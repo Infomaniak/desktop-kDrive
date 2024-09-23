@@ -23,8 +23,8 @@
 
 #include <thread>
 
-#define LOOP_PAUSE_SLEEP_PERIOD 200  // 0.2 sec
-#define LOOP_EXEC_SLEEP_PERIOD 100   // 0.1 sec
+#define LOOP_PAUSE_SLEEP_PERIOD 200 // 0.2 sec
+#define LOOP_EXEC_SLEEP_PERIOD 100 // 0.1 sec
 
 namespace KDC {
 
@@ -87,4 +87,4 @@ class ISyncWorker {
         ExitCause _exitCause{ExitCause::Unknown};
 };
 
-}  // namespace KDC
+} // namespace KDC

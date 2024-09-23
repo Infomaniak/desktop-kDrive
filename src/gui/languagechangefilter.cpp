@@ -30,4 +30,4 @@ bool LanguageChangeFilter::eventFilter(QObject *o, QEvent *e) {
     return false;
 }
 
-}  // namespace KDC
+} // namespace KDC

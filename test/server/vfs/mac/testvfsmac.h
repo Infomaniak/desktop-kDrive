@@ -37,4 +37,4 @@ class TestVfsMac : public CppUnit::TestFixture {
         std::unique_ptr<VfsMac> _vfs;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -123,8 +123,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void parseOptions(const QStringList &);
         void initLogging() noexcept(false);
         void setupProxy();
-        void handleCrashRecovery(bool &shouldQuit);  // Sets `shouldQuit` with true if the crash recovery is successful, false if
-                                                     // the application should exit.
+        void handleCrashRecovery(bool &shouldQuit); // Sets `shouldQuit` with true if the crash recovery is successful, false if
+                                                    // the application should exit.
         bool serverCrashedRecently(int seconds = 60 /*Allow one server self restart per minute (default)*/);
         bool clientCrashedRecently(int second = 60 /*Allow one client self restart per minute (default)*/);
 
@@ -177,7 +177,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
         void sendErrorsCleared(int syncDbId);
-        void sendQuit();  // Ask client to quit
+        void sendQuit(); // Ask client to quit
 
         // See types.h -> AppStateKey for the possible values of status
         void cancelLogUpload();
@@ -185,9 +185,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();
-        void stopSyncTask(int syncDbId);  // Long task which can block GUI: post-poned in the event loop by means of timer
-        void stopAllSyncsTask(const std::vector<int> &syncDbIdList);  // Idem.
-        void deleteAccountIfNeeded(int accountDbId);                  // Remove the account if no drive is associated to it.
+        void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
+        void stopAllSyncsTask(const std::vector<int> &syncDbIdList); // Idem.
+        void deleteAccountIfNeeded(int accountDbId); // Remove the account if no drive is associated to it.
         void deleteDrive(int driveDbId, int accountDbId);
 
         static void addError(const Error &error);
@@ -255,4 +255,4 @@ class AppServer : public SharedTools::QtSingleApplication {
 };
 
 
-}  // namespace KDC
+} // namespace KDC

@@ -39,7 +39,7 @@ class TestClass : public CppUnit::TestFixture {
         void testMyFunc(void);
         ...
 
-            private : Class *_myClass;
+                private : Class *_myClass;
 };
 
-}  // namespace KDC
+} // namespace KDC

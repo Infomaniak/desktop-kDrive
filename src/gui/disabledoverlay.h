@@ -32,4 +32,4 @@ class DisabledOverlay : public QWidget {
         void paintEvent(QPaintEvent *) override;
 };
 
-}  // namespace KDC
+} // namespace KDC

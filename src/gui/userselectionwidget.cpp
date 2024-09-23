@@ -37,14 +37,9 @@ static const int boxHSpacing = 7;
 static const char userDbIdProperty[] = "userDbId";
 static const int userIconSize = 32;
 
-UserSelectionWidget::UserSelectionWidget(QWidget *parent)
-    : QPushButton(parent),
-      _downIconSize(QSize()),
-      _downIconColor(QColor()),
-      _menuRightIconSize(QSize()),
-      _currentUserDbId(0),
-      _userIconLabel(nullptr),
-      _downIconLabel(nullptr) {
+UserSelectionWidget::UserSelectionWidget(QWidget *parent) :
+    QPushButton(parent), _downIconSize(QSize()), _downIconColor(QColor()), _menuRightIconSize(QSize()), _currentUserDbId(0),
+    _userIconLabel(nullptr), _downIconLabel(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
@@ -91,7 +86,7 @@ void UserSelectionWidget::setUserAvatar(const QImage &avatar) {
     if (_userIconLabel) {
         if (!avatar.isNull()) {
             _userIconLabel->setPixmap(KDC::GuiUtility::getAvatarFromImage(avatar).scaled(
-                userIconSize, userIconSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                    userIconSize, userIconSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }
     }
 }
@@ -99,8 +94,8 @@ void UserSelectionWidget::setUserAvatar(const QImage &avatar) {
 void UserSelectionWidget::setDownIcon() {
     if (_downIconLabel && _downIconSize != QSize() && _downIconColor != QColor()) {
         _downIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-down.svg", _downIconColor)
-                .pixmap(_downIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-down.svg", _downIconColor)
+                        .pixmap(_downIconSize));
     }
 }
 
@@ -118,7 +113,7 @@ void UserSelectionWidget::onClick(bool checked) {
             addMenuItem(menu, userMapIt->second, true);
         }
 
-        for (auto &userMapElt : _userMap) {
+        for (auto &userMapElt: _userMap) {
             UserInfo userInfo = userMapElt.second;
             if (userInfo.dbId() != _currentUserDbId) {
                 addMenuItem(menu, userInfo, false);
@@ -127,7 +122,7 @@ void UserSelectionWidget::onClick(bool checked) {
 
         QWidgetAction *addUserAction = new QWidgetAction(this);
         MenuItemWidget *addDriveMenuItemWidget =
-            new MenuItemWidget(tr("Add an account"), nullptr, MenuItemUserWidget::getMargins());
+                new MenuItemWidget(tr("Add an account"), nullptr, MenuItemUserWidget::getMargins());
         addDriveMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/add.svg");
         addUserAction->setDefaultWidget(addDriveMenuItemWidget);
         connect(addUserAction, &QWidgetAction::triggered, this, &UserSelectionWidget::onAddUserActionTriggered);
@@ -162,4 +157,4 @@ void UserSelectionWidget::onSelectUserActionTriggered(bool checked) {
     selectUser(userDbId);
 }
 
-}  // namespace KDC
+} // namespace KDC

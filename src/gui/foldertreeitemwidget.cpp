@@ -48,20 +48,10 @@ const QColor FolderTreeItemWidget::_sizeTextColor = QColor(0x939393);
 
 Q_LOGGING_CATEGORY(lcFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInfoMsg)
 
-FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool displayRoot, QWidget *parent)
-    : QTreeWidget(parent),
-      _gui(gui),
-      _syncDbId(0),
-      _userDbId(0),
-      _driveId(0),
-      _driveName(QString()),
-      _driveColor(QColor()),
-      _nodeId(QString()),
-      _displayRoot(displayRoot),
-      _mode(Update),
-      _oldBlackList(QSet<QString>()),
-      _oldUndecidedList(QSet<QString>()),
-      _inserting(false) {
+FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool displayRoot, QWidget *parent) :
+    QTreeWidget(parent), _gui(gui), _syncDbId(0), _userDbId(0), _driveId(0), _driveName(QString()), _driveColor(QColor()),
+    _nodeId(QString()), _displayRoot(displayRoot), _mode(Update), _oldBlackList(QSet<QString>()),
+    _oldUndecidedList(QSet<QString>()), _inserting(false) {
     initUI();
 
     // Make sure we don't get crashes if the sync is destroyed while the dialog is still opened
@@ -197,7 +187,7 @@ ExitCode FolderTreeItemWidget::updateBlackUndecidedSet() {
 
 void FolderTreeItemWidget::updateBlacklistPathMap() {
     for (int i = 0; i < 2; i++) {
-        for (const QString &nodeId : i == 0 ? _oldBlackList : _oldUndecidedList) {
+        for (const QString &nodeId: i == 0 ? _oldBlackList : _oldUndecidedList) {
             QString path;
             ExitCode exitCode = GuiRequests::getNodePath(_syncDbId, nodeId, path);
             if (exitCode != ExitCode::Ok) {
@@ -500,7 +490,7 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
     }
 
     KDC::CommonGuiUtility::sortSubfolders(list);
-    for (NodeInfo nodeInfo : list) {
+    for (NodeInfo nodeInfo: list) {
         insertNode(item, nodeInfo);
     }
 
@@ -679,4 +669,4 @@ void FolderTreeItemWidget::addTreeWidgetItemToQueue(const QString &nodeId, QTree
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

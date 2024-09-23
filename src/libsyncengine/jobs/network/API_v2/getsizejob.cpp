@@ -21,13 +21,13 @@
 
 namespace KDC {
 
-GetSizeJob::GetSizeJob(int userDbId, int driveId, const NodeId &nodeId)
-    : AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId), _nodeId(nodeId), _size(0) {
+GetSizeJob::GetSizeJob(int userDbId, int driveId, const NodeId &nodeId) :
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId), _nodeId(nodeId), _size(0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetSizeJob::GetSizeJob(int driveDbId, const NodeId &nodeId)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _nodeId(nodeId) {
+GetSizeJob::GetSizeJob(int driveDbId, const NodeId &nodeId) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -65,4 +65,4 @@ std::string GetSizeJob::getSpecificUrl() {
     return str;
 }
 
-}  // namespace KDC
+} // namespace KDC

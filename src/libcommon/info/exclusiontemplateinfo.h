@@ -51,4 +51,4 @@ class ExclusionTemplateInfo {
         bool _deleted;
 };
 
-}  // namespace KDC
+} // namespace KDC

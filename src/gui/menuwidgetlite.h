@@ -35,4 +35,4 @@ class MenuWidgetLite : public QMenu {
         QPushButton *b = nullptr;
 };
 
-}  // namespace KDC
+} // namespace KDC

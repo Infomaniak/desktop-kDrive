@@ -37,4 +37,4 @@ class CustomWordWrapLabel : public QLabel {
         int _maxWidth;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -85,4 +85,4 @@ class CustomToolButton : public QToolButton {
         void onClicked(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

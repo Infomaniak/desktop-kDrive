@@ -23,24 +23,16 @@ namespace KDC {
 SyncFileItemInfo::SyncFileItemInfo(NodeType type, const QString &path, const QString &newPath, const QString &localNodeId,
                                    const QString &remoteNodeId, SyncDirection direction, SyncFileInstruction instruction,
                                    SyncFileStatus status, ConflictType conflict, InconsistencyType inconsistency,
-                                   CancelType cancelType)
-    : _type(type),
-      _path(path),
-      _newPath(newPath),
-      _localNodeId(localNodeId),
-      _remoteNodeId(remoteNodeId),
-      _direction(direction),
-      _instruction(instruction),
-      _status(status),
-      _conflict(conflict),
-      _inconsistency(inconsistency),
-      _cancelType(cancelType) {}
+                                   CancelType cancelType) :
+    _type(type),
+    _path(path), _newPath(newPath), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _direction(direction),
+    _instruction(instruction), _status(status), _conflict(conflict), _inconsistency(inconsistency), _cancelType(cancelType) {}
 
 SyncFileItemInfo::SyncFileItemInfo() {}
 
 QDataStream &operator>>(QDataStream &in, SyncFileItemInfo &info) {
     in >> info._type >> info._path >> info._newPath >> info._localNodeId >> info._remoteNodeId >> info._direction >>
-        info._instruction >> info._status >> info._conflict >> info._inconsistency >> info._cancelType;
+            info._instruction >> info._status >> info._conflict >> info._inconsistency >> info._cancelType;
     return in;
 }
 
@@ -72,4 +64,4 @@ QDataStream &operator>>(QDataStream &in, QList<SyncFileItemInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

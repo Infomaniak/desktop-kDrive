@@ -32,4 +32,4 @@ class SharedObject {
         bool _updated;
 };
 
-}  // namespace KDC
+} // namespace KDC

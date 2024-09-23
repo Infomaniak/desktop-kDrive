@@ -20,8 +20,8 @@
 
 namespace KDC {
 
-GetThumbnailJob::GetThumbnailJob(int driveDbId, NodeId nodeId, unsigned width)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _nodeId(nodeId), _width(width) {
+GetThumbnailJob::GetThumbnailJob(int driveDbId, NodeId nodeId, unsigned width) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _nodeId(nodeId), _width(width) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -39,4 +39,4 @@ void GetThumbnailJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     canceled = false;
 }
 
-}  // namespace KDC
+} // namespace KDC

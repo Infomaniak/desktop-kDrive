@@ -24,4 +24,4 @@ SyncNode::SyncNode() : _nodeId(NodeId()), _type(SyncNodeType::Undefined) {}
 
 SyncNode::SyncNode(const NodeId &nodeId, SyncNodeType type) : _nodeId(nodeId), _type(type) {}
 
-}  // namespace KDC
+} // namespace KDC

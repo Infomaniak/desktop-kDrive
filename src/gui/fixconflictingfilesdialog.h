@@ -61,4 +61,4 @@ class FixConflictingFilesDialog : public CustomDialog {
         QListWidget *_fileListWidget = nullptr;
 };
 
-}  // namespace KDC
+} // namespace KDC

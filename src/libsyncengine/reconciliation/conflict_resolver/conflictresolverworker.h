@@ -35,7 +35,7 @@ class ConflictResolverWorker : public OperationProcessor {
         virtual void execute() override;
 
     private:
-        std::unordered_map<DbNodeId, ReplicaSide> _registeredOrphans;  // key: DB node ID, value : winner side
+        std::unordered_map<DbNodeId, ReplicaSide> _registeredOrphans; // key: DB node ID, value : winner side
 
         ExitCode generateOperations(const Conflict &conflict, bool &continueSolving);
 
@@ -52,4 +52,4 @@ class ConflictResolverWorker : public OperationProcessor {
         friend class TestConflictResolverWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

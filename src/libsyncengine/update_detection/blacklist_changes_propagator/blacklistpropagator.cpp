@@ -20,7 +20,7 @@
 
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
-#include "libcommon/utility/utility.h"  // Path2WStr
+#include "libcommon/utility/utility.h" // Path2WStr
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
@@ -78,7 +78,7 @@ ExitCode BlacklistPropagator::checkNodes() {
     }
 
     bool noItemToRemoveFound = true;
-    for (auto &remoteNodeId : blackList) {
+    for (auto &remoteNodeId: blackList) {
         if (isAborted()) {
             LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "BlacklistPropagator aborted " << jobId());
             return ExitCode::Ok;
@@ -145,7 +145,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         try {
             std::error_code ec;
             auto dirIt = std::filesystem::recursive_directory_iterator(
-                absolutePath, std::filesystem::directory_options::skip_permission_denied, ec);
+                    absolutePath, std::filesystem::directory_options::skip_permission_denied, ec);
             if (ec) {
                 LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                   L"Error in BlacklistPropagator::removeItem :" << Utility::formatStdError(ec).c_str());
@@ -160,7 +160,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                 // skip_permission_denied doesn't work on Windows
                 try {
                     bool dummy = dirIt->exists();
-                    (void)(dummy);
+                    (void) (dummy);
                 } catch (std::filesystem::filesystem_error &) {
                     dirIt.disable_recursion_pending();
                     continue;
@@ -230,23 +230,23 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     if (exists) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing item with "
-                                                                 << Utility::formatSyncPath(localPath).c_str() << L" ("
-                                                                 << Utility::s2ws(localNodeId).c_str()
-                                                                 << L") on local replica because it is blacklisted.");
+                                                                     << Utility::formatSyncPath(localPath).c_str() << L" ("
+                                                                     << Utility::s2ws(localNodeId).c_str()
+                                                                     << L") on local replica because it is blacklisted.");
         }
 
         LocalDeleteJob job(_syncPal->syncInfo(), localPath, liteSyncActivated, remoteNodeId);
         job.setBypassCheck(true);
         job.runSynchronously();
         if (job.exitCode() != ExitCode::Ok) {
-            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Failed to remove item with "
-                                                                << Utility::formatSyncPath(absolutePath).c_str() << L" ("
-                                                                << Utility::s2ws(localNodeId).c_str()
-                                                                << L") removed from local replica. It will not be blacklisted.");
+            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                              L"Failed to remove item with " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
+                                                             << Utility::s2ws(localNodeId).c_str()
+                                                             << L") removed from local replica. It will not be blacklisted.");
 
             SyncPath destPath;
             PlatformInconsistencyCheckerUtility::renameLocalFile(
-                absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
+                    absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
 
             Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictType::None,
                       InconsistencyType::None, CancelType::MoveToBinFailed, destPath);
@@ -271,4 +271,4 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

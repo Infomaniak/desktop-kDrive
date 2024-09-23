@@ -52,4 +52,4 @@ class NavigationPaneHelper : public QObject {
 #endif
 };
 
-}  // namespace KDC
+} // namespace KDC

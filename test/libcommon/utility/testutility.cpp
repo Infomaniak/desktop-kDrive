@@ -277,4 +277,4 @@ void TestUtility::testCompressFile() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
     CPPUNIT_ASSERT(exists);
 }
-}  // namespace KDC
+} // namespace KDC

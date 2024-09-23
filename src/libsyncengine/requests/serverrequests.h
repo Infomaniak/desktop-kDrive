@@ -105,10 +105,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path);
 
         // C/S requests (others)
-        static ExitCode deleteUser(int userDbId);        // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteAccount(int accountDbId);  // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteDrive(int driveDbId);      // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteSync(int syncDbId);        // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteAccount(int accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests
         static ExitCode loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
@@ -165,4 +165,4 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
 };
 
-}  // namespace KDC
+} // namespace KDC

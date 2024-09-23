@@ -38,4 +38,4 @@ class OldSyncDb : public Db {
         bool selectAllSelectiveSync(std::list<std::pair<std::string, SyncNodeType>> &selectiveSyncList);
 };
 
-}  // namespace KDC
+} // namespace KDC

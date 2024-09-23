@@ -126,4 +126,4 @@ ExitCode SyncNodeCache::clearCache(int syncDbId) {
     return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

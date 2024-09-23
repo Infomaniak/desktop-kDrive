@@ -54,11 +54,11 @@ class AbstractUpdater {
         log4cplus::Logger _logger;
         std::unique_ptr<std::thread> _thread;
 
-        UpdateStateV2 _state{UpdateStateV2::UpToDate};  // Current state of the update process.
-        VersionInfo _versionInfo;  // A struct keeping all the informations about the currently available version.
-        SyncPath _targetFile;      // Path to the downloaded installer file.
+        UpdateStateV2 _state{UpdateStateV2::UpToDate}; // Current state of the update process.
+        VersionInfo _versionInfo; // A struct keeping all the informations about the currently available version.
+        SyncPath _targetFile; // Path to the downloaded installer file.
 
         GetAppVersionJob *_getAppVersionJob{nullptr};
 };
 
-}  // namespace KDC
+} // namespace KDC

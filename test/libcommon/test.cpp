@@ -28,7 +28,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestTypes);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSentryHandler);
-}  // namespace KDC
+} // namespace KDC
 
 int main(int, char **) {
     return runTestSuite("_kDriveTestCommon.log");

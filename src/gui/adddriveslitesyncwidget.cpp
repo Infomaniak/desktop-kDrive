@@ -71,7 +71,7 @@ void AddDriveLiteSyncWidget::initUI() {
 
     auto *logoIconLabel = new QLabel(this);
     logoIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
-                                 .pixmap(QSize(logoIconSize, logoIconSize)));
+                                     .pixmap(QSize(logoIconSize, logoIconSize)));
     logoHBox->addWidget(logoIconLabel);
     logoHBox->addSpacing(hLogoSpacing);
 
@@ -97,7 +97,7 @@ void AddDriveLiteSyncWidget::initUI() {
 
     auto *pictureIconLabel = new QLabel(this);
     pictureIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/lite-sync.svg").pixmap(pictureIconSize));
+            KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/lite-sync.svg").pixmap(pictureIconSize));
     pictureIconLabel->setAlignment(Qt::AlignCenter);
     pictureHBox->addWidget(pictureIconLabel);
 
@@ -123,7 +123,7 @@ void AddDriveLiteSyncWidget::initUI() {
     textLabel->setText(tr("Lite Sync syncs all your files without using your computer space."
                           " You can browse the files in your kDrive and download them locally whenever you want."
                           R"( <a style="%1" href="%2">Learn more</a>)")
-                           .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
+                               .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
     textLabel->setWordWrap(true);
     mainLayout->addWidget(textLabel);
     mainLayout->addSpacing(textBoxVMargin);
@@ -137,7 +137,7 @@ void AddDriveLiteSyncWidget::initUI() {
 
     auto *point1IconLabel = new QLabel(this);
     point1IconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/statuts/success.svg").pixmap(checkIconSize));
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/statuts/success.svg").pixmap(checkIconSize));
     point1HBox->addWidget(point1IconLabel);
 
     auto *point1TextLabel = new QLabel(this);
@@ -157,7 +157,7 @@ void AddDriveLiteSyncWidget::initUI() {
 
     auto *point2IconLabel = new QLabel(this);
     point2IconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/statuts/success.svg").pixmap(checkIconSize));
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/statuts/success.svg").pixmap(checkIconSize));
     point2HBox->addWidget(point2IconLabel);
 
     auto *point2TextLabel = new QLabel(this);
@@ -210,8 +210,8 @@ void AddDriveLiteSyncWidget::onLinkActivated(const QString &link) {
 
 void AddDriveLiteSyncWidget::setLogoColor(const QColor &color) {
     _logoColor = color;
-    _logoTextIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor).pixmap(logoTextIconSize));
+    _logoTextIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor)
+                                          .pixmap(logoTextIconSize));
 }
 
 void AddDriveLiteSyncWidget::onBackButtonTriggered(bool checked) {
@@ -236,4 +236,4 @@ void AddDriveLiteSyncWidget::onYesButtonTriggered(bool checked) {
     emit terminated();
 }
 
-}  // namespace KDC
+} // namespace KDC

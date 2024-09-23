@@ -58,4 +58,4 @@ class TestParmsDb : public CppUnit::TestFixture {
         void testError(void);
 };
 
-}  // namespace KDC
+} // namespace KDC

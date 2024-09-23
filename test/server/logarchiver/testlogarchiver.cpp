@@ -57,7 +57,7 @@ void TestLogArchiver::testGetLogEstimatedSize() {
 }
 
 void TestLogArchiver::testCopyLogsTo() {
-    {  // Test with archivedLogs
+    { // Test with archivedLogs
         LocalTemporaryDirectory tempDir;
         LOG_DEBUG(_logger, "Ensure that the log file is created (test)");
 
@@ -80,7 +80,7 @@ void TestLogArchiver::testCopyLogsTo() {
         CPPUNIT_ASSERT_GREATER(logDirsize, tempDirSize);
     }
 
-    {  // Test without archivedLogs
+    { // Test without archivedLogs
         LocalTemporaryDirectory tempDir;
         SyncPath logDir = Log::instance()->getLogFilePath().parent_path();
 
@@ -195,7 +195,7 @@ void TestLogArchiver::testCompressLogs() {
         CPPUNIT_ASSERT(exists);
     }
 
-    {  // test the progress callback
+    { // test the progress callback
         LOG_DEBUG(_logger, "Test log compression with progress callback");
         LocalTemporaryDirectory tempDir("logArchiver");
         std::ofstream logFile(tempDir.path() / "test.log");
@@ -237,7 +237,7 @@ void TestLogArchiver::testCompressLogs() {
         CPPUNIT_ASSERT_GREATER(90, percent);
     }
 
-    {  // Test the progress callback with a cancel
+    { // Test the progress callback with a cancel
         LOG_DEBUG(_logger, "Test log compression with progress callback and cancel");
         // Creating dummy log files
         LocalTemporaryDirectory tempDir("logArchiver");
@@ -270,7 +270,7 @@ void TestLogArchiver::testCompressLogs() {
             percent = p;
             CPPUNIT_ASSERT(percent >= oldPercent);
             oldPercent = percent;
-            if (percent > 50) return false;  // A callback that returns false will cancel the operation
+            if (percent > 50) return false; // A callback that returns false will cancel the operation
             return true;
         };
 
@@ -316,7 +316,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive() {
         return;
     }
 
-    {  // Test the generation of the archive
+    { // Test the generation of the archive
         LocalTemporaryDirectory tempDir("GenerateLogsSupportArchive");
         SyncPath archivePath;
         ExitCause cause = ExitCause::Unknown;
@@ -341,7 +341,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive() {
         CPPUNIT_ASSERT(exists);
     }
 
-    {  // Test with a cancel
+    { // Test with a cancel
         LocalTemporaryDirectory tempDir("GenerateLogsSupportArchiveCancel");
         SyncPath archiveFile;
         ExitCause cause = ExitCause::Unknown;
@@ -367,4 +367,4 @@ bool TestLogArchiver::parmsDbFileExist() {
     return exists;
 }
 
-}  // namespace KDC
+} // namespace KDC

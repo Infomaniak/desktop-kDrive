@@ -24,8 +24,8 @@ ExclusionTemplate::ExclusionTemplate() {
     evaluateComplexity();
 }
 
-ExclusionTemplate::ExclusionTemplate(const std::string &templ, bool warning, bool def, bool deleted)
-    : _templ(templ), _warning(warning), _def(def), _deleted(deleted) {
+ExclusionTemplate::ExclusionTemplate(const std::string &templ, bool warning, bool def, bool deleted) :
+    _templ(templ), _warning(warning), _def(def), _deleted(deleted) {
     evaluateComplexity();
 }
 
@@ -56,4 +56,4 @@ void ExclusionTemplate::evaluateComplexity() {
     _complexity = ExclusionTemplateComplexity::Complex;
 }
 
-}  // namespace KDC
+} // namespace KDC

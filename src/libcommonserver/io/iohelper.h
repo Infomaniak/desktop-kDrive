@@ -276,7 +276,8 @@ struct IoHelper {
          */
         static bool deleteItem(const SyncPath &path, IoError &ioError) noexcept;
 
-        //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the directory.
+        //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
+        //! directory.
         /*!
          \param path is the file system path of the directory to iterate over.
          \param recursive is a boolean indicating whether the iterator should be recursive or not.
@@ -417,7 +418,7 @@ struct IoHelper {
         static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
 #ifdef _WIN32
-        static bool _setRightsWindowsApiInheritance;  // For windows tests only
+        static bool _setRightsWindowsApiInheritance; // For windows tests only
         static int _getAndSetRightsMethod;
         static std::unique_ptr<BYTE[]> _psid;
         static TRUSTEE _trustee;
@@ -426,4 +427,4 @@ struct IoHelper {
 #endif
 };
 
-}  // namespace KDC
+} // namespace KDC

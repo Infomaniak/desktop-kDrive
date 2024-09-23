@@ -44,4 +44,4 @@ CustomStateProvider::GetItemProperties(_In_ hstring const& itemPath) {
 
     return propertyVector;
 }
-}  // namespace winrt::FileExplorerExtension::implementation
+} // namespace winrt::FileExplorerExtension::implementation

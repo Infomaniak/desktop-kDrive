@@ -47,18 +47,11 @@ Q_LOGGING_CATEGORY(lcConfirmSynchronizationDialog, "gui.confirmsynchronizationdi
 ConfirmSynchronizationDialog::ConfirmSynchronizationDialog(std::shared_ptr<ClientGui> gui, int userDbId, int driveId,
                                                            const QString &serverFolderNodeId, const QString &localFolderName,
                                                            qint64 localFolderSize, const QString &serverFolderName,
-                                                           qint64 serverFolderSize, QWidget *parent)
-    : CustomDialog(true, parent),
-      _gui(gui),
-      _localFolderName(localFolderName),
-      _localFolderSize(localFolderSize),
-      _serverFolderName(serverFolderName),
-      _serverFolderSize(serverFolderSize),
-      _leftArrowIconLabel(nullptr),
-      _rightArrowIconLabel(nullptr),
-      _serverSizeLabel(nullptr),
-      _backButton(nullptr),
-      _continueButton(nullptr) {
+                                                           qint64 serverFolderSize, QWidget *parent) :
+    CustomDialog(true, parent),
+    _gui(gui), _localFolderName(localFolderName), _localFolderSize(localFolderSize), _serverFolderName(serverFolderName),
+    _serverFolderSize(serverFolderSize), _leftArrowIconLabel(nullptr), _rightArrowIconLabel(nullptr), _serverSizeLabel(nullptr),
+    _backButton(nullptr), _continueButton(nullptr) {
     initUI();
 
     connect(_gui.get(), &ClientGui::folderSizeCompleted, this, &ConfirmSynchronizationDialog::onFolderSizeCompleted);
@@ -92,8 +85,9 @@ void ConfirmSynchronizationDialog::initUI() {
     QLabel *descriptionLabel = new QLabel(this);
     descriptionLabel->setObjectName("descriptionLabel");
     descriptionLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    descriptionLabel->setText(tr(
-        "The contents of the folder on your computer will be synchronized to the folder of the selected kDrive and vice versa."));
+    descriptionLabel->setText(
+            tr("The contents of the folder on your computer will be synchronized to the folder of the selected kDrive and vice "
+               "versa."));
     descriptionLabel->setWordWrap(true);
     mainLayout->addWidget(descriptionLabel);
     mainLayout->addSpacing(descriptionBoxVMargin);
@@ -145,7 +139,7 @@ void ConfirmSynchronizationDialog::initUI() {
 
     QLabel *serverIconLabel = new QLabel(this);
     serverIconLabel->setPixmap(
-        QIcon(":/client/resources/icons/actions/folder-folder-drive.svg").pixmap(QSize(logoSize, logoSize)));
+            QIcon(":/client/resources/icons/actions/folder-folder-drive.svg").pixmap(QSize(logoSize, logoSize)));
     serverIconLabel->setAlignment(Qt::AlignCenter);
     summaryServerLayout->addWidget(serverIconLabel);
     summaryServerLayout->addSpacing(iconVSpacing);
@@ -200,11 +194,11 @@ void ConfirmSynchronizationDialog::initUI() {
 void ConfirmSynchronizationDialog::setArrowIcon() {
     if (_arrowIconColor != QColor()) {
         _leftArrowIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/arrow-left.svg", _arrowIconColor)
-                .pixmap(QSize(arrowSize, arrowSize)));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/arrow-left.svg", _arrowIconColor)
+                        .pixmap(QSize(arrowSize, arrowSize)));
         _rightArrowIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/arrow-right.svg", _arrowIconColor)
-                .pixmap(QSize(arrowSize, arrowSize)));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/arrow-right.svg", _arrowIconColor)
+                        .pixmap(QSize(arrowSize, arrowSize)));
     }
 }
 
@@ -229,4 +223,4 @@ void ConfirmSynchronizationDialog::onFolderSizeCompleted(QString /*nodeId*/, qin
     _serverSizeLabel->setText(KDC::CommonGuiUtility::octetsToString(_serverFolderSize));
 }
 
-}  // namespace KDC
+} // namespace KDC

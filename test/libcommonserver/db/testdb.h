@@ -68,4 +68,4 @@ class TestDb : public CppUnit::TestFixture {
         MyTestDb *_testObj;
 };
 
-}  // namespace KDC
+} // namespace KDC

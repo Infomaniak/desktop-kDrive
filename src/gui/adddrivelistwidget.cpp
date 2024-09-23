@@ -45,24 +45,11 @@ static const int labelKdriveMaxWidth = 538;
 
 Q_LOGGING_CATEGORY(lcAddDriveListWidget, "gui.adddrivelistwidget", QtInfoMsg)
 
-AddDriveListWidget::AddDriveListWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : QWidget(parent),
-      _gui(gui),
-      _userDbId(0),
-      _withoutDrives(false),
-      _driveInfo(DriveAvailableInfo()),
-      _addUserClicked(false),
-      _logoTextIconLabel(nullptr),
-      _backButton(nullptr),
-      _nextButton(nullptr),
-      _userSelector(nullptr),
-      _listWidget(nullptr),
-      _titleLabel(nullptr),
-      _logoColor(QColor()),
-      _buttonColor(QColor()),
-      _mainWithDriveWidget(nullptr),
-      _mainWithoutDriveWidget(nullptr),
-      _mainLayout(nullptr) {
+AddDriveListWidget::AddDriveListWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    QWidget(parent), _gui(gui), _userDbId(0), _withoutDrives(false), _driveInfo(DriveAvailableInfo()), _addUserClicked(false),
+    _logoTextIconLabel(nullptr), _backButton(nullptr), _nextButton(nullptr), _userSelector(nullptr), _listWidget(nullptr),
+    _titleLabel(nullptr), _logoColor(QColor()), _buttonColor(QColor()), _mainWithDriveWidget(nullptr),
+    _mainWithoutDriveWidget(nullptr), _mainLayout(nullptr) {
     initUI();
 }
 
@@ -82,7 +69,7 @@ void AddDriveListWidget::setDrivesData() {
         _withoutDrives = true;
     } else {
         // min 2 drives
-        for (const auto &driveInfo : driveInfoList) {
+        for (const auto &driveInfo: driveInfoList) {
             _listWidget->addItem(new DriveItemWidget(driveInfo, _listWidget));
         }
 
@@ -99,7 +86,7 @@ void AddDriveListWidget::setDrivesData() {
 }
 
 void AddDriveListWidget::setUsersData() {
-    for (const auto &userInfoMapIt : _gui->userInfoMap()) {
+    for (const auto &userInfoMapIt: _gui->userInfoMap()) {
         _userSelector->addOrUpdateUser(userInfoMapIt.first, userInfoMapIt.second);
     }
     _userSelector->selectUser(_userDbId);
@@ -107,8 +94,8 @@ void AddDriveListWidget::setUsersData() {
 
 void AddDriveListWidget::setLogoColor(const QColor &color) {
     _logoColor = color;
-    _logoTextIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor).pixmap(logoTextIconSize));
+    _logoTextIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor)
+                                          .pixmap(logoTextIconSize));
 }
 
 void AddDriveListWidget::initUI() {
@@ -133,7 +120,7 @@ void AddDriveListWidget::initMainUi() {
 
     QLabel *logoIconLabel = new QLabel(this);
     logoIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
-                                 .pixmap(QSize(logoIconSize, logoIconSize)));
+                                     .pixmap(QSize(logoIconSize, logoIconSize)));
     logoHBox->addWidget(logoIconLabel);
     logoHBox->addSpacing(hLogoSpacing);
 
@@ -240,9 +227,9 @@ void AddDriveListWidget::initMainWithoutDriveUi() {
     CustomWordWrapLabel *descrFreeKdrives = new CustomWordWrapLabel(this);
     descrFreeKdrives->setObjectName("descrLabel");
     descrFreeKdrives->setMaxWidth(labelKdriveMaxWidth);
-    descrFreeKdrives->setText(
-        tr("Store your pictures, documents and e-mails in Switzerland from an independent company that respects privacy. Learn "
-           "more"));
+    descrFreeKdrives->setText(tr(
+            "Store your pictures, documents and e-mails in Switzerland from an independent company that respects privacy. Learn "
+            "more"));
     descrFreeKdrives->setAlignment(Qt::AlignHCenter);
     kDriveFreeVBox->addWidget(descrFreeKdrives);
 
@@ -281,7 +268,7 @@ void AddDriveListWidget::onNextButtonTriggered(bool checked) {
 void AddDriveListWidget::onWidgetPressed(QListWidgetItem *item) {
     Q_UNUSED(item)
 
-    DriveItemWidget *driveItem = (DriveItemWidget *)item;
+    DriveItemWidget *driveItem = (DriveItemWidget *) item;
     _driveInfo = driveItem->driveInfo();
 }
 
@@ -295,4 +282,4 @@ void AddDriveListWidget::onUserSelected(int userDbId) {
     setDrivesData();
 }
 
-}  // namespace KDC
+} // namespace KDC

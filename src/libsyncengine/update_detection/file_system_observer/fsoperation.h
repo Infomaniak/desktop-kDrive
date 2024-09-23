@@ -58,4 +58,4 @@ struct FSOperation {
         static UniqueId _nextId;
 };
 
-}  // namespace KDC
+} // namespace KDC

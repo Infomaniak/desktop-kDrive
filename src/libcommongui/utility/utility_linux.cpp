@@ -39,4 +39,4 @@ static void setupFavLink_private(const QString &folder) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

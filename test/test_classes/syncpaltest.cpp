@@ -18,4 +18,4 @@
 
 #include "syncpaltest.h"
 
-namespace KDC {}  // namespace KDC
+namespace KDC {} // namespace KDC

@@ -22,4 +22,4 @@ namespace KDC {
 
 Updater::Updater(QObject *) {}
 
-}  // namespace KDC
+} // namespace KDC

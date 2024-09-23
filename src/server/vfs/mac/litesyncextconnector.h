@@ -106,4 +106,4 @@ class LiteSyncExtConnector {
         bool sendStatusToFinder(const QString &path, bool isSyncing, int progress, bool isHydrated);
 };
 
-}  // namespace KDC
+} // namespace KDC

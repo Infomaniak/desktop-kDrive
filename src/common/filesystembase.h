@@ -127,7 +127,7 @@ bool isLnkFile(const QString &filename);
  *  - A conversion is only done if the path len is larger than 245. Otherwise,
  *    the Windows API functions work with the normal "unixoid" representation too.
  */
-template <typename S>
+template<typename S>
 S pathtoUNC(const S &str) {
     int len = 0;
     S longStr;
@@ -142,7 +142,7 @@ S pathtoUNC(const S &str) {
             longStr.append("\\\\?");
         }
     } else {
-        longStr.append("\\\\?\\");  // prepend string by this four magic chars.
+        longStr.append("\\\\?\\"); // prepend string by this four magic chars.
     }
     longStr += str;
 
@@ -155,7 +155,7 @@ S pathtoUNC(const S &str) {
     }
     return longStr;
 }
-}  // namespace FileSystem
+} // namespace FileSystem
 
 /** @} */
-}  // namespace KDC
+} // namespace KDC

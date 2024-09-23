@@ -201,4 +201,4 @@ class SocketApi : public QObject {
         std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
 };
 
-}  // namespace KDC
+} // namespace KDC

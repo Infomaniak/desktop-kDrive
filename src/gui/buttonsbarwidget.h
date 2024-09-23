@@ -58,4 +58,4 @@ class ButtonsBarWidget : public QWidget {
         void onToggle(bool checked);
 };
 
-}  // namespace KDC
+} // namespace KDC

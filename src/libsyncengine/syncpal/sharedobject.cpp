@@ -22,4 +22,4 @@ namespace KDC {
 
 SharedObject::SharedObject() : _updated(false) {}
 
-}  // namespace KDC
+} // namespace KDC

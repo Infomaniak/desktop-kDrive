@@ -38,4 +38,4 @@ bool GetInfoDriveJob::handleError(std::istream &is, const Poco::URI &uri) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

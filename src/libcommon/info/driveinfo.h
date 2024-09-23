@@ -70,4 +70,4 @@ class DriveInfo {
         bool _accessDenied;
 };
 
-}  // namespace KDC
+} // namespace KDC

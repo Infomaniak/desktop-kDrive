@@ -50,14 +50,10 @@ static const int nodeIdRole = Qt::UserRole + 3;
 Q_LOGGING_CATEGORY(lcBaseFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInfoMsg)
 
 BaseFolderTreeItemWidget::BaseFolderTreeItemWidget(std::shared_ptr<ClientGui> gui, int driveDbId, bool displayRoot,
-                                                   QWidget *parent)
-    : QTreeWidget(parent),
-      _gui(gui),
-      _driveDbId(driveDbId),
-      _displayRoot(displayRoot),
-      _folderIconColor(QColor()),
-      _folderIconSize(QSize()),
-      _inserting(false) {
+                                                   QWidget *parent) :
+    QTreeWidget(parent),
+    _gui(gui), _driveDbId(driveDbId), _displayRoot(displayRoot), _folderIconColor(QColor()), _folderIconSize(QSize()),
+    _inserting(false) {
     initUI();
 }
 
@@ -85,9 +81,9 @@ void BaseFolderTreeItemWidget::loadSubFolders() {
 
             // Set drive name
             root->setText(TreeWidgetColumn::Folder, _driveDbId == 0 ? QString() : driveInfoMapIt->second.name());
-            root->setIcon(
-                TreeWidgetColumn::Folder,
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfoMapIt->second.color()));
+            root->setIcon(TreeWidgetColumn::Folder,
+                          KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg",
+                                                            driveInfoMapIt->second.color()));
             root->setData(TreeWidgetColumn::Folder, dirRole, QString());
             root->setData(TreeWidgetColumn::Folder, baseDirRole, QString());
             root->setData(TreeWidgetColumn::Folder, nodeIdRole, QString());
@@ -251,7 +247,7 @@ void BaseFolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, QList<No
     }
 
     KDC::CommonGuiUtility::sortSubfolders(list);
-    for (NodeInfo nodeInfo : list) {
+    for (NodeInfo nodeInfo: list) {
         insertNode(item, nodeInfo);
     }
 }
@@ -280,7 +276,7 @@ void BaseFolderTreeItemWidget::onCurrentItemChanged(QTreeWidgetItem *current, QT
         // Add action icon
         current->setIcon(TreeWidgetColumn::Action,
                          KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/folder-add.svg", _addIconColor)
-                             .pixmap(_addIconSize));
+                                 .pixmap(_addIconSize));
     }
 
     if (previous) {
@@ -350,8 +346,8 @@ void BaseFolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int column) 
     }
 }
 
-BaseFolderTreeItemWidget::CustomDelegate::CustomDelegate(BaseFolderTreeItemWidget *treeWidget, QObject *parent)
-    : QStyledItemDelegate(parent), _treeWidget(treeWidget) {}
+BaseFolderTreeItemWidget::CustomDelegate::CustomDelegate(BaseFolderTreeItemWidget *treeWidget, QObject *parent) :
+    QStyledItemDelegate(parent), _treeWidget(treeWidget) {}
 
 void BaseFolderTreeItemWidget::CustomDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
                                                                     const QModelIndex &index) const {
@@ -366,4 +362,4 @@ void BaseFolderTreeItemWidget::CustomDelegate::updateEditorGeometry(QWidget *edi
     editor->setGeometry(lineEditRect);
 }
 
-}  // namespace KDC
+} // namespace KDC

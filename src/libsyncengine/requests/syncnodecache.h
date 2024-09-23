@@ -52,4 +52,4 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         SyncNodeCache();
 };
 
-}  // namespace KDC
+} // namespace KDC

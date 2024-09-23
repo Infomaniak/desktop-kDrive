@@ -47,4 +47,4 @@ class FileExclude {
         std::vector<std::pair<std::regex, ExclusionTemplate>> _regexPatterns;
 };
 
-}  // namespace KDC
+} // namespace KDC

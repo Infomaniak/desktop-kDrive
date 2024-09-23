@@ -29,8 +29,8 @@
 
 // TODO: check which includes are actually necessary
 #include <windows.h>
-#include <Shobjidl.h>  //Required for IFileOperation Interface
-#include <shellapi.h>  //Required for Flags set in "SetOperationFlags"
+#include <Shobjidl.h> //Required for IFileOperation Interface
+#include <shellapi.h> //Required for Flags set in "SetOperationFlags"
 #include <objbase.h>
 #include <objidl.h>
 #include <shlguid.h>
@@ -59,8 +59,8 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // Couldn't CoCreateInstance - clean up and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in CoCreateInstance - path="
-                                                    << Path2WStr(itemPath).c_str() << L" err="
-                                                    << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath).c_str() << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
@@ -76,8 +76,8 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // Couldn't add flags - clean up and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SetOperationFlags path="
-                                                    << Path2WStr(itemPath).c_str() << L" err="
-                                                    << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath).c_str() << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
@@ -97,8 +97,8 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // Couldn't get file into an item - clean up and return (maybe the file doesn't exist?)
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SHCreateItemFromParsingName - path="
-                                                    << Path2WStr(itemPath).c_str() << L" err="
-                                                    << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath).c_str() << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
@@ -107,7 +107,8 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
-        SentryHandler::instance()->captureMessage(SentryLevel::Error, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed");
+        SentryHandler::instance()->captureMessage(SentryLevel::Error, "Utility::moveItemToTrash",
+                                                  "SHCreateItemFromParsingName failed");
         fileOperation->Release();
         CoUninitialize();
         return false;
@@ -117,8 +118,8 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // Failed to mark file/folder item for deletion - clean up and return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in DeleteItem - path="
-                                                    << Path2WStr(itemPath).c_str() << L" err="
-                                                    << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath).c_str() << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str() << L" - DeleteItem failed with error: "
@@ -137,8 +138,8 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (FAILED(hr)) {
         // failed to carry out delete - return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in PerformOperations - path="
-                                                    << Path2WStr(itemPath).c_str() << L" err="
-                                                    << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath).c_str() << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
@@ -158,8 +159,8 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (!FAILED(hr) && aborted) {
         // failed to carry out delete - return
         LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - path="
-                                                    << Path2WStr(itemPath).c_str() << L" err="
-                                                    << Utility::s2ws(std::system_category().message(hr)).c_str());
+                                                        << Path2WStr(itemPath).c_str() << L" err="
+                                                        << Utility::s2ws(std::system_category().message(hr)).c_str());
 
         std::wstringstream errorStream;
         errorStream << L"Move to trash aborted for item " << Path2WStr(itemPath).c_str();
@@ -186,13 +187,13 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
 static void UnixTimevalToFileTime(struct timeval t, LPFILETIME pft) {
     LONGLONG ll;
     ll = Int32x32To64(t.tv_sec, CSYNC_USEC_IN_SEC * 10) + t.tv_usec * 10 + CSYNC_SECONDS_SINCE_1601 * CSYNC_USEC_IN_SEC * 10;
-    pft->dwLowDateTime = (DWORD)ll;
+    pft->dwLowDateTime = (DWORD) ll;
     pft->dwHighDateTime = ll >> 32;
 }
 
 static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
-    (void)symlink;
+    (void) symlink;
 
     exists = true;
 
@@ -219,10 +220,10 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
     }
 
     HANDLE hFile;
-    for (bool isDirectory : {false, true}) {
-        hFile =
-            CreateFileW(filePath.native().c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL, OPEN_EXISTING, (isDirectory ? FILE_FLAG_BACKUP_SEMANTICS : 0) | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+    for (bool isDirectory: {false, true}) {
+        hFile = CreateFileW(filePath.native().c_str(), FILE_WRITE_ATTRIBUTES,
+                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+                            (isDirectory ? FILE_FLAG_BACKUP_SEMANTICS : 0) | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
         if (hFile == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
             if (dwError == ERROR_ACCESS_DENIED) {
@@ -281,4 +282,4 @@ static bool cpuUsageByProcess_private(double &percent) {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -61,8 +61,8 @@ static const QString folderBlocName("folderBloc");
 
 Q_LOGGING_CATEGORY(lcDrivePreferencesWidget, "gui.drivepreferenceswidget", QtInfoMsg)
 
-DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : LargeWidgetWithCustomToolTip(parent), _gui(gui) {
+DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    LargeWidgetWithCustomToolTip(parent), _gui(gui) {
     setContentsMargins(0, 0, 0, 0);
 
     /*
@@ -115,7 +115,7 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
     // Synchronization errors
     //
     _displayErrorsWidget =
-        new ActionWidget(":/client/resources/icons/actions/warning.svg", tr("Synchronization errors and information."), this);
+            new ActionWidget(":/client/resources/icons/actions/warning.svg", tr("Synchronization errors and information."), this);
     _displayErrorsWidget->setObjectName("displayErrorsWidget");
     _mainVBox->addWidget(_displayErrorsWidget);
     _displayErrorsWidget->setVisible(false);
@@ -124,8 +124,8 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
     // Big folders warning
     //
     _displayBigFoldersWarningWidget =
-        new ActionWidget(":/client/resources/icons/actions/warning.svg",
-                         tr("Some folders were not synchronized because they are too large."), this);
+            new ActionWidget(":/client/resources/icons/actions/warning.svg",
+                             tr("Some folders were not synchronized because they are too large."), this);
     _displayBigFoldersWarningWidget->setObjectName("displayBigFoldersWarningWidget");
     _displayBigFoldersWarningWidget->setVisible(false);
     _mainVBox->addWidget(_displayBigFoldersWarningWidget);
@@ -144,7 +144,7 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
     foldersHeaderHBox->addStretch();
 
     _addLocalFolderButton =
-        new CustomPushButton(":/client/resources/icons/actions/add.svg", tr("Synchronize a local folder"), this);
+            new CustomPushButton(":/client/resources/icons/actions/add.svg", tr("Synchronize a local folder"), this);
     _addLocalFolderButton->setObjectName("addFolderButton");
     foldersHeaderHBox->addWidget(_addLocalFolderButton);
 
@@ -289,7 +289,7 @@ void DrivePreferencesWidget::refreshStatus() {
     }
 
     const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+    for (PreferencesBlocWidget *folderBloc: folderBlocList) {
         folderBloc->updateBloc();
     }
 
@@ -301,7 +301,7 @@ void DrivePreferencesWidget::refreshStatus() {
 void DrivePreferencesWidget::showEvent(QShowEvent *event) {
     _gui->activateLoadInfo();
     QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+    for (PreferencesBlocWidget *folderBloc: folderBlocList) {
         if (auto folderItemWidget = folderBloc->findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
             folderItemWidget->closeFolderView();
         }
@@ -311,7 +311,7 @@ void DrivePreferencesWidget::showEvent(QShowEvent *event) {
 
 void DrivePreferencesWidget::onVfsConversionCompleted(int syncDbId) {
     QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+    for (PreferencesBlocWidget *folderBloc: folderBlocList) {
         FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
         if (folderItemWidget && folderItemWidget->syncDbId() == syncDbId) {
             auto syncInfoMapIt = _gui->syncInfoMap().find(folderItemWidget->syncDbId());
@@ -325,7 +325,7 @@ void DrivePreferencesWidget::onVfsConversionCompleted(int syncDbId) {
 bool DrivePreferencesWidget::existUndecidedSet() {
     bool ret = false;
     if (_driveDbId) {
-        for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
+        for (const auto &syncInfoMapElt: _gui->syncInfoMap()) {
             if (syncInfoMapElt.second.driveDbId() == _driveDbId) {
                 if (syncInfoMapElt.second.status() == SyncStatus::Undefined) {
                     continue;
@@ -364,7 +364,7 @@ void DrivePreferencesWidget::updateUserInfo() {
     const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfoMapIt->second.accountDbId());
     if (accountInfoMapIt == _gui->accountInfoMap().end()) {
         qCWarning(lcDrivePreferencesWidget())
-            << "Account not found in accountInfoMap for accountDbId=" << driveInfoMapIt->second.accountDbId();
+                << "Account not found in accountInfoMap for accountDbId=" << driveInfoMapIt->second.accountDbId();
         return;
     }
 
@@ -373,13 +373,13 @@ void DrivePreferencesWidget::updateUserInfo() {
     const auto userInfoMapIt = _gui->userInfoMap().find(accountInfoMapIt->second.userDbId());
     if (userInfoMapIt == _gui->userInfoMap().end()) {
         qCWarning(lcDrivePreferencesWidget())
-            << "User not found in userInfoMap for userDbId=" << accountInfoMapIt->second.userDbId();
+                << "User not found in userInfoMap for userDbId=" << accountInfoMapIt->second.userDbId();
         return;
     }
 
     if (!userInfoMapIt->second.avatar().isNull()) {
         _userAvatarLabel->setPixmap(KDC::GuiUtility::getAvatarFromImage(userInfoMapIt->second.avatar())
-                                        .scaled(avatarSize, avatarSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                                            .scaled(avatarSize, avatarSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
     _userNameLabel->setText(userInfoMapIt->second.name());
@@ -426,11 +426,11 @@ void DrivePreferencesWidget::askDisableLiteSync(const std::function<void(bool, b
 
     CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to turn off Lite Sync?"),
                             diskSpaceWarning
-                                ? tr("You don't have enough space to sync all the files on your kDrive (%1 missing)."
-                                     " If you turn off Lite Sync, you need to select which folders to sync on your computer."
-                                     " In the meantime, the synchronization of your kDrive will be paused.")
-                                      .arg(KDC::CommonGuiUtility::octetsToString(diskSpaceMissing))
-                                : tr("If you turn off Lite Sync, all files will sync locally on your computer."),
+                                    ? tr("You don't have enough space to sync all the files on your kDrive (%1 missing)."
+                                         " If you turn off Lite Sync, you need to select which folders to sync on your computer."
+                                         " In the meantime, the synchronization of your kDrive will be paused.")
+                                              .arg(KDC::CommonGuiUtility::octetsToString(diskSpaceMissing))
+                                    : tr("If you turn off Lite Sync, all files will sync locally on your computer."),
                             diskSpaceWarning, QMessageBox::NoButton, this);
     msgBox.addButton(tr("CONFIRM"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -460,10 +460,10 @@ bool DrivePreferencesWidget::switchVfsOn(int syncDbId) {
         // Check LiteSync ext authorizations
         std::string liteSyncExtErrorDescr;
         bool liteSyncExtOk =
-            CommonUtility::isLiteSyncExtEnabled() && CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
+                CommonUtility::isLiteSyncExtEnabled() && CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
         if (!liteSyncExtErrorDescr.empty()) {
             qCWarning(lcDrivePreferencesWidget)
-                << "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: " << liteSyncExtErrorDescr.c_str();
+                    << "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: " << liteSyncExtErrorDescr.c_str();
         }
         if (!liteSyncExtOk) {
             // Extension Setup step
@@ -513,7 +513,7 @@ bool DrivePreferencesWidget::switchVfsOff(int syncDbId, bool diskSpaceWarning) {
 
 void DrivePreferencesWidget::resetFoldersBlocs() {
     QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+    for (PreferencesBlocWidget *folderBloc: folderBlocList) {
         folderBloc->deleteLater();
     }
 
@@ -524,7 +524,7 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
     int foldersNextBeginIndex = _foldersBeginIndex;
     QList<int> syncDbIdList;
     const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+    for (PreferencesBlocWidget *folderBloc: folderBlocList) {
         FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
         if (!folderItemWidget) {
             qCDebug(lcDrivePreferencesWidget) << "Empty folder bloc!";
@@ -545,7 +545,7 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
         }
     }
 
-    for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
+    for (const auto &syncInfoMapElt: _gui->syncInfoMap()) {
         if (syncInfoMapElt.second.driveDbId() != _driveDbId) {
             continue;
         }
@@ -606,7 +606,7 @@ void DrivePreferencesWidget::updateFoldersBlocs() {
 
 void DrivePreferencesWidget::refreshFoldersBlocs() const {
     const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-    for (const PreferencesBlocWidget *folderBloc : folderBlocList) {
+    for (const PreferencesBlocWidget *folderBloc: folderBlocList) {
         folderBloc->refreshFolders();
     }
 }
@@ -767,7 +767,7 @@ void DrivePreferencesWidget::onBigFoldersWarningWidgetClicked() {
     EnableStateHolder _(this);
 
     std::unordered_map<int, std::pair<SyncInfoClient, QSet<QString>>> syncsUndecidedMap;
-    for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
+    for (const auto &syncInfoMapElt: _gui->syncInfoMap()) {
         if (syncInfoMapElt.second.driveDbId() == _driveDbId) {
             QSet<QString> tmpSet;
             ExitCode exitCode = GuiRequests::getSyncIdSet(syncInfoMapElt.first, SyncNodeType::UndecidedList, tmpSet);
@@ -985,24 +985,25 @@ void DrivePreferencesWidget::onLiteSyncSwitchSyncChanged(int syncDbId, bool acti
         });
     } else {
         askDisableLiteSync(
-            [this, &syncDbId](bool disable, bool diskSpaceWarning) {
-                if (disable) {
-                    auto syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
-                    if (syncInfoMapIt != _gui->syncInfoMap().end()) {
-                        if (switchVfsOff(syncInfoMapIt->first, diskSpaceWarning)) {
-                            CustomMessageBox msgBox(QMessageBox::Information,
-                                                    tr("The conversion of the folder has succeeded, it will now be synchronized"),
-                                                    QMessageBox::Ok, this);
-                            msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
-                        } else {
-                            CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has failed."),
-                                                    QMessageBox::Ok, this);
-                            msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+                [this, &syncDbId](bool disable, bool diskSpaceWarning) {
+                    if (disable) {
+                        auto syncInfoMapIt = _gui->syncInfoMap().find(syncDbId);
+                        if (syncInfoMapIt != _gui->syncInfoMap().end()) {
+                            if (switchVfsOff(syncInfoMapIt->first, diskSpaceWarning)) {
+                                CustomMessageBox msgBox(
+                                        QMessageBox::Information,
+                                        tr("The conversion of the folder has succeeded, it will now be synchronized"),
+                                        QMessageBox::Ok, this);
+                                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+                            } else {
+                                CustomMessageBox msgBox(QMessageBox::Information, tr("The conversion of the folder has failed."),
+                                                        QMessageBox::Ok, this);
+                                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
+                            }
                         }
                     }
-                }
-            },
-            syncDbId);
+                },
+                syncDbId);
     }
 }
 
@@ -1043,12 +1044,12 @@ void DrivePreferencesWidget::onDriveBeingRemoved() {
     driveInfoIt->second.setIsBeingDeleted(true);
 
     // Lock all GUI drive-related actions during drive deletion.
-    for (auto *child : findChildren<QWidget *>()) {
+    for (auto *child: findChildren<QWidget *>()) {
         GuiUtility::setEnabledRecursively<QWidget>(child, false);
     }
 
     const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+    for (PreferencesBlocWidget *folderBloc: folderBlocList) {
         folderBloc->setToolTipsEnabled(false);
     }
 
@@ -1068,14 +1069,14 @@ void DrivePreferencesWidget::onUnsyncTriggered(int syncDbId) {
     CustomMessageBox msgBox(QMessageBox::Question,
                             tr("Do you really want to stop syncing the folder <i>%1</i> ?<br>"
                                "<b>Note:</b> This will <b>not</b> delete any files.")
-                                .arg(syncInfoMapIt->second.localPath()),
+                                    .arg(syncInfoMapIt->second.localPath()),
                             QMessageBox::NoButton, this);
     msgBox.addButton(tr("REMOVE FOLDER SYNC CONNECTION"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
 
     if (msgBox.exec() == QMessageBox::Yes) {
-        PreferencesBlocWidget *folderBloc = (PreferencesBlocWidget *)sender()->parent();
+        PreferencesBlocWidget *folderBloc = (PreferencesBlocWidget *) sender()->parent();
         if (!folderBloc) {
             return;
         }
@@ -1099,14 +1100,14 @@ void DrivePreferencesWidget::onUnsyncTriggered(int syncDbId) {
 
 void DrivePreferencesWidget::onDisplayFolderDetail(int syncDbId, bool display) {
     if (syncDbId) {
-        FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *)sender()->parent());
+        FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *) sender()->parent());
         if (treeItemWidget) {
             if (display) {
                 setCursor(Qt::WaitCursor);
                 treeItemWidget->setSyncDbId(syncDbId);
                 treeItemWidget->loadSubFolders();
             } else {
-                QFrame *separatorFrame = blocSeparatorFrame((PreferencesBlocWidget *)sender()->parent());
+                QFrame *separatorFrame = blocSeparatorFrame((PreferencesBlocWidget *) sender()->parent());
                 if (!separatorFrame) {
                     return;
                 }
@@ -1125,7 +1126,7 @@ void DrivePreferencesWidget::onOpenFolder(const QString &filePath) {
 void DrivePreferencesWidget::onSubfoldersLoaded(bool error, bool empty) {
     setCursor(Qt::ArrowCursor);
     if (error || empty) {
-        FolderItemWidget *itemWidget = blocItemWidget((PreferencesBlocWidget *)sender()->parent());
+        FolderItemWidget *itemWidget = blocItemWidget((PreferencesBlocWidget *) sender()->parent());
         if (!itemWidget) {
             return;
         }
@@ -1147,12 +1148,12 @@ void DrivePreferencesWidget::onSubfoldersLoaded(bool error, bool empty) {
             msgBox.exec();
         }*/
     } else {
-        FolderTreeItemWidget *treeItemWidget = (FolderTreeItemWidget *)sender();
+        FolderTreeItemWidget *treeItemWidget = (FolderTreeItemWidget *) sender();
         if (!treeItemWidget) {
             return;
         }
 
-        QFrame *separatorFrame = blocSeparatorFrame((PreferencesBlocWidget *)sender()->parent());
+        QFrame *separatorFrame = blocSeparatorFrame((PreferencesBlocWidget *) sender()->parent());
         if (!separatorFrame) {
             return;
         }
@@ -1164,7 +1165,7 @@ void DrivePreferencesWidget::onSubfoldersLoaded(bool error, bool empty) {
 
 void DrivePreferencesWidget::onNeedToSave(bool isFolderItemBlackListed) {
     // Show update widget
-    FolderItemWidget *itemWidget = blocItemWidget((PreferencesBlocWidget *)sender()->parent());
+    FolderItemWidget *itemWidget = blocItemWidget((PreferencesBlocWidget *) sender()->parent());
     if (itemWidget) {
         itemWidget->setUpdateWidgetVisible(true);
         itemWidget->setUpdateWidgetLabelVisible(isFolderItemBlackListed);
@@ -1172,13 +1173,13 @@ void DrivePreferencesWidget::onNeedToSave(bool isFolderItemBlackListed) {
 }
 
 void DrivePreferencesWidget::onCancelUpdate(int syncDbId) {
-    FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *)sender()->parent());
+    FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *) sender()->parent());
     if (treeItemWidget) {
         ASSERT(treeItemWidget->syncDbId() == syncDbId);
         treeItemWidget->loadSubFolders();
 
         // Hide update widget
-        FolderItemWidget *itemWidget = (FolderItemWidget *)sender();
+        FolderItemWidget *itemWidget = (FolderItemWidget *) sender();
         if (itemWidget) {
             itemWidget->setUpdateWidgetVisible(false);
             itemWidget->setUpdateWidgetLabelVisible(false);
@@ -1187,7 +1188,7 @@ void DrivePreferencesWidget::onCancelUpdate(int syncDbId) {
 }
 
 void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
-    FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *)sender()->parent());
+    FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *) sender()->parent());
     if (treeItemWidget) {
         ASSERT(treeItemWidget->syncDbId() == syncDbId);
         _displayBigFoldersWarningWidget->setVisible(false);
@@ -1232,7 +1233,7 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
         GuiRequests::propagateSyncListChange(syncDbId, true);
 
         // Hide update widget
-        FolderItemWidget *itemWidget = (FolderItemWidget *)sender();
+        FolderItemWidget *itemWidget = (FolderItemWidget *) sender();
         if (itemWidget) {
             itemWidget->setUpdateWidgetVisible(false);
             itemWidget->setUpdateWidgetLabelVisible(false);
@@ -1261,10 +1262,10 @@ void DrivePreferencesWidget::retranslateUi() {
     _notificationsLabel->setText(tr("Notifications"));
     _notificationsTitleLabel->setText(tr("Enable the notifications for this kDrive"));
     _notificationsDescriptionLabel->setText(
-        tr("A notification will be displayed as soon as a new folder has been synchronized or modified"));
+            tr("A notification will be displayed as soon as a new folder has been synchronized or modified"));
     _connectedWithLabel->setText(tr("Connected with"));
     _removeDriveButton->setToolTip(tr("Remove all synchronizations"));
 }
 
 
-}  // namespace KDC
+} // namespace KDC

@@ -79,7 +79,7 @@ void RemotePathChecker::workerThreadLoop() {
         std::wstring response;
         while (!_stop && socket.ReadLine(&response)) {
             if (StringUtil::begins_with(response, wstring(L"REGISTER_PATH:"))) {
-                wstring responsePath = response.substr(14);  // length of REGISTER_PATH:
+                wstring responsePath = response.substr(14); // length of REGISTER_PATH:
 
                 auto sharedPtrCopy = atomic_load(&_watchedDirectories);
                 auto vectorCopy = make_shared<vector<wstring>>(*sharedPtrCopy);
@@ -91,7 +91,7 @@ void RemotePathChecker::workerThreadLoop() {
                 // is updated without the user needing to refresh.
                 SHChangeNotify(SHCNE_UPDATEDIR, SHCNF_PATH | SHCNF_FLUSHNOWAIT, responsePath.data(), nullptr);
             } else if (StringUtil::begins_with(response, wstring(L"UNREGISTER_PATH:"))) {
-                wstring responsePath = response.substr(16);  // length of UNREGISTER_PATH:
+                wstring responsePath = response.substr(16); // length of UNREGISTER_PATH:
 
                 auto sharedPtrCopy = atomic_load(&_watchedDirectories);
                 auto vectorCopy = make_shared<vector<wstring>>(*sharedPtrCopy);
@@ -111,7 +111,7 @@ void RemotePathChecker::workerThreadLoop() {
                         }
                     }
                 }
-                for (auto& path : removedPaths)
+                for (auto& path: removedPaths)
                     SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH | SHCNF_FLUSHNOWAIT, path.data(), nullptr);
             } else if (StringUtil::begins_with(response, wstring(L"STATUS:")) ||
                        StringUtil::begins_with(response, wstring(L"BROADCAST:"))) {
@@ -167,12 +167,9 @@ void RemotePathChecker::workerThreadLoop() {
 }
 
 
-RemotePathChecker::RemotePathChecker()
-    : _stop(false),
-      _watchedDirectories(make_shared<const vector<wstring>>()),
-      _connected(false),
-      _newQueries(CreateEvent(nullptr, FALSE, FALSE, nullptr)),
-      _thread([this] { this->workerThreadLoop(); }) {}
+RemotePathChecker::RemotePathChecker() :
+    _stop(false), _watchedDirectories(make_shared<const vector<wstring>>()), _connected(false),
+    _newQueries(CreateEvent(nullptr, FALSE, FALSE, nullptr)), _thread([this] { this->workerThreadLoop(); }) {}
 
 RemotePathChecker::~RemotePathChecker() {
     _stop = true;

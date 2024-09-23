@@ -64,4 +64,4 @@ class TestOperationSorterWorker : public CppUnit::TestFixture {
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 };
 
-}  // namespace KDC
+} // namespace KDC

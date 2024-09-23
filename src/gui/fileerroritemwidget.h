@@ -53,4 +53,4 @@ class FileErrorItemWidget : public GenericErrorItemWidget {
         void onLinkActivated(const QString &link);
 };
 
-}  // namespace KDC
+} // namespace KDC

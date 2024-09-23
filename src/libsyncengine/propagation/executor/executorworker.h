@@ -88,8 +88,8 @@ class ExecutorWorker : public OperationProcessor {
          */
         bool fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath);
         bool checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
-                                      bool &isSyncing);  // TODO : is called "check..." but perform some actions. Wording not
-                                                         // good, function probably does too much
+                                      bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not
+                                                        // good, function probably does too much
 
         void handleMoveOp(SyncOpPtr syncOp, bool &hasError);
         bool generateMoveJob(SyncOpPtr syncOp);
@@ -152,4 +152,4 @@ class ExecutorWorker : public OperationProcessor {
         friend class TestExecutorWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

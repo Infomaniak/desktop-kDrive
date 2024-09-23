@@ -37,4 +37,4 @@ class RenameJob : public AbstractTokenNetworkJob {
         SyncPath _absoluteFinalPath;
 };
 
-}  // namespace KDC
+} // namespace KDC

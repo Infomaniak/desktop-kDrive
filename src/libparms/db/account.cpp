@@ -24,4 +24,4 @@ Account::Account() : _dbId(0), _accountId(0), _userDbId(0) {}
 
 Account::Account(int dbId, int accountId, int userDbId) : _dbId(dbId), _accountId(accountId), _userDbId(userDbId) {}
 
-}  // namespace KDC
+} // namespace KDC

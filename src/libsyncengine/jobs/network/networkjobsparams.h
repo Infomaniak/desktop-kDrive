@@ -23,11 +23,11 @@
 
 namespace KDC {
 static const int threadPoolMinCapacity = 3;
-static const uint64_t chunkMaxSize = 100 * 1024 * 1024;               // 100MB
-static const uint64_t chunkMinSize = 10 * 1024 * 1024;                // 10MB
-static const uint64_t useUploadSessionThreshold = 100 * 1024 * 1024;  // if file size > 100MB -> start upload session
+static const uint64_t chunkMaxSize = 100 * 1024 * 1024; // 100MB
+static const uint64_t chunkMinSize = 10 * 1024 * 1024; // 10MB
+static const uint64_t useUploadSessionThreshold = 100 * 1024 * 1024; // if file size > 100MB -> start upload session
 static const uint64_t optimalTotalChunks = 200;
-static const uint64_t maxTotalChunks = 10000;  // Theoretical max. file size 10'000 * 100MB = 1TB
+static const uint64_t maxTotalChunks = 10000; // Theoretical max. file size 10'000 * 100MB = 1TB
 
 /*
  * Static string
@@ -124,8 +124,8 @@ enum class ActionCode {
     actionCodeRename,
     actionCodeEdit,
     actionCodeAccess,
-    actionCodeTrash,   // The file has been put into the trash
-    actionCodeDelete,  // The file has been completely deleted from the trash
+    actionCodeTrash, // The file has been put into the trash
+    actionCodeDelete, // The file has been completely deleted from the trash
     actionCodeMoveIn,
     actionCodeMoveOut,
     actionCodeRestore,
@@ -153,7 +153,7 @@ static const std::string isRootKey = "is_root";
 static const std::string isTeamSpaceKey = "is_team_space";
 static const std::string isSharedSpaceKey = "is_shared_space";
 /// Items per page
-static const std::string nbItemPerPage = "1000";  // Default # of items max returned per page
+static const std::string nbItemPerPage = "1000"; // Default # of items max returned per page
 
 /// Errors
 static const std::string errorKey = "error";
@@ -179,13 +179,13 @@ enum class NetworkErrorCode {
     accessDenied,
     fileTooBigError,
     quotaExceededError,
-    unknownError  // None of the handled errors
+    unknownError // None of the handled errors
 };
 
 enum class NetworkErrorReason {
     refreshTokenRevoked,
     notRenew,
-    unknownReason  // None of the handled reasons
+    unknownReason // None of the handled reasons
 };
 
 ActionCode getActionCode(const std::string &action) noexcept;
@@ -199,4 +199,4 @@ NetworkErrorReason getNetworkErrorReason(const std::string &errorCode) noexcept;
 static const std::string storageObjectIsNotOk = "storage_object_is_not_ok";
 
 static const std::string invalidToken = "Invalid Token";
-}  // namespace KDC
+} // namespace KDC

@@ -26,7 +26,7 @@ namespace KDC {
 
 class MockTestSentryHandler : public SentryHandler {
     public:
-        MockTestSentryHandler(); 
+        MockTestSentryHandler();
         int sentryUploadedEventCount() const { return _sentryUploadedEventCount; }
 
     private:

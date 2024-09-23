@@ -162,4 +162,4 @@ class UpdateTreeWorker : public ISyncWorker {
         friend class TestUpdateTreeWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -109,4 +109,4 @@ class DriveInfoClient : public DriveInfo {
         qint64 _lastErrorTimestamp{0};
 };
 
-}  // namespace KDC
+} // namespace KDC

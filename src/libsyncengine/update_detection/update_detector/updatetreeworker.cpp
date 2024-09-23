@@ -28,17 +28,15 @@
 namespace KDC {
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                                   ReplicaSide side)
-    : ISyncWorker(syncPal, name, shortName),
-      _syncDb(syncPal->_syncDb),
-      _operationSet(syncPal->operationSet(side)),
-      _updateTree(syncPal->updateTree(side)),
-      _side(side) {}
+                                   ReplicaSide side) :
+    ISyncWorker(syncPal, name, shortName),
+    _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)), _updateTree(syncPal->updateTree(side)), _side(side) {}
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,
                                    std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
-                                   ReplicaSide side)
-    : ISyncWorker(nullptr, name, shortName), _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
+                                   ReplicaSide side) :
+    ISyncWorker(nullptr, name, shortName),
+    _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
 
 UpdateTreeWorker::~UpdateTreeWorker() {
     _operationSet.reset();
@@ -55,7 +53,7 @@ void UpdateTreeWorker::execute() {
     _updateTree->startUpdate();
 
     // Reset nodes working properties
-    for (const auto &nodeItem : _updateTree->nodes()) {
+    for (const auto &nodeItem: _updateTree->nodes()) {
         nodeItem.second->clearChangeEvents();
         nodeItem.second->clearConflictAlreadyConsidered();
         nodeItem.second->setInconsistencyType(InconsistencyType::None);
@@ -69,7 +67,7 @@ void UpdateTreeWorker::execute() {
                                     &UpdateTreeWorker::step5CreateDirectory, &UpdateTreeWorker::step6CreateFile,
                                     &UpdateTreeWorker::step7EditFile,        &UpdateTreeWorker::step8CompleteUpdateTree};
 
-    for (auto stepn : steptab) {
+    for (auto stepn: steptab) {
         exitCode = (this->*stepn)();
         if (exitCode != ExitCode::Ok) {
             setDone(exitCode);
@@ -128,7 +126,7 @@ ExitCode UpdateTreeWorker::searchForParentNode(const SyncPath &nodePath, std::sh
 
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
     std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
-    for (const auto &deleteOpId : deleteOpsIds) {
+    for (const auto &deleteOpId: deleteOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -159,12 +157,13 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             currentNodeIt->second->setIsTmp(false);
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(
-                    _logger,
-                    _side << L" update tree: Node '" << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
-                          << Utility::s2ws(currentNodeIt->second->id().has_value() ? *currentNodeIt->second->id() : NodeId())
-                                 .c_str()
-                          << L"', DB ID: '" << (currentNodeIt->second->idb().has_value() ? *currentNodeIt->second->idb() : -1)
-                          << L"') updated. Operation DELETE inserted in change events.");
+                        _logger,
+                        _side << L" update tree: Node '" << SyncName2WStr(currentNodeIt->second->name()).c_str()
+                              << L"' (node ID: '"
+                              << Utility::s2ws(currentNodeIt->second->id().has_value() ? *currentNodeIt->second->id() : NodeId())
+                                         .c_str()
+                              << L"', DB ID: '" << (currentNodeIt->second->idb().has_value() ? *currentNodeIt->second->idb() : -1)
+                              << L"') updated. Operation DELETE inserted in change events.");
             }
         } else {
             std::shared_ptr<Node> parentNode;
@@ -210,11 +209,12 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                 newNode->setIsTmp(false);
                 _updateTree->nodes()[deleteOp->nodeId()] = newNode;
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(
-                        _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                                       << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
-                                       << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1)
-                                       << L"') updated. Operation DELETE inserted in change events.");
+                    LOGW_SYNCPAL_DEBUG(_logger,
+                                       _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str()
+                                             << L"' (node ID: '"
+                                             << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
+                                             << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1)
+                                             << L"') updated. Operation DELETE inserted in change events.");
                 }
             } else {
                 // create node
@@ -229,20 +229,20 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
 
                 if (!parentNode->insertChildren(newNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                                   << SyncName2WStr(newNode->name()).c_str()
-                                                   << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                                       << SyncName2WStr(newNode->name()).c_str() << L" parent node name="
+                                                       << SyncName2WStr(parentNode->name()).c_str());
                     return ExitCode::DataError;
                 }
 
                 _updateTree->nodes()[deleteOp->nodeId()] = newNode;
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(
-                        _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                                       << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
-                                       << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1)
-                                       << L"', parent ID: '"
-                                       << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : NodeId()).c_str()
-                                       << L"') inserted. Operation DELETE inserted in change events.");
+                            _logger,
+                            _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                                  << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
+                                  << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
+                                  << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : NodeId()).c_str()
+                                  << L"') inserted. Operation DELETE inserted in change events.");
                 }
             }
         }
@@ -257,7 +257,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
     bool isSnapshotRebuildRequired = false;
 
-    for (const auto &createOpId : createOpsIds) {
+    for (const auto &createOpId: createOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -321,9 +321,9 @@ void UpdateTreeWorker::logUpdate(const std::shared_ptr<Node> node, const Operati
     const std::wstring opTypeStr = Utility::s2ws(toString(opType));
 
     LOGW_SYNCPAL_DEBUG(_logger, updateTreeStr.c_str()
-                                    << L": " << nodeStr.c_str() << L" (" << nodeIdStr.c_str() << L", " << dbIdStr.c_str() << L", "
-                                    << parentIdStr.c_str() << L") " << updateTypeStr.c_str() << L". Operation "
-                                    << opTypeStr.c_str() << L" inserted in change events.");
+                                        << L": " << nodeStr.c_str() << L" (" << nodeIdStr.c_str() << L", " << dbIdStr.c_str()
+                                        << L", " << parentIdStr.c_str() << L") " << updateTypeStr.c_str() << L". Operation "
+                                        << opTypeStr.c_str() << L" inserted in change events.");
 }
 
 bool UpdateTreeWorker::updateTmpFileNode(std::shared_ptr<Node> newNode, const FSOpPtr op, const FSOpPtr deleteOp,
@@ -353,10 +353,10 @@ bool UpdateTreeWorker::updateTmpFileNode(std::shared_ptr<Node> newNode, const FS
 
 ExitCode UpdateTreeWorker::step4DeleteFile() {
     const ExitCode exitCode = handleCreateOperationsWithSamePath();
-    if (exitCode != ExitCode::Ok) return exitCode;  // Rebuild the snapshot.
+    if (exitCode != ExitCode::Ok) return exitCode; // Rebuild the snapshot.
 
     std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
-    for (const auto &deleteOpId : deleteOpsIds) {
+    for (const auto &deleteOpId: deleteOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -453,9 +453,9 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                     return ExitCode::DataError;
                 }
 
-                newNode =
-                    std::shared_ptr<Node>(new Node(idb, _side, op->path().filename().native(), op->objectType(), opType,
-                                                   op->nodeId(), op->createdAt(), op->lastModified(), op->size(), parentNode));
+                newNode = std::shared_ptr<Node>(new Node(idb, _side, op->path().filename().native(), op->objectType(), opType,
+                                                         op->nodeId(), op->createdAt(), op->lastModified(), op->size(),
+                                                         parentNode));
                 if (newNode == nullptr) {
                     std::cout << "Failed to allocate memory" << std::endl;
                     LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -470,8 +470,8 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
                 if (!parentNode->insertChildren(newNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                                   << SyncName2WStr(newNode->name()).c_str()
-                                                   << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                                       << SyncName2WStr(newNode->name()).c_str() << L" parent node name="
+                                                       << SyncName2WStr(parentNode->name()).c_str());
                     return ExitCode::DataError;
                 }
 
@@ -486,7 +486,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
 ExitCode UpdateTreeWorker::step5CreateDirectory() {
     std::unordered_set<UniqueId> createOpsIds = _operationSet->getOpsByType(OperationType::Create);
-    for (const auto &createOpId : createOpsIds) {
+    for (const auto &createOpId: createOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -524,17 +524,17 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
         _updateTree->nodes()[createOp->nodeId()] = currentNode;
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
-                _logger, _side << L" update tree: Node '" << SyncName2WStr(currentNode->name()).c_str() << L"' (node ID: '"
-                               << Utility::s2ws(currentNode->id().has_value() ? *currentNode->id() : std::string()).c_str()
-                               << L"', DB ID: '" << (currentNode->idb().has_value() ? *currentNode->idb() : -1)
-                               << L"') inserted. Operation " << createOp->operationType() << L" inserted in change events.");
+                    _logger, _side << L" update tree: Node '" << SyncName2WStr(currentNode->name()).c_str() << L"' (node ID: '"
+                                   << Utility::s2ws(currentNode->id().has_value() ? *currentNode->id() : std::string()).c_str()
+                                   << L"', DB ID: '" << (currentNode->idb().has_value() ? *currentNode->idb() : -1)
+                                   << L"') inserted. Operation " << createOp->operationType() << L" inserted in change events.");
         }
     }
     return ExitCode::Ok;
 }
 
 ExitCode UpdateTreeWorker::step6CreateFile() {
-    for (const auto &op : _createFileOperationSet) {
+    for (const auto &op: _createFileOperationSet) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -568,12 +568,12 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
                 _updateTree->nodes()[operation->nodeId()] = newNode;
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(
-                        _logger,
-                        _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                              << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
-                              << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
-                              << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : "-1").c_str()
-                              << L"') updated. Operation " << operation->operationType() << L" inserted in change events.");
+                            _logger,
+                            _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                                  << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
+                                  << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
+                                  << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : "-1").c_str()
+                                  << L"') updated. Operation " << operation->operationType() << L" inserted in change events.");
                 }
                 continue;
             }
@@ -581,8 +581,8 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 
         // create node
         newNode = std::shared_ptr<Node>(new Node(
-            std::nullopt, _side, operation->path().filename().native(), operation->objectType(), operation->operationType(),
-            operation->nodeId(), operation->createdAt(), operation->lastModified(), operation->size(), parentNode));
+                std::nullopt, _side, operation->path().filename().native(), operation->objectType(), operation->operationType(),
+                operation->nodeId(), operation->createdAt(), operation->lastModified(), operation->size(), parentNode));
         if (newNode == nullptr) {
             std::cout << "Failed to allocate memory" << std::endl;
             LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -590,20 +590,20 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
         }
 
         if (!parentNode->insertChildren(newNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                           << SyncName2WStr(newNode->name()).c_str()
-                                           << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(newNode->name()).c_str()
+                                                                                    << L" parent node name="
+                                                                                    << SyncName2WStr(parentNode->name()).c_str());
             return ExitCode::DataError;
         }
 
         _updateTree->nodes()[operation->nodeId()] = newNode;
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
-                _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                               << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : "").c_str() << L"', DB ID: '"
-                               << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
-                               << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : "-1").c_str()
-                               << L"') inserted. Operation " << operation->operationType() << L" inserted in change events.");
+                    _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                                   << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : "").c_str() << L"', DB ID: '"
+                                   << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
+                                   << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : "-1").c_str()
+                                   << L"') inserted. Operation " << operation->operationType() << L" inserted in change events.");
         }
     }
     return ExitCode::Ok;
@@ -611,7 +611,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 
 ExitCode UpdateTreeWorker::step7EditFile() {
     std::unordered_set<UniqueId> editOpsIds = _operationSet->getOpsByType(OperationType::Edit);
-    for (const auto &editOpId : editOpsIds) {
+    for (const auto &editOpId: editOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -648,10 +648,10 @@ ExitCode UpdateTreeWorker::step7EditFile() {
             _updateTree->nodes()[editOp->nodeId()] = newNode;
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(
-                    _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                                   << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
-                                   << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1)
-                                   << L"') updated. Operation " << editOp->operationType() << L" inserted in change events.");
+                        _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                                       << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
+                                       << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1)
+                                       << L"') updated. Operation " << editOp->operationType() << L" inserted in change events.");
             }
             continue;
         }
@@ -678,20 +678,20 @@ ExitCode UpdateTreeWorker::step7EditFile() {
         }
 
         if (!parentNode->insertChildren(newNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                           << SyncName2WStr(newNode->name()).c_str()
-                                           << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(newNode->name()).c_str()
+                                                                                    << L" parent node name="
+                                                                                    << SyncName2WStr(parentNode->name()).c_str());
             return ExitCode::DataError;
         }
 
         _updateTree->nodes()[editOp->nodeId()] = newNode;
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
-                _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                               << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
-                               << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
-                               << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
-                               << L"') inserted. editOp " << editOp->operationType() << L" inserted in change events.");
+                    _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                                   << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
+                                   << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
+                                   << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
+                                   << L"') inserted. editOp " << editOp->operationType() << L" inserted in change events.");
         }
     }
 
@@ -729,10 +729,10 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
     }
 
     std::optional<NodeId> rootNodeId =
-        (_side == ReplicaSide::Local ? _syncDb->rootNode().nodeIdLocal() : _syncDb->rootNode().nodeIdRemote());
+            (_side == ReplicaSide::Local ? _syncDb->rootNode().nodeIdLocal() : _syncDb->rootNode().nodeIdRemote());
 
     // creating missing nodes
-    for (const NodeId &dbNodeId : dbNodeIds) {
+    for (const NodeId &dbNodeId: dbNodeIds) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -770,7 +770,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
                 return ExitCode::DataError;
             }
             // not sure that parentId is already in _nodes ??
-            std::shared_ptr<Node> parentNode;  // parentNode could be null
+            std::shared_ptr<Node> parentNode; // parentNode could be null
             auto parentIt = _updateTree->nodes().find(parentId);
             if (parentIt != _updateTree->nodes().end()) {
                 parentNode = parentIt->second;
@@ -787,11 +787,11 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
             }
 
             SyncTime lastModified =
-                _side == ReplicaSide::Local ? dbNode.lastModifiedLocal().value() : dbNode.lastModifiedRemote().value();
+                    _side == ReplicaSide::Local ? dbNode.lastModifiedLocal().value() : dbNode.lastModifiedRemote().value();
             SyncName name = dbNode.nameRemote();
             std::shared_ptr<Node> newNode =
-                std::shared_ptr<Node>(new Node(dbNode.nodeId(), _side, name, dbNode.type(), {}, newNodeId, dbNode.created(),
-                                               lastModified, dbNode.size(), parentNode));
+                    std::shared_ptr<Node>(new Node(dbNode.nodeId(), _side, name, dbNode.type(), {}, newNodeId, dbNode.created(),
+                                                   lastModified, dbNode.size(), parentNode));
             if (newNode == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
                 LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -800,19 +800,20 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
 
             if (!parentNode->insertChildren(newNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << SyncName2WStr(newNode->name()).c_str()
-                                               << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                                   << SyncName2WStr(newNode->name()).c_str() << L" parent node name="
+                                                   << SyncName2WStr(parentNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
             _updateTree->nodes()[newNodeId] = newNode;
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(
-                    _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                                   << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
-                                   << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : 1) << L"', parent ID: '"
-                                   << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
-                                   << L"') inserted. Without change events.");
+                        _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                                       << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
+                                       << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : 1)
+                                       << L"', parent ID: '"
+                                       << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
+                                       << L"') inserted. Without change events.");
             }
         }
     }
@@ -822,7 +823,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
 
 ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
     std::unordered_set<UniqueId> moveOpsIds = _operationSet->getOpsByType(OperationType::Move);
-    for (const auto &moveOpId : moveOpsIds) {
+    for (const auto &moveOpId: moveOpsIds) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -873,9 +874,9 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             if (!currentNode->parentNode()->deleteChildren(currentNode)) {
                 LOG_SYNCPAL_WARN(_logger, "children " << currentNodeIt->first.c_str() << " was not affected to parent "
                                                       << (currentNodeIt->second->parentNode()->id().has_value()
-                                                              ? *currentNodeIt->second->parentNode()->id()
-                                                              : std::string())
-                                                             .c_str());
+                                                                  ? *currentNodeIt->second->parentNode()->id()
+                                                                  : std::string())
+                                                                 .c_str());
                 return ExitCode::DataError;
             }
 
@@ -884,8 +885,8 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             // set new parent
             if (!currentNode->setParentNode(parentNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                               << SyncName2WStr(parentNode->name()).c_str()
-                                               << L" parent node name=" << SyncName2WStr(currentNode->name()).c_str());
+                                                   << SyncName2WStr(parentNode->name()).c_str() << L" parent node name="
+                                                   << SyncName2WStr(currentNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
@@ -894,19 +895,20 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             // insert currentNode into children list of new parent
             if (!parentNode->insertChildren(currentNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << SyncName2WStr(currentNode->name()).c_str()
-                                               << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                                   << SyncName2WStr(currentNode->name()).c_str() << L" parent node name="
+                                                   << SyncName2WStr(parentNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(
-                    _logger, _side << L" update tree: Node '" << SyncName2WStr(currentNode->name()).c_str() << L"' (node ID: '"
-                                   << Utility::s2ws(currentNode->id().has_value() ? *currentNode->id() : std::string()).c_str()
-                                   << L"', DB ID: '" << (currentNode->idb().has_value() ? *currentNode->idb() : -1)
-                                   << L"', parent ID: '"
-                                   << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
-                                   << L"') inserted. Operation " << moveOp->operationType() << L" inserted in change events.");
+                        _logger,
+                        _side << L" update tree: Node '" << SyncName2WStr(currentNode->name()).c_str() << L"' (node ID: '"
+                              << Utility::s2ws(currentNode->id().has_value() ? *currentNode->id() : std::string()).c_str()
+                              << L"', DB ID: '" << (currentNode->idb().has_value() ? *currentNode->idb() : -1)
+                              << L"', parent ID: '"
+                              << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
+                              << L"') inserted. Operation " << moveOp->operationType() << L" inserted in change events.");
             }
         } else {
             // get parentNode
@@ -925,9 +927,9 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             }
 
             std::shared_ptr<Node> newNode =
-                std::make_shared<Node>(idb, _side, moveOp->destinationPath().filename().native(), moveOp->objectType(),
-                                       OperationType::Move, moveOp->nodeId(), moveOp->createdAt(), moveOp->lastModified(),
-                                       moveOp->size(), parentNode, moveOp->path(), std::nullopt);
+                    std::make_shared<Node>(idb, _side, moveOp->destinationPath().filename().native(), moveOp->objectType(),
+                                           OperationType::Move, moveOp->nodeId(), moveOp->createdAt(), moveOp->lastModified(),
+                                           moveOp->size(), parentNode, moveOp->path(), std::nullopt);
             if (newNode == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
                 LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -939,7 +941,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
                 return tmpExitCode;
             }
 
-            for (auto &child : parentNode->children()) {
+            for (auto &child: parentNode->children()) {
                 if (child.second->name() == moveOp->destinationPath().filename() && child.second->isTmp()) {
                     if (!mergingTempNodeToRealNode(child.second, newNode)) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::mergingTempNodeToRealNode");
@@ -952,19 +954,20 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
 
             if (!parentNode->insertChildren(newNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << SyncName2WStr(newNode->name()).c_str()
-                                               << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                                   << SyncName2WStr(newNode->name()).c_str() << L" parent node name="
+                                                   << SyncName2WStr(parentNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
             _updateTree->nodes()[*newNode->id()] = newNode;
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(
-                    _logger, _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                                   << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
-                                   << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
-                                   << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
-                                   << L"') inserted. Operation " << moveOp->operationType() << L" inserted in change events.");
+                        _logger,
+                        _side << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                              << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
+                              << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
+                              << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
+                              << L"') inserted. Operation " << moveOp->operationType() << L" inserted in change events.");
             }
         }
     }
@@ -980,8 +983,8 @@ bool UpdateTreeWorker::updateNodeId(std::shared_ptr<Node> node, const NodeId &ne
 
     if (!node->parentNode()->insertChildren(node)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                       << SyncName2WStr(node->name()).c_str()
-                                       << L" parent node name=" << SyncName2WStr(node->parentNode()->name()).c_str());
+                                           << SyncName2WStr(node->name()).c_str() << L" parent node name="
+                                           << SyncName2WStr(node->parentNode()->name()).c_str());
         return false;
     }
 
@@ -1004,7 +1007,7 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
     SyncPath pathTmp(path);
     while (pathTmp != pathTmp.root_path()) {
         names.push_back(
-            pathTmp.filename().native());  // TODO : not optimized to do push back on vector, use queue or deque instead
+                pathTmp.filename().native()); // TODO : not optimized to do push back on vector, use queue or deque instead
         pathTmp = pathTmp.parent_path();
     }
 
@@ -1012,7 +1015,7 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
     std::shared_ptr<Node> tmpNode = _updateTree->rootNode();
     for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
-        for (auto &[_, childNode] : tmpNode->children()) {
+        for (auto &[_, childNode]: tmpNode->children()) {
             if (childNode->type() == NodeType::Directory && *nameIt == childNode->name()) {
                 if (!isDeleted && childNode->hasChangeEvent(OperationType::Delete)) {
                     // An item on a deleted branch can only have a DELETE change event. If it has any other
@@ -1036,8 +1039,8 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
 
             if (!tmpNode->insertChildren(tmpChildNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << SyncName2WStr(tmpChildNode->name()).c_str()
-                                               << L" parent node name=" << SyncName2WStr(tmpNode->name()).c_str());
+                                                   << SyncName2WStr(tmpChildNode->name()).c_str() << L" parent node name="
+                                                   << SyncName2WStr(tmpNode->name()).c_str());
                 return nullptr;
             }
         }
@@ -1058,18 +1061,18 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
     }
 
     // merging tmpNode's children to realNode
-    for (auto &child : tmpNode->children()) {
+    for (auto &child: tmpNode->children()) {
         if (!child.second->setParentNode(realNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                           << SyncName2WStr(realNode->name()).c_str()
-                                           << L" parent node name=" << SyncName2WStr(child.second->name()).c_str());
+                                               << SyncName2WStr(realNode->name()).c_str() << L" parent node name="
+                                               << SyncName2WStr(child.second->name()).c_str());
             return false;
         }
 
         if (!realNode->insertChildren(child.second)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                           << SyncName2WStr(child.second->name()).c_str()
-                                           << L" parent node name=" << SyncName2WStr(realNode->name()).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name=" << SyncName2WStr(child.second->name()).c_str()
+                                                                                    << L" parent node name="
+                                                                                    << SyncName2WStr(realNode->name()).c_str());
             return false;
         }
     }
@@ -1081,8 +1084,8 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
     // Real node added as child of parent node
     if (!realNode->parentNode()->insertChildren(realNode)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                       << SyncName2WStr(realNode->name()).c_str()
-                                       << L" parent node name=" << SyncName2WStr(realNode->parentNode()->name()).c_str());
+                                           << SyncName2WStr(realNode->name()).c_str() << L" parent node name="
+                                           << SyncName2WStr(realNode->parentNode()->name()).c_str());
         return false;
     }
 
@@ -1092,14 +1095,14 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
 bool UpdateTreeWorker::integrityCheck() {
     // TODO : check if this does not slow the process too much
     LOGW_SYNCPAL_INFO(_logger, _side << L" update tree integrity check started");
-    for (const auto &node : _updateTree->nodes()) {
+    for (const auto &node: _updateTree->nodes()) {
         if (node.second->isTmp() || Utility::startsWith(*node.second->id(), "tmp_")) {
-            LOGW_SYNCPAL_WARN(
-                _logger, _side << L" update tree integrity check failed. A temporary node remains in the update tree: "
-                               << L" (node ID: '"
-                               << Utility::s2ws(node.second->id().has_value() ? *node.second->id() : std::string()).c_str()
-                               << L"', DB ID: '" << (node.second->idb().has_value() ? *node.second->idb() : -1) << L"', name: '"
-                               << SyncName2WStr(node.second->name()).c_str() << L"')");
+            LOGW_SYNCPAL_WARN(_logger,
+                              _side << L" update tree integrity check failed. A temporary node remains in the update tree: "
+                                    << L" (node ID: '"
+                                    << Utility::s2ws(node.second->id().has_value() ? *node.second->id() : std::string()).c_str()
+                                    << L"', DB ID: '" << (node.second->idb().has_value() ? *node.second->idb() : -1)
+                                    << L"', name: '" << SyncName2WStr(node.second->name()).c_str() << L"')");
             return false;
         }
     }
@@ -1132,7 +1135,7 @@ void UpdateTreeWorker::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncN
     treeStr += Str("\n");
 
     depth++;
-    for (const auto &[_, childNode] : node->children()) {
+    for (const auto &[_, childNode]: node->children()) {
         drawUpdateTreeRow(childNode, treeStr, depth);
     }
 }
@@ -1250,8 +1253,8 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 return ExitCode::DataError;
             }
             node->setMoveOrigin(_side == ReplicaSide::Local ? localPath
-                                                            : remotePath);  // TODO : no need to keep both remote and local paths
-                                                                            // since we do not rename the file locally anymore.
+                                                            : remotePath); // TODO : no need to keep both remote and local paths
+                                                                           // since we do not rename the file locally anymore.
         }
 
         // if it's dbNodeId is null
@@ -1270,7 +1273,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
             node->setSize(dbNode.size());
         }
 
-        for (auto &nodeChild : node->children()) {
+        for (auto &nodeChild: node->children()) {
             nodeQueue.push(nodeChild.second);
         }
     }
@@ -1314,9 +1317,9 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
     }
     if (!found) {
         LOGW_SYNCPAL_WARN(_logger, L"Node not found for ID = "
-                                       << Utility::s2ws(*id).c_str() << L" (Node name: '"
-                                       << SyncName2WStr(tmpNode->name()).c_str() << L"', node valid name: '"
-                                       << SyncName2WStr(tmpNode->name()).c_str() << L"') on side" << _side);
+                                           << Utility::s2ws(*id).c_str() << L" (Node name: '"
+                                           << SyncName2WStr(tmpNode->name()).c_str() << L"', node valid name: '"
+                                           << SyncName2WStr(tmpNode->name()).c_str() << L"') on side" << _side);
         return ExitCode::DataError;
     }
     tmpNode->setIdb(dbId);
@@ -1325,49 +1328,52 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
     const auto &prevNode = _updateTree->nodes()[*id];
     if (prevNode) {
         // Update children list
-        for (const auto &[_, childNode] : prevNode->children()) {
+        for (const auto &[_, childNode]: prevNode->children()) {
             if (!tmpNode->insertChildren(childNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << SyncName2WStr(childNode->name()).c_str()
-                                               << L" parent node name=" << SyncName2WStr(tmpNode->name()).c_str());
+                                                   << SyncName2WStr(childNode->name()).c_str() << L" parent node name="
+                                                   << SyncName2WStr(tmpNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
             // set new parent
             if (!childNode->setParentNode(tmpNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                               << SyncName2WStr(tmpNode->name()).c_str()
-                                               << L" parent node name=" << SyncName2WStr(childNode->name()).c_str());
+                                                   << SyncName2WStr(tmpNode->name()).c_str() << L" parent node name="
+                                                   << SyncName2WStr(childNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
-            LOGW_SYNCPAL_DEBUG(
-                _logger, _side << L" update tree: Node '" << SyncName2WStr(childNode->name()).c_str() << L"' (node ID: '"
-                               << Utility::s2ws((childNode->id().has_value() ? *childNode->id() : std::string())).c_str()
-                               << L"') inserted in children list of node '" << SyncName2WStr(tmpNode->name()).c_str()
-                               << L"' (node ID: '"
-                               << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())).c_str() << L"')");
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               _side << L" update tree: Node '" << SyncName2WStr(childNode->name()).c_str() << L"' (node ID: '"
+                                     << Utility::s2ws((childNode->id().has_value() ? *childNode->id() : std::string())).c_str()
+                                     << L"') inserted in children list of node '" << SyncName2WStr(tmpNode->name()).c_str()
+                                     << L"' (node ID: '"
+                                     << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())).c_str()
+                                     << L"')");
         }
 
         // Update events
         if (tmpNode->changeEvents() != prevNode->changeEvents()) {
             tmpNode->setChangeEvents(prevNode->changeEvents());
-            LOGW_SYNCPAL_DEBUG(
-                _logger, _side << L" update tree: Changed events to '" << prevNode->changeEvents() << L"' for node '"
-                               << SyncName2WStr(tmpNode->name()).c_str() << L"' (node ID: '"
-                               << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())).c_str() << L"')");
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               _side << L" update tree: Changed events to '" << prevNode->changeEvents() << L"' for node '"
+                                     << SyncName2WStr(tmpNode->name()).c_str() << L"' (node ID: '"
+                                     << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())).c_str()
+                                     << L"')");
         }
     }
 
     _updateTree->nodes()[*id] = tmpNode;
     if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(
-            _logger,
-            _side << L" update tree: Node '" << SyncName2WStr(tmpNode->name()).c_str() << L"' (node ID: '"
-                  << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())).c_str() << L"', DB ID: '"
-                  << (tmpNode->idb().has_value() ? *tmpNode->idb() : -1) << L"', parent ID: '"
-                  << Utility::s2ws(tmpNode->parentNode()->id().has_value() ? *tmpNode->parentNode()->id() : std::string()).c_str()
-                  << L"') updated. Node updated with DB");
+                _logger,
+                _side << L" update tree: Node '" << SyncName2WStr(tmpNode->name()).c_str() << L"' (node ID: '"
+                      << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())).c_str() << L"', DB ID: '"
+                      << (tmpNode->idb().has_value() ? *tmpNode->idb() : -1) << L"', parent ID: '"
+                      << Utility::s2ws(tmpNode->parentNode()->id().has_value() ? *tmpNode->parentNode()->id() : std::string())
+                                 .c_str()
+                      << L"') updated. Node updated with DB");
     }
 
     return ExitCode::Ok;
@@ -1395,8 +1401,8 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
                 return ExitCode::DbError;
             }
             if (!found) {
-                LOG_SYNCPAL_WARN(
-                    _logger, "Failed to retrieve node for id=" << (node->id().has_value() ? *node->id() : std::string()).c_str());
+                LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for id="
+                                                  << (node->id().has_value() ? *node->id() : std::string()).c_str());
                 return ExitCode::DataError;
             }
 
@@ -1448,7 +1454,7 @@ ExitCode UpdateTreeWorker::updateNameFromDbForMoveOp(const std::shared_ptr<Node>
         return ExitCode::DataError;
     }
 
-    if (dbNode.nameLocal() != dbNode.nameRemote()) {  // Useless?? Now the local and remote name are always the same
+    if (dbNode.nameLocal() != dbNode.nameRemote()) { // Useless?? Now the local and remote name are always the same
         // Check if the file has been renamed locally
         if (moveOp->destinationPath().filename() != dbNode.nameLocal()) {
             // The file has been renamed locally, propagate the change on remote
@@ -1462,4 +1468,4 @@ ExitCode UpdateTreeWorker::updateNameFromDbForMoveOp(const std::shared_ptr<Node>
     return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

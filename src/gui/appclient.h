@@ -137,4 +137,4 @@ class AppClient : public SharedTools::QtSingleApplication {
         void onLogTooBig();
 };
 
-}  // namespace KDC
+} // namespace KDC

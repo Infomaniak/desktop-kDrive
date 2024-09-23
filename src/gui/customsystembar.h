@@ -47,4 +47,4 @@ class CustomSystemBar : public QWidget {
         void onExit(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

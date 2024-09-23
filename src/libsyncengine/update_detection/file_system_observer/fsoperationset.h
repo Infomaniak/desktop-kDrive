@@ -35,8 +35,8 @@ class FSOperationSet : public SharedObject {
         explicit FSOperationSet(ReplicaSide side) : _side(side) {}
         ~FSOperationSet();
 
-        FSOperationSet(const FSOperationSet &other)
-            : _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId), _side(other._side) {}
+        FSOperationSet(const FSOperationSet &other) :
+            _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId), _side(other._side) {}
         FSOperationSet &operator=(FSOperationSet &other);
 
         bool getOp(UniqueId id, FSOpPtr &opPtr) const;
@@ -63,4 +63,4 @@ class FSOperationSet : public SharedObject {
         mutable std::recursive_mutex _mutex;
 };
 
-}  // namespace KDC
+} // namespace KDC

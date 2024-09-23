@@ -38,4 +38,4 @@ std::shared_ptr<Proxy> Proxy::instance(const ProxyConfig &proxyConfig) {
 
 Proxy::Proxy(const ProxyConfig &proxyConfig) : _proxyConfig(proxyConfig) {}
 
-}  // namespace KDC
+} // namespace KDC

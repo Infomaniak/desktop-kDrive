@@ -94,4 +94,4 @@ QIcon SynthesisItemWidget::getIconFromFileName(const QString &fileName) const {
     return QIcon(":/client/resources/icons/document types/file-default");
 }
 
-}  // namespace KDC
+} // namespace KDC

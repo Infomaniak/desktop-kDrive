@@ -99,4 +99,4 @@ class ErrorInfo {
         bool _autoResolved;
 };
 
-}  // namespace KDC
+} // namespace KDC

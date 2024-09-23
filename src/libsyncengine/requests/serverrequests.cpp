@@ -28,7 +28,7 @@
 #include "keychainmanager/keychainmanager.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
-#include "libcommon/utility/utility.h"  // fileSystemName(const QString&)
+#include "libcommon/utility/utility.h" // fileSystemName(const QString&)
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "jobs/network/API_v2/getrootfilelistjob.h"
@@ -66,7 +66,7 @@ ExitCode ServerRequests::getUserDbIdList(QList<int> &list) {
     }
 
     list.clear();
-    for (const User &user : userList) {
+    for (const User &user: userList) {
         list << user.dbId();
     }
 
@@ -81,7 +81,7 @@ ExitCode ServerRequests::getUserInfoList(QList<UserInfo> &list) {
     }
 
     list.clear();
-    for (const User &user : userList) {
+    for (const User &user: userList) {
         UserInfo userInfo;
         userToUserInfo(user, userInfo);
         list << userInfo;
@@ -180,7 +180,7 @@ ExitCode ServerRequests::getAccountInfoList(QList<AccountInfo> &list) {
     }
 
     list.clear();
-    for (const Account &account : accountList) {
+    for (const Account &account: accountList) {
         AccountInfo accountInfo;
         accountToAccountInfo(account, accountInfo);
         list << accountInfo;
@@ -197,7 +197,7 @@ ExitCode ServerRequests::getDriveInfoList(QList<DriveInfo> &list) {
     }
 
     list.clear();
-    for (const Drive &drive : driveList) {
+    for (const Drive &drive: driveList) {
         DriveInfo driveInfo;
         driveToDriveInfo(drive, driveInfo);
         list << driveInfo;
@@ -301,7 +301,7 @@ ExitCode ServerRequests::getSyncInfoList(QList<SyncInfo> &list) {
     }
     list.clear();
     SyncInfo syncInfo;
-    for (const Sync &sync : syncList) {
+    for (const Sync &sync: syncList) {
         syncToSyncInfo(sync, syncInfo);
         list << syncInfo;
     }
@@ -406,8 +406,8 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
         job = std::make_shared<GetFileInfoJob>(userDbId, driveId, nodeId.toStdString());
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::GetFileInfoJob for userDbId="
-                                                   << userDbId << " driveId=" << driveId
-                                                   << " nodeId=" << nodeId.toStdString().c_str() << " : " << e.what());
+                                                       << userDbId << " driveId=" << driveId
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << e.what());
         return ExitCode::DataError;
     }
 
@@ -415,8 +415,8 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
-                                                   << userDbId << " driveId=" << driveId
-                                                   << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
+                                                       << userDbId << " driveId=" << driveId
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
         return exitCode;
     }
 
@@ -556,17 +556,17 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
             job = std::make_shared<GetRootFileListJob>(userDbId, driveId, 1, true);
         } catch (std::exception const &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
-                                                       << userDbId << " driveId=" << driveId << " : " << e.what());
+                                                           << userDbId << " driveId=" << driveId << " : " << e.what());
             return ExitCode::DataError;
         }
     } else {
         try {
-            job = (std::shared_ptr<GetFileListJob>)std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), 1,
-                                                                                    true);
+            job = (std::shared_ptr<GetFileListJob>) std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), 1,
+                                                                                     true);
         } catch (std::exception const &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
-                                                       << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << e.what());
+                                                           << userDbId << " driveId=" << driveId
+                                                           << " nodeId=" << nodeId.toStdString().c_str() << " : " << e.what());
             return ExitCode::DataError;
         }
     }
@@ -575,8 +575,8 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
-                                                   << userDbId << " driveId=" << driveId
-                                                   << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
+                                                       << userDbId << " driveId=" << driveId
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
         return exitCode;
     }
 
@@ -629,7 +629,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
         }
 
         NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name),
-                          -1,  // Size is not set here as it can be very long to evaluate
+                          -1, // Size is not set here as it can be very long to evaluate
                           parentId.c_str(), modTime, SyncName2QStr(path));
         list << nodeInfo;
     }
@@ -682,7 +682,7 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     NodeInfo current;
     bool found = false;
     while (!found && !names.empty()) {
-        for (auto node : list) {
+        for (auto node: list) {
             if (QStr2SyncName(node.name()) == names.back()) {
                 current = node;
                 if (QStr2SyncName(current.name()) == target) {
@@ -756,7 +756,7 @@ ExitCode ServerRequests::migrateSelectiveSync(int syncDbId, std::pair<SyncPath, 
     QList<QPair<QString, SyncNodeType>> list;
     code = loadOldSelectiveSyncTable(dbPath, list);
 
-    for (auto &pair : list) {
+    for (auto &pair: list) {
         std::filesystem::path path(QStr2Path(pair.first));
         SyncNodeType type = pair.second;
         if (!ParmsDb::instance()->insertMigrationSelectiveSync(MigrationSelectiveSync(syncDbId, path, type))) {
@@ -936,10 +936,11 @@ bool ServerRequests::isAutoResolvedError(const Error &error) {
         autoResolved = false;
     } else if (error.level() == ErrorLevel::SyncPal) {
         autoResolved =
-            (error.exitCode() == ExitCode::NetworkError   // Sync is paused and we try to restart it every RESTART_SYNCS_INTERVAL
-             || (error.exitCode() == ExitCode::BackError  // Sync is stoped and a full sync is restarted
-                 && error.exitCause() != ExitCause::DriveAccessError && error.exitCause() != ExitCause::DriveNotRenew) ||
-             error.exitCode() == ExitCode::DataError);  // Sync is stoped and a full sync is restarted
+                (error.exitCode() ==
+                         ExitCode::NetworkError // Sync is paused and we try to restart it every RESTART_SYNCS_INTERVAL
+                 || (error.exitCode() == ExitCode::BackError // Sync is stoped and a full sync is restarted
+                     && error.exitCause() != ExitCause::DriveAccessError && error.exitCause() != ExitCause::DriveNotRenew) ||
+                 error.exitCode() == ExitCode::DataError); // Sync is stoped and a full sync is restarted
     } else if (error.level() == ErrorLevel::Node) {
         autoResolved = (error.conflictType() != ConflictType::None && !isConflictsWithLocalRename(error.conflictType())) ||
                        (error.inconsistencyType() !=
@@ -1001,7 +1002,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     exitCause = ExitCause::Unknown;
     ExitCode exitCode = ExitCode::Ok;
     std::function<bool(LogUploadState, int)> safeProgressCallback =
-        progressCallback ? progressCallback : std::function<bool(LogUploadState, int)>([](LogUploadState, int) { return true; });
+            progressCallback ? progressCallback
+                             : std::function<bool(LogUploadState, int)>([](LogUploadState, int) { return true; });
 
     safeProgressCallback(LogUploadState::Archiving, 0);
 
@@ -1017,12 +1019,12 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     IoHelper::logArchiverDirectoryPath(logUploadTempFolder, ioError);
     if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::logArchiverDirectoryPath: "
-                                                    << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
+                                                        << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         return ExitCode::SystemError;
     }
 
     IoHelper::createDirectory(logUploadTempFolder, ioError);
-    if (ioError == IoError::DirectoryExists) {  // If the directory already exists, we delete it and recreate it
+    if (ioError == IoError::DirectoryExists) { // If the directory already exists, we delete it and recreate it
         IoHelper::deleteItem(logUploadTempFolder, ioError);
         IoHelper::createDirectory(logUploadTempFolder, ioError);
     }
@@ -1070,12 +1072,12 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
 
     bool canceledByUser = false;
     std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
-        [&safeProgressCallback, &uploadSessionLog, &canceledByUser](UniqueId, int percent) {  // Progress callback
-            if (!safeProgressCallback(LogUploadState::Uploading, percent)) {
-                uploadSessionLog->abort();
-                canceledByUser = true;
+            [&safeProgressCallback, &uploadSessionLog, &canceledByUser](UniqueId, int percent) { // Progress callback
+                if (!safeProgressCallback(LogUploadState::Uploading, percent)) {
+                    uploadSessionLog->abort();
+                    canceledByUser = true;
+                };
             };
-        };
     uploadSessionLog->setProgressPercentCallback(progressCallbackUploadingWrapper);
 
     bool jobFinished = false;
@@ -1105,7 +1107,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
         return exitCode;
     }
 
-    IoHelper::deleteItem(logUploadTempFolder, ioError);  // Delete temp folder if the upload was successful
+    IoHelper::deleteItem(logUploadTempFolder, ioError); // Delete temp folder if the upload was successful
 
     if (exitCause != ExitCause::OperationCanceled) {
         std::string uploadDate = "";
@@ -1139,11 +1141,11 @@ ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
 
     if (logUploadState == LogUploadState::Canceled) {
         exitCause = ExitCause::OperationCanceled;
-        return ExitCode::Ok;  // The user has already canceled the operation
+        return ExitCode::Ok; // The user has already canceled the operation
     }
 
     if (logUploadState != LogUploadState::Uploading && logUploadState != LogUploadState::Archiving) {
-        return ExitCode::InvalidOperation;  // The operation is not in progress
+        return ExitCode::InvalidOperation; // The operation is not in progress
     }
 
     if (bool found = false;
@@ -1159,8 +1161,8 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;
     try {
-        job =
-            std::make_shared<CreateDirJob>(driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(), QStr2SyncName(dirName));
+        job = std::make_shared<CreateDirJob>(driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
+                                             QStr2SyncName(dirName));
     } catch (std::exception const &) {
         LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId);
         return ExitCode::DataError;
@@ -1200,7 +1202,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
-                                                   << driveDbId << " nodeId=" << nodeId.c_str() << " : " << e.what());
+                                                       << driveDbId << " nodeId=" << nodeId.c_str() << " : " << e.what());
         return ExitCode::DataError;
     }
 
@@ -1214,14 +1216,14 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
                 job2 = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
             } catch (std::exception const &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetFileLinkJob::GetFileLinkJob for driveDbId="
-                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " : " << e.what());
+                                                               << driveDbId << " nodeId=" << nodeId.c_str() << " : " << e.what());
                 return ExitCode::DataError;
             }
 
             exitCode = job2->runSynchronously();
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetFileLinkJob::GetFileLinkJob for driveDbId="
-                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
+                                                               << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
                 return exitCode;
             }
 
@@ -1248,7 +1250,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
             return ExitCode::Ok;
         } else {
             LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
-                                                       << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
+                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
             return exitCode;
         }
     }
@@ -1346,7 +1348,7 @@ ExitCode ServerRequests::getPrivateLinkUrl(int driveDbId, const QString &fileId,
 
 ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list) {
     list.clear();
-    for (const ExclusionTemplate &exclusionTemplate : ExclusionTemplateCache::instance()->exclusionTemplates(def)) {
+    for (const ExclusionTemplate &exclusionTemplate: ExclusionTemplateCache::instance()->exclusionTemplates(def)) {
         ExclusionTemplateInfo exclusionTemplateInfo;
         ServerRequests::exclusionTemplateToExclusionTemplateInfo(exclusionTemplate, exclusionTemplateInfo);
         list << exclusionTemplateInfo;
@@ -1357,7 +1359,7 @@ ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTempl
 
 ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplate> exclusionList;
-    for (const ExclusionTemplateInfo &exclusionTemplateInfo : list) {
+    for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
         ExclusionTemplate exclusionTemplate;
         ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
         exclusionList.push_back(exclusionTemplate);
@@ -1379,7 +1381,7 @@ ExitCode ServerRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &
         return ExitCode::DbError;
     }
     list.clear();
-    for (const ExclusionApp &exclusionApp : exclusionList) {
+    for (const ExclusionApp &exclusionApp: exclusionList) {
         ExclusionAppInfo exclusionAppInfo;
         ServerRequests::exclusionAppToExclusionAppInfo(exclusionApp, exclusionAppInfo);
         list << exclusionAppInfo;
@@ -1390,7 +1392,7 @@ ExitCode ServerRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &
 
 ExitCode ServerRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list) {
     std::vector<ExclusionApp> exclusionList;
-    for (const ExclusionAppInfo &exclusionAppInfo : list) {
+    for (const ExclusionAppInfo &exclusionAppInfo: list) {
         ExclusionApp exclusionApp;
         ServerRequests::exclusionAppInfoToExclusionApp(exclusionAppInfo, exclusionApp);
         exclusionList.push_back(exclusionApp);
@@ -1412,7 +1414,7 @@ ExitCode ServerRequests::getErrorInfoList(ErrorLevel level, int syncDbId, int li
     }
 
     list.clear();
-    for (const Error &error : errorList) {
+    for (const Error &error: errorList) {
         if (isDisplayableError(error)) {
             ErrorInfo errorInfo;
             errorToErrorInfo(error, errorInfo);
@@ -1431,7 +1433,7 @@ ExitCode ServerRequests::getConflictList(int syncDbId, const std::unordered_set<
             return ExitCode::DbError;
         }
     } else {
-        for (auto conflictType : filter) {
+        for (auto conflictType: filter) {
             if (!ParmsDb::instance()->selectConflicts(syncDbId, conflictType, errorList)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
                 return ExitCode::DbError;
@@ -1447,7 +1449,7 @@ ExitCode ServerRequests::getConflictErrorInfoList(int syncDbId, const std::unord
     std::vector<Error> errorList;
     ServerRequests::getConflictList(syncDbId, filter, errorList);
 
-    for (const Error &error : errorList) {
+    for (const Error &error: errorList) {
         if (isDisplayableError(error)) {
             ErrorInfo errorInfo;
             errorToErrorInfo(error, errorInfo);
@@ -1479,7 +1481,7 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
         return ExitCode::DbError;
     }
 
-    for (const Error &error : errorList) {
+    for (const Error &error: errorList) {
         if (isConflictsWithLocalRename(error.conflictType())) {
             // For conflict type that rename local file
             Sync sync;
@@ -1548,10 +1550,10 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
                                  const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                  bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
-                                                << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
-                                                << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath)).c_str()
-                                                << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str()
-                                                << L" liteSync=" << liteSync);
+                                                    << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
+                                                    << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath)).c_str()
+                                                    << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str()
+                                                    << L" liteSync=" << liteSync);
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
@@ -1582,8 +1584,9 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
             return exitCode;
         }
 
-        LOG_INFO(Log::instance()->getLogger(), "New account created in DB - accountDbId="
-                                                   << accountDbId << " accountId= " << accountId << " userDbId= " << userDbId);
+        LOG_INFO(Log::instance()->getLogger(), "New account created in DB - accountDbId=" << accountDbId
+                                                                                          << " accountId= " << accountId
+                                                                                          << " userDbId= " << userDbId);
     }
 
     // Create Drive in DB if needed
@@ -1619,10 +1622,10 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
 ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                  const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane,
                                  SyncInfo &syncInfo) {
-    LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId="
-                                                << driveDbId << L" localFolderPath="
-                                                << Path2WStr(QStr2Path(localFolderPath)).c_str() << L" serverFolderPath="
-                                                << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" liteSync=" << liteSync);
+    LOGW_INFO(Log::instance()->getLogger(),
+              L"Adding new sync - driveDbId=" << driveDbId << L" localFolderPath="
+                                              << Path2WStr(QStr2Path(localFolderPath)).c_str() << L" serverFolderPath="
+                                              << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" liteSync=" << liteSync);
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
@@ -1682,10 +1685,10 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     }
 
     LOGW_INFO(Log::instance()->getLogger(), L"New sync created in DB - syncDbId="
-                                                << syncDbId << L" driveDbId=" << driveDbId << L" localFolderPath="
-                                                << Path2WStr(sync.localPath()).c_str() << L" serverFolderPath="
-                                                << Path2WStr(sync.targetPath()).c_str() << L" dbPath="
-                                                << Path2WStr(sync.dbPath()).c_str());
+                                                    << syncDbId << L" driveDbId=" << driveDbId << L" localFolderPath="
+                                                    << Path2WStr(sync.localPath()).c_str() << L" serverFolderPath="
+                                                    << Path2WStr(sync.targetPath()).c_str() << L" dbPath="
+                                                    << Path2WStr(sync.dbPath()).c_str());
 
     return ExitCode::Ok;
 }
@@ -1823,7 +1826,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
         return ExitCode::DataError;
     } else if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         LOG_WARN(Log::instance()->getLogger(), "Network error in GetThumbnailJob::runSynchronously for driveDbId="
-                                                   << driveDbId << " and nodeId=" << nodeId.c_str());
+                                                       << driveDbId << " and nodeId=" << nodeId.c_str());
         return ExitCode::NetworkError;
     }
 
@@ -1851,7 +1854,7 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         if (exitCode == ExitCode::InvalidToken) {
-            user.setKeychainKey("");  // Invalid keychain key
+            user.setKeychainKey(""); // Invalid keychain key
         }
         return exitCode;
     }
@@ -2025,27 +2028,27 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
     const QString userDir = QDir::cleanPath(canonicalPath(path)) + '/';
 
     QList<QPair<std::filesystem::path, int>> folderByDriveList;
-    for (const Sync &sync : syncList) {
+    for (const Sync &sync: syncList) {
         folderByDriveList << qMakePair(sync.localPath(), sync.driveDbId());
     }
 
-    for (QPair<std::filesystem::path, int> folderByDrive : folderByDriveList) {
+    for (QPair<std::filesystem::path, int> folderByDrive: folderByDriveList) {
         QString folderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(folderByDrive.first.native()))) + '/';
 
         bool differentPaths = QString::compare(folderDir, userDir, cs) != 0;
         if (differentPaths && folderDir.startsWith(userDir, cs)) {
             error = QObject::tr(
-                        "The local folder %1 contains a folder already synced. "
-                        "Please pick another one!")
-                        .arg(QDir::toNativeSeparators(path));
+                            "The local folder %1 contains a folder already synced. "
+                            "Please pick another one!")
+                            .arg(QDir::toNativeSeparators(path));
             return ExitCode::SystemError;
         }
 
         if (differentPaths && userDir.startsWith(folderDir, cs)) {
             error = QObject::tr(
-                        "The local folder %1 is contained in a folder already synced. "
-                        "Please pick another one!")
-                        .arg(QDir::toNativeSeparators(path));
+                            "The local folder %1 is contained in a folder already synced. "
+                            "Please pick another one!")
+                            .arg(QDir::toNativeSeparators(path));
             return ExitCode::SystemError;
         }
 
@@ -2053,9 +2056,9 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
         if (!differentPaths) {
             if (driveDbId == folderByDrive.second) {
                 error = QObject::tr(
-                            "The local folder %1 is already synced on the same drive. "
-                            "Please pick another one!")
-                            .arg(QDir::toNativeSeparators(path));
+                                "The local folder %1 is already synced on the same drive. "
+                                "Please pick another one!")
+                                .arg(QDir::toNativeSeparators(path));
                 return ExitCode::SystemError;
             }
         }
@@ -2067,7 +2070,7 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
 ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QString &path, int &syncDbId) {
     QString absolutePath = QDir::cleanPath(path) + QLatin1Char('/');
 
-    for (const Sync &sync : syncList) {
+    for (const Sync &sync: syncList) {
         const QString localPath = SyncName2QStr(sync.localPath().native()) + QLatin1Char('/');
 
         if (absolutePath.startsWith(localPath,
@@ -2196,7 +2199,7 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
         std::copy(parameters.dialogGeometry()->begin(), parameters.dialogGeometry()->end(),
                   std::back_inserter(dialogGeometryArr));
         QList<QByteArray> dialogGeometryLines = dialogGeometryArr.split('\n');
-        for (const QByteArray &dialogGeometryLine : dialogGeometryLines) {
+        for (const QByteArray &dialogGeometryLine: dialogGeometryLines) {
             QList<QByteArray> dialogGeometryElts = dialogGeometryLine.split(';');
             if (dialogGeometryElts.size() == 2) {
                 parametersInfo.setDialogGeometry(QString(dialogGeometryElts[0]), dialogGeometryElts[1]);
@@ -2229,14 +2232,14 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
 
     if (parametersInfo.dialogGeometry().size()) {
         QByteArray dialogGeometryArr;
-        for (const QString &objectName : parametersInfo.dialogGeometry().keys()) {
+        for (const QString &objectName: parametersInfo.dialogGeometry().keys()) {
             dialogGeometryArr += objectName.toUtf8();
             dialogGeometryArr += ";";
             dialogGeometryArr += parametersInfo.dialogGeometry().value(objectName);
             dialogGeometryArr += "\n";
         }
         parameters.setDialogGeometry(
-            std::shared_ptr<std::vector<char>>(new std::vector<char>(dialogGeometryArr.begin(), dialogGeometryArr.end())));
+                std::shared_ptr<std::vector<char>>(new std::vector<char>(dialogGeometryArr.begin(), dialogGeometryArr.end())));
     }
     parameters.setMaxAllowedCpu(parametersInfo.maxAllowedCpu());
 }
@@ -2333,7 +2336,7 @@ ExitCode ServerRequests::loadOldSelectiveSyncTable(const SyncPath &syncDbPath, Q
         }
 
         list.clear();
-        for (const auto &selectiveSyncElt : selectiveSyncList) {
+        for (const auto &selectiveSyncElt: selectiveSyncList) {
             list << qMakePair(QString::fromStdString(selectiveSyncElt.first), selectiveSyncElt.second);
         }
 
@@ -2347,4 +2350,4 @@ ExitCode ServerRequests::loadOldSelectiveSyncTable(const SyncPath &syncDbPath, Q
     return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

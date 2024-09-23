@@ -38,4 +38,4 @@ class Account {
         int _userDbId;
 };
 
-}  // namespace KDC
+} // namespace KDC

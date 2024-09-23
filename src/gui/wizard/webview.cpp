@@ -148,7 +148,7 @@ void WebViewPageUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *reques
 
     QString code, state, error, errorDescr;
     bool ok = true;
-    for (const QString &part : parts) {
+    for (const QString &part: parts) {
         if (part.startsWith("code")) {
             code = part.split("=").last();
         } else if (part.startsWith("state")) {
@@ -178,6 +178,6 @@ void WebEnginePage::setUrl(const QUrl &url) {
     _rootUrl = url;
 }
 
-}  // namespace KDC
+} // namespace KDC
 
 #include "webview.moc"

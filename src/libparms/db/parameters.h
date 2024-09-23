@@ -127,7 +127,7 @@ class PARMS_EXPORT Parameters {
         bool _syncHiddenFiles;
         ProxyConfig _proxyConfig;
         bool _useBigFolderSizeLimit;
-        int64_t _bigFolderSizeLimit;  // MB
+        int64_t _bigFolderSizeLimit; // MB
         bool _darkTheme;
         bool _showShortcuts;
         std::string _updateFileAvailable;
@@ -141,4 +141,4 @@ class PARMS_EXPORT Parameters {
         int _jobPoolCapacityFactor;
 };
 
-}  // namespace KDC
+} // namespace KDC

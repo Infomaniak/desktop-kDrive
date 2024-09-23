@@ -29,7 +29,7 @@ using namespace Windows::Storage::Streams;
 using namespace Windows::Storage::Provider;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Security::Cryptography;
-}  // namespace winrt
+} // namespace winrt
 
 #define REGPATH_SYNCROOTMANAGER L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SyncRootManager\\"
 
@@ -40,7 +40,7 @@ using namespace Windows::Security::Cryptography;
 /// EV (Extended Validation) certificate AUMID : use this certificate to build a release version
 // #define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_dbrs6rk4qqhna!App"
 /// Virtual certificate AUMID : use this certificate in debug mode and to build a version for testing purpose
-#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_csy8f8zhvqa20!App"  // virtual
+#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_csy8f8zhvqa20!App" // virtual
 
 std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID,
                                                        DWORD *namespaceCLSIDSize) {
@@ -72,8 +72,8 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 }
 
                 // Set default key
-                if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *)Utilities::s_appName.c_str(),
-                                  (DWORD)(Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
+                if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *) Utilities::s_appName.c_str(),
+                                  (DWORD) (Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
                     TRACE_ERROR(L"Could not set default registry value");
                 }
 
@@ -94,7 +94,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
 
             WCHAR exePath[MAX_FULL_PATH];
             GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH);
-            info.IconResource(exePath);  // App icon
+            info.IconResource(exePath); // App icon
 
             info.HydrationPolicy(winrt::StorageProviderHydrationPolicy::Full);
             info.HydrationPolicyModifier(winrt::StorageProviderHydrationPolicyModifier::AutoDehydrationAllowed);
@@ -113,7 +113,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             std::wstring syncRootIdentity(providerInfo->id());
 
             winrt::IBuffer contextBuffer =
-                winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
+                    winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
             info.Context(contextBuffer);
 
             winrt::StorageProviderSyncRootManager::Register(info);
@@ -133,8 +133,8 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 }
 
                 // Set default key
-                if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *)Utilities::s_appName.c_str(),
-                                  (DWORD)(Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
+                if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *) Utilities::s_appName.c_str(),
+                                  (DWORD) (Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
                     TRACE_ERROR(L"Could not set default registry value");
                 }
 
@@ -152,8 +152,8 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
 #else
                 value = REGVALUE_AUMID;
 #endif
-                if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *)value.c_str(),
-                                  (DWORD)(value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
+                if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(),
+                                  (DWORD) (value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
                     TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
                 }
 
@@ -191,7 +191,7 @@ std::unique_ptr<TOKEN_USER> CloudProviderRegistrar::getTokenInformation() {
     std::unique_ptr<TOKEN_USER> tokenInfo;
 
     // get the tokenHandle from current thread/process if it's null
-    auto tokenHandle{GetCurrentThreadEffectiveToken()};  // Pseudo token, don't free.
+    auto tokenHandle{GetCurrentThreadEffectiveToken()}; // Pseudo token, don't free.
 
     DWORD tokenInfoSize{0};
     if (!::GetTokenInformation(tokenHandle, TokenUser, nullptr, 0, &tokenInfoSize)) {

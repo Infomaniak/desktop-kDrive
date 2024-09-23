@@ -63,4 +63,4 @@ static inline bool hasDarkSystray_private() {
     return !settings.value(QLatin1String(lightThemeKeyC), true).toBool();
 }
 
-}  // namespace KDC
+} // namespace KDC

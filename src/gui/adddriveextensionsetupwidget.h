@@ -60,4 +60,4 @@ class AddDriveExtensionSetupWidget : public QWidget {
         void onContinueButtonTriggered();
 };
 
-}  // namespace KDC
+} // namespace KDC

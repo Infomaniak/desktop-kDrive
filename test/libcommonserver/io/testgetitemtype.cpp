@@ -88,7 +88,7 @@ GetItemChecker::Result GetItemChecker::checkSuccessfullRetrievalOfDanglingLink(c
     ItemType itemType;
     try {
         CPPUNIT_ASSERT(_iohelper->getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoError::Success);  // Although `targetPath` is invalid.
+        CPPUNIT_ASSERT(itemType.ioError == IoError::Success); // Although `targetPath` is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == linkType);
         CPPUNIT_ASSERT(itemType.targetType == targetType);
@@ -154,14 +154,14 @@ void TestIo::testGetItemTypeSimpleCases() {
 
     // A non-existing file
     {
-        const auto result = checker.checkItemIsNotFound(_localTestDirPath / "non-existing.jpg");  // This file does not exist.
+        const auto result = checker.checkItemIsNotFound(_localTestDirPath / "non-existing.jpg"); // This file does not exist.
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // A non-existing file with a very long name
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
+        const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         ItemType itemType;
 #ifdef _WIN32
         CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
@@ -182,7 +182,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         const std::string pathSegment(50, 'a');
         SyncPath path = _localTestDirPath;
         for (int i = 0; i < 1000; ++i) {
-            path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
+            path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
         }
         ItemType itemType;
 #ifdef _WIN32
@@ -208,7 +208,7 @@ void TestIo::testGetItemTypeSimpleCases() {
 #ifdef _WIN32
         ItemType itemType;
         CPPUNIT_ASSERT(_testObj->getItemType(
-            path, itemType));  // Invalid name is considered as IoError::NoSuchFileOrDirectory (expected error)
+                path, itemType)); // Invalid name is considered as IoError::NoSuchFileOrDirectory (expected error)
         CPPUNIT_ASSERT(itemType.ioError == IoError::NoSuchFileOrDirectory);
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
@@ -233,13 +233,13 @@ void TestIo::testGetItemTypeSimpleCases() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt"; // This file does not exist.
         const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         // Assumptions made to implement getItemType.
         CPPUNIT_ASSERT(std::filesystem::is_symlink(path));
-        CPPUNIT_ASSERT(!std::filesystem::exists(path));  // Follow links
+        CPPUNIT_ASSERT(!std::filesystem::exists(path)); // Follow links
         std::error_code ec;
         const SyncPath targetPath_ = std::filesystem::read_symlink(path, ec);
         CPPUNIT_ASSERT(targetPath == targetPath_ && ec.value() == 0);
@@ -249,7 +249,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::File);
 #else
         const auto result =
-            checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::Unknown);
+                checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::Unknown);
 #endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
@@ -284,7 +284,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     // A dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         { std::ofstream ofs(targetPath); }
 
@@ -293,14 +293,14 @@ void TestIo::testGetItemTypeSimpleCases() {
         std::filesystem::remove(targetPath);
 
         const auto result =
-            checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkType::FinderAlias, NodeType::Unknown);
+                checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkType::FinderAlias, NodeType::Unknown);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // A dangling MacOSX Finder alias on a non-existing directory.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted";  // This directory will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted"; // This directory will be deleted.
         std::filesystem::create_directory(targetPath);
 
         const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
@@ -310,7 +310,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         std::filesystem::remove_all(targetPath);
 
         const auto result =
-            checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkType::FinderAlias, NodeType::Unknown);
+                checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkType::FinderAlias, NodeType::Unknown);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 #endif
@@ -354,7 +354,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         std::filesystem::create_directory(path);
 
         const auto allPermissions =
-            std::filesystem::perms::owner_all | std::filesystem::perms::others_all | std::filesystem::perms::group_all;
+                std::filesystem::perms::owner_all | std::filesystem::perms::others_all | std::filesystem::perms::group_all;
         std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::remove);
 
         const auto result = checker.checkSuccessfulRetrieval(path, NodeType::Directory);
@@ -449,7 +449,7 @@ void TestIo::testGetItemTypeAllBranches() {
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setIsSymlinkFunction([](const SyncPath &, std::error_code &ec) -> bool {
-            ec = std::make_error_code(std::errc::state_not_recoverable);  // Not handled -> IoError::Unknown.
+            ec = std::make_error_code(std::errc::state_not_recoverable); // Not handled -> IoError::Unknown.
             return false;
         });
 
@@ -604,7 +604,7 @@ void TestIo::testGetItemTypeAllBranches() {
         const auto result = checker.checkAccessIsDenied(path);
 
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-        std::filesystem::remove_all(subdir);  // required to allow automated deletion of `temporaryDirectory`
+        std::filesystem::remove_all(subdir); // required to allow automated deletion of `temporaryDirectory`
 
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
 
@@ -650,13 +650,13 @@ void TestIo::testGetItemTypeEdgeCases() {
     CPPUNIT_ASSERT(!_testObj->getItemType(path, itemType));
     // The outcome depends on the value of `temporaryDirectory.path`.
     if (std::filesystem::exists(path, ec)) {
-        CPPUNIT_ASSERT_EQUAL(
-            IoError::InvalidFileName,  // Ooops! Because of NSFileReadInvalidNameError with code 258 issued within `checkIfAlias_`
-            itemType.ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::InvalidFileName, // Ooops! Because of NSFileReadInvalidNameError with code 258 issued within
+                                                       // `checkIfAlias_`
+                             itemType.ioError);
     } else {
-        CPPUNIT_ASSERT_EQUAL(
-            IoError::FileNameTooLong,  // Ooops! Because of NSFileReadInvalidNameError with code 258 issued within `checkIfAlias_`
-            itemType.ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, // Ooops! Because of NSFileReadInvalidNameError with code 258 issued within
+                                                       // `checkIfAlias_`
+                             itemType.ioError);
     }
 #endif
 }
@@ -667,4 +667,4 @@ void TestIo::testGetItemType() {
     testGetItemTypeEdgeCases();
 }
 
-}  // namespace KDC
+} // namespace KDC

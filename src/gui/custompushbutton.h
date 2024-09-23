@@ -69,4 +69,4 @@ class CustomPushButton : public QPushButton {
         void onIconColorChanged();
 };
 
-}  // namespace KDC
+} // namespace KDC
