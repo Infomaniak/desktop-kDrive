@@ -89,7 +89,8 @@ Add to the following paths to your `PATH` or adapt them to the actual location o
 
 ## Sentry
 
-Download the [Sentry sources](https://github.com/getsentry/sentry-native/releases) and extract them to `F:\Projects`.
+Download the [Sentry sources (sentry-native.zip
+)](https://github.com/getsentry/sentry-native/releases) and extract them to `F:\Projects`.
 After successful extraction, run:
 
 ```bash
