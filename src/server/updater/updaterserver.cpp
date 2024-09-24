@@ -26,6 +26,7 @@
 #include "version.h"
 #include "config.h"
 #include "libcommon/theme/theme.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "utility/utility.h"
 

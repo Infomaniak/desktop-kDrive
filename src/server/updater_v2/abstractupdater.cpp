@@ -19,9 +19,46 @@
 
 #include "abstractupdater.h"
 
-#include "db/parmsdb.h"
-#include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
-#include "log/log.h"
 
-namespace KDC {} // namespace KDC
+namespace KDC {
+
+AbstractUpdater::AbstractUpdater() {
+    const std::function callback = [this] { onAppVersionReceived(); };
+    _updateChecker->setCallback(callback);
+}
+
+ExitCode AbstractUpdater::checkUpdateAvailable(UniqueId* id) {
+    setState(UpdateStateV2::Checking);
+    return _updateChecker->checkUpdateAvailable(id);
+}
+
+void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateStateV2)>& stateChangeCallback) {
+    LOG_INFO(Log::instance()->getLogger(), "Set state change callback");
+    _stateChangeCallback = stateChangeCallback;
+}
+
+void AbstractUpdater::onAppVersionReceived() {
+    if (!_updateChecker->versionInfo().isValid()) {
+        setState(UpdateStateV2::Error);
+        LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
+    }
+
+    const bool available =
+            CommonUtility::isVersionLower(CommonUtility::currentVersion(), _updateChecker->versionInfo().fullVersion());
+    setState(available ? UpdateStateV2::Available : UpdateStateV2::UpToDate);
+    if (available)
+        LOG_INFO(Log::instance()->getLogger(), "New app version available");
+    else
+        LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
+}
+
+void AbstractUpdater::setState(const UpdateStateV2 newState) {
+    if (_state != newState) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Update state changed to: " << newState);
+        _state = newState;
+        if (_stateChangeCallback) _stateChangeCallback(_state);
+    }
+}
+
+} // namespace KDC

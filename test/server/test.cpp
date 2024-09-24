@@ -23,7 +23,7 @@
 #include "vfs/mac/testlitesyncextconnector.h"
 #endif
 #include "logarchiver/testlogarchiver.h"
-#include "updater/testupdatemanager.h"
+#include "updater/testupdatechecker.h"
 #include "updater/testupdater.h"
 namespace KDC {
 // #ifdef __APPLE__
@@ -31,7 +31,7 @@ namespace KDC {
 // #endif
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdater);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateManager);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 } // namespace KDC
 
 int main(int, char **) {

@@ -19,12 +19,15 @@
 
 #include "updaterscheduler.h"
 
-#include "updatemanager.h"
+#include "sparkleupdater.h"
+#include "updatechecker.h"
 #include "log/log.h"
 
 namespace KDC {
 
 UpdaterScheduler::UpdaterScheduler(QObject *parent) : QObject(parent) {
+    createUpdater();
+
     connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdaterScheduler::slotTimerFired);
 
     // Note: the sparkle-updater is not an KDCUpdater
@@ -33,20 +36,20 @@ UpdaterScheduler::UpdaterScheduler(QObject *parent) : QObject(parent) {
     //     connect(updater, &KDCUpdater::requestRestart, this, &UpdaterScheduler::requestRestart);
     // }
 
-    // At startup, do a check in any case.
-    QTimer::singleShot(3000, this, &UpdaterScheduler::slotTimerFired);
-
     static constexpr auto checkInterval = std::chrono::hours(1);
     _updateCheckTimer.start(std::chrono::milliseconds(checkInterval).count());
 
+    // Setup callback for update state change notification
     const std::function<void(UpdateStateV2)> callback = std::bind_front(&UpdaterScheduler::onUpdateStateChange, this);
-    UpdateManager::instance()->setStateChangeCallback(callback);
-
+    _updater->setStateChangeCallback(callback);
     connect(this, &UpdaterScheduler::updateStateChanged, this, &UpdaterScheduler::slotUpdateStateChanged, Qt::QueuedConnection);
+
+    // At startup, do a check in any case.
+    QTimer::singleShot(3000, this, &UpdaterScheduler::slotTimerFired);
 }
 
 void UpdaterScheduler::slotTimerFired() const {
-    UpdateManager::instance()->checkUpdateAvailable();
+    _updater->checkUpdateAvailable();
 }
 
 void UpdaterScheduler::slotUpdateStateChanged(const UpdateStateV2 newState) const {
@@ -59,11 +62,11 @@ void UpdaterScheduler::slotUpdateStateChanged(const UpdateStateV2 newState) cons
             break;
         case UpdateStateV2::Available:
             // A new version has been found
-            UpdateManager::instance()->onUpdateFound();
+            _updater->onUpdateFound();
             break;
         case UpdateStateV2::Ready:
             // The new version is ready to be installed
-            UpdateManager::instance()->startInstaller();
+            _updater->startInstaller();
             break;
         case UpdateStateV2::Error:
             // An error occured
@@ -71,7 +74,19 @@ void UpdaterScheduler::slotUpdateStateChanged(const UpdateStateV2 newState) cons
     }
 }
 
+void UpdaterScheduler::createUpdater() {
+#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
+    _updater = std::make_unique<SparkleUpdater>();
+#elif defined(Q_OS_WIN32)
+    _updater = std::make_unique<to be implemented>();
+#else
+    // the best we can do is notify about updates
+    _updater = std::make_unique<to be implemented>();
+#endif
+}
+
 void UpdaterScheduler::onUpdateStateChange(const UpdateStateV2 newState) {
+    // Emit signal in order to run `slotUpdateStateChanged` in main thread
     emit updateStateChanged(newState);
 }
 

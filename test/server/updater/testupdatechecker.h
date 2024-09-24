@@ -20,23 +20,17 @@
 #pragma once
 
 #include "testincludes.h"
-#include "server/updater_v2/updatemanager.h"
-#include "utility/types.h"
-using namespace CppUnit;
 
 namespace KDC {
-class TestUpdateManager final : public CppUnit::TestFixture {
-    public:
-        CPPUNIT_TEST_SUITE(TestUpdateManager);
-        CPPUNIT_TEST(testCheckUpdateAvailable);
-        CPPUNIT_TEST(testCurrentVersion);
-        CPPUNIT_TEST_SUITE_END();
 
+class TestUpdateChecker final : public CppUnit::TestFixture {
     public:
-        void setUp() override;
+        CPPUNIT_TEST_SUITE(TestUpdateChecker);
+        CPPUNIT_TEST(testCheckUpdateAvailable);
+        CPPUNIT_TEST_SUITE_END();
 
     protected:
         void testCheckUpdateAvailable();
-        void testCurrentVersion();
 };
+
 } // namespace KDC

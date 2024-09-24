@@ -19,21 +19,22 @@
 
 #pragma once
 
+#include "abstractupdater.h"
 #include "utility/types.h"
 
 #include <QObject>
 #include <QTimer>
 
-namespace KDC {
-
 /**
- * @brief Schedule update checks every couple of hours if the client runs.
+ * @brief Schedule regular update checks.
  * @ingroup server
  *
- * This class schedules regular update checks.
+ * This class schedules update checks every hour and manage installation steps.
  *
  * This class is still based on Qt. It will be replaced later if Qt is removed from the project.
  */
+
+namespace KDC {
 
 class UpdaterScheduler final : public QObject {
         Q_OBJECT
@@ -50,10 +51,16 @@ class UpdaterScheduler final : public QObject {
         void slotUpdateStateChanged(KDC::UpdateStateV2 newState) const;
 
     private:
+        /**
+         * @brief Create adequat updater according to OS.
+         */
+        void createUpdater();
+
         void onUpdateStateChange(UpdateStateV2 newState);
 
+        std::unique_ptr<AbstractUpdater> _updater;
+
         QTimer _updateCheckTimer; /** Timer for the regular update check. */
-        UpdateStateV2 _newState{UpdateStateV2::UpToDate};
 };
 
 } // namespace KDC

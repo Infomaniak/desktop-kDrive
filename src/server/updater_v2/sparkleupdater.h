@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "../updater/updaterserver.h"
-#include "../../libcommon/utility/utility.h"
 #include "abstractupdater.h"
 
 namespace KDC {
@@ -31,15 +29,15 @@ class SparkleUpdater final : public AbstractUpdater {
         explicit SparkleUpdater();
         ~SparkleUpdater() override;
 
-        void onUpdateFound(const std::string &downloadUrl) override;
+        void onUpdateFound() override;
 
         void setUpdateUrl(const std::string &url);
-        void setQuitCallback(const QuitCallback &quitCallback) override;
+        void setQuitCallback(const std::function<void()> &quitCallback) override;
         bool startUpdater();
 
         void checkForUpdate();
 
-        int state() const;
+        // int state() const;
 
     private:
         class Private;

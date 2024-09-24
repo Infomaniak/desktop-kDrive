@@ -19,6 +19,7 @@
 #include <Sparkle/Sparkle.h>
 #include <Sparkle/SPUUpdaterDelegate.h>
 
+#include "updatechecker.h"
 #include "common/utility.h"
 #include "libcommon/utility/utility.h"
 #include "sparkleupdater.h"
@@ -33,14 +34,14 @@
     KDC::DownloadState _state;
     NSString *_availableVersion;
     NSString *_feedUrl;
-    KDC::QuitCallback _quitCallback;
+    std::function<void()> _quitCallback;
 }
 - (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)updater;
 - (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater;
 - (void)updaterWillRelaunchApplication:(SPUUpdater *)updater;
 - (KDC::DownloadState)downloadState;
 - (NSString *)availableVersion;
-- (void)setQuitCallback:(KDC::QuitCallback)quitCallback;
+- (void)setQuitCallback:(std::function<void()>)quitCallback;
 @end
 
 @implementation DelegateUpdaterObject  //(SUUpdaterDelegateInformalProtocol)
@@ -99,7 +100,7 @@
     return _availableVersion;
 }
 
-- (void)setQuitCallback:(KDC::QuitCallback)quitCallback {
+- (void)setQuitCallback:(std::function<void()>)quitCallback {
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Set quitCallback");
     _quitCallback = quitCallback;
 }
@@ -203,8 +204,8 @@ SparkleUpdater::~SparkleUpdater() {
     delete d;
 }
 
-void SparkleUpdater::onUpdateFound(const std::string &downloadUrl) {
-    setUpdateUrl(downloadUrl);
+void SparkleUpdater::onUpdateFound() {
+    setUpdateUrl(updateChecker()->versionInfo().downloadUrl);
     checkForUpdate();
 }
 
@@ -213,7 +214,7 @@ void SparkleUpdater::setUpdateUrl(const std::string &url) {
     [d->updaterDelegate setFeedUrl:_feedUrl];
 }
 
-void SparkleUpdater::setQuitCallback(const QuitCallback &quitCallback) {
+void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) {
     [d->updaterDelegate setQuitCallback:quitCallback];
 }
 
@@ -246,10 +247,10 @@ void SparkleUpdater::backgroundCheckForUpdate() {
     }
     [d->spuStandardUserDriver showUpdateInFocus];
 }
-*/
 
 int SparkleUpdater::state() const {
     return [d->updaterDelegate downloadState];
 }
+*/
 
 }  // namespace KDC

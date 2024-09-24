@@ -55,9 +55,7 @@
 #include <windows.h>
 #endif
 
-#include "updater_v2/updatemanager.h"
 #include "updater_v2/updaterscheduler.h"
-
 
 #include <QDesktopServices>
 #include <QDir>
@@ -279,13 +277,9 @@ AppServer::AppServer(int &argc, char **argv) :
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
 #ifdef Q_OS_MACOS
-    // Init Updater
-    // const QuitCallback quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    // UpdaterServer::instance()->setQuitCallback(quitCallback);
-
-    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    UpdateManager::instance()->setQuitCallback(quitCallback);
-    // UpdateManager::instance()->checkUpdateAvailable();
+        // TODO
+        // const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+        // UpdateManager::instance()->setQuitCallback(quitCallback);
 #endif
 
     // Update checks

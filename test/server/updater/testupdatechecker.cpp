@@ -17,18 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testupdatemanager.h"
+#include "testupdatechecker.h"
 
-#include "db/parmsdb.h"
 #include "jobs/jobmanager.h"
-#include "requests/parameterscache.h"
 #include "jobs/network/getappversionjob.h"
-#include "keychainmanager/keychainmanager.h"
-#include "server/updater_v2/updatemanager.h"
-#include "test_utility/testhelpers.h"
-
-#include <Poco/JSON/Parser.h>
-#include <regex>
+#include "libcommon/utility/utility.h"
+#include "server/updater_v2/updatechecker.h"
 
 namespace KDC {
 
@@ -52,8 +46,7 @@ class GetAppVersionJobTest final : public GetAppVersionJob {
         bool _updateShoudBeAvailable{false};
 };
 
-
-class UpdateManagerTest final : public UpdateManager {
+class UpdateCheckerTest final : public UpdateChecker {
     public:
         void setUpdateShoudBeAvailable(const bool val) { _updateShoudBeAvailable = val; }
 
@@ -67,43 +60,25 @@ class UpdateManagerTest final : public UpdateManager {
         bool _updateShoudBeAvailable{false};
 };
 
-void TestUpdateManager::setUp() {
-    // Create parmsDb
-    bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParametersCache::instance()->parameters().setExtendedLog(true);
-}
-
-void TestUpdateManager::testCheckUpdateAvailable() {
-    // Version is higher than current version
+void TestUpdateChecker::testCheckUpdateAvailable() { // Version is higher than current version
     {
-        UpdateManagerTest testObj;
+        UpdateCheckerTest testObj;
         UniqueId jobId = 0;
         testObj.setUpdateShoudBeAvailable(true);
         testObj.checkUpdateAvailable(&jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT_EQUAL(UpdateStateV2::Available, testObj.state());
+        CPPUNIT_ASSERT_EQUAL(true, testObj.versionInfo().isValid());
     }
 
     // Version is lower than current version
     {
-        UpdateManagerTest testObj;
+        UpdateCheckerTest testObj;
         UniqueId jobId = 0;
         testObj.setUpdateShoudBeAvailable(false);
         testObj.checkUpdateAvailable(&jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT_EQUAL(UpdateStateV2::UpToDate, testObj.state());
+        CPPUNIT_ASSERT_EQUAL(true, testObj.versionInfo().isValid());
     }
-}
-
-void TestUpdateManager::testCurrentVersion() {
-    const std::string test = CommonUtility::currentVersion();
-#ifdef NDEBUG
-    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]\d{8}$)")));
-#else
-    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]0$)")));
-#endif
 }
 
 } // namespace KDC

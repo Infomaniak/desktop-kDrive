@@ -18,22 +18,43 @@
 
 #pragma once
 
+#include "updatechecker.h"
 #include "utility/types.h"
-
 
 #include <functional>
 
 namespace KDC {
 
-class AbstractNetworkJob;
-
 class AbstractUpdater {
     public:
-        AbstractUpdater() = default;
+        AbstractUpdater();
         virtual ~AbstractUpdater() = default;
 
-        virtual void onUpdateFound(const std::string &downloadUrl) = 0;
+        ExitCode checkUpdateAvailable(UniqueId *id = nullptr);
+        virtual void downloadUpdate() noexcept { /* Redefined in child class if necessary */ }
+        virtual void startInstaller() const { /* Redefined in child class if necessary */ }
+
+        /**
+         * @brief A new version is available on the server.
+         * On macOS : start Sparkle
+         * On Windows : download the installer package
+         * On Linux : notify the user
+         */
+        virtual void onUpdateFound() = 0;
         virtual void setQuitCallback(const std::function<void()> &quitCallback) { /* Redefined in child class if necessary */ }
+        void setStateChangeCallback(const std::function<void(UpdateStateV2)> &stateChangeCallback);
+
+        [[nodiscard]] const std::unique_ptr<UpdateChecker> &updateChecker() const { return _updateChecker; }
+
+    private:
+        std::unique_ptr<UpdateChecker> _updateChecker;
+
+        void onAppVersionReceived();
+
+        void setState(UpdateStateV2 newState);
+
+        UpdateStateV2 _state{UpdateStateV2::UpToDate}; // Current state of the update process.
+        std::function<void(UpdateStateV2)> _stateChangeCallback = nullptr;
 };
 
 } // namespace KDC

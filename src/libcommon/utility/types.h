@@ -444,6 +444,14 @@ struct VersionInfo {
             ss << tag << "." << buildVersion;
             return ss.str();
         }
+
+        void clear() {
+            tag.clear();
+            changeLog.clear();
+            buildVersion = 0;
+            buildMinOsVersion.clear();
+            downloadUrl.clear();
+        }
 };
 
 enum class SentryConfidentialityLevel {
