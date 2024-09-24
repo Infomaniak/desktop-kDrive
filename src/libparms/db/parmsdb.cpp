@@ -517,7 +517,7 @@ std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, 
                                            bool autoDelete /*= false*/, bool test /*= false*/) {
     if (_instance == nullptr) {
         if (dbPath.empty()) {
-            throw std::runtime_error("ParmsDb must be initialized!");
+            throw ParmsDbIsNotInitializedException();
         } else {
             _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, version, autoDelete, test));
         }

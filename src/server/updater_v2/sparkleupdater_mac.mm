@@ -16,17 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Sparkle/Sparkle.h>
-#include <Sparkle/SPUUpdaterDelegate.h>
+#include "sparkleupdater.h"
 
 #include "updatechecker.h"
 #include "common/utility.h"
 #include "libcommon/utility/utility.h"
-#include "sparkleupdater.h"
-#include "libcommonserver/log/log.h"
 #include "libparms/db/parmsdb.h"
 
+#include "libcommonserver/log/log.h"
 #include <log4cplus/loggingmacros.h>
+
+#include <Sparkle/Sparkle.h>
+#include <Sparkle/SPUUpdaterDelegate.h>
 
 // DelegateUpdaterObject class
 @interface DelegateUpdaterObject : NSObject <SPUUpdaterDelegate> {

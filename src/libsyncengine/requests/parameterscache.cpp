@@ -26,7 +26,7 @@ namespace KDC {
 
 std::shared_ptr<ParametersCache> ParametersCache::_instance = nullptr;
 
-std::shared_ptr<ParametersCache> ParametersCache::instance(bool isTest /*= false*/) {
+std::shared_ptr<ParametersCache> ParametersCache::instance(const bool isTest /*= false*/) {
     if (_instance == nullptr) {
         try {
             _instance = std::shared_ptr<ParametersCache>(new ParametersCache(isTest));
@@ -39,6 +39,13 @@ std::shared_ptr<ParametersCache> ParametersCache::instance(bool isTest /*= false
 }
 
 ParametersCache::ParametersCache(bool isTest /*= false*/) {
+    try {
+        ParmsDb::instance();
+    } catch (ParmsDb::ParmsDbIsNotInitializedException &) {
+        // ParmsDB is not initialized, behave as test
+        isTest = true;
+    }
+
     if (isTest) {
         // In test, use extended log by default
         _parameters.setExtendedLog(true);
@@ -57,7 +64,7 @@ ParametersCache::ParametersCache(bool isTest /*= false*/) {
     }
 }
 
-ExitCode ParametersCache::save() {
+ExitCode ParametersCache::save() const {
     // Get old parameters
     Parameters oldParameters;
     bool found = false;

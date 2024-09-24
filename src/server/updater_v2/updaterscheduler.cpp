@@ -20,7 +20,6 @@
 #include "updaterscheduler.h"
 
 #include "sparkleupdater.h"
-#include "updatechecker.h"
 #include "log/log.h"
 
 namespace KDC {

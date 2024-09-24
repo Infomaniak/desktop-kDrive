@@ -18,10 +18,12 @@ set(testserver_SRCS
     ${server_srcs_path}/updater/updateinfo.h ${server_srcs_path}/updater/updateinfo.cpp
     ${server_srcs_path}/updater/updaterserver.h ${server_srcs_path}/updater/updaterserver.cpp
     ${server_srcs_path}/updater_v2/updaterscheduler.h ${server_srcs_path}/updater_v2/updaterscheduler.cpp
+    ${server_srcs_path}/updater_v2/abstractupdater.h ${server_srcs_path}/updater_v2/abstractupdater.cpp
+    ${server_srcs_path}/updater_v2/updatechecker.h ${server_srcs_path}/updater_v2/updatechecker.cpp
     test.cpp
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdater.h updater/testupdater.cpp
-        updater/testupdatechecker.h updater/testupdatechecker.cpp
+    updater/testupdatechecker.h updater/testupdatechecker.cpp
 )
 
 if(APPLE)
