@@ -1654,45 +1654,41 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
     bool hasError = false;
     while (!_terminatedJobs.empty()) {
         // Delete all terminated jobs
-        if (!hasError && _ongoingJobs.find(_terminatedJobs.front()) != _ongoingJobs.end()) {
-            auto onGoingJobIt = _ongoingJobs.find(_terminatedJobs.front());
-            if (onGoingJobIt == _ongoingJobs.end()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Terminated job not found");
-                _terminatedJobs.pop();
-                continue;
-            }
+        if (hasError) {
+            _terminatedJobs.pop();
+            continue;
+        }
+        const auto frontJob = _terminatedJobs.front();
+        if (!frontJob) continue;
 
-            std::shared_ptr<AbstractJob> job = onGoingJobIt->second;
+        if (const auto onGoingJobIt = _ongoingJobs.find(*frontJob); onGoingJobIt != _ongoingJobs.end()) {
+            const std::shared_ptr<AbstractJob> job = onGoingJobIt->second;
 
-            auto jobToSyncOpIt = _jobToSyncOpMap.find(job->jobId());
+            const auto jobToSyncOpIt = _jobToSyncOpMap.find(job->jobId());
             if (jobToSyncOpIt == _jobToSyncOpMap.end()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Sync Operation not found");
+                LOG_SYNCPAL_WARN(_logger, "Sync Operation not found");
                 _ongoingJobs.erase(job->jobId());
                 _terminatedJobs.pop();
                 continue;
             }
 
             SyncOpPtr syncOp = jobToSyncOpIt->second;
-            SyncPath relativeLocalPath = syncOp->nodePath(ReplicaSide::Local);
+            const SyncPath relativeLocalPath = syncOp->nodePath(ReplicaSide::Local);
             if (!handleFinishedJob(job, syncOp, relativeLocalPath)) {
                 increaseErrorCount(syncOp);
                 hasError = true;
             }
 
-            if (!hasError) {
-                if (syncOp->affectedNode()->id().has_value()) {
-                    std::unordered_set<NodeId> whiteList;
-                    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-                    if (whiteList.find(syncOp->affectedNode()->id().value()) != whiteList.end()) {
-                        // This item has been synchronized, it can now be removed from white list
-                        whiteList.erase(syncOp->affectedNode()->id().value());
-                        SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-                    }
+            if (!hasError && syncOp->affectedNode()->id()) {
+                std::unordered_set<NodeId> whiteList;
+                SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
+                if (auto whiteListIt = whiteList.find(*syncOp->affectedNode()->id()); whiteListIt != whiteList.end()) {
+                    whiteList.erase(whiteListIt); // This item has been synchronized, so it can now be removed from white list.
+                    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
                 }
             }
 
-            // Delete job
-            _ongoingJobs.erase(_terminatedJobs.front());
+            _ongoingJobs.erase(*frontJob);
         }
         _terminatedJobs.pop();
     }
