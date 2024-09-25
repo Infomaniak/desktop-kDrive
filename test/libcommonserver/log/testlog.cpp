@@ -52,7 +52,7 @@ void TestLog::testLog() {
 void TestLog::testLargeLogRolling(void) {
     clearLogDirectory();
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
-    auto customRollingFileAppender = static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get());
+    auto *customRollingFileAppender = static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get());
 
     const int maxSize = 1024; // 1KB
     const int previousMaxSize = customRollingFileAppender->getMaxFileSize();
