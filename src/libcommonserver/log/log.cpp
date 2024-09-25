@@ -45,6 +45,7 @@ std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
             throw std::runtime_error("Log must be initialized!");
         } else {
             _instance = std::shared_ptr<Log>(new Log(filePath));
+            _instance->checkForExpiredFiles();
         }
     }
 
@@ -111,4 +112,10 @@ Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
 SyncPath Log::getLogFilePath() const {
     return _filePath;
 }
+
+void Log::checkForExpiredFiles() {
+    auto customRollingFileAppender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
+    customRollingFileAppender->checkForExpiredFiles();
+}
+
 } // namespace KDC

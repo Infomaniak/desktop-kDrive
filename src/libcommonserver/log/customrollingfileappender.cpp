@@ -175,7 +175,6 @@ CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::tstring &f
                                                      bool immediateFlush, bool createDirs) :
     RollingFileAppender(filename, LONG_MAX /*Let us handle a custom rollover*/, maxBackupIndex, immediateFlush, createDirs),
     _maxFileSize(maxFileSize), _lastExpireCheck() {
-    checkForExpiredFiles();
 }
 
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties) :
