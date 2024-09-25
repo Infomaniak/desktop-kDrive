@@ -57,7 +57,8 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
 ## QT 6.2.3
 
-From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), tick the **Archive** box to see earlier Qt versions.  
+From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
+tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
 In `QT 6.2.3`, select:
 - macOS
 - Sources
