@@ -114,7 +114,7 @@ SyncPath Log::getLogFilePath() const {
 }
 
 void Log::checkForExpiredFiles() {
-    auto customRollingFileAppender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
+    auto *customRollingFileAppender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
     customRollingFileAppender->checkForExpiredFiles();
 }
 
