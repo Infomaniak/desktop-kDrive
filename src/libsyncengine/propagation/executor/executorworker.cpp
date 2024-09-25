@@ -290,15 +290,17 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
 
             // Remove from update tree
             if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: affectedNode name="
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 hasError = true;
                 return;
             }
 
             if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                                   << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
+                std::wstring nodeName = syncOp->correspondingNode() ? SyncName2WStr(syncOp->correspondingNode()->name())
+                                                : L"[Error: correspondingNode is nullptr, afectedNode name was=" +
+                                                          SyncName2WStr(syncOp->affectedNode()->name()) + L"]";
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: correspondingNode name=" << nodeName.c_str());
                 hasError = true;
                 return;
             }
