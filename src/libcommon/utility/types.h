@@ -551,11 +551,6 @@ inline CustomLogWStream &operator<<(CustomLogWStream &os, C e) {
 }
 
 template<PrintableEnum C>
-inline CustomLogWStream &operator<<(CustomLogWStream &os, C e) {
-    return os << typesUtility::stringToWideString(toStringWithCode(e));
-}
-
-template<PrintableEnum C>
 inline QDebug &operator<<(QDebug &os, C e) {
     return os << toStringWithCode(e).c_str();
 }
