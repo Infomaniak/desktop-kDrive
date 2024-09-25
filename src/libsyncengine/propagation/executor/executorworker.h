@@ -59,7 +59,7 @@ class TerminatedJobsQueue {
 
     private:
         std::queue<UniqueId> _terminatedJobs;
-        std::mutex _mutex;
+        mutable std::mutex _mutex;
 };
 
 class ExecutorWorker : public OperationProcessor {
