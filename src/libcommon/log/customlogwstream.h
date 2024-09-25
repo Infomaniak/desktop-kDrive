@@ -26,6 +26,10 @@ class CustomLogWStream : private std::wstringstream {
         CustomLogWStream &operator=(const CustomLogWStream &) = delete;
 
         std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
+
+        template<class T>
+        CustomLogWStream &operator<<(T) = delete;
+
         CustomLogWStream &operator<<(const wchar_t *str) {
             // We need to cast to std::wstringstream as the operator<<(std::wstringstream, const wchar_t *str) is defined outside
             // of the class std::wstringstream and therefore it is not applicable to the current object because of the private
@@ -33,8 +37,28 @@ class CustomLogWStream : private std::wstringstream {
             static_cast<std::wstringstream &>(*this) << str;
             return *this;
         }
+        CustomLogWStream &operator<<(bool b) {
+            std::wstringstream::operator<<(b);
+            return *this;
+        }
         CustomLogWStream &operator<<(int i) {
             std::wstringstream::operator<<(i);
+            return *this;
+        }
+        CustomLogWStream &operator<<(int64_t i64) {
+            std::wstringstream::operator<<(i64);
+            return *this;
+        }
+        CustomLogWStream &operator<<(size_t si) {
+            std::wstringstream::operator<<(si);
+            return *this;
+        }
+        CustomLogWStream &operator<<(unsigned long ul) {
+            std::wstringstream::operator<<(ul);
+            return *this;
+        }
+        CustomLogWStream &operator<<(double d) {
+            std::wstringstream::operator<<(d);
             return *this;
         }
         CustomLogWStream &operator<<(const std::wstring &str) {
