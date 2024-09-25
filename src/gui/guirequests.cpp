@@ -1204,4 +1204,54 @@ ExitCode GuiRequests::checkCommStatus() {
     return exitCode;
 }
 
+ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo) {
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSIONINFO, QByteArray(), results)) {
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> versionInfo;
+    return exitCode;
+}
+
+ExitCode GuiRequests::updateState(UpdateStateV2 &state) {
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_STATE, QByteArray(), results)) {
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> state;
+    return exitCode;
+}
+
+ExitCode GuiRequests::startInstaller() {
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_STARTINSTALLER, QByteArray(), results)) {
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    return exitCode;
+}
+
+ExitCode GuiRequests::unskipUpdate() {
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::RECONSIDER_SKIPPED_UPDATE, QByteArray(), results)) {
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    return exitCode;
+}
+
 } // namespace KDC

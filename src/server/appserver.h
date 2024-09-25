@@ -44,6 +44,7 @@
 #include <QTimer>
 
 namespace KDC {
+class UpdateManager;
 
 class Theme;
 /**
@@ -119,6 +120,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
+
+        std::unique_ptr<UpdateManager> _updateManager;
 
         void parseOptions(const QStringList &);
         void initLogging() noexcept(false);

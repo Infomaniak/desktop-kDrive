@@ -61,8 +61,6 @@ static const int textHSpacing = 10;
 static const int amountLineEditWidth = 85;
 
 static const QString debuggingFolderLink = "debuggingFolderLink";
-static const QString versionLink = "versionLink";
-static const QString releaseNoteLink = "releaseNoteLink";
 
 static const QString englishCode = "en";
 static const QString frenchCode = "fr";
@@ -82,7 +80,6 @@ LargeFolderConfirmation::LargeFolderConfirmation(QBoxLayout *folderConfirmationB
     _label->setWordWrap(true);
     folderConfirmation1HBox->addWidget(_label);
     folderConfirmation1HBox->setStretchFactor(_label, 1);
-
 
     _switch->setLayoutDirection(Qt::RightToLeft);
     _switch->setAttribute(Qt::WA_MacShowFocusRect, false);
@@ -114,70 +111,6 @@ void LargeFolderConfirmation::retranslateUi() {
 
 void LargeFolderConfirmation::setAmountLineEditEnabled(bool enabled) {
     _amountLineEdit->setEnabled(enabled);
-}
-
-VersionWidget::VersionWidget(QBoxLayout *parentBox, const QString &versionNumberLabel) :
-    _versionLabel{new QLabel()}, _updateStatusLabel{new QLabel()}, _showReleaseNoteLabel{new QLabel()},
-    _versionNumberLabel{new QLabel(versionNumberLabel)}, _updateButton{new QPushButton()} {
-    _versionLabel->setObjectName("blocLabel");
-    parentBox->addWidget(_versionLabel);
-
-    auto versionBloc = new PreferencesBlocWidget();
-    parentBox->addWidget(versionBloc);
-    QBoxLayout *versionBox = versionBloc->addLayout(QBoxLayout::Direction::LeftToRight);
-    QVBoxLayout *versionVBox = new QVBoxLayout();
-    versionVBox->setContentsMargins(0, 0, 0, 0);
-    versionVBox->setSpacing(0);
-    versionBox->addLayout(versionVBox);
-    versionBox->setStretchFactor(versionVBox, 1);
-
-    // Status
-    _updateStatusLabel->setObjectName("boldTextLabel");
-    _updateStatusLabel->setWordWrap(true);
-    _updateStatusLabel->setVisible(false);
-    versionVBox->addWidget(_updateStatusLabel);
-
-    _showReleaseNoteLabel->setObjectName("boldTextLabel");
-    _showReleaseNoteLabel->setWordWrap(true);
-    _showReleaseNoteLabel->setVisible(false);
-    versionVBox->addWidget(_showReleaseNoteLabel);
-
-    _versionNumberLabel->setContextMenuPolicy(Qt::PreventContextMenu);
-    versionVBox->addWidget(_versionNumberLabel);
-
-    auto copyrightLabel = new QLabel(QString("Copyright %1").arg(APPLICATION_VENDOR));
-    copyrightLabel->setObjectName("description");
-    versionVBox->addWidget(copyrightLabel);
-
-    _updateButton->setObjectName("defaultbutton");
-    _updateButton->setFlat(true);
-    versionBox->addWidget(_updateButton);
-}
-
-void VersionWidget::updateStatus(QString status, bool updateAvailable, const QString &releaseNoteLinkText) {
-    if (status.isEmpty()) {
-        _updateStatusLabel->setVisible(false);
-        _showReleaseNoteLabel->setVisible(false);
-    } else {
-        _updateStatusLabel->setVisible(true);
-        _updateStatusLabel->setText(status);
-
-        if (updateAvailable) {
-            _showReleaseNoteLabel->setVisible(true);
-
-            _showReleaseNoteLabel->setText(releaseNoteLinkText);
-        }
-    }
-
-    _updateButton->setVisible(updateAvailable);
-}
-
-void VersionWidget::setVersionLabelText(const QString &text) {
-    _versionLabel->setText(text);
-}
-
-void VersionWidget::setUpdateButtonText(const QString &text) {
-    _updateButton->setText(text);
 }
 
 PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
@@ -238,7 +171,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
      *              _versionWidget->_updateButton
      */
 
-    QVBoxLayout *vBox = new QVBoxLayout();
+    auto *vBox = new QVBoxLayout();
     vBox->setContentsMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin);
     vBox->setSpacing(boxSpacing);
     setLayout(vBox);
@@ -415,9 +348,8 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 #endif
 
     // Version
-    static const QString versionNumberLinkText =
-            tr(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING);
-    _versionWidget = std::unique_ptr<VersionWidget>(new VersionWidget(vBox, versionNumberLinkText));
+    _versionWidget = new VersionWidget(this);
+    vBox->addWidget(_versionWidget);
 
     vBox->addStretch();
 
@@ -446,9 +378,11 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 #ifdef Q_OS_MAC
     connect(liteSyncWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onLiteSyncWidgetClicked);
 #endif
-    connect(_versionWidget->updateStatusLabel(), &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
-    connect(_versionWidget->showReleaseNoteLabel(), &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
-    connect(_versionWidget->versionNumberLabel(), &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
+
+    connect(_versionWidget, &VersionWidget::showAboutDialog, this, &PreferencesWidget::onShowAboutDialog);
+    connect(_versionWidget, &VersionWidget::showReleaseNote, this, &PreferencesWidget::onShowReleaseNote);
+    connect(_versionWidget, &VersionWidget::updateButtonClicked, this, &PreferencesWidget::onStartInstaller);
+
     connect(_displayErrorsWidget, &ActionWidget::clicked, this, &PreferencesWidget::displayErrors);
 }
 
@@ -458,9 +392,8 @@ void PreferencesWidget::showErrorBanner(bool unresolvedErrors) {
 
 void PreferencesWidget::showEvent(QShowEvent *event) {
     Q_UNUSED(event)
-
     retranslateUi();
-    onUpdateInfo();
+    refreshUpdateState();
 }
 
 void PreferencesWidget::clearUndecidedLists() {
@@ -476,12 +409,6 @@ void PreferencesWidget::clearUndecidedLists() {
         emit undecidedListsCleared();
         emit restartSync(syncInfoMapElt.first);
     }
-}
-
-void PreferencesWidget::updateStatus(QString status, bool updateAvailable) {
-    static const QString releaseNoteLinkText =
-            tr("<a style=\"%1\" href=\"%2\">Show release note</a>").arg(CommonUtility::linkStyle, releaseNoteLink);
-    _versionWidget->updateStatus(status, updateAvailable, releaseNoteLinkText);
 }
 
 void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
@@ -600,8 +527,8 @@ void PreferencesWidget::onLiteSyncWidgetClicked() {
 
 void PreferencesWidget::onLinkActivated(const QString &link) {
     if (link == debuggingFolderLink) {
-        QString debuggingFolderPath = KDC::Logger::instance()->temporaryFolderLogDirPath();
-        QUrl debuggingFolderUrl = KDC::GuiUtility::getUrlFromLocalPath(debuggingFolderPath);
+        const QString debuggingFolderPath = KDC::Logger::instance()->temporaryFolderLogDirPath();
+        const QUrl debuggingFolderUrl = KDC::GuiUtility::getUrlFromLocalPath(debuggingFolderPath);
         if (debuggingFolderUrl.isValid()) {
             if (!QDesktopServices::openUrl(debuggingFolderUrl)) {
                 qCWarning(lcPreferencesWidget) << "QDesktopServices::openUrl failed for " << debuggingFolderUrl.toString();
@@ -609,40 +536,6 @@ void PreferencesWidget::onLinkActivated(const QString &link) {
                                         QMessageBox::Ok, this);
                 msgBox.exec();
             }
-        }
-    } else if (link == versionLink) {
-        EnableStateHolder _(this);
-
-        AboutDialog dialog(this);
-        dialog.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
-    } else if (link == releaseNoteLink) {
-        QString version;
-        try {
-            version = UpdaterClient::instance()->version();
-        } catch (std::exception const &) {
-            return;
-        }
-
-        QString os;
-#ifdef Q_OS_MAC
-        os = ""; // In order to works with Sparkle, the URL must have the same name as the package. So do not add the os for macOS
-#endif
-
-#ifdef Q_OS_WIN
-        os = "-win";
-#endif
-
-#ifdef Q_OS_LINUX
-        os = "-linux";
-#endif
-
-        const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
-        const QString &languageCode = KDC::CommonUtility::languageCode(appLanguage);
-
-        if (KDC::CommonUtility::languageCodeIsEnglish(languageCode)) {
-            QDesktopServices::openUrl(QUrl(QString("%1-%2%3.html").arg(APPLICATION_STORAGE_URL, version, os)));
-        } else {
-            QDesktopServices::openUrl(QUrl(QString("%1-%2%3-%4.html").arg(APPLICATION_STORAGE_URL, version, os, languageCode)));
         }
     } else {
         // URL link
@@ -660,65 +553,98 @@ void PreferencesWidget::onLinkActivated(const QString &link) {
         }
     }
 }
-
-void PreferencesWidget::onUpdateInfo() {
-    // Note: the sparkle-updater is not an KDCUpdater
-    bool isKDCUpdater = false;
-    // try {
-    //     isKDCUpdater = UpdaterClient::instance()->isKDCUpdater();
-    // } catch (std::exception const &) {
-    //     return;
-    // }
-
-#if defined(Q_OS_MAC)
-    bool isSparkleUpdater = false;
-    // try {
-    //     isSparkleUpdater = UpdaterClient::instance()->isSparkleUpdater();
-    // } catch (std::exception const &) {
-    //     return;
-    // }
-#endif
-
-    QString statusString;
-    try {
-        statusString = UpdaterClient::instance()->statusString();
-    } catch (std::exception const &) {
-        return;
-    }
-
-    if (isKDCUpdater) {
-        bool downloadCompleted;
-        try {
-            downloadCompleted = UpdaterClient::instance()->downloadCompleted();
-        } catch (std::exception const &) {
-            return;
-        }
-
-        connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &PreferencesWidget::onUpdateInfo,
-                Qt::UniqueConnection);
-        connect(_versionWidget->updateButton(), &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller,
-                Qt::UniqueConnection);
-
-        updateStatus(statusString, downloadCompleted);
-    }
-#if defined(Q_OS_MAC)
-    else if (isSparkleUpdater) {
-        bool updateFound;
-        try {
-            updateFound = UpdaterClient::instance()->updateFound();
-        } catch (std::exception const &) {
-            return;
-        }
-
-        connect(_versionWidget->updateButton(), &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller,
-                Qt::UniqueConnection);
-
-        updateStatus(statusString, updateFound);
-    }
-#endif
+void PreferencesWidget::onShowAboutDialog() {
+    EnableStateHolder _(this);
+    AboutDialog dialog(this);
+    dialog.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
 }
 
+void PreferencesWidget::onShowReleaseNote() {
+    QString os;
+#ifdef Q_OS_MAC
+    os = ""; // In order to works with Sparkle, the URL must have the same name as the package. So do not add the os for macOS
+#endif
+
+#ifdef Q_OS_WIN
+    os = "-win";
+#endif
+
+#ifdef Q_OS_LINUX
+    os = "-linux";
+#endif
+
+    const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
+    const QString &languageCode = KDC::CommonUtility::languageCode(appLanguage);
+
+    if (CommonUtility::languageCodeIsEnglish(languageCode)) {
+        QDesktopServices::openUrl(
+                QUrl(QString("%1-%2%3.html").arg(APPLICATION_STORAGE_URL, CommonUtility::currentVersion().c_str(), os)));
+    } else {
+        QDesktopServices::openUrl(
+                QUrl(QString("%1-%2%3-%4.html")
+                             .arg(APPLICATION_STORAGE_URL, CommonUtility::currentVersion().c_str(), os, languageCode)));
+    }
+}
+
+// void PreferencesWidget::onUpdateInfo() {
+//     // Note: the sparkle-updater is not an KDCUpdater
+//     bool isKDCUpdater = false;
+//     // try {
+//     //     isKDCUpdater = UpdaterClient::instance()->isKDCUpdater();
+//     // } catch (std::exception const &) {
+//     //     return;
+//     // }
+//
+// #if defined(Q_OS_MAC)
+//     bool isSparkleUpdater = false;
+//     // try {
+//     //     isSparkleUpdater = UpdaterClient::instance()->isSparkleUpdater();
+//     // } catch (std::exception const &) {
+//     //     return;
+//     // }
+// #endif
+//
+//     QString statusString;
+//     try {
+//         statusString = UpdaterClient::instance()->statusString();
+//     } catch (std::exception const &) {
+//         return;
+//     }
+//
+//     if (isKDCUpdater) {
+//         bool downloadCompleted;
+//         try {
+//             downloadCompleted = UpdaterClient::instance()->downloadCompleted();
+//         } catch (std::exception const &) {
+//             return;
+//         }
+//
+//         connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &PreferencesWidget::onUpdateInfo,
+//                 Qt::UniqueConnection);
+//         connect(_versionWidget->updateButton(), &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller,
+//                 Qt::UniqueConnection);
+//
+//         updateStatus(statusString, downloadCompleted);
+//     }
+// #if defined(Q_OS_MAC)
+//     else if (isSparkleUpdater) {
+//         bool updateFound;
+//         try {
+//             updateFound = UpdaterClient::instance()->updateFound();
+//         } catch (std::exception const &) {
+//             return;
+//         }
+//
+//         connect(_versionWidget->updateButton(), &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller,
+//                 Qt::UniqueConnection);
+//
+//         updateStatus(statusString, updateFound);
+//     }
+// #endif
+// }
+
 void PreferencesWidget::onStartInstaller() {
+    // TODO : to be changed
     try {
         switch (UpdaterClient::instance()->updateState()) {
             case UpdateState::Ready:
@@ -772,54 +698,7 @@ void PreferencesWidget::retranslateUi() {
 #ifdef Q_OS_MAC
     _liteSyncLabel->setText(tr("Lite Sync"));
 #endif
-    _versionWidget->setVersionLabelText(tr("Version"));
-
-    bool isKDCUpdater = false;
-    // try {
-    //     isKDCUpdater = UpdaterClient::instance()->isKDCUpdater();
-    // } catch (std::exception const &) {
-    //     return;
-    // }
-
-#if defined(Q_OS_MAC)
-    bool isSparkleUpdater = false;
-    // try {
-    //     isSparkleUpdater = UpdaterClient::instance()->isSparkleUpdater();
-    // } catch (std::exception const &) {
-    //     return;
-    // }
-#endif
-
-    QString statusString;
-    try {
-        statusString = UpdaterClient::instance()->statusString();
-    } catch (std::exception const &) {
-        return;
-    }
-
-    if (isKDCUpdater) {
-        bool downloadCompleted;
-        try {
-            downloadCompleted = UpdaterClient::instance()->downloadCompleted();
-        } catch (std::exception const &) {
-            return;
-        }
-
-        updateStatus(statusString, downloadCompleted);
-    }
-#if defined(Q_OS_MAC)
-    else if (isSparkleUpdater) {
-        bool updateFound;
-        try {
-            updateFound = UpdaterClient::instance()->updateFound();
-        } catch (std::exception const &) {
-            return;
-        }
-
-        updateStatus(statusString, updateFound);
-    }
-#endif
-    _versionWidget->setUpdateButtonText(tr("UPDATE"));
+    _versionWidget->refresh();
 }
 
 } // namespace KDC

@@ -30,6 +30,9 @@ class AbstractUpdater {
         AbstractUpdater();
         virtual ~AbstractUpdater() = default;
 
+        [[nodiscard]] const VersionInfo &versionInfo() const { return _updateChecker->versionInfo(); }
+        [[nodiscard]] const UpdateStateV2 &state() const { return _state; }
+
         ExitCode checkUpdateAvailable(UniqueId *id = nullptr);
         virtual void downloadUpdate() noexcept { /* Redefined in child class if necessary */ }
         virtual void startInstaller() const { /* Redefined in child class if necessary */ }

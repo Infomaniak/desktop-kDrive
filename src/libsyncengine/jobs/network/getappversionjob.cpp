@@ -74,18 +74,10 @@ bool GetAppVersionJob::handleError(std::istream &is, const Poco::URI &uri) {
 }
 
 DistributionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) const {
-    if (val == versionTypeProdKey) {
-        return DistributionChannel::Prod;
-    }
-    if (val == versionTypeNextKey) {
-        return DistributionChannel::Next;
-    }
-    if (val == versionTypeBetaKey) {
-        return DistributionChannel::Beta;
-    }
-    if (val == versionTypeInternalKey) {
-        return DistributionChannel::Internal;
-    }
+    if (val == versionTypeProdKey) return DistributionChannel::Prod;
+    if (val == versionTypeNextKey) return DistributionChannel::Next;
+    if (val == versionTypeBetaKey) return DistributionChannel::Beta;
+    if (val == versionTypeInternalKey) return DistributionChannel::Internal;
     return DistributionChannel::Unknown;
 }
 

@@ -23,7 +23,7 @@
 
 namespace KDC {
 
-AbstractUpdater::AbstractUpdater() {
+AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_unique<UpdateChecker>()) {
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);
 }

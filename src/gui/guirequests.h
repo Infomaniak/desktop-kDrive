@@ -127,5 +127,10 @@ struct GuiRequests {
         static ExitCode sendLogToSupport(bool sendArchivedLogs);
         static ExitCode cancelLogUploadToSupport();
         static ExitCode crash();
+
+        static ExitCode versionInfo(VersionInfo &versionInfo);
+        static ExitCode updateState(UpdateStateV2 &state);
+        static ExitCode startInstaller();
+        static ExitCode unskipUpdate();
 };
 } // namespace KDC

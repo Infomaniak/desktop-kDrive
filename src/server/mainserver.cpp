@@ -173,6 +173,7 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+    // TODO : useful
     // If handleStartup returns true, main() needs to terminate here, e.g. because the updater is triggered
     // KDC::UpdaterServer *updater = KDC::UpdaterServer::instance();
     // if (updater && updater->handleStartup()) {

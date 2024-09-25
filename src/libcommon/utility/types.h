@@ -430,7 +430,7 @@ std::string toString(Platform e);
 
 struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
-        std::string changeLog; // List of changes in this version
+        std::string changeLog; // List of changes in this version       TODO : is it useful? Do not send it to the UI?
         std::uint64_t buildVersion = 0; // Example: 20240816
         std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
@@ -445,6 +445,12 @@ struct VersionInfo {
             return ss.str();
         }
 
+        [[nodiscard]] std::string beautifulVersion() const {
+            std::stringstream ss;
+            ss << tag << " (" << buildVersion << ")";
+            return ss.str();
+        }
+
         void clear() {
             tag.clear();
             changeLog.clear();
@@ -453,6 +459,24 @@ struct VersionInfo {
             downloadUrl.clear();
         }
 };
+
+inline QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
+    QString tmpTag;
+    QString tmpChangeLog;
+    QString tmpBuildMinOsVersion;
+    QString tmpDownloadUrl;
+    in >> tmpTag >> tmpChangeLog >> versionInfo.buildVersion >> tmpBuildMinOsVersion >> tmpDownloadUrl;
+    versionInfo.tag = tmpTag.toStdString();
+    versionInfo.changeLog = tmpChangeLog.toStdString();
+    versionInfo.buildMinOsVersion = tmpBuildMinOsVersion.toStdString();
+    versionInfo.downloadUrl = tmpDownloadUrl.toStdString();
+    return in;
+}
+inline QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
+    out << versionInfo.tag.c_str() << versionInfo.changeLog.c_str() << versionInfo.buildVersion
+        << versionInfo.buildMinOsVersion.c_str() << versionInfo.downloadUrl.c_str();
+    return out;
+}
 
 enum class SentryConfidentialityLevel {
     Anonymous, // The sentry will not be able to identify the user (no ip, no email, no username, ...)

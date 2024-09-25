@@ -43,7 +43,7 @@ class GetAppVersionJob : public AbstractNetworkJob {
 
         [[nodiscard]] DistributionChannel toDistributionChannel(const std::string &val) const;
 
-        const Platform _platform;
+        const Platform _platform{Platform::Unknown};
         const std::string _appId;
 
         std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;

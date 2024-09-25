@@ -112,15 +112,9 @@ enum class RequestNum {
     UTILITY_SEND_LOG_TO_SUPPORT,
     UTILITY_CANCEL_LOG_TO_SUPPORT,
     UTILITY_GET_LOG_ESTIMATED_SIZE,
-    UPDATER_VERSION,
-    // UPDATER_ISKDCUPDATER,
-    // UPDATER_ISSPARKLEUPDATER,
-    UPDATER_STATUSSTRING,
-    UPDATER_STATUS,
-    UPDATER_DOWNLOADCOMPLETED,
-    UPDATER_UPDATEFOUND,
+    UPDATER_VERSIONINFO,
+    UPDATER_STATE,
     UPDATER_STARTINSTALLER,
-    UPDATER_UPDATE_DIALOG_RESULT,
     RECONSIDER_SKIPPED_UPDATE,
     UTILITY_CRASH,
     UTILITY_QUIT,
@@ -265,24 +259,12 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
             return "UTILITY_GET_LOG_ESTIMATED_SIZE";
-        case RequestNum::UPDATER_VERSION:
+        case RequestNum::UPDATER_VERSIONINFO:
             return "UPDATER_VERSION";
-        // case RequestNum::UPDATER_ISKDCUPDATER:
-        //     return "UPDATER_ISKDCUPDATER";
-        // case RequestNum::UPDATER_ISSPARKLEUPDATER:
-        //     return "UPDATER_ISSPARKLEUPDATER";
-        case RequestNum::UPDATER_STATUSSTRING:
-            return "UPDATER_STATUSSTRING";
-        case RequestNum::UPDATER_STATUS:
+        case RequestNum::UPDATER_STATE:
             return "UPDATER_STATUS";
-        case RequestNum::UPDATER_DOWNLOADCOMPLETED:
-            return "UPDATER_DOWNLOADCOMPLETED";
-        case RequestNum::UPDATER_UPDATEFOUND:
-            return "UPDATER_UPDATEFOUND";
         case RequestNum::UPDATER_STARTINSTALLER:
             return "UPDATER_STARTINSTALLER";
-        case RequestNum::UPDATER_UPDATE_DIALOG_RESULT:
-            return "UPDATER_UPDATE_DIALOG_RESULT";
         case RequestNum::RECONSIDER_SKIPPED_UPDATE:
             return "RECONSIDER_SKIPPED_UPDATE";
         case RequestNum::UTILITY_CRASH:

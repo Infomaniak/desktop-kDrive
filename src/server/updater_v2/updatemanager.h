@@ -36,10 +36,17 @@
 
 namespace KDC {
 
-class UpdaterScheduler final : public QObject {
+class UpdateManager final : public QObject {
         Q_OBJECT
     public:
-        explicit UpdaterScheduler(QObject *parent);
+        explicit UpdateManager(QObject *parent);
+
+        [[nodiscard]] const VersionInfo &versionInfo() const { return _updater->versionInfo(); }
+        [[nodiscard]] const UpdateStateV2 &state() const { return _updater->state(); }
+
+        void startInstaller() const { _updater->startInstaller(); }
+
+        void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
     signals:
         void updaterAnnouncement(const QString &title, const QString &msg);

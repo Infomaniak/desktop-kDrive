@@ -55,7 +55,7 @@
 #include <windows.h>
 #endif
 
-#include "updater_v2/updaterscheduler.h"
+#include "updater_v2/updatemanager.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -276,15 +276,13 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-#ifdef Q_OS_MACOS
-        // TODO
-        // const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
-        // UpdateManager::instance()->setQuitCallback(quitCallback);
-#endif
-
     // Update checks
-    auto updaterScheduler = new UpdaterScheduler(this);
-    connect(updaterScheduler, &UpdaterScheduler::requestRestart, this, &AppServer::onScheduleAppRestart);
+    _updateManager = std::make_unique<UpdateManager>(this);
+    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
+#ifdef Q_OS_MACOS
+    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    _updateManager->setQuitCallback(quitCallback);
+#endif
 
 #ifdef Q_OS_WIN
     connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
@@ -1949,66 +1947,22 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::UPDATER_VERSION: {
-            QString version = UpdaterServer::instance()->version();
-
-            resultStream << version;
+        case RequestNum::UPDATER_VERSIONINFO: {
+            VersionInfo versionInfo = _updateManager->versionInfo();
+            resultStream << versionInfo;
             break;
         }
-        // case RequestNum::UPDATER_ISKDCUPDATER: {
-        //     bool ret = UpdaterServer::instance()->isKDCUpdater();
-        //
-        //     resultStream << ret;
-        //     break;
-        // }
-        // case RequestNum::UPDATER_ISSPARKLEUPDATER: {
-        //     bool ret = UpdaterServer::instance()->isSparkleUpdater();
-        //
-        //     resultStream << ret;
-        //     break;
-        // }
-        case RequestNum::UPDATER_STATUSSTRING: {
-            QString status = "To be implemented"; // UpdaterServer::instance()->statusString();
-
+        case RequestNum::UPDATER_STATE: {
+            UpdateStateV2 status = _updateManager->state();
             resultStream << status;
-            break;
-        }
-        case RequestNum::UPDATER_STATUS: {
-            UpdateState status = UpdateState::None; // UpdaterServer::instance()->updateState();
-            resultStream << status;
-            break;
-        }
-        case RequestNum::UPDATER_DOWNLOADCOMPLETED: {
-            bool ret = false; // UpdaterServer::instance()->downloadCompleted();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_UPDATEFOUND: {
-            bool ret = false; // UpdaterServer::instance()->updateFound();
-
-            resultStream << ret;
             break;
         }
         case RequestNum::UPDATER_STARTINSTALLER: {
-            // UpdaterServer::instance()->startInstaller();
-            break;
-        }
-        case RequestNum::UPDATER_UPDATE_DIALOG_RESULT: {
-            bool skip;
-            QDataStream paramsStream(params);
-            paramsStream >> skip;
-
-            // NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            // if (skip) {
-            //     updater->wipeUpdateData();
-            //     updater->slotSetSeenVersion();
-            // } else {
-            //     updater->slotStartInstaller();
-            // }
+            _updateManager->startInstaller();
             break;
         }
         case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
+            // TODO : Manage seen version
             // NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
             // updater->slotUnsetSeenVersion();
             break;

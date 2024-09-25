@@ -735,6 +735,8 @@ std::string toString(const UpdateStateV2 e) {
     switch (e) {
         case UpdateStateV2::UpToDate:
             return "UpToDate";
+        case UpdateStateV2::Checking:
+            return "Checking";
         case UpdateStateV2::Available:
             return "Available";
         case UpdateStateV2::Downloading:
