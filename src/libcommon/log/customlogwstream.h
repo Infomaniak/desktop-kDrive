@@ -33,13 +33,18 @@ class CustomLogWStream : private std::wstringstream {
         template<NotPointer T>
         CustomLogWStream &operator<<(T) = delete;
 
+        // We need to cast to std::wstringstream as operators<<(std::wstringstream, const wchar_t *str /*and const std::wstring &str*/) are defined outside
+        // of the class std::wstringstream and therefore it is not applicable to the current object because of the private
+        // inheritance
         CustomLogWStream &operator<<(const wchar_t *str) {
-            // We need to cast to std::wstringstream as the operator<<(std::wstringstream, const wchar_t *str) is defined outside
-            // of the class std::wstringstream and therefore it is not applicable to the current object because of the private
-            // inheritance
             static_cast<std::wstringstream &>(*this) << str;
             return *this;
         }
+        CustomLogWStream &operator<<(const std::wstring &str) {
+            static_cast<std::wstringstream &>(*this) << str;
+            return *this;
+        }
+
         CustomLogWStream &operator<<(bool b) {
             std::wstringstream::operator<<(b);
             return *this;
@@ -62,10 +67,6 @@ class CustomLogWStream : private std::wstringstream {
         }
         CustomLogWStream &operator<<(double d) {
             std::wstringstream::operator<<(d);
-            return *this;
-        }
-        CustomLogWStream &operator<<(const std::wstring &str) {
-            CustomLogWStream::operator<<(str.c_str());
             return *this;
         }
         CustomLogWStream &operator<<(const QIODevice *ptr) {
