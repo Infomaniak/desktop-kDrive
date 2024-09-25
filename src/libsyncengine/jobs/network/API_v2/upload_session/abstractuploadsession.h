@@ -20,6 +20,7 @@
 
 #include "jobs/abstractjob.h"
 #include "utility/types.h"
+#include "libcommon/utility/threadsafecontainers/unorderedmapts.h"
 #include "db/syncdb.h"
 #include "uploadsessionchunkjob.h"
 #include "uploadsessionfinishjob.h"
@@ -27,7 +28,6 @@
 #include "uploadsessioncanceljob.h"
 #include <log4cplus/logger.h>
 
-#include <unordered_map>
 
 namespace KDC {
 
@@ -36,7 +36,7 @@ class UploadSessionChunkJob;
 class AbstractUploadSession : public AbstractJob {
     public:
         AbstractUploadSession(const SyncPath &filepath, const SyncName &filename, uint64_t nbParalleleThread = 1);
-        inline virtual ~AbstractUploadSession() = default;
+        inline ~AbstractUploadSession() override = default;
         void uploadChunkCallback(UniqueId jobId);
         void abort() override;
         UploadSessionType _uploadSessionType = UploadSessionType::Unknown;
@@ -97,7 +97,7 @@ class AbstractUploadSession : public AbstractJob {
         uint64_t _totalChunks = 0;
         std::string _totalChunkHash; // This is not a content checksum. It is the hash of all the chunk hash concatenated
 
-        std::unordered_map<UniqueId, std::shared_ptr<UploadSessionChunkJob>> _ongoingChunkJobs;
+        UnorderedMapTS<UniqueId, std::shared_ptr<UploadSessionChunkJob>> _ongoingChunkJobs;
         uint64_t _threadCounter = 0; // Number of running
 
         std::recursive_mutex _mutex;

@@ -120,17 +120,18 @@ void AbstractUploadSession::runJob() {
 
 void AbstractUploadSession::uploadChunkCallback(UniqueId jobId) {
     const std::scoped_lock lock(_mutex);
-    auto jobInfo = _ongoingChunkJobs.extract(jobId);
-    if (!jobInfo.empty() && jobInfo.mapped()) {
-        if (jobInfo.mapped()->hasHttpError() || jobInfo.mapped()->exitCode() != ExitCode::Ok) {
+    bool found = false;
+    auto jobInfo = _ongoingChunkJobs.extract(jobId, found);
+    if (found && jobInfo) {
+        if (jobInfo->hasHttpError() || jobInfo->exitCode() != ExitCode::Ok) {
             LOGW_WARN(_logger, L"Failed to upload chunk " << jobId << L" of file " << Path2WStr(_filePath.filename()).c_str());
-            _exitCode = jobInfo.mapped()->exitCode();
-            _exitCause = jobInfo.mapped()->exitCause();
+            _exitCode = jobInfo->exitCode();
+            _exitCause = jobInfo->exitCause();
             _jobExecutionError = true;
         }
 
         _threadCounter--;
-        addProgress(jobInfo.mapped()->chunkSize());
+        addProgress(jobInfo->chunkSize());
         LOG_INFO(_logger,
                  "Session " << _sessionToken.c_str() << ", thread " << jobId << " finished. " << _threadCounter << " running");
     }
@@ -447,12 +448,14 @@ bool AbstractUploadSession::cancelSession() {
     // Cancel all ongoing chunk jobs
     {
         const std::scoped_lock lock(_mutex);
-        for (auto &[jobId, job]: _ongoingChunkJobs) {
-            if (job.get() && job->sessionToken() == _sessionToken) {
+        auto const &ongoingChunkJobsExclusive = _ongoingChunkJobs.getRawReference(std::this_thread::get_id());
+        for (auto &[jobId, job]: ongoingChunkJobsExclusive) {
+            if (job.get() && !job->isAborted() && job->sessionToken() == _sessionToken) {
                 LOG_INFO(_logger, "Aborting chunk job " << jobId);
                 job->abort();
             }
         }
+        _ongoingChunkJobs.releaseOneRawReference(std::this_thread::get_id());
     }
 
     try {
