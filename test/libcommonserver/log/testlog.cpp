@@ -91,11 +91,13 @@ void TestLog::testExpiredLogFiles(void) {
     appender->setExpire(2); // 1 seconds
     Utility::msleep(1000);
     appender->checkForExpiredFiles();
+    LOG_INFO(_logger, "Test log file expiration"); // Ensure the current log file is not older than 2 seconds
     CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); // The fake log file should not be deleted (< 2 seconds)
 
     Utility::msleep(1000);
     appender->checkForExpiredFiles();
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file should be deleted
+    appender->setExpire(CommonUtility::logsPurgeRate * 24 * 3600); 
 }
 
 int TestLog::countFilesInDirectory(const SyncPath &directory) const {
