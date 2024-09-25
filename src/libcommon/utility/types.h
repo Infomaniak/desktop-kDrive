@@ -546,7 +546,12 @@ inline std::ostream &operator<<(std::ostream &os, C e) {
 }
 
 template<PrintableEnum C>
-inline CustomLogWStream &operator<<(CustomLogWStream &os, const C &e) {
+inline CustomLogWStream &operator<<(CustomLogWStream &os, C e) {
+    return os << typesUtility::stringToWideString(toStringWithCode(e));
+}
+
+template<PrintableEnum C>
+inline CustomLogWStream &operator<<(CustomLogWStream &os, C e) {
     return os << typesUtility::stringToWideString(toStringWithCode(e));
 }
 

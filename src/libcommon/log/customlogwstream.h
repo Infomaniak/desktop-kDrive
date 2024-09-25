@@ -19,9 +19,6 @@
 #include <sstream>
 #include "libcommon/utility/types.h"
 
-template<class C> // Any type that is not a pointer or present operator->()
-concept NotPointer = !std::is_pointer_v<C> && !requires(C c) { c.operator->(); };
-
 class CustomLogWStream : private std::wstringstream {
     public:
         CustomLogWStream() = default;
@@ -29,9 +26,6 @@ class CustomLogWStream : private std::wstringstream {
         CustomLogWStream &operator=(const CustomLogWStream &) = delete;
 
         std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
-
-        template<NotPointer T>
-        CustomLogWStream &operator<<(T) = delete;
 
         // We need to cast to std::wstringstream as operators<<(std::wstringstream, const wchar_t *str /*and const std::wstring
         // &str*/) are defined outside of the class std::wstringstream and therefore it is not applicable to the current object
