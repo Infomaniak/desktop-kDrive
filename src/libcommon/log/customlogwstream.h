@@ -47,16 +47,20 @@ class CustomLogWStream : private std::wstringstream {
             std::wstringstream::operator<<(i);
             return *this;
         }
-        CustomLogWStream &operator<<(int64_t i64) {
+        CustomLogWStream &operator<<(long i64) {
             std::wstringstream::operator<<(i64);
             return *this;
         }
-        CustomLogWStream &operator<<(uint64_t i64) {
+        CustomLogWStream &operator<<(long long i64) {
             std::wstringstream::operator<<(i64);
             return *this;
         }
         CustomLogWStream &operator<<(unsigned long ul) {
             std::wstringstream::operator<<(ul);
+            return *this;
+        }
+        CustomLogWStream &operator<<(unsigned long long ui64) {
+            std::wstringstream::operator<<(ui64);
             return *this;
         }
         CustomLogWStream &operator<<(double d) {
