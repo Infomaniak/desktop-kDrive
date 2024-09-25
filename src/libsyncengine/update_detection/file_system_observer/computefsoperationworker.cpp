@@ -885,7 +885,9 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<co
             deleteChildOpRecursively(remoteSnapshot, childId, tmpTooBigList);
         }
         _syncPal->_remoteOperationSet->removeOp(remoteNodeId, OperationType::Create);
-        tmpTooBigList.erase(childId);
+        if (tmpTooBigList.contains(childId)) {
+            tmpTooBigList.erase(childId);
+        }
     }
 }
 

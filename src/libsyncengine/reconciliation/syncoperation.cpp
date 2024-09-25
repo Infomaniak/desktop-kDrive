@@ -76,15 +76,19 @@ void SyncOperationList::deleteOp(std::list<UniqueId>::const_iterator it) {
     SyncOpPtr syncOp = getOp(opId);
     if (syncOp != nullptr) {
         OperationType type = syncOp->type();
-        _opListByType[type].erase(opId);
+        if (_opListByType[type].contains(opId)) {
+            _opListByType[type].erase(opId);
+        }
         if (syncOp->affectedNode()) {
             auto nodeId = syncOp->affectedNode()->id();
-            if (nodeId.has_value()) {
+            if (nodeId.has_value() && _node2op.contains(*nodeId)) {
                 _node2op.erase(*nodeId);
             }
         }
     }
-    _allOps.erase(opId);
+    if (_allOps.contains(opId)) {
+        _allOps.erase(opId);
+    }
     _opSortedList.erase(it);
 }
 

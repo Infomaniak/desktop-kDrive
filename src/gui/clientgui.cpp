@@ -1293,7 +1293,9 @@ void ClientGui::onSyncDeletionFailed(int syncDbId) {
 
 void ClientGui::onSyncRemoved(int syncDbId) {
     // Erase sync
-    _syncInfoMap.erase(syncDbId);
+    if (_syncInfoMap.contains(syncDbId)) {
+        _syncInfoMap.erase(syncDbId);
+    }
 
     emit syncListRefreshed();
     emit refreshStatusNeeded();

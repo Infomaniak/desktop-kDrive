@@ -143,7 +143,7 @@ bool Snapshot::removeItem(const NodeId &id) {
         parentIt->second.removeChildren(id);
     }
 
-    _items.erase(id);
+    _items.erase(it);
 
     if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(Log::instance()->getLogger(), "Item " << id.c_str() << " removed from " << _side << " snapshot.");
@@ -490,7 +490,9 @@ void Snapshot::removeChildrenRecursively(const NodeId &parentId) {
 
     for (const NodeId &childId: parentIt->second.childrenIds()) {
         removeChildrenRecursively(childId);
-        _items.erase(childId);
+        if (_items.contains(childId)) {
+            _items.erase(childId);
+        }
     }
 }
 

@@ -124,7 +124,7 @@ size_t Node::deleteChildren(std::shared_ptr<Node> child) {
 }
 
 size_t Node::deleteChildren(const NodeId &childId) {
-    return _childrenById.erase(childId);
+    return _childrenById.contains(childId) ? _childrenById.erase(childId) : 0;
 }
 
 bool Node::isEditFromDeleteCreate() const {

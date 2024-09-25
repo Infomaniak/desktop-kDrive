@@ -437,10 +437,14 @@ void AppServer::stopSyncTask(int syncDbId) {
     }
 
     ASSERT(_syncPalMap[syncDbId].use_count() == 1)
-    _syncPalMap.erase(syncDbId);
+    if (_syncPalMap.contains(syncDbId)) {
+        _syncPalMap.erase(syncDbId);
+    }
 
     ASSERT(_vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
-    _vfsMap.erase(syncDbId);
+    if (_vfsMap.contains(syncDbId)) {
+        _vfsMap.erase(syncDbId);
+    }
 }
 
 void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
@@ -1132,10 +1136,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     }
 
                     ASSERT(_syncPalMap[syncInfo.dbId()].use_count() == 1)
-                    _syncPalMap.erase(syncInfo.dbId());
+                    if (_syncPalMap.contains(syncInfo.dbId())) {
+                        _syncPalMap.erase(syncInfo.dbId());
+                    }
 
                     ASSERT(_vfsMap[syncInfo.dbId()].use_count() == 1)
-                    _vfsMap.erase(syncInfo.dbId());
+                    if (_vfsMap.contains(syncInfo.dbId())) {
+                        _vfsMap.erase(syncInfo.dbId());
+                    }
 
                     // Delete sync from DB
                     exitCode = ServerRequests::deleteSync(syncInfo.dbId());
@@ -3836,7 +3844,9 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         }
 
         // Delete previous vfs
-        _vfsMap.erase(syncDbId);
+        if (_vfsMap.contains(syncDbId)) {
+            _vfsMap.erase(syncDbId);
+        }
 
         tryCreateAndStartVfs(sync);
 

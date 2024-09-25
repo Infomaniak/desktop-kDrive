@@ -127,8 +127,12 @@ void JobManager::decreasePoolCapacity() {
 
 void JobManager::defaultCallback(UniqueId jobId) {
     const std::scoped_lock lock(_mutex);
-    _managedJobs.erase(jobId);
-    _runningJobs.erase(jobId);
+    if (_managedJobs.contains(jobId)) {
+        _managedJobs.erase(jobId);
+    }
+    if (_runningJobs.contains(jobId)) {
+        _runningJobs.erase(jobId);
+    }
 }
 
 JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
@@ -202,14 +206,18 @@ void JobManager::run() noexcept {
 void JobManager::startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> nextJob) {
     const std::scoped_lock lock(_mutex);
     try {
+        UniqueId jobId = nextJob.first->jobId();
         if (nextJob.first->isAborted()) {
-            LOG_DEBUG(Log::instance()->getLogger(), "Job " << nextJob.first->jobId() << " has been canceled");
-            _managedJobs.erase(nextJob.first->jobId());
+            LOG_DEBUG(Log::instance()->getLogger(), "Job " << jobId << " has been canceled");
+            if (_managedJobs.contains(jobId)) {
+                _managedJobs.erase(jobId);
+            }
         } else {
-            LOG_DEBUG(Log::instance()->getLogger(),
-                      "Starting job " << nextJob.first->jobId() << " with priority " << nextJob.second);
+            LOG_DEBUG(Log::instance()->getLogger(), "Starting job " << jobId << " with priority " << nextJob.second);
             Poco::ThreadPool::defaultPool().startWithPriority(nextJob.second, *nextJob.first);
-            _runningJobs.insert(nextJob.first->jobId());
+            if (_runningJobs.contains(jobId)) {
+                _runningJobs.insert(jobId);
+            }
         }
     } catch (Poco::NoThreadAvailableException &) {
         LOG_DEBUG(Log::instance()->getLogger(), "No more thread available, job " << nextJob.first->jobId() << " queued");
@@ -293,7 +301,9 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
         if (const auto &job = item.second.first; canRun(job, uploadSessionCount)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completly from job manager
-                _managedJobs.erase(item.first);
+                if (_managedJobs.contains(item.first)) {
+                    _managedJobs.erase(item.first);
+                }
             } else {
                 if (job->hasParentJob()) {
                     LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->parentJobId() << " has finished, queuing child job "

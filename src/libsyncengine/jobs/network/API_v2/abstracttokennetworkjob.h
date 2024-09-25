@@ -43,8 +43,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         static void updateLoginByUserDbId(const Login &login, int userDbId);
 
-        inline static void clearCacheForUser(int userDbId) { _userToApiKeyMap.erase(userDbId); }
-        inline static void clearCacheForDrive(int driveDbId) { _driveToApiKeyMap.erase(driveDbId); }
+        static void clearCacheForUser(int userDbId);
+        static void clearCacheForDrive(int driveDbId);
 
         bool refreshToken();
         long tokenUpdateDurationFromNow();

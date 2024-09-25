@@ -466,7 +466,9 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
                 }
             }
         }
-        moveOps2.erase(moveOpId);
+        if (moveOps2.contains(moveOpId)) {
+            moveOps2.erase(moveOpId);
+        }
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveOccupied");
 }

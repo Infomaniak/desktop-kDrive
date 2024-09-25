@@ -97,6 +97,18 @@ void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, int user
     }
 }
 
+void AbstractTokenNetworkJob::clearCacheForUser(int userDbId) {
+    if (_userToApiKeyMap.contains(userDbId)) {
+        _userToApiKeyMap.erase(userDbId);
+    }
+}
+
+void AbstractTokenNetworkJob::clearCacheForDrive(int driveDbId) {
+    if (_driveToApiKeyMap.contains(driveDbId)) {
+        _driveToApiKeyMap.erase(driveDbId);
+    }
+}
+
 std::string AbstractTokenNetworkJob::getSpecificUrl() {
     std::string str;
     switch (_apiType) {

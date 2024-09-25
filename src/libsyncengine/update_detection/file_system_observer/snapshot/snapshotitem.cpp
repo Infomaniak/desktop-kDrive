@@ -62,7 +62,9 @@ void SnapshotItem::addChildren(const NodeId &id) {
 }
 
 void SnapshotItem::removeChildren(const NodeId &id) {
-    _childrenIds.erase(id);
+    if (_childrenIds.contains(id)) {
+        _childrenIds.erase(id);
+    }
 }
 
 } // namespace KDC

@@ -399,7 +399,7 @@ SyncStep SyncPalWorker::nextStep() const {
                            : SyncStep::Idle;
             break;
         case SyncStep::UpdateDetection1: {
-            auto logNbOps = [=](const ReplicaSide side) {
+            auto logNbOps = [this](const ReplicaSide side) {
                 auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->nbOps()
                                                    << " " << side << " operations detected (# CREATE: "

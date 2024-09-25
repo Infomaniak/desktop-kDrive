@@ -135,7 +135,7 @@ void ProgressInfo::setProgressComplete(const SyncPath &path, SyncFileStatus stat
 
     it->second.pop();
     if (it->second.empty()) {
-        _currentItems.erase(path);
+        _currentItems.erase(it);
     }
     recomputeCompletedSize();
 }
