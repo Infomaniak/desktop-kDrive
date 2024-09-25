@@ -48,8 +48,14 @@ class TerminatedJobsQueue {
             const std::scoped_lock lock(_mutex);
             _terminatedJobs.pop();
         }
-        [[nodiscard]] UniqueId front() const { return _terminatedJobs.front(); }
-        [[nodiscard]] bool empty() const { return _terminatedJobs.empty(); }
+        [[nodiscard]] UniqueId front() const {
+            const std::scoped_lock lock(_mutex);
+            return _terminatedJobs.front();
+        }
+        [[nodiscard]] bool empty() const {
+            const std::scoped_lock lock(_mutex);
+            return _terminatedJobs.empty();
+        }
 
     private:
         std::queue<UniqueId> _terminatedJobs;
