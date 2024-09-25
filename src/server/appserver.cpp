@@ -330,7 +330,7 @@ AppServer::AppServer(int &argc, char **argv) :
     }
 
     // Start syncs
-    QTimer::singleShot(0, [=]() { startSyncPals(); });
+    QTimer::singleShot(0, [this]() { startSyncPals(); });
 
     // Check if a log Upload has been interrupted
     AppStateValue appStateValue = LogUploadState::None;
@@ -994,7 +994,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << ExitCode::Ok;
 
-            QTimer::singleShot(100, [=]() {
+            QTimer::singleShot(100, [this, syncDbId]() {
                 // Stop SyncPal
                 ExitCode exitCode = stopSyncPal(syncDbId, true);
                 if (exitCode != ExitCode::Ok) {
@@ -1100,7 +1100,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 resultStream << syncInfo.dbId();
             }
 
-            QTimer::singleShot(100, this, [=]() {
+            QTimer::singleShot(100, this, [this, syncInfo, blackList, whiteList]() {
                 Sync sync;
                 ServerRequests::syncInfoToSync(syncInfo, sync);
 
@@ -1187,7 +1187,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 resultStream << syncInfo.dbId();
             }
 
-            QTimer::singleShot(100, this, [=]() {
+            QTimer::singleShot(100, this, [this, syncInfo, blackList, whiteList]() {
                 Sync sync;
                 ServerRequests::syncInfoToSync(syncInfo, sync);
 
@@ -1600,7 +1600,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE: {
             resultStream << ExitCode::Ok;
 
-            QTimer::singleShot(100, [=]() {
+            QTimer::singleShot(100, [this]() {
                 for (auto &syncPalMapElt: _syncPalMap) {
                     if (_socketApi) {
                         _socketApi->unregisterSync(syncPalMapElt.second->syncDbId());
@@ -2049,7 +2049,7 @@ void AppServer::startSyncPals() {
         ExitCode exitCode = startSyncs(exitCause);
         if (exitCode != ExitCode::Ok) {
             if (exitCode == ExitCode::SystemError && exitCause == ExitCause::Unknown) {
-                QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=]() { startSyncPals(); });
+                QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [this]() { startSyncPals(); });
             }
         }
     }
@@ -2070,7 +2070,7 @@ ExitCode AppServer::clearErrors(int syncDbId, bool autoResolved /*= false*/) {
     }
 
     if (exitCode == ExitCode::Ok) {
-        QTimer::singleShot(100, [=]() { sendErrorsCleared(syncDbId); });
+        QTimer::singleShot(100, [this, syncDbId]() { sendErrorsCleared(syncDbId); });
     }
 
     return exitCode;
@@ -3840,7 +3840,7 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 
         tryCreateAndStartVfs(sync);
 
-        QTimer::singleShot(100, this, [=]() {
+        QTimer::singleShot(100, this, [this, newMode, sync, syncDbId]() {
             bool ok = true;
 
             if (newMode != VirtualFileMode::Off) {
