@@ -57,6 +57,10 @@ class CustomLogWStream : private std::wstringstream {
             std::wstringstream::operator<<(i64);
             return *this;
         }
+        CustomLogWStream &operator<<(uint64_t i64) {
+            std::wstringstream::operator<<(i64);
+            return *this;
+        }
 #ifdef WIN32 // On MacOS and Linux, size_t is unsigned long
         CustomLogWStream &operator<<(size_t si) {
             std::wstringstream::operator<<(si);
