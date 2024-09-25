@@ -215,9 +215,7 @@ void JobManager::startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::
         } else {
             LOG_DEBUG(Log::instance()->getLogger(), "Starting job " << jobId << " with priority " << nextJob.second);
             Poco::ThreadPool::defaultPool().startWithPriority(nextJob.second, *nextJob.first);
-            if (_runningJobs.contains(jobId)) {
-                _runningJobs.insert(jobId);
-            }
+            _runningJobs.insert(jobId);
         }
     } catch (Poco::NoThreadAvailableException &) {
         LOG_DEBUG(Log::instance()->getLogger(), "No more thread available, job " << nextJob.first->jobId() << " queued");
