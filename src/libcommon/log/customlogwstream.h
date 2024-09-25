@@ -19,6 +19,9 @@
 #include <sstream>
 #include "libcommon/utility/types.h"
 
+template<class C> // Any type that is not a pointer or present operator->()
+concept NotPointer = !std::is_pointer_v<C> && !requires(C c) { c.operator->(); };
+
 class CustomLogWStream : private std::wstringstream {
     public:
         CustomLogWStream() = default;
@@ -27,7 +30,7 @@ class CustomLogWStream : private std::wstringstream {
 
         std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
 
-        template<class T>
+        template<NotPointer T>
         CustomLogWStream &operator<<(T) = delete;
 
         CustomLogWStream &operator<<(const wchar_t *str) {
