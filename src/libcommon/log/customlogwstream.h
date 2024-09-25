@@ -38,7 +38,7 @@ class CustomLogWStream : private std::wstringstream {
             return *this;
         }
         CustomLogWStream &operator<<(const std::wstring &str) {
-            std::wstringstream::operator<<(str.c_str());
+            CustomLogWStream::operator<<(str.c_str());
             return *this;
         }
         CustomLogWStream &operator<<(const QIODevice *ptr) {
