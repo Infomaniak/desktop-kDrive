@@ -200,11 +200,6 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     // Rotate log file if needed after appending to it.
     if (out.tellp() > _maxFileSize) customRollover(true);
 
-    // Check for expired files at startup and every hour
-    if (_lastExpireCheck == std::chrono::time_point<std::chrono::system_clock>() ||
-        _lastExpireCheck + std::chrono::hours(1) < std::chrono::system_clock::now()) {
-        checkForExpiredFiles();
-    }
 }
 
 void CustomRollingFileAppender::customRollover(bool alreadyLocked) {
