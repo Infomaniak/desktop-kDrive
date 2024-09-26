@@ -331,7 +331,7 @@ bool SqliteDb::queryIsNullValue(const std::string &id, int index, bool &ok) cons
     return false;
 }
 
-void SqliteDb::queryFree(const std::string &id) {
+void SqliteDb::queryFree(const std::string &id) noexcept {
     if (auto it = _queries.find(id); it != _queries.cend()) {
         _queries.erase(it);
     } else {

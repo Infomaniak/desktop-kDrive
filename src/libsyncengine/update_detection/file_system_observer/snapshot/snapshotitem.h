@@ -62,7 +62,7 @@ class SnapshotItem {
 
         void copyExceptChildren(const SnapshotItem &other);
         void addChildren(const NodeId &id);
-        void removeChildren(const NodeId &id);
+        void removeChildren(const NodeId &id) noexcept;
 
     private:
         NodeId _id;

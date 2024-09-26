@@ -93,7 +93,7 @@ class Node {
         std::shared_ptr<Node> findChildrenById(const NodeId &nodeId);
         [[nodiscard]] bool insertChildren(std::shared_ptr<Node> child);
         size_t deleteChildren(std::shared_ptr<Node> child);
-        size_t deleteChildren(const NodeId &childId);
+        size_t deleteChildren(const NodeId &childId) noexcept;
         std::shared_ptr<Node> getChildExcept(SyncName name, OperationType except);
 
         inline void setChangeEvents(const OperationType ops) { _changeEvents = ops; }

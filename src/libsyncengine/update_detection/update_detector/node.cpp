@@ -123,7 +123,7 @@ size_t Node::deleteChildren(std::shared_ptr<Node> child) {
     return deleteChildren(*child->id());
 }
 
-size_t Node::deleteChildren(const NodeId &childId) {
+size_t Node::deleteChildren(const NodeId &childId) noexcept {
     if (auto it = _childrenById.find(childId); it != _childrenById.cend()) {
         _childrenById.erase(it);
         return 1;

@@ -125,7 +125,7 @@ void JobManager::decreasePoolCapacity() {
     }
 }
 
-void JobManager::defaultCallback(UniqueId jobId) {
+void JobManager::defaultCallback(UniqueId jobId) noexcept {
     const std::scoped_lock lock(_mutex);
     if (auto it = _managedJobs.find(jobId) != _managedJobs.cend()) {
         _managedJobs.erase(it);

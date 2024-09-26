@@ -76,7 +76,7 @@ class JobManager {
     private:
         JobManager();
 
-        static void defaultCallback(UniqueId jobId);
+        static void defaultCallback(UniqueId jobId) noexcept;
 
         static void run() noexcept;
         static void startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> nextJob);

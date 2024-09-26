@@ -57,7 +57,7 @@ class SqliteDb {
         bool querySyncNameValue(const std::string &id, int index, SyncName &value) const;
         bool queryBlobValue(const std::string &id, int index, std::shared_ptr<std::vector<char>> &value) const;
         bool queryIsNullValue(const std::string &id, int index, bool &ok) const;
-        void queryFree(const std::string &id);
+        void queryFree(const std::string &id) noexcept;
 
         int numRowsAffected() const;
         inline int errorId() const { return _errId; }
