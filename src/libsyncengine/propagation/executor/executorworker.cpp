@@ -2641,6 +2641,24 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
             _opList.push_front(_jobToSyncOpMap[job->jobId()]->id());
         }
     }
+
+    const auto startWaiting = std::chrono::system_clock::now();
+    while (!_ongoingJobs.empty()) {
+        if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - startWaiting).count() > 70) {
+            LOG_SYNCPAL_ERROR(
+                    _logger,
+                    "Timeout while waiting for jobs to finish (>70s), we will continue without waiting. It may cause a crash "
+                    "if the job ever finishes  [3.6.5 QUICK FIX]");
+            SentryHandler::instance()->captureMessage(
+                    SentryLevel::Error, "cancelAllOngoingJobs timeout",
+                    "Timeout while waiting for jobs to finish, we will continue without waiting. It may cause a crash "
+                    "when if the job ever finishes  [3.6.5 QUICK FIX]");
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        deleteFinishedAsyncJobs();
+    }
+
     _ongoingJobs.clear();
     if (!reschedule) {
         _opList.clear();
