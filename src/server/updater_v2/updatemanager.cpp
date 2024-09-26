@@ -47,10 +47,9 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     QTimer::singleShot(3000, this, &UpdateManager::slotTimerFired);
 }
 
-void UpdateManager::startInstaller() {
+void UpdateManager::startInstaller() const {
     LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
-    emit updateStateChanged(UpdateStateV2::Available);
-    // _updater->startInstaller();
+    _updater->startInstaller();
 }
 
 void UpdateManager::slotTimerFired() const {

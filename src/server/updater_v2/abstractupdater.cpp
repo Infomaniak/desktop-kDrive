@@ -47,10 +47,11 @@ void AbstractUpdater::onAppVersionReceived() {
     const bool available =
             CommonUtility::isVersionLower(CommonUtility::currentVersion(), _updateChecker->versionInfo().fullVersion());
     setState(available ? UpdateStateV2::Available : UpdateStateV2::UpToDate);
-    if (available)
+    if (available) {
         LOG_INFO(Log::instance()->getLogger(), "New app version available");
-    else
+    } else {
         LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
+    }
 }
 
 void AbstractUpdater::setState(const UpdateStateV2 newState) {

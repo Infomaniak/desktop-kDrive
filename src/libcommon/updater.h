@@ -31,9 +31,9 @@ class Updater : public QObject {
     public:
         explicit Updater(QObject *parent = NULL);
 
-        virtual QString version() const {};
-        // virtual bool isKDCUpdater() = 0;
-        // virtual bool isSparkleUpdater() = 0;
+        // virtual QString version() const {};
+        //  virtual bool isKDCUpdater() = 0;
+        //  virtual bool isSparkleUpdater() = 0;
         virtual QString statusString() const = 0;
         virtual bool downloadCompleted() const = 0;
         virtual bool updateFound() const = 0;

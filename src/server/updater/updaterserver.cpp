@@ -68,17 +68,17 @@ QUrl UpdaterServer::updateUrl() {
     return updateBaseUrl;
 }
 
-QString UpdaterServer::version() const {
-    QString version;
-
-#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    version = QString::fromStdString(CommonUtility::currentVersion());
-#else
-    version = qobject_cast<KDCUpdater *>(instance())->updateVersion();
-#endif
-
-    return version;
-}
+// QString UpdaterServer::version() const {
+//     QString version;
+//
+// #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
+//     version = QString::fromStdString(CommonUtility::currentVersion());
+// #else
+//     version = qobject_cast<KDCUpdater *>(instance())->updateVersion();
+// #endif
+//
+//     return version;
+// }
 
 // bool UpdaterServer::isKDCUpdater() {
 //     KDCUpdater *kdcupdater = qobject_cast<KDCUpdater *>(instance());

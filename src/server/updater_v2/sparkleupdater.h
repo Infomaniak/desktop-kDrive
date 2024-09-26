@@ -38,7 +38,7 @@ class SparkleUpdater final : public AbstractUpdater {
         void checkForUpdate();
 
     private:
-        bool startUpdater();
+        bool startSparkleUpdater();
 
         class Private;
         Private *d;

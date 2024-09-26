@@ -207,7 +207,7 @@ SparkleUpdater::~SparkleUpdater() {
 
 void SparkleUpdater::onUpdateFound() {
     setUpdateUrl(updateChecker()->versionInfo().downloadUrl);
-    checkForUpdate();
+    startInstaller();
 }
 
 void SparkleUpdater::setUpdateUrl(const std::string &url) {
@@ -220,17 +220,22 @@ void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) 
 }
 
 void SparkleUpdater::startInstaller() {
-    onUpdateFound();
+    checkForUpdate();
 }
 
 void SparkleUpdater::checkForUpdate() {
-    if (startUpdater()) {
+    static bool updaterStarted = false;
+    if (!updaterStarted && startSparkleUpdater()) {
+        updaterStarted = true;
+    }
+
+    if (updaterStarted) {
         [d->updater checkForUpdates];
         [d->spuStandardUserDriver showUpdateInFocus];
     }
 }
 
-bool SparkleUpdater::startUpdater() {
+bool SparkleUpdater::startSparkleUpdater() {
     NSError *error = nullptr;
     bool success = [d->updater startUpdater:&error];
 
