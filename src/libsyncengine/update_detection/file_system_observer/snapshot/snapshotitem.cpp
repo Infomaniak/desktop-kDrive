@@ -62,8 +62,8 @@ void SnapshotItem::addChildren(const NodeId &id) {
 }
 
 void SnapshotItem::removeChildren(const NodeId &id) {
-    if (_childrenIds.contains(id)) {
-        _childrenIds.erase(id);
+    if (auto it = _childrenIds.find(id); it != _childrenIds.cend()) {
+        _childrenIds.erase(it);
     }
 }
 

@@ -719,8 +719,9 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         vfsCancelHydrate(directDownloadJobsMapIt->second->localPath());
     }
 
-    if (_syncPathToDownloadJobMap.contains(directDownloadJobsMapIt->second->affectedFilePath())) {
-        _syncPathToDownloadJobMap.erase(directDownloadJobsMapIt->second->affectedFilePath());
+    if (auto it = _syncPathToDownloadJobMap.find(directDownloadJobsMapIt->second->affectedFilePath());
+        it != _syncPathToDownloadJobMap.cend()) {
+        _syncPathToDownloadJobMap.erase(it);
     }
     _directDownloadJobsMap.erase(directDownloadJobsMapIt);
 }

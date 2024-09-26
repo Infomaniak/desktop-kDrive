@@ -169,9 +169,9 @@ void ExecutorWorker::execute() {
                 if (syncOp->affectedNode()->id().has_value()) {
                     std::unordered_set<NodeId> whiteList;
                     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-                    if (whiteList.find(syncOp->affectedNode()->id().value()) != whiteList.end()) {
+                    if (auto it = whiteList.find(syncOp->affectedNode()->id().value()); it != whiteList.cend()) {
                         // This item has been synchronized, it can now be removed from white list
-                        whiteList.erase(syncOp->affectedNode()->id().value());
+                        whiteList.erase(it);
                         SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
                     }
                 }
@@ -1667,7 +1667,9 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
             auto jobToSyncOpIt = _jobToSyncOpMap.find(job->jobId());
             if (jobToSyncOpIt == _jobToSyncOpMap.end()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Sync Operation not found");
-                _ongoingJobs.erase(job->jobId());
+                if (auto it = _ongoingJobs.find(job->jobId()) != _ongoingJobs.cend()) {
+                    _ongoingJobs.erase(it);
+                }
                 _terminatedJobs.pop();
                 continue;
             }
@@ -1683,16 +1685,18 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
                 if (syncOp->affectedNode()->id().has_value()) {
                     std::unordered_set<NodeId> whiteList;
                     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-                    if (whiteList.find(syncOp->affectedNode()->id().value()) != whiteList.end()) {
+                    if (auto it = whiteList.find(syncOp->affectedNode()->id().value()); it != whiteList.cend()) {
                         // This item has been synchronized, it can now be removed from white list
-                        whiteList.erase(syncOp->affectedNode()->id().value());
+                        whiteList.erase(it);
                         SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
                     }
                 }
             }
 
             // Delete job
-            _ongoingJobs.erase(_terminatedJobs.front());
+            if (auto it = _ongoingJobs.find(_terminatedJobs.front()) != _ongoingJobs.cend()) {
+                _ongoingJobs.erase(it);
+            }
         }
         _terminatedJobs.pop();
     }

@@ -390,7 +390,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
                 // op is now the createOperation
                 op = tmp;
-                _createFileOperationSet.erase(deleteOp->path());
+                _createFileOperationSet.erase(createFileOpSetIt);
             }
         }
 

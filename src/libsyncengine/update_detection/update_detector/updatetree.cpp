@@ -64,8 +64,10 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, int depth) {
 
     // Remove node from tree
     node->parentNode()->deleteChildren(node);
-    if (node->id().has_value() && _nodes.contains(*node->id())) {
-        _nodes.erase(*node->id());
+    if (node->id().has_value()) {
+        if (auto it = _nodes.find(*node->id()); it != _nodes.cend()) {
+            _nodes.erase(it);
+        }
     }
 
     return true;

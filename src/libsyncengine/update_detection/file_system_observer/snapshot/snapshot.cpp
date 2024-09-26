@@ -490,8 +490,8 @@ void Snapshot::removeChildrenRecursively(const NodeId &parentId) {
 
     for (const NodeId &childId: parentIt->second.childrenIds()) {
         removeChildrenRecursively(childId);
-        if (_items.contains(childId)) {
-            _items.erase(childId);
+        if (auto it = _items.find(childId); it != _items.cend()) {
+            _items.erase(it);
         }
     }
 }

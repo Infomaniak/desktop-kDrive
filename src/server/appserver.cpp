@@ -437,13 +437,13 @@ void AppServer::stopSyncTask(int syncDbId) {
     }
 
     ASSERT(_syncPalMap[syncDbId].use_count() == 1)
-    if (_syncPalMap.contains(syncDbId)) {
-        _syncPalMap.erase(syncDbId);
+    if (auto it = _syncPalMap.find(syncDbId) != _syncPalMap.cend()) {
+        _syncPalMap.erase(it);
     }
 
     ASSERT(_vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
-    if (_vfsMap.contains(syncDbId)) {
-        _vfsMap.erase(syncDbId);
+    if (auto it = _vfsMap.find(syncDbId) != _vfsMap.cend()) {
+        _vfsMap.erase(it);
     }
 }
 
@@ -1136,13 +1136,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     }
 
                     ASSERT(_syncPalMap[syncInfo.dbId()].use_count() == 1)
-                    if (_syncPalMap.contains(syncInfo.dbId())) {
-                        _syncPalMap.erase(syncInfo.dbId());
+                    if (auto it = _syncPalMap.find(syncInfo.dbId()) != _syncPalMap.cend()) {
+                        _syncPalMap.erase(it);
                     }
 
                     ASSERT(_vfsMap[syncInfo.dbId()].use_count() == 1)
-                    if (_vfsMap.contains(syncInfo.dbId())) {
-                        _vfsMap.erase(syncInfo.dbId());
+                    if (auto it = _vfsMap.find(syncInfo.dbId()) != _vfsMap.cend()) {
+                        _vfsMap.erase(it);
                     }
 
                     // Delete sync from DB
@@ -3844,8 +3844,8 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         }
 
         // Delete previous vfs
-        if (_vfsMap.contains(syncDbId)) {
-            _vfsMap.erase(syncDbId);
+        if (auto it = _vfsMap.find(syncDbId) != _vfsMap.cend()) {
+            _vfsMap.erase(it);
         }
 
         tryCreateAndStartVfs(sync);

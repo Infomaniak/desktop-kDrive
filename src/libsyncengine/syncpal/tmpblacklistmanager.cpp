@@ -105,8 +105,8 @@ void TmpBlacklistManager::refreshBlacklist() {
 
                 std::unordered_set<NodeId> tmp;
                 SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType_, tmp);
-                if (tmp.contains(errorIt->first)) {
-                    tmp.erase(errorIt->first);
+                if (auto it = tmp.find(errorIt->first); it != tmp.cend()) {
+                    tmp.erase(it);
                 }
                 SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, tmp);
 
@@ -124,14 +124,14 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
 
     std::unordered_set<NodeId> tmp;
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType_, tmp);
-    if (tmp.contains(nodeId)) {
-        tmp.erase(nodeId);
+    if (auto it = tmp.find(nodeId); it != tmp.cend()) {
+        tmp.erase(it);
         SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, tmp);
     }
 
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
-    if (errors.contains(nodeId)) {
-        errors.erase(nodeId);
+    if (auto it = errors.find(nodeId); it != errors.cend()) {
+        errors.erase(it);
     }
 }
 
