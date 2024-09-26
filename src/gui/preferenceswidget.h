@@ -62,7 +62,7 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
     public:
         explicit PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-        void showErrorBanner(bool unresolvedErrors);
+        void showErrorBanner(bool unresolvedErrors) const;
 
     signals:
         void setStyle(bool darkTheme);
@@ -94,7 +94,6 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void showEvent(QShowEvent *event) override;
 
         void clearUndecidedLists();
-        void refreshUpdateState();
 
     private slots:
         void onFolderConfirmationSwitchClicked(bool checked = false);
@@ -115,9 +114,8 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
 
         void onShowAboutDialog();
         void onShowReleaseNote();
-        void onStartInstaller();
 
-        void retranslateUi();
+        void retranslateUi() const;
 };
 
 } // namespace KDC

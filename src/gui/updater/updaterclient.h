@@ -32,7 +32,7 @@ class UpdaterClient : public Updater {
         ~UpdaterClient();
         static UpdaterClient *instance();
 
-        QString version() const override;
+        // QString version() const override;
         // bool isKDCUpdater() override;
         // bool isSparkleUpdater() override;
         QString statusString() const override;

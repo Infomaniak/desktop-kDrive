@@ -44,7 +44,7 @@ class UpdateManager final : public QObject {
         [[nodiscard]] const VersionInfo &versionInfo() const { return _updater->versionInfo(); }
         [[nodiscard]] const UpdateStateV2 &state() const { return _updater->state(); }
 
-        void startInstaller() const { _updater->startInstaller(); }
+        void startInstaller();
 
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 

@@ -57,7 +57,6 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     // Status
     _updateStatusLabel->setObjectName("boldTextLabel");
     _updateStatusLabel->setWordWrap(true);
-    _updateStatusLabel->setVisible(false);
     versionVBox->addWidget(_updateStatusLabel);
 
     _showReleaseNoteLabel->setObjectName("boldTextLabel");
@@ -79,27 +78,11 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     _updateButton->setFlat(true);
     versionBox->addWidget(_updateButton);
 
-    retranslate();
+    refresh();
 
     connect(_versionNumberLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_showReleaseNoteLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
-    connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::updateButtonClicked);
-}
-
-void VersionWidget::updateStatus(const QString &status, const bool updateAvailable) const {
-    if (status.isEmpty()) {
-        _updateStatusLabel->setVisible(false);
-        _showReleaseNoteLabel->setVisible(false);
-    } else {
-        _updateStatusLabel->setVisible(true);
-        _updateStatusLabel->setText(status);
-
-        if (updateAvailable) {
-            _showReleaseNoteLabel->setVisible(true);
-        }
-    }
-
-    _updateButton->setVisible(updateAvailable);
+    connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdatButoonClicked);
 }
 
 void VersionWidget::refresh() const {
@@ -114,20 +97,47 @@ void VersionWidget::refresh() const {
     // Refresh update state
     auto state = UpdateStateV2::UpToDate;
     GuiRequests::updateState(state);
+    VersionInfo versionInfo;
+    GuiRequests::versionInfo(versionInfo);
+    const QString versionStr = versionInfo.beautifulVersion().c_str();
+
+    QString statusString;
+    bool showReleaseNote = false;
+    bool showUpdateButton = false;
     switch (state) {
-        case UpdateStateV2::UpToDate:
+        case UpdateStateV2::UpToDate: {
+            statusString = tr("%1 is up to date!").arg(APPLICATION_NAME);
             break;
-        case UpdateStateV2::Checking:
+        }
+        case UpdateStateV2::Checking: {
+            tr("Checking update server...");
+            statusString = tr("Checking update on server...");
             break;
+        }
         case UpdateStateV2::Available:
+        case UpdateStateV2::Ready: {
+            statusString = tr("An update is available: %1").arg(versionStr);
+            showReleaseNote = true;
+            showUpdateButton = true;
             break;
-        case UpdateStateV2::Downloading:
+        }
+        case UpdateStateV2::Downloading: {
+            statusString = tr("Downloading %1. Please wait...").arg(versionStr);
+            showReleaseNote = true;
             break;
-        case UpdateStateV2::Ready:
+        }
+        case UpdateStateV2::Error: {
+            statusString = tr("An error occured.");
             break;
-        case UpdateStateV2::Error:
-            break;
+        }
+            // case UpdateOnlyAvailableThroughSystem:
+            //     return tr("An update is available: %1.<br>Please download it from <a style=\"%2\" href=\"%3\">here</a>.")
+            //             .arg(updateVersion, CommonUtility::linkStyle, APPLICATION_DOWNLOAD_URL);
     }
+
+    _updateStatusLabel->setText(statusString);
+    _showReleaseNoteLabel->setVisible(showReleaseNote);
+    _updateButton->setVisible(showUpdateButton);
 }
 
 void VersionWidget::onLinkActivated(const QString &link) {
@@ -135,6 +145,10 @@ void VersionWidget::onLinkActivated(const QString &link) {
         emit showAboutDialog();
     else if (link == releaseNoteLink)
         emit showReleaseNote();
+}
+
+void VersionWidget::onUpdatButoonClicked() const {
+    GuiRequests::startInstaller();
 }
 
 } // namespace KDC

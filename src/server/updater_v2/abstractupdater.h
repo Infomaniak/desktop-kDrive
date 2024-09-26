@@ -34,8 +34,8 @@ class AbstractUpdater {
         [[nodiscard]] const UpdateStateV2 &state() const { return _state; }
 
         ExitCode checkUpdateAvailable(UniqueId *id = nullptr);
-        virtual void downloadUpdate() noexcept { /* Redefined in child class if necessary */ }
-        virtual void startInstaller() const { /* Redefined in child class if necessary */ }
+        [[nodiscard]] virtual bool downloadUpdate() noexcept { return false; }
+        virtual void startInstaller() = 0;
 
         /**
          * @brief A new version is available on the server.
@@ -49,12 +49,13 @@ class AbstractUpdater {
 
         [[nodiscard]] const std::unique_ptr<UpdateChecker> &updateChecker() const { return _updateChecker; }
 
+    protected:
+        void setState(UpdateStateV2 newState);
+
     private:
         std::unique_ptr<UpdateChecker> _updateChecker;
 
         void onAppVersionReceived();
-
-        void setState(UpdateStateV2 newState);
 
         UpdateStateV2 _state{UpdateStateV2::UpToDate}; // Current state of the update process.
         std::function<void(UpdateStateV2)> _stateChangeCallback = nullptr;

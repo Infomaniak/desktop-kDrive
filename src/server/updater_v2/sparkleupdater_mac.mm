@@ -67,7 +67,7 @@
     return _feedUrl;
 }
 
-- (void)setFeedUrl:(std::string)url {
+- (void)setCustomFeedUrl:(std::string)url {
     _feedUrl = [NSString stringWithUTF8String:url.c_str()];
 }
 
@@ -212,24 +212,15 @@ void SparkleUpdater::onUpdateFound() {
 
 void SparkleUpdater::setUpdateUrl(const std::string &url) {
     _feedUrl = url;
-    [d->updaterDelegate setFeedUrl:_feedUrl];
+    [d->updaterDelegate setCustomFeedUrl:_feedUrl];
 }
 
 void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) {
     [d->updaterDelegate setQuitCallback:quitCallback];
 }
 
-bool SparkleUpdater::startUpdater() {
-    NSError *error;
-    bool success = [d->updater startUpdater:&error];
-
-    if (!success) {
-        if (error) {
-            LOG_DEBUG(KDC::Log::instance()->getLogger(), "Error in startUpdater " << error.description.UTF8String);
-        }
-        return false;
-    }
-    return true;
+void SparkleUpdater::startInstaller() {
+    onUpdateFound();
 }
 
 void SparkleUpdater::checkForUpdate() {
@@ -239,19 +230,19 @@ void SparkleUpdater::checkForUpdate() {
     }
 }
 
-/*
-void SparkleUpdater::backgroundCheckForUpdate() {
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "launching background check");
+bool SparkleUpdater::startUpdater() {
+    NSError *error = nullptr;
+    bool success = [d->updater startUpdater:&error];
 
-    if (startUpdater() && !d->updater.sessionInProgress) {
-        [d->updater checkForUpdatesInBackground];
+    if (!success) {
+        if (error) {
+            LOG_DEBUG(KDC::Log::instance()->getLogger(), "Error in startUpdater " << error.description.UTF8String);
+            setState(UpdateStateV2::Error);
+        }
+        return false;
     }
-    [d->spuStandardUserDriver showUpdateInFocus];
-}
 
-int SparkleUpdater::state() const {
-    return [d->updaterDelegate downloadState];
+    return true;
 }
-*/
 
 }  // namespace KDC

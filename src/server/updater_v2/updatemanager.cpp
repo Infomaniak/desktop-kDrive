@@ -47,6 +47,12 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     QTimer::singleShot(3000, this, &UpdateManager::slotTimerFired);
 }
 
+void UpdateManager::startInstaller() {
+    LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
+    emit updateStateChanged(UpdateStateV2::Available);
+    // _updater->startInstaller();
+}
+
 void UpdateManager::slotTimerFired() const {
     _updater->checkUpdateAvailable();
 }
@@ -56,21 +62,25 @@ void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) const {
     switch (newState) {
         case UpdateStateV2::UpToDate:
         case UpdateStateV2::Checking:
-        case UpdateStateV2::Downloading:
+        case UpdateStateV2::Downloading: {
             // Nothing to do
             break;
-        case UpdateStateV2::Available:
+        }
+        case UpdateStateV2::Available: {
             // A new version has been found
             _updater->onUpdateFound();
             break;
-        case UpdateStateV2::Ready:
-            // TODO : do not keep asking if not needed
+        }
+        case UpdateStateV2::Ready: {
+            // TODO : manage seen version
             // The new version is ready to be installed
             _updater->startInstaller();
             break;
-        case UpdateStateV2::Error:
+        }
+        case UpdateStateV2::Error: {
             // An error occured
             break;
+        }
     }
 }
 

@@ -37,16 +37,15 @@ class VersionWidget final : public QWidget {
 
     public:
         explicit VersionWidget(QWidget *parent = nullptr);
-        void updateStatus(const QString &status, bool updateAvailable) const;
         void refresh() const;
 
     signals:
         void showReleaseNote();
         void showAboutDialog();
-        void updateButtonClicked();
 
     private slots:
         void onLinkActivated(const QString &link);
+        void onUpdatButoonClicked() const;
 
     private:
         QLabel *_versionLabel{nullptr};

@@ -458,25 +458,26 @@ struct VersionInfo {
             buildMinOsVersion.clear();
             downloadUrl.clear();
         }
-};
 
-inline QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
-    QString tmpTag;
-    QString tmpChangeLog;
-    QString tmpBuildMinOsVersion;
-    QString tmpDownloadUrl;
-    in >> tmpTag >> tmpChangeLog >> versionInfo.buildVersion >> tmpBuildMinOsVersion >> tmpDownloadUrl;
-    versionInfo.tag = tmpTag.toStdString();
-    versionInfo.changeLog = tmpChangeLog.toStdString();
-    versionInfo.buildMinOsVersion = tmpBuildMinOsVersion.toStdString();
-    versionInfo.downloadUrl = tmpDownloadUrl.toStdString();
-    return in;
-}
-inline QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
-    out << versionInfo.tag.c_str() << versionInfo.changeLog.c_str() << versionInfo.buildVersion
-        << versionInfo.buildMinOsVersion.c_str() << versionInfo.downloadUrl.c_str();
-    return out;
-}
+        friend QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
+            QString tmpTag;
+            QString tmpChangeLog;
+            QString tmpBuildMinOsVersion;
+            QString tmpDownloadUrl;
+            in >> tmpTag >> tmpChangeLog >> versionInfo.buildVersion >> tmpBuildMinOsVersion >> tmpDownloadUrl;
+            versionInfo.tag = tmpTag.toStdString();
+            versionInfo.changeLog = tmpChangeLog.toStdString();
+            versionInfo.buildMinOsVersion = tmpBuildMinOsVersion.toStdString();
+            versionInfo.downloadUrl = tmpDownloadUrl.toStdString();
+            return in;
+        }
+        friend QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
+            out << QString::fromStdString(versionInfo.tag) << QString::fromStdString(versionInfo.changeLog)
+                << versionInfo.buildVersion << QString::fromStdString(versionInfo.buildMinOsVersion)
+                << QString::fromStdString(versionInfo.downloadUrl);
+            return out;
+        }
+};
 
 enum class SentryConfidentialityLevel {
     Anonymous, // The sentry will not be able to identify the user (no ip, no email, no username, ...)

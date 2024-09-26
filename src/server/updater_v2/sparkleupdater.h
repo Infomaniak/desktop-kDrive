@@ -33,13 +33,13 @@ class SparkleUpdater final : public AbstractUpdater {
 
         void setUpdateUrl(const std::string &url);
         void setQuitCallback(const std::function<void()> &quitCallback) override;
-        bool startUpdater();
+        void startInstaller() override;
 
         void checkForUpdate();
 
-        // int state() const;
-
     private:
+        bool startUpdater();
+
         class Private;
         Private *d;
 

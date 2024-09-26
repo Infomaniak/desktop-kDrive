@@ -54,11 +54,11 @@
 
 namespace KDC {
 
-static const int boxHMargin = 20;
-static const int boxVMargin = 20;
-static const int boxSpacing = 12;
-static const int textHSpacing = 10;
-static const int amountLineEditWidth = 85;
+static constexpr int boxHMargin = 20;
+static constexpr int boxVMargin = 20;
+static constexpr int boxSpacing = 12;
+static constexpr int textHSpacing = 10;
+static constexpr int amountLineEditWidth = 85;
 
 static const QString debuggingFolderLink = "debuggingFolderLink";
 
@@ -72,7 +72,7 @@ Q_LOGGING_CATEGORY(lcPreferencesWidget, "gui.preferenceswidget", QtInfoMsg)
 
 LargeFolderConfirmation::LargeFolderConfirmation(QBoxLayout *folderConfirmationBox) :
     _label{new QLabel()}, _amountLabel{new QLabel()}, _amountLineEdit{new QLineEdit()}, _switch{new CustomSwitch()} {
-    QHBoxLayout *folderConfirmation1HBox = new QHBoxLayout();
+    const auto folderConfirmation1HBox = new QHBoxLayout();
     folderConfirmation1HBox->setContentsMargins(0, 0, 0, 0);
     folderConfirmation1HBox->setSpacing(0);
     folderConfirmationBox->addLayout(folderConfirmation1HBox);
@@ -86,7 +86,7 @@ LargeFolderConfirmation::LargeFolderConfirmation(QBoxLayout *folderConfirmationB
     _switch->setCheckState(ParametersCache::instance()->parametersInfo().useBigFolderSizeLimit() ? Qt::Checked : Qt::Unchecked);
     folderConfirmation1HBox->addWidget(_switch);
 
-    QHBoxLayout *folderConfirmation2HBox = new QHBoxLayout();
+    const auto folderConfirmation2HBox = new QHBoxLayout();
     folderConfirmation2HBox->setContentsMargins(0, 0, 0, 0);
     folderConfirmation2HBox->setSpacing(textHSpacing);
     folderConfirmationBox->addLayout(folderConfirmation2HBox);
@@ -263,7 +263,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     moveToTrashBox->addWidget(_moveToTrashLabel);
     moveToTrashBox->addStretch();
 
-    auto moveToTrashSwitch = new CustomSwitch();
+    const auto moveToTrashSwitch = new CustomSwitch();
     moveToTrashSwitch->setLayoutDirection(Qt::RightToLeft);
     moveToTrashSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
     moveToTrashSwitch->setCheckState(ParametersCache::instance()->parametersInfo().moveToTrash() ? Qt::Checked : Qt::Unchecked);
@@ -309,12 +309,12 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     _advancedLabel->setObjectName("blocLabel");
     vBox->addWidget(_advancedLabel);
 
-    auto advancedBloc = new PreferencesBlocWidget();
+    const auto advancedBloc = new PreferencesBlocWidget();
     vBox->addWidget(advancedBloc);
 
     // Debugging information
     QVBoxLayout *debuggingVBox = nullptr;
-    ClickableWidget *debuggingWidget = advancedBloc->addActionWidget(&debuggingVBox);
+    const auto debuggingWidget = advancedBloc->addActionWidget(&debuggingVBox);
 
     debuggingVBox->addWidget(_debuggingLabel);
 
@@ -326,14 +326,14 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     // Files to exclude
     QVBoxLayout *filesToExcludeVBox = nullptr;
-    ClickableWidget *filesToExcludeWidget = advancedBloc->addActionWidget(&filesToExcludeVBox);
+    const auto filesToExcludeWidget = advancedBloc->addActionWidget(&filesToExcludeVBox);
 
     filesToExcludeVBox->addWidget(_filesToExcludeLabel);
     advancedBloc->addSeparator();
 
     // Proxy server
     QVBoxLayout *proxyServerVBox = nullptr;
-    ClickableWidget *proxyServerWidget = advancedBloc->addActionWidget(&proxyServerVBox);
+    const auto proxyServerWidget = advancedBloc->addActionWidget(&proxyServerVBox);
 
     proxyServerVBox->addWidget(_proxyServerLabel);
     advancedBloc->addSeparator();
@@ -341,7 +341,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 #ifdef Q_OS_MAC
     // Lite Sync
     QVBoxLayout *liteSyncVBox = nullptr;
-    ClickableWidget *liteSyncWidget = advancedBloc->addActionWidget(&liteSyncVBox);
+    const auto liteSyncWidget = advancedBloc->addActionWidget(&liteSyncVBox);
 
     _liteSyncLabel = new QLabel();
     liteSyncVBox->addWidget(_liteSyncLabel);
@@ -354,7 +354,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     vBox->addStretch();
 
     // Init labels and setup connection for on the fly translation
-    LanguageChangeFilter *languageFilter = new LanguageChangeFilter(this);
+    const auto languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
 
     connect(_largeFolderConfirmation->customSwitch(), &CustomSwitch::clicked, this,
@@ -381,19 +381,18 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     connect(_versionWidget, &VersionWidget::showAboutDialog, this, &PreferencesWidget::onShowAboutDialog);
     connect(_versionWidget, &VersionWidget::showReleaseNote, this, &PreferencesWidget::onShowReleaseNote);
-    connect(_versionWidget, &VersionWidget::updateButtonClicked, this, &PreferencesWidget::onStartInstaller);
 
     connect(_displayErrorsWidget, &ActionWidget::clicked, this, &PreferencesWidget::displayErrors);
 }
 
-void PreferencesWidget::showErrorBanner(bool unresolvedErrors) {
+void PreferencesWidget::showErrorBanner(const bool unresolvedErrors) const {
     _displayErrorsWidget->setVisible(unresolvedErrors);
 }
 
 void PreferencesWidget::showEvent(QShowEvent *event) {
     Q_UNUSED(event)
     retranslateUi();
-    refreshUpdateState();
+    _versionWidget->refresh();
 }
 
 void PreferencesWidget::clearUndecidedLists() {
@@ -586,82 +585,7 @@ void PreferencesWidget::onShowReleaseNote() {
     }
 }
 
-// void PreferencesWidget::onUpdateInfo() {
-//     // Note: the sparkle-updater is not an KDCUpdater
-//     bool isKDCUpdater = false;
-//     // try {
-//     //     isKDCUpdater = UpdaterClient::instance()->isKDCUpdater();
-//     // } catch (std::exception const &) {
-//     //     return;
-//     // }
-//
-// #if defined(Q_OS_MAC)
-//     bool isSparkleUpdater = false;
-//     // try {
-//     //     isSparkleUpdater = UpdaterClient::instance()->isSparkleUpdater();
-//     // } catch (std::exception const &) {
-//     //     return;
-//     // }
-// #endif
-//
-//     QString statusString;
-//     try {
-//         statusString = UpdaterClient::instance()->statusString();
-//     } catch (std::exception const &) {
-//         return;
-//     }
-//
-//     if (isKDCUpdater) {
-//         bool downloadCompleted;
-//         try {
-//             downloadCompleted = UpdaterClient::instance()->downloadCompleted();
-//         } catch (std::exception const &) {
-//             return;
-//         }
-//
-//         connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &PreferencesWidget::onUpdateInfo,
-//                 Qt::UniqueConnection);
-//         connect(_versionWidget->updateButton(), &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller,
-//                 Qt::UniqueConnection);
-//
-//         updateStatus(statusString, downloadCompleted);
-//     }
-// #if defined(Q_OS_MAC)
-//     else if (isSparkleUpdater) {
-//         bool updateFound;
-//         try {
-//             updateFound = UpdaterClient::instance()->updateFound();
-//         } catch (std::exception const &) {
-//             return;
-//         }
-//
-//         connect(_versionWidget->updateButton(), &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller,
-//                 Qt::UniqueConnection);
-//
-//         updateStatus(statusString, updateFound);
-//     }
-// #endif
-// }
-
-void PreferencesWidget::onStartInstaller() {
-    // TODO : to be changed
-    try {
-        switch (UpdaterClient::instance()->updateState()) {
-            case UpdateState::Ready:
-                UpdaterClient::instance()->startInstaller();
-                break;
-            case UpdateState::Skipped:
-                UpdaterClient::instance()->unskipUpdate();
-                break;
-            default:
-                break;
-        }
-    } catch (std::exception const &) {
-        // Do nothing
-    }
-}
-
-void PreferencesWidget::retranslateUi() {
+void PreferencesWidget::retranslateUi() const {
     _displayErrorsWidget->setText(tr("Some process failed to run."));
     _generalLabel->setText(tr("General"));
     _largeFolderConfirmation->retranslateUi();
@@ -692,13 +616,12 @@ void PreferencesWidget::retranslateUi() {
     _advancedLabel->setText(tr("Advanced"));
     _debuggingLabel->setText(tr("Debugging information"));
     _debuggingFolderLabel->setText(
-            tr("<a style=\"%1\" href=\"%2\">Open debugging folder</a>").arg(CommonUtility::linkStyle, debuggingFolderLink));
+            tr(R"(<a style="%1" href="%2">Open debugging folder</a>)").arg(CommonUtility::linkStyle, debuggingFolderLink));
     _filesToExcludeLabel->setText(tr("Files to exclude"));
     _proxyServerLabel->setText(tr("Proxy server"));
 #ifdef Q_OS_MAC
     _liteSyncLabel->setText(tr("Lite Sync"));
 #endif
-    _versionWidget->refresh();
 }
 
 } // namespace KDC

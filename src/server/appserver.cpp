@@ -1949,16 +1949,19 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UPDATER_VERSIONINFO: {
             VersionInfo versionInfo = _updateManager->versionInfo();
+            resultStream << ExitCode::Ok;
             resultStream << versionInfo;
             break;
         }
         case RequestNum::UPDATER_STATE: {
-            UpdateStateV2 status = _updateManager->state();
-            resultStream << status;
+            UpdateStateV2 state = _updateManager->state();
+            resultStream << ExitCode::Ok;
+            resultStream << state;
             break;
         }
         case RequestNum::UPDATER_STARTINSTALLER: {
             _updateManager->startInstaller();
+            resultStream << ExitCode::Ok;
             break;
         }
         case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
@@ -2213,7 +2216,6 @@ void AppServer::onRestartClientReceived() {
     }
 #else
     LOG_INFO(_logger, "Client disconnected");
-    quit = true;
 #endif
 
     if (quit) {
