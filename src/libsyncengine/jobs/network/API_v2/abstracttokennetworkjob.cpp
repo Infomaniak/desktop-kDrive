@@ -98,7 +98,7 @@ void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, int user
 }
 
 void AbstractTokenNetworkJob::clearCacheForUser(int userDbId) noexcept {
-    if (auto it = _userToApiKeyMap.find(userDbId) != _userToApiKeyMap.cend()) {
+    if (auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.cend()) {
         _userToApiKeyMap.erase(it);
     } else {
         assert(false);
@@ -106,7 +106,7 @@ void AbstractTokenNetworkJob::clearCacheForUser(int userDbId) noexcept {
 }
 
 void AbstractTokenNetworkJob::clearCacheForDrive(int driveDbId) noexcept {
-    if (auto it = _driveToApiKeyMap.find(driveDbId) != _driveToApiKeyMap.cend()) {
+    if (auto it = _driveToApiKeyMap.find(driveDbId); it != _driveToApiKeyMap.cend()) {
         _driveToApiKeyMap.erase(it);
     } else {
         assert(false);

@@ -466,7 +466,7 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
                 }
             }
         }
-        if (auto it = moveOps2.find(moveOpId) != moveOps2.cend()) {
+        if (auto it = moveOps2.find(moveOpId); it != moveOps2.cend()) {
             moveOps2.erase(it);
         }
     }

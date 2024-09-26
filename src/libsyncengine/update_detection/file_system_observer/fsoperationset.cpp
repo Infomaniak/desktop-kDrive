@@ -92,10 +92,10 @@ bool FSOperationSet::removeOp(UniqueId id) {
     const std::scoped_lock lock(_mutex);
     startUpdate();
     if (auto it = _ops.find(id); it != _ops.end()) {
-        if (auto it2 = _opsByType[it->second->operationType()].find(id) != _opsByType[it->second->operationType()].cend()) {
+        if (auto it2 = _opsByType[it->second->operationType()].find(id); it2 != _opsByType[it->second->operationType()].cend()) {
             _opsByType[it->second->operationType()].erase(it2);
         }
-        if (auto it2 = _opsByNodeId[it->second->nodeId()].find(id) != _opsByNodeId[it->second->nodeId()].cend()) {
+        if (auto it2 = _opsByNodeId[it->second->nodeId()].find(id); it2 != _opsByNodeId[it->second->nodeId()].cend()) {
             _opsByNodeId[it->second->nodeId()].erase(it2);
         }
         if (_opsByNodeId[it->second->nodeId()].empty()) { // Remove nodeId from map if no more ops for this node

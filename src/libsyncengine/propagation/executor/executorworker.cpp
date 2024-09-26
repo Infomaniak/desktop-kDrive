@@ -1667,7 +1667,7 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
             auto jobToSyncOpIt = _jobToSyncOpMap.find(job->jobId());
             if (jobToSyncOpIt == _jobToSyncOpMap.end()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Sync Operation not found");
-                if (auto it = _ongoingJobs.find(job->jobId()) != _ongoingJobs.cend()) {
+                if (auto it = _ongoingJobs.find(job->jobId()); it != _ongoingJobs.cend()) {
                     _ongoingJobs.erase(it);
                 }
                 _terminatedJobs.pop();
@@ -1694,7 +1694,7 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
             }
 
             // Delete job
-            if (auto it = _ongoingJobs.find(_terminatedJobs.front()) != _ongoingJobs.cend()) {
+            if (auto it = _ongoingJobs.find(_terminatedJobs.front()); it != _ongoingJobs.cend()) {
                 _ongoingJobs.erase(it);
             }
         }

@@ -76,7 +76,7 @@ void SyncOperationList::deleteOp(std::list<UniqueId>::const_iterator it) {
     SyncOpPtr syncOp = getOp(opId);
     if (syncOp != nullptr) {
         OperationType type = syncOp->type();
-        if (auto it = _opListByType[type].find(opId) != _opListByType[type].cend()) {
+        if (auto it = _opListByType[type].find(opId); it != _opListByType[type].cend()) {
             _opListByType[type].erase(it);
         }
         if (syncOp->affectedNode()) {

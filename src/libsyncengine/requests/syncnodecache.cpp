@@ -120,10 +120,10 @@ ExitCode SyncNodeCache::clearCache(int syncDbId) {
         return ExitCode::DataError;
     }
 
-    if (auto it = _syncDbMap.find(syncDbId) != _syncDbMap.cend()) {
+    if (auto it = _syncDbMap.find(syncDbId); it != _syncDbMap.cend()) {
         _syncDbMap.erase(it);
     }
-    if (auto it = _syncNodesMap.find(syncDbId) != _syncNodesMap.cend()) {
+    if (auto it = _syncNodesMap.find(syncDbId); it != _syncNodesMap.cend()) {
         _syncNodesMap.erase(it);
     }
 

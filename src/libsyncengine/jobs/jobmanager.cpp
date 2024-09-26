@@ -127,11 +127,11 @@ void JobManager::decreasePoolCapacity() {
 
 void JobManager::defaultCallback(UniqueId jobId) noexcept {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _managedJobs.find(jobId) != _managedJobs.cend()) {
+    if (auto it = _managedJobs.find(jobId); it != _managedJobs.cend()) {
         _managedJobs.erase(it);
     }
 
-    if (auto it = _runningJobs.find(jobId) != _runningJobs.cend()) {
+    if (auto it = _runningJobs.find(jobId); it != _runningJobs.cend()) {
         _runningJobs.erase(it);
     }
 }
@@ -210,7 +210,7 @@ void JobManager::startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::
         const UniqueId jobId = nextJob.first->jobId();
         if (nextJob.first->isAborted()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Job " << jobId << " has been canceled");
-            if (auto it = _managedJobs.find(jobId) != _managedJobs.cend()) {
+            if (auto it = _managedJobs.find(jobId); it != _managedJobs.cend()) {
                 _managedJobs.erase(it);
             }
         } else {
@@ -300,7 +300,7 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
         if (const auto &job = item.second.first; canRun(job, uploadSessionCount)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completly from job manager
-                if (auto it = _managedJobs.find(item.first) != _managedJobs.cend()) {
+                if (auto it = _managedJobs.find(item.first); it != _managedJobs.cend()) {
                     _managedJobs.erase(it);
                 }
             } else {
