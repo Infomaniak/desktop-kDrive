@@ -266,6 +266,18 @@ bool ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
     return true;
 }
 
+void ExecutorWorker::logCorrespondingNodeErrorMsg(const SyncOpPtr syncOp) {
+    const std::wstring mainMsg = L"Error in UpdateTree::deleteNode: ";
+    if (syncOp->correspondingNode()) {
+        const auto nodeName = SyncName2WStr(syncOp->correspondingNode()->name());
+        LOGW_SYNCPAL_WARN(_logger, mainMsg << L"correspondingNode name=" << L"'" << nodeName << L"'.");
+    } else {
+        const auto nodeName = SyncName2WStr(syncOp->affectedNode()->name());
+        LOGW_SYNCPAL_WARN(_logger,
+                          mainMsg << L"correspondingNode is nullptr, former affectedNode name=" << L"'" << nodeName << L"'.");
+    }
+}
+
 void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError) {
     // The execution of the create operation consists of three steps:
     // 1. If omit-flag is False, propagate the file or directory to target replica, because the object is missing there.
@@ -290,15 +302,14 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
 
             // Remove from update tree
             if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: affectedNode name="
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 hasError = true;
                 return;
             }
 
             if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                                   << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
+                logCorrespondingNodeErrorMsg(syncOp);
                 hasError = true;
                 return;
             }
