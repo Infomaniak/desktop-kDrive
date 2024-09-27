@@ -33,6 +33,8 @@ class SyncDb : public Db {
     public:
         SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId = std::string());
 
+        std::string dbType() const override { return "Sync"; }
+
         bool create(bool &retry) override;
         bool prepare() override;
         bool upgrade(const std::string &fromVersion, const std::string &toVersion) override;

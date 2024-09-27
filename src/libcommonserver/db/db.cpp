@@ -342,7 +342,8 @@ bool Db::init(const std::string &version) {
 
             if (_fromVersion != version) {
                 // Upgrade DB
-                LOG_INFO(_logger, "Upgrade DB from " << _fromVersion.c_str() << " to " << version.c_str());
+                LOG_INFO(_logger,
+                         "Upgrade " << dbType().c_str() << " DB from " << _fromVersion.c_str() << " to " << version.c_str());
                 if (!upgrade(_fromVersion, version)) {
                     LOG_WARN(_logger, "Error in Db::upgrade");
                     return false;
