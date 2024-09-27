@@ -30,6 +30,24 @@ using namespace CppUnit;
 
 namespace KDC {
 
+SyncDbMock::SyncDbMock(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
+    SyncDb(dbPath, version, targetNodeId) {}
+
+
+void SyncDbMock::freeRequest(const char *requestId) {
+    queryFree(requestId);
+}
+
+void SyncDbMock::enablePrepare(bool enabled) {
+    _isPrepareEnabled = enabled;
+}
+
+bool SyncDbMock::prepare() {
+    if (!_isPrepareEnabled) return true;
+
+    return SyncDb::prepare();
+}
+
 class DbNodeTest : public DbNode {
     public:
         DbNodeTest(std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
@@ -70,7 +88,8 @@ void TestSyncDb::setUp() {
     std::filesystem::remove(syncDbPath);
 
     // Create DB
-    _testObj = new SyncDb(syncDbPath.string(), "3.4.0");
+    _testObj = new SyncDbMock(syncDbPath.string(), "3.4.0");
+    _testObj->init("3.4.0");
     _testObj->setAutoDelete(true);
 }
 
@@ -166,6 +185,9 @@ SyncFilesInfo createSyncFiles(const SyncPath &localPath) {
 }
 
 std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &localNodeIds) {
+    _testObj->enablePrepare(true);
+    _testObj->prepare();
+
     const time_t tLoc = std::time(0);
     const time_t tDrive = std::time(0);
     const auto rootId = _testObj->rootNode().nodeId();
@@ -226,11 +248,12 @@ void TestSyncDb::testUpgradeTo3_6_5CheckNodeMap() {
 }
 
 void TestSyncDb::testUpgradeTo3_6_5() {
-    LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_4");
+    LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_5");
     createParmsDb(_testObj->dbPath(), localTmpDir.path());
     const auto syncFilesInfo = createSyncFiles(localTmpDir.path());
     const auto initialDbNodes = setupSyncDb3_6_5(syncFilesInfo.nodeIds);
 
+    _testObj->freeRequest("update_node_name_local"); // Request created within init() call.
     _testObj->upgrade("3.6.4", "3.6.5");
 
     CPPUNIT_ASSERT_EQUAL(initialDbNodes.size(), syncFilesInfo.localCreationFileNames.size());
@@ -254,7 +277,25 @@ void TestSyncDb::testUpgradeTo3_6_5() {
     ParmsDb::reset();
 }
 
+void TestSyncDb::testInit3_6_4() {
+    LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_5");
+    createParmsDb(_testObj->dbPath(), localTmpDir.path());
+    const auto syncFilesInfo = createSyncFiles(localTmpDir.path());
+    const auto initialDbNodes = setupSyncDb3_6_5(syncFilesInfo.nodeIds);
+
+    _testObj->freeRequest("update_node_name_local"); // Request created within init() call.
+    _testObj->enablePrepare(false);
+    CPPUNIT_ASSERT(_testObj->init("3.6.4"));
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+}
+
+
 void TestSyncDb::testUpdateLocalName() {
+    _testObj->enablePrepare(true);
+    _testObj->prepare();
+
     const auto nfc = testhelpers::makeNfcSyncName();
     const auto nfd = testhelpers::makeNfdSyncName();
 
@@ -278,6 +319,9 @@ void TestSyncDb::testUpdateLocalName() {
 }
 
 void TestSyncDb::testNodes() {
+    _testObj->enablePrepare(true);
+    _testObj->prepare();
+
     CPPUNIT_ASSERT(_testObj->exists());
     CPPUNIT_ASSERT(_testObj->clearNodes());
 
@@ -659,6 +703,9 @@ void TestSyncDb::testNodes() {
 }
 
 void TestSyncDb::testSyncNodes() {
+    _testObj->enablePrepare(true);
+    _testObj->prepare();
+
     std::unordered_set<NodeId> nodeIdSet;
     nodeIdSet.emplace("1");
     nodeIdSet.emplace("2");
@@ -696,6 +743,9 @@ void TestSyncDb::testSyncNodes() {
 }
 
 void TestSyncDb::testCorrespondingNodeId() {
+    _testObj->enablePrepare(true);
+    _testObj->prepare();
+
     time_t tLoc = std::time(0);
     time_t tDrive = std::time(0);
     bool constraintError = false;

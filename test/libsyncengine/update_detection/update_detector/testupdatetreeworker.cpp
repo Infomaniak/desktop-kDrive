@@ -35,6 +35,7 @@ void TestUpdateTreeWorker::setUp() {
     // Create DB
     std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists, true);
     _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), "3.6.1"));
+    _syncDb->init("3.6.1");
     _syncDb->setAutoDelete(true);
     _operationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet(ReplicaSide::Unknown));
 
