@@ -170,6 +170,8 @@ class COMMONSERVER_EXPORT Log {
          */
         SyncPath getLogFilePath() const;
 
+        void checkForExpiredFiles();
+
         static const std::wstring instanceName;
         static const std::wstring rfName;
         static const std::wstring rfPattern;
