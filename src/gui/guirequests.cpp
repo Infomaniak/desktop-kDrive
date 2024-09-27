@@ -1204,6 +1204,22 @@ ExitCode GuiRequests::checkCommStatus() {
     return exitCode;
 }
 
+ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channel) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << channel;
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_CHANGE_CHANNEL, params, results)) {
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    return exitCode;
+}
+
 ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSIONINFO, QByteArray(), results)) {

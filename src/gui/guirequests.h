@@ -128,6 +128,7 @@ struct GuiRequests {
         static ExitCode cancelLogUploadToSupport();
         static ExitCode crash();
 
+        static ExitCode changeDistributionChannel(DistributionChannel channel);
         static ExitCode versionInfo(VersionInfo &versionInfo);
         static ExitCode updateState(UpdateStateV2 &state);
         static ExitCode startInstaller();

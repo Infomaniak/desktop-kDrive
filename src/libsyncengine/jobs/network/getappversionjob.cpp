@@ -103,6 +103,7 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
         }
 
         const DistributionChannel channel = toDistributionChannel(versionType);
+        _versionInfo[channel].channel = channel;
         if (!JsonParserUtility::extractValue(obj, tagKey, _versionInfo[channel].tag)) {
             return false;
         }

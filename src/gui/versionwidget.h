@@ -24,8 +24,13 @@
  * hyperlink to the release notes.
  */
 
+#include "utility/types.h"
+
+
 #include <QWidget>
 
+
+class QRadioButton;
 class QPushButton;
 class QLabel;
 class QBoxLayout;
@@ -44,10 +49,17 @@ class VersionWidget final : public QWidget {
         void showAboutDialog();
 
     private slots:
+        void onChannelButtonClicked() const;
         void onLinkActivated(const QString &link);
-        void onUpdatButoonClicked() const;
+        void onUpdatButtonClicked() const;
 
     private:
+        void refreshChannelButtons(DistributionChannel channel) const;
+
+        QRadioButton *_prodButton{nullptr};
+        QRadioButton *_betaButton{nullptr};
+        QRadioButton *_internalButton{nullptr};
+
         QLabel *_versionLabel{nullptr};
         QLabel *_updateStatusLabel{nullptr};
         QLabel *_showReleaseNoteLabel{nullptr};

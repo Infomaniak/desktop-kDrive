@@ -41,6 +41,9 @@ class UpdateManager final : public QObject {
     public:
         explicit UpdateManager(QObject *parent);
 
+        void setDistributionChannel(const DistributionChannel channel) const {
+            _updater->checkUpdateAvailable(channel);
+        } // TODO : write to DB
         [[nodiscard]] const VersionInfo &versionInfo() const { return _updater->versionInfo(); }
         [[nodiscard]] const UpdateStateV2 &state() const { return _updater->state(); }
 
@@ -64,6 +67,8 @@ class UpdateManager final : public QObject {
         void createUpdater();
 
         void onUpdateStateChange(UpdateStateV2 newState);
+
+        DistributionChannel readDistributionChannelFromDb() const;
 
         std::unique_ptr<AbstractUpdater> _updater;
 

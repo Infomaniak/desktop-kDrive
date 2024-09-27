@@ -429,6 +429,7 @@ enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
 std::string toString(Platform e);
 
 struct VersionInfo {
+        DistributionChannel channel = DistributionChannel::Unknown;
         std::string tag; // Version number. Example: 3.6.4
         std::string changeLog; // List of changes in this version       TODO : is it useful? Do not send it to the UI?
         std::uint64_t buildVersion = 0; // Example: 20240816
@@ -436,7 +437,8 @@ struct VersionInfo {
         std::string downloadUrl; // URL to download the version
 
         [[nodiscard]] bool isValid() const {
-            return !tag.empty() && !changeLog.empty() && buildVersion != 0 && !downloadUrl.empty();
+            return channel != DistributionChannel::Unknown && !tag.empty() && !changeLog.empty() && buildVersion != 0 &&
+                   !downloadUrl.empty();
         }
 
         [[nodiscard]] std::string fullVersion() const {
@@ -464,7 +466,8 @@ struct VersionInfo {
             QString tmpChangeLog;
             QString tmpBuildMinOsVersion;
             QString tmpDownloadUrl;
-            in >> tmpTag >> tmpChangeLog >> versionInfo.buildVersion >> tmpBuildMinOsVersion >> tmpDownloadUrl;
+            in >> versionInfo.channel >> tmpTag >> tmpChangeLog >> versionInfo.buildVersion >> tmpBuildMinOsVersion >>
+                    tmpDownloadUrl;
             versionInfo.tag = tmpTag.toStdString();
             versionInfo.changeLog = tmpChangeLog.toStdString();
             versionInfo.buildMinOsVersion = tmpBuildMinOsVersion.toStdString();
@@ -472,7 +475,7 @@ struct VersionInfo {
             return in;
         }
         friend QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
-            out << QString::fromStdString(versionInfo.tag) << QString::fromStdString(versionInfo.changeLog)
+            out << versionInfo.channel << QString::fromStdString(versionInfo.tag) << QString::fromStdString(versionInfo.changeLog)
                 << versionInfo.buildVersion << QString::fromStdString(versionInfo.buildMinOsVersion)
                 << QString::fromStdString(versionInfo.downloadUrl);
             return out;

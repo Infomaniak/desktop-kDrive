@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "log/log.h"
 #include "utility/types.h"
 
 namespace KDC {
@@ -33,10 +32,11 @@ class UpdateChecker {
 
         /**
          * @brief Asynchronously check for new version informations.
+         * @param channel Distribution channel (i.e. Production, Beta or Internal).
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if the job has been succesfully created.
          */
-        ExitCode checkUpdateAvailable(UniqueId *id = nullptr);
+        ExitCode checkUpdateAvailable(DistributionChannel channel, UniqueId *id = nullptr);
 
         void setCallback(const std::function<void()> &callback);
 
@@ -58,7 +58,7 @@ class UpdateChecker {
         virtual ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job);
 
         std::function<void()> _callback = nullptr;
-
+        DistributionChannel _channel = DistributionChannel::Unknown;
         VersionInfo _versionInfo; // A struct keeping all the informations about the currently available version.
 };
 

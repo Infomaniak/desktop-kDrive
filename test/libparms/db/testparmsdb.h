@@ -38,6 +38,7 @@ class TestParmsDb : public CppUnit::TestFixture {
 #endif
         CPPUNIT_TEST(testError);
         CPPUNIT_TEST(testAppState);
+        CPPUNIT_TEST(testColumnExist);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -56,6 +57,7 @@ class TestParmsDb : public CppUnit::TestFixture {
         void testExclusionApp(void);
 #endif
         void testError(void);
+        void testColumnExist();
 };
 
 } // namespace KDC

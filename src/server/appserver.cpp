@@ -1947,6 +1947,17 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
+        case RequestNum::UPDATER_CHANGE_CHANNEL: {
+            auto channel = DistributionChannel::Unknown;
+
+            QDataStream paramsStream(params);
+            paramsStream >> channel;
+
+            _updateManager->setDistributionChannel(channel);
+
+            resultStream << ExitCode::Ok;
+            break;
+        }
         case RequestNum::UPDATER_VERSIONINFO: {
             VersionInfo versionInfo = _updateManager->versionInfo();
             resultStream << ExitCode::Ok;

@@ -20,7 +20,9 @@
 #include "updatemanager.h"
 
 #include "sparkleupdater.h"
+#include "db/parmsdb.h"
 #include "log/log.h"
+#include "requests/parameterscache.h"
 
 namespace KDC {
 
@@ -43,8 +45,9 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     _updater->setStateChangeCallback(callback);
     connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
-    // At startup, do a check in any case.
-    QTimer::singleShot(3000, this, &UpdateManager::slotTimerFired);
+    // At startup, do a check in any case and setup distribution channel.
+    // QTimer::singleShot(3000, this, &UpdateManager::slotTimerFired);
+    QTimer::singleShot(3000, this, [=]() { setDistributionChannel(readDistributionChannelFromDb()); });
 }
 
 void UpdateManager::startInstaller() const {
@@ -97,6 +100,10 @@ void UpdateManager::createUpdater() {
 void UpdateManager::onUpdateStateChange(const UpdateStateV2 newState) {
     // Emit signal in order to run `slotUpdateStateChanged` in main thread
     emit updateStateChanged(newState);
+}
+
+DistributionChannel UpdateManager::readDistributionChannelFromDb() const {
+    return ParametersCache::instance()->parameters().distributionChannel();
 }
 
 } // namespace KDC

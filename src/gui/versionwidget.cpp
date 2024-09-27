@@ -22,11 +22,13 @@
 #include "guirequests.h"
 #include "preferencesblocwidget.h"
 #include "utility/utility.h"
+#include "utility/widgetsignalblocker.h"
 
 #include <config.h>
 
 #include <QLabel>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QVBoxLayout>
 #include <version.h>
 
@@ -54,10 +56,19 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     versionBox->addLayout(versionVBox);
     versionBox->setStretchFactor(versionVBox, 1);
 
-    // Status
     _updateStatusLabel->setObjectName("boldTextLabel");
     _updateStatusLabel->setWordWrap(true);
     versionVBox->addWidget(_updateStatusLabel);
+
+    const auto channelBox = new QHBoxLayout(this);
+    _prodButton = new QRadioButton(tr("Prod"), this);
+    channelBox->addWidget(_prodButton);
+    _betaButton = new QRadioButton(tr("Beta"), this);
+    channelBox->addWidget(_betaButton);
+    _internalButton = new QRadioButton(tr("Internal"), this);
+    channelBox->addWidget(_internalButton);
+    channelBox->addStretch();
+    versionVBox->addLayout(channelBox);
 
     _showReleaseNoteLabel->setObjectName("boldTextLabel");
     _showReleaseNoteLabel->setWordWrap(true);
@@ -80,9 +91,12 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
 
     refresh();
 
+    connect(_prodButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
+    connect(_betaButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
+    connect(_internalButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
     connect(_versionNumberLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_showReleaseNoteLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
-    connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdatButoonClicked);
+    connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdatButtonClicked);
 }
 
 void VersionWidget::refresh() const {
@@ -140,6 +154,22 @@ void VersionWidget::refresh() const {
     _updateButton->setVisible(showUpdateButton);
 }
 
+void VersionWidget::onChannelButtonClicked() const {
+    auto channel = DistributionChannel::Unknown;
+    if (sender() == _prodButton)
+        channel = DistributionChannel::Prod;
+    else if (sender() == _betaButton)
+        channel = DistributionChannel::Beta;
+    else if (sender() == _internalButton)
+        channel = DistributionChannel::Internal;
+    else
+        return;
+
+    GuiRequests::changeDistributionChannel(channel);
+    refresh();
+    // TODO : add auto refresh (with timer or signal from server???)
+}
+
 void VersionWidget::onLinkActivated(const QString &link) {
     if (link == versionLink)
         emit showAboutDialog();
@@ -147,8 +177,30 @@ void VersionWidget::onLinkActivated(const QString &link) {
         emit showReleaseNote();
 }
 
-void VersionWidget::onUpdatButoonClicked() const {
+void VersionWidget::onUpdatButtonClicked() const {
     GuiRequests::startInstaller();
+}
+
+void VersionWidget::refreshChannelButtons(const DistributionChannel channel) const {
+    switch (channel) {
+        case DistributionChannel::Prod: {
+            WidgetSignalBlocker _(_prodButton);
+            _prodButton->setChecked(true);
+            break;
+        }
+        case DistributionChannel::Beta: {
+            WidgetSignalBlocker _(_betaButton);
+            _betaButton->setChecked(true);
+            break;
+        }
+        case DistributionChannel::Internal: {
+            WidgetSignalBlocker _(_internalButton);
+            _internalButton->setChecked(true);
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 } // namespace KDC

@@ -28,7 +28,9 @@
 
 namespace KDC {
 
-ExitCode UpdateChecker::checkUpdateAvailable(UniqueId *id /*= nullptr*/) {
+ExitCode UpdateChecker::checkUpdateAvailable(const DistributionChannel channel, UniqueId *id /*= nullptr*/) {
+    _channel = channel;
+
     std::shared_ptr<AbstractNetworkJob> job;
     if (const auto exitCode = generateGetAppVersionJob(job); exitCode != ExitCode::Ok) return exitCode;
     if (id) *id = job->jobId();
@@ -63,8 +65,7 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         return;
     }
 
-    // TODO : Support all update types
-    _versionInfo = getAppVersionJobPtr->getVersionInfo(DistributionChannel::Internal);
+    _versionInfo = getAppVersionJobPtr->getVersionInfo(_channel);
     if (!_versionInfo.isValid()) {
         std::string error = "Invalid version info!";
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);

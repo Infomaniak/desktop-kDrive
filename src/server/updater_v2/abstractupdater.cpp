@@ -20,6 +20,7 @@
 #include "abstractupdater.h"
 
 #include "libcommon/utility/utility.h"
+#include "log/log.h"
 
 namespace KDC {
 
@@ -28,9 +29,9 @@ AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_unique<UpdateCheck
     _updateChecker->setCallback(callback);
 }
 
-ExitCode AbstractUpdater::checkUpdateAvailable(UniqueId* id) {
+ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel channel, UniqueId* id /*= nullptr*/) {
     setState(UpdateStateV2::Checking);
-    return _updateChecker->checkUpdateAvailable(id);
+    return _updateChecker->checkUpdateAvailable(channel, id);
 }
 
 void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateStateV2)>& stateChangeCallback) {
