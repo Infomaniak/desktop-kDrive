@@ -521,6 +521,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
             return ExitCode::DataError;
         } else if (currentNode == _updateTree->rootNode()) {
             LOG_SYNCPAL_WARN(_logger, "No operation allowed on the root node");
+            assert(false);
             return ExitCode::DataError;
         }
 
@@ -996,6 +997,7 @@ bool UpdateTreeWorker::updateNodeId(std::shared_ptr<Node> node, const NodeId &ne
 
     if (!node->parentNode()) {
         LOG_SYNCPAL_WARN(_logger, "Bad parameters");
+        assert(false);
         return false;
     }
 
