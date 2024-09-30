@@ -93,7 +93,7 @@ jobs:
         run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
 
       - name: Build and package kDrive desktop
-        run : ./infomaniak-build-tools/macos/build-drive.sh
+        run : ./infomaniak-build-tools/macos/build-release.sh
 
       - name: Grant upload script execute permission
         run : chmod +x ./infomaniak-build-tools/macos/upload-ci.sh
