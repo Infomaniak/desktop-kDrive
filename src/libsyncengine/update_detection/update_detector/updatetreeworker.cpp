@@ -506,8 +506,24 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
             continue;
         }
 
+        if (createOp->path().empty()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Invalid create operation on nodeId=" << createOp->nodeId().c_str());
+            assert(false);
+            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "UpdateTreeWorker::step5CreateDirectory",
+                                                      "Invalid create operation");
+            continue;
+        }
+
         // find node by path because it may have been created before
         std::shared_ptr<Node> currentNode = getOrCreateNodeFromExistingPath(createOp->path());
+        if (currentNode == nullptr) {
+            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
+            return ExitCode::DataError;
+        } else if (currentNode == _updateTree->rootNode()) {
+            LOGW_SYNCPAL_WARN(_logger, "No operation allowed on the root node");
+            return ExitCode::DataError;
+        }
+
         if (currentNode->hasChangeEvent(OperationType::Delete)) {
             // A directory has been deleted and another one has been created with the same name
             currentNode->setPreviousId(currentNode->id());
@@ -977,6 +993,11 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
 
 bool UpdateTreeWorker::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
     const NodeId oldId = node->id().has_value() ? *node->id() : "";
+
+    if (!node->parentNode()) {
+        LOG_SYNCPAL_WARN(_logger, "Bad parameters");
+        return false;
+    }
 
     node->parentNode()->deleteChildren(node);
     node->setId(newId);
