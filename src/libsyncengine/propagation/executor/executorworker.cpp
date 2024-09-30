@@ -2634,7 +2634,7 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
         if (!job.second->isRunning()) {
             LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job.second->jobId());
             job.second->abort();
-
+            job.second->setAdditionalCallback(nullptr);
             if (reschedule) {
                 _opList.push_front(_jobToSyncOpMap[job.first]->id());
             }
