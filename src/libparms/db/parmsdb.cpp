@@ -520,6 +520,10 @@ std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, 
             throw std::runtime_error("ParmsDb must be initialized!");
         } else {
             _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, version, autoDelete, test));
+            if (!_instance->init(version)) {
+                _instance.reset();
+                throw std::runtime_error("ParmsDb initialisation error!");
+            }
         }
     }
 

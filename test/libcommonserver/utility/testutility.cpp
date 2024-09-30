@@ -390,6 +390,11 @@ void TestUtility::testFormatIoError() {
     }
 }
 
+void TestUtility::testFormatSyncName() {
+    const SyncName name = Str("FileA.txt");
+    CPPUNIT_ASSERT(Utility::formatSyncName(name).find(SyncName2WStr(name)) != std::wstring::npos);
+}
+
 void TestUtility::testFormatPath() {
     const QString path = "A/AA";
     CPPUNIT_ASSERT(Utility::formatPath(path).find(path.toStdWString()) != std::wstring::npos);
