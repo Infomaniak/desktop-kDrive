@@ -314,7 +314,7 @@ bool Db::init(const std::string &version) {
 
     if (!version.empty()) {
         // Check if DB is already initialized
-        bool dbExists;
+        bool dbExists = false;
         if (!checkIfTableExists("version", dbExists)) {
             return false;
         }
@@ -328,7 +328,7 @@ bool Db::init(const std::string &version) {
                 return sqlFail(SELECT_VERSION_REQUEST_ID, error);
             }
 
-            bool found;
+            bool found = false;
             if (!selectVersion(_fromVersion, found)) {
                 LOG_WARN(_logger, "Error in Db::selectVersion");
                 return false;
@@ -397,7 +397,7 @@ bool Db::init(const std::string &version) {
             queryFree(INSERT_VERSION_REQUEST_ID);
 
             // Create DB
-            LOG_INFO(_logger, "Create DB");
+            LOG_INFO(_logger, "Create " << dbType().c_str() << " DB");
             bool retry;
             if (!create(retry)) {
                 if (retry) {
@@ -413,7 +413,7 @@ bool Db::init(const std::string &version) {
     }
 
     // Prepare DB
-    LOG_INFO(_logger, "Prepare DB");
+    LOG_INFO(_logger, "Prepare " << dbType().c_str() << " DB");
     if (!prepare()) {
         LOG_WARN(_logger, "Error in Db::prepare");
         return false;
@@ -613,12 +613,6 @@ bool Db::checkConnect(const std::string &version) {
     }
     queryFree(PRAGMA_FOREIGN_KEYS_ID);
     LOG_DEBUG(_logger, "sqlite3 foreign_keys=ON");
-
-    // DB initialization
-    if (!init(version)) {
-        LOG_ERROR(_logger, "Database initialisation error");
-        return false;
-    }
 
     return true;
 }

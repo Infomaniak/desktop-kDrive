@@ -2350,7 +2350,8 @@ bool SyncDb::updateNamesWithDistinctEncodings(const SyncNameMap &localNames) {
         bool found = false;
         updateNodeLocalName(dbNodeId, fileName, found);
         if (!found) {
-            LOGW_WARN(_logger, L"Node with DB id='" << dbNodeId << L"' and name='" << SyncName2WStr(fileName) << L"' not found.");
+            LOGW_WARN(_logger,
+                      L"Node with DB id='" << dbNodeId << L"' and " << Utility::formatSyncName(fileName) << L" not found.");
             queryFree(requestId);
 
             return false;
@@ -2389,7 +2390,7 @@ bool SyncDb::normalizeRemoteNames() {
 bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber) {
     if (!CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.5")) return true;
 
-    LOG_DEBUG(_logger, "Sync DB Upgrade < 3.6.5 DB");
+    LOG_DEBUG(_logger, "Upgrade < 3.6.5 Sync DB");
 
     normalizeRemoteNames();
 
