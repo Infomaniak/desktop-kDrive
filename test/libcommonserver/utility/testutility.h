@@ -36,6 +36,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testV2ws);
         CPPUNIT_TEST(testFormatStdError);
         CPPUNIT_TEST(testFormatIoError);
+        CPPUNIT_TEST(testFormatSyncName);
         CPPUNIT_TEST(testFormatPath);
         CPPUNIT_TEST(testFormatSyncPath);
         CPPUNIT_TEST(testFormatRequest);
@@ -78,6 +79,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testFormatStdError();
         void testFormatIoError();
         void testFormatPath();
+        void testFormatSyncName();
         void testFormatSyncPath();
         void testFormatRequest();
         void testFileSystemName();
