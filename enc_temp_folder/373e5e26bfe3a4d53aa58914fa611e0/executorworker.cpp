@@ -2657,7 +2657,7 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
         _opList.clear();
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "All queued executor jobs cancelled.");
+    LOG_SYNCPAL_DEBUG(_logger, "All queued executor jobs cancelled");
 }
 
 void ExecutorWorker::manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job) {
