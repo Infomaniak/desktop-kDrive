@@ -520,7 +520,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
             LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getOrCreateNodeFromExistingPath");
             return ExitCode::DataError;
         } else if (currentNode == _updateTree->rootNode()) {
-            LOGW_SYNCPAL_WARN(_logger, "No operation allowed on the root node");
+            LOG_SYNCPAL_WARN(_logger, "No operation allowed on the root node");
             return ExitCode::DataError;
         }
 
