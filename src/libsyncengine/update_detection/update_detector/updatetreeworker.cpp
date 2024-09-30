@@ -507,7 +507,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
         }
 
         if (createOp->path().empty()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Invalid create operation on nodeId=" << createOp->nodeId().c_str());
+            LOGW_SYNCPAL_WARN(_logger, "Invalid create operation on nodeId=" << createOp->nodeId().c_str());
             assert(false);
             SentryHandler::instance()->captureMessage(SentryLevel::Warning, "UpdateTreeWorker::step5CreateDirectory",
                                                       "Invalid create operation");
