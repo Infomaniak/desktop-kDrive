@@ -392,7 +392,7 @@ void TestUtility::testFormatIoError() {
 
 void TestUtility::testFormatSyncName() {
     const SyncName name = Str("FileA.txt");
-    CPPUNIT_ASSERT(Utility::formatSyncName(name).find(Utility::s2ws(name)) != std::wstring::npos);
+    CPPUNIT_ASSERT(Utility::formatSyncName(name).find(SyncName2WStr(name)) != std::wstring::npos);
 }
 
 void TestUtility::testFormatPath() {
