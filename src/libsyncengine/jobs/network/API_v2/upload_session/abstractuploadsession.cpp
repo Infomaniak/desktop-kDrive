@@ -111,10 +111,6 @@ void AbstractUploadSession::runJob() {
             abort();
         }
     }
-    
-    while (_threadCounter > 0) { // QUICK_FIX 3.6.5, Wait for all jobs to finish before ending the session. TODO apply proper fix (KDESKTOP-1256)
-        Utility::msleep(10);
-    }
 
     auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
