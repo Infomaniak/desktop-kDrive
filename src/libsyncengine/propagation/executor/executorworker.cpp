@@ -2633,8 +2633,8 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
     for (const auto &job: _ongoingJobs) {
         if (!job.second->isRunning()) {
             LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job.second->jobId());
-            job.second->abort();
             job.second->setAdditionalCallback(nullptr);
+            job.second->abort();
             if (reschedule) {
                 _opList.push_front(_jobToSyncOpMap[job.first]->id());
             }
@@ -2646,6 +2646,7 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
     // Then cancel jobs that are currently running
     for (const auto &job: remainingJobs) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job->jobId());
+        job->setAdditionalCallback(nullptr);
         job->abort();
 
         if (reschedule) {
