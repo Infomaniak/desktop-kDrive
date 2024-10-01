@@ -47,4 +47,4 @@ void DisabledOverlay::paintEvent(QPaintEvent *e) {
     painter.drawRoundedRect(rect().marginsRemoved(QMargins(hMargin, vMargin, hMargin, vMargin)), cornerRadius, cornerRadius);
 }
 
-}  // namespace KDC
+} // namespace KDC

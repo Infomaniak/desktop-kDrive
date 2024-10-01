@@ -36,4 +36,4 @@ class LanguageChangeFilter : public QObject {
         bool eventFilter(QObject *o, QEvent *e) override;
 };
 
-}  // namespace KDC
+} // namespace KDC

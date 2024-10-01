@@ -86,4 +86,4 @@ bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, SyncNode
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -56,4 +56,4 @@ class ContentChecksumWorker : public ISyncWorker {
         static std::unordered_map<UniqueId, std::shared_ptr<ComputeChecksumJob>> _runningJobs;
 };
 
-}  // namespace KDC
+} // namespace KDC

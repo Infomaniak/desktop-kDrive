@@ -107,4 +107,4 @@ class TestNetworkJobs : public CppUnit::TestFixture {
 
         static int _nbParalleleThreads;
 };
-}  // namespace KDC
+} // namespace KDC

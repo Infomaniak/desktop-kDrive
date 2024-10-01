@@ -62,4 +62,4 @@ class OperationProcessor : public ISyncWorker {
         std::shared_ptr<Node> findCorrespondingNodeFromPath(std::shared_ptr<Node> node);
 };
 
-}  // namespace KDC
+} // namespace KDC

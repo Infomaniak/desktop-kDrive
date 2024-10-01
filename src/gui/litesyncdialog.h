@@ -71,4 +71,4 @@ class LiteSyncDialog : public CustomDialog {
         void onSaveButtonTriggered(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

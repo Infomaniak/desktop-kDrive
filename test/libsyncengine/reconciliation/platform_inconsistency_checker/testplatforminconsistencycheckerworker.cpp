@@ -68,7 +68,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
     _syncPal->_platformInconsistencyCheckerWorker =
-        std::make_shared<PlatformInconsistencyCheckerWorker>(_syncPal, "Platform Inconsistency Checker", "PICH");
+            std::make_shared<PlatformInconsistencyCheckerWorker>(_syncPal, "Platform Inconsistency Checker", "PICH");
 }
 
 void TestPlatformInconsistencyCheckerWorker::tearDown() {
@@ -83,8 +83,8 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
     SyncName shortName = Str("1234567890");
     CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->checkNameSize(shortName));
 
-    SyncName longName =
-        Str("12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456"
+    SyncName longName = Str(
+            "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456"
             "78901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012"
             "3456789012345678901234567890");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameSize(longName));
@@ -130,15 +130,15 @@ void TestPlatformInconsistencyCheckerWorker::testCheckReservedNames() {
     CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(allowedName));
 
     std::array<SyncName, 2> reservedNames{{Str(".."), Str(".")}};
-    for (const auto &name : reservedNames) {
+    for (const auto &name: reservedNames) {
         CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(name));
     }
 
 #if defined(WIN32)
     std::array<SyncName, 7> reservedWinNames{
-        {Str("...."), Str("CON"), Str("LPT5"), Str("COM8"), Str("NUL"), Str("AUX"), Str("test.")}};
+            {Str("...."), Str("CON"), Str("LPT5"), Str("COM8"), Str("NUL"), Str("AUX"), Str("test.")}};
 
-    for (const auto &name : reservedWinNames) {
+    for (const auto &name: reservedWinNames) {
         CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(name));
     }
 #endif
@@ -168,7 +168,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash() {
 
 void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     // Create local files
-    for (const std::vector<std::string> nodes = {{"a1"}, {"A"}}; const auto &n : nodes) {
+    for (const std::vector<std::string> nodes = {{"a1"}, {"A"}}; const auto &n: nodes) {
         std::ofstream ofs(_tempDir.path() / n);
         ofs << "Some content.\n";
         ofs.close();
@@ -190,11 +190,11 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     // Set up remote tree
     const auto remoteParentNode = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
     const auto remoteNodeLower =
-        std::make_shared<Node>(dbNodeIdLower, ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Move, "ra", 0, 0,
-                               12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+            std::make_shared<Node>(dbNodeIdLower, ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Move, "ra", 0, 0,
+                                   12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
     const auto remoteNodeUpper =
-        std::make_shared<Node>(dbNodeIdUpper, ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::None, "rA", 0, 0,
-                               12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+            std::make_shared<Node>(dbNodeIdUpper, ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::None, "rA", 0, 0,
+                                   12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     CPPUNIT_ASSERT(remoteParentNode->insertChildren(remoteNodeLower));
     CPPUNIT_ASSERT(remoteParentNode->insertChildren(remoteNodeUpper));
@@ -276,4 +276,4 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
 #endif
 }
 
-}  // namespace KDC
+} // namespace KDC

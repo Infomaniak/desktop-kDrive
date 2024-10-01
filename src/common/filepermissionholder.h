@@ -36,4 +36,4 @@ class FilePermissionHolder {
         QFile::Permissions _initPermissions;
 };
 
-}  // namespace KDC
+} // namespace KDC

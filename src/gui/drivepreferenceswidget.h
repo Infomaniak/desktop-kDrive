@@ -127,4 +127,4 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onDriveBeingRemoved();
 };
 
-}  // namespace KDC
+} // namespace KDC

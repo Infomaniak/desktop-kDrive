@@ -41,4 +41,4 @@ class TestOldSyncDb : public CppUnit::TestFixture {
         OldSyncDb *_testObj;
 };
 
-}  // namespace KDC
+} // namespace KDC

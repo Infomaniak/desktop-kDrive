@@ -40,24 +40,24 @@ DEFINE_PROPERTYKEY(PKEY_StorageProviderTransferProgress, 0xE77E90DF, 0x6271, 0x4
 #define CHUNKBASESIZE 4096
 #define MAXCHUNKS 1000
 
-#define FIELD_SIZE(type, field) (sizeof(((type *)0)->field))
+#define FIELD_SIZE(type, field) (sizeof(((type *) 0)->field))
 #define CF_SIZE_OF_OP_PARAM(field) (FIELD_OFFSET(CF_OPERATION_PARAMETERS, field) + FIELD_SIZE(CF_OPERATION_PARAMETERS, field))
 
 CF_CALLBACK_REGISTRATION CloudProvider::s_callbackTable[] = {
-    {CF_CALLBACK_TYPE_FETCH_DATA, CloudProvider::onFetchData},
-    //{ CF_CALLBACK_TYPE_VALIDATE_DATA, CloudProvider::onValidateData },
-    {CF_CALLBACK_TYPE_CANCEL_FETCH_DATA, CloudProvider::onCancelFetchData},
-    //{ CF_CALLBACK_TYPE_FETCH_PLACEHOLDERS, CloudProvider::onNotifyFetchPlaceholder },
-    //{ CF_CALLBACK_TYPE_CANCEL_FETCH_PLACEHOLDERS, CloudProvider::onCancelFetchPlacehoders },
-    //{ CF_CALLBACK_TYPE_NOTIFY_FILE_OPEN_COMPLETION, CloudProvider::onNotifyOpenCompletion },
-    //{ CF_CALLBACK_TYPE_NOTIFY_FILE_CLOSE_COMPLETION, CloudProvider::onNotifyCloseCompletion },
-    {CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE, CloudProvider::onNotifyDehydrate},
-    //{ CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE_COMPLETION, CloudProvider::onNotifyDehydrateCompletion },
-    //{ CF_CALLBACK_TYPE_NOTIFY_DELETE, CloudProvider::onNotifyDelete },
-    //{ CF_CALLBACK_TYPE_NOTIFY_DELETE_COMPLETION, CloudProvider::onNotifyDeleteCompletion },
-    //{ CF_CALLBACK_TYPE_NOTIFY_RENAME, CloudProvider::onNotifyRename },
-    //{ CF_CALLBACK_TYPE_NOTIFY_RENAME_COMPLETION, CloudProvider::onNotifyRenameCompletion },
-    CF_CALLBACK_REGISTRATION_END};
+        {CF_CALLBACK_TYPE_FETCH_DATA, CloudProvider::onFetchData},
+        //{ CF_CALLBACK_TYPE_VALIDATE_DATA, CloudProvider::onValidateData },
+        {CF_CALLBACK_TYPE_CANCEL_FETCH_DATA, CloudProvider::onCancelFetchData},
+        //{ CF_CALLBACK_TYPE_FETCH_PLACEHOLDERS, CloudProvider::onNotifyFetchPlaceholder },
+        //{ CF_CALLBACK_TYPE_CANCEL_FETCH_PLACEHOLDERS, CloudProvider::onCancelFetchPlacehoders },
+        //{ CF_CALLBACK_TYPE_NOTIFY_FILE_OPEN_COMPLETION, CloudProvider::onNotifyOpenCompletion },
+        //{ CF_CALLBACK_TYPE_NOTIFY_FILE_CLOSE_COMPLETION, CloudProvider::onNotifyCloseCompletion },
+        {CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE, CloudProvider::onNotifyDehydrate},
+        //{ CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE_COMPLETION, CloudProvider::onNotifyDehydrateCompletion },
+        //{ CF_CALLBACK_TYPE_NOTIFY_DELETE, CloudProvider::onNotifyDelete },
+        //{ CF_CALLBACK_TYPE_NOTIFY_DELETE_COMPLETION, CloudProvider::onNotifyDeleteCompletion },
+        //{ CF_CALLBACK_TYPE_NOTIFY_RENAME, CloudProvider::onNotifyRename },
+        //{ CF_CALLBACK_TYPE_NOTIFY_RENAME_COMPLETION, CloudProvider::onNotifyRenameCompletion },
+        CF_CALLBACK_REGISTRATION_END};
 
 CloudProvider::CloudProvider(const LPCWSTR id, const LPCWSTR driveId, const LPCWSTR folderId, const LPCWSTR userId,
                              const LPCWSTR folderName, const LPCWSTR folderPath) {
@@ -145,7 +145,7 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
             try {
                 TRACE_DEBUG(L"Get placeholder info: path = %ls", path);
                 winrt::check_hresult(
-                    CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
+                        CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
             } catch (winrt::hresult_error const &ex) {
                 if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
                     TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
@@ -165,7 +165,7 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
 
                     TRACE_DEBUG(L"Dehydrating placeholder: path = %ls", path);
                     winrt::check_hresult(
-                        CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, nullptr));
+                            CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, nullptr));
                 } catch (winrt::hresult_error const &ex) {
                     TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
                                 ex.message().c_str());
@@ -286,8 +286,8 @@ bool CloudProvider::updateTransfer(const wchar_t *filePath, const wchar_t *fromF
         LARGE_INTEGER lengthToRead;
         totalLengthToRead.QuadPart = completed - fetchInfo._offset.QuadPart;
         size_t chunkSize = (totalLengthToRead.QuadPart > CHUNKBASESIZE
-                                ? min(MAXCHUNKS, totalLengthToRead.QuadPart / CHUNKBASESIZE) * CHUNKBASESIZE
-                                : totalLengthToRead.QuadPart);
+                                    ? min(MAXCHUNKS, totalLengthToRead.QuadPart / CHUNKBASESIZE) * CHUNKBASESIZE
+                                    : totalLengthToRead.QuadPart);
         char *transferData = new char[chunkSize];
         fromFilePathStream.seekg(fetchInfo._offset.QuadPart);
         while (((completed == fetchInfo._length.QuadPart && totalLengthToRead.QuadPart > 0) ||
@@ -424,10 +424,10 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         return;
     }
 
-    ProviderInfo *providerInfo = (ProviderInfo *)callbackInfo->CallbackContext;
+    ProviderInfo *providerInfo = (ProviderInfo *) callbackInfo->CallbackContext;
     if (providerInfo) {
         std::filesystem::path fullPath =
-            std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
+                std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
 
         if (wcsncmp(fullPath.wstring().c_str(), providerInfo->folderPath(), wcslen(providerInfo->folderPath()))) {
             TRACE_DEBUG(L"File not synchronized: %ls", fullPath.wstring().c_str());
@@ -452,7 +452,7 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         FetchInfo fetchInfo;
         fetchInfo._connectionKey = callbackInfo->ConnectionKey;
         fetchInfo._transferKey = callbackInfo->TransferKey;
-        fetchInfo._offset = {0};  // Restart always from 0
+        fetchInfo._offset = {0}; // Restart always from 0
         fetchInfo._length = callbackParameters->FetchData.RequiredFileOffset;
         fetchInfo._length.QuadPart += callbackParameters->FetchData.RequiredLength.QuadPart;
         fetchInfo._updating = false;
@@ -491,10 +491,10 @@ void CALLBACK CloudProvider::onCancelFetchData(_In_ CONST CF_CALLBACK_INFO *call
         return;
     }
 
-    ProviderInfo *providerInfo = (ProviderInfo *)callbackInfo->CallbackContext;
+    ProviderInfo *providerInfo = (ProviderInfo *) callbackInfo->CallbackContext;
     if (providerInfo) {
         std::filesystem::path fullPath =
-            std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
+                std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
 
         if (!cancelTransfer(providerInfo, fullPath.wstring().c_str(), false)) {
             TRACE_ERROR(L"Error in cancelTransfer: path = %lls", fullPath.wstring().c_str());
@@ -510,10 +510,10 @@ void CloudProvider::onNotifyDehydrate(_In_ CONST CF_CALLBACK_INFO *callbackInfo,
         return;
     }
 
-    ProviderInfo *providerInfo = (ProviderInfo *)callbackInfo->CallbackContext;
+    ProviderInfo *providerInfo = (ProviderInfo *) callbackInfo->CallbackContext;
     if (providerInfo) {
         std::filesystem::path fullPath =
-            std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
+                std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
 
         if (callbackInfo->ProcessInfo->ProcessId == Utilities::s_processId) {
             TRACE_DEBUG(L"Dehydration asked by app: path = %lls", fullPath.wstring().c_str());
@@ -650,7 +650,7 @@ bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER
     opParams.ParamSize = CF_SIZE_OF_OP_PARAM(TransferData);
     opParams.TransferData.CompletionStatus = STATUS_UNSUCCESSFUL;
     opParams.TransferData.Buffer = nullptr;
-    opParams.TransferData.Offset = {0};  // Cancel entire transfer
+    opParams.TransferData.Offset = {0}; // Cancel entire transfer
     opParams.TransferData.Length = requiredFileOffset;
 
     try {

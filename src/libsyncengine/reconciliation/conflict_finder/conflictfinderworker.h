@@ -48,11 +48,11 @@ class ConflictFinderWorker : public OperationProcessor {
         std::optional<Conflict> checkMoveMoveSourceConflict(std::shared_ptr<Node> moveNode);
         std::optional<Conflict> checkMoveMoveDestConflict(std::shared_ptr<Node> moveNode);
         std::optional<std::vector<Conflict>> determineMoveMoveCycleConflicts(
-            std::vector<std::shared_ptr<Node>> localMoveDirNodes, std::vector<std::shared_ptr<Node>> remoteMoveDirNodes);
+                std::vector<std::shared_ptr<Node>> localMoveDirNodes, std::vector<std::shared_ptr<Node>> remoteMoveDirNodes);
         std::optional<std::vector<std::shared_ptr<Node>>> findChangeEventInSubNodes(OperationType event,
                                                                                     std::shared_ptr<Node> parentNode);
 
         friend class TestConflictFinderWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

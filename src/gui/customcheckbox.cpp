@@ -22,10 +22,10 @@
 
 namespace KDC {
 
-static int defaultToolTipDuration = 3000;  // ms
+static int defaultToolTipDuration = 3000; // ms
 
-CustomCheckBox::CustomCheckBox(QWidget *parent)
-    : QCheckBox(parent), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _customToolTip(nullptr) {
+CustomCheckBox::CustomCheckBox(QWidget *parent) :
+    QCheckBox(parent), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _customToolTip(nullptr) {
     connect(this, &QCheckBox::clicked, this, &CustomCheckBox::onClicked);
 }
 
@@ -62,4 +62,4 @@ void CustomCheckBox::onClicked(bool checked) {
     QApplication::sendEvent(this, new QEvent(QEvent::Leave));
 }
 
-}  // namespace KDC
+} // namespace KDC

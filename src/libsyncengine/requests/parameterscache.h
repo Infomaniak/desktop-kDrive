@@ -37,7 +37,7 @@ class SYNCENGINE_EXPORT ParametersCache {
         inline Parameters &parameters() { return _parameters; }
         ExitCode save();
 
-        void setUploadSessionParallelThreads(int count);  // For testing purpose
+        void setUploadSessionParallelThreads(int count); // For testing purpose
         void decreaseUploadSessionParallelThreads();
 
     private:
@@ -47,4 +47,4 @@ class SYNCENGINE_EXPORT ParametersCache {
         ParametersCache(bool isTest = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

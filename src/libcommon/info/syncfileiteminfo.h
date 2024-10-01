@@ -67,7 +67,7 @@ class SyncFileItemInfo {
 
     private:
         NodeType _type;
-        QString _path;  // Sync folder relative filesystem path
+        QString _path; // Sync folder relative filesystem path
         QString _newPath;
         QString _localNodeId;
         QString _remoteNodeId;
@@ -80,4 +80,4 @@ class SyncFileItemInfo {
         QString _error;
 };
 
-}  // namespace KDC
+} // namespace KDC

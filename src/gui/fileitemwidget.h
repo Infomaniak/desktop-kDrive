@@ -43,4 +43,4 @@ class FileItemWidget : public AbstractFileItemWidget {
         NodeType _nodeType = NodeType::Unknown;
 };
 
-}  // namespace KDC
+} // namespace KDC

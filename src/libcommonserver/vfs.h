@@ -244,7 +244,7 @@ class Vfs : public QObject {
         bool _started;
 };
 
-}  // namespace KDC
+} // namespace KDC
 
 Q_DECLARE_INTERFACE(KDC::Vfs, "Vfs")
 
@@ -305,4 +305,4 @@ KDC::VirtualFileMode bestAvailableVfsMode();
 /// Create a VFS instance for the mode, returns nullptr on failure.
 std::unique_ptr<Vfs> createVfsFromPlugin(KDC::VirtualFileMode virtualFileMode, VfsSetupParams &vfsSetupParams, QString &error);
 
-}  // namespace KDC
+} // namespace KDC

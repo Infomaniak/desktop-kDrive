@@ -36,10 +36,9 @@
 
 namespace KDC {
 
-SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName)
-    : ISyncWorker(syncPal, name, shortName),
-      _step(SyncStep::Idle),
-      _pauseTime(std::chrono::time_point<std::chrono::system_clock>()) {}
+SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
+    ISyncWorker(syncPal, name, shortName), _step(SyncStep::Idle),
+    _pauseTime(std::chrono::time_point<std::chrono::system_clock>()) {}
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -127,8 +126,8 @@ void SyncPalWorker::execute() {
             // Check workers status
             ExitCode workersExitCode[2];
             for (int index = 0; index < 2; index++) {
-                workersExitCode[index] =
-                    (stepWorkers[index] && !stepWorkers[index]->isRunning() ? stepWorkers[index]->exitCode() : ExitCode::Unknown);
+                workersExitCode[index] = (stepWorkers[index] && !stepWorkers[index]->isRunning() ? stepWorkers[index]->exitCode()
+                                                                                                 : ExitCode::Unknown);
             }
 
             if ((!stepWorkers[0] || workersExitCode[0] == ExitCode::Ok) &&
@@ -396,18 +395,18 @@ SyncStep SyncPalWorker::nextStep() const {
                     !_syncPal->_localFSObserverWorker->updating() && !_syncPal->_remoteFSObserverWorker->updating() &&
                     (_syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated() ||
                      _syncPal->restart()))
-                       ? SyncStep::UpdateDetection1
-                       : SyncStep::Idle;
+                           ? SyncStep::UpdateDetection1
+                           : SyncStep::Idle;
             break;
         case SyncStep::UpdateDetection1: {
             auto logNbOps = [=](const ReplicaSide side) {
                 auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->nbOps()
-                                               << " " << side
-                                               << " operations detected (# CREATE: " << opsSet->nbOpsByType(OperationType::Create)
-                                               << ", # EDIT: " << opsSet->nbOpsByType(OperationType::Edit)
-                                               << ", # MOVE: " << opsSet->nbOpsByType(OperationType::Move)
-                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationType::Delete) << ")");
+                                                   << " " << side << " operations detected (# CREATE: "
+                                                   << opsSet->nbOpsByType(OperationType::Create)
+                                                   << ", # EDIT: " << opsSet->nbOpsByType(OperationType::Edit)
+                                                   << ", # MOVE: " << opsSet->nbOpsByType(OperationType::Move)
+                                                   << ", # DELETE: " << opsSet->nbOpsByType(OperationType::Delete) << ")");
             };
             logNbOps(ReplicaSide::Local);
             logNbOps(ReplicaSide::Remote);
@@ -421,14 +420,14 @@ SyncStep SyncPalWorker::nextStep() const {
 
             return (_syncPal->operationSet(ReplicaSide::Local)->updated() ||
                     _syncPal->operationSet(ReplicaSide::Remote)->updated())
-                       ? SyncStep::UpdateDetection2
-                       : SyncStep::Done;
+                           ? SyncStep::UpdateDetection2
+                           : SyncStep::Done;
             break;
         }
         case SyncStep::UpdateDetection2:
             return (_syncPal->updateTree(ReplicaSide::Local)->updated() || _syncPal->updateTree(ReplicaSide::Remote)->updated())
-                       ? SyncStep::Reconciliation1
-                       : SyncStep::Done;
+                           ? SyncStep::Reconciliation1
+                           : SyncStep::Done;
             break;
         case SyncStep::Reconciliation1:
             return SyncStep::Reconciliation2;
@@ -525,7 +524,7 @@ bool SyncPalWorker::resetVfsFilesStatus() {
     try {
         std::error_code ec;
         auto dirIt = std::filesystem::recursive_directory_iterator(
-            _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
+                _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
             return false;
@@ -535,7 +534,7 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             // skip_permission_denied doesn't work on Windows
             try {
                 bool dummy = dirIt->exists();
-                (void)(dummy);
+                (void) (dummy);
             } catch (std::filesystem::filesystem_error &) {
                 dirIt.disable_recursion_pending();
                 continue;
@@ -549,8 +548,8 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             bool isLink = false;
             IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
-                LOGW_SYNCPAL_WARN(
-                    _logger, L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
+                                                   << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
                 ok = false;
                 continue;
@@ -648,4 +647,4 @@ bool SyncPalWorker::resetVfsFilesStatus() {
     return ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

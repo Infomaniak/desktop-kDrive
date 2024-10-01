@@ -39,7 +39,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
 
-        static const int logsPurgeRate;  // Delay after which the logs are purged, expressed in days
+        static const int logsPurgeRate; // Delay after which the logs are purged, expressed in days
         static const int logMaxSize;
 
         static QString getIconPath(IconType iconType);
@@ -123,17 +123,17 @@ struct COMMON_EXPORT CommonUtility {
 };
 
 struct ArgsReader {
-        template <class... Args>
+        template<class... Args>
         explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
             read(args...);
         }
 
-        template <class T>
+        template<class T>
         void read(const T p) {
             stream << p;
         }
 
-        template <class T, class... Args>
+        template<class T, class... Args>
         void read(const T p, Args... args) {
             stream << p;
             read(args...);
@@ -147,12 +147,12 @@ struct ArgsReader {
 struct ArgsWriter {
         explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
 
-        template <class T>
+        template<class T>
         void write(T &r) {
             stream >> r;
         }
 
-        template <class T, class... Args>
+        template<class T, class... Args>
         void write(T &r, Args &...args) {
             stream >> r;
             write(args...);
@@ -160,4 +160,4 @@ struct ArgsWriter {
 
         QDataStream stream;
 };
-}  // namespace KDC
+} // namespace KDC

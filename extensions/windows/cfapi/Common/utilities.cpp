@@ -25,7 +25,7 @@
 #include <regex>
 #include <filesystem>
 
-#define PIPE_TIMEOUT 5 * 1000  // ms
+#define PIPE_TIMEOUT 5 * 1000 // ms
 #define DEFAULT_BUFLEN 4096
 
 TraceCbk Utilities::s_traceCbk;
@@ -110,7 +110,7 @@ void Utilities::traceFileDates(const wchar_t *filePath) {
 
 std::string Utilities::utf16ToUtf8(const wchar_t *utf16, int len) {
     if (len < 0) {
-        len = (int)wcslen(utf16);
+        len = (int) wcslen(utf16);
     }
 
     if (len == 0) {
@@ -125,7 +125,7 @@ std::string Utilities::utf16ToUtf8(const wchar_t *utf16, int len) {
 
 std::wstring Utilities::utf8ToUtf16(const char *utf8, int len) {
     if (len < 0) {
-        len = (int)strlen(utf8);
+        len = (int) strlen(utf8);
     }
 
     if (len == 0) {
@@ -196,7 +196,7 @@ bool Utilities::writeMessage(const std::wstring &verb, const std::wstring &path,
         msg = utf16ToUtf8(std::wstring(verb + MSG_CDE_SEPARATOR + path + MSG_END).c_str());
     } else {
         msg = utf16ToUtf8(
-            std::wstring(verb + MSG_CDE_SEPARATOR + std::to_wstring(msgId) + MSG_ARG_SEPARATOR + path + MSG_END).c_str());
+                std::wstring(verb + MSG_CDE_SEPARATOR + std::to_wstring(msgId) + MSG_ARG_SEPARATOR + path + MSG_END).c_str());
     }
 
     DWORD numBytesWritten = 0;
@@ -330,7 +330,7 @@ std::wstring Utilities::getLastErrorMessage() {
 
     LPWSTR messageBuffer = nullptr;
     size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                 NULL, errorMessageID, NULL, (LPWSTR)&messageBuffer, 0, NULL);
+                                 NULL, errorMessageID, NULL, (LPWSTR) &messageBuffer, 0, NULL);
 
     // Escape quotes
     std::wstring msg = std::wstring(messageBuffer, size);
@@ -363,7 +363,7 @@ bool Utilities::checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJuncti
     }
 
     BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
-    REPARSE_DATA_BUFFER &ReparseBuffer = (REPARSE_DATA_BUFFER &)buf;
+    REPARSE_DATA_BUFFER &ReparseBuffer = (REPARSE_DATA_BUFFER &) buf;
     DWORD dwRet;
     if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, NULL, 0, &ReparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
                          NULL)) {

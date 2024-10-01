@@ -40,11 +40,11 @@ class PlatformInconsistencyCheckerWorker : public OperationProcessor {
 
         struct NodeIdPair {
                 NodeId remoteId;
-                NodeId localId;  // Optional, only required if the file is already synchronized.
+                NodeId localId; // Optional, only required if the file is already synchronized.
         };
         std::list<NodeIdPair> _idsToBeRemoved;
 
         friend class TestPlatformInconsistencyCheckerWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

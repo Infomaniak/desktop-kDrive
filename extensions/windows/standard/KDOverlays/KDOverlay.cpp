@@ -55,7 +55,7 @@ RemotePathChecker *getGlobalChecker() {
     return s_instance.get();
 }
 
-}  // namespace
+} // namespace
 KDOverlay::KDOverlay(int state) : _referenceCount(1), _state(state) {}
 
 KDOverlay::~KDOverlay(void) {}

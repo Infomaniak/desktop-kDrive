@@ -29,14 +29,9 @@ static const int boxHMargin = 10;
 static const int boxVMargin = 5;
 static const int boxSpacing = 10;
 
-CustomPushButton::CustomPushButton(const QString &path, const QString &text, QWidget *parent)
-    : QPushButton(parent),
-      _iconPath(path),
-      _text(text),
-      _iconSize(QSize()),
-      _iconColor(QColor()),
-      _iconLabel(nullptr),
-      _textLabel(nullptr) {
+CustomPushButton::CustomPushButton(const QString &path, const QString &text, QWidget *parent) :
+    QPushButton(parent), _iconPath(path), _text(text), _iconSize(QSize()), _iconColor(QColor()), _iconLabel(nullptr),
+    _textLabel(nullptr) {
     setContentsMargins(0, 0, 0, 0);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
@@ -91,4 +86,4 @@ void CustomPushButton::setIcon() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

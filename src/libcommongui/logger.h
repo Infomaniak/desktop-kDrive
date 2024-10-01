@@ -113,4 +113,4 @@ class Logger : public QObject {
         bool _isCLientLog = false;
 };
 
-}  // namespace KDC
+} // namespace KDC

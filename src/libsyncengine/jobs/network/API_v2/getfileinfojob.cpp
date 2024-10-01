@@ -22,14 +22,14 @@
 
 namespace KDC {
 
-GetFileInfoJob::GetFileInfoJob(int userDbId, int driveId, const NodeId &nodeId)
-    : AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId), _nodeId(nodeId) {
+GetFileInfoJob::GetFileInfoJob(int userDbId, int driveId, const NodeId &nodeId) :
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId), _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _trials = 1;
 }
 
-GetFileInfoJob::GetFileInfoJob(int driveDbId, const NodeId &nodeId)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _nodeId(nodeId) {
+GetFileInfoJob::GetFileInfoJob(int driveDbId, const NodeId &nodeId) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _trials = 1;
 }
@@ -85,7 +85,7 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
 bool GetFileInfoJob::handleError(std::istream &is, const Poco::URI &uri) {
     using namespace Poco::Net;
     if (_resHttp.getStatus() == HTTPResponse::HTTP_FORBIDDEN || _resHttp.getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
-        return true;  // The file is not accessible or doesn't exist
+        return true; // The file is not accessible or doesn't exist
     }
 
     return AbstractTokenNetworkJob::handleError(is, uri);
@@ -105,4 +105,4 @@ void GetFileInfoJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     canceled = false;
 }
 
-}  // namespace KDC
+} // namespace KDC

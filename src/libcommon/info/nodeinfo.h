@@ -59,4 +59,4 @@ class NodeInfo {
         QString _path;
 };
 
-}  // namespace KDC
+} // namespace KDC

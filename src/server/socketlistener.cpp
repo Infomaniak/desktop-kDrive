@@ -72,4 +72,4 @@ void SocketListener::registerMonitoredDirectory(uint systemDirectoryHash) {
     _monitoredDirectoriesBloomFilter.storeHash(systemDirectoryHash);
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -52,7 +52,7 @@ ExitCode ExcludeListPropagator::checkItems() {
     try {
         std::error_code ec;
         auto dirIt = std::filesystem::recursive_directory_iterator(
-            _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
+                _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Error in checkItems: " << Utility::formatStdError(ec).c_str());
             return ExitCode::SystemError;
@@ -67,7 +67,7 @@ ExitCode ExcludeListPropagator::checkItems() {
             // skip_permission_denied doesn't work on Windows
             try {
                 bool dummy = dirIt->exists();
-                (void)(dummy);
+                (void) (dummy);
             } catch (std::filesystem::filesystem_error &) {
                 dirIt.disable_recursion_pending();
                 continue;
@@ -89,8 +89,9 @@ ExitCode ExcludeListPropagator::checkItems() {
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
                                                                                        isWarning, isExcluded, ioError);
             if (!success) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in ExclusionTemplateCache::isExcluded: "
-                                                                    << Utility::formatIoError(dirIt->path(), ioError).c_str());
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                                  L"Error in ExclusionTemplateCache::isExcluded: "
+                                          << Utility::formatIoError(dirIt->path(), ioError).c_str());
                 return ExitCode::SystemError;
             } else if (isExcluded) {
                 if (isWarning) {
@@ -114,8 +115,8 @@ ExitCode ExcludeListPropagator::checkItems() {
                 // Remove node (and children by cascade) from DB
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node "
-                                                                         << Path2WStr(relativePath).c_str()
-                                                                         << L" from DB because it is excluded from sync");
+                                                                             << Path2WStr(relativePath).c_str()
+                                                                             << L" from DB because it is excluded from sync");
                 }
 
                 if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
@@ -141,4 +142,4 @@ ExitCode ExcludeListPropagator::checkItems() {
     return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

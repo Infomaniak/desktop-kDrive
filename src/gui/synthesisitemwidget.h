@@ -40,4 +40,4 @@ class SynthesisItemWidget : public QWidget {
         QIcon getIconFromFileName(const QString &fileName) const;
 };
 
-}  // namespace KDC
+} // namespace KDC

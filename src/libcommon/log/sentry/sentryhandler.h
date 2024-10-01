@@ -54,11 +54,9 @@ inline std::string toString(SentryLevel level) {
 
 class SentryHandler {
     public:
-        enum class SentryProject { Server, Client, Deactivated }; // Only used for initialization, don't need to be in types.h
-
         virtual ~SentryHandler();
         static std::shared_ptr<SentryHandler> instance();
-        static void init(SentryProject project, int breadCrumbsSize = 100);
+        static void init(KDC::AppType appType, int breadCrumbsSize = 100);
         void setAuthenticatedUser(const SentryUser &user);
         void setGlobalConfidentialityLevel(SentryConfidentialityLevel level);
         /*   If the same event has been captured more than 10 times in the last 10 minutes, it will be flagged as a rate limited
@@ -74,12 +72,18 @@ class SentryHandler {
          */
         void captureMessage(SentryLevel level, const std::string &title, std::string message,
                             const SentryUser &user = SentryUser());
+        inline static AppType appType() { return _appType; }
+        inline static bool debugCrashCallback() { return _debugCrashCallback; }
+        inline static bool debugBeforeSendCallback() { return _debugBeforeSendCallback; }
+
+        // Print an event description into a file (for debugging)
+        static void writeEvent(const std::string &eventStr, bool crash) noexcept;
 
     protected:
         SentryHandler() = default;
         void setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit);
         void setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit);
-        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; } 
+        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
         virtual void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const;
 
     private:
@@ -95,7 +99,7 @@ class SentryHandler {
 
                 SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
                             SentryConfidentialityLevel userType, const SentryUser &user);
-                std::string getStr() const { return title + message + static_cast<char>(level) + userId; };
+                std::string getStr() const { return title + message + static_cast<char>(level) + userId; }
                 std::string title;
                 std::string message;
                 SentryLevel level;
@@ -146,5 +150,9 @@ class SentryHandler {
         unsigned int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
         int _sentryMinUploadIntervaOnRateLimit = 60; // Min. interval between two uploads of a rate limited event (seconds)
         bool _isSentryActivated = false;
+
+        static KDC::AppType _appType;
+        static bool _debugCrashCallback;
+        static bool _debugBeforeSendCallback;
 };
 } // namespace KDC

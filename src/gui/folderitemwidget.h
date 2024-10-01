@@ -103,4 +103,4 @@ class FolderItemWidget : public QWidget {
         void retranslateUi();
 };
 
-}  // namespace KDC
+} // namespace KDC

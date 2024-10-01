@@ -549,7 +549,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVer
     std::string error;
 
     if (dbFromVersionNumber == "3.4.0") {
-        LOG_DEBUG(_logger, "Upgrade 3.4.0 DB");
+        LOG_DEBUG(_logger, "Upgrade 3.4.0 Sync DB");
 
         // Upload session token table
         ASSERT(queryCreate(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID));
@@ -565,7 +565,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVer
     }
 
     if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.4")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.4.4 DB");
+        LOG_DEBUG(_logger, "Upgrade < 3.4.4 Sync DB");
 
         ASSERT(queryCreate(PRAGMA_WRITABLE_SCHEMA_ID));
         if (!queryPrepare(PRAGMA_WRITABLE_SCHEMA_ID, PRAGMA_WRITABLE_SCHEMA, false, errId, error)) {
@@ -1370,10 +1370,9 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
             ASSERT(queryBindValue(queryId, 1, nodeDbId));
             ASSERT(queryBindValue(queryId, 2, *nameIt));
             if (!queryNext(queryId, found)) {
-                LOGW_WARN(_logger, L"Error getting query result: " << Utility::s2ws(queryId.c_str())
-                                                                   << L" - parentNodeId="
-                                                                   << nodeDbId
-                                                                   << L" and name=" << (SyncName2WStr(*nameIt)).c_str());
+                LOGW_WARN(_logger, L"Error getting query result: " << Utility::s2ws(queryId.c_str()) << L" - parentNodeId="
+                                                                   << nodeDbId << L" and name="
+                                                                   << (SyncName2WStr(*nameIt)).c_str());
                 return false;
             }
             if (!found) {
@@ -2343,14 +2342,24 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
 }
 
 bool SyncDb::updateNamesWithDistinctEncodings(const SyncNameMap &localNames) {
+    static const char *requestId = UPDATE_NODE_NAME_LOCAL_REQUEST_ID;
+
+    if (!createAndPrepareRequest(requestId, UPDATE_NODE_NAME_LOCAL_REQUEST)) return false;
+
     for (const auto &[dbNodeId, fileName]: localNames) {
         bool found = false;
         updateNodeLocalName(dbNodeId, fileName, found);
         if (!found) {
-            LOGW_WARN(_logger, L"Node with DB id='" << dbNodeId << L"' and name='" << SyncName2WStr(fileName) << L"' not found.");
+            LOGW_WARN(_logger,
+                      L"Node with DB id='" << dbNodeId << L"' and " << Utility::formatSyncName(fileName) << L" not found.");
+            queryFree(requestId);
+
             return false;
         }
     }
+
+    queryFree(requestId);
+
     return true;
 }
 
@@ -2381,7 +2390,7 @@ bool SyncDb::normalizeRemoteNames() {
 bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber) {
     if (!CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.5")) return true;
 
-    LOG_DEBUG(_logger, "Upgrade < 3.6.5 DB");
+    LOG_DEBUG(_logger, "Upgrade < 3.6.5 Sync DB");
 
     normalizeRemoteNames();
 

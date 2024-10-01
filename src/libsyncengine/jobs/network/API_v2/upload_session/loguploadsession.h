@@ -40,4 +40,4 @@ class LogUploadSession : public AbstractUploadSession {
         bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
 };
 
-}  // namespace KDC
+} // namespace KDC

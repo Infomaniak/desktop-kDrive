@@ -58,7 +58,7 @@ void TestIo::testSetXAttrValue() {
 
     // A non-existing file
     {
-        const SyncPath path = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "on-fire", ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
@@ -66,8 +66,8 @@ void TestIo::testSetXAttrValue() {
 
     // A non-existing file with a very long name
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
+        const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(!_testObj->setXAttrValue(path, "status", "water-proof", ioError));
         CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);
@@ -128,7 +128,7 @@ void TestIo::testSetXAttrValue() {
 
     // A non-existing file
     {
-        const SyncPath path = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_NORMAL, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
@@ -136,4 +136,4 @@ void TestIo::testSetXAttrValue() {
 #endif
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -160,6 +160,29 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #endif
 }
 
+SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename) {
+    auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
+                                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                       _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    auto correspondingNode = std::make_shared<Node>(
+            dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
+            testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+
+    SyncOpPtr op = std::make_shared<SyncOperation>();
+    op->setAffectedNode(node);
+    op->setCorrespondingNode(correspondingNode);
+
+    return op;
+}
+
+void TestExecutorWorker::testLogCorrespondingNodeErrorMsg() {
+    SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
+    _syncPal->_executorWorker->logCorrespondingNodeErrorMsg(op);
+
+    op->setCorrespondingNode(nullptr);
+    _syncPal->_executorWorker->logCorrespondingNodeErrorMsg(op);
+}
+
 void TestExecutorWorker::testFixModificationDate() {
     // Create temp directory
     const LocalTemporaryDirectory temporaryDirectory;
@@ -179,17 +202,7 @@ void TestExecutorWorker::testFixModificationDate() {
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
 
-    // Generate sync operation
-    std::shared_ptr<Node> node = std::make_shared<Node>(
-        dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid", testhelpers::defaultTime,
-        testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    std::shared_ptr<Node> correspondingNode = std::make_shared<Node>(
-        dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
-        testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
-    SyncOpPtr op = std::make_shared<SyncOperation>();
-    op->setAffectedNode(node);
-    op->setCorrespondingNode(correspondingNode);
-
+    SyncOpPtr op = generateSyncOperation(dbNodeId, filename);
     CPPUNIT_ASSERT(_syncPal->_executorWorker->fixModificationDate(op, path));
 
     FileStat filestat;
@@ -204,6 +217,7 @@ void TestExecutorWorker::testAffectedUpdateTree() {
     // Normal cases
     auto syncOp = std::make_shared<SyncOperation>();
     syncOp->setTargetSide(ReplicaSide::Local);
+
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, _syncPal->_executorWorker->affectedUpdateTree(syncOp)->side());
 
     syncOp->setTargetSide(ReplicaSide::Remote);
@@ -227,4 +241,4 @@ void TestExecutorWorker::testTargetUpdateTree() {
     syncOp->setTargetSide(ReplicaSide::Unknown);
     CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _syncPal->_executorWorker->targetUpdateTree(syncOp));
 }
-}  // namespace KDC
+} // namespace KDC

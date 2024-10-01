@@ -32,7 +32,7 @@ class PluginFactory {
         virtual QObject *create(KDC::VfsSetupParams &vfsSetupParams, QObject *parent = nullptr) = 0;
 };
 
-template <class PluginClass>
+template<class PluginClass>
 class DefaultPluginFactory : public PluginFactory {
     public:
         QObject *create(KDC::VfsSetupParams &vfsSetupParams, QObject *parent = nullptr) override {
@@ -43,6 +43,6 @@ class DefaultPluginFactory : public PluginFactory {
 /// Return the expected name of a plugin, for use with QPluginLoader
 QString pluginFileName(const QString &type, const QString &name);
 
-}  // namespace KDC
+} // namespace KDC
 
 Q_DECLARE_INTERFACE(KDC::PluginFactory, "org.kDrive.PluginFactory")

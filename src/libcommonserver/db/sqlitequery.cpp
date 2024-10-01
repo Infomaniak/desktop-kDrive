@@ -98,7 +98,7 @@ bool SqliteQuery::bindValue(int index, const dbtype &value) {
     } else if (std::holds_alternative<std::shared_ptr<std::vector<char>>>(value)) {
         std::shared_ptr<std::vector<char>> valuePtr = std::get<std::shared_ptr<std::vector<char>>>(value);
         if (valuePtr) {
-            char *buffer = (char *)malloc(valuePtr->size() * sizeof(char));
+            char *buffer = (char *) malloc(valuePtr->size() * sizeof(char));
             std::uninitialized_copy(valuePtr->begin(), valuePtr->end(), buffer);
             res = sqlite3_bind_blob(_stmt.get(), index, buffer, static_cast<int>(valuePtr->size()), SQLITE_TRANSIENT);
             free(buffer);
@@ -154,7 +154,7 @@ bool SqliteQuery::exec() {
     } else {
         // LOG_DEBUG(_logger, "Last exec affected " << sqlite3_changes(_sqlite3Db.get()) << " rows.");
     }
-    return (_errId == SQLITE_DONE);  // either SQLITE_ROW or SQLITE_DONE
+    return (_errId == SQLITE_DONE); // either SQLITE_ROW or SQLITE_DONE
 }
 
 // !!! Not thread safe - To use with lock_guard
@@ -175,7 +175,7 @@ SqliteQuery::NextResult KDC::SqliteQuery::next() {
     for (;;) {
         _errId = sqlite3_step(_stmt.get());
         if (n < SQLITE_REPEAT_COUNT && firstStep && (_errId == SQLITE_LOCKED || _errId == SQLITE_BUSY)) {
-            sqlite3_reset(_stmt.get());  // not necessary after sqlite version 3.6.23.1
+            sqlite3_reset(_stmt.get()); // not necessary after sqlite version 3.6.23.1
             n++;
             Utility::msleep(SQLITE_SLEEP_TIME_MSEC);
         } else {
@@ -200,7 +200,7 @@ bool SqliteQuery::nullValue(int index) const {
 
 const std::string SqliteQuery::stringValue(int index) const {
 #ifdef _WIN32
-    char *value = (char *)sqlite3_column_text(_stmt.get(), index);
+    char *value = (char *) sqlite3_column_text(_stmt.get(), index);
     return (value ? std::string(reinterpret_cast<const char *>(value)) : std::string());
 #else
     const char *value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
@@ -210,7 +210,7 @@ const std::string SqliteQuery::stringValue(int index) const {
 
 const SyncName SqliteQuery::syncNameValue(int index) const {
 #ifdef _WIN32
-    wchar_t *value = (wchar_t *)sqlite3_column_text16(_stmt.get(), index);
+    wchar_t *value = (wchar_t *) sqlite3_column_text16(_stmt.get(), index);
     return (value ? reinterpret_cast<const wchar_t *>(value) : SyncName());
 #else
     const char *value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
@@ -250,4 +250,4 @@ bool SqliteQuery::isPragma() const {
     return Utility::startsWithInsensitive(_sql, "PRAGMA");
 }
 
-}  // namespace KDC
+} // namespace KDC

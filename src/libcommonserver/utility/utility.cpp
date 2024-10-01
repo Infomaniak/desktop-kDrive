@@ -205,6 +205,13 @@ std::wstring Utility::v2ws(const dbtype &v) {
     return std::visit(VariantPrinter{}, v);
 }
 
+std::wstring Utility::formatSyncName(const SyncName &name) {
+    std::wstringstream ss;
+    ss << L"name='" << SyncName2WStr(name) << L"'";
+
+    return ss.str();
+}
+
 std::wstring Utility::formatSyncPath(const SyncPath &path) {
     std::wstringstream ss;
     ss << L"path='" << Path2WStr(path) << L"'";

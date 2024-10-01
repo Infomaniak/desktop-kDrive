@@ -985,6 +985,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
+            Utility::restartFinderExtension();
+
             resultStream << toInt(exitCode);
             break;
         }

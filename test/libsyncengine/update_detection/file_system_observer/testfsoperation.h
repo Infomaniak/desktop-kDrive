@@ -33,4 +33,4 @@ class TestFsOperation : public CppUnit::TestFixture {
         void testConstructor();
 };
 
-}  // namespace KDC
+} // namespace KDC

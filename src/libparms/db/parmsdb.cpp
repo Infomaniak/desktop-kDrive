@@ -153,7 +153,8 @@
     "ORDER BY dbId;"
 
 #define SELECT_LAST_CONNECTED_USER_REQUEST_ID "select_last_connected_user"
-#define SELECT_LAST_CONNECTED_USER_REQUEST "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
+#define SELECT_LAST_CONNECTED_USER_REQUEST \
+    "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
 //
 // account
 //
@@ -519,6 +520,10 @@ std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, 
             throw std::runtime_error("ParmsDb must be initialized!");
         } else {
             _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, version, autoDelete, test));
+            if (!_instance->init(version)) {
+                _instance.reset();
+                throw std::runtime_error("ParmsDb initialisation error!");
+            }
         }
     }
 

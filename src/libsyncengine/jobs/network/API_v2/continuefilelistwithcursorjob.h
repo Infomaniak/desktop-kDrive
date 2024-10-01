@@ -35,4 +35,4 @@ class ContinueFileListWithCursorJob : public AbstractTokenNetworkJob {
         std::string _cursor;
 };
 
-}  // namespace KDC
+} // namespace KDC

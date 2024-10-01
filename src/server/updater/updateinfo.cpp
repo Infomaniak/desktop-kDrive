@@ -109,4 +109,4 @@ UpdateInfo UpdateInfo::parseString(const QString &xml, bool *ok) {
     return c;
 }
 
-}  // namespace KDC
+} // namespace KDC

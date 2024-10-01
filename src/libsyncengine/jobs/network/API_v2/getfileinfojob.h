@@ -57,4 +57,4 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
         SyncPath _path;
 };
 
-}  // namespace KDC
+} // namespace KDC

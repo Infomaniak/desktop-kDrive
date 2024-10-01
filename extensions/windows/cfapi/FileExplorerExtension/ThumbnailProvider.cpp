@@ -62,7 +62,7 @@ IFACEMETHODIMP ThumbnailProvider::GetThumbnail(_In_ UINT width, _Out_ HBITMAP *b
         std::wstring fullPath(path.data());
 
         winrt::handle fileHandle(
-            CreateFile(fullPath.c_str(), WRITE_DAC, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_NO_RECALL, nullptr));
+                CreateFile(fullPath.c_str(), WRITE_DAC, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_NO_RECALL, nullptr));
         if (fileHandle.get() == INVALID_HANDLE_VALUE) {
             TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
             return E_UNEXPECTED;
@@ -116,10 +116,10 @@ IFACEMETHODIMP ThumbnailProvider::GetThumbnail(_In_ UINT width, _Out_ HBITMAP *b
             TRACE_DEBUG(L"Thumbnail received");
 
             if (pixmapBuffer) {
-                BITMAPFILEHEADER *bmfh = (BITMAPFILEHEADER *)pixmapBuffer;
-                BITMAPINFOHEADER *bmih = (BITMAPINFOHEADER *)(pixmapBuffer + sizeof(BITMAPFILEHEADER));
-                BITMAPINFO *bmi = (BITMAPINFO *)bmih;
-                void *bits = (void *)(pixmapBuffer + bmfh->bfOffBits);
+                BITMAPFILEHEADER *bmfh = (BITMAPFILEHEADER *) pixmapBuffer;
+                BITMAPINFOHEADER *bmih = (BITMAPINFOHEADER *) (pixmapBuffer + sizeof(BITMAPFILEHEADER));
+                BITMAPINFO *bmi = (BITMAPINFO *) bmih;
+                void *bits = (void *) (pixmapBuffer + bmfh->bfOffBits);
                 HDC hdc = ::GetDC(nullptr);
 
                 TRACE_DEBUG(L"Create bitmap");

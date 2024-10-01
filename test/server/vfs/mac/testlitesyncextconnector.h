@@ -40,4 +40,4 @@ class TestLiteSyncExtConnector : public CppUnit::TestFixture {
 #endif
 };
 
-}  // namespace KDC
+} // namespace KDC

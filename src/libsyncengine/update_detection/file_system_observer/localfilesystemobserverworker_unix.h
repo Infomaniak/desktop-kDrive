@@ -32,4 +32,4 @@ class LocalFileSystemObserverWorker_unix : public LocalFileSystemObserverWorker 
         virtual bool isFolderWatcherReliable() const override { return (_folderWatcher && _folderWatcher->isReliable()); }
 };
 
-}  // namespace KDC
+} // namespace KDC

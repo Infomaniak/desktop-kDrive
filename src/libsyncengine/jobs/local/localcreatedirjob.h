@@ -43,4 +43,4 @@ class LocalCreateDirJob : public AbstractJob {
         SyncTime _modtime = 0;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -49,4 +49,4 @@ class ExclusionAppInfo {
         bool _def;
 };
 
-}  // namespace KDC
+} // namespace KDC

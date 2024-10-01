@@ -43,4 +43,4 @@ class UpdateErrorDialog : public CustomDialog {
         void initUi(const QString &targetVersion, const QString &targetVersionString, const QString &clientVersion);
 };
 
-}  // namespace KDC
+} // namespace KDC

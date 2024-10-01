@@ -110,4 +110,4 @@ void ParametersCache::decreaseUploadSessionParallelThreads() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

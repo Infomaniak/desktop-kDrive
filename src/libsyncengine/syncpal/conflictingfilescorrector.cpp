@@ -21,7 +21,7 @@
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"  // Path2WStr
+#include "libcommonserver/utility/utility.h" // Path2WStr
 
 #include <log4cplus/loggingmacros.h>
 
@@ -32,16 +32,17 @@
 namespace KDC {
 
 ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal, bool keepLocalVersion,
-                                                     std::vector<Error> &errors)
-    : _syncPal(syncPal), _keepLocalVersion(keepLocalVersion), _errors(std::move(errors)) {}
+                                                     std::vector<Error> &errors) :
+    _syncPal(syncPal),
+    _keepLocalVersion(keepLocalVersion), _errors(std::move(errors)) {}
 
 void ConflictingFilesCorrector::runJob() {
-    for (auto &error : _errors) {
+    for (auto &error: _errors) {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(error.destinationPath(), exists, ioError)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: "
-                                                        << Utility::formatIoError(error.destinationPath(), ioError).c_str());
+                                                            << Utility::formatIoError(error.destinationPath(), ioError).c_str());
             _nbErrors++;
             continue;
         }
@@ -109,4 +110,4 @@ void ConflictingFilesCorrector::deleteError(int errorDbId) {
     ParmsDb::instance()->deleteError(errorDbId, found);
 }
 
-}  // namespace KDC
+} // namespace KDC

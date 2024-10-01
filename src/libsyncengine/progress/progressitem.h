@@ -35,4 +35,4 @@ class ProgressItem {
         Progress _progress;
 };
 
-}  // namespace KDC
+} // namespace KDC

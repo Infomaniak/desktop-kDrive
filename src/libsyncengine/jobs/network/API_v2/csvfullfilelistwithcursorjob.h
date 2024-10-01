@@ -42,11 +42,11 @@ class SnapshotItemHandler {
         inline static void incrementCsvIndex(CsvIndex &index) { index = static_cast<CsvIndex>(static_cast<int>(index) + 1); };
 
         struct ParsingState {
-                CsvIndex index{CsvIndexId};  // The index of the column that is currently read.
+                CsvIndex index{CsvIndexId}; // The index of the column that is currently read.
                 bool readingDoubleQuotedValue{
-                    false};  // True if an opening double quote is encountered with no closing counter-part at this stage.
+                        false}; // True if an opening double quote is encountered with no closing counter-part at this stage.
                 bool prevCharDoubleQuotes{false};
-                bool readNextLine{true};  // If true, read the next line, stop item parsing otherwise.
+                bool readNextLine{true}; // If true, read the next line, stop item parsing otherwise.
                 std::string tmp;
                 int doubleQuoteCount{0};
         };
@@ -101,4 +101,4 @@ class CsvFullFileListWithCursorJob : public AbstractTokenNetworkJob {
         SnapshotItemHandler _snapshotItemHandler;
 };
 
-}  // namespace KDC
+} // namespace KDC
