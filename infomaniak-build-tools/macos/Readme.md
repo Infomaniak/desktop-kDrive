@@ -348,10 +348,10 @@ Issue these commands a terminal:
 ```bash
 cd ~/Projects/desktop-kDrive
 ```
-For a simple unsigned build:
+For a simple unsigned release build:
 
 ```bash
-infomaniak-build-tools/macos/build-drive.sh 
+infomaniak-build-tools/macos/build-release.sh 
 ```
 
 # Disabling SIP in VMWare Fusion

@@ -450,6 +450,7 @@ bool AbstractUploadSession::cancelSession() {
         for (auto &[jobId, job]: _ongoingChunkJobs) {
             if (job.get() && job->sessionToken() == _sessionToken) {
                 LOG_INFO(_logger, "Aborting chunk job " << jobId);
+                job->setAdditionalCallback(nullptr);
                 job->abort();
             }
         }

@@ -26,19 +26,45 @@ class CustomLogWStream : private std::wstringstream {
         CustomLogWStream &operator=(const CustomLogWStream &) = delete;
 
         std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
+
+        // We need to cast to std::wstringstream as operators<<(std::wstringstream, const wchar_t *str /*and const std::wstring
+        // &str*/) are defined outside of the class std::wstringstream and therefore it is not applicable to the current object
+        // because of the private inheritance
         CustomLogWStream &operator<<(const wchar_t *str) {
-            // We need to cast to std::wstringstream as the operator<<(std::wstringstream, const wchar_t *str) is defined outside
-            // of the class std::wstringstream and therefore it is not applicable to the current object because of the private
-            // inheritance
             static_cast<std::wstringstream &>(*this) << str;
+            return *this;
+        }
+        CustomLogWStream &operator<<(const std::wstring &str) {
+            static_cast<std::wstringstream &>(*this) << str;
+            return *this;
+        }
+
+        CustomLogWStream &operator<<(bool b) {
+            std::wstringstream::operator<<(b);
             return *this;
         }
         CustomLogWStream &operator<<(int i) {
             std::wstringstream::operator<<(i);
             return *this;
         }
-        CustomLogWStream &operator<<(const std::wstring &str) {
-            std::wstringstream::operator<<(str.c_str());
+        CustomLogWStream &operator<<(long i64) {
+            std::wstringstream::operator<<(i64);
+            return *this;
+        }
+        CustomLogWStream &operator<<(long long i64) {
+            std::wstringstream::operator<<(i64);
+            return *this;
+        }
+        CustomLogWStream &operator<<(unsigned long ul) {
+            std::wstringstream::operator<<(ul);
+            return *this;
+        }
+        CustomLogWStream &operator<<(unsigned long long ui64) {
+            std::wstringstream::operator<<(ui64);
+            return *this;
+        }
+        CustomLogWStream &operator<<(double d) {
+            std::wstringstream::operator<<(d);
             return *this;
         }
         CustomLogWStream &operator<<(const QIODevice *ptr) {
