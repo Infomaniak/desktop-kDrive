@@ -40,7 +40,8 @@ jobs:
           rm -f "${HOME}/BullseyeCoverageEnv.txt"
           echo "COVFILE=${PWD}/src/test.cov" >  "${HOME}/BullseyeCoverageEnv.txt"
           export PATH="/opt/BullseyeCoverage/bin/:${PATH}"
-          cov01 -1 # coverage on
+          cov01 -1 -q --no-banner # coverage on
+          cov01 -s
           
           # Build the application
           ./infomaniak-build-tools/linux/build-ci-amd64.sh
@@ -50,8 +51,12 @@ jobs:
       
       - name: Execute tests
         run : |
+          # Configure Bullseye
           export PATH="/opt/BullseyeCoverage/bin/:${PATH}"
-          cov01 -1 # coverage on
+          cov01 -1 -q --no-banner # coverage on
+          cov01 -s
+
+          # Execute tests
           ./infomaniak-build-tools/run-tests.sh
 
       - name: Compute code coverage
