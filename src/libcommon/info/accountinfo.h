@@ -46,4 +46,4 @@ class AccountInfo {
         int _userDbId;
 };
 
-}  // namespace KDC
+} // namespace KDC

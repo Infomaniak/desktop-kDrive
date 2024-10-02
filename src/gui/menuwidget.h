@@ -54,4 +54,4 @@ class MenuWidget : public QMenu {
         void onAboutToShow();
 };
 
-}  // namespace KDC
+} // namespace KDC

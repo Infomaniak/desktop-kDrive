@@ -41,4 +41,4 @@ struct COMMONGUI_EXPORT CommonGuiUtility {
         static QString octetsToString(qint64 octets);
 };
 
-}  // namespace KDC
+} // namespace KDC

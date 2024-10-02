@@ -44,4 +44,4 @@ class MigrationSelectiveSync {
         SyncNodeType _type;
 };
 
-}  // namespace KDC
+} // namespace KDC

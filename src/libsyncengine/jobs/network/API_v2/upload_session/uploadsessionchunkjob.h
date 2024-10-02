@@ -48,4 +48,4 @@ class UploadSessionChunkJob : public AbstractUploadSessionJob {
         UniqueId _sessionJobId = 0;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -83,4 +83,4 @@ class ConflictQueue : public SharedObject {
 };
 
 
-}  // namespace KDC
+} // namespace KDC

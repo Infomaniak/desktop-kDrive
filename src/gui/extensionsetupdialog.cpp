@@ -49,4 +49,4 @@ void ExtensionSetupDialog::onOkButtonTriggered() {
     accept();
 }
 
-}  // namespace KDC
+} // namespace KDC

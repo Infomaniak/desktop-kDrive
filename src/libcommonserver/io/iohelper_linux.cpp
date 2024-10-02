@@ -29,7 +29,7 @@
 namespace KDC {
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
-    (void)(itemPath);
+    (void) (itemPath);
 
     isDehydrated = false;
     ioError = IoError::Success;
@@ -59,4 +59,4 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -72,7 +72,7 @@ void LocalCreateDirJob::runJob() {
         return;
     }
 
-    if (ioError != IoError::Success) {  // Unexpected error
+    if (ioError != IoError::Success) { // Unexpected error
         LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
@@ -105,4 +105,4 @@ void LocalCreateDirJob::runJob() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

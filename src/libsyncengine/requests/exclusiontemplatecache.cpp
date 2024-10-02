@@ -59,13 +59,13 @@ ExclusionTemplateCache::ExclusionTemplateCache() {
 void ExclusionTemplateCache::populateUndeletedExclusionTemplates() {
     _undeletedExclusionTemplates.clear();
 
-    for (const auto &exclusionTemplate : _defExclusionTemplates) {
+    for (const auto &exclusionTemplate: _defExclusionTemplates) {
         if (!exclusionTemplate.deleted()) {
             _undeletedExclusionTemplates.push_back(exclusionTemplate);
         }
     }
 
-    for (const auto &exclusionTemplate : _userExclusionTemplates) {
+    for (const auto &exclusionTemplate: _userExclusionTemplates) {
         if (!exclusionTemplate.deleted()) {
             _undeletedExclusionTemplates.push_back(exclusionTemplate);
         }
@@ -78,7 +78,7 @@ void ExclusionTemplateCache::updateRegexPatterns() {
     const std::lock_guard<std::mutex> lock(_mutex);
     _regexPatterns.clear();
 
-    for (const auto &exclPattern : exclusionTemplates()) {
+    for (const auto &exclPattern: exclusionTemplates()) {
         std::string templateTest = exclPattern.templ();
         escapeRegexSpecialChar(templateTest);
 
@@ -87,7 +87,7 @@ void ExclusionTemplateCache::updateRegexPatterns() {
         if (templateTest[0] == '*') {
             regexPattern += ".*?";
         } else {
-            regexPattern += "^";  // Start of string
+            regexPattern += "^"; // Start of string
         }
 
         std::vector<std::string> splitStr = Utility::splitStr(templateTest, '*');
@@ -107,7 +107,7 @@ void ExclusionTemplateCache::updateRegexPatterns() {
         if (templateTest[templateTest.size() - 1] == '*') {
             regexPattern += ".*?";
         } else {
-            regexPattern += "$";  // End of string
+            regexPattern += "$"; // End of string
         }
 
         _regexPatterns.emplace_back(std::regex(regexPattern), exclPattern);
@@ -118,7 +118,7 @@ void ExclusionTemplateCache::escapeRegexSpecialChar(std::string &in) {
     std::string out;
     static const char metacharacters[] = R"(\.^$-+()[]{}|?)";
     out.reserve(in.size());
-    for (const auto ch : in) {
+    for (const auto ch: in) {
         if (std::strchr(metacharacters, ch)) {
             out.push_back('\\');
         }
@@ -195,7 +195,7 @@ bool ExclusionTemplateCache::checkIfIsExcludedBecauseHidden(const SyncPath &base
 bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, bool &isWarning) noexcept {
     const std::lock_guard<std::mutex> lock(_mutex);
     const std::string fileName = SyncName2Str(relativePath.filename().native());
-    for (const auto &pattern : _regexPatterns) {
+    for (const auto &pattern: _regexPatterns) {
         const std::string &patternStr = pattern.second.templ();
         isWarning = pattern.second.warning();
 
@@ -207,7 +207,7 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
                                   L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
                                              << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
                     }
-                    return true;  // Filename match exactly the pattern
+                    return true; // Filename match exactly the pattern
                 }
                 break;
             }
@@ -239,7 +239,7 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
                                   L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
                                              << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
                     }
-                    return true;  // Filename contains the pattern
+                    return true; // Filename contains the pattern
                 }
                 break;
             }
@@ -260,4 +260,4 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
     return false;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -266,6 +266,18 @@ bool ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
     return true;
 }
 
+void ExecutorWorker::logCorrespondingNodeErrorMsg(const SyncOpPtr syncOp) {
+    const std::wstring mainMsg = L"Error in UpdateTree::deleteNode: ";
+    if (syncOp->correspondingNode()) {
+        const auto nodeName = SyncName2WStr(syncOp->correspondingNode()->name());
+        LOGW_SYNCPAL_WARN(_logger, mainMsg << L"correspondingNode name=" << L"'" << nodeName << L"'.");
+    } else {
+        const auto nodeName = SyncName2WStr(syncOp->affectedNode()->name());
+        LOGW_SYNCPAL_WARN(_logger,
+                          mainMsg << L"correspondingNode is nullptr, former affectedNode name=" << L"'" << nodeName << L"'.");
+    }
+}
+
 void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError) {
     // The execution of the create operation consists of three steps:
     // 1. If omit-flag is False, propagate the file or directory to target replica, because the object is missing there.
@@ -290,15 +302,14 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
 
             // Remove from update tree
             if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: affectedNode name="
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 hasError = true;
                 return;
             }
 
             if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                                   << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
+                logCorrespondingNodeErrorMsg(syncOp);
                 hasError = true;
                 return;
             }
@@ -1012,7 +1023,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                                                    << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
                 _executorExitCode = ExitCode::DataError;
                 _executorExitCause = ExitCause::Unknown;
-                SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ExecutorWorker::generateEditJob", "Edit operation with empty corresponding node id");
+                SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ExecutorWorker::generateEditJob",
+                                                          "Edit operation with empty corresponding node id");
 
                 return false;
             }
@@ -2450,8 +2462,8 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
         if (!correspondingNode->setParentNode(parentNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                               << SyncName2WStr(parentNode->name()).c_str()
-                                               << L" parent node name=" << SyncName2WStr(correspondingNode->name()).c_str());
+                                               << SyncName2WStr(parentNode->name()).c_str() << L" parent node name="
+                                               << SyncName2WStr(correspondingNode->name()).c_str());
             return false;
         }
 
@@ -2621,8 +2633,8 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
     for (const auto &job: _ongoingJobs) {
         if (!job.second->isRunning()) {
             LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job.second->jobId());
+            job.second->setAdditionalCallback(nullptr);
             job.second->abort();
-
             if (reschedule) {
                 _opList.push_front(_jobToSyncOpMap[job.first]->id());
             }
@@ -2634,6 +2646,7 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
     // Then cancel jobs that are currently running
     for (const auto &job: remainingJobs) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job->jobId());
+        job->setAdditionalCallback(nullptr);
         job->abort();
 
         if (reschedule) {
@@ -2645,7 +2658,7 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
         _opList.clear();
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "All queued executor jobs cancelled");
+    LOG_SYNCPAL_DEBUG(_logger, "All queued executor jobs cancelled.");
 }
 
 void ExecutorWorker::manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job) {

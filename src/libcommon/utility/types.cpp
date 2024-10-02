@@ -793,6 +793,8 @@ std::string toString(const SentryConfidentialityLevel e) {
 
 std::string toString(const AppType e) {
     switch (e) {
+        case AppType::None:
+            return "None";
         case AppType::Server:
             return "Server";
         case AppType::Client:

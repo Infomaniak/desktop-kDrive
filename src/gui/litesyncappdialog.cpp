@@ -33,8 +33,8 @@ static const int subtitleLabelVMargin = 10;
 
 Q_LOGGING_CATEGORY(lcLiteSyncAppDialog, "gui.litesyncappdialog", QtInfoMsg)
 
-LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : CustomDialog(true, parent), _gui(gui), _appIdLineEdit(nullptr), _appNameLineEdit(nullptr), _validateButton(nullptr) {
+LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    CustomDialog(true, parent), _gui(gui), _appIdLineEdit(nullptr), _appNameLineEdit(nullptr), _validateButton(nullptr) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     QLabel *appIdLabel = new QLabel(this);
@@ -52,7 +52,7 @@ LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *pa
 
 #ifdef Q_OS_MAC
     // Get app fetching list from the LiteSync extension
-    for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
+    for (const auto &syncInfoMapElt: _gui->syncInfoMap()) {
         if (syncInfoMapElt.second.virtualFileMode() == VirtualFileMode::Mac) {
             try {
                 ExitCode exitCode = GuiRequests::getFetchingAppList(_appTable);
@@ -162,4 +162,4 @@ void LiteSyncAppDialog::onValidateButtonTriggered(bool checked) {
     accept();
 }
 
-}  // namespace KDC
+} // namespace KDC

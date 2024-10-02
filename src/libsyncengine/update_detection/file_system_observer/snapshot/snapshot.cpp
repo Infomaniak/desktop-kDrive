@@ -29,8 +29,8 @@
 
 namespace KDC {
 
-Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode)
-    : _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
+Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode) :
+    _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
     _items.insert({_rootFolderId, SnapshotItem(_rootFolderId)});
 }
 
@@ -128,7 +128,7 @@ bool Snapshot::removeItem(const NodeId &id) {
 
     auto it = _items.find(id);
     if (it == _items.end()) {
-        return true;  // Nothing to delete
+        return true; // Nothing to delete
     }
 
     if (!isOrphan(id)) {
@@ -163,10 +163,10 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
         if (pathIt->lexically_normal() == SyncPath(Str("/")).lexically_normal()) {
             continue;
         }
-#endif  // _WIN32
+#endif // _WIN32
 
         bool idFound = false;
-        for (const NodeId &childId : itemIt->second.childrenIds()) {
+        for (const NodeId &childId: itemIt->second.childrenIds()) {
             if (name(childId) == *pathIt) {
                 itemIt = _items.find(childId);
                 ret = childId;
@@ -327,7 +327,7 @@ int64_t Snapshot::size(const NodeId &itemId) const {
     if (type(itemId) == NodeType::Directory) {
         std::unordered_set<NodeId> childrenIds;
         getChildrenIds(itemId, childrenIds);
-        for (auto &childId : childrenIds) {
+        for (auto &childId: childrenIds) {
             ret += size(childId);
         }
     } else {
@@ -415,7 +415,7 @@ bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &
 void Snapshot::ids(std::unordered_set<NodeId> &ids) const {
     const std::scoped_lock lock(_mutex);
     ids.clear();
-    for (const auto &[id, _] : _items) {
+    for (const auto &[id, _]: _items) {
         ids.insert(id);
     }
 }
@@ -488,10 +488,10 @@ void Snapshot::removeChildrenRecursively(const NodeId &parentId) {
         return;
     }
 
-    for (const NodeId &childId : parentIt->second.childrenIds()) {
+    for (const NodeId &childId: parentIt->second.childrenIds()) {
         removeChildrenRecursively(childId);
         _items.erase(childId);
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

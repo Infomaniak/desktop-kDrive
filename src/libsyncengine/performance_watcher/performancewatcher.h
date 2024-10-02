@@ -84,4 +84,4 @@ class PerformanceWatcher {
         static uint64_t bytesToMb(uint64_t bytes);
 };
 
-}  // namespace KDC
+} // namespace KDC

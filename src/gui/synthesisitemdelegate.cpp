@@ -48,4 +48,4 @@ void SynthesisItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem 
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -68,8 +68,8 @@ void MenuWidget::paintEvent(QPaintEvent *event) {
                 offset = QPoint(menuOffsetX, menuOffsetY);
                 break;
             case Submenu:
-                offset = QPoint(pos().x() < parentWidget()->pos().x() ? contentMargin - 1  // Sub menu is on left
-                                                                      : -contentMargin     // Sub menu is on right
+                offset = QPoint(pos().x() < parentWidget()->pos().x() ? contentMargin - 1 // Sub menu is on left
+                                                                      : -contentMargin // Sub menu is on right
                                 ,
                                 0);
                 break;
@@ -109,4 +109,4 @@ void MenuWidget::onAboutToShow() {
     _moved = false;
 }
 
-}  // namespace KDC
+} // namespace KDC

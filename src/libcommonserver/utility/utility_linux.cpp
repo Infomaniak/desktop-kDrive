@@ -246,8 +246,8 @@ static bool cpuUsageByProcess_private(double &percent) {
 
 static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
-    (void)creationDate;
-    (void)symlink;
+    (void) creationDate;
+    (void) symlink;
 
     exists = true;
 
@@ -261,4 +261,4 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

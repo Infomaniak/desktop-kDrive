@@ -67,7 +67,7 @@ void TestIo::testGetNodeId() {
 
     // A non-existing file
     {
-        const SyncPath path = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         NodeId nodeId;
         CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(nodeId.empty());
@@ -76,8 +76,8 @@ void TestIo::testGetNodeId() {
     // A non-existing file with a very long name
     {
         const std::string veryLongfileName(1000,
-                                           'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
+                                           'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         NodeId nodeId;
         CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(nodeId.empty());
@@ -88,7 +88,7 @@ void TestIo::testGetNodeId() {
         const std::string pathSegment(50, 'a');
         SyncPath path = _localTestDirPath;
         for (int i = 0; i < 1000; ++i) {
-            path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
+            path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
         }
         NodeId nodeId;
         CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
@@ -129,7 +129,7 @@ void TestIo::testGetNodeId() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt"; // This file does not exist.
         const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -178,7 +178,7 @@ void TestIo::testGetNodeId() {
     // A dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         {
             std::ofstream ofs(targetPath);
@@ -202,7 +202,7 @@ void TestIo::testGetNodeId() {
     // A dangling MacOSX Finder alias on a non-existing directory.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted";  // This directory will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted"; // This directory will be deleted.
         std::filesystem::create_directory(targetPath);
 
         const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
@@ -231,7 +231,7 @@ void TestIo::testGetNodeId() {
             ofs.close();
         }
         const auto allPermissions =
-            std::filesystem::perms::owner_all | std::filesystem::perms::others_all | std::filesystem::perms::group_all;
+                std::filesystem::perms::owner_all | std::filesystem::perms::others_all | std::filesystem::perms::group_all;
         std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::remove);
 
         NodeId nodeId;
@@ -249,7 +249,7 @@ void TestIo::testGetNodeId() {
         std::filesystem::create_directory(path);
 
         const auto allPermissions =
-            std::filesystem::perms::owner_all | std::filesystem::perms::others_all | std::filesystem::perms::group_all;
+                std::filesystem::perms::owner_all | std::filesystem::perms::others_all | std::filesystem::perms::group_all;
         std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::remove);
 
         NodeId nodeId;
@@ -312,4 +312,4 @@ void TestIo::testGetNodeId() {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

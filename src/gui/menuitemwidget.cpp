@@ -30,22 +30,11 @@ static const int boxHMargin = 15;
 static const int boxVMargin = 10;
 static const int boxSpacing = 10;
 
-MenuItemWidget::MenuItemWidget(const QString &text, QWidget *parent, QMargins margins, bool hideIconLabels /*= false*/)
-    : QWidget(parent),
-      _leftIconPath(QString()),
-      _leftIconColor(QColor()),
-      _leftIconSize(QSize()),
-      _rightIconPath(QString()),
-      _rightIconColor(QColor()),
-      _rightIconSize(QSize()),
-      _defaultIconColor(QColor()),
-      _checkIconColor(QColor()),
-      _defaultIconSize(QSize()),
-      _submenuIconSize(QSize()),
-      _leftIconLabel(nullptr),
-      _rightIconLabel(nullptr),
-      _checked(false),
-      _hasSubmenu(false) {
+MenuItemWidget::MenuItemWidget(const QString &text, QWidget *parent, QMargins margins, bool hideIconLabels /*= false*/) :
+    QWidget(parent), _leftIconPath(QString()), _leftIconColor(QColor()), _leftIconSize(QSize()), _rightIconPath(QString()),
+    _rightIconColor(QColor()), _rightIconSize(QSize()), _defaultIconColor(QColor()), _checkIconColor(QColor()),
+    _defaultIconSize(QSize()), _submenuIconSize(QSize()), _leftIconLabel(nullptr), _rightIconLabel(nullptr), _checked(false),
+    _hasSubmenu(false) {
     if (margins.isNull()) {
         margins = QMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin);
     }
@@ -123,8 +112,8 @@ void MenuItemWidget::setIcons() {
     if (_leftIconPath.isEmpty()) {
         if (_checked && _checkIconColor != QColor() && _defaultIconSize != QSize()) {
             _leftIconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/check.svg", _checkIconColor)
-                    .pixmap(_defaultIconSize));
+                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/check.svg", _checkIconColor)
+                            .pixmap(_defaultIconSize));
         }
     } else if (_leftIconColor != QColor() && _leftIconSize != QSize()) {
         _leftIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(_leftIconPath, _leftIconColor).pixmap(_leftIconSize));
@@ -133,8 +122,8 @@ void MenuItemWidget::setIcons() {
     if (_rightIconPath.isEmpty()) {
         if (_hasSubmenu && _defaultIconColor != QColor() && _submenuIconSize != QSize()) {
             _rightIconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-right.svg", _defaultIconColor)
-                    .pixmap(_submenuIconSize));
+                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-right.svg", _defaultIconColor)
+                            .pixmap(_submenuIconSize));
         }
     } else if (_rightIconColor != QColor() && _rightIconSize != QSize()) {
         _rightIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(_rightIconPath, _rightIconColor).pixmap(_rightIconSize));
@@ -175,4 +164,4 @@ void MenuItemWidget::onSubmenuIconSizeChanged() {
     setIcons();
 }
 
-}  // namespace KDC
+} // namespace KDC

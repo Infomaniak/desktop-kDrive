@@ -86,4 +86,4 @@ class AddDriveWizard : public CustomDialog {
         void onExit();
 };
 
-}  // namespace KDC
+} // namespace KDC

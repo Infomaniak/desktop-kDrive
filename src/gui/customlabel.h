@@ -41,4 +41,4 @@ class CustomLabel : public QLabel {
         void leaveEvent(QEvent *event) override;
 };
 
-}  // namespace KDC
+} // namespace KDC

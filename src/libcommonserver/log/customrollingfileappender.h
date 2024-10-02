@@ -26,28 +26,29 @@ namespace KDC {
 class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
     public:
         CustomRollingFileAppender(const log4cplus::tstring &filename,
-                                  long maxFileSize = 10 * 1024 * 1024,  // 10 MB
+                                  long maxFileSize = 10 * 1024 * 1024, // 10 MB
                                   int maxBackupIndex = 1, bool immediateFlush = true, bool createDirs = false);
         CustomRollingFileAppender(const log4cplus::helpers::Properties &properties);
 
         inline int expire() const { return _expire; }
         inline void setExpire(int newExpire) {
             _expire = newExpire;
-            _lastExpireCheck = std::chrono::system_clock::time_point();  // Force check on next append
+            _lastExpireCheck = std::chrono::system_clock::time_point(); // Force check on next append
         }
 
-        inline void setMaxFileSize(long newMaxFileSize) { maxFileSize = newMaxFileSize; }
-        inline int getMaxFileSize() const { return maxFileSize; }
+        inline void setMaxFileSize(long newMaxFileSize) { _maxFileSize = newMaxFileSize; }
+        inline int getMaxFileSize() const { return _maxFileSize; }
+        void checkForExpiredFiles() noexcept(false);
 
     protected:
         void append(const log4cplus::spi::InternalLoggingEvent &event) override;
-        void rollover(bool alreadyLocked = false);
+        void customRollover(bool alreadyLocked = false);
 
     private:
         int _expire = 0;
+        long _maxFileSize = 0;
         std::chrono::time_point<std::chrono::system_clock> _lastExpireCheck;
 
-        void checkForExpiredFiles() noexcept(false);
 };
 
-}  // namespace KDC
+} // namespace KDC

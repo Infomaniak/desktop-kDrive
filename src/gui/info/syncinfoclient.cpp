@@ -30,4 +30,4 @@ QString SyncInfoClient::name() const {
     return CommonUtility::getRelativePathFromHome(_localPath);
 }
 
-}  // namespace KDC
+} // namespace KDC

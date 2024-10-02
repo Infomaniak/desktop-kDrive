@@ -61,4 +61,4 @@ class DownloadJob : public AbstractTokenNetworkJob {
         NodeId _localNodeId;
 };
 
-}  // namespace KDC
+} // namespace KDC

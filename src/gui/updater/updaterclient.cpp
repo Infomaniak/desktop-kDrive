@@ -174,4 +174,4 @@ UpdaterClient::UpdaterClient(QObject *) {
     _instance = this;
 }
 
-}  // namespace KDC
+} // namespace KDC

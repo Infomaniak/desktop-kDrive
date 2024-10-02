@@ -69,7 +69,7 @@ class PARMS_EXPORT Drive {
         int _accountDbId;
         std::string _name;
         int64_t _size;
-        std::string _color;  // #RRGGBB format
+        std::string _color; // #RRGGBB format
         bool _notifications;
         bool _admin;
 
@@ -82,4 +82,4 @@ class PARMS_EXPORT Drive {
         bool _accessDenied;
 };
 
-}  // namespace KDC
+} // namespace KDC

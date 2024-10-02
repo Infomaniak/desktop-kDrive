@@ -70,7 +70,7 @@ class AbstractJob : public Poco::Runnable {
         inline bool isRunning() const { return _isRunning; }
 
         inline void setVfsUpdateFetchStatusCallback(
-            std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> callback) noexcept {
+                std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> callback) noexcept {
             _vfsUpdateFetchStatus = callback;
         }
         inline void setVfsSetPinStateCallback(std::function<bool(const SyncPath &, PinState)> callback) noexcept {
@@ -84,7 +84,7 @@ class AbstractJob : public Poco::Runnable {
         }
         inline void setVfsUpdateMetadataCallback(std::function<bool(const SyncPath &, const SyncTime &, const SyncTime &,
                                                                     const int64_t, const NodeId &, std::string &)>
-                                                     callback) noexcept {
+                                                         callback) noexcept {
             _vfsUpdateMetadata = callback;
         }
         inline void setVfsCancelHydrateCallback(std::function<bool(const SyncPath &)> callback) noexcept {
@@ -105,36 +105,36 @@ class AbstractJob : public Poco::Runnable {
         ExitCause _exitCause = ExitCause::Unknown;
 
         std::function<bool(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled, bool &finished)>
-            _vfsUpdateFetchStatus = nullptr;
+                _vfsUpdateFetchStatus = nullptr;
         std::function<bool(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState = nullptr;
         std::function<bool(const SyncPath &path, bool isSyncing, int progress, bool isHydrated)> _vfsForceStatus = nullptr;
         std::function<bool(const SyncPath &path, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress)>
-            _vfsStatus = nullptr;
+                _vfsStatus = nullptr;
         std::function<bool(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
                            const NodeId &id, std::string &error)>
-            _vfsUpdateMetadata = nullptr;
+                _vfsUpdateMetadata = nullptr;
         std::function<bool(const SyncPath &path)> _vfsCancelHydrate = nullptr;
 
     private:
         virtual void run() final;
         virtual void callback(UniqueId) final;
 
-        std::function<void(UniqueId)> _mainCallback = nullptr;        // Used by the job manager to keep track of running jobs
-        std::function<void(UniqueId)> _additionalCallback = nullptr;  // Used by the caller to be notified of job completion
+        std::function<void(UniqueId)> _mainCallback = nullptr; // Used by the job manager to keep track of running jobs
+        std::function<void(UniqueId)> _additionalCallback = nullptr; // Used by the caller to be notified of job completion
         std::function<void(UniqueId id, int progress)> _progressPercentCallback =
-            nullptr;  // Used by the caller to be notified of job progress.
+                nullptr; // Used by the caller to be notified of job progress.
 
         static UniqueId _nextJobId;
         static std::mutex _nextJobIdMutex;
 
         UniqueId _jobId = 0;
-        UniqueId _parentJobId = -1;  // ID of that parent job i.e. the job that must be completed before starting this one
+        UniqueId _parentJobId = -1; // ID of that parent job i.e. the job that must be completed before starting this one
 
         int64_t _expectedFinishProgress =
-            expectedFinishProgressNotSetValue;  // Expected progress value when the job is finished. -2 means it is not set.
-        int64_t _progress = -1;                 // Progress is -1 when it is not relevant for the current job
-        int64_t _lastProgress = -1;             // Progress last time it was checked using progressChanged()
-        SyncPath _affectedFilePath;             // The file path associated to _progress
+                expectedFinishProgressNotSetValue; // Expected progress value when the job is finished. -2 means it is not set.
+        int64_t _progress = -1; // Progress is -1 when it is not relevant for the current job
+        int64_t _lastProgress = -1; // Progress last time it was checked using progressChanged()
+        SyncPath _affectedFilePath; // The file path associated to _progress
 
         bool _abort = false;
         bool _bypassCheck = false;
@@ -142,4 +142,4 @@ class AbstractJob : public Poco::Runnable {
         bool _isRunning = false;
 };
 
-}  // namespace KDC
+} // namespace KDC

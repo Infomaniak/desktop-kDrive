@@ -43,4 +43,4 @@ class ExtensionSetupDialog : public CustomDialog {
         void onOkButtonTriggered();
 };
 
-}  // namespace KDC
+} // namespace KDC

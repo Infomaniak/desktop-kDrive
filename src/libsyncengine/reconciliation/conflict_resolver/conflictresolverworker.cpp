@@ -23,8 +23,8 @@
 namespace KDC {
 
 ConflictResolverWorker::ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                               const std::string &shortName)
-    : OperationProcessor(syncPal, name, shortName) {}
+                                               const std::string &shortName) :
+    OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictResolverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -89,13 +89,13 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
             _syncPal->_syncOps->pushOp(op);
 
-            continueSolving = isConflictsWithLocalRename(conflict.type());  // solve them all in the same sync
+            continueSolving = isConflictsWithLocalRename(conflict.type()); // solve them all in the same sync
             break;
         }
         case ConflictType::EditDelete: {
             // Edit operation win
             auto deleteNode =
-                conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
+                    conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
             auto editNode = conflict.node()->hasChangeEvent(OperationType::Edit) ? conflict.node() : conflict.correspondingNode();
             if (deleteNode->parentNode()->hasChangeEvent(OperationType::Delete)) {
                 // Move the deleted node to root with a new name
@@ -124,7 +124,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 deleteOp->setAffectedNode(deleteNode);
                 deleteOp->setCorrespondingNode(editNode);
                 deleteOp->setTargetSide(editNode->side());
-                deleteOp->setOmit(true);  // Target side does not matter when we remove only in DB
+                deleteOp->setOmit(true); // Target side does not matter when we remove only in DB
                 deleteOp->setConflict(conflict);
 
                 LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated in DB only on "
@@ -141,7 +141,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 deleteOp->setAffectedNode(editNode);
                 deleteOp->setCorrespondingNode(deleteNode);
                 deleteOp->setTargetSide(deleteNode->side());
-                deleteOp->setOmit(true);  // Target side does not matter when we remove only in DB
+                deleteOp->setOmit(true); // Target side does not matter when we remove only in DB
                 deleteOp->setConflict(conflict);
 
                 LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated in DB only for item "
@@ -156,7 +156,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         case ConflictType::MoveDelete: {
             // Move operation win
             auto deleteNode =
-                conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
+                    conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
             auto moveNode = conflict.node()->hasChangeEvent(OperationType::Move) ? conflict.node() : conflict.correspondingNode();
             auto correspondingMoveNodeParent = correspondingNodeDirect(moveNode->parentNode());
             if (correspondingMoveNodeParent && correspondingMoveNodeParent->hasChangeEvent(OperationType::Delete) &&
@@ -175,7 +175,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             findAllChildNodes(deleteNode, allDeletedChildNodes);
 
             std::unordered_set<DbNodeId> deletedChildNodeDbIds;
-            for (auto &childNode : allDeletedChildNodes) {
+            for (auto &childNode: allDeletedChildNodes) {
                 deletedChildNodeDbIds.insert(*childNode->idb());
             }
 
@@ -187,7 +187,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                     return res;
                 }
 
-                for (const auto &dbId : allChildNodeDbIds) {
+                for (const auto &dbId: allChildNodeDbIds) {
                     if (!deletedChildNodeDbIds.contains(dbId)) {
                         // This is an orphan node
                         bool found = false;
@@ -205,7 +205,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                         auto correspondingOrphanNode = correspondingNodeInOtherTree(orphanNode);
                         if (!correspondingOrphanNode) {
                             LOGW_SYNCPAL_DEBUG(
-                                _logger, L"Failed to get corresponding node: " << SyncName2WStr(orphanNode->name()).c_str());
+                                    _logger, L"Failed to get corresponding node: " << SyncName2WStr(orphanNode->name()).c_str());
                             return ExitCode::DataError;
                         }
 
@@ -244,7 +244,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             op->setAffectedNode(deleteNode);
             op->setCorrespondingNode(moveNode);
             op->setTargetSide(moveNode->side());
-            op->setOmit(true);  // Target side does not matter when we remove only in DB
+            op->setOmit(true); // Target side does not matter when we remove only in DB
             op->setConflict(conflict);
 
             LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated in DB only for item "
@@ -274,7 +274,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         case ConflictType::CreateParentDelete: {
             // Delete operation always win
             auto deleteNode =
-                conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
+                    conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
             auto op = std::make_shared<SyncOperation>();
             op->setType(OperationType::Delete);
             op->setAffectedNode(deleteNode);
@@ -342,8 +342,8 @@ bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> 
                                                     bool isOrphanNode /*= false*/) const {
     SyncPath absoluteLocalFilePath = _syncPal->localPath() / node->getPath();
     newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-        absoluteLocalFilePath, isOrphanNode ? PlatformInconsistencyCheckerUtility::SuffixTypeOrphan
-                                            : PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
+            absoluteLocalFilePath, isOrphanNode ? PlatformInconsistencyCheckerUtility::SuffixTypeOrphan
+                                                : PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
 
     // Check path size
     size_t pathSize = absoluteLocalFilePath.parent_path().native().size() + 1 + newName.size();
@@ -357,7 +357,7 @@ bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> 
 
 void ConflictResolverWorker::findAllChildNodes(const std::shared_ptr<Node> parentNode,
                                                std::unordered_set<std::shared_ptr<Node>> &children) {
-    for (auto const &[_, childNode] : parentNode->children()) {
+    for (auto const &[_, childNode]: parentNode->children()) {
         if (childNode->type() == NodeType::Directory) {
             findAllChildNodes(childNode, children);
         }
@@ -377,7 +377,7 @@ ExitCode ConflictResolverWorker::findAllChildNodeIdsFromDb(const std::shared_ptr
         return ExitCode::DataError;
     }
 
-    for (const auto &nodeId : nodeIds) {
+    for (const auto &nodeId: nodeIds) {
         if (nodeId == *parentNode->id()) {
             continue;
         }
@@ -452,4 +452,4 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -40,4 +40,4 @@ class TestUtility : public CppUnit::TestFixture {
         void testCompressFile();
 };
 
-}  // namespace KDC
+} // namespace KDC

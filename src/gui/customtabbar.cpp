@@ -95,4 +95,4 @@ void CustomTabBar::paintEvent(QPaintEvent *) {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

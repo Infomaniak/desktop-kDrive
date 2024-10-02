@@ -45,8 +45,8 @@ static const int warningBoxSpacing = 10;
 
 Q_LOGGING_CATEGORY(lcLocalFolderDialog, "gui.localfolderdialog", QtInfoMsg)
 
-LocalFolderDialog::LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent)
-    : CustomDialog(true, parent), _gui(gui), _localFolderPath(localFolderPath) {
+LocalFolderDialog::LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent) :
+    CustomDialog(true, parent), _gui(gui), _localFolderPath(localFolderPath) {
     initUI();
     updateUI();
 }
@@ -186,7 +186,7 @@ void LocalFolderDialog::updateUI() {
         QDir dir(_localFolderPath);
         _folderNameLabel->setText(dir.dirName());
         _folderPathLabel->setText(
-            QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle).arg(_localFolderPath));
+                QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle).arg(_localFolderPath));
     }
     _folderSelectionWidget->setVisible(!ok);
     _folderSelectedWidget->setVisible(ok);
@@ -208,7 +208,7 @@ void LocalFolderDialog::updateUI() {
                 _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync.<br>"
 "Please select another folder or if you continue Lite Sync will be disabled.<br>"
 "<a style="%1" href="%2">Learn more</a>)")
-                                           .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
+                                               .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
                 _warningWidget->setVisible(true);
             } else {
                 _warningWidget->setVisible(false);
@@ -244,16 +244,16 @@ void LocalFolderDialog::selectFolder(const QString &startDirPath) {
 void LocalFolderDialog::setFolderIcon() {
     if (_folderIconColor != QColor() && _folderIconSize != QSize()) {
         _folderIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/folder.svg", _folderIconColor)
-                .pixmap(_folderIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/folder.svg", _folderIconColor)
+                        .pixmap(_folderIconSize));
     }
 }
 
 void LocalFolderDialog::setWarningIcon() {
     if (_warningIconColor != QColor() && _warningIconSize != QSize()) {
         _warningIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", _warningIconColor)
-                .pixmap(_warningIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", _warningIconColor)
+                        .pixmap(_warningIconSize));
     }
 }
 
@@ -292,4 +292,4 @@ void LocalFolderDialog::onLinkActivated(const QString &link) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

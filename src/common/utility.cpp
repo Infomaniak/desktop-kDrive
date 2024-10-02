@@ -177,9 +177,9 @@ void OldUtility::addLegacySyncRootKeys(const QUuid &clsid, const QString &folder
     OldUtility::registrySetKeyValue(HKEY_CURRENT_USER, namespacePath, QString(), REG_SZ, title, error);
     // Step 12: Hide your extension from the Desktop
     OldUtility::registrySetKeyValue(
-        HKEY_CURRENT_USER,
-        QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel"), clsidStr,
-        REG_DWORD, 0x1, error);
+            HKEY_CURRENT_USER,
+            QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel"), clsidStr,
+            REG_DWORD, 0x1, error);
 
     // For us, to later be able to iterate and find our own namespace entries and associated CLSID.
     // Use the macro instead of the theme to make sure it matches with the uninstaller.
@@ -194,7 +194,7 @@ void OldUtility::removeLegacySyncRootKeys(const QUuid &clsid) {
     QString clsidPathWow64 = QString() % "Software\\Classes\\Wow6432Node\\CLSID\\" % clsidStr;
     QString namespacePath = QString() % "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Desktop\\NameSpace\\" % clsidStr;
     QString newstartpanelPath =
-        QString() % "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel";
+            QString() % "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel";
 
     if (OldUtility::registryExistKeyTree(HKEY_CURRENT_USER, clsidPath)) {
         OldUtility::registryDeleteKeyTree(HKEY_CURRENT_USER, clsidPath);
@@ -211,4 +211,4 @@ void OldUtility::removeLegacySyncRootKeys(const QUuid &clsid) {
 }
 #endif
 
-}  // namespace KDC
+} // namespace KDC

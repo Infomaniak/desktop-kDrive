@@ -39,10 +39,10 @@ using namespace std::literals;
 namespace KDC {
 
 // Test in drive "kDrive Desktop Team"
-static const uint64_t nbFileInTestDir = 5;     // "Common documents/Test kDrive/test_ci/test_remote_FSO/" contains 5 files
-const NodeId testRemoteFsoDirId = "59541";     // Common documents/Test kDrive/test_ci/test_remote_FSO/
-const NodeId testBlackListedDirId = "56851";   // Common documents/Test kDrive/test_ci/test_pictures/
-const NodeId testBlackListedFileId = "97373";  // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
+static const uint64_t nbFileInTestDir = 5; // "Common documents/Test kDrive/test_ci/test_remote_FSO/" contains 5 files
+const NodeId testRemoteFsoDirId = "59541"; // Common documents/Test kDrive/test_ci/test_remote_FSO/
+const NodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/test_ci/test_pictures/
+const NodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
 
 void TestRemoteFileSystemObserverWorker::setUp() {
     _logger = Log::instance()->getLogger();
@@ -90,7 +90,7 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {testBlackListedDirId});
 
     _syncPal->_remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-        new RemoteFileSystemObserverWorker(_syncPal, "Remote File System Observer", "RFSO"));
+            new RemoteFileSystemObserverWorker(_syncPal, "Remote File System Observer", "RFSO"));
     _syncPal->_remoteFSObserverWorker->generateInitialSnapshot();
 }
 
@@ -195,7 +195,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         LOG_DEBUG(_logger, "***** test rename file *****");
 
         const SyncName newFileName =
-            Str("test_file_renamed_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
+                Str("test_file_renamed_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
 
         RenameJob job(_driveDbId, _testFileId, newFileName);
         job.runSynchronously();
@@ -221,4 +221,4 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

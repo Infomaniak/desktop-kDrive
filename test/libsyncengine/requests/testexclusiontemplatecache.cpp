@@ -28,62 +28,63 @@ using namespace CppUnit;
 namespace KDC {
 
 static const std::vector<ExclusionTemplate> excludedTemplates = {
-    ExclusionTemplate(".parms.db"), ExclusionTemplate(".sync_*.db"), ExclusionTemplate(".parms.db-shm"),
-    ExclusionTemplate(".parms.db-wal"), ExclusionTemplate(".sync_*.db-shm"), ExclusionTemplate(".sync_*.db-wal"),
-    ExclusionTemplate(".sentry-native_client"), ExclusionTemplate(".sentry-native_server"), ExclusionTemplate("*_conflict_*_*_*"),
-    ExclusionTemplate("*_blacklisted_*_*_*"), ExclusionTemplate("*~"), ExclusionTemplate("~$*"), ExclusionTemplate("*.~*"),
-    ExclusionTemplate("._*"), ExclusionTemplate("~*.tmp"), ExclusionTemplate("*.idlk"), ExclusionTemplate("*.lock"),
-    ExclusionTemplate("*.lck"), ExclusionTemplate("*.part"), ExclusionTemplate(".~lock.*"), ExclusionTemplate("*.symform"),
-    ExclusionTemplate("*.symform-store"), ExclusionTemplate("*.unison"), ExclusionTemplate(".directory"),
-    ExclusionTemplate(".sync.ffs_db"), ExclusionTemplate(".synkron.*"), ExclusionTemplate("*.crdownload"),
+        ExclusionTemplate(".parms.db"), ExclusionTemplate(".sync_*.db"), ExclusionTemplate(".parms.db-shm"),
+        ExclusionTemplate(".parms.db-wal"), ExclusionTemplate(".sync_*.db-shm"), ExclusionTemplate(".sync_*.db-wal"),
+        ExclusionTemplate(".sentry-native_client"), ExclusionTemplate(".sentry-native_server"),
+        ExclusionTemplate("*_conflict_*_*_*"), ExclusionTemplate("*_blacklisted_*_*_*"), ExclusionTemplate("*~"),
+        ExclusionTemplate("~$*"), ExclusionTemplate("*.~*"), ExclusionTemplate("._*"), ExclusionTemplate("~*.tmp"),
+        ExclusionTemplate("*.idlk"), ExclusionTemplate("*.lock"), ExclusionTemplate("*.lck"), ExclusionTemplate("*.part"),
+        ExclusionTemplate(".~lock.*"), ExclusionTemplate("*.symform"), ExclusionTemplate("*.symform-store"),
+        ExclusionTemplate("*.unison"), ExclusionTemplate(".directory"), ExclusionTemplate(".sync.ffs_db"),
+        ExclusionTemplate(".synkron.*"), ExclusionTemplate("*.crdownload"),
 #if defined(__APPLE__)
-    // macOS only
-    ExclusionTemplate(".fuse_hidden*"), ExclusionTemplate("*.kate-swp"), ExclusionTemplate(".DS_Store"),
-    ExclusionTemplate(".ds_store"), ExclusionTemplate(".TemporaryItems"), ExclusionTemplate(".Trashes"),
-    ExclusionTemplate(".DocumentRevisions-V100"), ExclusionTemplate(".fseventd"), ExclusionTemplate(".apdisk"),
-    ExclusionTemplate("*.photoslibrary"), ExclusionTemplate("*.tvlibrary"), ExclusionTemplate("*.musiclibrary"),
-    ExclusionTemplate("Icon\r*"), ExclusionTemplate(".Spotlight-V100"), ExclusionTemplate("*.lnk")
+        // macOS only
+        ExclusionTemplate(".fuse_hidden*"), ExclusionTemplate("*.kate-swp"), ExclusionTemplate(".DS_Store"),
+        ExclusionTemplate(".ds_store"), ExclusionTemplate(".TemporaryItems"), ExclusionTemplate(".Trashes"),
+        ExclusionTemplate(".DocumentRevisions-V100"), ExclusionTemplate(".fseventd"), ExclusionTemplate(".apdisk"),
+        ExclusionTemplate("*.photoslibrary"), ExclusionTemplate("*.tvlibrary"), ExclusionTemplate("*.musiclibrary"),
+        ExclusionTemplate("Icon\r*"), ExclusionTemplate(".Spotlight-V100"), ExclusionTemplate("*.lnk")
 #elif defined(_WIN32)
-    // Windows only
-    ExclusionTemplate("*.kate-swp"), ExclusionTemplate("System Volume Information"), ExclusionTemplate("Thumbs.db"),
-    ExclusionTemplate("Desktop.ini"), ExclusionTemplate("*.filepart"), ExclusionTemplate("*.app")
+        // Windows only
+        ExclusionTemplate("*.kate-swp"), ExclusionTemplate("System Volume Information"), ExclusionTemplate("Thumbs.db"),
+        ExclusionTemplate("Desktop.ini"), ExclusionTemplate("*.filepart"), ExclusionTemplate("*.app")
 #else
-    // Linux only
-    ExclusionTemplate(".fuse_hidden*"), ExclusionTemplate("*.kate-swp"), ExclusionTemplate("*.gnucash.tmp-*"),
-    ExclusionTemplate(".Trash-*"), ExclusionTemplate(".nfs*"), ExclusionTemplate("*.app"), ExclusionTemplate("*.lnk")
+        // Linux only
+        ExclusionTemplate(".fuse_hidden*"), ExclusionTemplate("*.kate-swp"), ExclusionTemplate("*.gnucash.tmp-*"),
+        ExclusionTemplate(".Trash-*"), ExclusionTemplate(".nfs*"), ExclusionTemplate("*.app"), ExclusionTemplate("*.lnk")
 #endif
 };
 
 // List of names that should be rejected
 static const std::vector<std::string> rejectedFiles = {
-    "test~",
-    ".test~",
-    "*.~*",
-    ".~",
-    "test.~test",
-    "test.~",
-    ".~test",
-    "~test.tmp",
-    "testfile_conflict_20220913_130102_abcdefghij.txt",
-    "testfile_conflict_test_20220913_130102_abcdefghij.txt",
-    "_conflict___",
-    "testfile_blacklisted_20220913_130102_abcdefghij.txt",
+        "test~",
+        ".test~",
+        "*.~*",
+        ".~",
+        "test.~test",
+        "test.~",
+        ".~test",
+        "~test.tmp",
+        "testfile_conflict_20220913_130102_abcdefghij.txt",
+        "testfile_conflict_test_20220913_130102_abcdefghij.txt",
+        "_conflict___",
+        "testfile_blacklisted_20220913_130102_abcdefghij.txt",
 #if defined(__APPLE__)
-    ".DS_Store",
-    ".ds_store",
-    ".apdisk",
-    "Icon\r*",
-    "Icon\r",
-    "Icon\rtest",
+        ".DS_Store",
+        ".ds_store",
+        ".apdisk",
+        "Icon\r*",
+        "Icon\r",
+        "Icon\rtest",
 #elif defined(_WIN32)
-    "test.kate-swp",
-    "System Volume Information",
-    "*.app"
+        "test.kate-swp",
+        "System Volume Information",
+        "*.app"
 #else
-    ".fuse_hidden1",
-    ".gnucash.tmp-",
-    "test.gnucash.tmp-test",
-    "test.test.gnucash.tmp-test"
+        ".fuse_hidden1",
+        ".gnucash.tmp-",
+        "test.gnucash.tmp-test",
+        "test.test.gnucash.tmp-test"
 #endif
 };
 
@@ -127,7 +128,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
     ParametersCache::instance()->parameters().setSyncHiddenFiles(false);
 
     // Test rejected files
-    for (const auto &str : rejectedFiles) {
+    for (const auto &str: rejectedFiles) {
         bool isWarning = false;
         bool isExcluded = false;
         IoError ioError = IoError::Unknown;
@@ -139,7 +140,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
     }
 
     // Test accepted files
-    for (const auto &str : acceptedFiles) {
+    for (const auto &str: acceptedFiles) {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoError::Unknown;
@@ -211,4 +212,4 @@ void TestExclusionTemplateCache::testIsExcluded() {
 #endif
 }
 
-}  // namespace KDC
+} // namespace KDC

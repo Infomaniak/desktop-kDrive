@@ -172,7 +172,7 @@ QString UpdaterServer::getSystemInfo() {
     process.waitForFinished();
     QByteArray output = process.readAllStandardOutput();
     LOG_DEBUG(Log::instance()->getLogger(), "Sys Info size: " << output.length());
-    if (output.length() > 1024) output.clear();  // don't send too much.
+    if (output.length() > 1024) output.clear(); // don't send too much.
 
     return QString::fromLocal8Bit(output.toBase64());
 #else
@@ -221,4 +221,4 @@ QString UpdaterServer::clientVersion() {
     return QString::fromLatin1(KDRIVE_STRINGIFY(KDRIVE_VERSION_FULL));
 }
 
-}  // namespace KDC
+} // namespace KDC

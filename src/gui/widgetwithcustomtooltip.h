@@ -57,4 +57,4 @@ class LargeWidgetWithCustomToolTip : public WidgetWithCustomToolTip {
     private:
         QPoint customToolTipPosition(QHelpEvent *event) override;
 };
-}  // namespace KDC
+} // namespace KDC

@@ -20,10 +20,10 @@
 
 namespace KDC {
 
-static int defaultToolTipDuration = 3000;  // ms
+static int defaultToolTipDuration = 3000; // ms
 
-CustomLabel::CustomLabel(QWidget *parent)
-    : QLabel(parent), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _customToolTip(nullptr) {}
+CustomLabel::CustomLabel(QWidget *parent) :
+    QLabel(parent), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _customToolTip(nullptr) {}
 
 
 bool CustomLabel::event(QEvent *event) {
@@ -52,4 +52,4 @@ void CustomLabel::leaveEvent(QEvent *event) {
     QLabel::leaveEvent(event);
 }
 
-}  // namespace KDC
+} // namespace KDC

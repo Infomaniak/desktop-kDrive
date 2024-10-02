@@ -39,13 +39,13 @@ void TestUpdater::setUp() {
 
 void TestUpdater::testUpdateInfoVersionParseString(void) {
     bool ok = false;
-    QString xml =  // Well-formed XML
-        "<kdriveclient>"
-        "<version>1.2.3.4</version>"
-        "<versionstring>1.2.3.4 Version test</versionstring>"
-        "<web>test web</web>"
-        "<downloadurl>https://download.storage.infomaniak.com/drive/desktopclient/kDrive-1.2.3.4.exe</downloadurl>"
-        "</kdriveclient>";
+    QString xml = // Well-formed XML
+            "<kdriveclient>"
+            "<version>1.2.3.4</version>"
+            "<versionstring>1.2.3.4 Version test</versionstring>"
+            "<web>test web</web>"
+            "<downloadurl>https://download.storage.infomaniak.com/drive/desktopclient/kDrive-1.2.3.4.exe</downloadurl>"
+            "</kdriveclient>";
 
 
     UpdateInfo updateInfo = UpdateInfo::parseString(xml, &ok);
@@ -56,13 +56,13 @@ void TestUpdater::testUpdateInfoVersionParseString(void) {
     CPPUNIT_ASSERT_EQUAL(std::string("https://download.storage.infomaniak.com/drive/desktopclient/kDrive-1.2.3.4.exe"),
                          updateInfo.downloadUrl().toStdString());
 
-    xml =  // Well-formed XML with empty values
-        "<kdriveclient>"
-        "<version></version>"
-        "<versionstring></versionstring>"
-        "<web></web>"
-        "<downloadurl></downloadurl>"
-        "</kdriveclient>";
+    xml = // Well-formed XML with empty values
+            "<kdriveclient>"
+            "<version></version>"
+            "<versionstring></versionstring>"
+            "<web></web>"
+            "<downloadurl></downloadurl>"
+            "</kdriveclient>";
 
     updateInfo = UpdateInfo::parseString(xml, &ok);
     CPPUNIT_ASSERT(ok);
@@ -71,9 +71,9 @@ void TestUpdater::testUpdateInfoVersionParseString(void) {
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.web().toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.downloadUrl().toStdString());
 
-    xml =  // Well-formed XML with missing values
-        "<kdriveclient>"
-        "</kdriveclient>";
+    xml = // Well-formed XML with missing values
+            "<kdriveclient>"
+            "</kdriveclient>";
     updateInfo = UpdateInfo::parseString(xml, &ok);
     CPPUNIT_ASSERT(ok);
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.version().toStdString());
@@ -81,11 +81,11 @@ void TestUpdater::testUpdateInfoVersionParseString(void) {
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.web().toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.downloadUrl().toStdString());
 
-    xml =  // Malformed XML
-        "<kdriveclient>"
-        "<version>"
-        "<versionstring>"
-        "</kdriveclient>";
+    xml = // Malformed XML
+            "<kdriveclient>"
+            "<version>"
+            "<versionstring>"
+            "</kdriveclient>";
     updateInfo = UpdateInfo::parseString(xml, &ok);
     CPPUNIT_ASSERT(!ok);
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.version().toStdString());
@@ -106,14 +106,14 @@ void TestUpdater::testIsKDCorSparkleUpdater(void) {
 
 void TestUpdater::testUpdateSucceeded(void) {
 #ifdef __APPLE__
-    return;  // Not implemented
+    return; // Not implemented
 #else
 
-    ParametersCache::instance(true)->parameters().setUpdateTargetVersion("1");  // Target version is set to the current version
+    ParametersCache::instance(true)->parameters().setUpdateTargetVersion("1"); // Target version is set to the current version
     CPPUNIT_ASSERT(_updater->updateSucceeded());
 
-    ParametersCache::instance()->parameters().setUpdateTargetVersion("99.99.99");  // Target version is set to a newer version
+    ParametersCache::instance()->parameters().setUpdateTargetVersion("99.99.99"); // Target version is set to a newer version
     CPPUNIT_ASSERT(!_updater->updateSucceeded());
 #endif
 }
-}  // namespace KDC
+} // namespace KDC

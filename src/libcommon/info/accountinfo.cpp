@@ -55,4 +55,4 @@ QDataStream &operator>>(QDataStream &in, QList<AccountInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

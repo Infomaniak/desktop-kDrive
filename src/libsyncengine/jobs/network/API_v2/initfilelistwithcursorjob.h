@@ -34,4 +34,4 @@ class InitFileListWithCursorJob : public AbstractTokenNetworkJob {
         NodeId _dirId;
 };
 
-}  // namespace KDC
+} // namespace KDC

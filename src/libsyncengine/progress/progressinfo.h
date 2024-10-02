@@ -56,8 +56,8 @@ class ProgressInfo {
     private:
         std::shared_ptr<SyncPal> _syncPal;
         std::map<SyncPath, std::queue<ProgressItem>>
-            _currentItems;  // Use a queue here because in a few cases, we can have several operations on the same path (e.g.:
-                            // DELETE a file and CREATE a directory with exact same name)
+                _currentItems; // Use a queue here because in a few cases, we can have several operations on the same path (e.g.:
+                               // DELETE a file and CREATE a directory with exact same name)
         Progress _sizeProgress;
         Progress _fileProgress;
         int64_t _totalSizeOfCompletedJobs;
@@ -72,4 +72,4 @@ class ProgressInfo {
         bool isSizeDependent(const SyncFileItem &item) const;
 };
 
-}  // namespace KDC
+} // namespace KDC

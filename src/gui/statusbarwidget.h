@@ -76,4 +76,4 @@ class StatusBarWidget : public HalfRoundRectWidget {
         void onResumeAllSync();
 };
 
-}  // namespace KDC
+} // namespace KDC

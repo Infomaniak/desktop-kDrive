@@ -51,4 +51,4 @@ class MenuItemUserWidget : public QWidget {
         void paintEvent(QPaintEvent *paintEvent);
 };
 
-}  // namespace KDC
+} // namespace KDC

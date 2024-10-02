@@ -179,4 +179,4 @@ class SynthesisPopover : public QDialog {
         void retranslateUi();
 };
 
-}  // namespace KDC
+} // namespace KDC

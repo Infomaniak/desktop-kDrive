@@ -43,4 +43,4 @@ class FileExclusionNameDialog : public CustomDialog {
         void onValidateButtonTriggered(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

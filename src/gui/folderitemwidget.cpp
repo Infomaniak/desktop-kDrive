@@ -39,14 +39,14 @@ static const int expandButtonVMargin = 5;
 static const int statusIconSize = 20;
 #ifdef _MACOS
 static const QString liteSyncActivatedQstr = QObject::tr(
-    "Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
+        "Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
 static const QString liteSyncDeactivatedQstr =
-    QObject::tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.");
+        QObject::tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.");
 #else
 static const QString liteSyncActivatedQstr =
-    QObject::tr("Lite sync is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
+        QObject::tr("Lite sync is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
 static const QString liteSyncDeactivatedQstr =
-    QObject::tr("Lite sync is disabled. The kDrive files use the storage space of your computer.");
+        QObject::tr("Lite sync is disabled. The kDrive files use the storage space of your computer.");
 #endif
 Q_LOGGING_CATEGORY(lcFolderItemWidget, "gui.folderitemwidget", QtInfoMsg)
 
@@ -55,19 +55,19 @@ enum class MenuAction : char { LiteSyncOn, LiteSyncOff, Pause, Remove, Resume };
 QString menuIconPath(MenuAction action) {
     static const QString actionIconsPath = ":/client/resources/icons/actions/";
     static const std::unordered_map<MenuAction, QString> iconPathsMap{
-        {MenuAction::LiteSyncOn, actionIconsPath + "litesync-on.svg"},
-        {MenuAction::LiteSyncOff, actionIconsPath + "litesync-off.svg"},
-        {MenuAction::Pause, actionIconsPath + "pause.svg"},
-        {MenuAction::Remove, actionIconsPath + "delete.svg"},
-        {MenuAction::Resume, actionIconsPath + "start.svg"},
+            {MenuAction::LiteSyncOn, actionIconsPath + "litesync-on.svg"},
+            {MenuAction::LiteSyncOff, actionIconsPath + "litesync-off.svg"},
+            {MenuAction::Pause, actionIconsPath + "pause.svg"},
+            {MenuAction::Remove, actionIconsPath + "delete.svg"},
+            {MenuAction::Resume, actionIconsPath + "start.svg"},
     };
 
     return iconPathsMap.at(action);
 }
 
 
-FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : QWidget(parent), _gui(gui), _syncDbId(syncDbId) {
+FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    QWidget(parent), _gui(gui), _syncDbId(syncDbId) {
     QHBoxLayout *mainLayout = new QHBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(hSpacing);
@@ -207,7 +207,7 @@ void FolderItemWidget::updateItem() {
     const auto syncInfoClient = getSyncInfoClient();
     statusInfo._status = syncInfoClient->status();
     _statusIconLabel->setPixmap(
-        QIcon(KDC::GuiUtility::getDriveStatusIconPath(statusInfo)).pixmap(QSize(statusIconSize, statusIconSize)));
+            QIcon(KDC::GuiUtility::getDriveStatusIconPath(statusInfo)).pixmap(QSize(statusIconSize, statusIconSize)));
 }
 
 void FolderItemWidget::setUpdateWidgetVisible(bool visible) {
@@ -227,9 +227,9 @@ void FolderItemWidget::setLiteSyncActivated(bool value) {
     _liteSyncActivated = value;
 
     static const QPixmap liteSynOnPixmap =
-        KDC::GuiUtility::getIconWithColor(menuIconPath(MenuAction::LiteSyncOn), QColor(16, 117, 187)).pixmap(QSize(18, 18));
+            KDC::GuiUtility::getIconWithColor(menuIconPath(MenuAction::LiteSyncOn), QColor(16, 117, 187)).pixmap(QSize(18, 18));
     static const QPixmap liteSynOffPixmap =
-        KDC::GuiUtility::getIconWithColor(menuIconPath(MenuAction::LiteSyncOff), QColor(159, 159, 159)).pixmap(QSize(18, 18));
+            KDC::GuiUtility::getIconWithColor(menuIconPath(MenuAction::LiteSyncOff), QColor(159, 159, 159)).pixmap(QSize(18, 18));
 
     _liteSyncIconLabel->setPixmap(value ? liteSynOnPixmap : liteSynOffPixmap);
     _liteSyncIconLabel->setToolTip(value ? liteSyncActivatedQstr : liteSyncDeactivatedQstr);
@@ -331,9 +331,9 @@ void FolderItemWidget::onMenuButtonClicked() {
             QWidgetAction *activateLitesyncAction = new QWidgetAction(this);
             MenuItemWidget *activateLitesyncMenuItemWidget = new MenuItemWidget(
 #ifdef Q_OS_WIN
-                tr("Activate Lite Sync"));
+                    tr("Activate Lite Sync"));
 #else
-                tr("Activate Lite Sync (Beta)"));
+                    tr("Activate Lite Sync (Beta)"));
 #endif
             activateLitesyncMenuItemWidget->setLeftIcon(menuIconPath(MenuAction::LiteSyncOn));
             activateLitesyncAction->setDefaultWidget(activateLitesyncMenuItemWidget);
@@ -464,16 +464,16 @@ void FolderItemWidget::retranslateUi() {
 
     if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
         _saveLabel->setText(
-            tr("Unselected folders will be moved to trash. Folders synced to kDrive will remain available "
-               "online."));
+                tr("Unselected folders will be moved to trash. Folders synced to kDrive will remain available "
+                   "online."));
     } else {
-        _saveLabel->setText(
-            tr("Unselected folders will be <b>permanently</b> deleted from the computer. Folders synced to kDrive will remain "
-               "available online."));
+        _saveLabel->setText(tr(
+                "Unselected folders will be <b>permanently</b> deleted from the computer. Folders synced to kDrive will remain "
+                "available online."));
     }
 
     _cancelButton->setText(tr("Cancel"));
     _validateButton->setText(tr("VALIDATE"));
 }
 
-}  // namespace KDC
+} // namespace KDC

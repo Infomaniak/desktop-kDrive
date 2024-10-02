@@ -136,4 +136,4 @@ class WinVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsWin> 
         Q_INTERFACES(KDC::PluginFactory)
 };
 
-}  // namespace KDC
+} // namespace KDC

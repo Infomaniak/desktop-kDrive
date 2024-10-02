@@ -52,4 +52,4 @@ void RefreshTokenJob::setData(bool &canceled) {
     canceled = false;
 }
 
-}  // namespace KDC
+} // namespace KDC

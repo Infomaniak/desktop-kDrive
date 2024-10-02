@@ -88,8 +88,8 @@ class ExecutorWorker : public OperationProcessor {
          */
         bool fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath);
         bool checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
-                                      bool &isSyncing);  // TODO : is called "check..." but perform some actions. Wording not
-                                                         // good, function probably does too much
+                                      bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not
+                                                        // good, function probably does too much
 
         void handleMoveOp(SyncOpPtr syncOp, bool &hasError);
         bool generateMoveJob(SyncOpPtr syncOp);
@@ -135,6 +135,7 @@ class ExecutorWorker : public OperationProcessor {
         void increaseErrorCount(SyncOpPtr syncOp);
 
         bool getFileSize(const SyncPath &path, uint64_t &size);
+        void logCorrespondingNodeErrorMsg(const SyncOpPtr syncOp);
 
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
@@ -152,4 +153,4 @@ class ExecutorWorker : public OperationProcessor {
         friend class TestExecutorWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

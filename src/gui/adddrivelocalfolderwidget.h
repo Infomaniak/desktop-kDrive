@@ -143,4 +143,4 @@ class AddDriveLocalFolderWidget : public QWidget {
         void onLinkActivated(const QString &link);
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -146,4 +146,4 @@ void HalfRoundRectWidget::paintEvent(QPaintEvent *event) {
     painter.drawPath(painterPathRightArc);
 }
 
-}  // namespace KDC
+} // namespace KDC

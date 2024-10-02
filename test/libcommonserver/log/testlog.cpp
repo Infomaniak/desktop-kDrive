@@ -52,45 +52,55 @@ void TestLog::testLog() {
 void TestLog::testLargeLogRolling(void) {
     clearLogDirectory();
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
-    auto customRollingFileAppender = static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get());
+    auto *customRollingFileAppender = static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get());
 
-    const int maxSize = 1024 * 1024 * 1;  // 1MB
+    const int maxSize = 1024; // 1KB
     const int previousMaxSize = customRollingFileAppender->getMaxFileSize();
     customRollingFileAppender->setMaxFileSize(maxSize);
+
+    LOG_DEBUG(_logger, "Ensure the log file is created");
+    CPPUNIT_ASSERT_GREATER(1, countFilesInDirectory(_logDir));
 
     // Generate a log larger than the max log file size. (log header is 50bytes)
     const auto testLog = std::string(maxSize, 'a');
     LOG_DEBUG(_logger, testLog.c_str());
+    CPPUNIT_ASSERT_GREATER(2, countFilesInDirectory(_logDir));
 
+    SyncPath rolledFile = _logDir / (Log::instance()->getLogFilePath().filename().string() + ".1.gz");
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::exists(rolledFile, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Restore the previous max file size
     customRollingFileAppender->setMaxFileSize(previousMaxSize);
-    // Check that a new log file has been created (might be 3 files if the "old" log file is already archived)
-    CPPUNIT_ASSERT_GREATER(1, countFilesInDirectory(_logDir));
 }
 
 void TestLog::testExpiredLogFiles(void) {
+    // This test check that old archived log files are deleted after a certain time
     clearLogDirectory();
 
     // Generate a fake log file
     std::ofstream fakeLogFile(_logDir / APPLICATION_NAME "_fake.log.gz");
     fakeLogFile << "Fake old log file" << std::endl;
     fakeLogFile.close();
-    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
+    LOG_INFO(_logger, "Test log file expiration"); // Ensure the log file is created
 
-    LOG_DEBUG(_logger, "Ensure the log file is not older than 5s");
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); // The current log file and the fake archived log file
 
-    log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
-    static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())->setExpire(5);
-    Utility::msleep(2000);
-    LOG_DEBUG(_logger, "Ensure the two log files do not expire at the same time.");  // No log file should be deleted
-    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
-    Utility::msleep(4000);  // Wait for the fake log file to expire
-    static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())
-        ->setExpire(5);                                  // Force the check of expired files at the next log
-    LOG_DEBUG(_logger, "Log to trigger the appender.");  // Generate a log to trigger the appender
-    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
+    auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
+    appender->setExpire(2); // 1 seconds
+    Utility::msleep(1000);
+    appender->checkForExpiredFiles();
+    LOG_INFO(_logger, "Test log file expiration"); // Ensure the current log file is not older than 2 seconds
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); // The fake log file should not be deleted (< 2 seconds)
+
+    Utility::msleep(1000);
+    appender->checkForExpiredFiles();
+    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file should be deleted
+    appender->setExpire(CommonUtility::logsPurgeRate * 24 * 3600); 
 }
 
-int TestLog::countFilesInDirectory(const SyncPath& directory) const {
+int TestLog::countFilesInDirectory(const SyncPath &directory) const {
     bool endOfDirectory = false;
     IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt(directory, false, ioError);
@@ -123,4 +133,4 @@ void TestLog::clearLogDirectory(void) const {
     CPPUNIT_ASSERT(endOfDirectory);
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
 }
-}  // namespace KDC
+} // namespace KDC

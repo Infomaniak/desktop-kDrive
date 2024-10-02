@@ -26,8 +26,8 @@
 
 namespace KDC {
 RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId,
-                                                   const std::string& testType /*= "undef"*/)
-    : _driveDbId(driveDbId) {
+                                                   const std::string& testType /*= "undef"*/) :
+    _driveDbId(driveDbId) {
     // Generate directory name
     const std::time_t now = std::time(nullptr);
     const std::tm tm = *std::localtime(&now);
@@ -54,4 +54,4 @@ RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     CPPUNIT_ASSERT_EQUAL_MESSAGE("~RemoteTemporaryDirectory() failed to delete the directory on remote side.", ExitCode::Ok,
                                  job.runSynchronously());
 }
-}  // namespace KDC
+} // namespace KDC
