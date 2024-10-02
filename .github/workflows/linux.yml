@@ -38,7 +38,7 @@ jobs:
         run : | 
           # Configure BullseyeCoverage
           rm -f "${HOME}/BullseyeCoverageEnv.txt"
-          echo "COVFILE=${BASEPATH}/src/test.cov" >  "${HOME}/BullseyeCoverageEnv.txt"
+          echo "COVFILE=${PWD}/src/test.cov" >  "${HOME}/BullseyeCoverageEnv.txt"
           export PATH="/opt/BullseyeCoverage/bin/:${PATH}"
           cov01 -1 # coverage on
           
