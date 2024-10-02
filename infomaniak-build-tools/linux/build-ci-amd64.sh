@@ -57,13 +57,6 @@ CMAKE_PARAMS=()
 
 export KDRIVE_DEBUG=0
 
-# Configure code coverage computation
-if [ ! -f "${HOME}/BullseyeCoverageEnv.txt" ]; then
-	# Tells BullseyeCoverage where to store the coverage information generated during the build and the run of the tests
-	echo "COVFILE=${BASEPATH}/src/test.cov" >  "${HOME}/BullseyeCoverageEnv.txt"
-fi
-
-
 cmake -B$BUILDDIR -H$BASEPATH \
     -DOPENSSL_ROOT_DIR=/usr/local \
     -DOPENSSL_INCLUDE_DIR=/usr/local/include \
