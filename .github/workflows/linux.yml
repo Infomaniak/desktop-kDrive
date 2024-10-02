@@ -74,7 +74,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.DESKTOP_KDRIVE_SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         run: |
-          sonar-scanner --define sonar.projectKey=Infomaniak_desktop-kDrive \
+          sonar-scanner -X --define sonar.projectKey=Infomaniak_desktop-kDrive \
             --define sonar.organization=infomaniak \
             --define sonar.sources=src \
             --define sonar.exclusions=src/3rdparty/** \
