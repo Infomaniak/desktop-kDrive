@@ -31,12 +31,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           submodules: recursive
-      
-      - name: Install sonar-scanner
-        uses: SonarSource/sonarcloud-github-c-cpp@v3
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
-  
+        
       - name: Clean the log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
@@ -93,7 +88,7 @@ jobs:
             --define sonar.projectKey="Infomaniak_desktop-kDrive"
             --define sonar.organization="infomaniak"
             --define sonar.sources="src"
-            --define sonar.exclusions="src/3rdparty/**""
+            --define sonar.exclusions="src/3rdparty/**"
             --define sonar.cfamily.compile-commands="build-windows/build/compile_commands.json"
             --define sonar.cfamily.bullseye.reportPaths="coverage.xml"
 
