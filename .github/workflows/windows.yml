@@ -58,7 +58,7 @@ jobs:
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           set COVFILE=%cd%\src\test.cov  
-          call "C:\Program Files\BullseyeCoverage\bin\cov01.exe" -1
+          call "cov01.exe" -1
 
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
@@ -66,7 +66,7 @@ jobs:
       - name: Execute tests
         run: |
           $env:COVFILE="$pwd\src\test.cov"
-          & "C:\Program Files\BullseyeCoverage\bin\cov01.exe" "-1" # coverage on
+          & "cov01.exe" "-1" # coverage on
           ./infomaniak-build-tools/run-tests.ps1
 
       - name: Compute code coverage
@@ -74,9 +74,9 @@ jobs:
           rm -Force -ErrorAction SilentlyContinue BullseyeCoverageExclusions
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
           $env:COVFILE="$pwd\src\test.cov"
-          & "C:\Program Files\BullseyeCoverage\bin\cov01.exe" "-0" # coverage off
-          & "C:\Program Files\BullseyeCoverage\bin\covselect.exe" "--import" "BullseyeCoverageExclusions"
-          & "C:\Program Files\BullseyeCoverage\bin\covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
+          & "cov01.exe" "-0" # coverage off
+          & "covselect.exe" "--import" "BullseyeCoverageExclusions"
+          & "covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
 
       - name: Install sonar-scanner
         uses: SonarSource/sonarcloud-github-c-cpp@v3
@@ -88,13 +88,14 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.DESKTOP_KDRIVE_SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
-        run: |
-          & "sonar-scanner --define sonar.projectKey=Infomaniak_desktop-kDrive" `
-            "--define sonar.organization=infomaniak" `
-            "--define sonar.sources=src" `
-            "--define sonar.exclusions=src/3rdparty/**" `
-            "--define sonar.cfamily.compile-commands=build-windows/build/compile_commands.json" `
-            "--define sonar.cfamily.bullseye.reportPaths=coverage.xml" 
+        run: >
+            sonar-scanner 
+            --define sonar.projectKey="Infomaniak_desktop-kDrive"
+            --define sonar.organization="infomaniak"
+            --define sonar.sources="src"
+            --define sonar.exclusions="src/3rdparty/**""
+            --define sonar.cfamily.compile-commands="build-windows/build/compile_commands.json"
+            --define sonar.cfamily.bullseye.reportPaths="coverage.xml"
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
