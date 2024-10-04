@@ -22,6 +22,10 @@ jobs:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
 
     steps:
+      - name: Load system Path into Github environment
+        run : echo Path=%Path%>> %GITHUB_ENV%
+        shell: cmd
+
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
