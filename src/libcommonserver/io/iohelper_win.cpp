@@ -186,17 +186,6 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
 bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoError::Success;
 
-    // Check if the file exist
-    bool exist = false;
-    if (!checkIfPathExists(path, exist, ioError) || ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(path, ioError).c_str());
-        return false;
-    }
-    if (!exist) {
-        ioError = IoError::NoSuchFileOrDirectory;
-        return isExpectedError(ioError);
-    }
-
     // Get parent folder handle
     HANDLE hParent;
     bool retry = true;
