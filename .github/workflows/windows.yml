@@ -81,7 +81,7 @@ jobs:
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          SONAR_TOKEN: ${{ secrets.DESKTOP_KDRIVE_SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_DESKTOP_KDRIVE_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         run: >
             sonar-scanner 
