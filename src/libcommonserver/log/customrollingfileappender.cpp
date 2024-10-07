@@ -174,9 +174,7 @@ static void rolloverFiles(const log4cplus::tstring &filename, unsigned int maxBa
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::tstring &filename, long maxFileSize, int maxBackupIndex,
                                                      bool immediateFlush, bool createDirs) :
     RollingFileAppender(filename, LONG_MAX /*Let us handle a custom rollover*/, maxBackupIndex, immediateFlush, createDirs),
-    _maxFileSize(maxFileSize), _lastExpireCheck() {
-    checkForExpiredFiles();
-}
+    _maxFileSize(maxFileSize), _lastExpireCheck() {}
 
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties) :
     RollingFileAppender(properties), _lastExpireCheck() {}
@@ -200,12 +198,6 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
 
     // Rotate log file if needed after appending to it.
     if (out.tellp() > _maxFileSize) customRollover(true);
-
-    // Check for expired files at startup and every hour
-    if (_lastExpireCheck == std::chrono::time_point<std::chrono::system_clock>() ||
-        _lastExpireCheck + std::chrono::hours(1) < std::chrono::system_clock::now()) {
-        checkForExpiredFiles();
-    }
 }
 
 void CustomRollingFileAppender::customRollover(bool alreadyLocked) {

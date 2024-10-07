@@ -38,6 +38,7 @@ class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
 
         inline void setMaxFileSize(long newMaxFileSize) { _maxFileSize = newMaxFileSize; }
         inline int getMaxFileSize() const { return _maxFileSize; }
+        void checkForExpiredFiles() noexcept(false);
 
     protected:
         void append(const log4cplus::spi::InternalLoggingEvent &event) override;
@@ -47,8 +48,6 @@ class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
         int _expire = 0;
         long _maxFileSize = 0;
         std::chrono::time_point<std::chrono::system_clock> _lastExpireCheck;
-
-        void checkForExpiredFiles() noexcept(false);
 };
 
 } // namespace KDC
