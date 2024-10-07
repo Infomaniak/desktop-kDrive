@@ -170,6 +170,31 @@ class SparkleUpdater::Private {
 
 SparkleUpdater::SparkleUpdater() {
     d = new Private;
+}
+
+SparkleUpdater::~SparkleUpdater() {
+    deleteUpdater();
+    delete d;
+}
+
+void SparkleUpdater::onUpdateFound() {
+    _feedUrl = updateChecker()->versionInfo().downloadUrl;
+    startInstaller();
+}
+
+void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) {
+    [d->updaterDelegate setQuitCallback:quitCallback];
+}
+
+void SparkleUpdater::startInstaller() {
+    reset(_feedUrl);
+    [d->updater checkForUpdates];
+    [d->spuStandardUserDriver showUpdateInFocus];
+}
+
+void SparkleUpdater::reset(const std::string &url) {
+    [d->spuStandardUserDriver dismissUpdateInstallation];
+    deleteUpdater();
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
     [d->updaterDelegate retain];
@@ -196,43 +221,18 @@ SparkleUpdater::SparkleUpdater() {
 
     // Migrate away from using `-[SPUUpdater setFeedURL:]`
     [d->updater clearFeedURLFromUserDefaults];
+
+    [d->updaterDelegate setCustomFeedUrl:_feedUrl];
+
+    if(startSparkleUpdater()) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
+    }
 }
 
-SparkleUpdater::~SparkleUpdater() {
+void SparkleUpdater::deleteUpdater() {
     [d->updater release];
     [d->updaterDelegate release];
     [d->spuStandardUserDriver release];
-    delete d;
-}
-
-void SparkleUpdater::onUpdateFound() {
-    setUpdateUrl(updateChecker()->versionInfo().downloadUrl);
-    startInstaller();
-}
-
-void SparkleUpdater::setUpdateUrl(const std::string &url) {
-    _feedUrl = url;
-    [d->updaterDelegate setCustomFeedUrl:_feedUrl];
-}
-
-void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) {
-    [d->updaterDelegate setQuitCallback:quitCallback];
-}
-
-void SparkleUpdater::startInstaller() {
-    checkForUpdate();
-}
-
-void SparkleUpdater::checkForUpdate() {
-    static bool updaterStarted = false;
-    if (!updaterStarted && startSparkleUpdater()) {
-        updaterStarted = true;
-    }
-
-    if (updaterStarted) {
-        [d->updater checkForUpdates];
-        [d->spuStandardUserDriver showUpdateInFocus];
-    }
 }
 
 bool SparkleUpdater::startSparkleUpdater() {

@@ -63,8 +63,10 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     const auto channelBox = new QHBoxLayout(this);
     _prodButton = new QRadioButton(tr("Prod"), this);
     channelBox->addWidget(_prodButton);
+    channelBox->addStretch();
     _betaButton = new QRadioButton(tr("Beta"), this);
     channelBox->addWidget(_betaButton);
+    channelBox->addStretch();
     _internalButton = new QRadioButton(tr("Internal"), this);
     channelBox->addWidget(_internalButton);
     channelBox->addStretch();
