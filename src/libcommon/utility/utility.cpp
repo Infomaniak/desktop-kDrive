@@ -655,7 +655,7 @@ size_t CommonUtility::maxPathLength() {
     // For folders in short path mode, it is MAX_PATH - 12
     // (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
     // We decided to apply this rule for files too. We could else encounter issues.
-    // If the path of a folder is > MAX_PATH - 12 and the path of a file in this folder is between MAX_PATH - 12 and MAX_PATH.
+    // If the path length of a folder is > MAX_PATH - 12 and the path length of a file in this folder is between MAX_PATH - 12 and MAX_PATH.
     // It would lead to a synced file in a folder that is not synced (hence excluded because of its path length).
     return (_maxPathWin == MAX_PATH_LENGTH_WIN_LONG) ? MAX_PATH_LENGTH_WIN_LONG : MAX_PATH_LENGTH_WIN_SHORT - 12;
 #elif defined(__APPLE__)
