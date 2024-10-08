@@ -74,6 +74,9 @@ class COMMONSERVER_EXPORT Db {
 
         inline int createNormalizeSyncNameFunc() { return _sqliteDb->createNormalizeSyncNameFunc(); };
 
+        bool tableExists(const std::string &tableName, bool &exist);
+        bool columnExists(const std::string &tableName, const std::string &columnName, bool &exist);
+
     protected:
         void startTransaction();
         void commitTransaction();
@@ -90,7 +93,6 @@ class COMMONSERVER_EXPORT Db {
         std::string _fromVersion;
 
     private:
-        bool checkIfTableExists(const std::string &tableName, bool &found);
         bool insertVersion(const std::string &version);
         bool updateVersion(const std::string &version, bool &found);
         bool selectVersion(std::string &version, bool &found);

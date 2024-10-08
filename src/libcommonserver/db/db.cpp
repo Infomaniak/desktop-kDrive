@@ -52,10 +52,6 @@
 #define PRAGMA_FOREIGN_KEYS_ID "db6"
 #define PRAGMA_FOREIGN_KEYS "PRAGMA foreign_keys=ON;"
 
-// Check if a table exists
-#define CHECK_TABLE_EXISTS_ID "check_table_exists"
-#define CHECK_TABLE_EXISTS "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1;"
-
 //
 // version
 //
@@ -76,6 +72,14 @@
 #define SELECT_VERSION_REQUEST \
     "SELECT value "            \
     "FROM version;"
+
+// Item existence
+// Check if a table exists
+#define CHECK_TABLE_EXISTENCE_REQUEST_ID "check_table_existence"
+#define CHECK_TABLE_EXISTENCE_REQUEST "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1;"
+
+#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
+#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info(?1) WHERE name=?2;"
 
 namespace KDC {
 
@@ -309,13 +313,25 @@ bool Db::init(const std::string &version) {
 #define SQLITE_IOERR_SHMMAP (SQLITE_IOERR | (21 << 8))
 #endif
 
-    int errId;
+    int errId = 0;
     std::string error;
+
+    ASSERT(queryCreate(CHECK_TABLE_EXISTENCE_REQUEST_ID));
+    if (!queryPrepare(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST, false, errId, error)) {
+        queryFree(CHECK_TABLE_EXISTENCE_REQUEST_ID);
+        return sqlFail(CHECK_TABLE_EXISTENCE_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(CHECK_COLUMN_EXISTENCE_REQUEST_ID));
+    if (!queryPrepare(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST, false, errId, error)) {
+        queryFree(CHECK_COLUMN_EXISTENCE_REQUEST_ID);
+        return sqlFail(CHECK_COLUMN_EXISTENCE_REQUEST_ID, error);
+    }
 
     if (!version.empty()) {
         // Check if DB is already initialized
         bool dbExists = false;
-        if (!checkIfTableExists("version", dbExists)) {
+        if (!tableExists("version", dbExists)) {
             return false;
         }
 
@@ -617,32 +633,45 @@ bool Db::checkConnect(const std::string &version) {
     return true;
 }
 
-void Db::setAutoDelete(bool value) {
-    _sqliteDb->setAutoDelete(value);
-}
+bool Db::tableExists(const std::string &tableName, bool &exist) {
+    const std::scoped_lock lock(_mutex);
 
-bool Db::checkIfTableExists(const std::string &tableName, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-
-    int errId;
-    std::string error;
-    ASSERT(queryCreate(CHECK_TABLE_EXISTS_ID));
-    if (!queryPrepare(CHECK_TABLE_EXISTS_ID, CHECK_TABLE_EXISTS, false, errId, error)) {
-        queryFree(CHECK_TABLE_EXISTS_ID);
-        return sqlFail(CHECK_TABLE_EXISTS_ID, error);
-    }
-
-    ASSERT(queryResetAndClearBindings(CHECK_TABLE_EXISTS_ID));
-    ASSERT(queryBindValue(CHECK_TABLE_EXISTS_ID, 1, tableName));
-    if (!queryNext(CHECK_TABLE_EXISTS_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << CHECK_TABLE_EXISTS_ID);
-        queryFree(CHECK_TABLE_EXISTS_ID);
+    static const std::string id = CHECK_TABLE_EXISTENCE_REQUEST_ID;
+    ASSERT(queryResetAndClearBindings(id));
+    ASSERT(queryBindValue(id, 1, tableName));
+    if (!queryNext(id, exist)) {
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str());
         return false;
     }
 
-    queryFree(CHECK_TABLE_EXISTS_ID);
-
     return true;
+}
+
+bool Db::columnExists(const std::string &tableName, const std::string &columnName, bool &exist) {
+    const std::scoped_lock lock(_mutex);
+
+    static const std::string id = CHECK_COLUMN_EXISTENCE_REQUEST_ID;
+    ASSERT(queryResetAndClearBindings(id));
+    ASSERT(queryBindValue(id, 1, tableName));
+    ASSERT(queryBindValue(id, 2, columnName));
+
+    bool found = false;
+    if (!queryNext(id, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str());
+        return false;
+    }
+    if (!found) return false;
+
+    int count = 0;
+    ASSERT(queryIntValue(id, 0, count));
+    ASSERT(queryResetAndClearBindings(id));
+
+    exist = count != 0;
+    return true;
+}
+
+void Db::setAutoDelete(bool value) {
+    _sqliteDb->setAutoDelete(value);
 }
 
 bool Db::insertVersion(const std::string &version) {

@@ -115,6 +115,20 @@ void TestDb::testQueries() {
     CPPUNIT_ASSERT_EQUAL(tests2[1].textValue, test2.textValue);
 }
 
+void TestDb::testTableExist() {
+    bool exist = false;
+    CPPUNIT_ASSERT_EQUAL(true, _testObj->tableExists("test", exist) && exist);
+    CPPUNIT_ASSERT_EQUAL(true, _testObj->tableExists("not_existing_table_name", exist) && !exist);
+}
+
+void TestDb::testColumnExist() {
+    bool exist = false;
+    CPPUNIT_ASSERT_EQUAL(true, _testObj->columnExists("test", "intValue", exist) && exist);
+    CPPUNIT_ASSERT_EQUAL(true, _testObj->columnExists("test", "not_existing_column_name", exist) && !exist);
+    CPPUNIT_ASSERT_EQUAL(true, _testObj->columnExists("not_existing_table_name", "intValue", exist) && !exist);
+    CPPUNIT_ASSERT_EQUAL(true, _testObj->columnExists("not_existing_table_name", "not_existing_column_name", exist) && !exist);
+}
+
 TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) : Db(dbPath) {
     if (!checkConnect("3.3.4")) {
         throw std::runtime_error("Cannot open DB!");

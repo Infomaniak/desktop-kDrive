@@ -509,11 +509,6 @@
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID "select_migration_selectivesync"
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST "SELECT syncDbId, path, type FROM migration_selectivesync;"
 
-// Check column existance
-#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
-#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info(?1) WHERE name=?2;"
-
-
 namespace KDC {
 
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
@@ -1267,12 +1262,6 @@ bool ParmsDb::prepare() {
                       error)) {
         queryFree(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID);
         return sqlFail(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(CHECK_COLUMN_EXISTENCE_REQUEST_ID));
-    if (!queryPrepare(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST, false, errId, error)) {
-        queryFree(CHECK_COLUMN_EXISTENCE_REQUEST_ID);
-        return sqlFail(CHECK_COLUMN_EXISTENCE_REQUEST_ID, error);
     }
 
     // App state
@@ -3313,30 +3302,6 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
     ASSERT(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
 
     return true;
-}
-
-bool ParmsDb::columnExists(const std::string &tableName, const std::string &columnName) {
-    const std::scoped_lock lock(_mutex);
-
-    static const std::string id = CHECK_COLUMN_EXISTENCE_REQUEST_ID;
-    ASSERT(queryResetAndClearBindings(id));
-    ASSERT(queryBindValue(id, 1, tableName));
-    ASSERT(queryBindValue(id, 2, columnName));
-
-    bool found = false;
-    if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << id.c_str());
-        return false;
-    }
-    if (!found) {
-        return true;
-    }
-
-    int count = 0;
-    ASSERT(queryIntValue(id, 0, count));
-    ASSERT(queryResetAndClearBindings(id));
-
-    return count != 0;
 }
 
 } // namespace KDC

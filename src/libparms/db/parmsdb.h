@@ -151,7 +151,5 @@ class PARMS_EXPORT ParmsDb : public Db {
 #ifdef __APPLE__
         bool updateExclusionApps();
 #endif
-
-        bool columnExists(const std::string &tableName, const std::string &columnName);
 };
 } // namespace KDC
