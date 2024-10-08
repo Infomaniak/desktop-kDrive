@@ -58,13 +58,10 @@ void TestLocalFileSystemObserverWorker::setUp() {
         std::string filename = "test" + std::to_string(i) + ".txt";
         SyncPath filepath = _subDirPath / filename;
         testhelpers::generateOrEditTestFile(filepath);
-
-        if (i == 0) {
-            FileStat fileStat;
-            bool exists = false;
-            IoHelper::getFileStat(filepath, &fileStat, exists);
-            _testFileId = std::to_string(fileStat.inode);
-        }
+        FileStat fileStat;
+        bool exists = false;
+        IoHelper::getFileStat(filepath, &fileStat, exists);
+        _testFiles.emplace_back(std::make_pair(std::to_string(fileStat.inode), filepath));
     }
 
     // Create parmsDb
@@ -344,7 +341,7 @@ void TestLocalFileSystemObserverWorker::testLFSODeleteDir() {
         Utility::msleep(1000); // Wait 1sec
 
         CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
-        CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFileId));
+        CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
     }
 
     LOGW_DEBUG(_logger, L"***** Tests for copy and deletion of directories succesfully finished! *****");
@@ -409,6 +406,21 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(initItemId));
     CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(newItemId));
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(initItemId) == testFilename);
+}
+
+void TestLocalFileSystemObserverWorker::testLFSOFastMoveDelete() {
+    LOGW_DEBUG(_logger, L"***** Test fast move/delete *****");
+
+    IoError ioError = IoError::Unknown;
+    SyncPath destinationPath = _testFiles[0].second.parent_path() / (_testFiles[0].second.filename().string() + "2");
+    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::deleteItem(destinationPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    Utility::msleep(1000); // Wait 1sec
+
+    CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
 }
 
 } // namespace KDC
