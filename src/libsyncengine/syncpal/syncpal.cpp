@@ -1292,7 +1292,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
 
     for (auto &uploadSessionToken: uploadSessionTokenList) {
         try {
-            auto job = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, driveDbId(), "",
+            auto job = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Drive, driveDbId(), "",
                                                                 uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCode::Ok) {

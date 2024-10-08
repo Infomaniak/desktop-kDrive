@@ -343,10 +343,10 @@ std::string toString(const UploadSessionType e) {
     switch (e) {
         case UploadSessionType::Unknown:
             return "Unknown";
-        case UploadSessionType::Standard:
-            return "Standard";
-        case UploadSessionType::LogUpload:
-            return "LogUpload";
+        case UploadSessionType::Drive:
+            return "Drive";
+        case UploadSessionType::Log:
+            return "Log";
         default:
             return noConversionStr;
     }
