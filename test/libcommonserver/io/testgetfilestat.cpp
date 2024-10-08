@@ -377,6 +377,53 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
+#elif defined(_WIN32)
+    // A junction on a regular directory.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "regular_dir";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
+
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+
+        IoError junctionError;
+        IoHelper::createJunctionFromPath(targetPath, path, junctionError);
+        CPPUNIT_ASSERT(junctionError == IoError::Success);
+
+        FileStat fileStat;
+        IoError ioError = IoError::Unknown;
+
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(!fileStat.isHidden);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0),
+                             fileStat.size); // `fileStat.size` is 0 for a junction`
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    }
+
+    // A dangling junction on a non-existing directory.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = _localTestDirPath / "dummy"; // Non existing directory
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
+
+        IoError junctionError;
+        IoHelper::createJunctionFromPath(targetPath, path, junctionError);
+        CPPUNIT_ASSERT(junctionError == IoError::Success);
+
+        FileStat fileStat;
+        IoError ioError = IoError::Unknown;
+
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(!fileStat.isHidden);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0),
+                             fileStat.size); // `fileStat.size` is 0 for a junction`
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    }
 #endif
     // A regular file missing all permissions (no error expected)
     {

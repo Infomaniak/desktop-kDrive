@@ -183,7 +183,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
     ioError = IoError::Success;
 
     // Get parent folder handle
@@ -195,7 +195,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
 
         const DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
         hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, dwShareMode, NULL, OPEN_EXISTING,
-                              FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                              FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
         if (hParent == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
             if (!fileExistsFromCode(dwError)) {
@@ -262,15 +262,15 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
     }
 
     // Get the Windows file id as an inode replacement.
-    buf->inode = ((long long) pFileInfo->FileId.HighPart << 32) + (long long) pFileInfo->FileId.LowPart;
-    buf->size = ((long long) pFileInfo->EndOfFile.HighPart << 32) + (long long) pFileInfo->EndOfFile.LowPart;
+    filestat->inode = ((long long) pFileInfo->FileId.HighPart << 32) + (long long) pFileInfo->FileId.LowPart;
+    filestat->size = ((long long) pFileInfo->EndOfFile.HighPart << 32) + (long long) pFileInfo->EndOfFile.LowPart;
 
     DWORD rem;
-    buf->modtime = FileTimeToUnixTime(pFileInfo->LastWriteTime, &rem);
-    buf->creationTime = FileTimeToUnixTime(pFileInfo->CreationTime, &rem);
+    filestat->modtime = FileTimeToUnixTime(pFileInfo->LastWriteTime, &rem);
+    filestat->creationTime = FileTimeToUnixTime(pFileInfo->CreationTime, &rem);
 
-    buf->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
-    buf->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeType::Directory : NodeType::File;
+    filestat->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
+    filestat->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeType::Directory : NodeType::File;
     CloseHandle(hParent);
 
     return true;
@@ -651,11 +651,11 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     if (ioError != IoError::Success) {
         return isExpectedError(ioError);
     }
-    const bool isSymlink = itemType.linkType == LinkType::Symlink;
+    const bool isLink = itemType.linkType == LinkType::Symlink || itemType.linkType == LinkType::Junction;
 
     std::error_code ec;
-    std::filesystem::perms perms =
-            isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
+    std::filesystem::perms perms = isLink ? std::filesystem::symlink_status(path, ec).permissions() // Don't follow link
+                                          : std::filesystem::status(path, ec).permissions();
     ioError = stdError2ioError(ec);
     if (ioError != IoError::Success) {
         LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());

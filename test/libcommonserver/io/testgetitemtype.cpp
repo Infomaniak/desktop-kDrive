@@ -143,9 +143,13 @@ void TestIo::testGetItemTypeSimpleCases() {
 
     // A regular symbolic link on a folder
     {
-        const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "regular_dir";
         const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
+
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+
         std::filesystem::create_directory_symlink(targetPath, path);
 
         const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkType::Symlink, NodeType::Directory);
@@ -313,9 +317,7 @@ void TestIo::testGetItemTypeSimpleCases() {
                 checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkType::FinderAlias, NodeType::Unknown);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
-#endif
-
-#if defined(_WIN32)
+#elif defined(_WIN32)
     // A Windows junction on a regular folder.
     {
         const LocalTemporaryDirectory temporaryDirectory;

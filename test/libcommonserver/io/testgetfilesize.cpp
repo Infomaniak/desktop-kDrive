@@ -181,6 +181,45 @@ void TestIo::testGetFileSizeSimpleCases() {
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
         CPPUNIT_ASSERT(ioError == IoError::Success);
     }
+#elif defined(_WIN32)
+    // Getting the size of a regular junction.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "regular_dir";
+        const SyncPath path = temporaryDirectory.path() / "dangling_junction";
+
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+
+        IoError junctionError;
+        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
+        CPPUNIT_ASSERT(junctionError == IoError::Success);
+
+        uint64_t fileSize = 0u;
+        IoError ioError = IoError::Success;
+
+        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(fileSize == 0); // The size of a junction is 0 (consistent with IoHelper::getFileStat)
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+    }
+
+    // Getting the size of a dangling junction on a non-existing directory.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "dummy"; // Non existing directory
+        const SyncPath path = temporaryDirectory.path() / "dangling_junction";
+
+        IoError junctionError;
+        CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
+        CPPUNIT_ASSERT(junctionError == IoError::Success);
+
+        uint64_t fileSize = 0u;
+        IoError ioError = IoError::Success;
+
+        CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
+        CPPUNIT_ASSERT(fileSize == 0); // The size of a junction is 0 (consistent with IoHelper::getFileStat)
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+    }
 #endif
 }
 

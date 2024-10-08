@@ -430,10 +430,12 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
         return false;
     }
 
-    const bool isSymlink = itemType.linkType == LinkType::Symlink;
-    if (isSymlink) {
+    if (itemType.linkType == LinkType::Symlink) {
         // The size of a symlink file is the target path length
         size = itemType.targetPath.native().length();
+    } else if (itemType.linkType == LinkType::Junction) {
+        // The size of a junction is 0 (consistent with IoHelper::getFileStat)
+        size = 0;
     } else {
         if (itemType.nodeType != NodeType::File) {
             LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());

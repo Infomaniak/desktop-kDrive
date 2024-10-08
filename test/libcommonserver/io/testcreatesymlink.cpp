@@ -47,8 +47,11 @@ void TestIo::testCreateSymlink() {
     // Successfully creates a symlink on a regular directory.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = _localTestDirPath / "test_pictures";
+        const SyncPath targetPath = temporaryDirectory.path() / "regular_dir";
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
+
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, true, ioError));
