@@ -99,6 +99,7 @@ void AbstractJob::run() {
 
 void AbstractJob::callback(UniqueId id) {
     try {
+        std::scoped_lock lock(_additionalCallbackMutex);
         if (_mainCallback && _additionalCallback) {
             _additionalCallback(id); // Call the "additional" callback first since the main callback might delete the last
                                      // reference on the job
