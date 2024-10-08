@@ -42,7 +42,10 @@ class VersionWidget final : public QWidget {
 
     public:
         explicit VersionWidget(QWidget *parent = nullptr);
-        void refresh() const;
+        void refresh(UpdateStateV2 state = UpdateStateV2::UpToDate) const;
+
+    public slots:
+        void onUpdateStateChanged(UpdateStateV2 state) const;
 
     signals:
         void showReleaseNote();

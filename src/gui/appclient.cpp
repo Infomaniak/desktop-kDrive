@@ -444,6 +444,12 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             });
             break;
         }
+        case SignalNum::UPDATER_STATE_CHANGED: {
+            auto state = UpdateStateV2::UpToDate;
+            paramsStream >> state;
+            emit updateStateChanged(state);
+            break;
+        }
         case SignalNum::UTILITY_SHOW_SETTINGS: {
             showParametersDialog();
             break;

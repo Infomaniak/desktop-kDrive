@@ -89,6 +89,8 @@ class AppClient : public SharedTools::QtSingleApplication {
         void errorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         void errorsCleared(int syncDbId);
         void logUploadStatusUpdated(LogUploadState status, int percent);
+        // Updater
+        void updateStateChanged(UpdateStateV2 state);
 
     public slots:
         void onWizardDone(int);

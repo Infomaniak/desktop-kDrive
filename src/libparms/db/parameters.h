@@ -142,7 +142,7 @@ class PARMS_EXPORT Parameters {
         int _maxAllowedCpu;
         int _uploadSessionParallelJobs;
         int _jobPoolCapacityFactor;
-        DistributionChannel _distributionChannel;
+        DistributionChannel _distributionChannel{DistributionChannel::Beta}; // TODO : for now, only Production is supported
 };
 
 } // namespace KDC

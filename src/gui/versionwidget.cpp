@@ -60,17 +60,18 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     _updateStatusLabel->setWordWrap(true);
     versionVBox->addWidget(_updateStatusLabel);
 
-    const auto channelBox = new QHBoxLayout(this);
-    _prodButton = new QRadioButton(tr("Prod"), this);
-    channelBox->addWidget(_prodButton);
-    channelBox->addStretch();
-    _betaButton = new QRadioButton(tr("Beta"), this);
-    channelBox->addWidget(_betaButton);
-    channelBox->addStretch();
-    _internalButton = new QRadioButton(tr("Internal"), this);
-    channelBox->addWidget(_internalButton);
-    channelBox->addStretch();
-    versionVBox->addLayout(channelBox);
+    // TODO : add it back later
+    // const auto channelBox = new QHBoxLayout(this);
+    // _prodButton = new QRadioButton(tr("Prod"), this);
+    // channelBox->addWidget(_prodButton);
+    // channelBox->addStretch();
+    // _betaButton = new QRadioButton(tr("Beta"), this);
+    // channelBox->addWidget(_betaButton);
+    // channelBox->addStretch();
+    // _internalButton = new QRadioButton(tr("Internal"), this);
+    // channelBox->addWidget(_internalButton);
+    // channelBox->addStretch();
+    // versionVBox->addLayout(channelBox);
 
     _showReleaseNoteLabel->setObjectName("boldTextLabel");
     _showReleaseNoteLabel->setWordWrap(true);
@@ -93,15 +94,15 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
 
     refresh();
 
-    connect(_prodButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
-    connect(_betaButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
-    connect(_internalButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
+    // connect(_prodButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
+    // connect(_betaButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
+    // connect(_internalButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
     connect(_versionNumberLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_showReleaseNoteLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdatButtonClicked);
 }
 
-void VersionWidget::refresh() const {
+void VersionWidget::refresh(const UpdateStateV2 state /*= UpdateStateV2::UpToDate*/) const {
     // Re-translate
     const QString releaseNoteLinkText =
             tr(R"(<a style="%1" href="%2">Show release note</a>)").arg(CommonUtility::linkStyle, releaseNoteLink);
@@ -111,8 +112,6 @@ void VersionWidget::refresh() const {
     _updateButton->setText(tr("UPDATE"));
 
     // Refresh update state
-    auto state = UpdateStateV2::UpToDate;
-    GuiRequests::updateState(state);
     VersionInfo versionInfo;
     GuiRequests::versionInfo(versionInfo);
     const QString versionStr = versionInfo.beautifulVersion().c_str();
@@ -154,6 +153,10 @@ void VersionWidget::refresh() const {
     _updateStatusLabel->setText(statusString);
     _showReleaseNoteLabel->setVisible(showReleaseNote);
     _updateButton->setVisible(showUpdateButton);
+}
+
+void VersionWidget::onUpdateStateChanged(const UpdateStateV2 state) const {
+    refresh(state);
 }
 
 void VersionWidget::onChannelButtonClicked() const {

@@ -248,6 +248,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onRestartSyncs();
         void onScheduleAppRestart();
         void onShowWindowsUpdateErrorDialog();
+        void onUpdateStateChanged(UpdateStateV2 state);
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
         void onRestartClientReceived();

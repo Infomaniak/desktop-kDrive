@@ -37,8 +37,9 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     //     connect(updater, &KDCUpdater::requestRestart, this, &UpdaterScheduler::requestRestart);
     // }
 
-    static constexpr auto checkInterval = std::chrono::hours(1);
-    _updateCheckTimer.start(std::chrono::milliseconds(checkInterval).count());
+    // static constexpr auto checkInterval = std::chrono::hours(1);
+    static constexpr auto checkTestInterval = std::chrono::seconds(15);
+    _updateCheckTimer.start(std::chrono::milliseconds(checkTestInterval).count());
 
     // Setup callback for update state change notification
     const std::function<void(UpdateStateV2)> callback = std::bind_front(&UpdateManager::onUpdateStateChange, this);
@@ -46,7 +47,6 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
     // At startup, do a check in any case and setup distribution channel.
-    // QTimer::singleShot(3000, this, &UpdateManager::slotTimerFired);
     QTimer::singleShot(3000, this, [=]() { setDistributionChannel(readDistributionChannelFromDb()); });
 }
 

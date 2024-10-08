@@ -20,7 +20,6 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/asserts.h"
 #include "libcommonserver/utility/utility.h"
-#include "utility/utility.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
 
@@ -61,8 +60,7 @@
     "extendedLog INTEGER,"                   \
     "maxAllowedCpu INTEGER,"                 \
     "uploadSessionParallelJobs INTEGER,"     \
-    "jobPoolCapacityFactor INTEGER,"         \
-    "distributionChannel INTEGER);"
+    "jobPoolCapacityFactor INTEGER);"
 
 #define INSERT_PARAMETERS_REQUEST_ID "insert_parameters"
 #define INSERT_PARAMETERS_REQUEST                                                                                             \
@@ -70,9 +68,9 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, "    \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "     \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "               \
-    "jobPoolCapacityFactor, distributionChannel) "                                                                            \
+    "jobPoolCapacityFactor) "                                                                                                 \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, " \
-    "?25, ?26, ?27, ?28, ?29, ?30);"
+    "?25, ?26, ?27, ?28, ?29);"
 
 #define UPDATE_PARAMETERS_REQUEST_ID "update_parameters"
 #define UPDATE_PARAMETERS_REQUEST                                                                                               \
@@ -83,7 +81,7 @@
     "bigFolderSizeLimit=?17, darkTheme=?18, showShortcuts=?19, updateFileAvailable=?20, updateTargetVersion=?21, "              \
     "updateTargetVersionString=?22, "                                                                                           \
     "autoUpdateAttempted=?23, seenVersion=?24, dialogGeometry=?25, extendedLog=?26, maxAllowedCpu=?27, "                        \
-    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30;"
+    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29;"
 
 #define SELECT_PARAMETERS_REQUEST_ID "select_parameters"
 #define SELECT_PARAMETERS_REQUEST                                                                                          \
@@ -91,7 +89,7 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, " \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "  \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "            \
-    "jobPoolCapacityFactor, distributionChannel "                                                                          \
+    "jobPoolCapacityFactor "                                                                                               \
     "FROM parameters;"
 
 #define ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID "alter_parameters_add_max_allowed_cpu"
@@ -107,8 +105,9 @@
 #define UPDATE_PARAMETERS_JOB_REQUEST_ID "update_parameters_job"
 #define UPDATE_PARAMETERS_JOB_REQUEST "UPDATE parameters SET uploadSessionParallelJobs=?1, jobPoolCapacityFactor=?2;"
 
-#define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID "alter_parameters_add_distribution"
-#define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST "ALTER TABLE parameters ADD COLUMN distributionChannel INTEGER;"
+// TODO : will be added later
+// #define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID "alter_parameters_add_distribution"
+// #define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST "ALTER TABLE parameters ADD COLUMN distributionChannel INTEGER;"
 
 //
 // user
@@ -1361,20 +1360,6 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
         queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
 
-    if (!columnExists("parameters", "distributionChannel")) { // TODO : probably not working for now
-        ASSERT(queryCreate(ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID));
-        if (!queryPrepare(ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID, ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST,
-                          false, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID, error);
-        }
-        if (!queryExec(ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID, error);
-        }
-        queryFree(ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID);
-    }
-
     if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.3")) {
         LOG_DEBUG(_logger, "Upgrade < 3.6.3 DB");
         if (!createAppState()) {
@@ -1581,8 +1566,9 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 28, intResult));
     parameters.setJobPoolCapacityFactor(intResult);
 
-    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
-    parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
+    // TODO : not supported for now
+    // ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
+    // parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
 
     ASSERT(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 

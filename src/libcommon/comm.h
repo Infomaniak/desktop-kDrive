@@ -120,6 +120,7 @@ enum class RequestNum {
     UTILITY_CRASH,
     UTILITY_QUIT,
 };
+
 inline std::string toString(RequestNum e) {
     switch (e) {
         case RequestNum::LOGIN_REQUESTTOKEN:
@@ -306,6 +307,7 @@ enum class SignalNum {
     NODE_FIX_CONFLICTED_FILES_COMPLETED,
     // Updater
     UPDATER_SHOW_DIALOG,
+    UPDATER_STATE_CHANGED,
     // Utility
     UTILITY_SHOW_NOTIFICATION,
     UTILITY_NEW_BIG_FOLDER,
@@ -363,6 +365,8 @@ inline std::string toString(SignalNum e) {
             return "NODE_FIX_CONFLICTED_FILES_COMPLETED";
         case SignalNum::UPDATER_SHOW_DIALOG:
             return "UPDATER_SHOW_DIALOG";
+        case SignalNum::UPDATER_STATE_CHANGED:
+            return "UPDATER_STATE_CHANGED";
         case SignalNum::UTILITY_SHOW_NOTIFICATION:
             return "UTILITY_SHOW_NOTIFICATION";
         case SignalNum::UTILITY_NEW_BIG_FOLDER:

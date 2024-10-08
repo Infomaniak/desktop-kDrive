@@ -381,6 +381,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     connect(_versionWidget, &VersionWidget::showAboutDialog, this, &PreferencesWidget::onShowAboutDialog);
     connect(_versionWidget, &VersionWidget::showReleaseNote, this, &PreferencesWidget::onShowReleaseNote);
+    connect(_gui.get(), &ClientGui::updateStateChanged, _versionWidget, &VersionWidget::onUpdateStateChanged);
 
     connect(_displayErrorsWidget, &ActionWidget::clicked, this, &PreferencesWidget::displayErrors);
 }

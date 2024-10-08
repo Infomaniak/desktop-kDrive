@@ -79,6 +79,7 @@ ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(_app, &AppClient::errorsCleared, this, &ClientGui::onErrorsCleared);
     connect(_app, &AppClient::folderSizeCompleted, this, &ClientGui::folderSizeCompleted);
     connect(_app, &AppClient::fixConflictingFilesCompleted, this, &ClientGui::onFixConflictingFilesCompleted);
+    connect(_app, &AppClient::updateStateChanged, this, &ClientGui::updateStateChanged);
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
     connect(this, &ClientGui::appVersionLocked, this, &ClientGui::onAppVersionLocked);

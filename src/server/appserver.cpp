@@ -284,6 +284,7 @@ AppServer::AppServer(int &argc, char **argv) :
     _updateManager->setQuitCallback(quitCallback);
 #endif
 
+    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
 #ifdef Q_OS_WIN
     connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
 #endif
@@ -2215,6 +2216,14 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
             }
         }
     }
+}
+
+void AppServer::onUpdateStateChanged(const UpdateStateV2 state) {
+    int id = 0;
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << state;
+    CommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params, id);
 }
 
 void AppServer::onRestartClientReceived() {
