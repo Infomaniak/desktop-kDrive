@@ -46,8 +46,13 @@ bool DriveUploadSession::runJobInit() {
 }
 
 std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
-    return std::make_shared<UploadSessionStartJob>(UploadSessionType::Standard, _driveDbId, getFileName(), getFileSize(),
-                                                   _remoteParentDirId, getTotalChunks());
+    if (_fileId.empty()) {
+        return std::make_shared<UploadSessionStartJob>(UploadSessionType::Drive, _driveDbId, getFileName(), getFileSize(),
+                                                       _remoteParentDirId, getTotalChunks());
+    } else {
+        return std::make_shared<UploadSessionStartJob>(UploadSessionType::Drive, _driveDbId, _fileId, getFileSize(),
+                                                       getTotalChunks());
+    }
 }
 
 std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
