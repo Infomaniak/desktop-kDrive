@@ -26,7 +26,7 @@ DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> sy
                                        bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/) :
     AbstractUploadSession(filepath, filename, nbParalleleThread),
     _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime), _remoteParentDirId(remoteParentDirId) {
-    _uploadSessionType = UploadSessionType::Standard;
+    _uploadSessionType = UploadSessionType::Drive;
 }
 
 DriveUploadSession::~DriveUploadSession() {
@@ -46,17 +46,17 @@ std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
 
 std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
-    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken(),
+    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
                                                    chunckContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
-    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken(),
+    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
                                                     getTotalChunkHash(), getTotalChunks(), _modtimeIn);
 }
 
 std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
-    return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken());
+    return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken());
 }
 
 bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
