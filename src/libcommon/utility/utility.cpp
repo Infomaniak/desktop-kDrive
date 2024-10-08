@@ -740,19 +740,10 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
     extractIntFromStrVersion(targetVersion, targetTabVersion);
 
     if (currTabVersion.size() != targetTabVersion.size()) {
-        // Should not happen
-        return false;
+        return false; // Should not happen
     }
 
-    for (size_t i = 0; i < targetTabVersion.size(); i++) {
-        if (currTabVersion[i] > targetTabVersion[i]) {
-            return false;
-        } else if (currTabVersion[i] < targetTabVersion[i]) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::ranges::lexicographical_compare(currTabVersion, targetTabVersion);
 }
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
