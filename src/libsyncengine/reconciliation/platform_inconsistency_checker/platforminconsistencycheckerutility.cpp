@@ -44,7 +44,7 @@ static const char forbiddenFilenameChars[] = {'/', '\0'};
 
 namespace KDC {
 
-#ifdef WIN32
+#ifdef _WIN32
 static const std::unordered_set<std::string> reservedWinNames = {
         "CON",  "PRN",  "AUX",  "NUL",  "CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5",
         "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
@@ -67,7 +67,7 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
     SyncName suffix = generateSuffix(suffixType);
     SyncName sub = name.stem().native().substr(0, MAX_NAME_LENGTH - suffix.size() - name.extension().native().size());
 
-#ifdef WIN32
+#ifdef _WIN32
     SyncName nameStr(name.native());
     // Can't finish with a space or a '.'
     if (nameStr.back() == ' ' || nameStr.back() == '.') {
@@ -153,7 +153,7 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
         return true;
     }
 
-#ifdef WIN32
+#ifdef _WIN32
     // Can't have only dots
     if (std::ranges::count(name, '.') == name.size()) {
         return true;

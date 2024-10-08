@@ -98,7 +98,7 @@ enum class RequestNum {
     PARAMETERS_UPDATE,
     UTILITY_FINDGOODPATHFORNEWSYNC,
     UTILITY_BESTVFSAVAILABLEMODE,
-#ifdef WIN32
+#ifdef _WIN32
     UTILITY_SHOWSHORTCUT,
     UTILITY_SETSHOWSHORTCUT,
 #endif
@@ -239,7 +239,7 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_FINDGOODPATHFORNEWSYNC";
         case RequestNum::UTILITY_BESTVFSAVAILABLEMODE:
             return "UTILITY_BESTVFSAVAILABLEMODE";
-#ifdef WIN32
+#ifdef _WIN32
         case RequestNum::UTILITY_SHOWSHORTCUT:
             return "UTILITY_SHOWSHORTCUT";
         case RequestNum::UTILITY_SETSHOWSHORTCUT:
