@@ -36,4 +36,4 @@ class UploadSessionCancelJob : public AbstractUploadSessionJob {
         virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
 };
 
-}  // namespace KDC
+} // namespace KDC

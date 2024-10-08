@@ -24,7 +24,7 @@
 #include <thread>
 
 namespace KDC {
-MockTestSentryHandler::MockTestSentryHandler(): SentryHandler() {
+MockTestSentryHandler::MockTestSentryHandler() : SentryHandler() {
     SentryHandler::setIsSentryActivated(true);
     SentryHandler::setMaxCaptureCountBeforeRateLimit(3);
     SentryHandler::setMinUploadIntervalOnRateLimit(1);
@@ -75,7 +75,7 @@ void TestSentryHandler::testMultipleSendEventForTheSameEvent() {
     CPPUNIT_ASSERT_EQUAL(8, mockSentryHandler.sentryUploadedEventCount());
 
     mockSentryHandler.captureMessage(SentryLevel::Info, "Test", "Test message"); // Rate limit reached, should not be sent
-    CPPUNIT_ASSERT_EQUAL(8, mockSentryHandler.sentryUploadedEventCount()); 
+    CPPUNIT_ASSERT_EQUAL(8, mockSentryHandler.sentryUploadedEventCount());
 }
 void TestSentryHandler::testMultipleSendEventForDifferentEvent() {
     MockTestSentryHandler mockSentryHandler;
@@ -95,7 +95,7 @@ void TestSentryHandler::testMultipleSendEventForDifferentEvent() {
     mockSentryHandler.captureMessage(SentryLevel::Fatal, "Test", "Test message"); // Should be sent
     CPPUNIT_ASSERT_EQUAL(4, mockSentryHandler.sentryUploadedEventCount());
 
-    //Test Title change
+    // Test Title change
     mockSentryHandler.captureMessage(SentryLevel::Info, "Test2", "Test message"); // Should be sent
     CPPUNIT_ASSERT_EQUAL(5, mockSentryHandler.sentryUploadedEventCount());
 
@@ -108,7 +108,7 @@ void TestSentryHandler::testMultipleSendEventForDifferentEvent() {
     mockSentryHandler.captureMessage(SentryLevel::Info, "Test5", "Test message"); // Should be sent
     CPPUNIT_ASSERT_EQUAL(8, mockSentryHandler.sentryUploadedEventCount());
 
-    //Test Message change
+    // Test Message change
     mockSentryHandler.captureMessage(SentryLevel::Info, "Test", "Test message2"); // Should be sent
     CPPUNIT_ASSERT_EQUAL(9, mockSentryHandler.sentryUploadedEventCount());
 
@@ -120,5 +120,49 @@ void TestSentryHandler::testMultipleSendEventForDifferentEvent() {
 
     mockSentryHandler.captureMessage(SentryLevel::Info, "Test", "Test message5"); // Should be sent
     CPPUNIT_ASSERT_EQUAL(12, mockSentryHandler.sentryUploadedEventCount());
+}
+
+void TestSentryHandler::testWriteEvent() {
+    using namespace KDC::event_dump_files;
+
+    // Test send event
+    {
+        auto eventFilePath = std::filesystem::temp_directory_path() / clientSendEventFileName;
+        std::error_code ec;
+        std::filesystem::remove(eventFilePath, ec);
+
+        std::string eventInStr("send event line 1\nsend event line 2\nsend event line 3");
+        SentryHandler::writeEvent(eventInStr, false);
+
+        CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath, ec));
+
+        std::ifstream is(eventFilePath);
+        std::string eventOutStr((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+        eventOutStr.pop_back(); // Remove last LF
+
+        CPPUNIT_ASSERT_EQUAL(eventInStr, eventOutStr);
+
+        std::filesystem::remove(eventFilePath, ec);
+    }
+
+    // Test crash event
+    {
+        auto eventFilePath = std::filesystem::temp_directory_path() / clientCrashEventFileName;
+        std::error_code ec;
+        std::filesystem::remove(eventFilePath, ec);
+
+        std::string eventInStr = "crash event line 1\ncrash event line 2\ncrash event line 3";
+        SentryHandler::writeEvent(eventInStr, true);
+
+        CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath, ec));
+
+        std::ifstream is(eventFilePath);
+        std::string eventOutStr((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+        eventOutStr.pop_back(); // Remove last LF
+
+        CPPUNIT_ASSERT_EQUAL(eventInStr, eventOutStr);
+
+        std::filesystem::remove(eventFilePath, ec);
+    }
 }
 } // namespace KDC

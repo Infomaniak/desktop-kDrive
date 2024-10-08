@@ -41,4 +41,4 @@ class BottomWidget : public QWidget {
         inline void setBackgroundColor(const QColor &value) { _backgroundColor = value; }
 };
 
-}  // namespace KDC
+} // namespace KDC

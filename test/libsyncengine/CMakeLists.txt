@@ -53,6 +53,10 @@ set(testsyncengine_SRCS
         ../test_classes/syncpaltest.h
 )
 
+if (APPLE)
+    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp)
+endif ()
+
 if (USE_OUR_OWN_SQLITE3)
     list(APPEND testsyncengine_SRCS ${SQLITE3_SOURCE})
 endif ()

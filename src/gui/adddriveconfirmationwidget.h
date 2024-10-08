@@ -59,4 +59,4 @@ class AddDriveConfirmationWidget : public QWidget {
         void onAddDriveButtonTriggered(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

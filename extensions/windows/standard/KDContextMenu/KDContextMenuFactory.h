@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <unknwn.h>  // For IClassFactory
+#include <unknwn.h> // For IClassFactory
 
 class KDContextMenuFactory : public IClassFactory {
     public:

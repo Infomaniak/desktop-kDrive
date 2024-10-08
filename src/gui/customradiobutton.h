@@ -46,4 +46,4 @@ class CustomRadioButton : public QRadioButton {
         void onClicked(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

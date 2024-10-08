@@ -42,4 +42,4 @@ class GetSizeJob : public AbstractTokenNetworkJob {
         NodeId _nodeId;
         int64_t _size;
 };
-}  // namespace KDC
+} // namespace KDC

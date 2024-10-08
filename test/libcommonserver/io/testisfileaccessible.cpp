@@ -52,7 +52,7 @@ void TestIo::testIsFileAccessible() {
 #ifdef _WIN32
     CPPUNIT_ASSERT(!res);
 #else
-    (void)res;
+    (void) res;
 #endif
 
     // File copy not finished yet.
@@ -63,4 +63,4 @@ void TestIo::testIsFileAccessible() {
     CPPUNIT_ASSERT(res);
 }
 
-}  // namespace KDC
+} // namespace KDC

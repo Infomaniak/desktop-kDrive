@@ -84,4 +84,4 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         bool defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri);
 };
 
-}  // namespace KDC
+} // namespace KDC

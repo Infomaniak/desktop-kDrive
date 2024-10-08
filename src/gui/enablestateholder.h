@@ -20,7 +20,7 @@
 
 #include <QWidget>
 
-template <typename T>
+template<typename T>
 class EnableStateHolder {
     public:
         explicit EnableStateHolder(T *w) : _widget(w) { _widget->setEnabled(false); }

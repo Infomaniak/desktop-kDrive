@@ -75,4 +75,4 @@ class Theme : public QObject {
         bool _mono;
         mutable QHash<QString, QIcon> _iconCache;
 };
-}  // namespace KDC
+} // namespace KDC

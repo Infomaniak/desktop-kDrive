@@ -51,4 +51,4 @@ class OperationGeneratorWorker : public OperationProcessor {
         friend class TestOperationGeneratorWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

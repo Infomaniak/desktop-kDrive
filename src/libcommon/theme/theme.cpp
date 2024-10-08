@@ -111,7 +111,7 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
 
 void Theme::updateIconWithText(QIcon &icon, QString text) const {
     QList<QSize> sizes = icon.availableSizes();
-    for (QSize size : sizes) {
+    for (QSize size: sizes) {
         QPixmap px = icon.pixmap(size);
         QPainter painter(&px);
         int pictSize = size.width() / 2;
@@ -226,4 +226,4 @@ QString Theme::versionSwitchOutput() const {
     return helpText;
 }
 
-}  // namespace KDC
+} // namespace KDC

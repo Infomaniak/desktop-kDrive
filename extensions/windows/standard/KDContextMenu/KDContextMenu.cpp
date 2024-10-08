@@ -41,9 +41,9 @@ KDContextMenu::~KDContextMenu(void) {
 // Query to the interface the component supported.
 IFACEMETHODIMP KDContextMenu::QueryInterface(REFIID riid, void **ppv) {
     static const QITAB qit[] = {
-        QITABENT(KDContextMenu, IContextMenu),
-        QITABENT(KDContextMenu, IShellExtInit),
-        {0},
+            QITABENT(KDContextMenu, IContextMenu),
+            QITABENT(KDContextMenu, IShellExtInit),
+            {0},
     };
     return QISearch(this, qit, riid, ppv);
 }
@@ -147,7 +147,7 @@ IFACEMETHODIMP KDContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu, UINT
     InsertSeperator(hMenu, indexMenu++);
 
     UINT indexSubMenu = 0;
-    for (auto &item : m_info.menuItems) {
+    for (auto &item: m_info.menuItems) {
         bool disabled = item.flags.find(L'd') != std::string::npos;
 
         MENUITEMINFO mii = {sizeof(mii)};
@@ -171,16 +171,16 @@ IFACEMETHODIMP KDContextMenu::InvokeCommand(LPCMINVOKECOMMANDINFO pici) {
     std::wstring command;
 
     CMINVOKECOMMANDINFOEX *piciEx = nullptr;
-    if (pici->cbSize == sizeof(CMINVOKECOMMANDINFOEX)) piciEx = (CMINVOKECOMMANDINFOEX *)pici;
+    if (pici->cbSize == sizeof(CMINVOKECOMMANDINFOEX)) piciEx = (CMINVOKECOMMANDINFOEX *) pici;
 
     // For the Unicode case, if the high-order word is not zero, the
     // command's verb string is in lpcmi->lpVerbW.
-    if (piciEx && (piciEx->fMask & CMIC_MASK_UNICODE) && HIWORD(((CMINVOKECOMMANDINFOEX *)pici)->lpVerbW)) {
+    if (piciEx && (piciEx->fMask & CMIC_MASK_UNICODE) && HIWORD(((CMINVOKECOMMANDINFOEX *) pici)->lpVerbW)) {
         command = piciEx->lpVerbW;
 
         // Verify that we handle the verb
         bool handled = false;
-        for (auto &item : m_info.menuItems) {
+        for (auto &item: m_info.menuItems) {
             if (item.command == command) {
                 handled = true;
                 break;

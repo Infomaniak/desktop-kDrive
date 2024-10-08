@@ -57,4 +57,4 @@ class PlatformInconsistencyCheckerUtility {
         friend class TestPlatformInconsistencyCheckerWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -66,4 +66,4 @@ static inline bool hasDarkSystray_private() {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

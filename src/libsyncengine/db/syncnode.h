@@ -37,4 +37,4 @@ class SyncNode {
         SyncNodeType _type;
 };
 
-}  // namespace KDC
+} // namespace KDC

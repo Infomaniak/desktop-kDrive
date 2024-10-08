@@ -28,20 +28,16 @@
 namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                                   const std::string &shortName)
-    : ISyncWorker(syncPal, name, shortName),
-      _syncDb(syncPal->_syncDb),
-      _localSnapshot(syncPal->_localSnapshot),
-      _remoteSnapshot(syncPal->_remoteSnapshot) {}
+                                                   const std::string &shortName) :
+    ISyncWorker(syncPal, name, shortName),
+    _syncDb(syncPal->_syncDb), _localSnapshot(syncPal->_localSnapshot), _remoteSnapshot(syncPal->_remoteSnapshot) {}
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb,
                                                    const std::shared_ptr<Snapshot> testLocalSnapshot,
                                                    const std::shared_ptr<Snapshot> testRemoteSnapshot, const std::string &name,
-                                                   const std::string &shortName)
-    : ISyncWorker(nullptr, name, shortName, true),
-      _syncDb(testSyncDb),
-      _localSnapshot(testLocalSnapshot),
-      _remoteSnapshot(testRemoteSnapshot) {}
+                                                   const std::string &shortName) :
+    ISyncWorker(nullptr, name, shortName, true),
+    _syncDb(testSyncDb), _localSnapshot(testLocalSnapshot), _remoteSnapshot(testRemoteSnapshot) {}
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -175,7 +171,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                 }
             }
 
-            if (isExcluded) return ExitCode::Ok;  // Never generate operation on excluded file
+            if (isExcluded) return ExitCode::Ok; // Never generate operation on excluded file
         }
 
         if (isInUnsyncedList(snapshot, nodeId, side, true)) {
@@ -212,11 +208,11 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             IoError ioError = IoError::Success;
             bool warn = false;
             bool isExcluded = false;
-            const bool success =
-                ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), dbPath, warn, isExcluded, ioError);
+            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), dbPath, warn,
+                                                                                       isExcluded, ioError);
             if (!success) {
                 LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                                       << Utility::formatIoError(dbPath, ioError).c_str());
+                                           << Utility::formatIoError(dbPath, ioError).c_str());
                 return ExitCode::SystemError;
             }
             if (isExcluded) {
@@ -262,7 +258,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         }
         if (!exists) {
             LOGW_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - "
-                                    << Utility::formatSyncPath(absolutePath).c_str());
+                                        << Utility::formatSyncPath(absolutePath).c_str());
             setExitCause(ExitCause::InvalidSnapshot);
             return ExitCode::DataError;
         }
@@ -306,7 +302,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
     for (auto dbIdIt = remainingDbIds.begin(); dbIdIt != remainingDbIds.end();) {
         if (*dbIdIt == _syncPal->syncDb()->rootNode().nodeId()) {
             dbIdIt = remainingDbIds.erase(dbIdIt);
-            continue;  // Ignore root folder
+            continue; // Ignore root folder
         }
 
         if (stopAsked()) {
@@ -363,7 +359,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             return ExitCode::DataError;
         }
 
-        for (const auto side : std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
+        for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
             if (const auto inferExitCode = inferChangeFromDbNode(side, dbNode, localDbPath, remoteDbPath);
                 inferExitCode != ExitCode::Ok) {
                 return inferExitCode;
@@ -393,7 +389,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(NodeIdSet &localIdsSet, No
     // First, detect changes only for directories: this populates exclusion lists.
     // Second, detect changes for files. This is made faster thanks to exclusion lists.
     _dirPathToDeleteSet.clear();
-    for (const auto nodeType : std::array<NodeType, 2>{NodeType::Directory, NodeType::File}) {
+    for (const auto nodeType: std::array<NodeType, 2>{NodeType::Directory, NodeType::File}) {
         if (const auto exitCode = inferChangesFromDb(nodeType, localIdsSet, remoteIdsSet, remainingDbIds);
             exitCode != ExitCode::Ok) {
             return exitCode;
@@ -441,7 +437,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
             if (*snapIdIt == snapshot->rootFolderId()) {
                 // Ignore root folder
                 snapIdIt = remainingDbIds.erase(snapIdIt);
-                continue;  // Do not process root node
+                continue; // Do not process root node
             }
 
             if (idsSet.find(*snapIdIt) != idsSet.end()) {
@@ -488,7 +484,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
                 bool isExcluded = false;
                 IoError ioError = IoError::Success;
                 const bool success = ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(
-                    _syncPal->localPath(), snapshotPath, isExcluded, ioError);
+                        _syncPal->localPath(), snapshotPath, isExcluded, ioError);
                 if (!success || ioError != IoError::Success || isExcluded) {
                     if (_testing && ioError == IoError::NoSuchFileOrDirectory) {
                         // Files does exist in test, this fine, ignore ioError.
@@ -584,7 +580,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
     int64_t remoteSnapshotSize = _syncPal->snapshot(ReplicaSide::Remote, true)->size(dbNode.nodeIdRemote().value());
     SyncTime localSnapshotLastModified = _syncPal->snapshot(ReplicaSide::Local, true)->lastModified(dbNode.nodeIdLocal().value());
     SyncTime remoteSnapshotLastModified =
-        _syncPal->snapshot(ReplicaSide::Remote, true)->lastModified(dbNode.nodeIdRemote().value());
+            _syncPal->snapshot(ReplicaSide::Remote, true)->lastModified(dbNode.nodeIdRemote().value());
 
     // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
     if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
@@ -592,8 +588,8 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         SyncPath localSnapshotPath;
         if (!_syncPal->snapshot(ReplicaSide::Local, true)->path(dbNode.nodeIdLocal().value(), localSnapshotPath)) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
-                                           << SyncName2WStr(dbNode.nameLocal()).c_str() << L" ("
-                                           << Utility::s2ws(dbNode.nodeIdLocal().value()).c_str() << L")");
+                                               << SyncName2WStr(dbNode.nameLocal()).c_str() << L" ("
+                                               << Utility::s2ws(dbNode.nodeIdLocal().value()).c_str() << L")");
             setExitCause(ExitCause::InvalidSnapshot);
             return ExitCode::DataError;
         }
@@ -607,7 +603,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
                                                                  << L"\". Remote version will be downloaded again.");
         _fileSizeMismatchMap.insert({dbNode.nodeIdLocal().value(), absoluteLocalPath});
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ComputeFSOperationWorker::exploreDbTree",
-                                                   "File size mismatch detected");
+                                                  "File size mismatch detected");
     }
 
     return ExitCode::Ok;
@@ -686,9 +682,9 @@ bool ComputeFSOperationWorker::isInUnsyncedList(const NodeId &nodeId, const Repl
 bool ComputeFSOperationWorker::isInUnsyncedList(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId,
                                                 const ReplicaSide side, bool tmpListOnly /*= false*/) const {
     const auto &unsyncedList =
-        side == ReplicaSide::Local ? _localTmpUnsyncedList : (tmpListOnly ? _remoteTmpUnsyncedList : _remoteUnsyncedList);
+            side == ReplicaSide::Local ? _localTmpUnsyncedList : (tmpListOnly ? _remoteTmpUnsyncedList : _remoteUnsyncedList);
     const auto &correspondingUnsyncedList =
-        side == ReplicaSide::Local ? (tmpListOnly ? _remoteTmpUnsyncedList : _remoteUnsyncedList) : _localTmpUnsyncedList;
+            side == ReplicaSide::Local ? (tmpListOnly ? _remoteTmpUnsyncedList : _remoteUnsyncedList) : _localTmpUnsyncedList;
 
     if (unsyncedList.empty() && correspondingUnsyncedList.empty()) {
         return false;
@@ -814,7 +810,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, existsWithSameId, otherNodeId, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExistsWithSameNodeId: "
-                               << Utility::formatIoError(absolutePath, ioError).c_str());
+                                   << Utility::formatIoError(absolutePath, ioError).c_str());
 
         if (ioError == IoError::InvalidFileName) {
             // Observed on MacOSX under special circumstances; see getItemType unit test edge cases.
@@ -872,11 +868,11 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
                                          << L" still exists on local replica. Snapshot not up to date, restarting sync.");
 
     SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ComputeFSOperationWorker::checkIfOkToDelete",
-                                               "Unwanted local delete operation averted");
+                                              "Unwanted local delete operation averted");
 
     setExitCause(ExitCause::InvalidSnapshot);
 
-    return ExitCode::DataError;  // We need to rebuild the local snapshot from scratch.
+    return ExitCode::DataError; // We need to rebuild the local snapshot from scratch.
 }
 
 void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot,
@@ -884,7 +880,7 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<co
     NodeIdSet childrenIds;
     remoteSnapshot->getChildrenIds(remoteNodeId, childrenIds);
 
-    for (auto &childId : childrenIds) {
+    for (auto &childId: childrenIds) {
         if (remoteSnapshot->type(childId) == NodeType::Directory) {
             deleteChildOpRecursively(remoteSnapshot, childId, tmpTooBigList);
         }
@@ -902,7 +898,7 @@ void ComputeFSOperationWorker::updateUnsyncedList() {
     _remoteUnsyncedList.merge(_remoteTmpUnsyncedList);
 
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist,
-                                         _localTmpUnsyncedList);  // Only tmp list on local side
+                                         _localTmpUnsyncedList); // Only tmp list on local side
 }
 
 void ComputeFSOperationWorker::addFolderToDelete(const SyncPath &path) {
@@ -933,4 +929,4 @@ bool ComputeFSOperationWorker::pathInDeletedFolder(const SyncPath &path) {
     return false;
 }
 
-}  // namespace KDC
+} // namespace KDC

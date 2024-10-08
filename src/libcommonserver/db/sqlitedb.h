@@ -94,4 +94,4 @@ class SqliteDb {
         CheckDbResult checkDb();
 };
 
-}  // namespace KDC
+} // namespace KDC

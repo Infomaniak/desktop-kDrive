@@ -112,4 +112,4 @@ class BaseFolderTreeItemWidget : public QTreeWidget {
         void onItemChanged(QTreeWidgetItem *item, int column);
 };
 
-}  // namespace KDC
+} // namespace KDC

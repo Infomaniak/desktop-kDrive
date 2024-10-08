@@ -51,7 +51,7 @@ void TestIo::testCreateJunction() {
     // A Windows junction on a non-existing target directory: no error expected
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = _localTestDirPath / "non_existing_dir";  // It doesn't exist.
+        const SyncPath targetPath = _localTestDirPath / "non_existing_dir"; // It doesn't exist.
         const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
         IoError ioError = IoError::Unknown;
@@ -80,8 +80,8 @@ void TestIo::testCreateJunction() {
 
     // The junction name is very long: failure with ad hoc error
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
+        const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
 
         IoError ioError = IoError::Unknown;
@@ -94,7 +94,7 @@ void TestIo::testCreateJunction() {
         const std::string pathSegment(50, 'a');
         SyncPath path = _localTestDirPath;
         for (int i = 0; i < 1000; ++i) {
-            path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
+            path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
         }
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         IoError ioError = IoError::Unknown;
@@ -104,4 +104,4 @@ void TestIo::testCreateJunction() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

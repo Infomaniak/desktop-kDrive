@@ -75,7 +75,7 @@ void PerformanceWatcher::run() {
         if (_movingAverageValues.size() == 10) {
             _movingAverageValues.pop_front();
             _movingAverageValues.push_back(_cpuUsagePercent);
-            for (const auto &value : _movingAverageValues) {
+            for (const auto &value: _movingAverageValues) {
                 _movingAverageCpuUsagePercent += value;
             }
             _movingAverageCpuUsagePercent /= 10;
@@ -83,7 +83,7 @@ void PerformanceWatcher::run() {
             _movingAverageValues.push_back(_cpuUsagePercent);
         }
 
-        Utility::msleep(1000);  // Sleep for 1s
+        Utility::msleep(1000); // Sleep for 1s
     }
 }
 
@@ -91,13 +91,13 @@ bool PerformanceWatcher::updateCpuUsage() {
 #ifdef __unix__
     double cpuUsage = 0;
     if (Utility::cpuUsage(_lastTotalUser, _lastTotalUserLow, _lastTotalSys, _lastTotalIdle, cpuUsage)) {
-        _cpuUsagePercent = (int)cpuUsage;
+        _cpuUsagePercent = (int) cpuUsage;
         return true;
     }
 #elif defined(__APPLE__)
     double cpuUsage = 0;
     if (Utility::cpuUsage(_previousTotalTicks, _previousIdleTicks, cpuUsage)) {
-        _cpuUsagePercent = (int)cpuUsage;
+        _cpuUsagePercent = (int) cpuUsage;
         return true;
     }
 #endif
@@ -106,7 +106,7 @@ bool PerformanceWatcher::updateCpuUsage() {
 
 double PerformanceWatcher::calculatePercent(uint64_t value, uint64_t total) {
     if (total != 0) {
-        double proportion = ((double)value / (double)total);
+        double proportion = ((double) value / (double) total);
         return trunc(proportion * 100.0);
     }
     return 0;
@@ -160,11 +160,11 @@ bool PerformanceWatcher::updateRAMUsedByProc() {
 }
 
 uint64_t PerformanceWatcher::bytesToMb(uint64_t bytes) {
-    return (uint64_t)(bytes / (1 * pow(10, 6)));
+    return (uint64_t) (bytes / (1 * pow(10, 6)));
 }
 
 uint64_t PerformanceWatcher::bytesToGb(uint64_t bytes) {
-    return (uint64_t)(bytes / (1 * pow(10, 9)));
+    return (uint64_t) (bytes / (1 * pow(10, 9)));
 }
 
 uint64_t PerformanceWatcher::bytesToBetterUnit(uint64_t bytes, std::string &unit) {
@@ -195,12 +195,12 @@ void PerformanceWatcher::updateAllStats() {
 bool PerformanceWatcher::updateCpuUsageByProcess() {
     double cpuUsageByProcess = 0;
     if (Utility::cpuUsageByProcess(cpuUsageByProcess)) {
-        int nbCore = ((int)std::thread::hardware_concurrency() > 0 ? (int)std::thread::hardware_concurrency() : 1);
-        _cpuUsageByProcessPercent = (int)cpuUsageByProcess / nbCore;
+        int nbCore = ((int) std::thread::hardware_concurrency() > 0 ? (int) std::thread::hardware_concurrency() : 1);
+        _cpuUsageByProcessPercent = (int) cpuUsageByProcess / nbCore;
         return true;
     }
     return false;
 }
 
 
-}  // namespace KDC
+} // namespace KDC

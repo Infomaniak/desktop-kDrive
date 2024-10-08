@@ -26,7 +26,7 @@
 
 std::string StringUtil::toUtf8(const wchar_t *utf16, int len) {
     if (len < 0) {
-        len = (int)wcslen(utf16);
+        len = (int) wcslen(utf16);
     }
 
     if (len == 0) {
@@ -41,7 +41,7 @@ std::string StringUtil::toUtf8(const wchar_t *utf16, int len) {
 
 std::wstring StringUtil::toUtf16(const char *utf8, int len) {
     if (len < 0) {
-        len = (int)strlen(utf8);
+        len = (int) strlen(utf8);
     }
 
     if (len == 0) {

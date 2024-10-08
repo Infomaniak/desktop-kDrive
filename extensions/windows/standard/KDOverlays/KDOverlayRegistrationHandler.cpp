@@ -49,7 +49,7 @@ HRESULT KDOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
     wchar_t stringCLSID[MAX_PATH];
     StringFromGUID2(clsid, stringCLSID, ARRAYSIZE(stringCLSID));
     LPCTSTR value = stringCLSID;
-    hResult = RegSetValueEx(syncExOverlayKey, nullptr, 0, REG_SZ, (LPBYTE)value, (DWORD)((wcslen(value) + 1) * sizeof(TCHAR)));
+    hResult = RegSetValueEx(syncExOverlayKey, nullptr, 0, REG_SZ, (LPBYTE) value, (DWORD) ((wcslen(value) + 1) * sizeof(TCHAR)));
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
@@ -92,12 +92,12 @@ HRESULT KDOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
 
     HKEY clsidKey = nullptr;
     hResult = HRESULT_FROM_WIN32(
-        RegCreateKeyEx(hKey, stringCLSID, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &clsidKey, nullptr));
+            RegCreateKeyEx(hKey, stringCLSID, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &clsidKey, nullptr));
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
 
-    hResult = HRESULT_FROM_WIN32(RegSetValue(clsidKey, nullptr, REG_SZ, friendlyName, (DWORD)wcslen(friendlyName)));
+    hResult = HRESULT_FROM_WIN32(RegSetValue(clsidKey, nullptr, REG_SZ, friendlyName, (DWORD) wcslen(friendlyName)));
 
     HKEY inprocessKey = nullptr;
     hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(clsidKey, REGISTRY_IN_PROCESS, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE,
@@ -106,20 +106,20 @@ HRESULT KDOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
         return hResult;
     }
 
-    hResult = HRESULT_FROM_WIN32(RegSetValue(inprocessKey, nullptr, REG_SZ, modulePath, (DWORD)wcslen(modulePath)));
+    hResult = HRESULT_FROM_WIN32(RegSetValue(inprocessKey, nullptr, REG_SZ, modulePath, (DWORD) wcslen(modulePath)));
 
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
 
-    hResult = HRESULT_FROM_WIN32(RegSetValueEx(inprocessKey, REGISTRY_THREADING, 0, REG_SZ, (LPBYTE)REGISTRY_APARTMENT,
-                                               (DWORD)((wcslen(REGISTRY_APARTMENT) + 1) * sizeof(TCHAR))));
+    hResult = HRESULT_FROM_WIN32(RegSetValueEx(inprocessKey, REGISTRY_THREADING, 0, REG_SZ, (LPBYTE) REGISTRY_APARTMENT,
+                                               (DWORD) ((wcslen(REGISTRY_APARTMENT) + 1) * sizeof(TCHAR))));
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
 
-    hResult = HRESULT_FROM_WIN32(RegSetValueEx(inprocessKey, REGISTRY_VERSION, 0, REG_SZ, (LPBYTE)REGISTRY_VERSION_NUMBER,
-                                               (DWORD)(wcslen(REGISTRY_VERSION_NUMBER) + 1) * sizeof(TCHAR)));
+    hResult = HRESULT_FROM_WIN32(RegSetValueEx(inprocessKey, REGISTRY_VERSION, 0, REG_SZ, (LPBYTE) REGISTRY_VERSION_NUMBER,
+                                               (DWORD) (wcslen(REGISTRY_VERSION_NUMBER) + 1) * sizeof(TCHAR)));
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }

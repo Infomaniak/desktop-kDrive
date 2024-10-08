@@ -26,7 +26,8 @@ DbNode::DbNode(int64_t nodeId, std::optional<DbNodeId> parentNodeId, const SyncN
                std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
                std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
                const std::optional<std::string> &checksum, SyncFileStatus status, bool syncing) :
-    _nodeId(nodeId), _parentNodeId(parentNodeId), _nameLocal(nameLocal), _nameRemote(nameRemote), _nodeIdLocal(nodeIdLocal),
+    _nodeId(nodeId),
+    _parentNodeId(parentNodeId), _nameLocal(nameLocal), _nameRemote(nameRemote), _nodeIdLocal(nodeIdLocal),
     _nodeIdRemote(nodeIdRemote), _created(created), _lastModifiedLocal(lastModifiedLocal),
     _lastModifiedRemote(lastModifiedRemote), _type(type), _size(size), _checksum(checksum), _status(status), _syncing(syncing) {}
 

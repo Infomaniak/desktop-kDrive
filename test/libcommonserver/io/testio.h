@@ -43,7 +43,7 @@ struct IoHelperTests : public IoHelper {
 
 class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestIo);
-        CPPUNIT_TEST(testCheckSetAndGetRights);  // Keep this test before any tests that may use set/get rights functions
+        CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get rights functions
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testTempDirectoryPath);
@@ -159,4 +159,4 @@ SyncPath makeVeryLonPath(const SyncPath &rootPath);
 SyncPath makeFileNameWithEmojis();
 
 
-}  // namespace KDC
+} // namespace KDC

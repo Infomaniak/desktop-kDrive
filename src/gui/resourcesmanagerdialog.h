@@ -46,4 +46,4 @@ class ResourcesManagerDialog : public CustomDialog {
         void updateLabel(int sliderValue);
 };
 
-}  // namespace KDC
+} // namespace KDC

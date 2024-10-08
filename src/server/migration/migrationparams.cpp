@@ -252,7 +252,7 @@ ExitCode MigrationParams::migrateAccountsParams() {
     ExitCode code = ExitCode::Ok;
     QSettings settings(configDir().filePath(configFileName()), QSettings::IniFormat);
     settings.beginGroup(accountsC);
-    for (const auto &accountIdStr : settings.childGroups()) {
+    for (const auto &accountIdStr: settings.childGroups()) {
         LOG_INFO(Log::instance()->getLogger(), "Migrate account " << accountIdStr.toStdString().c_str());
         settings.beginGroup(accountIdStr);
         code = loadAccount(settings);
@@ -345,10 +345,10 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
 
     if (user.keychainKey().empty()) {
         std::string oldAccountStr = settings.group().toStdString();
-        std::string oldAccountId = oldAccountStr.substr(oldAccountStr.size() - 1);  // get last char
+        std::string oldAccountId = oldAccountStr.substr(oldAccountStr.size() - 1); // get last char
         std::string urlKey = strDriveUrl.toStdString()[strDriveUrl.size() - 1] == '/'
-                                 ? strDriveUrl.toStdString()
-                                 : strDriveUrl.toStdString() + "/";  // add "/" to url if necessary
+                                     ? strDriveUrl.toStdString()
+                                     : strDriveUrl.toStdString() + "/"; // add "/" to url if necessary
 
         std::string keychainKeyAppPassword;
 #ifdef Q_OS_WIN
@@ -356,7 +356,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
         keychainKeyAppPassword += "_";
 #endif
         keychainKeyAppPassword +=
-            user.email() + app_password + oldKeychainKeySeparator + urlKey + oldKeychainKeySeparator + oldAccountId;
+                user.email() + app_password + oldKeychainKeySeparator + urlKey + oldKeychainKeySeparator + oldAccountId;
 
 
         LOG_DEBUG(_logger, "Old account id : " << oldAccountId.c_str()
@@ -459,7 +459,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
 
     // prevent corrupted .cfg
     if (hasMaster) {
-        for (auto &syncCheckPair : syncConsistencyCheckList) {
+        for (auto &syncCheckPair: syncConsistencyCheckList) {
             if (!syncCheckPair.first) {
                 if (syncCheckPair.second.virtualFileMode() != masterVfs) {
                     // TODO : changeVfs for this sync in database
@@ -576,7 +576,7 @@ void MigrationParams::migrateGeometry(std::shared_ptr<std::vector<char>> &geomet
     std::string geometryStr;
     QSettings settings(configDir().filePath(configFileName()), QSettings::IniFormat);
 
-    for (auto dialog : geometryDialog) {
+    for (auto dialog: geometryDialog) {
         settings.beginGroup(QString::fromStdString(dialog));
         QByteArray dialogGeo = settings.value(geometryC).toByteArray();
 
@@ -625,7 +625,7 @@ ExitCode MigrationParams::migrateSelectiveSyncs() {
     LOG_INFO(Log::instance()->getLogger(), "Migrate selective syncs");
 
     ExitCode ret = ExitCode::Ok;
-    for (auto &syncToMigrateElt : _syncToMigrate) {
+    for (auto &syncToMigrateElt: _syncToMigrate) {
         ExitCode code = ServerRequests::migrateSelectiveSync(syncToMigrateElt.first, syncToMigrateElt.second);
         if (code != ExitCode::Ok) {
             ret = code;
@@ -643,23 +643,23 @@ void MigrationParams::deleteUselessConfigFiles() {
     filters << "sync-exclude.lst";
     filters << "litesync-exclude.lst";
     QStringList cfgFileNameList = cfgDir.entryList(filters, QDir::Files);
-    for (const QString &cfgFileName : cfgFileNameList) {
+    for (const QString &cfgFileName: cfgFileNameList) {
         QFileInfo cfgFileInfo(cfgDir, cfgFileName);
         QFile cfgFile(cfgFileInfo.absoluteFilePath());
         cfgFile.remove();
     }
 
     // Remove old sync DB files
-    for (auto sync : _syncToMigrate) {
+    for (auto sync: _syncToMigrate) {
         QDir dbDir(SyncName2QStr(sync.second.first.native()));
         QStringList filters;
         filters << SyncName2QStr(sync.second.second);
         filters << SyncName2QStr(sync.second.second) + "-shm";
         filters << SyncName2QStr(sync.second.second) + "-wal";
-        filters << ".owncloudsync.log";  // This is a now unused log file from older kDrive versions, we keep this filter here to
-                                         // avoid people with older config to synchronize it
+        filters << ".owncloudsync.log"; // This is a now unused log file from older kDrive versions, we keep this filter here to
+                                        // avoid people with older config to synchronize it
         QStringList dbFileNameList = dbDir.entryList(filters, QDir::Files | QDir::Hidden);
-        for (const QString &dbFileName : dbFileNameList) {
+        for (const QString &dbFileName: dbFileNameList) {
             QFileInfo dbFileInfo(dbDir, dbFileName);
             QFile dbFile(dbFileInfo.absoluteFilePath());
             dbFile.remove();
@@ -673,9 +673,9 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
     void *data;
     uint32 length;
 
-    OSStatus status =
-        SecKeychainFindGenericPassword(nullptr, static_cast<uint32>(serviceName.length()), serviceName.c_str(),
-                                       static_cast<uint32>(keychainKey.length()), keychainKey.c_str(), &length, &data, nullptr);
+    OSStatus status = SecKeychainFindGenericPassword(nullptr, static_cast<uint32>(serviceName.length()), serviceName.c_str(),
+                                                     static_cast<uint32>(keychainKey.length()), keychainKey.c_str(), &length,
+                                                     &data, nullptr);
 
     if (status == errSecNoSuchKeychain) {
         LOG_DEBUG(_logger, "Application password not found");
@@ -702,16 +702,16 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
     const auto schema = SecretSchema{package.c_str(),
                                      SECRET_SCHEMA_DONT_MATCH_NAME,
                                      {
-                                         {userFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
-                                         {serverFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
-                                         {typeFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
-                                         {nullptr, SecretSchemaAttributeType(0)},
+                                             {userFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
+                                             {serverFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
+                                             {typeFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
+                                             {nullptr, SecretSchemaAttributeType(0)},
                                      }};
 
     GError *error = nullptr;
 
     gchar *raw_passwords = secret_password_lookup_sync(&schema,
-                                                       nullptr,  // not cancellable
+                                                       nullptr, // not cancellable
                                                        &error, userFieldName, keychainKey.c_str(), serverFieldName,
                                                        server.c_str(), typeFieldName, type.c_str(), nullptr);
 
@@ -767,7 +767,7 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
     LOG_DEBUG(_logger, "job.runSynchronously() done");
     if (job.hasErrorApi(&errorCode, &errorDescr)) {
         LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : "
-                               << KDC::Utility::s2ws(errorCode).c_str() << L" - " << KDC::Utility::s2ws(errorDescr).c_str());
+                                   << KDC::Utility::s2ws(errorCode).c_str() << L" - " << KDC::Utility::s2ws(errorDescr).c_str());
         return ExitCode::BackError;
     }
 
@@ -808,4 +808,4 @@ ExitCode MigrationParams::setToken(User &user, const std::string &appPassword) {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

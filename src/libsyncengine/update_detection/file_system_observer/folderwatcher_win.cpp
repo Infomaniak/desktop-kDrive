@@ -79,8 +79,8 @@ void FolderWatcher_win::watchChanges() {
     LOG_DEBUG(_logger, "Start watching changes");
 
     _directoryHandle =
-        CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
-                    nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
+            CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
+                        nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
 
     if (_directoryHandle == INVALID_HANDLE_VALUE) {
         DWORD errorCode = GetLastError();
@@ -100,8 +100,8 @@ void FolderWatcher_win::watchChanges() {
         DWORD dwBytesReturned = 0;
         if (!ReadDirectoryChangesW(_directoryHandle, &fileNotifyBuffer, static_cast<DWORD>(NOTIFY_BUFFER_SIZE), true,
                                    FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_ATTRIBUTES |
-                                       FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION |
-                                       FILE_NOTIFY_CHANGE_SECURITY,
+                                           FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION |
+                                           FILE_NOTIFY_CHANGE_SECURITY,
                                    &dwBytesReturned, &overlapped, nullptr)) {
             DWORD errorCode = GetLastError();
             if (errorCode == ERROR_NOTIFY_ENUM_DIR) {
@@ -116,7 +116,7 @@ void FolderWatcher_win::watchChanges() {
         _ready = true;
 
         HANDLE handles[] = {_resultEventHandle, _stopEventHandle};
-        DWORD result = WaitForMultipleObjects(2, handles, false  // awake once one of them arrives
+        DWORD result = WaitForMultipleObjects(2, handles, false // awake once one of them arrives
                                               ,
                                               INFINITE);
 
@@ -252,4 +252,4 @@ OperationType FolderWatcher_win::operationFromAction(DWORD action) {
     return OperationType::None;
 }
 
-}  // namespace KDC
+} // namespace KDC

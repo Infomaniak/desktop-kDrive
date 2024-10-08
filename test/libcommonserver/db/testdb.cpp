@@ -119,6 +119,7 @@ TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) : Db(dbPath) {
     if (!checkConnect("3.3.4")) {
         throw std::runtime_error("Cannot open DB!");
     }
+    init("3.3.4");
 }
 
 TestDb::MyTestDb::~MyTestDb() {
@@ -280,7 +281,7 @@ std::vector<TestDb::Test> TestDb::MyTestDb::selectTest() {
     return tests;
 }
 
-TestDb::Test::Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue)
-    : id(id), intValue(intValue), int64Value(int64Value), doubleValue(doubleValue), textValue(textValue) {}
+TestDb::Test::Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue) :
+    id(id), intValue(intValue), int64Value(int64Value), doubleValue(doubleValue), textValue(textValue) {}
 
-}  // namespace KDC
+} // namespace KDC

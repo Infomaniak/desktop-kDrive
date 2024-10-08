@@ -33,13 +33,8 @@ static const int driveLogoIconSize = 24;
 
 Q_LOGGING_CATEGORY(lcErrorsMenuBarWidget, "gui.errorsmenubarwidget", QtInfoMsg)
 
-ErrorsMenuBarWidget::ErrorsMenuBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : HalfRoundRectWidget(parent),
-      _gui(gui),
-      _driveDbId(0),
-      _backButton(nullptr),
-      _driveIconLabel(nullptr),
-      _titleLabel(nullptr) {
+ErrorsMenuBarWidget::ErrorsMenuBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    HalfRoundRectWidget(parent), _gui(gui), _driveDbId(0), _backButton(nullptr), _driveIconLabel(nullptr), _titleLabel(nullptr) {
     setContentsMargins(hMargin, 0, hMargin, vMargin);
     setSpacing(0);
 
@@ -79,8 +74,8 @@ void ErrorsMenuBarWidget::setDrive(int driveDbId) {
 
         _driveDbId = driveDbId;
         _driveIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfoIt->second.color())
-                .pixmap(QSize(driveLogoIconSize, driveLogoIconSize)));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfoIt->second.color())
+                        .pixmap(QSize(driveLogoIconSize, driveLogoIconSize)));
         _titleLabel->setText(tr("Synchronization conflicts or errors"));
     } else {
         _titleLabel->setText(tr("Errors"));
@@ -106,4 +101,4 @@ void ErrorsMenuBarWidget::retranslateUi() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

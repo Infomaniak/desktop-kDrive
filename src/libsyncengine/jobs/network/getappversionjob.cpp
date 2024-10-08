@@ -103,7 +103,7 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
     const Poco::JSON::Array::Ptr publishedVersions = JsonParserUtility::extractArrayObject(applicationObj, publishedVersionsKey);
     if (!publishedVersions) return false;
 
-    for (const auto &versionInfo : *publishedVersions) {
+    for (const auto &versionInfo: *publishedVersions) {
         const auto &obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
         std::string versionType;
         if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) {
@@ -135,4 +135,4 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
 
     return true;
 }
-}  // namespace KDC
+} // namespace KDC

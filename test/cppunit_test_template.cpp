@@ -35,4 +35,4 @@ void TestClass::testMyFunc() {
     ... CPPUNIT_ASSERT(testResult);
 }
 
-}  // namespace KDC
+} // namespace KDC

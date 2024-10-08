@@ -896,7 +896,7 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, params, results,
-                                         COMM_SHORT_TIMEOUT)) {  // Short timeout because the operation is asynchronous
+                                         COMM_SHORT_TIMEOUT)) { // Short timeout because the operation is asynchronous
         return ExitCode::SystemError;
     }
 
@@ -910,7 +910,7 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
 ExitCode GuiRequests::cancelLogUploadToSupport() {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, QByteArray(), results,
-                                         COMM_SHORT_TIMEOUT)) {  // Short timeout because the operation is asynchronous
+                                         COMM_SHORT_TIMEOUT)) { // Short timeout because the operation is asynchronous
         return ExitCode::SystemError;
     }
 
@@ -1204,4 +1204,4 @@ ExitCode GuiRequests::checkCommStatus() {
     return exitCode;
 }
 
-}  // namespace KDC
+} // namespace KDC

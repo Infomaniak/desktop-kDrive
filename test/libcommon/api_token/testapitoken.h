@@ -36,4 +36,4 @@ class TestApiToken : public CppUnit::TestFixture {
         void testReconstructJson();
 };
 
-}  // namespace KDC
+} // namespace KDC

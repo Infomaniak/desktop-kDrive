@@ -57,4 +57,4 @@ class SynchronizedItem {
         bool _displayed;
 };
 
-}  // namespace KDC
+} // namespace KDC

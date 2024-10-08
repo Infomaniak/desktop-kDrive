@@ -63,12 +63,12 @@ class TestJobManager : public CppUnit::TestFixture {
         void testWithCallbackBigFiles();
         void testCancelJobs();
         void testJobDependencies();
-        void testJobPriority();   // Test execution order of jobs with different priority. Jobs with higher piority must be
-                                  // executed first.
-        void testJobPriority2();  // Test execution order of jobs with same priority. Jobs created first must be executed first.
-        void testJobPriority3();  // Test execution order of jobs. Jobs are created with priority alternating between Normal and
-                                  // Highest. It checks that jobs are dequed correctly in JobManager (issue #320:
-                                  // https://gitlab.infomaniak.ch/infomaniak/desktop-app/multi/kdrive/-/issues/320)
+        void testJobPriority(); // Test execution order of jobs with different priority. Jobs with higher piority must be
+                                // executed first.
+        void testJobPriority2(); // Test execution order of jobs with same priority. Jobs created first must be executed first.
+        void testJobPriority3(); // Test execution order of jobs. Jobs are created with priority alternating between Normal and
+                                 // Highest. It checks that jobs are dequed correctly in JobManager (issue #320:
+                                 // https://gitlab.infomaniak.ch/infomaniak/desktop-app/multi/kdrive/-/issues/320)
 
         void testReuseSocket();
 
@@ -82,9 +82,9 @@ class TestJobManager : public CppUnit::TestFixture {
         std::recursive_mutex _mutex;
 
         void callback(uint64_t jobId);
-        int ongoingJobsCount();
+        size_t ongoingJobsCount();
         void testWithCallbackBigFiles(const SyncPath &dirPath, int size, int count);
         void cancelAllOngoingJobs();
 };
 
-}  // namespace KDC
+} // namespace KDC

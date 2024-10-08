@@ -28,7 +28,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
-}  // namespace KDC
+} // namespace KDC
 
 int main(int, char **) {
     return runTestSuite("_kDriveTestCommonServer.log");

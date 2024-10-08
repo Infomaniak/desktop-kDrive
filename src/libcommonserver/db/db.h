@@ -64,6 +64,7 @@ class COMMONSERVER_EXPORT Db {
         int extendedErrorCode() const;
 
         bool init(const std::string &version);
+        virtual std::string dbType() const { return "Unknown"; };
 
         virtual bool create(bool &retry) = 0;
         virtual bool prepare() = 0;
@@ -95,4 +96,4 @@ class COMMONSERVER_EXPORT Db {
         bool selectVersion(std::string &version, bool &found);
 };
 
-}  // namespace KDC
+} // namespace KDC

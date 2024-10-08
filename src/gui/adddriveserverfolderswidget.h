@@ -92,4 +92,4 @@ class AddDriveServerFoldersWidget : public QWidget {
         void onContinueButtonTriggered(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -68,4 +68,4 @@ class SocketApiServer : public QObject {
         QScopedPointer<SocketApiServerPrivate> d_ptr;
 };
 
-#endif  // SOCKETAPISOCKET_OSX_H
+#endif // SOCKETAPISOCKET_OSX_H

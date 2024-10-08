@@ -81,4 +81,4 @@ bool ApiToken::operator==(const ApiToken &other) const {
            this->_scope == other._scope;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -47,13 +47,9 @@ std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
     return _instance;
 }
 
-CommServer::CommServer(QObject *parent)
-    : QObject(parent),
-      _requestWorkerThread(new QThread()),
-      _requestWorker(new Worker()),
-      _tcpSocket(nullptr),
-      _buffer(QByteArray()),
-      _hasQuittedProperly(false) {
+CommServer::CommServer(QObject *parent) :
+    QObject(parent), _requestWorkerThread(new QThread()), _requestWorker(new Worker()), _tcpSocket(nullptr),
+    _buffer(QByteArray()), _hasQuittedProperly(false) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);
     connect(_requestWorkerThread, &QThread::started, _requestWorker, &Worker::onStart);
@@ -156,18 +152,18 @@ void CommServer::onReadyRead() {
 
         while (_buffer.count()) {
             // Read size
-            if (_buffer.count() < (int)sizeof(qint32)) {
+            if (_buffer.count() < (int) sizeof(qint32)) {
                 break;
             }
 
-            int size = CommonUtility::toInt(_buffer.mid(0, (qint32)sizeof(qint32)));
+            int size = CommonUtility::toInt(_buffer.mid(0, (qint32) sizeof(qint32)));
 
             // Read data
-            if (_buffer.count() < (int)sizeof(qint32) + size) {
+            if (_buffer.count() < (int) sizeof(qint32) + size) {
                 break;
             }
 
-            _buffer.remove(0, (int)sizeof(qint32));
+            _buffer.remove(0, (int) sizeof(qint32));
             QByteArray data = _buffer.mid(0, size);
             _buffer.remove(0, size);
 
@@ -221,7 +217,7 @@ void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
 }
 
 void CommServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
-    QTimer::singleShot(0, this, [=]() { emit requestReceived(id, (RequestNum)num, params); });
+    QTimer::singleShot(0, this, [=]() { emit requestReceived(id, (RequestNum) num, params); });
 }
 
 void CommServer::onSendReply(int id, const QByteArray &result) {
@@ -399,4 +395,4 @@ void Worker::onStart() {
     LOG_DEBUG(Log::instance()->getLogger(), "Worker ended");
 }
 
-}  // namespace KDC
+} // namespace KDC

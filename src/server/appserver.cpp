@@ -418,6 +418,9 @@ void AppServer::onCleanup() {
 
     _syncPalMap.clear();
     _vfsMap.clear();
+
+    ParmsDb::instance()->close();
+    LOG_DEBUG(_logger, "ParmsDb closed");
 }
 
 // This task can be long and block the GUI
@@ -981,6 +984,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 resultStream << toInt(exitCode);
                 break;
             }
+
+            Utility::restartFinderExtension();
 
             resultStream << toInt(exitCode);
             break;

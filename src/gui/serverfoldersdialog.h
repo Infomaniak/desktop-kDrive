@@ -68,4 +68,4 @@ class ServerFoldersDialog : public CustomDialog {
         void onNeedToSave();
 };
 
-}  // namespace KDC
+} // namespace KDC

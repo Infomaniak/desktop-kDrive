@@ -61,7 +61,7 @@ void TestIo::testCreateAlias() {
     // The target file does not exist: failure
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
+        const SyncPath targetPath = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError = IoError::Success;
@@ -124,8 +124,8 @@ void TestIo::testCreateAlias() {
     // The alias file name is very long: failure
     {
         const std::string veryLongfileName(1000,
-                                           'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
+                                           'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError aliasError = IoError::Success;
@@ -137,11 +137,11 @@ void TestIo::testCreateAlias() {
     // The target file name is very long: failure
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path() / "alias.txt";  // This file doesn't exist.
+        const SyncPath path = temporaryDirectory.path() / "alias.txt"; // This file doesn't exist.
 
         const std::string veryLongfileName(1000,
-                                           'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath targetPath = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
+                                           'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath targetPath = _localTestDirPath / veryLongfileName; // This file doesn't exist.
 
         IoError aliasError = IoError::Success;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -167,7 +167,7 @@ void TestIo::testCreateAlias() {
         const SyncPath targetPath = makeVeryLonPath(_localTestDirPath);
 
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path() / "alias.txt";  // This file doesn't exist.
+        const SyncPath path = temporaryDirectory.path() / "alias.txt"; // This file doesn't exist.
 
         IoError aliasError = IoError::Success;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -192,4 +192,4 @@ void TestIo::testCreateAlias() {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

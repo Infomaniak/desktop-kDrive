@@ -30,4 +30,4 @@ QString shortDisplayNameForSettings(Account* account, int width) {
     return drive;
 }
 
-}  // namespace SettingsDialogCommon
+} // namespace SettingsDialogCommon

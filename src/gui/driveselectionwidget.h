@@ -99,4 +99,4 @@ class DriveSelectionWidget : public QPushButton {
         void onAddDriveActionTriggered(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

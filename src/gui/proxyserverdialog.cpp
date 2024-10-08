@@ -46,7 +46,7 @@ static const int defaultPortNumber = 8080;
 static const int hostNameMaxLength = 200;
 
 std::map<ProxyType, std::pair<int, QString>> ProxyServerDialog::_manualProxyMap = {
-    {ProxyType::HTTP, {0, QString(tr("HTTP(S) Proxy"))}}};
+        {ProxyType::HTTP, {0, QString(tr("HTTP(S) Proxy"))}}};
 
 Q_LOGGING_CATEGORY(lcProxyServerDialog, "gui.proxyserverdialog", QtInfoMsg)
 
@@ -111,7 +111,7 @@ void ProxyServerDialog::initUI() {
     _proxyTypeComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     _proxyTypeComboBox->setAttribute(Qt::WA_MacShowFocusRect, false);
 
-    for (auto const &manualProxyMapElt : _manualProxyMap) {
+    for (auto const &manualProxyMapElt: _manualProxyMap) {
         _proxyTypeComboBox->insertItem(manualProxyMapElt.second.first, manualProxyMapElt.second.second,
                                        toInt(manualProxyMapElt.first));
     }
@@ -256,10 +256,10 @@ void ProxyServerDialog::setNeedToSave(bool value) {
 
 bool ProxyServerDialog::isSaveEnabled() {
     bool saveButtonEnabled =
-        _needToSave &&
-        (_proxyConfigInfo.type() == ProxyType::None || _proxyConfigInfo.type() == ProxyType::System ||
-         (!_proxyConfigInfo.hostName().isEmpty() &&
-          (!_proxyConfigInfo.needsAuth() || (!_proxyConfigInfo.user().isEmpty() && !_proxyConfigInfo.pwd().isEmpty()))));
+            _needToSave &&
+            (_proxyConfigInfo.type() == ProxyType::None || _proxyConfigInfo.type() == ProxyType::System ||
+             (!_proxyConfigInfo.hostName().isEmpty() &&
+              (!_proxyConfigInfo.needsAuth() || (!_proxyConfigInfo.user().isEmpty() && !_proxyConfigInfo.pwd().isEmpty()))));
 
     return saveButtonEnabled;
 }
@@ -350,7 +350,7 @@ void ProxyServerDialog::onSystemProxyButtonClicked(bool checked) {
 
 void ProxyServerDialog::onManualProxyButtonClicked(bool checked) {
     if (checked) {
-        _proxyConfigInfo.setType(ProxyType::HTTP);  // Default manual proxy type
+        _proxyConfigInfo.setType(ProxyType::HTTP); // Default manual proxy type
         updateUI();
         setNeedToSave(true);
     }
@@ -392,4 +392,4 @@ void ProxyServerDialog::onPwdTextEdited(const QString &text) {
     setNeedToSave(true);
 }
 
-}  // namespace KDC
+} // namespace KDC

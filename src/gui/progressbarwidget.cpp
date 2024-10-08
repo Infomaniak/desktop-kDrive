@@ -30,8 +30,8 @@ static const int hSpacing = 15;
 static const int progressBarMin = 0;
 static const int progressBarMax = 100;
 
-ProgressBarWidget::ProgressBarWidget(QWidget *parent)
-    : QWidget(parent), _totalSize(0), _progressBar(nullptr), _progressLabel(nullptr) {
+ProgressBarWidget::ProgressBarWidget(QWidget *parent) :
+    QWidget(parent), _totalSize(0), _progressBar(nullptr), _progressLabel(nullptr) {
     QHBoxLayout *hboxProgressBar = new QHBoxLayout();
     hboxProgressBar->setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     hboxProgressBar->setSpacing(hSpacing);
@@ -75,4 +75,4 @@ void ProgressBarWidget::reset() {
     _progressLabel->setVisible(false);
 }
 
-}  // namespace KDC
+} // namespace KDC

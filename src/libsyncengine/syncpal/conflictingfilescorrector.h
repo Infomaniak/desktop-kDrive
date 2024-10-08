@@ -48,4 +48,4 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
         uint64_t _nbErrors = 0;
 };
 
-}  // namespace KDC
+} // namespace KDC

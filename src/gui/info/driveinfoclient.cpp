@@ -47,7 +47,7 @@ void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
         int abortOrPausedSeen = 0;
         int runSeen = 0;
 
-        for (auto &syncInfoMapElt : syncInfoMap) {
+        for (auto &syncInfoMapElt: syncInfoMap) {
             SyncInfoClient &syncInfo = syncInfoMapElt.second;
             if (syncInfo.paused()) {
                 abortOrPausedSeen++;
@@ -101,4 +101,4 @@ QString DriveInfoClient::folderPath(std::shared_ptr<std::map<int, SyncInfoClient
     return fullFilePath;
 }
 
-}  // namespace KDC
+} // namespace KDC

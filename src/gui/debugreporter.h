@@ -76,4 +76,4 @@ class DebugReporter : public QProgressDialog {
         void onFail(int error, const QString &errorString);
 };
 
-}  // namespace KDC
+} // namespace KDC

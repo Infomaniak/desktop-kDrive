@@ -37,4 +37,4 @@ class TestExclusionTemplateCache : public CppUnit::TestFixture {
         void testIsExcluded();
 };
 
-}  // namespace KDC
+} // namespace KDC

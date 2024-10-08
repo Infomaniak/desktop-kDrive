@@ -83,7 +83,7 @@ bool GuiUtility::openBrowser(const QUrl &url, QWidget *errorWidgetParent) {
                                  QCoreApplication::translate("utility",
                                                              "There was an error when launching the browser to go to "
                                                              "URL %1. Maybe no default browser is configured?")
-                                     .arg(url.toString()));
+                                         .arg(url.toString()));
         }
         qCWarning(lcGuiUtility) << "QDesktopServices::openUrl failed for" << url;
         return false;
@@ -312,31 +312,32 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
     QString text;
     if (statusInfo._disconnected) {
         text = QCoreApplication::translate("utility", "You are not connected anymore. <a style=\"%1\" href=\"%2\">Log in</a>")
-                   .arg(KDC::CommonUtility::linkStyle)
-                   .arg(loginLink);
+                       .arg(KDC::CommonUtility::linkStyle)
+                       .arg(loginLink);
     } else {
         switch (statusInfo._status) {
             case KDC::SyncStatus::Undefined:
-                text =
-                    QCoreApplication::translate("utility", "No folder to synchronize\nYou can add one from the kDrive settings.");
+                text = QCoreApplication::translate("utility",
+                                                   "No folder to synchronize\nYou can add one from the kDrive settings.");
                 break;
             case KDC::SyncStatus::Starting:
             case KDC::SyncStatus::Running:
                 if (statusInfo._totalFiles > 0) {
                     if (statusInfo._liteSyncActivated) {
                         text = QCoreApplication::translate("utility", "Sync in progress (%1 of %2)")
-                                   .arg(statusInfo._syncedFiles)
-                                   .arg(statusInfo._totalFiles);
+                                       .arg(statusInfo._syncedFiles)
+                                       .arg(statusInfo._totalFiles);
                     } else {
                         text = QCoreApplication::translate("utility", "Sync in progress (%1 of %2)\n%3 left...")
-                                   .arg(statusInfo._syncedFiles)
-                                   .arg(statusInfo._totalFiles)
-                                   .arg(KDC::CommonGuiUtility::durationToDescriptiveString1(statusInfo._estimatedRemainingTime));
+                                       .arg(statusInfo._syncedFiles)
+                                       .arg(statusInfo._totalFiles)
+                                       .arg(KDC::CommonGuiUtility::durationToDescriptiveString1(
+                                               statusInfo._estimatedRemainingTime));
                     }
                 } else if (statusInfo._oneSyncInPropagationStep) {
                     text = QCoreApplication::translate("utility", "Sync in progress (Step %1/%2).")
-                               .arg(toInt(statusInfo._syncStep))
-                               .arg(toInt(KDC::SyncStep::Done));
+                                   .arg(toInt(statusInfo._syncStep))
+                                   .arg(toInt(KDC::SyncStep::Done));
                 } else if (statusInfo._status == KDC::SyncStatus::Starting) {
                     text = QCoreApplication::translate("utility", "Synchronization starting");
                 } else {
@@ -352,9 +353,9 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                 break;
             case KDC::SyncStatus::Error:
                 text = QCoreApplication::translate(
-                           "utility", "Some files couldn't be synchronized. <a style=\"%1\" href=\"%2\">Learn more</a>")
-                           .arg(KDC::CommonUtility::linkStyle)
-                           .arg(learnMoreLink);
+                               "utility", "Some files couldn't be synchronized. <a style=\"%1\" href=\"%2\">Learn more</a>")
+                               .arg(KDC::CommonUtility::linkStyle)
+                               .arg(learnMoreLink);
                 break;
             case KDC::SyncStatus::PauseAsked:
             case KDC::SyncStatus::StopAsked:
@@ -472,7 +473,7 @@ qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
     DWORD fileSizeLow, fileSizeHigh;
     while (it.hasNext()) {
         fileSizeLow = GetCompressedFileSizeA(it.next().toStdString().c_str(), &fileSizeHigh);
-        total += ((ULONGLONG)fileSizeHigh << 32) + fileSizeLow;
+        total += ((ULONGLONG) fileSizeHigh << 32) + fileSizeLow;
     }
 #else
     Q_UNUSED(dirPath)
@@ -515,7 +516,7 @@ void GuiUtility::forceUpdate(QWidget *widget) {
     for (int i = 0; i < widget->children().size(); i++) {
         QObject *child = widget->children()[i];
         if (child->isWidgetType()) {
-            forceUpdate((QWidget *)child);
+            forceUpdate((QWidget *) child);
         }
     }
 
@@ -540,7 +541,7 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
 }
 
 void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*/) {
-    if (path.size() > (qsizetype)maxSize) {
+    if (path.size() > (qsizetype) maxSize) {
         path = path.left(maxSize) + "...";
     }
 }
@@ -550,7 +551,7 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
     const QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
     const SyncPath directoryPath = QStr2Path(dirPath);
 
-    for (const auto &sync : syncInfoMap) {
+    for (const auto &sync: syncInfoMap) {
         const QString syncFolderName = sync.second.name();
         const SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
 
@@ -559,20 +560,21 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
         if (syncLocalPath == directoryPath) {
             warn = true;
             warningMsg = QCoreApplication::translate(
-                             "utility", "Folder <b>%1</b> cannot be selected because another sync is using the same folder.")
-                             .arg(selectedFolderName);
+                                 "utility", "Folder <b>%1</b> cannot be selected because another sync is using the same folder.")
+                                 .arg(selectedFolderName);
         } else if (CommonUtility::isSubDir(directoryPath, syncLocalPath)) {
             warn = true;
-            warningMsg =
-                QCoreApplication::translate(
-                    "utility", "Folder <b>%1</b> cannot be selected because it contains the synchronized folder <b>%2</b>.")
-                    .arg(selectedFolderName, syncFolderName);
+            warningMsg = QCoreApplication::translate(
+                                 "utility",
+                                 "Folder <b>%1</b> cannot be selected because it contains the synchronized folder <b>%2</b>.")
+                                 .arg(selectedFolderName, syncFolderName);
         } else if (CommonUtility::isSubDir(syncLocalPath, directoryPath)) {
             warn = true;
-            warningMsg = QCoreApplication::translate(
-                             "utility",
-                             "Folder <b>%1</b> cannot be selected because it is contained in the synchronized folder <b>%2</b>.")
-                             .arg(selectedFolderName, syncFolderName);
+            warningMsg =
+                    QCoreApplication::translate(
+                            "utility",
+                            "Folder <b>%1</b> cannot be selected because it is contained in the synchronized folder <b>%2</b>.")
+                            .arg(selectedFolderName, syncFolderName);
         }
 
         if (warn) {
@@ -628,4 +630,4 @@ bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
     return true;
 }
 #endif
-}  // namespace KDC
+} // namespace KDC

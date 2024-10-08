@@ -28,4 +28,4 @@ FilePermissionHolder::~FilePermissionHolder() {
     _file.setPermissions(_initPermissions);
 }
 
-}  // namespace KDC
+} // namespace KDC

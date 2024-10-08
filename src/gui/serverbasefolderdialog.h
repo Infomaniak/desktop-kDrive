@@ -93,4 +93,4 @@ class ServerBaseFolderDialog : public CustomDialog {
         void onNoFolderSelected();
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -101,4 +101,4 @@ class TestIntegration : public CppUnit::TestFixture {
         LocalTemporaryDirectory _localTmpDir{"test_integration"};
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -60,7 +60,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         void testMoveDelete1();
         void testMoveDelete2();
         void testMoveDelete3();
-        void testMoveDelete4();  // Test with orphan nodes
+        void testMoveDelete4(); // Test with orphan nodes
         void testMoveDelete5();
         void testMoveParentDelete();
         void testCreateParentDelete();
@@ -74,4 +74,4 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 };
 
-}  // namespace KDC
+} // namespace KDC

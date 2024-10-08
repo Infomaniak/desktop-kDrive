@@ -36,4 +36,4 @@ class LocalMoveJob : public AbstractJob {
         SyncPath _dest;
 };
 
-}  // namespace KDC
+} // namespace KDC

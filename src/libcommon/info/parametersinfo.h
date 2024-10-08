@@ -99,4 +99,4 @@ class ParametersInfo {
         int _maxAllowedCpu;
 };
 
-}  // namespace KDC
+} // namespace KDC

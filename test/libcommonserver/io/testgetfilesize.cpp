@@ -106,7 +106,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         // is set with `IoError::NoSuchFileOrDirectory`.
         {
             const LocalTemporaryDirectory temporaryDirectory;
-            const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+            const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt"; // This file does not exist.
             const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
             std::filesystem::create_symlink(targetPath, path);
 
@@ -115,7 +115,7 @@ void TestIo::testGetFileSizeSimpleCases() {
 
             CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
             CPPUNIT_ASSERT(fileSize == targetPath.native().size());
-            CPPUNIT_ASSERT(ioError == IoError::Success);  // Although the target path is invalid.
+            CPPUNIT_ASSERT(ioError == IoError::Success); // Although the target path is invalid.
         }
     }
 
@@ -159,7 +159,7 @@ void TestIo::testGetFileSizeSimpleCases() {
     // Getting the size of a dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         {
             std::ofstream ofs(targetPath);
@@ -204,7 +204,7 @@ void TestIo::testGetFileSizeAllBranches() {
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-        std::filesystem::remove_all(subdir);  // required to allow automated deletion of `temporaryDirectory`
+        std::filesystem::remove_all(subdir); // required to allow automated deletion of `temporaryDirectory`
 
         // Remark: the test CPPUNIT_ASSERT(fileSize == 0u) fails on MacOSX.
 #ifdef _WIN32
@@ -220,4 +220,4 @@ void TestIo::testGetFileSize() {
     testGetFileSizeAllBranches();
 }
 
-}  // namespace KDC
+} // namespace KDC

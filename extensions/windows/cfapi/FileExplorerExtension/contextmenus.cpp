@@ -25,7 +25,7 @@
 namespace winrt {
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Provider;
-}  // namespace winrt
+} // namespace winrt
 
 IFACEMETHODIMP ExplorerCommandHandler::GetTitle(IShellItemArray *psiItemArray, LPWSTR *ppszName) {
     if (_contextMenuInfo._menuItem._root) {
@@ -205,7 +205,7 @@ void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
 
             // bool enabled = flags.find(L'd') == std::string::npos;
             MenuItem menuItem{false, title, L"", true /*enabled*/,
-                              commandName};  // enabled flag not supported by new Windows 11 menu
+                              commandName}; // enabled flag not supported by new Windows 11 menu
             _contextMenuInfo._subMenuItems.push_back(menuItem);
         } while (!response.empty());
 

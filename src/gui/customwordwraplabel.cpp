@@ -29,8 +29,8 @@ CustomWordWrapLabel::CustomWordWrapLabel(QWidget *parent, Qt::WindowFlags f) : Q
     setWordWrap(true);
 }
 
-CustomWordWrapLabel::CustomWordWrapLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
-    : QLabel(text, parent, f), _maxWidth(0) {
+CustomWordWrapLabel::CustomWordWrapLabel(const QString &text, QWidget *parent, Qt::WindowFlags f) :
+    QLabel(text, parent, f), _maxWidth(0) {
     setWordWrap(true);
 }
 
@@ -40,7 +40,7 @@ QSize CustomWordWrapLabel::sizeHint() const {
         QStringList lines = text().split("<br>");
         QFontMetrics metrics(font());
         int height = 0;
-        for (QString line : lines) {
+        for (QString line: lines) {
             QRect textRect = metrics.boundingRect(screen()->geometry(), alignment() | Qt::TextWordWrap, line);
             int nbLines = textRect.width() / _maxWidth + 1;
             height += textRect.height() * nbLines;
@@ -58,4 +58,4 @@ void CustomWordWrapLabel::setMaxWidth(int width) {
     setFixedHeight(sizeHint().height());
 }
 
-}  // namespace KDC
+} // namespace KDC

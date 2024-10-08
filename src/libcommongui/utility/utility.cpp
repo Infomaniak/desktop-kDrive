@@ -121,4 +121,4 @@ QString CommonGuiUtility::octetsToString(qint64 octets) {
     return s.arg(value, 0, 'g', 2);
 }
 
-}  // namespace KDC
+} // namespace KDC

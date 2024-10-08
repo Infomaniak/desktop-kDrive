@@ -109,7 +109,7 @@ void TestIo::testGetFileStat() {
     }
     // A non-existing file
     {
-        const SyncPath path = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         FileStat fileStat;
         IoError ioError = IoError::Success;
 
@@ -124,8 +124,8 @@ void TestIo::testGetFileStat() {
 
     // A non-existing file with a very long name
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
+        const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         FileStat fileStat;
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
@@ -145,7 +145,7 @@ void TestIo::testGetFileStat() {
         const std::string pathSegment(50, 'a');
         SyncPath path = _localTestDirPath;
         for (int i = 0; i < 1000; ++i) {
-            path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
+            path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
         }
         FileStat fileStat;
         IoError ioError = IoError::Success;
@@ -262,7 +262,7 @@ void TestIo::testGetFileStat() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt"; // This file does not exist.
         const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -301,7 +301,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
-                               fileStat.size);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
+                               fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -322,7 +322,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
-                               fileStat.size);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
+                               fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -331,7 +331,7 @@ void TestIo::testGetFileStat() {
     // A dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         {
             std::ofstream ofs(targetPath);
@@ -348,7 +348,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
-                               fileStat.size);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
+                               fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -357,7 +357,7 @@ void TestIo::testGetFileStat() {
     // A dangling MacOSX Finder alias on a non-existing directory.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted";  // This directory will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted"; // This directory will be deleted.
         std::filesystem::create_directory(targetPath);
 
         const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
@@ -372,7 +372,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT_GREATER(int64_t(0),
-                               fileStat.size);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
+                               fileStat.size); // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -495,4 +495,4 @@ void TestIo::testGetFileStat() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

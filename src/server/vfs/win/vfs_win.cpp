@@ -51,7 +51,7 @@ VfsWin::VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupPa
     Utility::setLogger(logger());
     IoHelper::setLogger(logger());
 
-    if (vfsInit(debugCallback, QString(APPLICATION_SHORTNAME).toStdWString().c_str(), (DWORD)_getpid(),
+    if (vfsInit(debugCallback, QString(APPLICATION_SHORTNAME).toStdWString().c_str(), (DWORD) _getpid(),
                 KDC::CommonUtility::escape(KDRIVE_VERSION_STRING).toStdWString().c_str(),
                 QString(APPLICATION_TRASH_URL).toStdWString().c_str()) != S_OK) {
         LOG_WARN(logger(), "Error in vfsInit!");
@@ -85,7 +85,7 @@ VfsWin::~VfsWin() {
 
     // Force threads to stop if needed
     for (int i = 0; i < NB_WORKERS; i++) {
-        for (QThread *thread : qAsConst(_workerInfo[i]._threadList)) {
+        for (QThread *thread: qAsConst(_workerInfo[i]._threadList)) {
             if (thread) {
                 thread->quit();
                 if (!thread->wait(1000)) {
@@ -232,8 +232,8 @@ bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t
 
     // Update placeholder
     WIN32_FIND_DATA findData;
-    findData.nFileSizeHigh = (DWORD)(size >> 32);
-    findData.nFileSizeLow = (DWORD)(size & 0xFFFFFFFF);
+    findData.nFileSizeHigh = (DWORD) (size >> 32);
+    findData.nFileSizeLow = (DWORD) (size & 0xFFFFFFFF);
     OldUtility::UnixTimeToFiletime(modtime, &findData.ftLastWriteTime);
     findData.ftLastAccessTime = findData.ftLastWriteTime;
     OldUtility::UnixTimeToFiletime(creationTime, &findData.ftCreationTime);
@@ -274,8 +274,8 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
 
     // Create placeholder
     WIN32_FIND_DATA findData;
-    findData.nFileSizeHigh = (DWORD)(item.size() >> 32);
-    findData.nFileSizeLow = (DWORD)(item.size() & 0xFFFFFFFF);
+    findData.nFileSizeHigh = (DWORD) (item.size() >> 32);
+    findData.nFileSizeLow = (DWORD) (item.size() & 0xFFFFFFFF);
     OldUtility::UnixTimeToFiletime(item.creationTime(), &findData.ftCreationTime);
     OldUtility::UnixTimeToFiletime(item.modTime(), &findData.ftLastWriteTime);
     findData.ftLastAccessTime = findData.ftLastWriteTime;
@@ -388,7 +388,7 @@ bool VfsWin::convertToPlaceholder(const QString &path, const SyncFileItem &item,
 
 void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) {
     const QFileInfoList infoList = QDir(filePath).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-    for (const auto &tmpInfo : qAsConst(infoList)) {
+    for (const auto &tmpInfo: qAsConst(infoList)) {
         QString tmpPath(tmpInfo.filePath());
         if (tmpPath.isEmpty()) {
             LOG_WARN(logger(), "Invalid parameters");
@@ -766,4 +766,4 @@ void Worker::start() {
     LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " ended");
 }
 
-}  // namespace KDC
+} // namespace KDC

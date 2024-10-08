@@ -21,10 +21,9 @@
 
 namespace KDC {
 
-RenameJob::RenameJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &absoluteFinalPath)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-      _remoteFileId(remoteFileId),
-      _absoluteFinalPath(absoluteFinalPath) {
+RenameJob::RenameJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &absoluteFinalPath) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteFileId(remoteFileId),
+    _absoluteFinalPath(absoluteFinalPath) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
@@ -63,4 +62,4 @@ void RenameJob::setData(bool &canceled) {
     canceled = false;
 }
 
-}  // namespace KDC
+} // namespace KDC

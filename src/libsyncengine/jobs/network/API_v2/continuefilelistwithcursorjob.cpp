@@ -20,8 +20,8 @@
 
 namespace KDC {
 
-ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _cursor(cursor) {
+ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _cursor(cursor) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -38,4 +38,4 @@ void ContinueFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &can
     canceled = false;
 }
 
-}  // namespace KDC
+} // namespace KDC

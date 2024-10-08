@@ -21,8 +21,8 @@
 
 namespace KDC {
 
-InitFileListWithCursorJob::InitFileListWithCursorJob(int driveDbId, const NodeId &dirId)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _dirId(dirId) {
+InitFileListWithCursorJob::InitFileListWithCursorJob(int driveDbId, const NodeId &dirId) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _dirId(dirId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -40,4 +40,4 @@ void InitFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &cancele
     canceled = false;
 }
 
-}  // namespace KDC
+} // namespace KDC
