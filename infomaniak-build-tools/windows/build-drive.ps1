@@ -266,16 +266,20 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext)
 #                                                                                               #
 #################################################################################################
 
+$msvc_bin_path = "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin"
+$compiler_path = "$msvc_bin_path/Hostx64/x64/cl.exe"
+
 $args = @("'-GNinja'")
 $args += ("'-DCMAKE_BUILD_TYPE=$buildType'")
 $args += ("'-DCMAKE_INSTALL_PREFIX=$installPath'")
 $args += ("'-DCMAKE_PREFIX_PATH=$installPath'")
 
 $flags = @(
+"'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
 "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
 "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
-"'-DCMAKE_C_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe'",
-"'-DCMAKE_CXX_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe'",
+"'-DCMAKE_C_COMPILER:STRING=$compiler_path'",
+"'-DCMAKE_CXX_COMPILER:STRING=$compiler_path'",
 "'-DAPPLICATION_UPDATE_URL:STRING=https://www.infomaniak.com/drive/update/desktopclient'",
 "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
 "'-DBIN_INSTALL_DIR:PATH=$path'",
