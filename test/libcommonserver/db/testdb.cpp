@@ -129,6 +129,18 @@ void TestDb::testColumnExist() {
     CPPUNIT_ASSERT_EQUAL(true, _testObj->columnExists("not_existing_table_name", "not_existing_column_name", exist) && !exist);
 }
 
+void TestDb::testAddColumnIfMissing() {
+    const std::string requestId = "test_request_id";
+    std::string request = "ALTER TABLE test ADD COLUMN intValue INTEGER;";
+    bool columnAdded = false;
+    CPPUNIT_ASSERT_EQUAL(true,
+                         _testObj->addColumnIfMissing("test", "intValue", requestId, request, &columnAdded) && !columnAdded);
+
+    request = "ALTER TABLE test ADD COLUMN intValue2 INTEGER;";
+    CPPUNIT_ASSERT_EQUAL(true,
+                         _testObj->addColumnIfMissing("test", "intValue2", requestId, request, &columnAdded) && columnAdded);
+}
+
 TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) : Db(dbPath) {
     if (!checkConnect("3.3.4")) {
         throw std::runtime_error("Cannot open DB!");

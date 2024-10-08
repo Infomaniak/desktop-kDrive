@@ -48,6 +48,8 @@ constexpr const char *APP_STATE_KEY_DEFAULT_LogUploadToken = APP_STATE_DEFAULT_I
 namespace KDC {
 
 bool ParmsDb::createAppState() {
+    LOG_INFO(_logger, "Creating table app_state");
+
     int errId = 0;
     std::string error;
 

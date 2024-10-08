@@ -76,6 +76,8 @@ class COMMONSERVER_EXPORT Db {
 
         bool tableExists(const std::string &tableName, bool &exist);
         bool columnExists(const std::string &tableName, const std::string &columnName, bool &exist);
+        bool addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
+                                const std::string &request, bool *columnAdded = nullptr);
 
     protected:
         void startTransaction();

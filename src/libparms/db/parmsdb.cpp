@@ -1279,53 +1279,29 @@ bool ParmsDb::prepare() {
 }
 
 bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVersion*/) {
-    int errId;
-    std::string error;
-
-    std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.9")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.4.9 DB");
-
-        ASSERT(queryCreate(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID));
-        if (!queryPrepare(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID, ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST, false,
-                          errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID, error);
-        }
-        if (!queryExec(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID, error);
-        }
-        queryFree(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID);
+    const std::string tableName = "parameters";
+    std::string columnName = "maxAllowedCpu";
+    if (!addColumnIfMissing(tableName, columnName, ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID,
+                            ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST)) {
+        return false;
     }
 
-    // TODO: Version to update if this code is not delivered in 3.5.8
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.5.8")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.5.8 DB");
+    bool updateParameters = false;
+    columnName = "uploadSessionParallelJobs";
+    if (!addColumnIfMissing(tableName, columnName, ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID,
+                            ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST, &updateParameters)) {
+        return false;
+    }
 
-        ASSERT(queryCreate(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID));
-        if (!queryPrepare(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID,
-                          ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST, false, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID, error);
-        }
-        if (!queryExec(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID, error);
-        }
-        queryFree(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID);
+    columnName = "jobPoolCapacityFactor";
+    if (!addColumnIfMissing(tableName, columnName, ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID,
+                            ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST, &updateParameters)) {
+        return false;
+    }
 
-        ASSERT(queryCreate(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID));
-        if (!queryPrepare(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID,
-                          ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST, false, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID, error);
-        }
-        if (!queryExec(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID, error);
-        }
-        queryFree(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID);
+    if (updateParameters) {
+        int errId = 0;
+        std::string error;
 
         ASSERT(queryCreate(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         if (!queryPrepare(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST, false, errId, error)) {
@@ -1346,8 +1322,9 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
         queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
 
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.3")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.6.3 DB");
+    bool exist = false;
+    if (!tableExists("app_state", exist)) return false;
+    if (!exist) {
         if (!createAppState()) {
             LOG_WARN(_logger, "Error in createAppState");
             return false;

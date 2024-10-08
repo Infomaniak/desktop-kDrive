@@ -670,6 +670,31 @@ bool Db::columnExists(const std::string &tableName, const std::string &columnNam
     return true;
 }
 
+bool Db::addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
+                            const std::string &request, bool *columnAdded /*= nullptr*/) {
+    bool exist = false;
+    if (!columnExists(tableName, columnName, exist)) return false;
+    if (!exist) {
+        LOG_INFO(_logger, "Adding column " << columnName.c_str() << " into table " << tableName.c_str());
+
+        int errId = 0;
+        std::string error;
+        ASSERT(queryCreate(requestId));
+        if (!queryPrepare(requestId, request, false, errId, error)) {
+            queryFree(requestId);
+            return sqlFail(requestId, error);
+        }
+        if (!queryExec(requestId, errId, error)) {
+            queryFree(requestId);
+            return sqlFail(requestId, error);
+        }
+        queryFree(requestId);
+
+        if (columnAdded) *columnAdded = true;
+    }
+    return true;
+}
+
 void Db::setAutoDelete(bool value) {
     _sqliteDb->setAutoDelete(value);
 }
