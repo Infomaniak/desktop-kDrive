@@ -20,6 +20,12 @@
 #include "utility/utility.h"
 
 namespace KDC {
+DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
+                                       const NodeId &fileId, SyncTime modtime, bool liteSyncActivated,
+                                       uint64_t nbParalleleThread /*= 1*/) :
+    DriveUploadSession(driveDbId, syncDb, filepath, SyncName(), fileId, modtime, liteSyncActivated, nbParalleleThread) {
+    _fileId = fileId;
+}
 
 DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
                                        const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
