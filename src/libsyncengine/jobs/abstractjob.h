@@ -42,7 +42,10 @@ class AbstractJob : public Poco::Runnable {
          * Job ID is passed as argument
          */
         inline void setMainCallback(const std::function<void(uint64_t)> &newCallback) { _mainCallback = newCallback; }
-        inline void setAdditionalCallback(const std::function<void(uint64_t)> &newCallback) { _additionalCallback = newCallback; }
+        inline void setAdditionalCallback(const std::function<void(uint64_t)> &newCallback) {
+            std::scoped_lock lock(_additionalCallbackMutex);
+            _additionalCallback = newCallback;
+        }
         inline void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
             _progressPercentCallback = newCallback;
         }
@@ -120,6 +123,7 @@ class AbstractJob : public Poco::Runnable {
         virtual void callback(UniqueId) final;
 
         std::function<void(UniqueId)> _mainCallback = nullptr; // Used by the job manager to keep track of running jobs
+        std::mutex _additionalCallbackMutex;
         std::function<void(UniqueId)> _additionalCallback = nullptr; // Used by the caller to be notified of job completion
         std::function<void(UniqueId id, int progress)> _progressPercentCallback =
                 nullptr; // Used by the caller to be notified of job progress.

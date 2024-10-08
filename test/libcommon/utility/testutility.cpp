@@ -44,6 +44,7 @@ void TestUtility::testGetAppSupportDir() {
 void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "3.5.8"));
 
+    // Single digit major, minor or patch versions
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("3.5.8", "3.5.9"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "3.5.7"));
 
@@ -64,6 +65,20 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.5.9"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.7"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.9"));
+
+
+    // Double digit major, minor or patch versions
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.0.0", "55.0.0"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("9.0.0", "55.0.0"));
+
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("25.0.0", "55.0.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("75.0.0", "55.0.0"));
+
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("55.0.25", "55.0.55"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("55.0.75", "55.0.55"));
+
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("55.25.0", "55.55.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("55.75.0", "55.55.0"));
 }
 
 void TestUtility::testStringToAppStateValue() {
