@@ -359,7 +359,7 @@ AppServer::AppServer(int &argc, char **argv) :
     }
 
     if (const auto logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
-        UploadSessionCancelJob cancelJob(UploadSessionType::LogUpload, logUploadToken);
+        UploadSessionCancelJob cancelJob(UploadSessionType::Log, logUploadToken);
         if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
         } else {

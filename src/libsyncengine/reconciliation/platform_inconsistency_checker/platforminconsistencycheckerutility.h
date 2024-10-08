@@ -42,7 +42,7 @@ class PlatformInconsistencyCheckerUtility {
 #endif
         bool checkNameSize(const SyncName &name);
         bool checkReservedNames(const SyncName &name);
-        bool checkPathLength(size_t pathSize, NodeType type);
+        bool checkPathLength(size_t pathSize);
 
     private:
         PlatformInconsistencyCheckerUtility();
@@ -53,9 +53,6 @@ class PlatformInconsistencyCheckerUtility {
 
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> _instance;
         static size_t _maxPathLength;
-#if defined(_WIN32)
-        static size_t _maxPathLengthFolder;
-#endif
 
         friend class TestPlatformInconsistencyCheckerWorker;
 };

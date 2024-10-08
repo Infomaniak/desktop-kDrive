@@ -52,9 +52,6 @@ static const std::unordered_set<std::string> reservedWinNames = {
 
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::_instance = nullptr;
 size_t PlatformInconsistencyCheckerUtility::_maxPathLength = 0;
-#if defined(_WIN32)
-size_t PlatformInconsistencyCheckerUtility::_maxPathLengthFolder = 0;
-#endif
 
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::instance() {
     if (_instance == nullptr) {
@@ -174,18 +171,8 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
     return false;
 }
 
-bool PlatformInconsistencyCheckerUtility::checkPathLength(size_t pathSize, NodeType type) {
-    size_t maxLength = _maxPathLength;
-
-#ifdef _WIN32
-    if (type == NodeType::Directory) {
-        maxLength = _maxPathLengthFolder;
-    }
-#else
-    (void) type;
-#endif
-
-    return pathSize > maxLength;
+bool PlatformInconsistencyCheckerUtility::checkPathLength(size_t pathSize) {
+    return pathSize > _maxPathLength;
 }
 
 PlatformInconsistencyCheckerUtility::PlatformInconsistencyCheckerUtility() {
@@ -200,9 +187,6 @@ SyncName PlatformInconsistencyCheckerUtility::charToHex(unsigned int c) {
 
 void PlatformInconsistencyCheckerUtility::setMaxPath() {
     _maxPathLength = CommonUtility::maxPathLength();
-#if defined(_WIN32)
-    _maxPathLengthFolder = CommonUtility::maxPathLengthFolder();
-#endif
 }
 
 SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixType /*= SuffixTypeRename*/) {

@@ -28,6 +28,12 @@ namespace KDC {
 
 class DriveUploadSession : public AbstractUploadSession {
     public:
+        // Using file ID, for file edition only.
+        DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const NodeId &fileId,
+                           SyncTime modtime, bool liteSyncActivated,
+                           uint64_t nbParalleleThread = 1);
+
+        // Using file name and parent ID, for file creation only.
         DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
                            const NodeId &remoteParentDirId, SyncTime modtime, bool liteSyncActivated,
                            uint64_t nbParalleleThread = 1);
