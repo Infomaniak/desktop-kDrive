@@ -38,6 +38,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testLFSOWithDuplicateFileNames);
         CPPUNIT_TEST(testLFSODeleteDir);
         CPPUNIT_TEST(testLFSOWithDirs);
+        CPPUNIT_TEST(testLFSOFastMoveDelete);
         CPPUNIT_TEST(testLFSOWithSpecialCases1);
         CPPUNIT_TEST(testLFSOWithSpecialCases2);
         CPPUNIT_TEST_SUITE_END();
@@ -53,13 +54,14 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         LocalTemporaryDirectory _tempDir;
         SyncPath _rootFolderPath;
         SyncPath _subDirPath;
-        NodeId _testFileId;
+        std::vector<std::pair<NodeId, SyncPath>> _testFiles;
 
         void testLFSOWithInitialSnapshot();
         void testLFSOWithFiles();
         void testLFSOWithDuplicateFileNames();
         void testLFSOWithDirs();
         void testLFSODeleteDir();
+        void testLFSOFastMoveDelete();
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
 };

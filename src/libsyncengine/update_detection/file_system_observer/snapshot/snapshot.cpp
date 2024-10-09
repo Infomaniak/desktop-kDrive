@@ -482,6 +482,33 @@ void Snapshot::setValid(bool newIsValid) {
     _isValid = newIsValid;
 }
 
+bool Snapshot::checkIntegrityRecursively() {
+    return checkIntegrityRecursively(rootFolderId());
+}
+
+bool Snapshot::checkIntegrityRecursively(const NodeId &parentId) {
+    // Check that we do not have the same file twice in the same folder
+    const auto &parrentItem = _items[parentId];
+    for (auto child = parrentItem.childrenIds().begin(), end = parrentItem.childrenIds().end(); child != end; child++) {
+        if (!checkIntegrityRecursively(*child)) {
+            return false;
+        }
+
+        for (auto child2 = child; child2 != end; ++child2) {
+            if (*child != *child2 && _items[*child].name() == _items[*child2].name()) {
+                LOG_ERROR(Log::instance()->getLogger(), "Snapshot integrity check failed, the folder named: \""
+                                                                << SyncName2Str(parrentItem.name()).c_str() << "\"("
+                                                                << parrentItem.id().c_str() << ") contains: \""
+                                                                << SyncName2Str(_items[*child].name()).c_str()
+                                                                << "\" twice with two differents NodeId (" << child->c_str()
+                                                                << " and " << child2->c_str() << ")");
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void Snapshot::removeChildrenRecursively(const NodeId &parentId) {
     auto parentIt = _items.find(parentId);
     if (parentIt == _items.end()) {
