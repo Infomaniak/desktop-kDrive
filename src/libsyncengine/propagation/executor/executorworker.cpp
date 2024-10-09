@@ -1000,13 +1000,24 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
             return false;
         }
 
+        if (!syncOp->correspondingNode()->id()) {
+            // Should not happen
+            LOGW_SYNCPAL_WARN(_logger, L"Edit operation with empty corresponding node id for "
+                                               << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
+            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ExecutorWorker::generateEditJob",
+                                                      "Edit operation with empty corresponding node id");
+
+            return false;
+        }
+
         if (filesize > useUploadSessionThreshold) {
             try {
                 int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                 job = std::make_shared<DriveUploadSession>(
-                        _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath, syncOp->affectedNode()->name(),
-                        syncOp->correspondingNode()->parentNode()->id() ? *syncOp->correspondingNode()->parentNode()->id()
-                                                                        : std::string(),
+                        _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath,
+                        syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
                         isLiteSyncActivated(), uploadSessionParallelJobs);
             } catch (std::exception const &e) {
@@ -1017,18 +1028,6 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                 return false;
             };
         } else {
-            if (!syncOp->correspondingNode()->id()) {
-                // Should not happen
-                LOGW_SYNCPAL_WARN(_logger, L"Edit operation with empty corresponding node id for "
-                                                   << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-                _executorExitCode = ExitCode::DataError;
-                _executorExitCause = ExitCause::Unknown;
-                SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ExecutorWorker::generateEditJob",
-                                                          "Edit operation with empty corresponding node id");
-
-                return false;
-            }
-
             try {
                 job = std::make_shared<UploadJob>(
                         _syncPal->driveDbId(), absoluteLocalFilePath,
