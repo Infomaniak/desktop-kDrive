@@ -965,6 +965,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
+            // Clear old errors for this sync
+            clearErrors(sync.dbId(), false);
+            clearErrors(sync.dbId(), true);
+
             ExitCode exitCode = checkIfSyncIsValid(sync);
             ExitCause exitCause = ExitCause::Unknown;
             if (exitCode != ExitCode::Ok) {
@@ -2928,6 +2932,9 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                         }
                     }
                 }
+                // Clear old errors for this sync
+                clearErrors(sync.dbId(), false);
+                clearErrors(sync.dbId(), true);
 
                 exitCode = checkIfSyncIsValid(sync);
                 exitCause = ExitCause::Unknown;
@@ -3541,10 +3548,6 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
     if (_socketApi) {
         _socketApi->registerSync(sync.dbId());
     }
-
-    // Clear old errors for this sync
-    clearErrors(sync.dbId(), false);
-    clearErrors(sync.dbId(), true);
 
     return ExitCode::Ok;
 }
