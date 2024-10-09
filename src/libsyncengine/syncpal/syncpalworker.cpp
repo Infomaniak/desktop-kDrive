@@ -285,6 +285,10 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[0] = _syncPal->computeFSOperationsWorker();
             workers[1] = nullptr;
             _syncPal->copySnapshots();
+            assert(_syncPal->snapshot(ReplicaSide::Local, true)->checkIntegrityRecursively() &&
+                   "Local snapshot is corrupted, see logs for details");
+            assert(_syncPal->snapshot(ReplicaSide::Remote, true)->checkIntegrityRecursively() &&
+                   "Remote snapshot is corrupted, see logs for details");
             inputSharedObject[0] = _syncPal->snapshot(ReplicaSide::Local, true);
             inputSharedObject[1] = _syncPal->snapshot(ReplicaSide::Remote, true);
             _syncPal->setRestart(false);
