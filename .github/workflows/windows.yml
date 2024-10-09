@@ -92,6 +92,10 @@ jobs:
             --define sonar.exclusions="src/3rdparty/**"
             --define sonar.cfamily.compile-commands="build-windows/build/compile_commands.json"
             --define sonar.cfamily.bullseye.reportPaths="coverage.xml"
+            --define sonar.pullrequest.key="${{ github.event.number }}"
+            --define sonar.pullrequest.branch="${{ github.base_ref }}"
+            --define sonar.pullrequest.base="${{ github.head_ref }}"
+
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
