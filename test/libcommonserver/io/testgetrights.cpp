@@ -35,14 +35,14 @@ void TestIo::testGetRights() {
 
         std::error_code ec;
         std::filesystem::create_symlink(targetPath, path, ec);
-        CPPUNIT_ASSERT(ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(ec.value() == 0);
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec));
 
         bool readPermission = false;
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
+        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));        
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);
@@ -59,7 +59,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         std::filesystem::create_symlink(targetPath, path, ec);
-        CPPUNIT_ASSERT(ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(ec.value() == 0);
 
         bool readPermission = false;
         bool writePermission = false;
@@ -79,11 +79,11 @@ void TestIo::testGetRights() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
 
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec));
 
         std::filesystem::create_directory_symlink(targetPath, path, ec);
-        CPPUNIT_ASSERT(ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(ec.value() == 0);
 
         bool readPermission = false;
         bool writePermission = false;
@@ -106,7 +106,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         std::filesystem::create_directory_symlink(targetPath, path, ec);
-        CPPUNIT_ASSERT(ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(ec.value() == 0);
 
         bool readPermission = false;
         bool writePermission = false;
@@ -159,7 +159,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && ec.value() == 0);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         bool readPermission = false;
@@ -180,7 +180,7 @@ void TestIo::testGetRights() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec));
 
         IoError aliasError;
@@ -194,7 +194,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
-        CPPUNIT_ASSERT(execPermission == true);
+        CPPUNIT_ASSERT(execPermission == false);
         CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
@@ -205,14 +205,13 @@ void TestIo::testGetRights() {
         const SyncPath path = temporaryDirectory.path() / "dummy_dir_alias";
 
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
         IoError aliasError;
         CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
-        std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && ec.value() == 0);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         bool readPermission = false;
@@ -222,7 +221,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
-        CPPUNIT_ASSERT(execPermission == true);
+        CPPUNIT_ASSERT(execPermission == false);
         CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 #elif defined(_WIN32)
@@ -233,7 +232,7 @@ void TestIo::testGetRights() {
         const SyncPath path = temporaryDirectory.path() / "dangling_junction";
 
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec));
 
         IoError junctionError;

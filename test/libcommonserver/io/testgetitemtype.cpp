@@ -148,7 +148,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
 
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
         std::filesystem::create_directory_symlink(targetPath, path);
 

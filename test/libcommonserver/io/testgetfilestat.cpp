@@ -385,7 +385,7 @@ void TestIo::testGetFileStat() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
         IoError junctionError;
         IoHelper::createJunctionFromPath(targetPath, path, junctionError);

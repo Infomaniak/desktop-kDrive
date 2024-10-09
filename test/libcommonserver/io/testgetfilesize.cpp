@@ -189,7 +189,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "dangling_junction";
 
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == ERROR_SUCCESS);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
         IoError junctionError;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
