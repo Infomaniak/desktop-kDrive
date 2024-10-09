@@ -276,6 +276,46 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
 
     return true;
 }
+
+bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
+    read = false;
+    write = false;
+    exec = false;
+
+    ItemType itemType;
+    const bool success = getItemType(path, itemType);
+    if (!success) {
+        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        return false;
+    }
+    ioError = itemType.ioError;
+    if (ioError != IoError::Success) {
+        return isExpectedError(ioError);
+    }
+    const bool isSymlink = itemType.linkType == LinkType::Symlink;
+
+    std::error_code ec;
+    std::filesystem::perms perms =
+            isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
+    if (ec) {
+        const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
+        ioError = stdError2ioError(ec);
+        if (!exists) {
+            ioError = IoError::NoSuchFileOrDirectory;
+        }
+        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
+        return isExpectedError(ioError);
+    }
+
+    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
+#if defined(__APPLE__)
+    write = isLocked(path) ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
+#elif defined(__unix__)
+    write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
+#endif
+    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
+    return true;
+}
 #endif // #if defined(__APPLE__) || defined(__unix__)
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
