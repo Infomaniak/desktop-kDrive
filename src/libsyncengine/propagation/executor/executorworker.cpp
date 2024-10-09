@@ -866,8 +866,8 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
 
     syncItem.setLocalNodeId(std::to_string(fileStat.inode));
 
-    if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem,
-                                           needRestart)) { // TODO : should not use SyncFileItem
+    if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem)) { // TODO : should not use SyncFileItem
+        LOGW_WARN(_logger, L"Error in vfsConvertToPlaceholder: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
 

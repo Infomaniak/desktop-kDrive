@@ -340,9 +340,7 @@ bool VfsMac::dehydratePlaceholder(const QString &path) {
     return true;
 }
 
-bool VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item, bool &needRestart) {
-    needRestart = false;
-
+bool VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item) {
     if (extendedLog()) {
         LOGW_DEBUG(logger(), L"convertToPlaceholder - " << Utility::formatPath(path).c_str());
     }

@@ -405,12 +405,12 @@ bool SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const Sync
     return _vfsCreatePlaceholder(syncDbId(), relativeLocalPath, item);
 }
 
-bool SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item, bool &needRestart) {
+bool SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
     if (!_vfsConvertToPlaceholder) {
         return false;
     }
 
-    return _vfsConvertToPlaceholder(syncDbId(), path, item, needRestart);
+    return _vfsConvertToPlaceholder(syncDbId(), path, item);
 }
 
 bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
