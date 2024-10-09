@@ -49,15 +49,9 @@ namespace KDC {
 
 bool ParmsDb::createAppState() {
     LOG_INFO(_logger, "Creating table app_state");
-
+    if (!prepareQuery(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE)) return false;
     int errId = 0;
     std::string error;
-
-    ASSERT(queryCreate(CREATE_APP_STATE_TABLE_ID))
-    if (!queryPrepare(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE, false, errId, error)) {
-        queryFree(CREATE_APP_STATE_TABLE_ID);
-        return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
-    }
     if (!queryExec(CREATE_APP_STATE_TABLE_ID, errId, error)) {
         queryFree(CREATE_APP_STATE_TABLE_ID);
         return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
@@ -67,26 +61,9 @@ bool ParmsDb::createAppState() {
 }
 
 bool ParmsDb::prepareAppState() {
-    int errId = 0;
-    std::string error;
-
-    ASSERT(queryCreate(INSERT_APP_STATE_REQUEST_ID))
-    if (!queryPrepare(INSERT_APP_STATE_REQUEST_ID, INSERT_APP_STATE_REQUEST, false, errId, error)) {
-        queryFree(INSERT_APP_STATE_REQUEST_ID);
-        return sqlFail(INSERT_APP_STATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_APP_STATE_REQUEST_ID))
-    if (!queryPrepare(SELECT_APP_STATE_REQUEST_ID, SELECT_APP_STATE_REQUEST, false, errId, error)) {
-        queryFree(SELECT_APP_STATE_REQUEST_ID);
-        return sqlFail(SELECT_APP_STATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_APP_STATE_REQUEST_ID))
-    if (!queryPrepare(UPDATE_APP_STATE_REQUEST_ID, UPDATE_APP_STATE_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_APP_STATE_REQUEST_ID);
-        return sqlFail(UPDATE_APP_STATE_REQUEST_ID, error);
-    }
+    if (!prepareQuery(INSERT_APP_STATE_REQUEST_ID, INSERT_APP_STATE_REQUEST)) return false;
+    if (!prepareQuery(SELECT_APP_STATE_REQUEST_ID, SELECT_APP_STATE_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_APP_STATE_REQUEST_ID, UPDATE_APP_STATE_REQUEST)) return false;
     return true;
 }
 

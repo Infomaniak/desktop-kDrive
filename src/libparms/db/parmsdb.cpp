@@ -918,352 +918,75 @@ bool ParmsDb::prepare() {
     std::string error;
 
     // Parameters
-    ASSERT(queryCreate(INSERT_PARAMETERS_REQUEST_ID));
-    if (!queryPrepare(INSERT_PARAMETERS_REQUEST_ID, INSERT_PARAMETERS_REQUEST, false, errId, error)) {
-        queryFree(INSERT_PARAMETERS_REQUEST_ID);
-        return sqlFail(INSERT_PARAMETERS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_PARAMETERS_REQUEST_ID));
-    if (!queryPrepare(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_PARAMETERS_REQUEST_ID);
-        return sqlFail(UPDATE_PARAMETERS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_PARAMETERS_REQUEST_ID));
-    if (!queryPrepare(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST, false, errId, error)) {
-        queryFree(SELECT_PARAMETERS_REQUEST_ID);
-        return sqlFail(SELECT_PARAMETERS_REQUEST_ID, error);
-    }
-
+    if (!prepareQuery(INSERT_PARAMETERS_REQUEST_ID, INSERT_PARAMETERS_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST)) return false;
+    if (!prepareQuery(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST)) return false;
     // User
-    ASSERT(queryCreate(INSERT_USER_REQUEST_ID));
-    if (!queryPrepare(INSERT_USER_REQUEST_ID, INSERT_USER_REQUEST, false, errId, error)) {
-        queryFree(INSERT_USER_REQUEST_ID);
-        return sqlFail(INSERT_USER_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_USER_REQUEST_ID));
-    if (!queryPrepare(UPDATE_USER_REQUEST_ID, UPDATE_USER_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_USER_REQUEST_ID);
-        return sqlFail(UPDATE_USER_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_USER_REQUEST_ID));
-    if (!queryPrepare(DELETE_USER_REQUEST_ID, DELETE_USER_REQUEST, false, errId, error)) {
-        queryFree(DELETE_USER_REQUEST_ID);
-        return sqlFail(DELETE_USER_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_USER_REQUEST_ID));
-    if (!queryPrepare(SELECT_USER_REQUEST_ID, SELECT_USER_REQUEST, false, errId, error)) {
-        queryFree(SELECT_USER_REQUEST_ID);
-        return sqlFail(SELECT_USER_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_USER_BY_USERID_REQUEST_ID));
-    if (!queryPrepare(SELECT_USER_BY_USERID_REQUEST_ID, SELECT_USER_BY_USERID_REQUEST, false, errId, error)) {
-        queryFree(SELECT_USER_BY_USERID_REQUEST_ID);
-        return sqlFail(SELECT_USER_BY_USERID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_USERS_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_USERS_REQUEST_ID, SELECT_ALL_USERS_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_USERS_REQUEST_ID);
-        return sqlFail(SELECT_ALL_USERS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
-    if (!queryPrepare(SELECT_LAST_CONNECTED_USER_REQUEST_ID, SELECT_LAST_CONNECTED_USER_REQUEST, false, errId, error)) {
-        queryFree(SELECT_LAST_CONNECTED_USER_REQUEST_ID);
-        return sqlFail(SELECT_LAST_CONNECTED_USER_REQUEST_ID, error);
-    }
-
+    if (!prepareQuery(INSERT_USER_REQUEST_ID, INSERT_USER_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_USER_REQUEST_ID, UPDATE_USER_REQUEST)) return false;
+    if (!prepareQuery(DELETE_USER_REQUEST_ID, DELETE_USER_REQUEST)) return false;
+    if (!prepareQuery(SELECT_USER_REQUEST_ID, SELECT_USER_REQUEST)) return false;
+    if (!prepareQuery(SELECT_USER_BY_USERID_REQUEST_ID, SELECT_USER_BY_USERID_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_USERS_REQUEST_ID, SELECT_ALL_USERS_REQUEST)) return false;
+    if (!prepareQuery(SELECT_LAST_CONNECTED_USER_REQUEST_ID, SELECT_LAST_CONNECTED_USER_REQUEST)) return false;
     // Account
-    ASSERT(queryCreate(INSERT_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(INSERT_ACCOUNT_REQUEST_ID, INSERT_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(INSERT_ACCOUNT_REQUEST_ID);
-        return sqlFail(INSERT_ACCOUNT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(UPDATE_ACCOUNT_REQUEST_ID, UPDATE_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_ACCOUNT_REQUEST_ID);
-        return sqlFail(UPDATE_ACCOUNT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(DELETE_ACCOUNT_REQUEST_ID, DELETE_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ACCOUNT_REQUEST_ID);
-        return sqlFail(DELETE_ACCOUNT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(SELECT_ACCOUNT_REQUEST_ID, SELECT_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ACCOUNT_REQUEST_ID);
-        return sqlFail(SELECT_ACCOUNT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_ACCOUNTS_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_ACCOUNTS_REQUEST_ID, SELECT_ALL_ACCOUNTS_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_ACCOUNTS_REQUEST_ID);
-        return sqlFail(SELECT_ALL_ACCOUNTS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, SELECT_ALL_ACCOUNTS_BY_USER_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID);
-        return sqlFail(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, error);
-    }
-
+    if (!prepareQuery(INSERT_ACCOUNT_REQUEST_ID, INSERT_ACCOUNT_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_ACCOUNT_REQUEST_ID, UPDATE_ACCOUNT_REQUEST)) return false;
+    if (!prepareQuery(DELETE_ACCOUNT_REQUEST_ID, DELETE_ACCOUNT_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ACCOUNT_REQUEST_ID, SELECT_ACCOUNT_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_ACCOUNTS_REQUEST_ID, SELECT_ALL_ACCOUNTS_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, SELECT_ALL_ACCOUNTS_BY_USER_REQUEST)) return false;
     // Drive
-    ASSERT(queryCreate(INSERT_DRIVE_REQUEST_ID));
-    if (!queryPrepare(INSERT_DRIVE_REQUEST_ID, INSERT_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(INSERT_DRIVE_REQUEST_ID);
-        return sqlFail(INSERT_DRIVE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_DRIVE_REQUEST_ID));
-    if (!queryPrepare(UPDATE_DRIVE_REQUEST_ID, UPDATE_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_DRIVE_REQUEST_ID);
-        return sqlFail(UPDATE_DRIVE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_DRIVE_REQUEST_ID));
-    if (!queryPrepare(DELETE_DRIVE_REQUEST_ID, DELETE_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(DELETE_DRIVE_REQUEST_ID);
-        return sqlFail(DELETE_DRIVE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_DRIVE_REQUEST_ID));
-    if (!queryPrepare(SELECT_DRIVE_REQUEST_ID, SELECT_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(SELECT_DRIVE_REQUEST_ID);
-        return sqlFail(SELECT_DRIVE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID));
-    if (!queryPrepare(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, SELECT_DRIVE_BY_DRIVEID_REQUEST, false, errId, error)) {
-        queryFree(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID);
-        return sqlFail(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_DRIVES_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_DRIVES_REQUEST_ID, SELECT_ALL_DRIVES_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_DRIVES_REQUEST_ID);
-        return sqlFail(SELECT_ALL_DRIVES_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID);
-        return sqlFail(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, error);
-    }
-
+    if (!prepareQuery(INSERT_DRIVE_REQUEST_ID, INSERT_DRIVE_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_DRIVE_REQUEST_ID, UPDATE_DRIVE_REQUEST)) return false;
+    if (!prepareQuery(DELETE_DRIVE_REQUEST_ID, DELETE_DRIVE_REQUEST)) return false;
+    if (!prepareQuery(SELECT_DRIVE_REQUEST_ID, SELECT_DRIVE_REQUEST)) return false;
+    if (!prepareQuery(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, SELECT_DRIVE_BY_DRIVEID_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_DRIVES_REQUEST_ID, SELECT_ALL_DRIVES_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST)) return false;
     // Sync
-    ASSERT(queryCreate(INSERT_SYNC_REQUEST_ID));
-    if (!queryPrepare(INSERT_SYNC_REQUEST_ID, INSERT_SYNC_REQUEST, false, errId, error)) {
-        queryFree(INSERT_SYNC_REQUEST_ID);
-        return sqlFail(INSERT_SYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_SYNC_REQUEST_ID));
-    if (!queryPrepare(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_SYNC_REQUEST_ID);
-        return sqlFail(UPDATE_SYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_SYNC_PAUSED_REQUEST_ID));
-    if (!queryPrepare(UPDATE_SYNC_PAUSED_REQUEST_ID, UPDATE_SYNC_PAUSED_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_SYNC_PAUSED_REQUEST_ID);
-        return sqlFail(UPDATE_SYNC_PAUSED_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID));
-    if (!queryPrepare(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID);
-        return sqlFail(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_SYNC_REQUEST_ID));
-    if (!queryPrepare(DELETE_SYNC_REQUEST_ID, DELETE_SYNC_REQUEST, false, errId, error)) {
-        queryFree(DELETE_SYNC_REQUEST_ID);
-        return sqlFail(DELETE_SYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_SYNC_REQUEST_ID));
-    if (!queryPrepare(SELECT_SYNC_REQUEST_ID, SELECT_SYNC_REQUEST, false, errId, error)) {
-        queryFree(SELECT_SYNC_REQUEST_ID);
-        return sqlFail(SELECT_SYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_SYNC_BY_PATH_REQUEST_ID));
-    if (!queryPrepare(SELECT_SYNC_BY_PATH_REQUEST_ID, SELECT_SYNC_BY_PATH_REQUEST, false, errId, error)) {
-        queryFree(SELECT_SYNC_BY_PATH_REQUEST_ID);
-        return sqlFail(SELECT_SYNC_BY_PATH_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_SYNCS_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_SYNCS_REQUEST_ID);
-        return sqlFail(SELECT_ALL_SYNCS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, SELECT_ALL_SYNCS_BY_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID);
-        return sqlFail(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, error);
-    }
-
+    if (!prepareQuery(INSERT_SYNC_REQUEST_ID, INSERT_SYNC_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_SYNC_PAUSED_REQUEST_ID, UPDATE_SYNC_PAUSED_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST)) return false;
+    if (!prepareQuery(DELETE_SYNC_REQUEST_ID, DELETE_SYNC_REQUEST)) return false;
+    if (!prepareQuery(SELECT_SYNC_REQUEST_ID, SELECT_SYNC_REQUEST)) return false;
+    if (!prepareQuery(SELECT_SYNC_BY_PATH_REQUEST_ID, SELECT_SYNC_BY_PATH_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, SELECT_ALL_SYNCS_BY_DRIVE_REQUEST)) return false;
     // Exclusion Template
-    ASSERT(queryCreate(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID));
-    if (!queryPrepare(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST, false, errId, error)) {
-        queryFree(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
-        return sqlFail(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID));
-    if (!queryPrepare(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, UPDATE_EXCLUSION_TEMPLATE_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID);
-        return sqlFail(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID));
-    if (!queryPrepare(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID, DELETE_EXCLUSION_TEMPLATE_REQUEST, false, errId, error)) {
-        queryFree(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID);
-        return sqlFail(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST, false, errId,
-                      error)) {
-        queryFree(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
-        return sqlFail(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID);
-        return sqlFail(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST, false, errId,
-                      error)) {
-        queryFree(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
-        return sqlFail(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, error);
-    }
-
+    if (!prepareQuery(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, UPDATE_EXCLUSION_TEMPLATE_REQUEST)) return false;
+    if (!prepareQuery(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID, DELETE_EXCLUSION_TEMPLATE_REQUEST)) return false;
+    if (!prepareQuery(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
+        return false;
+    if (!prepareQuery(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
+        return false;
 #ifdef __APPLE__
     // Exclusion App
-    ASSERT(queryCreate(INSERT_EXCLUSION_APP_REQUEST_ID));
-    if (!queryPrepare(INSERT_EXCLUSION_APP_REQUEST_ID, INSERT_EXCLUSION_APP_REQUEST, false, errId, error)) {
-        queryFree(INSERT_EXCLUSION_APP_REQUEST_ID);
-        return sqlFail(INSERT_EXCLUSION_APP_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_EXCLUSION_APP_REQUEST_ID));
-    if (!queryPrepare(UPDATE_EXCLUSION_APP_REQUEST_ID, UPDATE_EXCLUSION_APP_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_EXCLUSION_APP_REQUEST_ID);
-        return sqlFail(UPDATE_EXCLUSION_APP_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_EXCLUSION_APP_REQUEST_ID));
-    if (!queryPrepare(DELETE_EXCLUSION_APP_REQUEST_ID, DELETE_EXCLUSION_APP_REQUEST, false, errId, error)) {
-        queryFree(DELETE_EXCLUSION_APP_REQUEST_ID);
-        return sqlFail(DELETE_EXCLUSION_APP_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID);
-        return sqlFail(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_EXCLUSION_APP_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, SELECT_ALL_EXCLUSION_APP_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_EXCLUSION_APP_REQUEST_ID);
-        return sqlFail(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID);
-        return sqlFail(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, error);
-    }
+    if (!prepareQuery(INSERT_EXCLUSION_APP_REQUEST_ID, INSERT_EXCLUSION_APP_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_EXCLUSION_APP_REQUEST_ID, UPDATE_EXCLUSION_APP_REQUEST)) return false;
+    if (!prepareQuery(DELETE_EXCLUSION_APP_REQUEST_ID, DELETE_EXCLUSION_APP_REQUEST)) return false;
+    if (!prepareQuery(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, SELECT_ALL_EXCLUSION_APP_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST)) return false;
 #endif
-
     // Error
-    ASSERT(queryCreate(INSERT_ERROR_REQUEST_ID));
-    if (!queryPrepare(INSERT_ERROR_REQUEST_ID, INSERT_ERROR_REQUEST, false, errId, error)) {
-        queryFree(INSERT_ERROR_REQUEST_ID);
-        return sqlFail(INSERT_ERROR_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_ERROR_REQUEST_ID));
-    if (!queryPrepare(UPDATE_ERROR_REQUEST_ID, UPDATE_ERROR_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_ERROR_REQUEST_ID);
-        return sqlFail(UPDATE_ERROR_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, DELETE_ALL_ERROR_BY_EXITCODE_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID);
-        return sqlFail(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID);
-        return sqlFail(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, DELETE_ALL_ERROR_BY_LEVEL_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID);
-        return sqlFail(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ERROR_BY_DBID_REQUEST_ID));
-    if (!queryPrepare(DELETE_ERROR_BY_DBID_REQUEST_ID, DELETE_ERROR_BY_DBID_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ERROR_BY_DBID_REQUEST_ID);
-        return sqlFail(DELETE_ERROR_BY_DBID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST, false,
-                      errId, error)) {
-        queryFree(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID);
-        return sqlFail(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST, false, errId,
-                      error)) {
-        queryFree(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
-        return sqlFail(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID));
-    if (!queryPrepare(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST, false,
-                      errId, error)) {
-        queryFree(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
-        return sqlFail(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, error);
-    }
-
+    if (!prepareQuery(INSERT_ERROR_REQUEST_ID, INSERT_ERROR_REQUEST)) return false;
+    if (!prepareQuery(UPDATE_ERROR_REQUEST_ID, UPDATE_ERROR_REQUEST)) return false;
+    if (!prepareQuery(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, DELETE_ALL_ERROR_BY_EXITCODE_REQUEST)) return false;
+    if (!prepareQuery(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST)) return false;
+    if (!prepareQuery(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, DELETE_ALL_ERROR_BY_LEVEL_REQUEST)) return false;
+    if (!prepareQuery(DELETE_ERROR_BY_DBID_REQUEST_ID, DELETE_ERROR_BY_DBID_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST))
+        return false;
+    if (!prepareQuery(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST)) return false;
+    if (!prepareQuery(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST))
+        return false;
     // Migration old selectivesync table
-    ASSERT(queryCreate(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID));
-    if (!queryPrepare(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, INSERT_MIGRATION_SELECTIVESYNC_REQUEST, false, errId, error)) {
-        queryFree(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID);
-        return sqlFail(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST, false, errId,
-                      error)) {
-        queryFree(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID);
-        return sqlFail(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
-    }
-
+    if (!prepareQuery(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, INSERT_MIGRATION_SELECTIVESYNC_REQUEST)) return false;
+    if (!prepareQuery(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST)) return false;
     // App state
     if (!prepareAppState()) {
         LOG_WARN(_logger, "Error in prepareAppState");

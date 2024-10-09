@@ -86,6 +86,8 @@ class COMMONSERVER_EXPORT Db {
         bool sqlFail(const std::string &log, const std::string &error);
         bool checkConnect(const std::string &version);
 
+        bool prepareQuery(const std::string &queryId, const std::string &query);
+
         log4cplus::Logger _logger;
         std::shared_ptr<SqliteDb> _sqliteDb;
         std::filesystem::path _dbPath;

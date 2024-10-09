@@ -313,20 +313,8 @@ bool Db::init(const std::string &version) {
 #define SQLITE_IOERR_SHMMAP (SQLITE_IOERR | (21 << 8))
 #endif
 
-    int errId = 0;
-    std::string error;
-
-    ASSERT(queryCreate(CHECK_TABLE_EXISTENCE_REQUEST_ID));
-    if (!queryPrepare(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST, false, errId, error)) {
-        queryFree(CHECK_TABLE_EXISTENCE_REQUEST_ID);
-        return sqlFail(CHECK_TABLE_EXISTENCE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(CHECK_COLUMN_EXISTENCE_REQUEST_ID));
-    if (!queryPrepare(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST, false, errId, error)) {
-        queryFree(CHECK_COLUMN_EXISTENCE_REQUEST_ID);
-        return sqlFail(CHECK_COLUMN_EXISTENCE_REQUEST_ID, error);
-    }
+    if (!prepareQuery(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST)) return false;
+    if (!prepareQuery(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST)) return false;
 
     if (!version.empty()) {
         // Check if DB is already initialized
@@ -338,11 +326,7 @@ bool Db::init(const std::string &version) {
         if (dbExists) {
             // Check version
             LOG_DEBUG(_logger, "Check DB version");
-            ASSERT(queryCreate(SELECT_VERSION_REQUEST_ID));
-            if (!queryPrepare(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST, false, errId, error)) {
-                queryFree(SELECT_VERSION_REQUEST_ID);
-                return sqlFail(SELECT_VERSION_REQUEST_ID, error);
-            }
+            if (!prepareQuery(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST)) return false;
 
             bool found = false;
             if (!selectVersion(_fromVersion, found)) {
@@ -366,12 +350,7 @@ bool Db::init(const std::string &version) {
                 }
 
                 // Update version
-                ASSERT(queryCreate(UPDATE_VERSION_REQUEST_ID));
-                if (!queryPrepare(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST, false, errId, error)) {
-                    queryFree(UPDATE_VERSION_REQUEST_ID);
-                    return sqlFail(UPDATE_VERSION_REQUEST_ID, error);
-                }
-
+                if (!prepareQuery(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST)) return false;
                 if (!updateVersion(version, found)) {
                     LOG_WARN(_logger, "Error in Db::updateVersion");
                     return false;
@@ -386,11 +365,10 @@ bool Db::init(const std::string &version) {
         } else {
             // Create version table
             LOG_DEBUG(_logger, "Create version table");
-            ASSERT(queryCreate(CREATE_VERSION_TABLE_ID));
-            if (!queryPrepare(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE, false, errId, error)) {
-                queryFree(CREATE_VERSION_TABLE_ID);
-                return sqlFail(CREATE_VERSION_TABLE_ID, error);
-            }
+            if (!prepareQuery(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE)) return false;
+
+            int errId = -1;
+            std::string error;
             if (!queryExec(CREATE_VERSION_TABLE_ID, errId, error)) {
                 queryFree(CREATE_VERSION_TABLE_ID);
                 return sqlFail(CREATE_VERSION_TABLE_ID, error);
@@ -399,12 +377,7 @@ bool Db::init(const std::string &version) {
 
             // Insert version
             LOG_DEBUG(_logger, "Insert version " << version.c_str());
-            ASSERT(queryCreate(INSERT_VERSION_REQUEST_ID));
-            if (!queryPrepare(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST, false, errId, error)) {
-                queryFree(INSERT_VERSION_REQUEST_ID);
-                return sqlFail(INSERT_VERSION_REQUEST_ID, error);
-            }
-
+            if (!prepareQuery(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST)) return false;
             if (!insertVersion(version)) {
                 LOG_WARN(_logger, "Error in Db::insertVersion");
                 return false;
@@ -414,8 +387,7 @@ bool Db::init(const std::string &version) {
 
             // Create DB
             LOG_INFO(_logger, "Create " << dbType().c_str() << " DB");
-            bool retry;
-            if (!create(retry)) {
+            if (bool retry = false; !create(retry)) {
                 if (retry) {
                     LOG_WARN(_logger, "Error in Db::create - Retry");
                     _sqliteDb->close();
@@ -630,6 +602,21 @@ bool Db::checkConnect(const std::string &version) {
     queryFree(PRAGMA_FOREIGN_KEYS_ID);
     LOG_DEBUG(_logger, "sqlite3 foreign_keys=ON");
 
+    return true;
+}
+
+bool Db::prepareQuery(const std::string &queryId, const std::string &query) {
+    if (!queryCreate(queryId)) {
+        LOG_WARN(_logger, "SQL Error - Fail to create query " << queryId.c_str());
+        return false;
+    }
+
+    int errId = 0;
+    std::string error;
+    if (!queryPrepare(queryId, query, false, errId, error)) {
+        queryFree(queryId);
+        return sqlFail(queryId, error);
+    }
     return true;
 }
 
