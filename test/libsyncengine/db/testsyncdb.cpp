@@ -278,14 +278,15 @@ void TestSyncDb::testUpgradeTo3_6_5() {
 }
 
 void TestSyncDb::testInit3_6_4() {
-    LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_5");
-    createParmsDb(_testObj->dbPath(), localTmpDir.path());
+    SyncDbMock testDb(_testObj->dbPath(), "3.6.4");
+    const LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_5");
+    createParmsDb(testDb.dbPath(), localTmpDir.path());
     const auto syncFilesInfo = createSyncFiles(localTmpDir.path());
     const auto initialDbNodes = setupSyncDb3_6_5(syncFilesInfo.nodeIds);
 
-    _testObj->freeRequest("update_node_name_local"); // Request created within init() call.
-    _testObj->enablePrepare(false);
-    CPPUNIT_ASSERT(_testObj->init("3.6.4"));
+    testDb.freeRequest("update_node_name_local"); // Request created within init() call.
+    testDb.enablePrepare(false);
+    CPPUNIT_ASSERT(testDb.init("3.6.4"));
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
