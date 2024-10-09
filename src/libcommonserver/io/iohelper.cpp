@@ -286,7 +286,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
     itemType.ioError = stdError2ioError(ec);
 #ifdef _WIN32
-    const bool fsSupportsSymlinks = Utility::isNtfs(path.parent_path());
+    const bool fsSupportsSymlinks = Utility::isNtfs(path);
 #else
     const bool fsSupportsSymlinks =
             itemType.ioError != IoError::InvalidArgument; // If true, we assume that the file system in use does support symlinks.
