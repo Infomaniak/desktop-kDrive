@@ -93,16 +93,6 @@
     "jobPoolCapacityFactor "                                                                                               \
     "FROM parameters;"
 
-#define ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID "alter_parameters_add_max_allowed_cpu"
-#define ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST "ALTER TABLE parameters ADD COLUMN maxAllowedCpu INTEGER;"
-
-#define ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID "alter_parameters_add_upload_session_parallel_jobs"
-#define ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST \
-    "ALTER TABLE parameters ADD COLUMN uploadSessionParallelJobs INTEGER;"
-
-#define ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID "alter_parameters_add_job_pool_capacity_factor"
-#define ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST "ALTER TABLE parameters ADD COLUMN jobPoolCapacityFactor INTEGER;"
-
 #define UPDATE_PARAMETERS_JOB_REQUEST_ID "update_parameters_job"
 #define UPDATE_PARAMETERS_JOB_REQUEST "UPDATE parameters SET uploadSessionParallelJobs=?1, jobPoolCapacityFactor=?2;"
 
@@ -1004,21 +994,18 @@ bool ParmsDb::prepare() {
 bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVersion*/) {
     const std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
-    if (!addColumnIfMissing(tableName, columnName, ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID,
-                            ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST)) {
+    if (!addIntegerColumnIfMissing(tableName, columnName)) {
         return false;
     }
 
     bool updateParameters = false;
     columnName = "uploadSessionParallelJobs";
-    if (!addColumnIfMissing(tableName, columnName, ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID,
-                            ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST, &updateParameters)) {
+    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
         return false;
     }
 
     columnName = "jobPoolCapacityFactor";
-    if (!addColumnIfMissing(tableName, columnName, ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID,
-                            ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST, &updateParameters)) {
+    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
         return false;
     }
 

@@ -620,6 +620,32 @@ bool Db::prepareQuery(const std::string &queryId, const std::string &query) {
     return true;
 }
 
+bool Db::addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
+    const auto requestId = tableName + "add_column_" + columnName;
+    const auto request = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " INTEGER;";
+    return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
+}
+
+bool Db::addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
+                            const std::string &request, bool *columnAdded /*= nullptr*/) {
+    bool exist = false;
+    if (!columnExists(tableName, columnName, exist)) return false;
+    if (!exist) {
+        LOG_INFO(_logger, "Adding column " << columnName.c_str() << " into table " << tableName.c_str());
+        if (!prepareQuery(requestId, request)) return false;
+        int errId = 0;
+        std::string error;
+        if (!queryExec(requestId, errId, error)) {
+            queryFree(requestId);
+            return sqlFail(requestId, error);
+        }
+        queryFree(requestId);
+
+        if (columnAdded) *columnAdded = true;
+    }
+    return true;
+}
+
 bool Db::tableExists(const std::string &tableName, bool &exist) {
     const std::scoped_lock lock(_mutex);
 
@@ -635,6 +661,8 @@ bool Db::tableExists(const std::string &tableName, bool &exist) {
 }
 
 bool Db::columnExists(const std::string &tableName, const std::string &columnName, bool &exist) {
+    if (!tableExists(tableName, exist) || !exist) return false;
+
     const std::scoped_lock lock(_mutex);
 
     static const std::string id = CHECK_COLUMN_EXISTENCE_REQUEST_ID;
@@ -654,31 +682,6 @@ bool Db::columnExists(const std::string &tableName, const std::string &columnNam
     ASSERT(queryResetAndClearBindings(id));
 
     exist = count != 0;
-    return true;
-}
-
-bool Db::addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
-                            const std::string &request, bool *columnAdded /*= nullptr*/) {
-    bool exist = false;
-    if (!columnExists(tableName, columnName, exist)) return false;
-    if (!exist) {
-        LOG_INFO(_logger, "Adding column " << columnName.c_str() << " into table " << tableName.c_str());
-
-        int errId = 0;
-        std::string error;
-        ASSERT(queryCreate(requestId));
-        if (!queryPrepare(requestId, request, false, errId, error)) {
-            queryFree(requestId);
-            return sqlFail(requestId, error);
-        }
-        if (!queryExec(requestId, errId, error)) {
-            queryFree(requestId);
-            return sqlFail(requestId, error);
-        }
-        queryFree(requestId);
-
-        if (columnAdded) *columnAdded = true;
-    }
     return true;
 }
 

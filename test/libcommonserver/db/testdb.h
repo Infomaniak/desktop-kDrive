@@ -31,6 +31,7 @@ class TestDb : public CppUnit::TestFixture {
         CPPUNIT_TEST(testTableExist);
         CPPUNIT_TEST(testColumnExist);
         CPPUNIT_TEST(testAddColumnIfMissing);
+        CPPUNIT_TEST(testAddIntegerColumnIfMissing);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -42,6 +43,7 @@ class TestDb : public CppUnit::TestFixture {
         void testTableExist();
         void testColumnExist();
         void testAddColumnIfMissing();
+        void testAddIntegerColumnIfMissing();
 
     private:
         struct Test {
