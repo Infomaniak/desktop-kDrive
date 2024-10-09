@@ -604,7 +604,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
         return true;
     }
 #ifdef _WIN32 // TODO: Remove this block when migrating the release process to Visual Studio 2022.
-    // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a missleading InvalidArgument if the path is
+    // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a misleading InvalidArgument if the path is
     // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when compiling
     // with VS2022, see https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
     if (ioError == IoError::InvalidArgument && !Utility::isNtfs(path)) {
