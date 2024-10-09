@@ -3667,8 +3667,8 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
         QString error;
         _vfsMap[sync.dbId()] = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
         if (!_vfsMap[sync.dbId()]) {
-            LOG_WARN(_logger, "Error in Vfs::createVfsFromPlugin for mode " << sync.virtualFileMode() << " : "
-                                                                            << error.toStdString().c_str());
+            LOG_WARN(_logger, "Error in Vfs::createVfsFromPlugin for mode " << sync.virtualFileMode() << " : "                                                                     << error.toStdString().c_str());
+            _vfsMap.erase(sync.dbId());
             exitCause = ExitCause::UnableToCreateVfs;
             return ExitCode::SystemError;
         }
