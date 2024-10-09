@@ -545,7 +545,7 @@ bool SyncDb::createAndPrepareRequest(const char *requestId, const char *query) {
 bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVersion*/) {
     const std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
 
-    int errId;
+    int errId = -1;
     std::string error;
 
     if (dbFromVersionNumber == "3.4.0") {
@@ -572,7 +572,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVer
             queryFree(PRAGMA_WRITABLE_SCHEMA_ID);
             return sqlFail(PRAGMA_WRITABLE_SCHEMA_ID, error);
         }
-        bool hasData;
+        bool hasData = false;
         if (!queryNext(PRAGMA_WRITABLE_SCHEMA_ID, hasData)) {
             queryFree(PRAGMA_WRITABLE_SCHEMA_ID);
             return sqlFail(PRAGMA_WRITABLE_SCHEMA_ID, error);
@@ -2336,7 +2336,8 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
         const IntNodeId intNodeId = std::stoll(nodeIdLocal);
         namedNodeMap.try_emplace(intNodeId, NamedNode{dbNodeId, nameLocal});
     }
-    ASSERT(queryResetAndClearBindings(requestId));
+
+    queryFree(requestId);
 
     return true;
 }
@@ -2388,9 +2389,9 @@ bool SyncDb::normalizeRemoteNames() {
 }
 
 bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber) {
-    if (!CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.5")) return true;
+    if (!CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.7")) return true;
 
-    LOG_DEBUG(_logger, "Upgrade < 3.6.5 Sync DB");
+    LOG_DEBUG(_logger, "Upgrade < 3.6.7 Sync DB");
 
     normalizeRemoteNames();
 

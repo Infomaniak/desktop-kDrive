@@ -652,22 +652,18 @@ size_t CommonUtility::maxPathLength() {
             _maxPathWin = MAX_PATH_LENGTH_WIN_SHORT;
         }
     }
-    return _maxPathWin;
-
+    // For folders in short path mode, it is MAX_PATH - 12
+    // (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
+    // We decided to apply this rule for files too. We could else encounter issues.
+    // If the path length of a folder is > MAX_PATH - 12 and the path length of a file in this folder is between MAX_PATH - 12 and MAX_PATH.
+    // It would lead to a synced file in a folder that is not synced (hence excluded because of its path length).
+    return (_maxPathWin == MAX_PATH_LENGTH_WIN_LONG) ? MAX_PATH_LENGTH_WIN_LONG : MAX_PATH_LENGTH_WIN_SHORT - 12;
 #elif defined(__APPLE__)
     return MAX_PATH_LENGTH_MAC;
 #else
     return MAX_PATH_LENGTH_LINUX;
 #endif
 }
-
-#if defined(_WIN32)
-size_t CommonUtility::maxPathLengthFolder() {
-    // For folders in short path mode, it is MAX_PATH - 12
-    // (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
-    return (maxPathLength() == MAX_PATH_LENGTH_WIN_LONG) ? MAX_PATH_LENGTH_WIN_LONG : MAX_PATH_LENGTH_WIN_SHORT - 12;
-}
-#endif
 
 bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
     if (path1.compare(path2) == 0) {
@@ -729,19 +725,10 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
     extractIntFromStrVersion(targetVersion, targetTabVersion);
 
     if (currTabVersion.size() != targetTabVersion.size()) {
-        // Should not happen
-        return false;
+        return false; // Should not happen
     }
 
-    for (size_t i = 0; i < targetTabVersion.size(); i++) {
-        if (currTabVersion[i] > targetTabVersion[i]) {
-            return false;
-        } else if (currTabVersion[i] < targetTabVersion[i]) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::ranges::lexicographical_compare(currTabVersion, targetTabVersion);
 }
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
