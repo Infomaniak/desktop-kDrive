@@ -78,6 +78,10 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 }
 #endif
 
+#ifdef __APPLE__
+bool isLocked(const SyncPath &path);
+#endif
+
 log4cplus::Logger IoHelper::_logger;
 
 IoError IoHelper::stdError2ioError(const std::error_code &ec) noexcept {

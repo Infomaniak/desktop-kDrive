@@ -30,8 +30,6 @@
 
 namespace KDC {
 
-bool isLocked(const SyncPath &path);
-
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
     return (error == IoError::NoSuchFileOrDirectory) || (error == IoError::AttrNotFound) || (error == IoError::AccessDenied);
