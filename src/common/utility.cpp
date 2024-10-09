@@ -74,6 +74,7 @@ bool OldUtility::hasSystemLaunchOnStartup(const QString &appName, log4cplus::Log
 #else
     Q_UNUSED(appName)
     Q_UNUSED(logger)
+
     return false;
 #endif
 }
