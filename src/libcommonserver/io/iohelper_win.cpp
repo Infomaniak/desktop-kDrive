@@ -651,11 +651,11 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     if (ioError != IoError::Success) {
         return isExpectedError(ioError);
     }
-    const bool isLink = itemType.linkType == LinkType::Symlink || itemType.linkType == LinkType::Junction;
 
     std::error_code ec;
-    std::filesystem::perms perms = isLink ? std::filesystem::symlink_status(path, ec).permissions() // Don't follow link
-                                          : std::filesystem::status(path, ec).permissions();
+    std::filesystem::perms perms = itemType.linkType == LinkType::Symlink || itemType.linkType == LinkType::Junction
+                                           ? std::filesystem::symlink_status(path, ec).permissions() // Don't follow link
+                                           : std::filesystem::status(path, ec).permissions();
     ioError = stdError2ioError(ec);
     if (ioError != IoError::Success) {
         LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
