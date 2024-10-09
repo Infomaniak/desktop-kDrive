@@ -32,11 +32,11 @@ void TestIo::testGetRights() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
 
         { std::ofstream ofs(targetPath); }
-
         std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
+
         std::filesystem::create_symlink(targetPath, path, ec);
         CPPUNIT_ASSERT(ec.value() == 0);
-        CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec));
 
         bool readPermission = false;
         bool writePermission = false;
@@ -129,7 +129,7 @@ void TestIo::testGetRights() {
         { std::ofstream ofs(targetPath); }
 
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec));
+        CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         IoError aliasError;
         CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
@@ -181,7 +181,7 @@ void TestIo::testGetRights() {
 
         std::error_code ec;
         CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
-        CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec));
+        CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         IoError aliasError;
         CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
@@ -233,7 +233,7 @@ void TestIo::testGetRights() {
 
         std::error_code ec;
         CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
-        CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec));
+        CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
         IoError junctionError;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
