@@ -653,8 +653,8 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     }
 
     std::error_code ec;
-    std::filesystem::perms perms = itemType.linkType == LinkType::Symlink || itemType.linkType == LinkType::Junction
-                                           ? std::filesystem::symlink_status(path, ec).permissions() // Don't follow link
+    std::filesystem::perms perms = isLinkFollowedByDefault(itemType.linkType)
+                                           ? std::filesystem::symlink_status(path, ec).permissions()
                                            : std::filesystem::status(path, ec).permissions();
     ioError = stdError2ioError(ec);
     if (ioError != IoError::Success) {

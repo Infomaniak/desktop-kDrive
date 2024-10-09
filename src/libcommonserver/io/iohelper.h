@@ -386,6 +386,10 @@ struct IoHelper {
                    (linkType == LinkType::Junction && OldUtility::isWindows());
         }
 
+        static inline bool isLinkFollowedByDefault(LinkType linkType) {
+            return linkType == LinkType::Symlink || linkType == LinkType::Junction;
+        }
+
         // The most common and expected errors during IO operations
         static bool isExpectedError(IoError ioError) noexcept;
 

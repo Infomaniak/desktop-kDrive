@@ -191,7 +191,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         std::error_code ec;
         CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
-        IoError junctionError;
+        IoError junctionError{IoError::Unknown};
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
@@ -209,7 +209,7 @@ void TestIo::testGetFileSizeSimpleCases() {
         const SyncPath targetPath = temporaryDirectory.path() / "dummy"; // Non existing directory
         const SyncPath path = temporaryDirectory.path() / "dangling_junction";
 
-        IoError junctionError;
+        IoError junctionError{IoError::Unknown};
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 

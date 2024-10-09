@@ -235,7 +235,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
         CPPUNIT_ASSERT(std::filesystem::exists(targetPath, ec) && ec.value() == 0);
 
-        IoError junctionError;
+        IoError junctionError{IoError::Unknown};
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
@@ -259,7 +259,7 @@ void TestIo::testGetRights() {
         std::error_code ec;
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
-        IoError junctionError;
+        IoError junctionError{IoError::Unknown};
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, junctionError));
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 

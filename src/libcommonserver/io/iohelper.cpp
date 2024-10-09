@@ -285,6 +285,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     read = false;
     write = false;
     exec = false;
+    ioError = IoError::Success;
 
     ItemType itemType;
     const bool success = getItemType(path, itemType);
@@ -296,11 +297,11 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     if (ioError != IoError::Success) {
         return isExpectedError(ioError);
     }
-    const bool isSymlink = itemType.linkType == LinkType::Symlink;
 
     std::error_code ec;
-    std::filesystem::perms perms =
-            isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
+    std::filesystem::perms perms = isLinkFollowedByDefault(itemType.linkType)
+                                           ? std::filesystem::symlink_status(path, ec).permissions()
+                                           : std::filesystem::status(path, ec).permissions();
     if (ec) {
         const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
         ioError = stdError2ioError(ec);
@@ -474,26 +475,29 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
         return false;
     }
 
-    if (itemType.linkType == LinkType::Symlink) {
-        // The size of a symlink file is the target path length
-        size = itemType.targetPath.native().length();
-    } else if (itemType.linkType == LinkType::Junction) {
-        // The size of a junction is 0 (consistent with IoHelper::getFileStat)
-        size = 0;
-    } else {
-        if (itemType.nodeType != NodeType::File) {
-            LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
-            return false;
-        }
+    switch (itemType.linkType) {
+        case LinkType::Symlink:
+            // The size of a symlink file is the target path length
+            size = itemType.targetPath.native().length();
+            break;
+        case LinkType::Junction:
+            // The size of a junction is 0 (consistent with IoHelper::getFileStat)
+            size = 0;
+            break;
+        default:
+            if (itemType.nodeType != NodeType::File) {
+                LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
+                return false;
+            }
 
-        std::error_code ec;
-        size = _fileSize(path, ec); // The std::filesystem implementation reports the correct size for a MacOSX alias.
-        ioError = stdError2ioError(ec);
+            std::error_code ec;
+            size = _fileSize(path, ec); // The std::filesystem implementation reports the correct size for a MacOSX alias.
+            ioError = stdError2ioError(ec);
 
-        if (ioError != IoError::Success) {
-            LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
-            return isExpectedError(ioError);
-        }
+            if (ioError != IoError::Success) {
+                LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+                return isExpectedError(ioError);
+            }
     }
 
     return true;

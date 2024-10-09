@@ -387,7 +387,7 @@ void TestIo::testGetFileStat() {
         std::error_code ec;
         CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec) && ec.value() == 0);
 
-        IoError junctionError;
+        IoError junctionError{IoError::Unknown};
         IoHelper::createJunctionFromPath(targetPath, path, junctionError);
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
@@ -409,7 +409,7 @@ void TestIo::testGetFileStat() {
         const SyncPath targetPath = _localTestDirPath / "dummy"; // Non existing directory
         const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
-        IoError junctionError;
+        IoError junctionError{IoError::Unknown};
         IoHelper::createJunctionFromPath(targetPath, path, junctionError);
         CPPUNIT_ASSERT(junctionError == IoError::Success);
 
