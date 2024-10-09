@@ -18,36 +18,28 @@
 
 #pragma once
 
-#include "testincludes.h"
-
-#include <log4cplus/logger.h>
-#include <QApplication>
-#include "server/updater/kdcupdater.h"
-#ifdef __APPLE__
-#include "../../../src/server/updater_v2/sparkleupdater.h"
-#endif
-
-using namespace CppUnit;
+#include "abstractupdater.h"
 
 namespace KDC {
-class TestUpdater : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestUpdater);
-        CPPUNIT_TEST(testUpdateInfoVersionParseString);
-        CPPUNIT_TEST(testUpdateSucceeded);
-        CPPUNIT_TEST_SUITE_END();
 
+class WindowsUpdater : public AbstractUpdater {
     public:
-        void setUp(void) final;
-        void testUpdateInfoVersionParseString(void);
-        void testUpdateSucceeded(void);
+        void onUpdateFound() override;
+        void startInstaller() override;
 
-    protected:
-        log4cplus::Logger _logger;
-#ifdef __APPLE__
-        SparkleUpdater* _updater;
-#else
-        KDCUpdater* _updater;
-#endif
+    private:
+        /**
+         * @brief Start the synchronous download of the new version installer.
+         * @return
+         */
+        virtual void downloadUpdate() noexcept;
+
+        /**
+         * @brief Callback to notify that the download is finished.
+         */
+        void downloadFinished(UniqueId jobId);
+
+        SyncPath installerPath();
 };
 
 } // namespace KDC

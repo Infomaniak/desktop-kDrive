@@ -141,8 +141,12 @@ void VersionWidget::refresh(const UpdateStateV2 state /*= UpdateStateV2::UpToDat
             showReleaseNote = true;
             break;
         }
-        case UpdateStateV2::Error: {
-            statusString = tr("An error occured.");
+        case UpdateStateV2::CheckError: {
+            statusString = tr("Could not check for new updates.");
+            break;
+        }
+        case UpdateStateV2::DownloadError: {
+            statusString = tr("Could not download update.");
             break;
         }
             // case UpdateOnlyAvailableThroughSystem:

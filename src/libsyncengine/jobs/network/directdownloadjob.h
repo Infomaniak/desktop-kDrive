@@ -18,36 +18,24 @@
 
 #pragma once
 
-#include "testincludes.h"
-
-#include <log4cplus/logger.h>
-#include <QApplication>
-#include "server/updater/kdcupdater.h"
-#ifdef __APPLE__
-#include "../../../src/server/updater_v2/sparkleupdater.h"
-#endif
-
-using namespace CppUnit;
+#include "utility/types.h"
+#include "abstractnetworkjob.h"
 
 namespace KDC {
-class TestUpdater : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestUpdater);
-        CPPUNIT_TEST(testUpdateInfoVersionParseString);
-        CPPUNIT_TEST(testUpdateSucceeded);
-        CPPUNIT_TEST_SUITE_END();
 
+class DirectDownloadJob final : public AbstractNetworkJob {
     public:
-        void setUp(void) final;
-        void testUpdateInfoVersionParseString(void);
-        void testUpdateSucceeded(void);
+        DirectDownloadJob(const SyncPath &destinationFile, const std::string &url);
 
     protected:
-        log4cplus::Logger _logger;
-#ifdef __APPLE__
-        SparkleUpdater* _updater;
-#else
-        KDCUpdater* _updater;
-#endif
+        std::string getUrl() override { return _url; }
+
+    private:
+        bool handleResponse(std::istream &inputStream) override;
+        bool handleError(std::istream &is, const Poco::URI &uri) override;
+
+        const SyncPath _destinationFile;
+        const std::string _url;
 };
 
 } // namespace KDC

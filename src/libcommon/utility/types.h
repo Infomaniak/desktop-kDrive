@@ -419,7 +419,7 @@ std::string toString(LogUploadState e);
 enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
 std::string toString(UpdateState e);
 
-enum class UpdateStateV2 { UpToDate, Checking, Available, Downloading, Ready, Error };
+enum class UpdateStateV2 { UpToDate, Checking, Available, Downloading, Ready, CheckError, DownloadError };
 std::string toString(UpdateStateV2 e);
 
 enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };

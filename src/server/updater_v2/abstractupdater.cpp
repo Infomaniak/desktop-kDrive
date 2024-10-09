@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -41,7 +40,7 @@ void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateStat
 
 void AbstractUpdater::onAppVersionReceived() {
     if (!_updateChecker->versionInfo().isValid()) {
-        setState(UpdateStateV2::Error);
+        setState(UpdateStateV2::CheckError);
         LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
     }
 

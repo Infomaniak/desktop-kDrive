@@ -94,16 +94,6 @@ void TestUpdater::testUpdateInfoVersionParseString(void) {
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.downloadUrl().toStdString());
 }
 
-void TestUpdater::testIsKDCorSparkleUpdater(void) {
-#ifdef __APPLE__
-    // CPPUNIT_ASSERT(_updater->isSparkleUpdater());
-    // CPPUNIT_ASSERT(!_updater->isKDCUpdater());
-#else
-    CPPUNIT_ASSERT(!_updater->isSparkleUpdater());
-    CPPUNIT_ASSERT(_updater->isKDCUpdater());
-#endif
-}
-
 void TestUpdater::testUpdateSucceeded(void) {
 #ifdef __APPLE__
     return; // Not implemented

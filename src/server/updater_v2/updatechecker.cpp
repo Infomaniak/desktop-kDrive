@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -53,7 +52,11 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
 
     auto job = JobManager::instance()->getJob(jobId);
     const auto getAppVersionJobPtr = std::dynamic_pointer_cast<GetAppVersionJob>(job);
-    assert(getAppVersionJobPtr);
+    if (!getAppVersionJobPtr) {
+        LOG_ERROR(Log::instance()->getLogger(), "Could not cast job pointer.");
+        _callback();
+        return;
+    }
 
     std::string errorCode;
     std::string errorDescr;
@@ -62,14 +65,13 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         ss << errorCode.c_str() << " - " << errorDescr;
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
-        return;
-    }
-
-    _versionInfo = getAppVersionJobPtr->getVersionInfo(_channel);
-    if (!_versionInfo.isValid()) {
-        std::string error = "Invalid version info!";
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
-        LOG_ERROR(Log::instance()->getLogger(), error.c_str());
+    } else {
+        _versionInfo = getAppVersionJobPtr->getVersionInfo(_channel);
+        if (!_versionInfo.isValid()) {
+            std::string error = "Invalid version info!";
+            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
+            LOG_ERROR(Log::instance()->getLogger(), error.c_str());
+        }
     }
 
     _callback();

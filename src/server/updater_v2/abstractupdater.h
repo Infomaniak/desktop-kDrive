@@ -41,18 +41,10 @@ class AbstractUpdater {
         /**
          * @brief Updates distribution channel and checks if an update is available.
          * @param channel New distribution channel selected by the user.
-         * @param id Optionnal. ID of the created asynchronous job. Useful in tests.
+         * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if no errors.
          */
         ExitCode checkUpdateAvailable(DistributionChannel channel, UniqueId *id = nullptr);
-
-        /**
-         * @brief Start the download of the new version installer.
-         * Not used on macOS since the update in manage by Sparkle.
-         * Not used on Linux since we only send a notification to the user.
-         * @return true if no errors.
-         */
-        [[nodiscard]] virtual bool downloadUpdate() noexcept { return false; }
 
         /**
          * @brief Start the installation.

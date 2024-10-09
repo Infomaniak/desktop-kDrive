@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -20,6 +19,7 @@
 #include "updatemanager.h"
 
 #include "sparkleupdater.h"
+#include "windowsupdater.h"
 #include "db/parmsdb.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
@@ -47,7 +47,7 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
     // At startup, do a check in any case and setup distribution channel.
-    QTimer::singleShot(3000, this, [=]() { setDistributionChannel(readDistributionChannelFromDb()); });
+    QTimer::singleShot(3000, this, [this]() { setDistributionChannel(readDistributionChannelFromDb()); });
 }
 
 void UpdateManager::startInstaller() const {
@@ -79,8 +79,9 @@ void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) const {
             _updater->startInstaller();
             break;
         }
-        case UpdateStateV2::Error: {
-            // An error occured
+        case UpdateStateV2::DownloadError:
+        case UpdateStateV2::CheckError: {
+            // An error occurred
             break;
         }
     }
@@ -90,7 +91,7 @@ void UpdateManager::createUpdater() {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
     _updater = std::make_unique<SparkleUpdater>();
 #elif defined(Q_OS_WIN32)
-    _updater = std::make_unique<to be implemented>();
+    _updater = std::make_unique<WindowsUpdater>();
 #else
     // the best we can do is notify about updates
     _updater = std::make_unique<to be implemented>();

@@ -743,8 +743,10 @@ std::string toString(const UpdateStateV2 e) {
             return "Downloading";
         case UpdateStateV2::Ready:
             return "Ready";
-        case UpdateStateV2::Error:
-            return "Error";
+        case UpdateStateV2::DownloadError:
+            return "DownloadError";
+        case UpdateStateV2::CheckError:
+            return "CheckError";
         default:
             return noConversionStr;
     }

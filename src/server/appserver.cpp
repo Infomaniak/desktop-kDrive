@@ -286,7 +286,8 @@ AppServer::AppServer(int &argc, char **argv) :
 
     connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
 #ifdef Q_OS_WIN
-    connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
+    // TODO
+    // connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
 #endif
 
     // Init socket api
