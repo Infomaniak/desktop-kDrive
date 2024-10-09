@@ -95,6 +95,7 @@ jobs:
             --define sonar.pullrequest.key="${{ github.event.number }}"
             --define sonar.pullrequest.branch="${{ github.base_ref }}"
             --define sonar.pullrequest.base="${{ github.head_ref }}"
+            --define sonar.newCode.referenceBranch="${{ github.head_ref }}"
 
 
       - name: Upload tests logs artifacts
