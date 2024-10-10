@@ -129,8 +129,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool clientCrashedRecently(int second = 60 /*Allow one client self restart per minute (default)*/);
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
-        ExitCode updateUserInfo(User &user);
-        ExitCode updateAllUsersInfo();
+        ExitInfo updateUserInfo(User &user);
+        ExitInfo updateAllUsersInfo();
         ExitCode initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList = std::unordered_set<NodeId>(),
                              const std::unordered_set<NodeId> &undecidedList = std::unordered_set<NodeId>(),
                              const std::unordered_set<NodeId> &whiteList = std::unordered_set<NodeId>(), bool start = true,
