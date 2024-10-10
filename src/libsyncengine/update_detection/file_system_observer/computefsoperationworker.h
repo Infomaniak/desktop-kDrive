@@ -45,6 +45,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
         virtual void execute() override;
 
     private:
+        ExitInfo init();
+
         using NodeIdSet = std::unordered_set<NodeId>;
         using DbNodeIdSet = std::unordered_set<DbNodeId>;
         // Detect changes based on the database records: delete, move and edit operations
