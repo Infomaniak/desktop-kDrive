@@ -3668,13 +3668,14 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
         vfsSetupParams._executeCommand = [this](const char *command) { emit socketApiExecuteCommandDirect(QString(command)); };
         vfsSetupParams._logger = _logger;
         QString error;
-        _vfsMap[sync.dbId()] = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
-        if (!_vfsMap[sync.dbId()]) {
-            LOG_WARN(_logger, "Error in Vfs::createVfsFromPlugin for mode " << sync.virtualFileMode() << " : "                                                                     << error.toStdString().c_str());
-            _vfsMap.erase(sync.dbId());
+        std::shared_ptr vfsPtr = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
+        if (!vfsPtr) {
+            LOG_WARN(_logger, "Error in Vfs::createVfsFromPlugin for mode " << sync.virtualFileMode() << " : "
+                                                                            << error.toStdString().c_str());
             exitCause = ExitCause::UnableToCreateVfs;
             return ExitCode::SystemError;
         }
+        _vfsMap[sync.dbId()] = vfsPtr;
         _vfsMap[sync.dbId()]->setExtendedLog(ParametersCache::isExtendedLogEnabled());
 
         // Set callbacks
@@ -3744,7 +3745,6 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
         return ExitCode::DataError;
     }
 #endif
-
     return ExitCode::Ok;
 }
 
