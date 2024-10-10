@@ -242,7 +242,7 @@ bool SparkleUpdater::startSparkleUpdater() {
     if (!success) {
         if (error) {
             LOG_DEBUG(KDC::Log::instance()->getLogger(), "Error in startUpdater " << error.description.UTF8String);
-            setState(UpdateStateV2::Error);
+            setState(UpdateStateV2::UpdateError);
         }
         return false;
     }

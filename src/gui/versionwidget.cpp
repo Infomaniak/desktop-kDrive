@@ -146,10 +146,16 @@ void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) co
             statusString = tr("Could not check for new updates.");
             break;
         }
+        case UpdateStateV2::UpdateError: {
+            statusString = tr("An error occured during update.");
+            break;
+        }
         case UpdateStateV2::DownloadError: {
             statusString = tr("Could not download update.");
             break;
         }
+        case UpdateStateV2::Unknown:
+            break;
             // case UpdateOnlyAvailableThroughSystem:
             //     return tr("An update is available: %1.<br>Please download it from <a style=\"%2\" href=\"%3\">here</a>.")
             //             .arg(updateVersion, CommonUtility::linkStyle, APPLICATION_DOWNLOAD_URL);
