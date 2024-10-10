@@ -87,13 +87,13 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, eca);
 
-    ei = {ExitCode::NetworkError, ExitCause::ConnectionRefused};
+    ei = {ExitCode::NetworkError, ExitCause::DbAccessError};
     ec = ei;
     eca = ei;
     CPPUNIT_ASSERT_EQUAL(ExitCode::NetworkError, ei.code());
     CPPUNIT_ASSERT_EQUAL(ExitCode::NetworkError, ec);
-    CPPUNIT_ASSERT_EQUAL(ExitCause::ConnectionRefused, ei.cause());
-    CPPUNIT_ASSERT_EQUAL(ExitCause::ConnectionRefused, eca);
+    CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, ei.cause());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, eca);
 
     ec = ExitCode::BackError;
     ei = ec;
