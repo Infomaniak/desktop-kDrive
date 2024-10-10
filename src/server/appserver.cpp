@@ -306,13 +306,12 @@ AppServer::AppServer(int &argc, char **argv) :
     connect(CommServer::instance().get(), &CommServer::restartClient, this, &AppServer::onRestartClientReceived);
 
     // Update users/accounts/drives info
-    ExitCode exitCode = updateAllUsersInfo();
-    if (exitCode == ExitCode::InvalidToken) {
+    if (ExitInfo exitInfo = updateAllUsersInfo(); exitInfo.code() == ExitCode::InvalidToken) {
         // The user will be asked to enter its credentials later
-    } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo : " << exitCode);
-        addError(Error(errId(), exitCode, ExitCause::Unknown));
-        if (exitCode != ExitCode::NetworkError && exitCode != ExitCode::UpdateRequired) {
+    } else if (exitInfo.code() != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in updateAllUsersInfo : " << exitInfo.code());
+        addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
+        if (exitInfo.code() != ExitCode::NetworkError && exitInfo.code() != ExitCode::UpdateRequired) {
             throw std::runtime_error("Failed to load user data.");
             return;
         }
@@ -2628,24 +2627,24 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
     return exitCode;
 }
 
-ExitCode AppServer::updateUserInfo(User &user) {
+ExitInfo AppServer::updateUserInfo(User &user) {
     if (user.keychainKey().empty()) {
         return ExitCode::Ok;
     }
 
     bool found = false;
     bool updated = false;
-    ExitCode exitCode = ServerRequests::loadUserInfo(user, updated);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::loadUserInfo : " << exitCode);
-        if (exitCode == ExitCode::InvalidToken) {
+    ExitInfo exitInfo = ServerRequests::loadUserInfo(user, updated);
+    if (exitInfo.code() != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in Requests::loadUserInfo : " << exitInfo.code() << " " << exitInfo.cause());
+        if (exitInfo.code() == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
             UserInfo userInfo;
             ServerRequests::userToUserInfo(user, userInfo);
             sendUserUpdated(userInfo);
         }
 
-        return exitCode;
+        return exitInfo;
     }
 
     if (updated) {
@@ -2682,7 +2681,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
         for (auto &drive: drives) {
             bool quotaUpdated = false;
             bool accountUpdated = false;
-            exitCode = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
+            ExitCode exitCode = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::loadDriveInfo : " << exitCode);
                 return exitCode;
@@ -3424,7 +3423,7 @@ bool AppServer::startClient() {
     return true;
 }
 
-ExitCode AppServer::updateAllUsersInfo() {
+ExitInfo AppServer::updateAllUsersInfo() {
     std::vector<User> users;
     if (!ParmsDb::instance()->selectAllUsers(users)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
@@ -3437,10 +3436,10 @@ ExitCode AppServer::updateAllUsersInfo() {
             continue;
         }
 
-        ExitCode exitCode = updateUserInfo(user);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in updateUserInfo : " << exitCode);
-            return exitCode;
+        ExitInfo exitInfo = updateUserInfo(user);
+        if (exitInfo.code() != ExitCode::Ok) {
+            LOG_WARN(_logger, "Error in updateUserInfo : " << exitInfo.code() << " " << exitInfo.cause());
+            return exitInfo;
         }
     }
 

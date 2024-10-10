@@ -1900,7 +1900,7 @@ ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
             } else if (user.avatarUrl() != avatarUrl) {
                 // get avatarData
                 user.setAvatarUrl(avatarUrl);
-                exitCode = loadUserAvatar(user);
+                ExitCode exitCode = loadUserAvatar(user);
                 if (exitCode != ExitCode::Ok) {
                     return exitCode;
                 }
