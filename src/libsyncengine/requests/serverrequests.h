@@ -112,7 +112,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         // Server requests
         static ExitCode loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
-        static ExitCode loadUserInfo(User &user, bool &updated);
+        static ExitInfo loadUserInfo(User &user, bool &updated);
         static ExitCode loadUserAvatar(User &user);
         static ExitCode getThumbnail(int driveDbId, NodeId nodeId, int width, std::string &thumbnail);
 

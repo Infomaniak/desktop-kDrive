@@ -1834,7 +1834,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
+ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
     updated = false;
 
     // Get user data
@@ -1851,12 +1851,12 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
         return ExitCode::DataError;
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        if (exitCode == ExitCode::InvalidToken) {
+    ExitInfo exitInfo = job->runSynchronously();
+    if (exitInfo.code() != ExitCode::Ok) {
+        if (exitInfo.code() == ExitCode::InvalidToken) {
             user.setKeychainKey(""); // Invalid keychain key
         }
-        return exitCode;
+        return exitInfo;
     }
 
     Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
