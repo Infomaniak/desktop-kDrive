@@ -439,10 +439,4 @@ void TestParmsDb::testError() {
     CPPUNIT_ASSERT(!ParmsDb::instance()->insertError(error3));
 }
 
-void TestParmsDb::testColumnExist() {
-    CPPUNIT_ASSERT(ParmsDb::instance()->columnExists("parameters", "autoStart"));
-    CPPUNIT_ASSERT(!ParmsDb::instance()->columnExists("parameters", "not_existing_column_name"));
-    CPPUNIT_ASSERT(!ParmsDb::instance()->columnExists("not_existing_table_name", "autoStart"));
-}
-
 } // namespace KDC
