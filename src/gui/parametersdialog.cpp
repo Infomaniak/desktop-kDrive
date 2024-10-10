@@ -327,7 +327,7 @@ void ParametersDialog::reset() {
     _noDrivePagewidget->setVisible(true);
 }
 
-QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const {
+QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const { 
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
     // TODO: USELESS CODE : this switch should be simplified !!!!
     switch (exitCode) {
@@ -341,6 +341,10 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                 return tr("It seems that your network connection is configured with too low a timeout for the application to "
                           "work correctly (error %1).<br>"
                           "Please check your network configuration.")
+                        .arg(err);
+            } else if (exitCause == ExitCause::ConnectionRefused) {
+                return tr("Cannot connect to kDrive server (error %1).<br>"
+                          "Please check your Proxy settings in application preferences and your firewall.")
                         .arg(err);
             } else {
                 return tr("Cannot connect to kDrive server (error %1).<br>"
@@ -524,7 +528,12 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
                 return tr("The network connections have been dropped by the kernel (error %1).<br>"
                           "Please empty the history and if the error persists, contact our support team.")
                         .arg(err);
-            } else {
+            } else if (exitCause == ExitCause::ConnectionRefused) {
+                return tr("Cannot connect to kDrive server (error %1).<br>"
+                          "Please check your Proxy settings in application preferences and your firewall.")
+                        .arg(err);
+            }
+            else {
                 return tr("Cannot connect to kDrive server (error %1).<br>"
                           "Attempting reconnection. Please check your Internet connection and your firewall.")
                         .arg(err);
