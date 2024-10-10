@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -52,7 +51,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     QBoxLayout *versionBox = versionBloc->addLayout(QBoxLayout::Direction::LeftToRight);
     const auto versionVBox = new QVBoxLayout();
     versionVBox->setContentsMargins(0, 0, 0, 0);
-    versionVBox->setSpacing(0);
+    versionVBox->setSpacing(1);
     versionBox->addLayout(versionVBox);
     versionBox->setStretchFactor(versionVBox, 1);
 
@@ -102,7 +101,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdatButtonClicked);
 }
 
-void VersionWidget::refresh(const UpdateStateV2 state /*= UpdateStateV2::UpToDate*/) const {
+void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) const {
     // Re-translate
     const QString releaseNoteLinkText =
             tr(R"(<a style="%1" href="%2">Show release note</a>)").arg(CommonUtility::linkStyle, releaseNoteLink);
@@ -112,6 +111,9 @@ void VersionWidget::refresh(const UpdateStateV2 state /*= UpdateStateV2::UpToDat
     _updateButton->setText(tr("UPDATE"));
 
     // Refresh update state
+    if (state == UpdateStateV2::Unknown) {
+        GuiRequests::updateState(state);
+    }
     VersionInfo versionInfo;
     GuiRequests::versionInfo(versionInfo);
     const QString versionStr = versionInfo.beautifulVersion().c_str();
@@ -176,7 +178,6 @@ void VersionWidget::onChannelButtonClicked() const {
 
     GuiRequests::changeDistributionChannel(channel);
     refresh();
-    // TODO : add auto refresh (with timer or signal from server???)
 }
 
 void VersionWidget::onLinkActivated(const QString &link) {

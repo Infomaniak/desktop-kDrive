@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -42,7 +41,7 @@ class VersionWidget final : public QWidget {
 
     public:
         explicit VersionWidget(QWidget *parent = nullptr);
-        void refresh(UpdateStateV2 state = UpdateStateV2::UpToDate) const;
+        void refresh(UpdateStateV2 state = UpdateStateV2::Unknown) const;
 
     public slots:
         void onUpdateStateChanged(UpdateStateV2 state) const;
