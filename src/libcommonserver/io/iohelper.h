@@ -111,10 +111,11 @@ struct IoHelper {
          \param path is a file system path to a directory entry (we also call it an item).
          \param filestat is set with the file status of the item indicated by path, if the item exists and the status could be
          successfully retrieved, nullptr otherwise.
+         !!! For a symlink, filestat.nodeType is set with the type of the target !!!
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept;
+        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
 
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
@@ -383,6 +384,10 @@ struct IoHelper {
             return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
                    (linkType == LinkType::FinderAlias && OldUtility::isMac()) ||
                    (linkType == LinkType::Junction && OldUtility::isWindows());
+        }
+
+        static inline bool isLinkFollowedByDefault(LinkType linkType) {
+            return linkType == LinkType::Symlink || linkType == LinkType::Junction;
         }
 
         // The most common and expected errors during IO operations
