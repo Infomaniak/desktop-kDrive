@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -19,124 +18,47 @@
 
 #include "abstractupdater.h"
 
-#include "db/parmsdb.h"
-#include "../../libsyncengine/jobs/network/API_v2/downloadjob.h"
-#include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
-#include "utility/utility.h"
 
 namespace KDC {
 
-#define ONE_HOUR 3600000
-
-AbstractUpdater *AbstractUpdater::_instance = nullptr;
-
-AbstractUpdater *AbstractUpdater::instance() {
-    if (!_instance) {
-        _instance = new AbstractUpdater();
-    }
-    return _instance;
+AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_unique<UpdateChecker>()) {
+    const std::function callback = [this] { onAppVersionReceived(); };
+    _updateChecker->setCallback(callback);
 }
 
-ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
-    AppStateValue appStateValue = "";
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
-        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
-        return ExitCode::DbError;
-    }
-
-    const auto &appUid = std::get<std::string>(appStateValue);
-    if (!_getAppVersionJob) {
-        _getAppVersionJob = new GetAppVersionJob(CommonUtility::platform(), appUid);
-    }
-    _getAppVersionJob->runSynchronously();
-
-    std::string errorCode;
-    std::string errorDescr;
-    if (_getAppVersionJob->hasErrorApi(&errorCode, &errorDescr)) {
-        std::stringstream ss;
-        ss << errorCode.c_str() << " - " << errorDescr;
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
-        LOG_ERROR(_logger, ss.str().c_str());
-        return ExitCode::UpdateFailed;
-    }
-    // TODO : for now we support only Prod updates
-    _versionInfo = _getAppVersionJob->getVersionInfo(DistributionChannel::Prod);
-    if (!_versionInfo.isValid()) {
-        std::string error = "Invalid version info!";
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
-        LOG_ERROR(_logger, error.c_str());
-        return ExitCode::UpdateFailed;
-    }
-
-    available = CommonUtility::isVersionLower(CommonUtility::currentVersion(), _versionInfo.fullVersion());
-    return ExitCode::Ok;
+ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel channel, UniqueId* id /*= nullptr*/) {
+    setState(UpdateStateV2::Checking);
+    return _updateChecker->checkUpdateAvailable(channel, id);
 }
 
-bool AbstractUpdater::isUpdateDownloaded() {
-    return true;
+void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateStateV2)>& stateChangeCallback) {
+    LOG_INFO(Log::instance()->getLogger(), "Set state change callback");
+    _stateChangeCallback = stateChangeCallback;
 }
 
-ExitCode AbstractUpdater::downloadUpdate() noexcept {
-    std::error_code ec;
-    if (std::filesystem::exists(_targetFile, ec)) {
-        return ExitCode::Ok;
+void AbstractUpdater::onAppVersionReceived() {
+    if (!_updateChecker->versionInfo().isValid()) {
+        setState(UpdateStateV2::CheckError);
+        LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
     }
 
-    const SyncPath targetPath(CommonUtility::getAppSupportDir());
-    const std::string::size_type pos = _versionInfo.downloadUrl.find_last_of('/');
-    _targetFile = targetPath / _versionInfo.downloadUrl.substr(pos + 1);
-
-    // TODO : start a simple download job
-
-    return ExitCode::Ok;
-}
-
-AbstractUpdater::AbstractUpdater() {
-    _thread = std::make_unique<std::thread>(&AbstractUpdater::run, _instance);
-}
-
-AbstractUpdater::~AbstractUpdater() {
-    if (_getAppVersionJob) {
-        delete _getAppVersionJob;
-        _getAppVersionJob = nullptr;
+    const bool available =
+            CommonUtility::isVersionLower(CommonUtility::currentVersion(), _updateChecker->versionInfo().fullVersion());
+    setState(available ? UpdateStateV2::Available : UpdateStateV2::UpToDate);
+    if (available) {
+        LOG_INFO(Log::instance()->getLogger(), "New app version available");
+    } else {
+        LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
     }
 }
 
-void AbstractUpdater::run() noexcept {
-    switch (_state) {
-        case UpdateStateV2::UpToDate: {
-            bool updateAvailable = false;
-            if (const ExitCode exitCode = checkUpdateAvailable(updateAvailable); exitCode != ExitCode::Ok) {
-                // TODO : how do we give feedback to main loop about update errors?
-                _state = UpdateStateV2::Error;
-                break;
-            }
-            if (updateAvailable) {
-                _state = UpdateStateV2::Available;
-            } else {
-                Utility::msleep(ONE_HOUR); // Sleep for 1h
-            }
-            break;
-        }
-        case UpdateStateV2::Available: {
-            if (isUpdateDownloaded()) {
-                _state = UpdateStateV2::Ready;
-                break;
-            }
-            if (const ExitCode exitCode = downloadUpdate(); exitCode != ExitCode::Ok) {
-                // TODO : how do we give feedback to main loop about update errors?
-                _state = UpdateStateV2::Error;
-                break;
-            }
-            break;
-        }
-        case UpdateStateV2::Downloading:
-        case UpdateStateV2::Ready:
-        case UpdateStateV2::Error:
-        default:
-            break;
+void AbstractUpdater::setState(const UpdateStateV2 newState) {
+    if (_state != newState) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Update state changed to: " << newState);
+        _state = newState;
+        if (_stateChangeCallback) _stateChangeCallback(_state);
     }
 }
 

@@ -31,8 +31,7 @@ std::unordered_map<UniqueId, std::shared_ptr<ComputeChecksumJob>> ContentChecksu
 
 ContentChecksumWorker::ContentChecksumWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                              const std::string &shortName, std::shared_ptr<Snapshot> localSnapshot) :
-    ISyncWorker(syncPal, name, shortName),
-    _localSnapshot(localSnapshot), _threadPool(1, 5) // Min 1 thread, max 5
+    ISyncWorker(syncPal, name, shortName), _localSnapshot(localSnapshot), _threadPool(1, 5) // Min 1 thread, max 5
 {}
 
 ContentChecksumWorker::~ContentChecksumWorker() {

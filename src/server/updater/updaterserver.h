@@ -44,9 +44,9 @@ class UpdaterServer : public Updater {
         static UpdaterServer *instance();
         static QUrl updateUrl();
 
-        QString version() const override;
-        bool isKDCUpdater() override;
-        bool isSparkleUpdater() override;
+        // QString version() const override;
+        // bool isKDCUpdater() override;
+        // bool isSparkleUpdater() override;
         QString statusString() const override;
         bool downloadCompleted() const override;
         bool updateFound() const override;

@@ -735,14 +735,18 @@ std::string toString(const UpdateStateV2 e) {
     switch (e) {
         case UpdateStateV2::UpToDate:
             return "UpToDate";
+        case UpdateStateV2::Checking:
+            return "Checking";
         case UpdateStateV2::Available:
             return "Available";
         case UpdateStateV2::Downloading:
             return "Downloading";
         case UpdateStateV2::Ready:
             return "Ready";
-        case UpdateStateV2::Error:
-            return "Error";
+        case UpdateStateV2::DownloadError:
+            return "DownloadError";
+        case UpdateStateV2::CheckError:
+            return "CheckError";
         default:
             return noConversionStr;
     }

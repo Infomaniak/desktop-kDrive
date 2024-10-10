@@ -1063,16 +1063,16 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
     if (_lockedAppVersionWidget->isHidden()) return;
     QString statusString;
     UpdateState updateState = UpdateState::Error;
-    try {
-        if (!UpdaterClient::instance()->isSparkleUpdater()) {
-            statusString = UpdaterClient::instance()->statusString();
-            updateState = UpdaterClient::instance()->updateState();
-        } else {
-            updateState = UpdateState::Ready; // On macOS, we just start the installer (Sparkle does the rest)
-        }
-    } catch (std::exception const &) {
-        return;
-    }
+    // try {
+    //     if (!UpdaterClient::instance()->isSparkleUpdater()) {
+    //         statusString = UpdaterClient::instance()->statusString();
+    //         updateState = UpdaterClient::instance()->updateState();
+    //     } else {
+    //         updateState = UpdateState::Ready;  // On macOS, we just start the installer (Sparkle does the rest)
+    //     }
+    // } catch (std::exception const &) {
+    //     return;
+    // }
 
     _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready);
     _lockedAppUpdateOptionalLabel->setVisible(updateState != UpdateState::Ready && updateState != UpdateState::Downloading);

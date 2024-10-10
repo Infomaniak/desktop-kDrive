@@ -31,7 +31,7 @@ namespace KDC {
 void TestUpdater::setUp() {
     _logger = Log::instance()->getLogger();
 #ifdef __APPLE__
-    _updater = static_cast<SparkleUpdater*>(UpdaterServer::instance());
+    _updater = nullptr; // static_cast<SparkleUpdater*>(UpdaterServer::instance());
 #else
     _updater = static_cast<KDCUpdater*>(UpdaterServer::instance());
 #endif
@@ -92,16 +92,6 @@ void TestUpdater::testUpdateInfoVersionParseString(void) {
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.versionString().toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.web().toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.downloadUrl().toStdString());
-}
-
-void TestUpdater::testIsKDCorSparkleUpdater(void) {
-#ifdef __APPLE__
-    CPPUNIT_ASSERT(_updater->isSparkleUpdater());
-    CPPUNIT_ASSERT(!_updater->isKDCUpdater());
-#else
-    CPPUNIT_ASSERT(!_updater->isSparkleUpdater());
-    CPPUNIT_ASSERT(_updater->isKDCUpdater());
-#endif
 }
 
 void TestUpdater::testUpdateSucceeded(void) {

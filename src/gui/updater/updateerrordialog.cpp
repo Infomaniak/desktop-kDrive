@@ -39,8 +39,7 @@ static const int mainBoxVBMargin = 40;
 static const int boxHSpacing = 10;
 
 UpdateErrorDialog::UpdateErrorDialog(const QString &targetVersion, const QString &targetVersionString,
-                                     const QString &clientVersion, QWidget *parent) :
-    CustomDialog(false, parent) {
+                                     const QString &clientVersion, QWidget *parent) : CustomDialog(false, parent) {
     KDC::GuiUtility::setStyle(qApp, false);
     initUi(targetVersion, targetVersionString, clientVersion);
 }

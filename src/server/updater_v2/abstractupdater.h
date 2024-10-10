@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -19,46 +18,63 @@
 
 #pragma once
 
-#include "jobs/network/getappversionjob.h"
+#include "updatechecker.h"
 #include "utility/types.h"
 
-
-#include <log4cplus/logger.h>
-#include <thread>
+#include <functional>
 
 namespace KDC {
-/**
- * @brief Checks for new updates and manage installation.
- *
- * This class schedules regular update checks.
- * It also trigger automatic update and installation of the new version.
- */
 
 class AbstractUpdater {
     public:
-        static AbstractUpdater *instance();
+        AbstractUpdater();
+        virtual ~AbstractUpdater() = default;
 
-        ExitCode checkUpdateAvailable(bool &available);
-        bool isUpdateDownloaded();
-        ExitCode downloadUpdate() noexcept;
+        [[nodiscard]] const VersionInfo &versionInfo() const { return _updateChecker->versionInfo(); }
+        [[nodiscard]] const UpdateStateV2 &state() const { return _state; }
 
-        void setGetAppVersionJob(GetAppVersionJob *getAppVersionJob) { _getAppVersionJob = getAppVersionJob; }
+        /**
+         * @brief Checks if an update is available with the currently set distribution channel.
+         * @return ExitCode::Ok if no errors.
+         */
+        ExitCode checkUpdateAvailable() { return checkUpdateAvailable(_updateChecker->versionInfo().channel); }
+        /**
+         * @brief Updates distribution channel and checks if an update is available.
+         * @param channel New distribution channel selected by the user.
+         * @param id Optional. ID of the created asynchronous job. Useful in tests.
+         * @return ExitCode::Ok if no errors.
+         */
+        ExitCode checkUpdateAvailable(DistributionChannel channel, UniqueId *id = nullptr);
+
+        /**
+         * @brief Start the installation.
+         * On macOS, raise the Sparkle dialog.
+         * Not used on Linux since we only send a notification to the user.
+         */
+        virtual void startInstaller() = 0;
+
+        /**
+         * @brief A new version is available on the server.
+         * On macOS : start Sparkle
+         * On Windows : download the installer package
+         * On Linux : notify the user
+         */
+        virtual void onUpdateFound() = 0;
+        virtual void setQuitCallback(const std::function<void()> &quitCallback) { /* Redefined in child class if necessary */ }
+        void setStateChangeCallback(const std::function<void(UpdateStateV2)> &stateChangeCallback);
+
+        [[nodiscard]] const std::unique_ptr<UpdateChecker> &updateChecker() const { return _updateChecker; }
+
+    protected:
+        void setState(UpdateStateV2 newState);
 
     private:
-        AbstractUpdater();
-        ~AbstractUpdater();
+        void onAppVersionReceived();
 
-        void run() noexcept;
-
-        static AbstractUpdater *_instance;
-        log4cplus::Logger _logger;
-        std::unique_ptr<std::thread> _thread;
+        std::unique_ptr<UpdateChecker> _updateChecker;
 
         UpdateStateV2 _state{UpdateStateV2::UpToDate}; // Current state of the update process.
-        VersionInfo _versionInfo; // A struct keeping all the informations about the currently available version.
-        SyncPath _targetFile; // Path to the downloaded installer file.
-
-        GetAppVersionJob *_getAppVersionJob{nullptr};
+        std::function<void(UpdateStateV2)> _stateChangeCallback = nullptr;
 };
 
 } // namespace KDC

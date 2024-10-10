@@ -44,29 +44,6 @@ static const double minSupportedWindowsMajorVersion = 10;
 static const double minSupportedWindowsMinorVersion = 0;
 static const double minSupportedWindowsMicroVersion = 17763;
 
-UpdaterScheduler::UpdaterScheduler(QObject *parent) : QObject(parent) {
-    connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdaterScheduler::slotTimerFired);
-
-    // Note: the sparkle-updater is not an KDCUpdater
-    if (KDCUpdater *updater = qobject_cast<KDCUpdater *>(UpdaterServer::instance())) {
-        connect(updater, &KDCUpdater::newUpdateAvailable, this, &UpdaterScheduler::updaterAnnouncement);
-        connect(updater, &KDCUpdater::requestRestart, this, &UpdaterScheduler::requestRestart);
-    }
-
-    // at startup, do a check in any case.
-    QTimer::singleShot(3000, this, &UpdaterScheduler::slotTimerFired);
-
-    auto checkInterval = std::chrono::hours(1);
-    _updateCheckTimer.start(std::chrono::milliseconds(checkInterval).count());
-}
-
-void UpdaterScheduler::slotTimerFired() {
-    UpdaterServer *updater = UpdaterServer::instance();
-    if (updater) {
-        updater->backgroundCheckForUpdate();
-    }
-}
-
 
 /* ----------------------------------------------------------------- */
 

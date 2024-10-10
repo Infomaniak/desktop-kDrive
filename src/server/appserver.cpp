@@ -55,6 +55,8 @@
 #include <windows.h>
 #endif
 
+#include "updater_v2/updatemanager.h"
+
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
@@ -153,7 +155,6 @@ AppServer::AppServer(int &argc, char **argv) :
     if (parmsDbPath.empty()) {
         LOG_WARN(_logger, "Error in Db::makeDbName");
         throw std::runtime_error("Unable to create parameters database.");
-        return;
     }
 
     bool newDbExists = false;
@@ -161,7 +162,6 @@ AppServer::AppServer(int &argc, char **argv) :
     if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
         throw std::runtime_error("Unable to check if parmsdb exists.");
-        return;
     }
 
     std::filesystem::path pre334ConfigFilePath =
@@ -171,7 +171,6 @@ AppServer::AppServer(int &argc, char **argv) :
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(pre334ConfigFilePath, ioError).c_str());
         throw std::runtime_error("Unable to check if pre 3.3.4 config exists.");
-        return;
     }
 
     LOGW_INFO(_logger, L"New DB exists : " << Path2WStr(parmsDbPath).c_str() << L" => " << newDbExists);
@@ -181,7 +180,6 @@ AppServer::AppServer(int &argc, char **argv) :
         ParmsDb::instance(parmsDbPath, _theme->version().toStdString());
     } catch (const std::exception &) {
         throw std::runtime_error("Unable to open parameters database.");
-        return;
     }
 
     // Clear old server errors
@@ -217,7 +215,6 @@ AppServer::AppServer(int &argc, char **argv) :
         LOG_WARN(_logger, "Error in ParametersCache::instance");
         addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         throw std::runtime_error("Unable to initialize parameters cache.");
-        return;
     }
 
     // Setup translations
@@ -238,7 +235,6 @@ AppServer::AppServer(int &argc, char **argv) :
         LOG_WARN(_logger, "Error in ExclusionTemplateCache::instance");
         addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         throw std::runtime_error("Unable to initialize exclusion template cache.");
-        return;
     }
 
 #ifdef Q_OS_WIN
@@ -280,18 +276,18 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
+    // Update checks
+    _updateManager = std::make_unique<UpdateManager>(this);
+    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
 #ifdef Q_OS_MACOS
-    // Init Updater
-    const QuitCallback quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    UpdaterServer::instance()->setQuitCallback(quitCallback);
+    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    _updateManager->setQuitCallback(quitCallback);
 #endif
 
-    // Update checks
-    UpdaterScheduler *updaterScheduler = new UpdaterScheduler(this);
-    connect(updaterScheduler, &UpdaterScheduler::requestRestart, this, &AppServer::onScheduleAppRestart);
-
+    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
 #ifdef Q_OS_WIN
-    connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
+    // TODO
+    // connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
 #endif
 
     // Init socket api
@@ -1962,68 +1958,38 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::UPDATER_VERSION: {
-            QString version = UpdaterServer::instance()->version();
+        case RequestNum::UPDATER_CHANGE_CHANNEL: {
+            auto channel = DistributionChannel::Unknown;
 
-            resultStream << version;
+            QDataStream paramsStream(params);
+            paramsStream >> channel;
+
+            _updateManager->setDistributionChannel(channel);
+
+            resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::UPDATER_ISKDCUPDATER: {
-            bool ret = UpdaterServer::instance()->isKDCUpdater();
-
-            resultStream << ret;
+        case RequestNum::UPDATER_VERSIONINFO: {
+            VersionInfo versionInfo = _updateManager->versionInfo();
+            resultStream << ExitCode::Ok;
+            resultStream << versionInfo;
             break;
         }
-        case RequestNum::UPDATER_ISSPARKLEUPDATER: {
-            bool ret = UpdaterServer::instance()->isSparkleUpdater();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_STATUSSTRING: {
-            QString status = UpdaterServer::instance()->statusString();
-
-            resultStream << status;
-            break;
-        }
-        case RequestNum::UPDATER_STATUS: {
-            UpdateState status = UpdaterServer::instance()->updateState();
-            resultStream << status;
-            break;
-        }
-        case RequestNum::UPDATER_DOWNLOADCOMPLETED: {
-            bool ret = UpdaterServer::instance()->downloadCompleted();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_UPDATEFOUND: {
-            bool ret = UpdaterServer::instance()->updateFound();
-
-            resultStream << ret;
+        case RequestNum::UPDATER_STATE: {
+            UpdateStateV2 state = _updateManager->state();
+            resultStream << ExitCode::Ok;
+            resultStream << state;
             break;
         }
         case RequestNum::UPDATER_STARTINSTALLER: {
-            UpdaterServer::instance()->startInstaller();
-            break;
-        }
-        case RequestNum::UPDATER_UPDATE_DIALOG_RESULT: {
-            bool skip;
-            QDataStream paramsStream(params);
-            paramsStream >> skip;
-
-            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            if (skip) {
-                updater->wipeUpdateData();
-                updater->slotSetSeenVersion();
-            } else {
-                updater->slotStartInstaller();
-            }
+            _updateManager->startInstaller();
+            resultStream << ExitCode::Ok;
             break;
         }
         case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
-            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            updater->slotUnsetSeenVersion();
+            // TODO : Manage seen version
+            // NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
+            // updater->slotUnsetSeenVersion();
             break;
         }
         case RequestNum::UTILITY_CRASH: {
@@ -2257,6 +2223,14 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
     }
 }
 
+void AppServer::onUpdateStateChanged(const UpdateStateV2 state) {
+    int id = 0;
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << state;
+    CommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params, id);
+}
+
 void AppServer::onRestartClientReceived() {
     bool quit = false;
 #if NDEBUG
@@ -2272,7 +2246,6 @@ void AppServer::onRestartClientReceived() {
     }
 #else
     LOG_INFO(_logger, "Client disconnected");
-    quit = true;
 #endif
 
     if (quit) {

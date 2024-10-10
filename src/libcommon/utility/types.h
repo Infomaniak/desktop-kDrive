@@ -419,7 +419,7 @@ std::string toString(LogUploadState e);
 enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
 std::string toString(UpdateState e);
 
-enum class UpdateStateV2 { UpToDate, Available, Downloading, Ready, Error };
+enum class UpdateStateV2 { UpToDate, Checking, Available, Downloading, Ready, CheckError, DownloadError, UpdateError, Unknown };
 std::string toString(UpdateStateV2 e);
 
 enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
@@ -429,20 +429,56 @@ enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
 std::string toString(Platform e);
 
 struct VersionInfo {
+        DistributionChannel channel = DistributionChannel::Unknown;
         std::string tag; // Version number. Example: 3.6.4
-        std::string changeLog; // List of changes in this version
+        std::string changeLog; // List of changes in this version       TODO : is it useful? Do not send it to the UI?
         std::uint64_t buildVersion = 0; // Example: 20240816
         std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
         [[nodiscard]] bool isValid() const {
-            return !tag.empty() && !changeLog.empty() && buildVersion != 0 && !downloadUrl.empty();
+            return channel != DistributionChannel::Unknown && !tag.empty() && !changeLog.empty() && buildVersion != 0 &&
+                   !downloadUrl.empty();
         }
 
         [[nodiscard]] std::string fullVersion() const {
             std::stringstream ss;
             ss << tag << "." << buildVersion;
             return ss.str();
+        }
+
+        [[nodiscard]] std::string beautifulVersion() const {
+            std::stringstream ss;
+            ss << tag << " (" << buildVersion << ")";
+            return ss.str();
+        }
+
+        void clear() {
+            tag.clear();
+            changeLog.clear();
+            buildVersion = 0;
+            buildMinOsVersion.clear();
+            downloadUrl.clear();
+        }
+
+        friend QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
+            QString tmpTag;
+            QString tmpChangeLog;
+            QString tmpBuildMinOsVersion;
+            QString tmpDownloadUrl;
+            in >> versionInfo.channel >> tmpTag >> tmpChangeLog >> versionInfo.buildVersion >> tmpBuildMinOsVersion >>
+                    tmpDownloadUrl;
+            versionInfo.tag = tmpTag.toStdString();
+            versionInfo.changeLog = tmpChangeLog.toStdString();
+            versionInfo.buildMinOsVersion = tmpBuildMinOsVersion.toStdString();
+            versionInfo.downloadUrl = tmpDownloadUrl.toStdString();
+            return in;
+        }
+        friend QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
+            out << versionInfo.channel << QString::fromStdString(versionInfo.tag) << QString::fromStdString(versionInfo.changeLog)
+                << versionInfo.buildVersion << QString::fromStdString(versionInfo.buildMinOsVersion)
+                << QString::fromStdString(versionInfo.downloadUrl);
+            return out;
         }
 };
 

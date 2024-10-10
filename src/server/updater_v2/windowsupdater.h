@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -19,25 +18,32 @@
 
 #pragma once
 
-#include "testincludes.h"
-#include "server/updater_v2/abstractupdater.h"
-#include "utility/types.h"
-using namespace CppUnit;
+#include "abstractupdater.h"
 
 namespace KDC {
-class TestAbstractUpdater : public CppUnit::TestFixture {
-    public:
-        CPPUNIT_TEST_SUITE(TestAbstractUpdater);
-        CPPUNIT_TEST(testCheckUpdateAvailable);
-        CPPUNIT_TEST(testCurrentVersion);
-        CPPUNIT_TEST_SUITE_END();
 
+class WindowsUpdater : public AbstractUpdater {
     public:
-        void setUp() override;
-        void tearDown() override;
+        void onUpdateFound() override;
+        void startInstaller() override;
 
-    protected:
-        void testCheckUpdateAvailable();
-        void testCurrentVersion();
+    private:
+        /**
+         * @brief Start the synchronous download of the new version installer.
+         * @return
+         */
+        virtual void downloadUpdate() noexcept;
+
+        /**
+         * @brief Callback to notify that the download is finished.
+         */
+        void downloadFinished(UniqueId jobId);
+
+        /**
+         * Build the destination path where the installer should be download.
+         * @return the absolute path to the installer file.
+         */
+        [[nodiscard]] bool getInstallerPath(SyncPath &path) const;
 };
+
 } // namespace KDC

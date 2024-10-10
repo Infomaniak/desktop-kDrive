@@ -19,14 +19,16 @@
 
 #include "updaterserver.h"
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-#include "sparkleupdater.h"
+#include "../updater_v2/sparkleupdater.h"
 #endif
 #include "kdcupdater.h"
 #include "common/utility.h"
 #include "version.h"
 #include "config.h"
 #include "libcommon/theme/theme.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
+#include "utility/utility.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -66,31 +68,31 @@ QUrl UpdaterServer::updateUrl() {
     return updateBaseUrl;
 }
 
-QString UpdaterServer::version() const {
-    QString version;
+// QString UpdaterServer::version() const {
+//     QString version;
+//
+// #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
+//     version = QString::fromStdString(CommonUtility::currentVersion());
+// #else
+//     version = qobject_cast<KDCUpdater *>(instance())->updateVersion();
+// #endif
+//
+//     return version;
+// }
 
-#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    version = qobject_cast<SparkleUpdater *>(instance())->version();
-#else
-    version = qobject_cast<KDCUpdater *>(instance())->updateVersion();
-#endif
-
-    return version;
-}
-
-bool UpdaterServer::isKDCUpdater() {
-    KDCUpdater *kdcupdater = qobject_cast<KDCUpdater *>(instance());
-    return (kdcupdater != nullptr);
-}
-
-bool UpdaterServer::isSparkleUpdater() {
-#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *sparkleUpdater = qobject_cast<SparkleUpdater *>(instance());
-    return (sparkleUpdater != nullptr);
-#else
-    return false;
-#endif
-}
+// bool UpdaterServer::isKDCUpdater() {
+//     KDCUpdater *kdcupdater = qobject_cast<KDCUpdater *>(instance());
+//     return (kdcupdater != nullptr);
+// }
+//
+// bool UpdaterServer::isSparkleUpdater() {
+// #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
+//     SparkleUpdater *sparkleUpdater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
+//     return (sparkleUpdater != nullptr);
+// #else
+//     return false;
+// #endif
+// }
 
 QString UpdaterServer::statusString() const {
     return instance()->statusString();
@@ -107,21 +109,21 @@ bool UpdaterServer::downloadCompleted() const {
 }
 
 bool UpdaterServer::updateFound() const {
-#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *sparkleUpdater = qobject_cast<SparkleUpdater *>(instance());
-    if (sparkleUpdater) {
-        return sparkleUpdater->updateFound();
-    }
-#endif
+    // #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
+    //     SparkleUpdater *sparkleUpdater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
+    //     if (sparkleUpdater) {
+    //         return sparkleUpdater->updateFound();
+    //     }
+    // #endif
 
     return false;
 }
 
 void UpdaterServer::startInstaller() const {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *updater = qobject_cast<SparkleUpdater *>(instance());
+    SparkleUpdater *updater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
     if (updater) {
-        updater->slotStartInstaller();
+        // updater->slotStartInstaller();
     }
 #elif defined(Q_OS_WIN32)
     KDCUpdater *updater = qobject_cast<KDCUpdater *>(instance());
@@ -190,7 +192,7 @@ UpdaterServer *UpdaterServer::create() {
     }
 
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    return new SparkleUpdater(url);
+    return nullptr; // new SparkleUpdater(/*url*/);
 #elif defined(Q_OS_WIN32)
     // Also for MSI
     return new NSISUpdater(url);

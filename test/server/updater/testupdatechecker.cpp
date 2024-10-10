@@ -17,19 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testabstractupdater.h"
+#include "testupdatechecker.h"
 
-#include "db/parmsdb.h"
-#include "requests/parameterscache.h"
+#include "jobs/jobmanager.h"
 #include "jobs/network/getappversionjob.h"
-#include "keychainmanager/keychainmanager.h"
-
-#include <regex>
-
-#include "server/updater_v2/abstractupdater.h"
-#include "test_utility/testhelpers.h"
-
-#include <Poco/JSON/Parser.h>
+#include "libcommon/utility/utility.h"
+#include "server/updater_v2/updatechecker.h"
 
 namespace KDC {
 
@@ -38,64 +31,54 @@ static const std::string bigVersionJsonUpdateStr =
 static const std::string smallVersionJsonUpdateStr =
         R"({"result":"success","data":{"application_id":27,"has_prod_next":false,"version":{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"1.1.1","next_version_rate":0,"published_versions":[{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]}]}}})";
 
-void TestAbstractUpdater::setUp() {
-    LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ Set Up");
-
-    // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParametersCache::instance()->parameters().setExtendedLog(true);
-}
-
-void TestAbstractUpdater::tearDown() {}
-
-class TestGetAppVersionJob final : public GetAppVersionJob {
+class GetAppVersionJobTest final : public GetAppVersionJob {
     public:
-        TestGetAppVersionJob(const Platform platform, const std::string &appID, const bool updateAvailable) :
-            GetAppVersionJob(platform, appID), _updateAvailable(updateAvailable) {}
+        GetAppVersionJobTest(const Platform platform, const std::string &appID, const bool updateShouldBeAvailable) :
+            GetAppVersionJob(platform, appID), _updateShoudBeAvailable(updateShouldBeAvailable) {}
 
         void runJob() noexcept override {
-            std::istringstream iss(_updateAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
+            const std::istringstream iss(_updateShoudBeAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
             std::istream is(iss.rdbuf());
             GetAppVersionJob::handleResponse(is);
         }
 
     private:
-        bool _updateAvailable{false};
+        bool _updateShoudBeAvailable{false};
 };
 
-void TestAbstractUpdater::testCheckUpdateAvailable() {
-    const auto appUid = "1234567890";
+class UpdateCheckerTest final : public UpdateChecker {
+    public:
+        void setUpdateShoudBeAvailable(const bool val) { _updateShoudBeAvailable = val; }
 
-    // Version is higher than current version
+    private:
+        ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
+            static const std::string appUid = "1234567890";
+            job = std::make_shared<GetAppVersionJobTest>(CommonUtility::platform(), appUid, _updateShoudBeAvailable);
+            return ExitCode::Ok;
+        }
+
+        bool _updateShoudBeAvailable{false};
+};
+
+void TestUpdateChecker::testCheckUpdateAvailable() { // Version is higher than current version
     {
-        auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, true);
-        AbstractUpdater::instance()->setGetAppVersionJob(testJob);
-        bool updateAvailable = false;
-        AbstractUpdater::instance()->checkUpdateAvailable(updateAvailable);
-        CPPUNIT_ASSERT(updateAvailable);
-        delete testJob;
+        UpdateCheckerTest testObj;
+        UniqueId jobId = 0;
+        testObj.setUpdateShoudBeAvailable(true);
+        testObj.checkUpdateAvailable(DistributionChannel::Internal, &jobId);
+        while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT_EQUAL(true, testObj.versionInfo().isValid());
     }
 
     // Version is lower than current version
     {
-        auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, false);
-        AbstractUpdater::instance()->setGetAppVersionJob(testJob);
-        bool updateAvailable = false;
-        AbstractUpdater::instance()->checkUpdateAvailable(updateAvailable);
-        CPPUNIT_ASSERT(!updateAvailable);
-        delete testJob;
+        UpdateCheckerTest testObj;
+        UniqueId jobId = 0;
+        testObj.setUpdateShoudBeAvailable(false);
+        testObj.checkUpdateAvailable(DistributionChannel::Internal, &jobId);
+        while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT_EQUAL(true, testObj.versionInfo().isValid());
     }
-}
-
-void TestAbstractUpdater::testCurrentVersion() {
-    const std::string test = CommonUtility::currentVersion();
-#ifdef NDEBUG
-    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]\d{8}$)")));
-#else
-    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]0$)")));
-#endif
 }
 
 } // namespace KDC

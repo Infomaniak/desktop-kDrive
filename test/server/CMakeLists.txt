@@ -17,11 +17,13 @@ set(testserver_SRCS
     ${server_srcs_path}/updater/kdcupdater.h ${server_srcs_path}/updater/kdcupdater.cpp
     ${server_srcs_path}/updater/updateinfo.h ${server_srcs_path}/updater/updateinfo.cpp
     ${server_srcs_path}/updater/updaterserver.h ${server_srcs_path}/updater/updaterserver.cpp
+    ${server_srcs_path}/updater_v2/updatemanager.h ${server_srcs_path}/updater_v2/updatemanager.cpp
     ${server_srcs_path}/updater_v2/abstractupdater.h ${server_srcs_path}/updater_v2/abstractupdater.cpp
+    ${server_srcs_path}/updater_v2/updatechecker.h ${server_srcs_path}/updater_v2/updatechecker.cpp
     test.cpp
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdater.h updater/testupdater.cpp
-    updater/testabstractupdater.h updater/testabstractupdater.cpp
+    updater/testupdatechecker.h updater/testupdatechecker.cpp
 )
 
 if(APPLE)
@@ -35,14 +37,16 @@ if(APPLE)
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
-        list(APPEND testserver_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater_mac.mm)
+        list(APPEND testserver_SRCS ${server_srcs_path}/updater_v2/sparkleupdater.h ${server_srcs_path}/updater_v2/sparkleupdater.mm)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
         # as its logic is tightly tailored around Qt6 frameworks
         install(DIRECTORY "${SPARKLE_LIBRARY}"
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
-   endif()
+    endif()
+elseif (WIN32)
+    list(APPEND testserver_SRCS ${server_srcs_path}/updater_v2/windowsupdater.h ${server_srcs_path}/updater_v2/windowsupdater.cpp)
 endif()
 
 if (WIN32)
