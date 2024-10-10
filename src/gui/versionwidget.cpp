@@ -127,7 +127,6 @@ void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) co
             break;
         }
         case UpdateStateV2::Checking: {
-            tr("Checking update server...");
             statusString = tr("Checking update on server...");
             break;
         }
