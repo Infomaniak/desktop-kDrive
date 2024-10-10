@@ -61,13 +61,13 @@ class DriveInfo {
         int _accountDbId;
         QString _name;
         QColor _color;
-        bool _notifications;
-        bool _admin;
+        bool _notifications{false};
+        bool _admin{false};
 
         // Non DB attributes
-        bool _maintenance;
-        bool _locked;
-        bool _accessDenied;
+        bool _maintenance{false};
+        bool _locked{false};
+        bool _accessDenied{false};
 };
 
 } // namespace KDC

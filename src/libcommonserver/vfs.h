@@ -217,10 +217,10 @@ class Vfs : public QObject {
         VfsSetupParams _vfsSetupParams;
 
         // Callbacks
-        void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status);
-        void (*_syncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool &syncing);
-        void (*_setSyncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool syncing);
-        void (*_exclusionAppList)(QString &appList);
+        void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status) = nullptr;
+        void (*_syncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool &syncing) = nullptr;
+        void (*_setSyncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool syncing) = nullptr;
+        void (*_exclusionAppList)(QString &appList) = nullptr;
 
         inline bool extendedLog() { return _extendedLog; }
 
