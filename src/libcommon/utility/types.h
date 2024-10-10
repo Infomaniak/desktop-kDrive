@@ -288,7 +288,7 @@ enum class SyncStatus {
 };
 std::string toString(SyncStatus e);
 
-enum class UploadSessionType { Unknown, Standard, LogUpload };
+enum class UploadSessionType { Unknown, Drive, Log };
 std::string toString(UploadSessionType e);
 
 enum class SyncNodeType {

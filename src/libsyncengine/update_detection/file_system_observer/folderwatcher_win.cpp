@@ -149,7 +149,8 @@ void FolderWatcher_win::watchChanges() {
             SyncPath filepath = (_folder / wPathName).lexically_normal();
 
             bool skip = false;
-            const OperationType opType = operationFromAction(notifInfo->Action);
+            bool converted = false;
+            OperationType opType = operationFromAction(notifInfo->Action);
 
             if (notifInfo->Action == FILE_ACTION_MODIFIED) {
                 bool isDirectory = false;
@@ -161,10 +162,11 @@ void FolderWatcher_win::watchChanges() {
                 }
                 if (!isDirectory) {
                     if (ioError == IoError::NoSuchFileOrDirectory) {
-                        LOGW_DEBUG(_logger, L"Skip operation " << opType << L" detected on item with "
-                                                               << Utility::formatSyncPath(filepath).c_str()
-                                                               << L" (item doesn't exist)");
-                        skip = true;
+                        LOGW_DEBUG(_logger, L"Convert operation " << opType << L" detected on item "
+                                                                  << Utility::formatSyncPath(filepath).c_str()
+                                                                  << L" to Delete (item doesn't exist)");
+                        opType = OperationType::Delete;
+                        converted = true;
                     }
                 } else {
                     if (ParametersCache::isExtendedLogEnabled()) {
@@ -177,15 +179,16 @@ void FolderWatcher_win::watchChanges() {
 
             // Unless the file was removed or renamed, get its full long name
             SyncPath longfilepath = filepath;
-            if (!skip && notifInfo->Action != FILE_ACTION_REMOVED && notifInfo->Action != FILE_ACTION_RENAMED_OLD_NAME) {
+            if (!skip && opType != OperationType::Delete && notifInfo->Action != FILE_ACTION_RENAMED_OLD_NAME) {
                 bool notFound = false;
                 if (!KDC::Utility::longPath(filepath, longfilepath, notFound)) {
                     if (notFound) {
                         // Item doesn't exist anymore
-                        LOGW_DEBUG(_logger, L"Skip operation " << opType << L" detected on item "
-                                                               << Utility::formatSyncPath(longfilepath).c_str()
-                                                               << L" (item doesn't exist)");
-                        skip = true;
+                        LOGW_DEBUG(_logger, L"Convert operation " << opType << L" detected on item "
+                                                                  << Utility::formatSyncPath(longfilepath).c_str()
+                                                                  << L" to Delete (item doesn't exist)");
+                        opType = OperationType::Delete;
+                        converted = true;
                     } else {
                         // Keep original name
                         LOGW_WARN(KDC::Log::instance()->getLogger(),
@@ -196,7 +199,8 @@ void FolderWatcher_win::watchChanges() {
 
             if (!skip) {
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"Operation " << opType << L" detected on item with "
+                    LOGW_DEBUG(_logger, L"Operation " << opType << (converted ? L"(converted) " : L"")
+                                                      << L" detected on item with "
                                                       << Utility::formatSyncPath(longfilepath).c_str());
                 }
 

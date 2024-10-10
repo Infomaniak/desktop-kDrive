@@ -87,9 +87,9 @@ struct COMMONSERVER_EXPORT Utility {
                                           std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
 #ifdef _WIN32
-        static bool isNtfs(const SyncPath &dirPath);
+        static bool isNtfs(const SyncPath &targetPath);
 #endif
-        static std::string fileSystemName(const SyncPath &dirPath);
+        static std::string fileSystemName(const SyncPath &targetPath);
         static bool startsWith(const std::string &str, const std::string &prefix);
         static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
         static bool endsWith(const std::string &str, const std::string &suffix);

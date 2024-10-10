@@ -37,6 +37,7 @@
 #include "jobs/network/API_v2/upload_session/driveuploadsession.h"
 #include "jobs/network/API_v2/upload_session/loguploadsession.h"
 #include "jobs/network/API_v2/uploadjob.h"
+#include "jobs/network/API_v2/getsizejob.h"
 #include "jobs/jobmanager.h"
 #include "network/proxy.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
@@ -674,37 +675,71 @@ void TestNetworkJobs::testDriveUploadSessionConstructorException() {
 }
 
 void TestNetworkJobs::testDriveUploadSessionSynchronous() {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous");
+    // Create a file
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous Create");
 
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionSynchronous");
+    const LocalTemporaryDirectory localTmpDir("testDriveUploadSessionSynchronous");
+    const SyncPath localFilePath = localTmpDir.path() / bigFileName;
 
-    SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(
+            IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath / bigFileDirName / bigFileName, localFilePath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-    DriveUploadSession driveUploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
-                                             remoteTmpDir.id(), 12345, false, 1);
-    ExitCode exitCode = driveUploadSessionJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    DriveUploadSession driveUploadSessionJobCreate(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
+                                                   remoteTmpDir.id(), 12345, false, 1);
+    ExitCode exitCode = driveUploadSessionJobCreate.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
+    const NodeId newNodeId = driveUploadSessionJobCreate.nodeId();
     GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == driveUploadSessionJob.nodeId());
+    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == newNodeId);
     CPPUNIT_ASSERT(Utility::s2ws(dataArray->getObject(0)->get(nameKey)) == Path2WStr(localFilePath.filename()));
+
+    // Update a file
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous Edit");
+    std::ofstream ofs(localFilePath, std::ios::app);
+    ofs << "test";
+    ofs.close();
+    uint64_t fileSizeLocal = 0;
+    CPPUNIT_ASSERT(IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    DriveUploadSession driveUploadSessionJobEdit(_driveDbId, nullptr, localFilePath, newNodeId, false, 1);
+    exitCode = driveUploadSessionJobEdit.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+
+    GetSizeJob fileSizeJob(_driveDbId, newNodeId);
+    exitCode = fileSizeJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+    int64_t fileSizeRemote = fileSizeJob.size();
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(fileSizeLocal), fileSizeRemote);
 }
 
 void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous");
+    // Create a file
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousCreate");
 
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionAsynchronous");
+    const LocalTemporaryDirectory localTmpDir("testDriveUploadSessionASynchronous");
+    const SyncPath localFilePath = localTmpDir.path() / bigFileName;
 
-    const SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(
+            IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath / bigFileDirName / bigFileName, localFilePath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     ExitCode exitCode = ExitCode::Unknown;
-    NodeId nodeId;
+    NodeId newNodeId;
+    int initialNbParalleleThreads = _nbParalleleThreads;
     while (_nbParalleleThreads > 0) {
         LOG_DEBUG(Log::instance()->getLogger(),
                   "$$$$$ testDriveUploadSessionAsynchronous - " << _nbParalleleThreads << " threads");
@@ -712,13 +747,13 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
                                                  remoteTmpDir.id(), 12345, false, _nbParalleleThreads);
         exitCode = driveUploadSessionJob.runSynchronously();
         if (exitCode == ExitCode::Ok) {
-            nodeId = driveUploadSessionJob.nodeId();
+            newNodeId = driveUploadSessionJob.nodeId();
             break;
         } else if (exitCode == ExitCode::NetworkError && driveUploadSessionJob.exitCause() == ExitCause::SocketsDefuncted) {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
-                _nbParalleleThreads = std::floor(_nbParalleleThreads / 2.0);
+                _nbParalleleThreads = static_cast<int>(std::floor(_nbParalleleThreads / 2.0));
             } else {
                 break;
             }
@@ -726,18 +761,58 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
             break;
         }
     }
-
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    _nbParalleleThreads = initialNbParalleleThreads;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == nodeId);
+    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == newNodeId);
     CPPUNIT_ASSERT(dataArray->getObject(0)->get(nameKey) == localFilePath.filename().string());
+
+    // Edit a file
+    _nbParalleleThreads = 10;
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousEdit");
+    std::ofstream ofs(localFilePath, std::ios::app);
+    ofs << "test";
+    ofs.close();
+    uint64_t fileSizeLocal = 0;
+    CPPUNIT_ASSERT(IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    while (_nbParalleleThreads > 0) {
+        LOG_DEBUG(Log::instance()->getLogger(),
+                  "$$$$$ testDriveUploadSessionAsynchronous - " << _nbParalleleThreads << " threads");
+        DriveUploadSession driveUploadSessionJob(_driveDbId, nullptr, localFilePath, newNodeId, 12345, false,
+                                                 _nbParalleleThreads);
+        exitCode = driveUploadSessionJob.runSynchronously();
+        if (exitCode == ExitCode::Ok) {
+            break;
+        } else if (exitCode == ExitCode::NetworkError && driveUploadSessionJob.exitCause() == ExitCause::SocketsDefuncted) {
+            LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
+            // Decrease upload session max parallel jobs
+            if (_nbParalleleThreads > 1) {
+                _nbParalleleThreads = static_cast<int>(std::floor(_nbParalleleThreads / 2.0));
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    _nbParalleleThreads = initialNbParalleleThreads;
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+
+    GetSizeJob fileSizeJob(_driveDbId, newNodeId);
+    exitCode = fileSizeJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+
+    int64_t fileSizeRemote = fileSizeJob.size();
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(fileSizeLocal), fileSizeRemote);
 }
 
 void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {

@@ -856,7 +856,7 @@ Wählen Sie diejenigen aus, die Sie synchronisieren möchten:</translation>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="702"/>
         <source>  Share</source>
-        <translation>  Aktie</translation>
+        <translation>  Teilen</translation>
     </message>
     <message>
         <location filename="../src/gui/debuggingdialog.cpp" line="712"/>

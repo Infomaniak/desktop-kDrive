@@ -50,7 +50,7 @@ void UploadSessionStartJob::setData(bool &canceled) {
     auto timestamp = duration_cast<seconds>(time_point_cast<seconds>(system_clock::now()).time_since_epoch());
 
     switch (_uploadType) {
-        case UploadSessionType::Standard:
+        case UploadSessionType::Drive:
             if (_fileId.empty()) {
                 json.set("file_name", _filename);
                 json.set("directory_id", _remoteParentDirId);
@@ -58,7 +58,7 @@ void UploadSessionStartJob::setData(bool &canceled) {
                 json.set("file_id", _fileId);
             }
             break;
-        case UploadSessionType::LogUpload:
+        case UploadSessionType::Log:
             json.set("last_modified_at", timestamp.count());
             json.set("file_name", _filename);
             break;

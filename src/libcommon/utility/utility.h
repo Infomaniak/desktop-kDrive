@@ -96,9 +96,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static bool isFileSizeMismatchDetectionEnabled();
         static size_t maxPathLength();
-#if defined(_WIN32)
-        static size_t maxPathLengthFolder();
-#endif
+
         static bool isSubDir(const SyncPath &path1, const SyncPath &path2);
 
         static const std::string dbVersionNumber(const std::string &dbVersion);

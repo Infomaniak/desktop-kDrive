@@ -355,7 +355,7 @@ AppServer::AppServer(int &argc, char **argv) :
     }
 
     if (const auto logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
-        UploadSessionCancelJob cancelJob(UploadSessionType::LogUpload, logUploadToken);
+        UploadSessionCancelJob cancelJob(UploadSessionType::Log, logUploadToken);
         if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
         } else {
@@ -960,6 +960,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 resultStream << ExitCode::DataError;
                 break;
             }
+
+            // Clear old errors for this sync
+            clearErrors(sync.dbId(), false);
+            clearErrors(sync.dbId(), true);
 
             ExitCode exitCode = checkIfSyncIsValid(sync);
             ExitCause exitCause = ExitCause::Unknown;
@@ -2901,6 +2905,9 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                         }
                     }
                 }
+                // Clear old errors for this sync
+                clearErrors(sync.dbId(), false);
+                clearErrors(sync.dbId(), true);
 
                 exitCode = checkIfSyncIsValid(sync);
                 exitCause = ExitCause::Unknown;
@@ -3515,10 +3522,6 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
         _socketApi->registerSync(sync.dbId());
     }
 
-    // Clear old errors for this sync
-    clearErrors(sync.dbId(), false);
-    clearErrors(sync.dbId(), true);
-
     return ExitCode::Ok;
 }
 
@@ -3638,13 +3641,14 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
         vfsSetupParams._executeCommand = [this](const char *command) { emit socketApiExecuteCommandDirect(QString(command)); };
         vfsSetupParams._logger = _logger;
         QString error;
-        _vfsMap[sync.dbId()] = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
-        if (!_vfsMap[sync.dbId()]) {
+        std::shared_ptr vfsPtr = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
+        if (!vfsPtr) {
             LOG_WARN(_logger, "Error in Vfs::createVfsFromPlugin for mode " << sync.virtualFileMode() << " : "
                                                                             << error.toStdString().c_str());
             exitCause = ExitCause::UnableToCreateVfs;
             return ExitCode::SystemError;
         }
+        _vfsMap[sync.dbId()] = vfsPtr;
         _vfsMap[sync.dbId()]->setExtendedLog(ParametersCache::isExtendedLogEnabled());
 
         // Set callbacks
@@ -3714,7 +3718,6 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
         return ExitCode::DataError;
     }
 #endif
-
     return ExitCode::Ok;
 }
 

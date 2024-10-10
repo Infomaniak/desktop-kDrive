@@ -24,7 +24,7 @@ namespace KDC {
 
 LogUploadSession::LogUploadSession(const SyncPath &filepath, uint64_t nbParalleleThread /*= 1*/) :
     AbstractUploadSession(filepath, filepath.filename(), nbParalleleThread) {
-    _uploadSessionType = UploadSessionType::LogUpload;
+    _uploadSessionType = UploadSessionType::Log;
 }
 
 bool LogUploadSession::runJobInit() {
@@ -32,12 +32,12 @@ bool LogUploadSession::runJobInit() {
 }
 
 std::shared_ptr<UploadSessionStartJob> LogUploadSession::createStartJob() {
-    return std::make_shared<UploadSessionStartJob>(UploadSessionType::LogUpload, getFileName(), getFileSize(), getTotalChunks());
+    return std::make_shared<UploadSessionStartJob>(UploadSessionType::Log, getFileName(), getFileSize(), getTotalChunks());
 }
 
 std::shared_ptr<UploadSessionChunkJob> LogUploadSession::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
                                                                         std::streamsize actualChunkSize) {
-    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::LogUpload, getFilePath(), getSessionToken(), chunckContent,
+    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Log, getFilePath(), getSessionToken(), chunckContent,
                                                    chunkNb, actualChunkSize, jobId());
 }
 
@@ -45,12 +45,12 @@ std::shared_ptr<UploadSessionFinishJob> LogUploadSession::createFinishJob() {
     SyncTime modtimeIn =
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::LogUpload, getFilePath(), getSessionToken(),
-                                                    getTotalChunkHash(), getTotalChunks(), modtimeIn);
+    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Log, getFilePath(), getSessionToken(), getTotalChunkHash(),
+                                                    getTotalChunks(), modtimeIn);
 }
 
 std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
-    return std::make_shared<UploadSessionCancelJob>(UploadSessionType::LogUpload, getSessionToken());
+    return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Log, getSessionToken());
 }
 
 bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
@@ -60,7 +60,7 @@ bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionS
     }
 
     if (const std::string logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
-        UploadSessionCancelJob cancelJob(UploadSessionType::LogUpload, logUploadToken);
+        UploadSessionCancelJob cancelJob(UploadSessionType::Log, logUploadToken);
         if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCode::Ok) {
             LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
         } else {

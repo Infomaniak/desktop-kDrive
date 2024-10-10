@@ -44,7 +44,7 @@ static const char forbiddenFilenameChars[] = {'/', '\0'};
 
 namespace KDC {
 
-#ifdef WIN32
+#ifdef _WIN32
 static const std::unordered_set<std::string> reservedWinNames = {
         "CON",  "PRN",  "AUX",  "NUL",  "CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5",
         "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
@@ -52,9 +52,6 @@ static const std::unordered_set<std::string> reservedWinNames = {
 
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::_instance = nullptr;
 size_t PlatformInconsistencyCheckerUtility::_maxPathLength = 0;
-#if defined(_WIN32)
-size_t PlatformInconsistencyCheckerUtility::_maxPathLengthFolder = 0;
-#endif
 
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::instance() {
     if (_instance == nullptr) {
@@ -67,7 +64,7 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
     SyncName suffix = generateSuffix(suffixType);
     SyncName sub = name.stem().native().substr(0, MAX_NAME_LENGTH - suffix.size() - name.extension().native().size());
 
-#ifdef WIN32
+#ifdef _WIN32
     SyncName nameStr(name.native());
     // Can't finish with a space or a '.'
     if (nameStr.back() == ' ' || nameStr.back() == '.') {
@@ -153,7 +150,7 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
         return true;
     }
 
-#ifdef WIN32
+#ifdef _WIN32
     // Can't have only dots
     if (std::ranges::count(name, '.') == name.size()) {
         return true;
@@ -174,18 +171,8 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
     return false;
 }
 
-bool PlatformInconsistencyCheckerUtility::checkPathLength(size_t pathSize, NodeType type) {
-    size_t maxLength = _maxPathLength;
-
-#ifdef _WIN32
-    if (type == NodeType::Directory) {
-        maxLength = _maxPathLengthFolder;
-    }
-#else
-    (void) type;
-#endif
-
-    return pathSize > maxLength;
+bool PlatformInconsistencyCheckerUtility::checkPathLength(size_t pathSize) {
+    return pathSize > _maxPathLength;
 }
 
 PlatformInconsistencyCheckerUtility::PlatformInconsistencyCheckerUtility() {
@@ -200,9 +187,6 @@ SyncName PlatformInconsistencyCheckerUtility::charToHex(unsigned int c) {
 
 void PlatformInconsistencyCheckerUtility::setMaxPath() {
     _maxPathLength = CommonUtility::maxPathLength();
-#if defined(_WIN32)
-    _maxPathLengthFolder = CommonUtility::maxPathLengthFolder();
-#endif
 }
 
 SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixType /*= SuffixTypeRename*/) {

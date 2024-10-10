@@ -20,13 +20,19 @@
 #include "utility/utility.h"
 
 namespace KDC {
+DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
+                                       const NodeId &fileId, SyncTime modtime, bool liteSyncActivated,
+                                       uint64_t nbParalleleThread /*= 1*/) :
+    DriveUploadSession(driveDbId, syncDb, filepath, SyncName(), fileId, modtime, liteSyncActivated, nbParalleleThread) {
+    _fileId = fileId;
+}
 
 DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
                                        const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
                                        bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/) :
     AbstractUploadSession(filepath, filename, nbParalleleThread), _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime),
     _remoteParentDirId(remoteParentDirId) {
-    _uploadSessionType = UploadSessionType::Standard;
+    _uploadSessionType = UploadSessionType::Drive;
 }
 
 DriveUploadSession::~DriveUploadSession() {
@@ -40,23 +46,28 @@ bool DriveUploadSession::runJobInit() {
 }
 
 std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
-    return std::make_shared<UploadSessionStartJob>(UploadSessionType::Standard, _driveDbId, getFileName(), getFileSize(),
-                                                   _remoteParentDirId, getTotalChunks());
+    if (_fileId.empty()) {
+        return std::make_shared<UploadSessionStartJob>(UploadSessionType::Drive, _driveDbId, getFileName(), getFileSize(),
+                                                       _remoteParentDirId, getTotalChunks());
+    } else {
+        return std::make_shared<UploadSessionStartJob>(UploadSessionType::Drive, _driveDbId, _fileId, getFileSize(),
+                                                       getTotalChunks());
+    }
 }
 
 std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
-    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken(),
+    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
                                                    chunckContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
-    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken(),
+    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
                                                     getTotalChunkHash(), getTotalChunks(), _modtimeIn);
 }
 
 std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
-    return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken());
+    return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken());
 }
 
 bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
