@@ -40,48 +40,38 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb>
     _syncDb(testSyncDb), _localSnapshot(testLocalSnapshot), _remoteSnapshot(testRemoteSnapshot) {}
 
 void ComputeFSOperationWorker::execute() {
-    ExitCode exitCode(ExitCode::Unknown);
-    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
-    auto start = std::chrono::steady_clock::now();
-
-    if (auto exitInfo = init(); !exitInfo) {
-        setDone(exitInfo.code());
-        LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    ExitInfo exitInfo = init();
+    if (!exitInfo || stopAsked()) {
+        stop(exitInfo.code());
         return;
     }
 
-    bool ok = true;
     NodeIdSet localIdsSet;
     NodeIdSet remoteIdsSet;
-    if (!stopAsked()) {
-        exitCode = inferChangesFromDb(localIdsSet, remoteIdsSet);
-        ok = exitCode == ExitCode::Ok;
+
+    // Detect changes based on the database records: delete, move and edit operations
+    exitInfo = inferChangesFromDb(localIdsSet, remoteIdsSet);
+    if (!exitInfo || stopAsked()) {
+        stop(exitInfo);
+        return;
     }
 
-    if (ok && !stopAsked()) {
-        exitCode = exploreSnapshotTree(ReplicaSide::Local, localIdsSet);
-        ok = exitCode == ExitCode::Ok;
-        if (ok) {
-            exitCode = exploreSnapshotTree(ReplicaSide::Remote, remoteIdsSet);
-        }
+    // Detect changes based on the snapshot records: create operations
+    exitInfo = exploreSnapshotTree(ReplicaSide::Local, localIdsSet);
+    if (!exitInfo || stopAsked()) {
+        stop(exitInfo);
+        return;
     }
 
-    if (!ok || stopAsked()) {
-        // Do not keep operations if there was an error or sync was stopped
-        _syncPal->operationSet(ReplicaSide::Local)->clear();
-        _syncPal->operationSet(ReplicaSide::Remote)->clear();
-    } else {
-        exitCode = ExitCode::Ok;
-    }
-
-    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsed_seconds.count() << "s");
-
-    setDone(exitCode);
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    exitInfo = exploreSnapshotTree(ReplicaSide::Remote, remoteIdsSet);
+   
+    stop(exitInfo);
 }
 
 ExitInfo ComputeFSOperationWorker::init() {
+    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
+    _start = std::chrono::steady_clock::now();
+
     // Update the sync parameters
     bool ok = true;
     bool found = true;
@@ -108,6 +98,22 @@ ExitInfo ComputeFSOperationWorker::init() {
 
     _fileSizeMismatchMap.clear();
     return ExitCode::Ok;
+}
+
+void ComputeFSOperationWorker::stop(ExitCode exitCode) {
+    std::chrono::duration<double> duration = std::chrono::steady_clock::now() - _start;
+    if (stopAsked() || exitCode != ExitCode::Ok) {
+        // Do not keep operations if there was an error or sync was stopped
+        _syncPal->operationSet(ReplicaSide::Local)->clear();
+        _syncPal->operationSet(ReplicaSide::Remote)->clear();
+        LOG_SYNCPAL_INFO(_logger, "FS operation sets generation aborted after: " << duration.count() << "s");
+        setDone(exitCode);
+    } else {
+        LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << duration.count() << "s");
+    }
+
+    setDone(exitCode);
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
 }
 
 ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode,
@@ -298,7 +304,6 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     return ExitCode::Ok;
 }
-
 
 ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
                                                       std::unordered_set<DbNodeId> &remainingDbIds) {
@@ -624,7 +629,6 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
 
             // Check if a local file is hidden, hence excluded.
             bool isExcluded = false;
-            IoError ioError = IoError::Success;
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(_syncPal->localPath(), path,
                                                                                                     isExcluded, ioError);
             if (!success || ioError != IoError::Success || isExcluded) {

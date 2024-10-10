@@ -1116,7 +1116,6 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
 }
 
 bool UpdateTreeWorker::integrityCheck() {
-    // TODO : check if this does not slow the process too much
     LOGW_SYNCPAL_INFO(_logger, _side << L" update tree integrity check started");
     for (const auto &node: _updateTree->nodes()) {
         if (node.second->isTmp() || Utility::startsWith(*node.second->id(), "tmp_")) {

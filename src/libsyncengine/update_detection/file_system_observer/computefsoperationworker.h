@@ -46,6 +46,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
     private:
         ExitInfo init();
+        void stop(ExitCode exitCode);
 
         using NodeIdSet = std::unordered_set<NodeId>;
         using DbNodeIdSet = std::unordered_set<DbNodeId>;
@@ -78,6 +79,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
         void updateUnsyncedList();
 
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
+
+        std::chrono::steady_clock::time_point _start;
 
         const std::shared_ptr<SyncDb> _syncDb;
         const std::shared_ptr<Snapshot> _localSnapshot;
