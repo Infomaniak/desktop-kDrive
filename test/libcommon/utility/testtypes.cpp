@@ -70,4 +70,34 @@ void TestTypes::testStreamConversion() {
     }
     CPPUNIT_ASSERT(previousLine.find("Test log of enumClass: Unknown(0)") != std::string::npos);
 }
+void TestTypes::testExitInfo() {
+    ExitInfo ei;
+    ExitCode ec = ei;
+    ExitCause eca = ei;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Unknown, ei.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Unknown, ec);
+    CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, eca);
+
+    ei = {ExitCode::Ok};
+    ec = ei;
+    eca = ei;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ei.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ec);
+    CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, eca);
+
+    ei = {ExitCode::NetworkError, ExitCause::ConnectionRefused};
+    ec = ei;
+    eca = ei;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::NetworkError, ei.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::NetworkError, ec);
+    CPPUNIT_ASSERT_EQUAL(ExitCause::ConnectionRefused, ei.cause());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::ConnectionRefused, eca);
+
+    ec = ExitCode::BackError;
+    ei = ec;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, ei.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
+}
 } // namespace KDC
