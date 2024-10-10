@@ -219,6 +219,21 @@ enum class ExitCause {
 };
 std::string toString(ExitCause e);
 
+struct ExitInfo {
+        ExitInfo() = default;
+        ExitInfo(const ExitCode &code, const ExitCause &cause) : _code(code), _cause(cause) {}
+        ExitInfo(const ExitCode &code) : _code(code) {}
+        const ExitCode &code() const { return _code; }
+        const ExitCause &cause() const { return _cause; }
+        operator ExitCode() const { return _code; }
+        operator ExitCause() const { return _cause; }
+        operator bool() const { return _code == ExitCode::Ok; }
+
+    private:
+        ExitCode _code{ExitCode::Unknown};
+        ExitCause _cause{ExitCause::Unknown};
+};
+
 // Conflict types ordered by priority
 enum class ConflictType {
     None,
