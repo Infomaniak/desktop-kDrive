@@ -552,7 +552,7 @@ bool AbstractNetworkJob::processSocketError(const std::string &msg, const Unique
 }
 
 bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e) {
-    return processSocketError(msg, jobId, e.code(), e.message());
+    return processSocketError(msg, jobId, e.code(), e.displayText());
 }
 
 bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, int err, const std::string &errMsg) {
