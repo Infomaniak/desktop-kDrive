@@ -23,20 +23,49 @@
 #include "log/sentry/sentryhandler.h"
 #include "log/log.h"
 #include "io/iohelper.h"
+#include "utility/utility.h"
 
 namespace KDC {
 
 void WindowsUpdater::onUpdateFound() {
     // Check if version is already downloaded
-    // TODO
+    SyncPath filepath;
+    if (!getInstallerPath(filepath)) {
+        setState(UpdateStateV2::DownloadError);
+        return;
+    }
+    if (std::filesystem::exists(filepath)) {
+        LOG_INFO(Log::instance()->getLogger(),
+                 L"Installer already downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
+        setState(UpdateStateV2::Ready);
+        return;
+    }
 
     downloadUpdate();
 }
 
-void WindowsUpdater::startInstaller() {}
+void WindowsUpdater::startInstaller() {
+    SyncPath filepath;
+    if (!getInstallerPath(filepath)) {
+        setState(UpdateStateV2::DownloadError);
+        return;
+    }
+
+    LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << Path2WStr(filepath).c_str());
+
+    auto *updaterThread = new std::jthread([filepath] {
+        const auto cmd = filepath.string() + " /S /launch";
+        std::system(cmd.c_str());
+    });
+    updaterThread->detach();
+}
 
 void WindowsUpdater::downloadUpdate() noexcept {
-    const auto filepath = installerPath();
+    SyncPath filepath;
+    if (!getInstallerPath(filepath)) {
+        setState(UpdateStateV2::DownloadError);
+        return;
+    }
 
     auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo().downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
@@ -67,9 +96,12 @@ void WindowsUpdater::downloadFinished(UniqueId jobId) {
     }
 
     // Verify that the installer is present on local filesystem
-    std::error_code ec;
-    const bool exists = IoHelper::fileExists(ec);
-    if (!exists) {
+    SyncPath filepath;
+    if (!getInstallerPath(filepath)) {
+        setState(UpdateStateV2::DownloadError);
+        return;
+    }
+    if (!std::filesystem::exists(filepath)) {
         const auto error = "Installer file not found.";
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::downloadFinished", error);
         LOG_ERROR(Log::instance()->getLogger(), error);
@@ -77,13 +109,22 @@ void WindowsUpdater::downloadFinished(UniqueId jobId) {
         return;
     }
 
+    LOG_INFO(Log::instance()->getLogger(),
+             L"Installer downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
     setState(UpdateStateV2::Ready);
 }
 
-SyncPath WindowsUpdater::installerPath() {
+bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
     const auto pos = versionInfo().downloadUrl.find_last_of('/');
     const auto installerName = versionInfo().downloadUrl.substr(pos + 1);
-    return CommonUtility::getAppSupportDir() / installerName;
+    SyncPath tmpDirPath;
+    if (IoError ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::getInstallerPath",
+                                                  "Impossible to retrieve installer destination directory.");
+        return false;
+    }
+    path = tmpDirPath / installerName;
+    return true;
 }
 
 } // namespace KDC

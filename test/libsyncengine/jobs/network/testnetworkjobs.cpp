@@ -813,6 +813,7 @@ void TestNetworkJobs::testDirectDownload() {
                           "https://download.storage.infomaniak.com/drive/desktopclient/kDrive-3.6.1.20240604.exe");
     job.runSynchronously();
     CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+    CPPUNIT_ASSERT_EQUAL(119771744, static_cast<int>(std::filesystem::file_size(localDestFilePath)));
 }
 
 bool TestNetworkJobs::createTestFiles() {

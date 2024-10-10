@@ -39,7 +39,11 @@ class WindowsUpdater : public AbstractUpdater {
          */
         void downloadFinished(UniqueId jobId);
 
-        SyncPath installerPath();
+        /**
+         * Build the destination path where the installer should be download.
+         * @return the absolute path to the installer file.
+         */
+        [[nodiscard]] bool getInstallerPath(SyncPath &path) const;
 };
 
 } // namespace KDC

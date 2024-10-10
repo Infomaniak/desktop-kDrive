@@ -76,7 +76,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) const {
         case UpdateStateV2::Ready: {
             // TODO : manage seen version
             // The new version is ready to be installed
-            _updater->startInstaller();
+            //_updater->startInstaller();
             break;
         }
         case UpdateStateV2::DownloadError:

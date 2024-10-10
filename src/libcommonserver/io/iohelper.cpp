@@ -547,7 +547,11 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
     directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
     ioError = stdError2ioError(ec);
 
-    return ioError == IoError::Success;
+    if (ioError != IoError::Success) {
+        LOG_ERROR(logger(), "Impossible to retrieve tmp directory: " << ioError2StdString(ioError).c_str());
+        return false;
+    }
+    return true;
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {

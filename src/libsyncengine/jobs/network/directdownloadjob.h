@@ -27,6 +27,8 @@ class DirectDownloadJob final : public AbstractNetworkJob {
     public:
         DirectDownloadJob(const SyncPath &destinationFile, const std::string &url);
 
+        [[nodiscard]] const SyncPath &getDestinationFile() const { return _destinationFile; }
+
     protected:
         std::string getUrl() override { return _url; }
 
