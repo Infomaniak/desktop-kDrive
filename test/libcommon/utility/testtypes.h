@@ -27,10 +27,12 @@ class TestTypes : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestTypes);
         CPPUNIT_TEST(testOtherSide);
         CPPUNIT_TEST(testStreamConversion);
+        CPPUNIT_TEST(testExitInfo);
         CPPUNIT_TEST_SUITE_END();
 
     protected:
         void testOtherSide();
         void testStreamConversion();
+        void testExitInfo();
 };
 } // namespace KDC
