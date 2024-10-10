@@ -328,7 +328,7 @@ void TestNetworkJobs::testGetDriveList() {
 void TestNetworkJobs::testGetFileInfo() {
     {
         GetFileInfoJob job(_driveDbId, testFileRemoteId);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously());
+        CPPUNIT_ASSERT(job.runSynchronously());
         CPPUNIT_ASSERT(job.jsonRes());
         CPPUNIT_ASSERT(job.path().empty());
     }
@@ -337,7 +337,7 @@ void TestNetworkJobs::testGetFileInfo() {
     {
         GetFileInfoJob jobWithPath(_driveDbId, testFileRemoteId);
         jobWithPath.setWithPath(true);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, jobWithPath.runSynchronously());
+        CPPUNIT_ASSERT(jobWithPath.runSynchronously());
 
         const auto expectedPath =
                 SyncPath("Common documents") / "Test kDrive" / "test_ci" / "test_networkjobs" / "test_download.txt";
@@ -347,7 +347,7 @@ void TestNetworkJobs::testGetFileInfo() {
     // The returned path is empty if the job requests info on the remote drive root.
     {
         GetFileInfoJob jobWithPath(_driveDbId, "1"); // The identifier of the remote root drive is always 1.
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, jobWithPath.runSynchronously());
+        CPPUNIT_ASSERT(jobWithPath.runSynchronously());
         jobWithPath.setWithPath(true);
         CPPUNIT_ASSERT(jobWithPath.path().empty());
     }

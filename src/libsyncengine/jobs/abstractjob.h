@@ -35,7 +35,7 @@ class AbstractJob : public Poco::Runnable {
         ~AbstractJob() override;
 
         virtual void runJob() = 0;
-        ExitCode runSynchronously();
+        ExitInfo runSynchronously();
 
         /*
          * Callback to get reply
