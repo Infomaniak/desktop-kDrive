@@ -215,7 +215,8 @@ enum class ExitCause {
     NotFound,
     QuotaExceeded,
     FullListParsingError,
-    OperationCanceled
+    OperationCanceled,
+    ConnectionRefused
 };
 std::string toString(ExitCause e);
 

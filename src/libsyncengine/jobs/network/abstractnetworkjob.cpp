@@ -575,6 +575,8 @@ bool AbstractNetworkJob::processSocketError(const std::string &msg, const Unique
             // macOS !!!
             LOG_WARN(_logger, "Sockets defuncted by kernel");
             _exitCause = ExitCause::SocketsDefuncted;
+        } else if (err == POCO_ECONNREFUSED) {
+            _exitCause = ExitCause::ConnectionRefused;
         } else {
             _exitCause = ExitCause::Unknown;
         }
