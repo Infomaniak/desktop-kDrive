@@ -161,6 +161,7 @@ void SqliteDb::close() {
 
 bool SqliteDb::queryCreate(const std::string &id) {
     if (_queries.find(id) != _queries.end()) {
+        LOG_WARN(_logger, "Query ID " << id.c_str() << " already exist.");
         return false;
     }
 

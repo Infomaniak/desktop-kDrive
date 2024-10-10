@@ -74,12 +74,20 @@ class COMMONSERVER_EXPORT Db {
 
         inline int createNormalizeSyncNameFunc() { return _sqliteDb->createNormalizeSyncNameFunc(); };
 
+        bool tableExists(const std::string &tableName, bool &exist);
+        bool columnExists(const std::string &tableName, const std::string &columnName, bool &exist);
+
     protected:
         void startTransaction();
         void commitTransaction();
         void rollbackTransaction();
         bool sqlFail(const std::string &log, const std::string &error);
         bool checkConnect(const std::string &version);
+
+        bool prepareQuery(const std::string &queryId, const std::string &query);
+        bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
+        bool addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
+                                const std::string &request, bool *columnAdded = nullptr);
 
         log4cplus::Logger _logger;
         std::shared_ptr<SqliteDb> _sqliteDb;
@@ -90,10 +98,11 @@ class COMMONSERVER_EXPORT Db {
         std::string _fromVersion;
 
     private:
-        bool checkIfTableExists(const std::string &tableName, bool &found);
         bool insertVersion(const std::string &version);
         bool updateVersion(const std::string &version, bool &found);
         bool selectVersion(std::string &version, bool &found);
+
+        friend class TestDb;
 };
 
 } // namespace KDC
