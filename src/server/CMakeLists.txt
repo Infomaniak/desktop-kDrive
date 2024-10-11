@@ -79,6 +79,8 @@ if(APPLE)
     endif()
 elseif (WIN32)
     list(APPEND updater_SRCS updater_v2/windowsupdater.h updater_v2/windowsupdater.cpp)
+else ()
+    list(APPEND updater_SRCS updater_v2/linuxupdater.h updater_v2/linuxupdater.cpp)
 endif()
 
 set(3rdparty_SRC

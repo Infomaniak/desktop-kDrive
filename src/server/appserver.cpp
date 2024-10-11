@@ -285,6 +285,7 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
 
     connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
 #ifdef Q_OS_WIN
     // TODO
     // connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
@@ -2261,6 +2262,10 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
     } else if (message == showSettingsMsg) {
         showSettings();
     }
+}
+
+void AppServer::onSendNotifAsked(const QString& title, const QString& message) {
+    sendShowNotification(title, message);
 }
 
 void AppServer::sendShowNotification(const QString &title, const QString &message) {

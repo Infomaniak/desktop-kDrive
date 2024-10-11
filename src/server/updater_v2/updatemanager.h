@@ -51,13 +51,13 @@ class UpdateManager final : public QObject {
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
     signals:
-        void updaterAnnouncement(const QString &title, const QString &msg);
+        void updateAnnouncement(const QString &title, const QString &msg);
         void requestRestart();
         void updateStateChanged(KDC::UpdateStateV2 mewState);
 
     private slots:
         void slotTimerFired() const;
-        void slotUpdateStateChanged(KDC::UpdateStateV2 newState) const;
+        void slotUpdateStateChanged(KDC::UpdateStateV2 newState);
 
     private:
         /**
@@ -67,7 +67,7 @@ class UpdateManager final : public QObject {
 
         void onUpdateStateChange(UpdateStateV2 newState);
 
-        DistributionChannel readDistributionChannelFromDb() const;
+        [[nodiscard]] DistributionChannel readDistributionChannelFromDb() const;
 
         std::unique_ptr<AbstractUpdater> _updater;
 

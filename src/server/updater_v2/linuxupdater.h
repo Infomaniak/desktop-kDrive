@@ -17,33 +17,14 @@
  */
 
 #pragma once
-
 #include "abstractupdater.h"
 
 namespace KDC {
 
-class WindowsUpdater final : public AbstractUpdater {
+class LinuxUpdater final : public AbstractUpdater {
     public:
         void onUpdateFound() override;
-        void startInstaller() override;
-
-    private:
-        /**
-         * @brief Start the synchronous download of the new version installer.
-         * @return
-         */
-        virtual void downloadUpdate() noexcept;
-
-        /**
-         * @brief Callback to notify that the download is finished.
-         */
-        void downloadFinished(UniqueId jobId);
-
-        /**
-         * Build the destination path where the installer should be download.
-         * @return the absolute path to the installer file.
-         */
-        [[nodiscard]] bool getInstallerPath(SyncPath &path) const;
+        void startInstaller() override {}
 };
 
-} // namespace KDC
+} // KDC

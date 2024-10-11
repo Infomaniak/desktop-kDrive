@@ -18,11 +18,16 @@
 
 #include "versionwidget.h"
 
+#include "aboutdialog.h"
+#include "enablestateholder.h"
 #include "guirequests.h"
+#include "guiutility.h"
+#include "parameterscache.h"
 #include "preferencesblocwidget.h"
 #include "utility/utility.h"
 #include "utility/widgetsignalblocker.h"
 
+#include <QDesktopServices>
 #include <config.h>
 
 #include <QLabel>
@@ -35,6 +40,7 @@ namespace KDC {
 
 static const QString versionLink = "versionLink";
 static const QString releaseNoteLink = "releaseNoteLink";
+static const QString downloadPageLink = "downloadPageLink";
 
 VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     QWidget(parent), _versionLabel{new QLabel()}, _updateStatusLabel{new QLabel()}, _showReleaseNoteLabel{new QLabel()},
@@ -96,6 +102,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     // connect(_prodButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
     // connect(_betaButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
     // connect(_internalButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
+    connect(_updateStatusLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_versionNumberLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_showReleaseNoteLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdatButtonClicked);
@@ -130,6 +137,11 @@ void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) co
             statusString = tr("Checking update on server...");
             break;
         }
+        case UpdateStateV2::ManualUpdateAvailable: {
+            statusString =  tr(R"(An update is available: %1.<br>Please download it from <a style="%2" href="%3">here</a>.)").arg(versionStr, CommonUtility::linkStyle, downloadPageLink);
+            showReleaseNote = true;
+            break;
+        }
         case UpdateStateV2::Available:
         case UpdateStateV2::Ready: {
             statusString = tr("An update is available: %1").arg(versionStr);
@@ -156,14 +168,49 @@ void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) co
         }
         case UpdateStateV2::Unknown:
             break;
-            // case UpdateOnlyAvailableThroughSystem:
-            //     return tr("An update is available: %1.<br>Please download it from <a style=\"%2\" href=\"%3\">here</a>.")
-            //             .arg(updateVersion, CommonUtility::linkStyle, APPLICATION_DOWNLOAD_URL);
     }
 
     _updateStatusLabel->setText(statusString);
     _showReleaseNoteLabel->setVisible(showReleaseNote);
     _updateButton->setVisible(showUpdateButton);
+}
+
+void VersionWidget::showAboutDialog() {
+    EnableStateHolder _(this);
+    AboutDialog dialog(this);
+    dialog.execAndMoveToCenter(GuiUtility::getTopLevelWidget(this));
+}
+
+void VersionWidget::showReleaseNote() const {
+    QString os;
+#ifdef Q_OS_MAC
+    os = ""; // In order to works with Sparkle, the URL must have the same name as the package. So do not add the os for macOS
+#endif
+
+#ifdef Q_OS_WIN
+    os = "-win";
+#endif
+
+#ifdef Q_OS_LINUX
+    os = "-linux";
+#endif
+
+    VersionInfo versionInfo;
+    GuiRequests::versionInfo(versionInfo);
+
+    const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
+    if (const QString languageCode = CommonUtility::languageCode(appLanguage);CommonUtility::languageCodeIsEnglish(languageCode)) {
+        QDesktopServices::openUrl(
+                QUrl(QString("%1-%2%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), os)));
+    } else {
+        QDesktopServices::openUrl(
+                QUrl(QString("%1-%2%3-%4.html")
+                             .arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), os, languageCode)));
+    }
+}
+
+void VersionWidget::showDownloadPage() const {
+    QDesktopServices::openUrl(QUrl(APPLICATION_DOWNLOAD_URL));
 }
 
 void VersionWidget::onUpdateStateChanged(const UpdateStateV2 state) const {
@@ -187,9 +234,11 @@ void VersionWidget::onChannelButtonClicked() const {
 
 void VersionWidget::onLinkActivated(const QString &link) {
     if (link == versionLink)
-        emit showAboutDialog();
+        showAboutDialog();
     else if (link == releaseNoteLink)
-        emit showReleaseNote();
+        showReleaseNote();
+    else if (link == downloadPageLink)
+        showDownloadPage();
 }
 
 void VersionWidget::onUpdatButtonClicked() const {

@@ -419,7 +419,7 @@ std::string toString(LogUploadState e);
 enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
 std::string toString(UpdateState e);
 
-enum class UpdateStateV2 { UpToDate, Checking, Available, Downloading, Ready, CheckError, DownloadError, UpdateError, Unknown };
+enum class UpdateStateV2 { UpToDate, Checking, Available, ManualUpdateAvailable, Downloading, Ready, CheckError, DownloadError, UpdateError, Unknown };
 std::string toString(UpdateStateV2 e);
 
 enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
@@ -432,7 +432,7 @@ struct VersionInfo {
         DistributionChannel channel = DistributionChannel::Unknown;
         std::string tag; // Version number. Example: 3.6.4
         std::string changeLog; // List of changes in this version       TODO : is it useful? Do not send it to the UI?
-        std::uint64_t buildVersion = 0; // Example: 20240816
+        uint64_t buildVersion = 0; // Example: 20240816
         std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
@@ -464,19 +464,21 @@ struct VersionInfo {
         friend QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
             QString tmpTag;
             QString tmpChangeLog;
+            quint64 tmpBuildVersion = 0;
             QString tmpBuildMinOsVersion;
             QString tmpDownloadUrl;
-            in >> versionInfo.channel >> tmpTag >> tmpChangeLog >> versionInfo.buildVersion >> tmpBuildMinOsVersion >>
+            in >> versionInfo.channel >> tmpTag >> tmpChangeLog >> tmpBuildVersion >> tmpBuildMinOsVersion >>
                     tmpDownloadUrl;
             versionInfo.tag = tmpTag.toStdString();
             versionInfo.changeLog = tmpChangeLog.toStdString();
+            versionInfo.buildVersion = tmpBuildVersion;
             versionInfo.buildMinOsVersion = tmpBuildMinOsVersion.toStdString();
             versionInfo.downloadUrl = tmpDownloadUrl.toStdString();
             return in;
         }
         friend QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
             out << versionInfo.channel << QString::fromStdString(versionInfo.tag) << QString::fromStdString(versionInfo.changeLog)
-                << versionInfo.buildVersion << QString::fromStdString(versionInfo.buildMinOsVersion)
+                << static_cast<quint64>(versionInfo.buildVersion) << QString::fromStdString(versionInfo.buildMinOsVersion)
                 << QString::fromStdString(versionInfo.downloadUrl);
             return out;
         }

@@ -112,9 +112,6 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onLiteSyncWidgetClicked();
         void onLinkActivated(const QString &link);
 
-        void onShowAboutDialog();
-        void onShowReleaseNote();
-
         void retranslateUi() const;
 };
 

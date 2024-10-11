@@ -47,7 +47,8 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 # Installation Requirements
 
-Once `Visual Studio 2019` is installed, all commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.  
+Once `Visual Studio 2019` is installed, all commands should to be run using the `x64 Native Tools Command Prompt` with
+administrator permissions.
 
 ## Visual Studio 2019
 
@@ -65,14 +66,17 @@ When installing `Visual Studio 2019`, select the following components:
 
 ## Qt 6.2.3
 
-From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
+From
+the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4),
 tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
 In `Qt 6.2.3`, select:
+
 - MSVC 2019 64-bit
 - Sources
 - Qt 5 Compatibility Module
 
 In `Qt 6.2.3 Additional Libraries`, select :
+
 - Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
@@ -80,17 +84,21 @@ In `Qt 6.2.3 Additional Libraries`, select :
 - Qt Debug Information Files (only if you want to use a debugger)
 
 In `Developer and Designer Tools` (should be selected by default):
+
 - CMake
 - Ninja
 
-Add an environment variable named `QTDIR`, set with the path of your Qt msvc folder (which defaults to `C:\Qt\6.2.3\msvc2019_64`).
+Add an environment variable named `QTDIR`, set with the path of your Qt msvc folder (which defaults
+to `C:\Qt\6.2.3\msvc2019_64`).
 Add to the following paths to your `PATH` or adapt them to the actual location of your Qt folder if needed:
+
 - `C:\Qt\6.2.3\msvc2019_64\bin`
 - `C:\Qt\Tools\CMake_64\bin`
 
 ## Sentry
 
-Download the [Sentry sources (`sentry-native.zip`)](https://github.com/getsentry/sentry-native/releases) and extract them to `F:\Projects`.
+Download the [Sentry sources (`sentry-native.zip`)](https://github.com/getsentry/sentry-native/releases) and extract
+them to `F:\Projects`.
 After successful extraction, run:
 
 ```bash
@@ -127,7 +135,8 @@ cd openssl
 git checkout tags/openssl-3.2.1
 ```
 
-Then follow their [installation instructions](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) for Windows. 
+Then follow their [installation instructions](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) for
+Windows.
 Note that installing `NASM` is not required.
 
 ## Poco
@@ -146,7 +155,9 @@ cd build
 cmake -G "Visual Studio 16 2019" .. -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" -DOPENSSL_INCLUDE_DIR="C:\Program Files\OpenSSL\include" -DOPENSSL_CRYPTO_LIBRARY=libcrypto.lib -DOPENSSL_SSL_LIBRARY=libssl.lib
 ```
 
-Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\OpenSSL-Win64\lib` to the `Additional Library Directories` for the following projects:
+Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\OpenSSL-Win64\lib` to
+the `Additional Library Directories` for the following projects:
+
 - Crypto
 - JWT
 - NetSSL
@@ -184,8 +195,10 @@ git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 ```
 
 Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure as follows:
+
 - Select all projects then right click to access `Properties`.
-- Select `All configurations` and `All plateforms`,  then add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH` in `C/C++ > Preprocessor > Preprocessor Definitions`.
+- Select `All configurations` and `All plateforms`, then add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH`
+  in `C/C++ > Preprocessor > Preprocessor Definitions`.
 - In the `Build` menu, select `Batch Build...`.
 - Select all projects in `x64` version and click on `build`.
 
@@ -194,6 +207,7 @@ Only the two directories `lib` and `include` are required, everything else can b
 ## Zlib
 
 Download [Zlib](https://zlib.net/fossils/zlib-1.2.11.tar.gz) then run the following:
+
 ```bash
 tar -xvzf C:\Users\%username%\Downloads\zlib-1.2.11.tar.gz -C "C:\Program Files (x86)\"
 cd "C:/Program Files (x86)/zlib-1.2.11"
@@ -229,14 +243,18 @@ cmake --build . --target install --config Release
 
 ## Redistributable
 
-Create the `F:\Projects\vcredist` folder and copy-paste the [C++ Redistributable](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) `x64` and `arm64` 
+Create the `F:\Projects\vcredist` folder and copy-paste
+the [C++ Redistributable](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) `x64`
+and `arm64`
 inside it.
 
 ## NSIS
 
-Download and install [NSIS v3.03](https://sourceforge.net/projects/nsis/files/NSIS%203/3.03/nsis-3.03-setup.exe/download).
+Download and
+install [NSIS v3.03](https://sourceforge.net/projects/nsis/files/NSIS%203/3.03/nsis-3.03-setup.exe/download).
 Add the `NSIS` path to the `PATH` environment variable.
 You will need the following `NSIS` plugins:
+
 - `LogicLib`
 - `nsProcess`
 - `UAC`
@@ -244,18 +262,22 @@ You will need the following `NSIS` plugins:
 
 ## 7za
 
-Download [7za](https://sourceforge.net/projects/sevenzip/files/7-Zip/23.01/7z2301-extra.7z/download) and extract it in `C:\Program Files\7-Zip`. This 
+Download [7za](https://sourceforge.net/projects/sevenzip/files/7-Zip/23.01/7z2301-extra.7z/download) and extract it
+in `C:\Program Files\7-Zip`. This
 requires the prior installation of `7-Zip`.
 
 ## Icoutils
 
-Download [Icoutils](https://sourceforge.net/projects/unix-utils/files/icoutils/icoutils-0.32.3-x86_64.zip/download) and extract it.
-Add the path to the `Icoutils` folder to your `PATH` environment variable, e.g. `C:\Program Files\icoutils-0.32.3-x86_64\bin`. 
+Download [Icoutils](https://sourceforge.net/projects/unix-utils/files/icoutils/icoutils-0.32.3-x86_64.zip/download) and
+extract it.
+Add the path to the `Icoutils` folder to your `PATH` environment variable,
+e.g. `C:\Program Files\icoutils-0.32.3-x86_64\bin`.
 
 # Certificate Configuration
 
 To be able to sign executables, you need to have the Infomaniak certificate installed.  
 Once installed, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln`. Then follow the next steps:
+
 - Select `FileExplorerExtensionPackage\Package.appxmanifest`.
 - Go to the `Packaging` tab.
 - Click on `Choose Certificate...` then `Select from store`.
@@ -270,7 +292,9 @@ To build in `Debug` mode, you will need to build and deploy the Windows extensio
 
 ## Linking dependencies
 
-In order for CMake to be able to find all dependencies, add all libraries installation folder in the `PATH` environment variable:
+In order for CMake to be able to find all dependencies, add all libraries installation folder in the `PATH` environment
+variable:
+
 ```
 C:\Program Files (x86)\Poco\bin
 C:\Program Files (x86)\libzip\bin
@@ -283,7 +307,9 @@ C:\Program Files\OpenSSL\bin
 ```
 
 ## Prerequisites
+
 Add all the necessary libraries to your path environment variable:
+
 ```bash
 C:\Program Files (x86)\Poco\bin;
 C:\Program Files (x86)\libzip\bin;
@@ -300,6 +326,7 @@ C:\Program Files\OpenSSL\bin;
 ### CMake Parameters
 
 Copy the following list of `CMake` variables in the CMake options field:
+
 ```bash
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
@@ -313,6 +340,7 @@ Copy the following list of `CMake` variables in the CMake options field:
 -DVFS_STATIC_LIBRARY:FILEPATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Debug/Vfs.lib
 -DVFS_DIRECTORY:PATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Release
 ```
+
 ![alt text](CLion_cmake_options-1.png)
 
 ## Using Qt Creator
@@ -321,7 +349,8 @@ You can disable QML debugger from the settings to avoid some error pop-ups.
 
 ### Additionnal Requirements
 
-To be able to properly debug, you will need to install the `Qt Debug Information Files` from the [`Qt 6.2.3` Section](#qt-6.2.3).
+To be able to properly debug, you will need to install the `Qt Debug Information Files` from
+the [`Qt 6.2.3` Section](#qt-6.2.3).
 If you cannot see it, you need to tick the **Archive** box and filter again.
 
 ### CMake Parameters
@@ -336,7 +365,6 @@ Then copy the following list of `CMake` variables in "Initial CMake Parameters" 
 -DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
--DAPPLICATION_UPDATE_URL:STRING=https://www.infomaniak.com/drive/update/desktopclient
 -DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive
 -DBIN_INSTALL_DIR:PATH=F:/projects/desktop-kDrive
 -DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
@@ -353,14 +381,17 @@ Then copy the following list of `CMake` variables in "Initial CMake Parameters" 
 Then click "Re-configure with Initial Parameters".
 
 ## Using Visual Studio 2019
+
 ### Windows Extension
 
 To build in Debug mode, you'll need to build and deploy the Windows extension first.
 
 1. Open the `kDriveExt` solution located at `F:\Projects\desktop-kDrive\extensions\windows\cfapi`.
-2. Navigate to the post-build events of the `Vfs` project: right click on the `Vfs` project and follow `Properties > Configuration properties > Build Events > Post-Build Event`.
+2. Navigate to the post-build events of the `Vfs` project: right click on the `Vfs` project and
+   follow `Properties > Configuration properties > Build Events > Post-Build Event`.
 3. Select `x64` in the `Platform` drop-down menu.
-4. Modify `F:\Projects\` to match your actual path. The last two paths are outputs of the global projects; keep them for later steps.
+4. Modify `F:\Projects\` to match your actual path. The last two paths are outputs of the global projects; keep them for
+   later steps.
 5. Save and close the properties window.
 
 Select `Debug x64` and deploy. Repeat the same steps for `Release x64`.
@@ -371,16 +402,15 @@ Close the `kDriveExt` solution.
 
 Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projects\desktop-kDrive`.
 
-
 ### CMake Configuration
 
 1. On the configuration selector, click on "Manage configurations".
 2. Create a new configuration `x64 Debug`.
 3. Configure it as follows:
-   - Configuration type: Debug
-   - Toolset: msvc_x64_x64
-   - Build root: The folder set in the post-build events of the `kDriveExt` solution.
-   - CMake command args: 
+    - Configuration type: Debug
+    - Toolset: msvc_x64_x64
+    - Build root: The folder set in the post-build events of the `kDriveExt` solution.
+    - CMake command args:
     ```bash
     -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client 
     -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak 
@@ -401,10 +431,10 @@ Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projec
     -DPoco_DIR:PATH="C:/Program Files (x86)/Poco/cmake"
     ```
    You may need to adjust paths based on your installation.
-   
-   - Check that `Advanced settings > install path` is the the build root path.
 
-Save (CTRL + S). `CMake` will automatically run in the output window. 
+    - Check that `Advanced settings > install path` is the the build root path.
+
+Save (CTRL + S). `CMake` will automatically run in the output window.
 Make sure no errors occur.
 
 ### Install
@@ -417,10 +447,11 @@ Select `CMake` targets.
 Right-click on the `kDrive` executable and then on `Install`.
 Once done, right-click on the `kDrive_client` executable and then on `Install`.
 
-
 ### DLL Copy
 
-During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
+During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your
+output directory. The DLLs are located in:
+
 - `C:\Program Files (x86)\Poco\bin`
 - `C:\Program Files (x86)\log4cplus\bin`
 - `C:\Program Files (x86)\NSIS\Bin`
@@ -438,10 +469,10 @@ Once `kDrive.exe` is running, right-click on the client executable: `Debug > kDr
 
 Once `kDrive.exe` is running, right-click on the `kDrive_client` executable: `Debug > kDrive_client.exe`.
 
-
 ## Testing the extension
 
-To test the extension in Debug mode, you will first need to install a [release version](https://www.infomaniak.com/en/apps/download-kdrive) of `kDrive`.  
+To test the extension in Debug mode, you will first need to install
+a [release version](https://www.infomaniak.com/en/apps/download-kdrive) of `kDrive`.  
 Once installed and running, stop the `File Explorer` with the command:
 
 ```bash
@@ -465,10 +496,12 @@ start explorer.exe
 
 ## Build and Packaging
 
-The script `build-drive.ps1` will build, sign, then package the project. You can either start it from the root of the `desktop-kDrive` repository, or provide a path when executing it.    
+The script `build-drive.ps1` will build, sign, then package the project. You can either start it from the root of
+the `desktop-kDrive` repository, or provide a path when executing it.    
 To get more information, call the script with the option `-h` or `-help`
 
-**Note.** For `CMake` to be able to build the project, you need to initialise the environment for `x64` with `vcvarsall.bat`, or `vcvars64.bat` (see the help output of `build-drive.ps1` for details).
+**Note.** For `CMake` to be able to build the project, you need to initialise the environment for `x64`
+with `vcvarsall.bat`, or `vcvars64.bat` (see the help output of `build-drive.ps1` for details).
 
 ```bash
 cd F:\Projects\desktop-kDrive
@@ -482,4 +515,5 @@ When building in Debug mode, the following error may occur when `CMAKE_INSTALL_P
 ![sentry_init Debug Error](./doc-images/Qt_Debug_Error.png)
 
 The `INSTALL_PREFIX` must not end with `bin`, and if so you will need to adjust its value.
-For example, `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug/bin` must be changed to `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug`.
+For example, `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug/bin` must be changed
+to `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug`.

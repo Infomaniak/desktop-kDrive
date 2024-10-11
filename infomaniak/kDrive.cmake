@@ -5,7 +5,6 @@ set( APPLICATION_CLIENT_EXECUTABLE "kDrive_client" )
 set( APPLICATION_DOMAIN     "infomaniak.com" )
 set( APPLICATION_VENDOR     "Infomaniak Network SA" )
 
-set( APPLICATION_UPDATE_URL "https://www.infomaniak.com/drive/update/desktopclient" CACHE STRING "URL for updater" FORCE )
 if("$ENV{KDRIVE_PREPROD_UPDATE}" STREQUAL "1")
     message(STATUS "Environment variable KDRIVE_PREPROD_UPDATE is defined")
     set( APPLICATION_STORAGE_URL "https://download.storage.infomaniak.com/drive/desktopclient_preprod/kDrive" )

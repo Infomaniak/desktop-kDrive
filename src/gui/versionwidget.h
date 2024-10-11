@@ -43,12 +43,12 @@ class VersionWidget final : public QWidget {
         explicit VersionWidget(QWidget *parent = nullptr);
         void refresh(UpdateStateV2 state = UpdateStateV2::Unknown) const;
 
+        void showAboutDialog();
+        void showReleaseNote() const;
+        void showDownloadPage() const;
+
     public slots:
         void onUpdateStateChanged(UpdateStateV2 state) const;
-
-    signals:
-        void showReleaseNote();
-        void showAboutDialog();
 
     private slots:
         void onChannelButtonClicked() const;

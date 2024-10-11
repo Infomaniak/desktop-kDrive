@@ -544,7 +544,7 @@ QString CommonUtility::languageCode(const KDC::Language enforcedLocale) {
             break;
     }
 
-    return QString();
+    return {};
 }
 
 SyncPath CommonUtility::getAppDir() {

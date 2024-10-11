@@ -48,6 +48,8 @@ UpdaterServer *UpdaterServer::instance() {
 }
 
 QUrl UpdaterServer::updateUrl() {
+    return {};
+    /*
     QUrl updateBaseUrl = QUrl(QLatin1String(APPLICATION_UPDATE_URL));
     if (!updateBaseUrl.isValid() || updateBaseUrl.host() == ".") {
         return QUrl();
@@ -66,6 +68,7 @@ QUrl UpdaterServer::updateUrl() {
     updateBaseUrl.setQuery(urlQuery);
 
     return updateBaseUrl;
+    */
 }
 
 // QString UpdaterServer::version() const {

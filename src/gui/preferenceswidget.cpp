@@ -379,8 +379,6 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     connect(liteSyncWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onLiteSyncWidgetClicked);
 #endif
 
-    connect(_versionWidget, &VersionWidget::showAboutDialog, this, &PreferencesWidget::onShowAboutDialog);
-    connect(_versionWidget, &VersionWidget::showReleaseNote, this, &PreferencesWidget::onShowReleaseNote);
     connect(_gui.get(), &ClientGui::updateStateChanged, _versionWidget, &VersionWidget::onUpdateStateChanged);
 
     connect(_displayErrorsWidget, &ActionWidget::clicked, this, &PreferencesWidget::displayErrors);
@@ -551,38 +549,6 @@ void PreferencesWidget::onLinkActivated(const QString &link) {
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Invalid link %1.").arg(link), QMessageBox::Ok, this);
             msgBox.exec();
         }
-    }
-}
-void PreferencesWidget::onShowAboutDialog() {
-    EnableStateHolder _(this);
-    AboutDialog dialog(this);
-    dialog.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
-}
-
-void PreferencesWidget::onShowReleaseNote() {
-    QString os;
-#ifdef Q_OS_MAC
-    os = ""; // In order to works with Sparkle, the URL must have the same name as the package. So do not add the os for macOS
-#endif
-
-#ifdef Q_OS_WIN
-    os = "-win";
-#endif
-
-#ifdef Q_OS_LINUX
-    os = "-linux";
-#endif
-
-    const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
-    const QString &languageCode = KDC::CommonUtility::languageCode(appLanguage);
-
-    if (CommonUtility::languageCodeIsEnglish(languageCode)) {
-        QDesktopServices::openUrl(
-                QUrl(QString("%1-%2%3.html").arg(APPLICATION_STORAGE_URL, CommonUtility::currentVersion().c_str(), os)));
-    } else {
-        QDesktopServices::openUrl(
-                QUrl(QString("%1-%2%3-%4.html")
-                             .arg(APPLICATION_STORAGE_URL, CommonUtility::currentVersion().c_str(), os, languageCode)));
     }
 }
 

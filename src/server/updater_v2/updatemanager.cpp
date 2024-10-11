@@ -18,6 +18,7 @@
 
 #include "updatemanager.h"
 
+#include "linuxupdater.h"
 #include "sparkleupdater.h"
 #include "windowsupdater.h"
 #include "db/parmsdb.h"
@@ -59,13 +60,17 @@ void UpdateManager::slotTimerFired() const {
     _updater->checkUpdateAvailable();
 }
 
-void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) const {
+void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) {
     LOG_DEBUG(Log::instance()->getLogger(), "New update state: " << newState);
     switch (newState) {
         case UpdateStateV2::UpToDate:
         case UpdateStateV2::Checking:
         case UpdateStateV2::Downloading: {
             // Nothing to do
+            break;
+        }
+        case UpdateStateV2::ManualUpdateAvailable: {
+            emit updateAnnouncement(tr("New update available."), tr("Version %1 is available for download.").arg(_updater->versionInfo().tag.c_str()));
             break;
         }
         case UpdateStateV2::Available: {
@@ -76,11 +81,12 @@ void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) const {
         case UpdateStateV2::Ready: {
             // TODO : manage seen version
             // The new version is ready to be installed
-            //_updater->startInstaller();
+            _updater->startInstaller();
             break;
         }
         case UpdateStateV2::DownloadError:
-        case UpdateStateV2::CheckError: {
+        case UpdateStateV2::CheckError:
+        case UpdateStateV2::UpdateError: {
             // An error occurred
             break;
         }
@@ -94,7 +100,7 @@ void UpdateManager::createUpdater() {
     _updater = std::make_unique<WindowsUpdater>();
 #else
     // the best we can do is notify about updates
-    _updater = std::make_unique<to be implemented>();
+    _updater = std::make_unique<LinuxUpdater>();
 #endif
 }
 
