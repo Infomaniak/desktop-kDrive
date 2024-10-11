@@ -610,7 +610,7 @@ void TestConflictResolverWorker::testMoveMoveSource() {
 void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
     // Initial state : Node AAA is orphan.
     const SyncName orphanName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-            "AAA", PlatformInconsistencyCheckerUtility::SuffixTypeOrphan);
+            "AAA", PlatformInconsistencyCheckerUtility::SuffixType::Orphan);
 
     std::shared_ptr<Node> lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
     lNodeAAA->setName(orphanName);

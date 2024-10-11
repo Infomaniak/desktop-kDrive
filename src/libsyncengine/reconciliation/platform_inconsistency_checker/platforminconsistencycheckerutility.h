@@ -28,7 +28,7 @@ namespace KDC {
 
 class PlatformInconsistencyCheckerUtility {
     public:
-        typedef enum { SuffixTypeRename, SuffixTypeConflict, SuffixTypeOrphan, SuffixTypeBlacklisted } SuffixType;
+        enum class SuffixType { Conflict, Orphan, Blacklisted };
 
     public:
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> instance();
