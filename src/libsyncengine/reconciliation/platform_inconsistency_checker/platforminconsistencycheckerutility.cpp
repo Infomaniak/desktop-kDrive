@@ -40,7 +40,7 @@ static const char forbiddenFilenameChars[] = {'/', '\0'};
 #endif
 #endif
 
-static const int maxNameLengh = 50; // Max filename length is uniformized to 255 characters for all platforms and backends
+static const int maxNameLengh = 255; // Max filename length is uniformized to 255 characters for all platforms and backends
 
 namespace KDC {
 
