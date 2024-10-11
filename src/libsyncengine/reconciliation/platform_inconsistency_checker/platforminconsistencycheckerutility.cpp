@@ -40,7 +40,7 @@ static const char forbiddenFilenameChars[] = {'/', '\0'};
 #endif
 #endif
 
-#define MAX_NAME_LENGTH 255
+static const int maxNameLengh = 50; // Max filename length is uniformized to 255 characters for all platforms and backends
 
 namespace KDC {
 
@@ -62,7 +62,7 @@ std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyChecke
 
 SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPath &name, SuffixType suffixType) {
     SyncName suffix = generateSuffix(suffixType);
-    SyncName sub = name.stem().native().substr(0, MAX_NAME_LENGTH - suffix.size() - name.extension().native().size());
+    SyncName sub = name.stem().native().substr(0, maxNameLengh - suffix.size() - name.extension().native().size());
 
 #ifdef _WIN32
     SyncName nameStr(name.native());
@@ -131,8 +131,8 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
 }
 #endif
 
-bool PlatformInconsistencyCheckerUtility::checkNameSize(const SyncName &name) {
-    if (name.size() > MAX_NAME_LENGTH) {
+bool PlatformInconsistencyCheckerUtility::checkNameSize(const SyncName &name) const {
+    if (name.size() > maxNameLengh) {
         return true;
     }
 
