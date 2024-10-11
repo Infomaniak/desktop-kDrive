@@ -24,13 +24,11 @@
 #endif
 #include "logarchiver/testlogarchiver.h"
 #include "updater/testupdatechecker.h"
-#include "updater/testupdater.h"
 namespace KDC {
-// #ifdef __APPLE__
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
-// #endif
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdater);
+#ifdef __APPLE__
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
+#endif
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 } // namespace KDC
 

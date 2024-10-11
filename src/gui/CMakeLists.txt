@@ -41,7 +41,6 @@ set(client_SRCS
     ../libcommongui/commclient.h ../libcommongui/commclient.cpp
     ../common/filesystembase.h ../common/filesystembase.cpp
     ../libcommongui/logger.h ../libcommongui/logger.cpp
-    ../libcommon/updater.h ../libcommon/updater.cpp
     clientgui.h clientgui.cpp
     debugreporter.h debugreporter.cpp
     guiutility.h guiutility.cpp
@@ -127,7 +126,6 @@ set(client_SRCS
     synchronizeditemwidget.h synchronizeditemwidget.cpp
     synthesispopover.h synthesispopover.cpp
     updater/updateerrordialog.h updater/updateerrordialog.cpp
-    updater/updaterclient.h updater/updaterclient.cpp
     userselectionwidget.h userselectionwidget.cpp
     customextensionsetupwidget.h customextensionsetupwidget.cpp
     customlabel.h customlabel.cpp

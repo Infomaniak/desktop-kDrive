@@ -32,7 +32,6 @@
 #include "languagechangefilter.h"
 #include "version.h"
 #include "config.h"
-#include "updater/updaterclient.h"
 #include "litesyncdialog.h"
 #include "enablestateholder.h"
 #include "libcommongui/logger.h"

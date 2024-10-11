@@ -130,8 +130,6 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
 
     CommonUtility::setupTranslations(QApplication::instance(), ParametersCache::instance()->parametersInfo().language());
 
-    _updaterClient.reset(new UpdaterClient);
-
 #ifdef PLUGINDIR
     // Setup extra plugin search path
     QString extraPluginPath = QStringLiteral(PLUGINDIR);
@@ -439,9 +437,10 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> targetVersion;
             paramsStream >> targetVersionString;
             paramsStream >> clientVersion;
-            QTimer::singleShot(500, this, [this, targetVersion, targetVersionString, clientVersion]() {
-                _updaterClient->showWindowsUpdaterDialog(targetVersion, targetVersionString, clientVersion);
-            });
+            // TODO : show dialog for Windows
+            // QTimer::singleShot(500, this, [this, targetVersion, targetVersionString, clientVersion]() {
+            //     _updaterClient->showWindowsUpdaterDialog(targetVersion, targetVersionString, clientVersion);
+            // });
             break;
         }
         case SignalNum::UPDATER_STATE_CHANGED: {

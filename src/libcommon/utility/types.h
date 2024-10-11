@@ -416,10 +416,18 @@ static constexpr int64_t selfRestarterNoCrashDetected = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
 std::string toString(LogUploadState e);
-enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
-std::string toString(UpdateState e);
-
-enum class UpdateStateV2 { UpToDate, Checking, Available, ManualUpdateAvailable, Downloading, Ready, CheckError, DownloadError, UpdateError, Unknown };
+enum class UpdateStateV2 {
+    UpToDate,
+    Checking,
+    Available,
+    ManualUpdateAvailable,
+    Downloading,
+    Ready,
+    CheckError,
+    DownloadError,
+    UpdateError,
+    Unknown
+};
 std::string toString(UpdateStateV2 e);
 
 enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
@@ -431,14 +439,13 @@ std::string toString(Platform e);
 struct VersionInfo {
         DistributionChannel channel = DistributionChannel::Unknown;
         std::string tag; // Version number. Example: 3.6.4
-        std::string changeLog; // List of changes in this version       TODO : is it useful? Do not send it to the UI?
+        // std::string changeLog; // List of changes in this version, not used for now.
         uint64_t buildVersion = 0; // Example: 20240816
         std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
         [[nodiscard]] bool isValid() const {
-            return channel != DistributionChannel::Unknown && !tag.empty() && !changeLog.empty() && buildVersion != 0 &&
-                   !downloadUrl.empty();
+            return channel != DistributionChannel::Unknown && !tag.empty() && buildVersion != 0 && !downloadUrl.empty();
         }
 
         [[nodiscard]] std::string fullVersion() const {
@@ -455,7 +462,6 @@ struct VersionInfo {
 
         void clear() {
             tag.clear();
-            changeLog.clear();
             buildVersion = 0;
             buildMinOsVersion.clear();
             downloadUrl.clear();
@@ -463,21 +469,19 @@ struct VersionInfo {
 
         friend QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
             QString tmpTag;
-            QString tmpChangeLog;
             quint64 tmpBuildVersion = 0;
             QString tmpBuildMinOsVersion;
             QString tmpDownloadUrl;
-            in >> versionInfo.channel >> tmpTag >> tmpChangeLog >> tmpBuildVersion >> tmpBuildMinOsVersion >>
-                    tmpDownloadUrl;
+            in >> versionInfo.channel >> tmpTag >> tmpBuildVersion >> tmpBuildMinOsVersion >> tmpDownloadUrl;
             versionInfo.tag = tmpTag.toStdString();
-            versionInfo.changeLog = tmpChangeLog.toStdString();
             versionInfo.buildVersion = tmpBuildVersion;
             versionInfo.buildMinOsVersion = tmpBuildMinOsVersion.toStdString();
             versionInfo.downloadUrl = tmpDownloadUrl.toStdString();
             return in;
         }
+
         friend QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
-            out << versionInfo.channel << QString::fromStdString(versionInfo.tag) << QString::fromStdString(versionInfo.changeLog)
+            out << versionInfo.channel << QString::fromStdString(versionInfo.tag)
                 << static_cast<quint64>(versionInfo.buildVersion) << QString::fromStdString(versionInfo.buildMinOsVersion)
                 << QString::fromStdString(versionInfo.downloadUrl);
             return out;

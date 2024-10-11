@@ -29,12 +29,14 @@
 #include "config.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/sentryhandler.h"
-#include "updater/updaterclient.h"
 
 #undef CONSOLE_DEBUG
 #ifdef CONSOLE_DEBUG
 #include <iostream>
 #endif
+#include "guirequests.h"
+
+
 #include <QActionGroup>
 #include <QApplication>
 #include <QBoxLayout>
@@ -602,8 +604,10 @@ void SynthesisPopover::initUI() {
     connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
     connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
     connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
-    connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &SynthesisPopover::onUpdateAvailabalityChange,
-            Qt::UniqueConnection);
+    // TODO : put back for locked versions
+    // connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this,
+    // &SynthesisPopover::onUpdateAvailabalityChange,
+    //         Qt::UniqueConnection);
 }
 
 QUrl SynthesisPopover::syncUrl(int syncDbId, const QString &filePath) {
@@ -1059,53 +1063,54 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
 }
 
 void SynthesisPopover::onUpdateAvailabalityChange() {
-    if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
-    if (_lockedAppVersionWidget->isHidden()) return;
-    QString statusString;
-    UpdateState updateState = UpdateState::Error;
-    // try {
-    //     if (!UpdaterClient::instance()->isSparkleUpdater()) {
-    //         statusString = UpdaterClient::instance()->statusString();
-    //         updateState = UpdaterClient::instance()->updateState();
-    //     } else {
-    //         updateState = UpdateState::Ready;  // On macOS, we just start the installer (Sparkle does the rest)
-    //     }
-    // } catch (std::exception const &) {
-    //     return;
+    // TODO : locked version
+    // if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
+    // if (_lockedAppVersionWidget->isHidden()) return;
+    // QString statusString;
+    // UpdateState updateState = UpdateState::Error;
+    // // try {
+    // //     if (!UpdaterClient::instance()->isSparkleUpdater()) {
+    // //         statusString = UpdaterClient::instance()->statusString();
+    // //         updateState = UpdaterClient::instance()->updateState();
+    // //     } else {
+    // //         updateState = UpdateState::Ready;  // On macOS, we just start the installer (Sparkle does the rest)
+    // //     }
+    // // } catch (std::exception const &) {
+    // //     return;
+    // // }
+    //
+    // _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready);
+    // _lockedAppUpdateOptionalLabel->setVisible(updateState != UpdateState::Ready && updateState != UpdateState::Downloading);
+    // switch (updateState) {
+    //     case UpdateState::Ready:
+    //         _lockedAppUpdateButton->setText(tr("Update"));
+    //         break;
+    //     case UpdateState::Downloading:
+    //         _lockedAppUpdateButton->setText(tr("Update download in progress"));
+    //         break;
+    //     case UpdateState::Skipped:
+    //         UpdaterClient::instance()->unskipUpdate();
+    //     case UpdateState::Checking:
+    //         _lockedAppUpdateButton->setText(tr("Looking for update..."));
+    //         break;
+    //     case UpdateState::ManualOnly:
+    //         _lockedAppUpdateButton->setText(tr("Manual update"));
+    //         _lockedAppUpdateOptionalLabel->setText(statusString);
+    //         break;
+    //     default:
+    //         _lockedAppUpdateButton->setText(tr("Unavailable"));
+    //         _lockedAppUpdateOptionalLabel->setText(statusString);
+    //         SentryHandler::instance()->captureMessage(
+    //                 SentryLevel::Fatal, "AppLocked",
+    //                 "406 Error received but unable to fetch an update: " + statusString.toStdString());
+    //         break;
     // }
-
-    _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready);
-    _lockedAppUpdateOptionalLabel->setVisible(updateState != UpdateState::Ready && updateState != UpdateState::Downloading);
-    switch (updateState) {
-        case UpdateState::Ready:
-            _lockedAppUpdateButton->setText(tr("Update"));
-            break;
-        case UpdateState::Downloading:
-            _lockedAppUpdateButton->setText(tr("Update download in progress"));
-            break;
-        case UpdateState::Skipped:
-            UpdaterClient::instance()->unskipUpdate();
-        case UpdateState::Checking:
-            _lockedAppUpdateButton->setText(tr("Looking for update..."));
-            break;
-        case UpdateState::ManualOnly:
-            _lockedAppUpdateButton->setText(tr("Manual update"));
-            _lockedAppUpdateOptionalLabel->setText(statusString);
-            break;
-        default:
-            _lockedAppUpdateButton->setText(tr("Unavailable"));
-            _lockedAppUpdateOptionalLabel->setText(statusString);
-            SentryHandler::instance()->captureMessage(
-                    SentryLevel::Fatal, "AppLocked",
-                    "406 Error received but unable to fetch an update: " + statusString.toStdString());
-            break;
-    }
-    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
+    // connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
 }
 
 void SynthesisPopover::onStartInstaller() noexcept {
     try {
-        UpdaterClient::instance()->startInstaller();
+        GuiRequests::startInstaller();
     } catch (std::exception const &) {
         // Do nothing
     }

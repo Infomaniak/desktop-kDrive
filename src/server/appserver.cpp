@@ -19,7 +19,6 @@
 #include "appserver.h"
 #include "libcommon/asserts.h"
 #include "common/utility.h"
-#include "updater/kdcupdater.h"
 #include "libcommonserver/vfs.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
@@ -286,10 +285,6 @@ AppServer::AppServer(int &argc, char **argv) :
 
     connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
     connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-#ifdef Q_OS_WIN
-    // TODO
-    // connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
-#endif
 
     // Init socket api
     _socketApi.reset(new SocketApi(_syncPalMap, _vfsMap));
@@ -2198,30 +2193,31 @@ void AppServer::onScheduleAppRestart() {
 }
 
 void AppServer::onShowWindowsUpdateErrorDialog() {
-    static bool alreadyAsked = false; // Ask only once
-    if (!alreadyAsked) {
-        NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-        if (updater) {
-            if (updater->autoUpdateAttempted()) { // Try auto update first
-                alreadyAsked = true;
-
-                // Notify client
-                int id = 0;
-
-                QString targetVersion;
-                QString targetVersionString;
-                QString clientVersion;
-                updater->getVersions(targetVersion, targetVersionString, clientVersion);
-
-                QByteArray params;
-                QDataStream paramsStream(&params, QIODevice::WriteOnly);
-                paramsStream << targetVersion;
-                paramsStream << targetVersionString;
-                paramsStream << clientVersion;
-                CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
-            }
-        }
-    }
+    // TODO : update dialog for Windows
+    // static bool alreadyAsked = false; // Ask only once
+    // if (!alreadyAsked) {
+    //     NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
+    //     if (updater) {
+    //         if (updater->autoUpdateAttempted()) { // Try auto update first
+    //             alreadyAsked = true;
+    //
+    //             // Notify client
+    //             int id = 0;
+    //
+    //             QString targetVersion;
+    //             QString targetVersionString;
+    //             QString clientVersion;
+    //             updater->getVersions(targetVersion, targetVersionString, clientVersion);
+    //
+    //             QByteArray params;
+    //             QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    //             paramsStream << targetVersion;
+    //             paramsStream << targetVersionString;
+    //             paramsStream << clientVersion;
+    //             CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
+    //         }
+    //     }
+    // }
 }
 
 void AppServer::onUpdateStateChanged(const UpdateStateV2 state) {
@@ -2264,7 +2260,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
     }
 }
 
-void AppServer::onSendNotifAsked(const QString& title, const QString& message) {
+void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
     sendShowNotification(title, message);
 }
 

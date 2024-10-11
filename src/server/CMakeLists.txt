@@ -37,7 +37,6 @@ else()
 endif()
 
 set(server_SRCS
-    ../libcommon/updater.h ../libcommon/updater.cpp
     ../libcommonserver/commserver.h ../libcommonserver/commserver.cpp
     ../libcommonserver/vfs.h ../libcommonserver/vfs.cpp
     ../libcommonserver/plugin.h ../libcommonserver/plugin.cpp
@@ -51,9 +50,6 @@ set(server_SRCS
 )
 
 set(updater_SRCS
-    updater/kdcupdater.h updater/kdcupdater.cpp
-    updater/updateinfo.h updater/updateinfo.cpp
-    updater/updaterserver.h updater/updaterserver.cpp
     updater_v2/abstractupdater.h updater_v2/abstractupdater.cpp
     updater_v2/updatemanager.h updater_v2/updatemanager.cpp
     updater_v2/updatechecker.h updater_v2/updatechecker.cpp
