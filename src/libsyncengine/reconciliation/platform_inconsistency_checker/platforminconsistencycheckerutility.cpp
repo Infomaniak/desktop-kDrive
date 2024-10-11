@@ -189,7 +189,7 @@ void PlatformInconsistencyCheckerUtility::setMaxPath() {
     _maxPathLength = CommonUtility::maxPathLength();
 }
 
-SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixType /*= SuffixTypeRename*/) {
+SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixType) {
     std::time_t now = std::time(nullptr);
     std::tm tm = *std::localtime(&now);
 

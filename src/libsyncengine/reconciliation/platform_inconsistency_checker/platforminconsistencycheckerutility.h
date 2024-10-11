@@ -49,7 +49,7 @@ class PlatformInconsistencyCheckerUtility {
 
         SyncName charToHex(unsigned int c);
         void setMaxPath();
-        SyncName generateSuffix(SuffixType suffixType = SuffixTypeRename);
+        SyncName generateSuffix(SuffixType suffixType);
 
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> _instance;
         static size_t _maxPathLength;
