@@ -198,16 +198,13 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     ss << std::put_time(&tm, Str("%Y%m%d_%H%M%S"));
 
     switch (suffixType) {
-        case SuffixTypeRename:
-            suffix = Str("_renamed_");
-            break;
-        case SuffixTypeConflict:
+        case SuffixType::Conflict:
             suffix = Str("_conflict_");
             break;
-        case SuffixTypeOrphan:
+        case SuffixType::Orphan:
             suffix = Str("_orphan_");
             break;
-        case SuffixTypeBlacklisted:
+        case SuffixType::Blacklisted:
             suffix = Str("_blacklisted_");
             break;
     }
