@@ -54,8 +54,20 @@ class ComputeFSOperationWorker : public ISyncWorker {
         ExitInfo inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);
         ExitInfo inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
                                     DbNodeIdSet &remainingDbIds); // Restrict change detection to a node type.
+
         ExitInfo inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
                                        const SyncPath &remoteDbPath); // Detect change for a single node on a specific side.
+
+        ExitInfo inferEditFromDbNode(const ReplicaSide side, const DbNode &dbNode, const NodeId &nodeId,
+                                     bool &done); // Detect change for a single node on a specific side.
+
+        ExitInfo inferMoveAndRenameFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
+                                              const SyncPath &remoteDbPath, const NodeId &nodeId, const NodeId &parentId,
+                                              bool &done); // Detect change for a single node on a specific side.
+
+        ExitInfo inferDeleteFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
+                                       const SyncPath &remoteDbPath, const NodeId &nodeId, const NodeId &parentId,
+                                       bool &done); // Detect change for a single node on a specific side.
 
         // Detect changes based on the snapshot records: create operations
         ExitInfo exploreSnapshotTree(ReplicaSide side, const std::unordered_set<NodeId> &idsSet);
