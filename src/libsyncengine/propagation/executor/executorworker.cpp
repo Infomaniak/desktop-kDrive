@@ -173,6 +173,8 @@ void ExecutorWorker::execute() {
                 if (!bypassProgressComplete) {
                     if (ignored) {
                         setProgressComplete(syncOp, SyncFileStatus::Ignored);
+                    } else if (syncOp->affectedNode() && syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
+                        setProgressComplete(syncOp, SyncFileStatus::Inconsistency);
                     } else {
                         setProgressComplete(syncOp, SyncFileStatus::Success);
                     }
@@ -383,7 +385,7 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
                 }
 
                 _executorExitCode = convertToPlaceholder(relativeLocalFilePath, true, _executorExitCause);
-                if (_executorExitCode != ExitCode::Unknown) {
+                if (_executorExitCode != ExitCode::Ok) {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
                                                        << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                     hasError = true;
@@ -447,7 +449,7 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
 
             _executorExitCode =
                     convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote, _executorExitCause);
-            if (_executorExitCode != ExitCode::Unknown) {
+            if (_executorExitCode != ExitCode::Ok) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 hasError = true;
@@ -536,7 +538,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
 
         if (placeholderCreation) {
             _executorExitCode = createPlaceholder(relativeLocalFilePath, _executorExitCause);
-            if (_executorExitCode != ExitCode::Unknown) {
+            if (_executorExitCode != ExitCode::Ok) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Failed to create placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 return false;
@@ -573,15 +575,11 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 return false;
             }
 
-            SyncFileStatus status = SyncFileStatus::Success;
-
             // Check for inconsistency
             if (syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
                 // Notify user that the file has been renamed
                 SyncFileItem syncItem;
                 if (_syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
-                    status = SyncFileStatus::Inconsistency;
-
                     Error err(_syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
                               syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
                               syncItem.newPath().has_value() ? syncItem.newPath().value() : syncItem.path(), syncItem.conflict(),
@@ -589,8 +587,6 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                     _syncPal->addError(err);
                 }
             }
-
-            _syncPal->setProgressComplete(relativeLocalFilePath, status);
         } else {
             if (syncOp->affectedNode()->type() == NodeType::Directory) {
                 job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath);
@@ -642,7 +638,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
         if (syncOp->affectedNode()->type() == NodeType::Directory) {
             _executorExitCode =
                     convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote, _executorExitCause);
-            if (_executorExitCode != ExitCode::Unknown) {
+            if (_executorExitCode != ExitCode::Ok) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 _syncPal->setRestart(true);
@@ -669,7 +665,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             }
         } else {
             _executorExitCode = convertToPlaceholder(relativeLocalFilePath, true, _executorExitCause);
-            if (_executorExitCode != ExitCode::Unknown) {
+            if (_executorExitCode != ExitCode::Ok) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 return false;
