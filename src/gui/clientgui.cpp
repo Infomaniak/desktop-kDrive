@@ -24,6 +24,8 @@
 #include "parameterscache.h"
 #include "libcommongui/utility/utility.h"
 #include "libcommon/theme/theme.h"
+#include "gui/updater/updatedialog.h"
+#include "utility/lockutility.h"
 
 #include <QClipboard>
 #include <QDesktopServices>
@@ -80,6 +82,7 @@ ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(_app, &AppClient::folderSizeCompleted, this, &ClientGui::folderSizeCompleted);
     connect(_app, &AppClient::fixConflictingFilesCompleted, this, &ClientGui::onFixConflictingFilesCompleted);
     connect(_app, &AppClient::updateStateChanged, this, &ClientGui::updateStateChanged);
+    connect(_app, &AppClient::showWindowsUpdateDialog, this, &ClientGui::onShowWindowsUpdateDialog, Qt::QueuedConnection);
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
     connect(this, &ClientGui::appVersionLocked, this, &ClientGui::onAppVersionLocked);
@@ -455,9 +458,9 @@ void ClientGui::setupSynthesisPopover() {
     _workaroundManualVisibility = true;
 #endif
 
-    qCInfo(lcClientGui) << "Tray menu workarounds:"
-                        << "noabouttoshow:" << _workaroundNoAboutToShowUpdate << "fakedoubleclick:" << _workaroundFakeDoubleClick
-                        << "showhide:" << _workaroundShowAndHideTray << "manualvisibility:" << _workaroundManualVisibility;
+    qCInfo(lcClientGui) << "Tray menu workarounds:" << "noabouttoshow:" << _workaroundNoAboutToShowUpdate
+                        << "fakedoubleclick:" << _workaroundFakeDoubleClick << "showhide:" << _workaroundShowAndHideTray
+                        << "manualvisibility:" << _workaroundManualVisibility;
 
     connect(&_delayedTrayUpdateTimer, &QTimer::timeout, this, &ClientGui::onUpdateSystray);
     _delayedTrayUpdateTimer.setInterval(2 * 1000);
@@ -754,6 +757,20 @@ void ClientGui::onNewDriveWizard() {
     }
 
     raiseDialog(_addDriveWizard.get());
+}
+
+void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) {
+    static LockUtility lock;
+    if (!lock.lock()) return;
+
+    UpdateDialog dialog(versionInfo);
+    if (dialog.exec() == QDialog::Accepted) {
+        GuiRequests::startInstaller();
+    } else if (dialog.skip()) {
+        GuiRequests::skipUpdate(versionInfo.fullVersion());
+    }
+
+    lock.unlock();
 }
 
 void ClientGui::onDisableNotifications(NotificationsDisabled type, QDateTime value) {

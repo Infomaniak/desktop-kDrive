@@ -125,7 +125,7 @@ set(client_SRCS
     synchronizeditem.h synchronizeditem.cpp
     synchronizeditemwidget.h synchronizeditemwidget.cpp
     synthesispopover.h synthesispopover.cpp
-    updater/updateerrordialog.h updater/updateerrordialog.cpp
+        updater/updatedialog.h updater/updatedialog.cpp
     userselectionwidget.h userselectionwidget.cpp
     customextensionsetupwidget.h customextensionsetupwidget.cpp
     customlabel.h customlabel.cpp

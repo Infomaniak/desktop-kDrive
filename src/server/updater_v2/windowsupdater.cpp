@@ -23,7 +23,6 @@
 #include "log/sentry/sentryhandler.h"
 #include "log/log.h"
 #include "io/iohelper.h"
-#include "utility/utility.h"
 
 namespace KDC {
 

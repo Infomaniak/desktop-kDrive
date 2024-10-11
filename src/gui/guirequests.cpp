@@ -1222,7 +1222,7 @@ ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channe
 
 ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSIONINFO, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSION_INFO, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -1248,7 +1248,23 @@ ExitCode GuiRequests::updateState(UpdateStateV2 &state) {
 
 ExitCode GuiRequests::startInstaller() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_STARTINSTALLER, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_START_INSTALLER, QByteArray(), results)) {
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    return exitCode;
+}
+
+ExitCode GuiRequests::skipUpdate(const std::string &version) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << version.c_str();
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_SKIP_VERSION, params, results)) {
         return ExitCode::SystemError;
     }
 

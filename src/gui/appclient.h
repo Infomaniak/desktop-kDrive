@@ -90,6 +90,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         void logUploadStatusUpdated(LogUploadState status, int percent);
         // Updater
         void updateStateChanged(UpdateStateV2 state);
+        void showWindowsUpdateDialog(const VersionInfo &versionInfo);
 
     public slots:
         void onWizardDone(int);

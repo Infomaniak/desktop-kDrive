@@ -29,6 +29,7 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
+#include "gui/updater/updatedialog.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QMenu>
@@ -431,20 +432,13 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::UPDATER_SHOW_DIALOG: {
-            QString targetVersion;
-            QString targetVersionString;
-            QString clientVersion;
-            paramsStream >> targetVersion;
-            paramsStream >> targetVersionString;
-            paramsStream >> clientVersion;
-            // TODO : show dialog for Windows
-            // QTimer::singleShot(500, this, [this, targetVersion, targetVersionString, clientVersion]() {
-            //     _updaterClient->showWindowsUpdaterDialog(targetVersion, targetVersionString, clientVersion);
-            // });
+            VersionInfo versionInfo;
+            paramsStream >> versionInfo;
+            emit showWindowsUpdateDialog(versionInfo);
             break;
         }
         case SignalNum::UPDATER_STATE_CHANGED: {
-            auto state = UpdateStateV2::UpToDate;
+            auto state = UpdateStateV2::Unknown;
             paramsStream >> state;
             emit updateStateChanged(state);
             break;

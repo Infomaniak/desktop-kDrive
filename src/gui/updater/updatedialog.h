@@ -19,28 +19,26 @@
 #pragma once
 
 #include "../customdialog.h"
-
-// #include "../updater/updateinfo.h"
-
-class QTextEdit;
+#include "utility/types.h"
 
 namespace KDC {
 
-class UpdateErrorDialog : public CustomDialog {
+class UpdateDialog : public CustomDialog {
         Q_OBJECT
 
     public:
-        explicit UpdateErrorDialog(const QString &targetVersion, const QString &targetVersionString, const QString &clientVersion,
-                                   QWidget *parent = nullptr);
-        virtual ~UpdateErrorDialog();
+        explicit UpdateDialog(const VersionInfo &versionInfo, QWidget *parent = nullptr);
+        ~UpdateDialog() override;
 
-    signals:
-        void skip();
-        void askagain();
-        void retry();
+        void reject() override;
+
+        [[nodiscard]] bool skip() const { return _skip; }
 
     private:
-        void initUi(const QString &targetVersion, const QString &targetVersionString, const QString &clientVersion);
+        void initUi(const VersionInfo &versionInfo);
+
+        QPushButton *_skipButton{nullptr};
+        bool _skip{false};
 };
 
 } // namespace KDC

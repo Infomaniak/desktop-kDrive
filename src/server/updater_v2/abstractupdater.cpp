@@ -56,7 +56,7 @@ void AbstractUpdater::onAppVersionReceived() {
 
 void AbstractUpdater::setState(const UpdateStateV2 newState) {
     if (_state != newState) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Update state changed to: " << newState);
+        LOG_INFO(Log::instance()->getLogger(), "Update state changed to: " << newState);
         _state = newState;
         if (_stateChangeCallback) _stateChangeCallback(_state);
     }

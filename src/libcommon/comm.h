@@ -113,9 +113,10 @@ enum class RequestNum {
     UTILITY_CANCEL_LOG_TO_SUPPORT,
     UTILITY_GET_LOG_ESTIMATED_SIZE,
     UPDATER_CHANGE_CHANNEL,
-    UPDATER_VERSIONINFO,
+    UPDATER_VERSION_INFO,
     UPDATER_STATE,
-    UPDATER_STARTINSTALLER,
+    UPDATER_START_INSTALLER,
+    UPDATER_SKIP_VERSION,
     RECONSIDER_SKIPPED_UPDATE,
     UTILITY_CRASH,
     UTILITY_QUIT,
@@ -261,12 +262,14 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
             return "UTILITY_GET_LOG_ESTIMATED_SIZE";
-        case RequestNum::UPDATER_VERSIONINFO:
+        case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION";
         case RequestNum::UPDATER_STATE:
             return "UPDATER_STATUS";
-        case RequestNum::UPDATER_STARTINSTALLER:
-            return "UPDATER_STARTINSTALLER";
+        case RequestNum::UPDATER_START_INSTALLER:
+            return "UPDATER_START_INSTALLER";
+        case RequestNum::UPDATER_SKIP_VERSION:
+            return "UPDATER_SKIP_VERSION";
         case RequestNum::RECONSIDER_SKIPPED_UPDATE:
             return "RECONSIDER_SKIPPED_UPDATE";
         case RequestNum::UTILITY_CRASH:

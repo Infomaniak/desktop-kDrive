@@ -285,6 +285,7 @@ AppServer::AppServer(int &argc, char **argv) :
 
     connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
     connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
 
     // Init socket api
     _socketApi.reset(new SocketApi(_syncPalMap, _vfsMap));
@@ -1956,16 +1957,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UPDATER_CHANGE_CHANNEL: {
             auto channel = DistributionChannel::Unknown;
-
             QDataStream paramsStream(params);
             paramsStream >> channel;
-
             _updateManager->setDistributionChannel(channel);
-
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::UPDATER_VERSIONINFO: {
+        case RequestNum::UPDATER_VERSION_INFO: {
             VersionInfo versionInfo = _updateManager->versionInfo();
             resultStream << ExitCode::Ok;
             resultStream << versionInfo;
@@ -1977,8 +1975,16 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << state;
             break;
         }
-        case RequestNum::UPDATER_STARTINSTALLER: {
+        case RequestNum::UPDATER_START_INSTALLER: {
             _updateManager->startInstaller();
+            resultStream << ExitCode::Ok;
+            break;
+        }
+        case RequestNum::UPDATER_SKIP_VERSION: {
+            QString tmp;
+            QDataStream paramsStream(params);
+            paramsStream >> tmp;
+            _updateManager->skipVersion(tmp.toStdString());
             resultStream << ExitCode::Ok;
             break;
         }
@@ -2192,32 +2198,13 @@ void AppServer::onScheduleAppRestart() {
     _appRestartRequired = true;
 }
 
-void AppServer::onShowWindowsUpdateErrorDialog() {
-    // TODO : update dialog for Windows
-    // static bool alreadyAsked = false; // Ask only once
-    // if (!alreadyAsked) {
-    //     NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-    //     if (updater) {
-    //         if (updater->autoUpdateAttempted()) { // Try auto update first
-    //             alreadyAsked = true;
-    //
-    //             // Notify client
-    //             int id = 0;
-    //
-    //             QString targetVersion;
-    //             QString targetVersionString;
-    //             QString clientVersion;
-    //             updater->getVersions(targetVersion, targetVersionString, clientVersion);
-    //
-    //             QByteArray params;
-    //             QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    //             paramsStream << targetVersion;
-    //             paramsStream << targetVersionString;
-    //             paramsStream << clientVersion;
-    //             CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
-    //         }
-    //     }
-    // }
+void AppServer::onShowWindowsUpdateDialog() {
+    int id = 0;
+
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << _updateManager->versionInfo();
+    CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
 }
 
 void AppServer::onUpdateStateChanged(const UpdateStateV2 state) {

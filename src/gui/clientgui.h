@@ -115,6 +115,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onErrorsCleared(int syncDbId);
         void onFixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors);
         void onNewDriveWizard();
+        void onShowWindowsUpdateDialog(const VersionInfo &versionInfo);
 
     private:
         QScopedPointer<Systray> _tray;
@@ -140,6 +141,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QSet<int> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
         std::map<int, QList<ErrorInfo>> _errorInfoMap;
+
 #ifdef Q_OS_LINUX
         QAction *_actionSynthesis = nullptr;
         QAction *_actionPreferences = nullptr;

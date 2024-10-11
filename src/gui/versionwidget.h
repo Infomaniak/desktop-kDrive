@@ -47,13 +47,16 @@ class VersionWidget final : public QWidget {
         void showReleaseNote() const;
         void showDownloadPage() const;
 
+    signals:
+        void showUpdateDialog(const VersionInfo &versionInfo);
+
     public slots:
         void onUpdateStateChanged(UpdateStateV2 state) const;
 
     private slots:
         void onChannelButtonClicked() const;
         void onLinkActivated(const QString &link);
-        void onUpdatButtonClicked() const;
+        void onUpdatButtonClicked();
 
     private:
         void refreshChannelButtons(DistributionChannel channel) const;

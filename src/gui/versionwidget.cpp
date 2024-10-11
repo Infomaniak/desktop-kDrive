@@ -42,13 +42,12 @@ static const QString versionLink = "versionLink";
 static const QString releaseNoteLink = "releaseNoteLink";
 static const QString downloadPageLink = "downloadPageLink";
 
-VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
-    QWidget(parent), _versionLabel{new QLabel()}, _updateStatusLabel{new QLabel()}, _showReleaseNoteLabel{new QLabel()},
-    _versionNumberLabel{new QLabel()}, _updateButton{new QPushButton()} {
+VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     const auto mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
 
+    _versionLabel = new QLabel(this);
     _versionLabel->setObjectName("blocLabel");
     layout()->addWidget(_versionLabel);
 
@@ -61,6 +60,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     versionBox->addLayout(versionVBox);
     versionBox->setStretchFactor(versionVBox, 1);
 
+    _updateStatusLabel = new QLabel(this);
     _updateStatusLabel->setObjectName("boldTextLabel");
     _updateStatusLabel->setWordWrap(true);
     versionVBox->addWidget(_updateStatusLabel);
@@ -78,6 +78,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     // channelBox->addStretch();
     // versionVBox->addLayout(channelBox);
 
+    _showReleaseNoteLabel = new QLabel(this);
     _showReleaseNoteLabel->setObjectName("boldTextLabel");
     _showReleaseNoteLabel->setWordWrap(true);
     _showReleaseNoteLabel->setVisible(false);
@@ -85,6 +86,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
 
     static const QString versionNumberLinkText =
             tr(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING);
+    _versionNumberLabel = new QLabel(this);
     _versionNumberLabel->setContextMenuPolicy(Qt::PreventContextMenu);
     _versionNumberLabel->setText(versionNumberLinkText);
     versionVBox->addWidget(_versionNumberLabel);
@@ -93,6 +95,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     copyrightLabel->setObjectName("description");
     versionVBox->addWidget(copyrightLabel);
 
+    _updateButton = new QPushButton(this);
     _updateButton->setObjectName("defaultbutton");
     _updateButton->setFlat(true);
     versionBox->addWidget(_updateButton);
@@ -138,7 +141,8 @@ void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) co
             break;
         }
         case UpdateStateV2::ManualUpdateAvailable: {
-            statusString =  tr(R"(An update is available: %1.<br>Please download it from <a style="%2" href="%3">here</a>.)").arg(versionStr, CommonUtility::linkStyle, downloadPageLink);
+            statusString = tr(R"(An update is available: %1.<br>Please download it from <a style="%2" href="%3">here</a>.)")
+                                   .arg(versionStr, CommonUtility::linkStyle, downloadPageLink);
             showReleaseNote = true;
             break;
         }
@@ -159,7 +163,7 @@ void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) co
             break;
         }
         case UpdateStateV2::UpdateError: {
-            statusString = tr("An error occured during update.");
+            statusString = tr("An error occurred during update.");
             break;
         }
         case UpdateStateV2::DownloadError: {
@@ -199,13 +203,12 @@ void VersionWidget::showReleaseNote() const {
     GuiRequests::versionInfo(versionInfo);
 
     const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
-    if (const QString languageCode = CommonUtility::languageCode(appLanguage);CommonUtility::languageCodeIsEnglish(languageCode)) {
-        QDesktopServices::openUrl(
-                QUrl(QString("%1-%2%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), os)));
+    if (const QString languageCode = CommonUtility::languageCode(appLanguage);
+        CommonUtility::languageCodeIsEnglish(languageCode)) {
+        QDesktopServices::openUrl(QUrl(QString("%1-%2%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), os)));
     } else {
         QDesktopServices::openUrl(
-                QUrl(QString("%1-%2%3-%4.html")
-                             .arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), os, languageCode)));
+                QUrl(QString("%1-%2%3-%4.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), os, languageCode)));
     }
 }
 
@@ -241,8 +244,10 @@ void VersionWidget::onLinkActivated(const QString &link) {
         showDownloadPage();
 }
 
-void VersionWidget::onUpdatButtonClicked() const {
-    GuiRequests::startInstaller();
+void VersionWidget::onUpdatButtonClicked() {
+    VersionInfo versionInfo;
+    GuiRequests::versionInfo(versionInfo);
+    emit showUpdateDialog(versionInfo);
 }
 
 void VersionWidget::refreshChannelButtons(const DistributionChannel channel) const {

@@ -47,6 +47,7 @@ class UpdateManager final : public QObject {
         [[nodiscard]] const UpdateStateV2 &state() const { return _updater->state(); }
 
         void startInstaller() const;
+        void skipVersion(const std::string &skippedVersion) const;
 
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
@@ -54,6 +55,7 @@ class UpdateManager final : public QObject {
         void updateAnnouncement(const QString &title, const QString &msg);
         void requestRestart();
         void updateStateChanged(KDC::UpdateStateV2 mewState);
+        void showUpdateDialog();
 
     private slots:
         void slotTimerFired() const;

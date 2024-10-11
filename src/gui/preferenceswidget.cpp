@@ -379,6 +379,8 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 #endif
 
     connect(_gui.get(), &ClientGui::updateStateChanged, _versionWidget, &VersionWidget::onUpdateStateChanged);
+    connect(_versionWidget, &VersionWidget::showUpdateDialog, _gui.get(), &ClientGui::onShowWindowsUpdateDialog,
+            Qt::QueuedConnection);
 
     connect(_displayErrorsWidget, &ActionWidget::clicked, this, &PreferencesWidget::displayErrors);
 }

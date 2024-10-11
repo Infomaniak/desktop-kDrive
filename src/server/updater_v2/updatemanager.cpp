@@ -70,7 +70,8 @@ void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) {
             break;
         }
         case UpdateStateV2::ManualUpdateAvailable: {
-            emit updateAnnouncement(tr("New update available."), tr("Version %1 is available for download.").arg(_updater->versionInfo().tag.c_str()));
+            emit updateAnnouncement(tr("New update available."),
+                                    tr("Version %1 is available for download.").arg(_updater->versionInfo().tag.c_str()));
             break;
         }
         case UpdateStateV2::Available: {
@@ -79,9 +80,13 @@ void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) {
             break;
         }
         case UpdateStateV2::Ready: {
-            // TODO : manage seen version
+            // TODO : manage skipped version
             // The new version is ready to be installed
+#if defined(__APPLE__)
             _updater->startInstaller();
+#elif defined(_WIN32)
+            emit showUpdateDialog();
+#endif
             break;
         }
         case UpdateStateV2::DownloadError:
@@ -94,9 +99,9 @@ void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) {
 }
 
 void UpdateManager::createUpdater() {
-#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
+#if defined(__APPLE__) && defined(HAVE_SPARKLE)
     _updater = std::make_unique<SparkleUpdater>();
-#elif defined(Q_OS_WIN32)
+#elif defined(_WIN32)
     _updater = std::make_unique<WindowsUpdater>();
 #else
     // the best we can do is notify about updates
@@ -111,6 +116,10 @@ void UpdateManager::onUpdateStateChange(const UpdateStateV2 newState) {
 
 DistributionChannel UpdateManager::readDistributionChannelFromDb() const {
     return ParametersCache::instance()->parameters().distributionChannel();
+}
+
+void UpdateManager::skipVersion(const std::string &skippedVersion) const {
+    // TODO : write skipped version in DB
 }
 
 } // namespace KDC
