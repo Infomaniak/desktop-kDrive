@@ -37,7 +37,10 @@ Param(
 # ci	: Build with CI testing (currently only checks the building stage)
 [switch] $ci,
 
-# Upload :	flag to trigger the use of the USB-key signing certificate
+# wo	: The path to the build wrapper output directory used by SonarCloud CI Analysis
+[switch] $won= $null,
+
+# Upload : Flag to trigger the use of the USB-key signing certificate
 [switch] $upload,
 
 # Help	: Displays the help message then exit if called
@@ -309,8 +312,8 @@ Invoke-Expression $cmake
 $buildArgs += @('--build', $buildPath, '--target all install')
 $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
 
-if ($ci) { 	# Insert the SonarCloud build-wrapper tool for CI Analysis
-	$buildCall = "build-wrapper-win-x86-64 --out-dir $BUILD_WRAPPER_OUT_DIR $buildCall"
+if ($wo) { 	# Insert the SonarCloud build-wrapper tool for CI Analysis
+	$buildCall = "build-wrapper-win-x86-64 --out-dir $wo $buildCall"
 }
 
 Write-Host $buildCall
