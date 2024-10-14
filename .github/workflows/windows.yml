@@ -61,7 +61,7 @@ jobs:
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           set COVFILE=%cd%\src\test.cov  
           call "cov01.exe" -1
-
+          setx BUILD_WRAPPER_OUT_DIR ${{ env.BUILD_WRAPPER_OUT_DIR }}
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
