@@ -38,7 +38,7 @@ Param(
 [switch] $ci,
 
 # wo	: The path to the build wrapper output directory used by SonarCloud CI Analysis
-[switch] $won= $null,
+[string] $wo= $null,
 
 # Upload : Flag to trigger the use of the USB-key signing certificate
 [switch] $upload,
@@ -169,6 +169,8 @@ Parameters :
 	`t`tall`t`t`t: Remove all the files, located in '$path/build-$buildType', then exit the script
 	`t`tremake`t`t: Remove all the files, then rebuild the project
 	`t-ext`t`t`t: Rebuild and redeploy the windows extension
+	`t-ci`t`t`t: Build with CI testing
+	`t-wo`t`t`t: Optional parameter to wrap the build with SonarCloud build-wrapper tool (CI Analysis). Set the path to the build wrapper output directory. The wrapper will be used iff this path is not empty.
 	`t-upload`t`t: Upload flag to switch between the virtual and physical certificates. Also rebuilds the project
 	") -f Cyan
 
