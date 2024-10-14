@@ -111,7 +111,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdatButtonClicked);
 }
 
-void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) const {
+void VersionWidget::refresh(UpdateState state /*= UpdateStateV2::Unknown*/) const {
     // Re-translate
     const QString releaseNoteLinkText =
             tr(R"(<a style="%1" href="%2">Show release note</a>)").arg(CommonUtility::linkStyle, releaseNoteLink);
@@ -121,7 +121,7 @@ void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) co
     _updateButton->setText(tr("UPDATE"));
 
     // Refresh update state
-    if (state == UpdateStateV2::Unknown) {
+    if (state == UpdateState::Unknown) {
         GuiRequests::updateState(state);
     }
     VersionInfo versionInfo;
@@ -132,45 +132,45 @@ void VersionWidget::refresh(UpdateStateV2 state /*= UpdateStateV2::Unknown*/) co
     bool showReleaseNote = false;
     bool showUpdateButton = false;
     switch (state) {
-        case UpdateStateV2::UpToDate: {
+        case UpdateState::UpToDate: {
             statusString = tr("%1 is up to date!").arg(APPLICATION_NAME);
             break;
         }
-        case UpdateStateV2::Checking: {
+        case UpdateState::Checking: {
             statusString = tr("Checking update on server...");
             break;
         }
-        case UpdateStateV2::ManualUpdateAvailable: {
+        case UpdateState::ManualUpdateAvailable: {
             statusString = tr(R"(An update is available: %1.<br>Please download it from <a style="%2" href="%3">here</a>.)")
                                    .arg(versionStr, CommonUtility::linkStyle, downloadPageLink);
             showReleaseNote = true;
             break;
         }
-        case UpdateStateV2::Available:
-        case UpdateStateV2::Ready: {
+        case UpdateState::Available:
+        case UpdateState::Ready: {
             statusString = tr("An update is available: %1").arg(versionStr);
             showReleaseNote = true;
             showUpdateButton = true;
             break;
         }
-        case UpdateStateV2::Downloading: {
+        case UpdateState::Downloading: {
             statusString = tr("Downloading %1. Please wait...").arg(versionStr);
             showReleaseNote = true;
             break;
         }
-        case UpdateStateV2::CheckError: {
+        case UpdateState::CheckError: {
             statusString = tr("Could not check for new updates.");
             break;
         }
-        case UpdateStateV2::UpdateError: {
+        case UpdateState::UpdateError: {
             statusString = tr("An error occurred during update.");
             break;
         }
-        case UpdateStateV2::DownloadError: {
+        case UpdateState::DownloadError: {
             statusString = tr("Could not download update.");
             break;
         }
-        case UpdateStateV2::Unknown:
+        case UpdateState::Unknown:
             break;
     }
 
@@ -216,7 +216,7 @@ void VersionWidget::showDownloadPage() const {
     QDesktopServices::openUrl(QUrl(APPLICATION_DOWNLOAD_URL));
 }
 
-void VersionWidget::onUpdateStateChanged(const UpdateStateV2 state) const {
+void VersionWidget::onUpdateStateChanged(const UpdateState state) const {
     refresh(state);
 }
 

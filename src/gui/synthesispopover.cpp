@@ -1063,11 +1063,10 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
 }
 
 void SynthesisPopover::onUpdateAvailabalityChange() {
-    // TODO : locked version
     // if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
     // if (_lockedAppVersionWidget->isHidden()) return;
     // QString statusString;
-    // UpdateState updateState = UpdateState::Error;
+    // UpdateState updateState = UpdateState::Unknown;
     // // try {
     // //     if (!UpdaterClient::instance()->isSparkleUpdater()) {
     // //         statusString = UpdaterClient::instance()->statusString();
@@ -1078,6 +1077,9 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
     // // } catch (std::exception const &) {
     // //     return;
     // // }
+    // if (GuiRequests::updateState(updateState) != ExitCode::Ok) {
+    //     qCWarning(lcSynthesisPopover()) << "Failed to fetch update state.";
+    // }
     //
     // _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready);
     // _lockedAppUpdateOptionalLabel->setVisible(updateState != UpdateState::Ready && updateState != UpdateState::Downloading);
@@ -1095,14 +1097,14 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
     //         break;
     //     case UpdateState::ManualOnly:
     //         _lockedAppUpdateButton->setText(tr("Manual update"));
-    //         _lockedAppUpdateOptionalLabel->setText(statusString);
+    //         //_lockedAppUpdateOptionalLabel->setText(statusString);
     //         break;
     //     default:
     //         _lockedAppUpdateButton->setText(tr("Unavailable"));
-    //         _lockedAppUpdateOptionalLabel->setText(statusString);
+    //         //_lockedAppUpdateOptionalLabel->setText(statusString);
     //         SentryHandler::instance()->captureMessage(
     //                 SentryLevel::Fatal, "AppLocked",
-    //                 "406 Error received but unable to fetch an update: " + statusString.toStdString());
+    //                 "406 uError received but unable to fetch an pdate: " + statusString.toStdString());
     //         break;
     // }
     // connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);

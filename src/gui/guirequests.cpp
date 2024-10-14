@@ -1233,7 +1233,7 @@ ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo) {
     return exitCode;
 }
 
-ExitCode GuiRequests::updateState(UpdateStateV2 &state) {
+ExitCode GuiRequests::updateState(UpdateState &state) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UPDATER_STATE, QByteArray(), results)) {
         return ExitCode::SystemError;

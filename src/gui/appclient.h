@@ -89,7 +89,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         void errorsCleared(int syncDbId);
         void logUploadStatusUpdated(LogUploadState status, int percent);
         // Updater
-        void updateStateChanged(UpdateStateV2 state);
+        void updateStateChanged(UpdateState state);
         void showWindowsUpdateDialog(const VersionInfo &versionInfo);
 
     public slots:

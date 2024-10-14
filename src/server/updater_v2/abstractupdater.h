@@ -31,7 +31,7 @@ class AbstractUpdater {
         virtual ~AbstractUpdater() = default;
 
         [[nodiscard]] const VersionInfo &versionInfo() const { return _updateChecker->versionInfo(); }
-        [[nodiscard]] const UpdateStateV2 &state() const { return _state; }
+        [[nodiscard]] const UpdateState &state() const { return _state; }
 
         /**
          * @brief Checks if an update is available with the currently set distribution channel.
@@ -61,20 +61,20 @@ class AbstractUpdater {
          */
         virtual void onUpdateFound() = 0;
         virtual void setQuitCallback(const std::function<void()> &quitCallback) { /* Redefined in child class if necessary */ }
-        void setStateChangeCallback(const std::function<void(UpdateStateV2)> &stateChangeCallback);
+        void setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback);
 
         [[nodiscard]] const std::unique_ptr<UpdateChecker> &updateChecker() const { return _updateChecker; }
 
     protected:
-        void setState(UpdateStateV2 newState);
+        void setState(UpdateState newState);
 
     private:
         void onAppVersionReceived();
 
         std::unique_ptr<UpdateChecker> _updateChecker;
 
-        UpdateStateV2 _state{UpdateStateV2::UpToDate}; // Current state of the update process.
-        std::function<void(UpdateStateV2)> _stateChangeCallback = nullptr;
+        UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
+        std::function<void(UpdateState)> _stateChangeCallback = nullptr;
 };
 
 } // namespace KDC

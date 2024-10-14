@@ -18,6 +18,7 @@
 
 #include "getappversionjob.h"
 #include "utility/jsonparserutility.h"
+#include "utility/utility.h"
 
 #include <config.h>
 
@@ -68,8 +69,8 @@ std::string GetAppVersionJob::getContentType(bool &canceled) {
     return {};
 }
 
-bool GetAppVersionJob::handleError(std::istream &is, const Poco::URI &uri) {
-    // TODO
+bool GetAppVersionJob::handleError(std::istream &, const Poco::URI &uri) {
+    LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str());
     return false;
 }
 

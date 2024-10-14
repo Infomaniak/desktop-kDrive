@@ -43,7 +43,7 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     _updateCheckTimer.start(std::chrono::milliseconds(checkTestInterval).count());
 
     // Setup callback for update state change notification
-    const std::function<void(UpdateStateV2)> callback = std::bind_front(&UpdateManager::onUpdateStateChange, this);
+    const std::function<void(UpdateState)> callback = std::bind_front(&UpdateManager::onUpdateStateChange, this);
     _updater->setStateChangeCallback(callback);
     connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
@@ -60,26 +60,26 @@ void UpdateManager::slotTimerFired() const {
     _updater->checkUpdateAvailable();
 }
 
-void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) {
+void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
     LOG_DEBUG(Log::instance()->getLogger(), "New update state: " << newState);
     switch (newState) {
-        case UpdateStateV2::UpToDate:
-        case UpdateStateV2::Checking:
-        case UpdateStateV2::Downloading: {
+        case UpdateState::UpToDate:
+        case UpdateState::Checking:
+        case UpdateState::Downloading: {
             // Nothing to do
             break;
         }
-        case UpdateStateV2::ManualUpdateAvailable: {
+        case UpdateState::ManualUpdateAvailable: {
             emit updateAnnouncement(tr("New update available."),
                                     tr("Version %1 is available for download.").arg(_updater->versionInfo().tag.c_str()));
             break;
         }
-        case UpdateStateV2::Available: {
+        case UpdateState::Available: {
             // A new version has been found
             _updater->onUpdateFound();
             break;
         }
-        case UpdateStateV2::Ready: {
+        case UpdateState::Ready: {
             // TODO : manage skipped version
             // The new version is ready to be installed
 #if defined(__APPLE__)
@@ -89,9 +89,9 @@ void UpdateManager::slotUpdateStateChanged(const UpdateStateV2 newState) {
 #endif
             break;
         }
-        case UpdateStateV2::DownloadError:
-        case UpdateStateV2::CheckError:
-        case UpdateStateV2::UpdateError: {
+        case UpdateState::DownloadError:
+        case UpdateState::CheckError:
+        case UpdateState::UpdateError: {
             // An error occurred
             break;
         }
@@ -109,7 +109,7 @@ void UpdateManager::createUpdater() {
 #endif
 }
 
-void UpdateManager::onUpdateStateChange(const UpdateStateV2 newState) {
+void UpdateManager::onUpdateStateChange(const UpdateState newState) {
     // Emit signal in order to run `slotUpdateStateChanged` in main thread
     emit updateStateChanged(newState);
 }

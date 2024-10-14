@@ -711,21 +711,21 @@ std::string toString(const LogUploadState e) {
     }
 }
 
-std::string toString(const UpdateStateV2 e) {
+std::string toString(const UpdateState e) {
     switch (e) {
-        case UpdateStateV2::UpToDate:
+        case UpdateState::UpToDate:
             return "UpToDate";
-        case UpdateStateV2::Checking:
+        case UpdateState::Checking:
             return "Checking";
-        case UpdateStateV2::Available:
+        case UpdateState::Available:
             return "Available";
-        case UpdateStateV2::Downloading:
+        case UpdateState::Downloading:
             return "Downloading";
-        case UpdateStateV2::Ready:
+        case UpdateState::Ready:
             return "Ready";
-        case UpdateStateV2::DownloadError:
+        case UpdateState::DownloadError:
             return "DownloadError";
-        case UpdateStateV2::CheckError:
+        case UpdateState::CheckError:
             return "CheckError";
         default:
             return noConversionStr;

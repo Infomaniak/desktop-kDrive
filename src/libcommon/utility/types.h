@@ -416,19 +416,20 @@ static constexpr int64_t selfRestarterNoCrashDetected = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
 std::string toString(LogUploadState e);
-enum class UpdateStateV2 {
+enum class UpdateState {
     UpToDate,
     Checking,
     Available,
     ManualUpdateAvailable,
     Downloading,
     Ready,
+    Skipped,
     CheckError,
     DownloadError,
     UpdateError,
     Unknown
 };
-std::string toString(UpdateStateV2 e);
+std::string toString(UpdateState e);
 
 enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
 std::string toString(DistributionChannel e);

@@ -44,7 +44,7 @@ class UpdateManager final : public QObject {
             _updater->checkUpdateAvailable(channel);
         } // TODO : write to DB
         [[nodiscard]] const VersionInfo &versionInfo() const { return _updater->versionInfo(); }
-        [[nodiscard]] const UpdateStateV2 &state() const { return _updater->state(); }
+        [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
 
         void startInstaller() const;
         void skipVersion(const std::string &skippedVersion) const;
@@ -54,12 +54,12 @@ class UpdateManager final : public QObject {
     signals:
         void updateAnnouncement(const QString &title, const QString &msg);
         void requestRestart();
-        void updateStateChanged(KDC::UpdateStateV2 mewState);
+        void updateStateChanged(KDC::UpdateState mewState);
         void showUpdateDialog();
 
     private slots:
         void slotTimerFired() const;
-        void slotUpdateStateChanged(KDC::UpdateStateV2 newState);
+        void slotUpdateStateChanged(KDC::UpdateState newState);
 
     private:
         /**
@@ -67,7 +67,7 @@ class UpdateManager final : public QObject {
          */
         void createUpdater();
 
-        void onUpdateStateChange(UpdateStateV2 newState);
+        void onUpdateStateChange(UpdateState newState);
 
         [[nodiscard]] DistributionChannel readDistributionChannelFromDb() const;
 

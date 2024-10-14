@@ -1970,7 +1970,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UPDATER_STATE: {
-            UpdateStateV2 state = _updateManager->state();
+            UpdateState state = _updateManager->state();
             resultStream << ExitCode::Ok;
             resultStream << state;
             break;
@@ -2207,7 +2207,7 @@ void AppServer::onShowWindowsUpdateDialog() {
     CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
 }
 
-void AppServer::onUpdateStateChanged(const UpdateStateV2 state) {
+void AppServer::onUpdateStateChanged(const UpdateState state) {
     int id = 0;
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);

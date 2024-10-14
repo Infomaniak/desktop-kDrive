@@ -438,7 +438,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::UPDATER_STATE_CHANGED: {
-            auto state = UpdateStateV2::Unknown;
+            auto state = UpdateState::Unknown;
             paramsStream >> state;
             emit updateStateChanged(state);
             break;

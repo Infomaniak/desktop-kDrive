@@ -130,7 +130,7 @@ struct GuiRequests {
 
         static ExitCode changeDistributionChannel(DistributionChannel channel);
         static ExitCode versionInfo(VersionInfo &versionInfo);
-        static ExitCode updateState(UpdateStateV2 &state);
+        static ExitCode updateState(UpdateState &state);
         static ExitCode startInstaller();
         static ExitCode skipUpdate(const std::string &version);
         static ExitCode unskipUpdate();

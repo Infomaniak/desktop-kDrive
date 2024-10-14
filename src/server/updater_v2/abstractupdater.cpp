@@ -29,24 +29,24 @@ AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_unique<UpdateCheck
 }
 
 ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel channel, UniqueId* id /*= nullptr*/) {
-    setState(UpdateStateV2::Checking);
+    setState(UpdateState::Checking);
     return _updateChecker->checkUpdateAvailable(channel, id);
 }
 
-void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateStateV2)>& stateChangeCallback) {
+void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateState)>& stateChangeCallback) {
     LOG_INFO(Log::instance()->getLogger(), "Set state change callback");
     _stateChangeCallback = stateChangeCallback;
 }
 
 void AbstractUpdater::onAppVersionReceived() {
     if (!_updateChecker->versionInfo().isValid()) {
-        setState(UpdateStateV2::CheckError);
+        setState(UpdateState::CheckError);
         LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
     }
 
     const bool available =
             CommonUtility::isVersionLower(CommonUtility::currentVersion(), _updateChecker->versionInfo().fullVersion());
-    setState(available ? UpdateStateV2::Available : UpdateStateV2::UpToDate);
+    setState(available ? UpdateState::Available : UpdateState::UpToDate);
     if (available) {
         LOG_INFO(Log::instance()->getLogger(), "New app version available");
     } else {
@@ -54,7 +54,7 @@ void AbstractUpdater::onAppVersionReceived() {
     }
 }
 
-void AbstractUpdater::setState(const UpdateStateV2 newState) {
+void AbstractUpdater::setState(const UpdateState newState) {
     if (_state != newState) {
         LOG_INFO(Log::instance()->getLogger(), "Update state changed to: " << newState);
         _state = newState;
