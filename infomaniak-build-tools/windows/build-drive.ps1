@@ -275,7 +275,6 @@ $args += ("'-DCMAKE_INSTALL_PREFIX=$installPath'")
 $args += ("'-DCMAKE_PREFIX_PATH=$installPath'")
 
 $flags = @(
-"'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
 "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
 "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
 "'-DCMAKE_C_COMPILER:STRING=$compiler_path'",
@@ -309,6 +308,10 @@ Invoke-Expression $cmake
 
 $buildArgs += @('--build', $buildPath, '--target all install')
 $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
+
+if ($ci) { 	# Insert the SonarCloud build-wrapper tool for CI Analysis
+	$build_call = "build-wrapper-win-x86-64 --out-dir $BUILD_WRAPPER_OUT_DIR $buildCall"
+}
 
 Write-Host $buildCall
 Invoke-Expression $buildCall
