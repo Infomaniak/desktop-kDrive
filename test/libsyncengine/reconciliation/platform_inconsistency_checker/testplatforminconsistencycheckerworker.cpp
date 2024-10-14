@@ -294,15 +294,15 @@ void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {
     /* Initial tree structure:
      *  |
      *  +-- /test (dir) CREATE
-     *  | |
-     *  | +-- a.txt (file) CREATE
-     *  | +-- A.txt (file) NONE
-     *  | +-- aaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaa.txt (file)  [maxNameLengh +1] CREATE
+     *  |   |
+     *  |   +-- a.txt (file) CREATE
+     *  |   +-- A.txt (file) NONE
+     *  |   +-- aaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaa.txt (file)  [maxNameLengh +1] CREATE
      *  |
      *  +-- /testDiraaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaa  (dir)  [maxNameLengh +1] MOVE
-     *  | |
-     *  | +-- b.txt (file) NONE
-     *  | +-- B.txt (file) NONE
+     *  |   |
+     *  |   +-- b.txt (file) NONE
+     *  |   +-- B.txt (file) NONE
      */
 
     const auto testNode =

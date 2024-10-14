@@ -165,7 +165,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     if (localNode) {
         const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
         LOGW_SYNCPAL_INFO(_logger,
-                          L"Excluding also local item with " << Utility::formatSyncPath(absoluteLocalPath).c_str() << L".");
+                          L"Excluding local item with " << Utility::formatSyncPath(absoluteLocalPath).c_str() << L".");
         PlatformInconsistencyCheckerUtility::renameLocalFile(
                 absoluteLocalPath, node->side() == ReplicaSide::Remote
                                            ? PlatformInconsistencyCheckerUtility::SuffixType::Conflict
