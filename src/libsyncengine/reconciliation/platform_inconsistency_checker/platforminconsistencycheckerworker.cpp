@@ -36,11 +36,24 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
-    ExitCode exitCode = checkRemoteTree(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(),
-                                        _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->name());
+    ExitCode exitCodeRemote = checkRemoteTree(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(),
+                                              _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->name());
 
-    exitCode = checkLocalTree(_syncPal->updateTree(ReplicaSide::Local)->rootNode(),
-                              _syncPal->updateTree(ReplicaSide::Local)->rootNode()->name());
+    ExitCode exitCodeLocal = checkLocalTree(_syncPal->updateTree(ReplicaSide::Local)->rootNode(),
+                                            _syncPal->updateTree(ReplicaSide::Local)->rootNode()->name());
+
+    ExitCode exitCode = ExitCode::Ok;
+    if (exitCodeRemote != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "PlatformInconsistencyCheckerWorker::checkRemoteTree partially failed, ExitCode=" << exitCodeRemote);
+        exitCode = exitCodeRemote;
+    }
+
+    if (exitCodeLocal != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "PlatformInconsistencyCheckerWorker::checkLocalTree partially failed, ExitCode=" << exitCodeLocal);
+        exitCode = exitCodeLocal;
+    }
 
     for (const auto &idItem: _idsToBeRemoved) {
         if (!_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
