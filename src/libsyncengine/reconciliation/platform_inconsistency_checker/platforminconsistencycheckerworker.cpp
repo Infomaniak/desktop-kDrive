@@ -199,7 +199,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
                 inconsistencyType);
     _syncPal->addError(error);
 
-    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting " << node->side() << " item with "
+    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting " << node->side() << L" item with "
                                                 << Utility::formatSyncPath(node->getPath()).c_str() << L" because "
                                                 << inconsistencyType << L".");
 
