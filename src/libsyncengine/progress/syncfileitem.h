@@ -75,19 +75,19 @@ class SyncFileItem {
         inline bool isDirectory() const { return _type == NodeType::Directory; }
 
     private:
-        NodeType _type;
+        NodeType _type{NodeType::Unknown};
         SyncPath _path; // Sync folder relative filesystem path
-        std::optional<SyncPath> _newPath;
-        std::optional<NodeId> _localNodeId;
-        std::optional<NodeId> _remoteNodeId;
-        SyncDirection _direction;
-        SyncFileInstruction _instruction;
-        SyncFileStatus _status;
-        ConflictType _conflict;
-        InconsistencyType _inconsistency;
-        CancelType _cancelType;
+        std::optional<SyncPath> _newPath{std::nullopt};
+        std::optional<NodeId> _localNodeId{std::nullopt};
+        std::optional<NodeId> _remoteNodeId{std::nullopt};
+        SyncDirection _direction{SyncDirection::Unknown};
+        SyncFileInstruction _instruction{SyncFileInstruction::None};
+        SyncFileStatus _status{SyncFileStatus::Unknown};
+        ConflictType _conflict{ConflictType::None};
+        InconsistencyType _inconsistency{InconsistencyType::None};
+        CancelType _cancelType{CancelType::None};
         std::string _error;
-        int64_t _size;
+        int64_t _size{0};
         time_t _modTime{0};
         time_t _creationTime{0};
         bool _dehydrated{false};
