@@ -276,4 +276,86 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
 #endif
 }
 
+void TestPlatformInconsistencyCheckerWorker::testNameSizeLocalTree() {
+    initUpdateTree(ReplicaSide::Local);
+   
+    _syncPal->_platformInconsistencyCheckerWorker->execute();
+
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->exists("testNode"));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->exists("aNode"));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->exists("ANode"));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("longNameANode"));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("testNode2"));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("bNode"));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("BNode"));
+}
+
+void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {
+    /* Initial tree structure:
+     *  |
+     *  +-- /test (dir) CREATE
+     *  | |
+     *  | +-- a.txt (file) CREATE
+     *  | +-- A.txt (file) NONE
+     *  | +-- aaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaa.txt (file)  [maxNameLengh +1] CREATE
+     *  |
+     *  +-- /testDiraaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaa  (dir)  [maxNameLengh +1] MOVE
+     *  | |
+     *  | +-- b.txt (file) NONE
+     *  | +-- B.txt (file) NONE
+     */
+
+    const auto testNode =
+            std::make_shared<Node>(std::nullopt, _syncPal->updateTree(side)->side(), Str2SyncName("test"), NodeType::Directory,
+                                   OperationType::Create, "testNode", 0, 0, 12345, _syncPal->updateTree(side)->rootNode());
+    
+    const auto aNode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(side)->side(), Str2SyncName("a.txt"),
+                                              NodeType::File,
+                                              OperationType::Create, "aNode", 0, 0, 12345, testNode);
+
+    const auto ANode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(side)->side(), Str2SyncName("A.txt"),
+                                              NodeType::File,
+                                              OperationType::None, "ANode", 0, 0, 12345, testNode);
+    
+    const auto longNameANode = std::make_shared<Node>(
+            std::nullopt, _syncPal->updateTree(side)->side(),
+            Str2SyncName("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.txt"),
+            NodeType::File, OperationType::Create, "longNameANode", 0, 0, 12345, testNode);
+
+    const auto testNode2 = std::make_shared<Node>(
+            std::nullopt, _syncPal->updateTree(side)->side(),
+            Str2SyncName("testDiraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+            NodeType::Directory, OperationType::Move, "testNode2", 0, 0, 12345, _syncPal->updateTree(side)->rootNode());
+
+    const auto bNode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(side)->side(), Str2SyncName("b.txt"),
+                                              NodeType::File,
+                                              OperationType::None, "bNode", 0, 0, 12345, testNode2);
+
+    const auto BNode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(side)->side(), Str2SyncName("B.txt"),
+                                              NodeType::File,
+                                              OperationType::None, "BNode", 0, 0, 12345, testNode2);
+    
+
+    CPPUNIT_ASSERT(_syncPal->updateTree(side)->rootNode()->insertChildren(testNode));
+    CPPUNIT_ASSERT(testNode->insertChildren(aNode));
+    CPPUNIT_ASSERT(testNode->insertChildren(ANode));
+    CPPUNIT_ASSERT(testNode->insertChildren(longNameANode));
+    CPPUNIT_ASSERT(_syncPal->updateTree(side)->rootNode()->insertChildren(testNode2));
+    CPPUNIT_ASSERT(testNode2->insertChildren(bNode));
+    CPPUNIT_ASSERT(testNode2->insertChildren(BNode));
+
+    _syncPal->updateTree(side)->insertNode(testNode);
+    _syncPal->updateTree(side)->insertNode(aNode);
+    _syncPal->updateTree(side)->insertNode(ANode);
+    _syncPal->updateTree(side)->insertNode(longNameANode);
+    _syncPal->updateTree(side)->insertNode(testNode2);
+    _syncPal->updateTree(side)->insertNode(bNode);
+    _syncPal->updateTree(side)->insertNode(BNode);
+
+}
+
 } // namespace KDC
