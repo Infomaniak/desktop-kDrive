@@ -296,7 +296,7 @@ void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {
      *  +-- /test (dir) CREATE
      *  |   |
      *  |   +-- a.txt (file) CREATE
-     *  |   +-- A.txt (file) NONE
+     *  |   +-- A.txt (file) CREATE
      *  |   +-- aaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaa.txt (file)  [maxNameLengh +1] CREATE
      *  |
      *  +-- /testDiraaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaa  (dir)  [maxNameLengh +1] MOVE
@@ -314,8 +314,7 @@ void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {
                                               OperationType::Create, "aNode", 0, 0, 12345, testNode);
 
     const auto ANode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(side)->side(), Str2SyncName("A.txt"),
-                                              NodeType::File,
-                                              OperationType::None, "ANode", 0, 0, 12345, testNode);
+                                              NodeType::File, OperationType::Create, "ANode", 0, 0, 12345, testNode);
     
     const auto longNameANode = std::make_shared<Node>(
             std::nullopt, _syncPal->updateTree(side)->side(),
