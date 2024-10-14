@@ -310,7 +310,7 @@ $buildArgs += @('--build', $buildPath, '--target all install')
 $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
 
 if ($ci) { 	# Insert the SonarCloud build-wrapper tool for CI Analysis
-	$build_call = "build-wrapper-win-x86-64 --out-dir $BUILD_WRAPPER_OUT_DIR $buildCall"
+	$buildCall = "build-wrapper-win-x86-64 --out-dir $BUILD_WRAPPER_OUT_DIR $buildCall"
 }
 
 Write-Host $buildCall
