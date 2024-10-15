@@ -36,10 +36,10 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
-    ExitCode exitCodeRemote = checkRemoteTree(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(),
+   const ExitCode exitCodeRemote = checkRemoteTree(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(),
                                               _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->name());
 
-    ExitCode exitCodeLocal = checkLocalTree(_syncPal->updateTree(ReplicaSide::Local)->rootNode(),
+    const ExitCode exitCodeLocal = checkLocalTree(_syncPal->updateTree(ReplicaSide::Local)->rootNode(),
                                             _syncPal->updateTree(ReplicaSide::Local)->rootNode()->name());
 
     ExitCode exitCode = ExitCode::Ok;
@@ -132,8 +132,8 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
         }
     }
 
-    auto childeIt = localNode->children().begin();
-    for (; childeIt != localNode->children().end(); childeIt++) {
+    auto childIt = localNode->children().begin();
+    for (; childIt != localNode->children().end(); childIt++) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -146,7 +146,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
             Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
-        ExitCode exitCode = checkLocalTree(childeIt->second, parentPath / localNode->name());
+       const ExitCode exitCode = checkLocalTree(childeIt->second, parentPath / localNode->name());
         if (exitCode != ExitCode::Ok) {
             return exitCode;
         }
@@ -165,7 +165,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     if (localNode) {
         const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
         LOGW_SYNCPAL_INFO(_logger,
-                          L"Excluding local item with " << Utility::formatSyncPath(absoluteLocalPath).c_str() << L".");
+                          L"Excluding local item with " << Utility::formatSyncPath(absoluteLocalPath) << L".");
         PlatformInconsistencyCheckerUtility::renameLocalFile(
                 absoluteLocalPath, node->side() == ReplicaSide::Remote
                                            ? PlatformInconsistencyCheckerUtility::SuffixType::Conflict
@@ -176,11 +176,11 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
             DbNodeId dbId = -1;
             if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, *localNode->id(), dbId, found)) {
                 LOGW_WARN(_logger,
-                          L"Failed to retreive dbId for local node: " << Utility::formatSyncPath(absoluteLocalPath).c_str());
+                          L"Failed to retrieve dbId for local node: " << Utility::formatSyncPath(absoluteLocalPath));
             }
             if (found && !_syncPal->syncDb()->deleteNode(dbId, found)) {
                 // Remove node (and childs by cascade) from DB if it exists (else ignore as it is already not in DB)
-                LOGW_WARN(_logger, L"Failed to delete node from DB: " << Utility::formatSyncPath(absoluteLocalPath).c_str());
+                LOGW_WARN(_logger, L"Failed to delete node from DB: " << Utility::formatSyncPath(absoluteLocalPath));
             }
 
             if (!_syncPal->vfsFileStatusChanged(absoluteLocalPath, node->side() == ReplicaSide::Remote ? SyncFileStatus::Conflict
@@ -200,7 +200,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     _syncPal->addError(error);
 
     LOGW_SYNCPAL_INFO(_logger, L"Blacklisting " << node->side() << L" item with "
-                                                << Utility::formatSyncPath(node->getPath()).c_str() << L" because "
+                                                << Utility::formatSyncPath(node->getPath()) << L" because "
                                                 << inconsistencyType << L".");
 
     nodeIDs.remoteId = (remoteNode && remoteNode->id().has_value()) ? *remoteNode->id() : NodeId();
