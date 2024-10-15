@@ -48,6 +48,7 @@ class UpdateManager final : public QObject {
 
         void startInstaller() const;
         void skipVersion(const std::string &skippedVersion) const;
+        void unskipVersion() const;
 
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
@@ -63,7 +64,7 @@ class UpdateManager final : public QObject {
 
     private:
         /**
-         * @brief Create adequat updater according to OS.
+         * @brief Create adequate updater according to OS.
          */
         void createUpdater();
 

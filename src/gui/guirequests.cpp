@@ -1213,24 +1213,18 @@ ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channe
     if (!CommClient::instance()->execute(RequestNum::UPDATER_CHANGE_CHANNEL, params, results)) {
         return ExitCode::SystemError;
     }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    return exitCode;
+    return ExitCode::Ok;
 }
 
 ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSION_INFO, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSION_INFO, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
     resultStream >> versionInfo;
-    return exitCode;
+    return ExitCode::Ok;
 }
 
 ExitCode GuiRequests::updateState(UpdateState &state) {
@@ -1239,11 +1233,9 @@ ExitCode GuiRequests::updateState(UpdateState &state) {
         return ExitCode::SystemError;
     }
 
-    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
     resultStream >> state;
-    return exitCode;
+    return ExitCode::Ok;
 }
 
 ExitCode GuiRequests::startInstaller() {
@@ -1251,11 +1243,7 @@ ExitCode GuiRequests::startInstaller() {
     if (!CommClient::instance()->execute(RequestNum::UPDATER_START_INSTALLER, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    return exitCode;
+    return ExitCode::Ok;
 }
 
 ExitCode GuiRequests::skipUpdate(const std::string &version) {
@@ -1267,11 +1255,7 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
     if (!CommClient::instance()->execute(RequestNum::UPDATER_SKIP_VERSION, params, results)) {
         return ExitCode::SystemError;
     }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    return exitCode;
+    return ExitCode::Ok;
 }
 
 ExitCode GuiRequests::unskipUpdate() {
@@ -1279,11 +1263,7 @@ ExitCode GuiRequests::unskipUpdate() {
     if (!CommClient::instance()->execute(RequestNum::RECONSIDER_SKIPPED_UPDATE, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    return exitCode;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

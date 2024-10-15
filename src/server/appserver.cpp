@@ -1960,24 +1960,20 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> channel;
             _updateManager->setDistributionChannel(channel);
-            resultStream << ExitCode::Ok;
             break;
         }
         case RequestNum::UPDATER_VERSION_INFO: {
             VersionInfo versionInfo = _updateManager->versionInfo();
-            resultStream << ExitCode::Ok;
             resultStream << versionInfo;
             break;
         }
         case RequestNum::UPDATER_STATE: {
             UpdateState state = _updateManager->state();
-            resultStream << ExitCode::Ok;
             resultStream << state;
             break;
         }
         case RequestNum::UPDATER_START_INSTALLER: {
             _updateManager->startInstaller();
-            resultStream << ExitCode::Ok;
             break;
         }
         case RequestNum::UPDATER_SKIP_VERSION: {
@@ -1985,13 +1981,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> tmp;
             _updateManager->skipVersion(tmp.toStdString());
-            resultStream << ExitCode::Ok;
             break;
         }
         case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
-            // TODO : Manage seen version
-            // NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            // updater->slotUnsetSeenVersion();
+            _updateManager->unskipVersion();
             break;
         }
         case RequestNum::UTILITY_CRASH: {

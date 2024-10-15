@@ -56,6 +56,10 @@ void UpdateManager::skipVersion(const std::string &skippedVersion) const {
     _updater->skipVersion(skippedVersion);
 }
 
+void UpdateManager::unskipVersion() const {
+    _updater->unskipVersion();
+}
+
 void UpdateManager::slotTimerFired() const {
     _updater->checkUpdateAvailable();
 }
