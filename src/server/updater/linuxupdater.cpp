@@ -24,4 +24,4 @@ void LinuxUpdater::onUpdateFound() {
     setState(UpdateStateV2::ManualUpdateAvailable);
 }
 
-} // KDC
+} // namespace KDC

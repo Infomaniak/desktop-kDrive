@@ -34,12 +34,6 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
 
     connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdateManager::slotTimerFired);
 
-    // Note: the sparkle-updater is not an KDCUpdater
-    // if (KDCUpdater *updater = qobject_cast<KDCUpdater *>(UpdaterServer::instance())) {
-    //     connect(updater, &KDCUpdater::newUpdateAvailable, this, &UpdaterScheduler::updaterAnnouncement);
-    //     connect(updater, &KDCUpdater::requestRestart, this, &UpdaterScheduler::requestRestart);
-    // }
-
     // static constexpr auto checkInterval = std::chrono::hours(1);
     static constexpr auto checkTestInterval = std::chrono::seconds(15);
     _updateCheckTimer.start(std::chrono::milliseconds(checkTestInterval).count());

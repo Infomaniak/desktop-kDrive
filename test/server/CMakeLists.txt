@@ -13,12 +13,13 @@ set(testserver_SRCS
     ../test_utility/localtemporarydirectory.cpp
     ../../src/server/logarchiver.h ../../src/server/logarchiver.cpp
     ${server_srcs_path}/logarchiver.h ${server_srcs_path}/logarchiver.cpp
-    ${server_srcs_path}/updater_v2/updatemanager.h ${server_srcs_path}/updater_v2/updatemanager.cpp
-    ${server_srcs_path}/updater_v2/abstractupdater.h ${server_srcs_path}/updater_v2/abstractupdater.cpp
-    ${server_srcs_path}/updater_v2/updatechecker.h ${server_srcs_path}/updater_v2/updatechecker.cpp
+    ${server_srcs_path}/updater/updatemanager.h ${server_srcs_path}/updater/updatemanager.cpp
+    ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
+    ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
     test.cpp
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdatechecker.h updater/testupdatechecker.cpp
+    updater/testabstractupdater.h updater/testabstractupdater.cpp
 )
 
 if(APPLE)
@@ -32,7 +33,7 @@ if(APPLE)
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
-        list(APPEND testserver_SRCS ${server_srcs_path}/updater_v2/sparkleupdater.h ${server_srcs_path}/updater_v2/sparkleupdater.mm)
+        list(APPEND testserver_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater.mm)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
@@ -41,7 +42,7 @@ if(APPLE)
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
 elseif (WIN32)
-    list(APPEND testserver_SRCS ${server_srcs_path}/updater_v2/windowsupdater.h ${server_srcs_path}/updater_v2/windowsupdater.cpp)
+    list(APPEND testserver_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp)
 endif()
 
 if (WIN32)

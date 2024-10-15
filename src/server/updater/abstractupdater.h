@@ -64,7 +64,8 @@ class AbstractUpdater {
         void setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback);
 
         void skipVersion(const std::string &skippedVersion) const;
-        bool isVersionSkipped(const std::string &version) const;
+        void unskipVersion() const;
+        [[nodiscard]] bool isVersionSkipped(const std::string &version) const;
 
     protected:
         void setState(UpdateState newState);

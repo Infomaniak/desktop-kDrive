@@ -54,7 +54,7 @@
 #include <windows.h>
 #endif
 
-#include "updater_v2/updatemanager.h"
+#include "updater/updatemanager.h"
 
 #include <QDesktopServices>
 #include <QDir>

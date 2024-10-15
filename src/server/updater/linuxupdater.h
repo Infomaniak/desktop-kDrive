@@ -16,25 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
-
-
-#ifdef __APPLE__
-#include "vfs/mac/testlitesyncextconnector.h"
-#endif
-#include "logarchiver/testlogarchiver.h"
-#include "updater/testabstractupdater.h"
-#include "updater/testupdatechecker.h"
+#pragma once
+#include "abstractupdater.h"
 
 namespace KDC {
-// #ifdef __APPLE__
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
-// #endif
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
-} // namespace KDC
 
-int main(int, char **) {
-    return runTestSuite("_kDriveTestServer.log");
-}
+class LinuxUpdater final : public AbstractUpdater {
+    public:
+        void onUpdateFound() override;
+        void startInstaller() override {}
+};
+
+} // namespace KDC

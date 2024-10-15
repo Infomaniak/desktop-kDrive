@@ -17,14 +17,33 @@
  */
 
 #pragma once
-#include "abstractupdater.h"
+
+#include "testincludes.h"
+#include "server/updater/abstractupdater.h"
 
 namespace KDC {
 
-class LinuxUpdater final : public AbstractUpdater {
+class UpdaterTest final : public AbstractUpdater {
     public:
-        void onUpdateFound() override;
         void startInstaller() override {}
+        void onUpdateFound() override {}
 };
 
-} // KDC
+class TestAbstractUpdater final : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestAbstractUpdater);
+        CPPUNIT_TEST(testSkipUnskipVersion);
+        CPPUNIT_TEST(testIsVersionSkipped);
+        CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp() override;
+
+    protected:
+        void testSkipUnskipVersion() const;
+        void testIsVersionSkipped() const;
+
+    private:
+        UpdaterTest _testObj;
+};
+
+} // namespace KDC

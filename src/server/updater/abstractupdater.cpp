@@ -59,6 +59,10 @@ void AbstractUpdater::skipVersion(const std::string& skippedVersion) const {
     ParametersCache::instance()->parameters().setSeenVersion(skippedVersion);
     ParametersCache::instance()->save();
 }
+void AbstractUpdater::unskipVersion() const {
+    ParametersCache::instance()->parameters().setSeenVersion("");
+    ParametersCache::instance()->save();
+}
 
 bool AbstractUpdater::isVersionSkipped(const std::string& version) const {
     if (version.empty()) return false;

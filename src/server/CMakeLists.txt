@@ -50,9 +50,9 @@ set(server_SRCS
 )
 
 set(updater_SRCS
-    updater_v2/abstractupdater.h updater_v2/abstractupdater.cpp
-    updater_v2/updatemanager.h updater_v2/updatemanager.cpp
-    updater_v2/updatechecker.h updater_v2/updatechecker.cpp
+        updater/abstractupdater.h updater/abstractupdater.cpp
+        updater/updatemanager.h updater/updatemanager.cpp
+        updater/updatechecker.h updater/updatechecker.cpp
 )
 
 if(APPLE)
@@ -65,7 +65,7 @@ if(APPLE)
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
-        list(APPEND updater_SRCS updater_v2/sparkleupdater.h updater_v2/sparkleupdater.mm)
+        list(APPEND updater_SRCS updater/sparkleupdater.h updater/sparkleupdater.mm)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
@@ -74,9 +74,9 @@ if(APPLE)
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
 elseif (WIN32)
-    list(APPEND updater_SRCS updater_v2/windowsupdater.h updater_v2/windowsupdater.cpp)
+    list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else ()
-    list(APPEND updater_SRCS updater_v2/linuxupdater.h updater_v2/linuxupdater.cpp)
+    list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 
 set(3rdparty_SRC

@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -22,7 +21,7 @@
 #include "jobs/jobmanager.h"
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
-#include "server/updater_v2/updatechecker.h"
+#include "server/updater/updatechecker.h"
 
 namespace KDC {
 
