@@ -22,8 +22,10 @@
 #include "sparkleupdater.h"
 #include "windowsupdater.h"
 #include "db/parmsdb.h"
+#include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
+#include "utility/utility.h"
 
 namespace KDC {
 
@@ -56,6 +58,10 @@ void UpdateManager::startInstaller() const {
     _updater->startInstaller();
 }
 
+void UpdateManager::skipVersion(const std::string &skippedVersion) const {
+    _updater->skipVersion(skippedVersion);
+}
+
 void UpdateManager::slotTimerFired() const {
     _updater->checkUpdateAvailable();
 }
@@ -65,7 +71,8 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
     switch (newState) {
         case UpdateState::UpToDate:
         case UpdateState::Checking:
-        case UpdateState::Downloading: {
+        case UpdateState::Downloading:
+        case UpdateState::Skipped: {
             // Nothing to do
             break;
         }
@@ -80,15 +87,14 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::Ready: {
-            // TODO : manage skipped version
-            // The new version is ready to be installed
-#if defined(__APPLE__)
-            _updater->startInstaller();
-#elif defined(_WIN32)
+            if (_updater->isVersionSkipped(_updater->versionInfo().fullVersion())) break;
+                // The new version is ready to be installed
+#if defined(_WIN32)
             emit showUpdateDialog();
 #endif
             break;
         }
+        case UpdateState::Unknown:
         case UpdateState::DownloadError:
         case UpdateState::CheckError:
         case UpdateState::UpdateError: {
@@ -116,10 +122,6 @@ void UpdateManager::onUpdateStateChange(const UpdateState newState) {
 
 DistributionChannel UpdateManager::readDistributionChannelFromDb() const {
     return ParametersCache::instance()->parameters().distributionChannel();
-}
-
-void UpdateManager::skipVersion(const std::string &skippedVersion) const {
-    // TODO : write skipped version in DB
 }
 
 } // namespace KDC

@@ -147,7 +147,8 @@ void VersionWidget::refresh(UpdateState state /*= UpdateStateV2::Unknown*/) cons
             break;
         }
         case UpdateState::Available:
-        case UpdateState::Ready: {
+        case UpdateState::Ready:
+        case UpdateState::Skipped: {
             statusString = tr("An update is available: %1").arg(versionStr);
             showReleaseNote = true;
             showUpdateButton = true;
@@ -187,15 +188,11 @@ void VersionWidget::showAboutDialog() {
 
 void VersionWidget::showReleaseNote() const {
     QString os;
-#ifdef Q_OS_MAC
+#if defined(__APPLE__)
     os = ""; // In order to works with Sparkle, the URL must have the same name as the package. So do not add the os for macOS
-#endif
-
-#ifdef Q_OS_WIN
+#elif defined(_WIN32)
     os = "-win";
-#endif
-
-#ifdef Q_OS_LINUX
+#else
     os = "-linux";
 #endif
 
@@ -247,7 +244,11 @@ void VersionWidget::onLinkActivated(const QString &link) {
 void VersionWidget::onUpdatButtonClicked() {
     VersionInfo versionInfo;
     GuiRequests::versionInfo(versionInfo);
+#if defined(__APPLE__)
+    GuiRequests::startInstaller();
+#else
     emit showUpdateDialog(versionInfo);
+#endif
 }
 
 void VersionWidget::refreshChannelButtons(const DistributionChannel channel) const {

@@ -22,6 +22,7 @@
 #include "common/utility.h"
 #include "libcommon/utility/utility.h"
 #include "libparms/db/parmsdb.h"
+#include "requests/parameterscache.h"
 
 #include "libcommonserver/log/log.h"
 #include <log4cplus/loggingmacros.h>
@@ -36,6 +37,7 @@
     NSString *_availableVersion;
     NSString *_feedUrl;
     std::function<void()> _quitCallback;
+    std::function<void()> _skipCallback;
 }
 - (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)updater;
 - (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater;
@@ -43,6 +45,8 @@
 - (KDC::DownloadState)downloadState;
 - (NSString *)availableVersion;
 - (void)setQuitCallback:(std::function<void()>)quitCallback;
+- (void)setSkipCallback:(std::function<void()>)skipCallback;
+- (void)updater:(SPUUpdater *)updater userDidMakeChoice:(SPUUserUpdateChoice)choice forUpdate:(SUAppcastItem *)updateItem state:(SPUUserUpdateState *)state;
 @end
 
 @implementation DelegateUpdaterObject  //(SUUpdaterDelegateInformalProtocol)
@@ -53,6 +57,7 @@
         _availableVersion = @"";
         _feedUrl = @"";
         _quitCallback = nullptr;
+        _skipCallback = nullptr;
     }
     return self;
 }
@@ -106,12 +111,26 @@
     _quitCallback = quitCallback;
 }
 
+- (void)setSkipCallback:(std::function<void()>)skipCallback {
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Set skipCallback");
+    _skipCallback = skipCallback;
+}
+
+- (void)updater:(SPUUpdater *)updater userDidMakeChoice:(SPUUserUpdateChoice)choice forUpdate:(SUAppcastItem *)updateItem state:(SPUUserUpdateState *)state {
+    if (choice == SPUUserUpdateChoiceSkip) {
+        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version " << [updateItem.versionString UTF8String] << " skipped!");
+        if (_skipCallback) {
+            _skipCallback();
+        }
+    }
+}
+
 // Sent when a valid update is found by the update driver.
-- (void)updater:(SPUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)update {
+- (void)updater:(SPUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)updateItem {
     (void)updater;
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version: " << [update.versionString UTF8String]);
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version: " << [updateItem.versionString UTF8String]);
     _state = KDC::FindValidUpdate;
-    _availableVersion = [update.versionString copy];
+    _availableVersion = [updateItem.versionString copy];
 }
 
 // Sent when a valid update is not found.
@@ -157,6 +176,8 @@
 
 @end
 
+//
+
 // SparkleUpdater class
 namespace KDC {
 
@@ -178,7 +199,7 @@ SparkleUpdater::~SparkleUpdater() {
 }
 
 void SparkleUpdater::onUpdateFound() {
-    _feedUrl = updateChecker()->versionInfo().downloadUrl;
+    if (isVersionSkipped(versionInfo().fullVersion())) return;
     startInstaller();
 }
 
@@ -187,7 +208,8 @@ void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) 
 }
 
 void SparkleUpdater::startInstaller() {
-    reset(_feedUrl);
+    reset(versionInfo().downloadUrl);
+
     [d->updater checkForUpdates];
     [d->spuStandardUserDriver showUpdateInFocus];
 }
@@ -197,6 +219,8 @@ void SparkleUpdater::reset(const std::string &url) {
     deleteUpdater();
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
+    const std::function<void()> skipCallback = std::bind_front(&SparkleUpdater::skipVersionCallback, this);
+    [d->updaterDelegate setSkipCallback:skipCallback];
     [d->updaterDelegate retain];
 
     d->delegateUserDriverObject = [[DelegateUserDriverObject alloc] init];
@@ -222,7 +246,7 @@ void SparkleUpdater::reset(const std::string &url) {
     // Migrate away from using `-[SPUUpdater setFeedURL:]`
     [d->updater clearFeedURLFromUserDefaults];
 
-    [d->updaterDelegate setCustomFeedUrl:_feedUrl];
+    [d->updaterDelegate setCustomFeedUrl:url];
 
     if(startSparkleUpdater()) {
         LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
@@ -236,18 +260,23 @@ void SparkleUpdater::deleteUpdater() {
 }
 
 bool SparkleUpdater::startSparkleUpdater() {
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Starting updater...");
     NSError *error = nullptr;
     bool success = [d->updater startUpdater:&error];
 
     if (!success) {
         if (error) {
-            LOG_DEBUG(KDC::Log::instance()->getLogger(), "Error in startUpdater " << error.description.UTF8String);
-            setState(UpdateStateV2::UpdateError);
+            LOG_WARN(KDC::Log::instance()->getLogger(), "Error in startUpdater " << error.description.UTF8String);
+            setState(UpdateState::UpdateError);
         }
         return false;
     }
 
     return true;
+}
+
+void SparkleUpdater::skipVersionCallback() {
+    skipVersion(versionInfo().fullVersion());
 }
 
 }  // namespace KDC

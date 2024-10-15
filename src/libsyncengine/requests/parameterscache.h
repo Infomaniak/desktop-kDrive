@@ -36,7 +36,7 @@ class SYNCENGINE_EXPORT ParametersCache {
         void operator=(ParametersCache const &) = delete;
 
         Parameters &parameters() { return _parameters; }
-        ExitCode save() const;
+        void save(ExitCode *exitCode = nullptr) const;
 
         void setUploadSessionParallelThreads(int count); // For testing purpose
         void decreaseUploadSessionParallelThreads();

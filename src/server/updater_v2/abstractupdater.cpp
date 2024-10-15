@@ -20,6 +20,7 @@
 
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
+#include "requests/parameterscache.h"
 
 namespace KDC {
 
@@ -52,6 +53,24 @@ void AbstractUpdater::onAppVersionReceived() {
     } else {
         LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
     }
+}
+
+void AbstractUpdater::skipVersion(const std::string& skippedVersion) const {
+    ParametersCache::instance()->parameters().setSeenVersion(skippedVersion);
+    ParametersCache::instance()->save();
+}
+
+bool AbstractUpdater::isVersionSkipped(const std::string& version) const {
+    if (version.empty()) return false;
+
+    const auto seenVerison = ParametersCache::instance()->parameters().seenVersion();
+    if (seenVerison.empty()) return false;
+
+    if (seenVerison == version || CommonUtility::isVersionLower(version, seenVerison)) {
+        LOG_INFO(Log::instance()->getLogger(), "Version " << seenVerison.c_str() << " has been skipped.");
+        return true;
+    }
+    return false;
 }
 
 void AbstractUpdater::setState(const UpdateState newState) {

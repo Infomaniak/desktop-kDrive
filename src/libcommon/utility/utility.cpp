@@ -710,6 +710,8 @@ const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 }
 
 void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion) {
+    if (version.empty()) return;
+
     std::string::size_type prevPos = 0;
     std::string::size_type pos = 0;
     do {

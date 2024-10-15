@@ -458,9 +458,9 @@ void ClientGui::setupSynthesisPopover() {
     _workaroundManualVisibility = true;
 #endif
 
-    qCInfo(lcClientGui) << "Tray menu workarounds:" << "noabouttoshow:" << _workaroundNoAboutToShowUpdate
-                        << "fakedoubleclick:" << _workaroundFakeDoubleClick << "showhide:" << _workaroundShowAndHideTray
-                        << "manualvisibility:" << _workaroundManualVisibility;
+    qCInfo(lcClientGui) << "Tray menu workarounds:"
+                        << "noabouttoshow:" << _workaroundNoAboutToShowUpdate << "fakedoubleclick:" << _workaroundFakeDoubleClick
+                        << "showhide:" << _workaroundShowAndHideTray << "manualvisibility:" << _workaroundManualVisibility;
 
     connect(&_delayedTrayUpdateTimer, &QTimer::timeout, this, &ClientGui::onUpdateSystray);
     _delayedTrayUpdateTimer.setInterval(2 * 1000);
@@ -763,8 +763,7 @@ void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) {
     static LockUtility lock;
     if (!lock.lock()) return;
 
-    UpdateDialog dialog(versionInfo);
-    if (dialog.exec() == QDialog::Accepted) {
+    if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
         GuiRequests::startInstaller();
     } else if (dialog.skip()) {
         GuiRequests::skipUpdate(versionInfo.fullVersion());

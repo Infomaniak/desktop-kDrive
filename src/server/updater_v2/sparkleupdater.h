@@ -39,10 +39,10 @@ class SparkleUpdater final : public AbstractUpdater {
         void deleteUpdater();
         bool startSparkleUpdater();
 
+        void skipVersionCallback();
+
         class Private;
         Private *d;
-
-        std::string _feedUrl;
 };
 
 } // namespace KDC
