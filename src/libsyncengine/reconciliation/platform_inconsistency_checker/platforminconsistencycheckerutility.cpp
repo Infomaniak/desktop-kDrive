@@ -62,7 +62,7 @@ std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyChecke
 
 SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPath &name, SuffixType suffixType) {
     SyncName suffix = generateSuffix(suffixType);
-    SyncName sub = name.stem().native().substr(0, maxNameLengh - suffix.size() - name.extension().native().size());
+    const SyncName sub = name.stem().native().substr(0, maxNameLengh - suffix.size() - name.extension().native().size());
 
 #ifdef _WIN32
     SyncName nameStr(name.native());
