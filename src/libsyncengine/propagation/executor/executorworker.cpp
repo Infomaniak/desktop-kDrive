@@ -384,14 +384,6 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
                     return;
                 }
 
-                _executorExitCode = convertToPlaceholder(relativeLocalFilePath, true, _executorExitCause);
-                if (_executorExitCode != ExitCode::Ok) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
-                                                       << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-                    hasError = true;
-                    return;
-                }
-
                 // Ignore operation
                 SyncFileItem syncItem;
                 if (_syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
@@ -782,6 +774,7 @@ ExitCode ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath, Ex
         return ExitCode::DataError;
     }
     if (!_syncPal->vfsCreatePlaceholder(relativeLocalPath, syncItem)) {
+        // TODO: vfs functions should output an ioError parameter
         // Check if the item already exists on local replica
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
         bool exists = false;
@@ -871,8 +864,29 @@ ExitCode ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
 #endif
 
     if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem)) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Error in vfsConvertToPlaceholder: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
+        // TODO: vfs functions should output an ioError parameter
+        // Check that the item exists on local replica
+        SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
+        bool exists = false;
+        IoError ioError = IoError::Success;
+        if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
+                                               << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
+            return ExitCode::SystemError;
+        }
+
+        if (ioError == IoError::AccessDenied) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
+            exitCause = ExitCause::NoSearchPermission;
+            return ExitCode::SystemError;
+        }
+
+        if (!exists) {
+            exitCause = ExitCause::InvalidSnapshot;
+            return ExitCode::DataError;
+        }
+
         exitCause = ExitCause::FileAccessError;
         return ExitCode::SystemError;
     }

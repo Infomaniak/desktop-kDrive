@@ -382,7 +382,7 @@ bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
 }
 
 bool SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
-    if (!_vfsPinState) {
+    if (!_vfsSetPinState) {
         return false;
     }
 
@@ -998,6 +998,10 @@ std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) const {
     return (side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree);
 }
 
+void SyncPal::createProgressInfo() {
+    _progressInfo = std::shared_ptr<ProgressInfo>(new ProgressInfo(shared_from_this()));
+}
+
 ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const {
     DbNodeId dbNodeId = -1;
     bool found = false;
@@ -1176,7 +1180,7 @@ void SyncPal::start() {
     SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpLocalBlacklist, std::unordered_set<NodeId>());
 
     // Create ProgressInfo
-    _progressInfo = std::shared_ptr<ProgressInfo>(new ProgressInfo(shared_from_this()));
+    createProgressInfo();
 
     // Create workers
     createWorkers();

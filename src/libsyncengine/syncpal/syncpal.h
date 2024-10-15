@@ -353,6 +353,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
 
         // Progress info management
+        void createProgressInfo();
         void resetEstimateUpdates();
         void startEstimateUpdates();
         void stopEstimateUpdates();
@@ -399,6 +400,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestSnapshot;
         friend class TestLocalJobs;
         friend class TestIntegration;
+        friend class TestWorkers;
 };
 
 } // namespace KDC
