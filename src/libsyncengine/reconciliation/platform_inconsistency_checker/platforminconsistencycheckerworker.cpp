@@ -36,24 +36,11 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
-   const ExitCode exitCodeRemote = checkRemoteTree(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(),
-                                              _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->name());
+    checkTree(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(),
+                                                    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->name());
 
-    const ExitCode exitCodeLocal = checkLocalTree(_syncPal->updateTree(ReplicaSide::Local)->rootNode(),
-                                            _syncPal->updateTree(ReplicaSide::Local)->rootNode()->name());
-
-    ExitCode exitCode = ExitCode::Ok;
-    if (exitCodeRemote != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "PlatformInconsistencyCheckerWorker::checkRemoteTree partially failed, ExitCode=" << exitCodeRemote);
-        exitCode = exitCodeRemote;
-    }
-
-    if (exitCodeLocal != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "PlatformInconsistencyCheckerWorker::checkLocalTree partially failed, ExitCode=" << exitCodeLocal);
-        exitCode = exitCodeLocal;
-    }
+    checkTree(_syncPal->updateTree(ReplicaSide::Local)->rootNode(),
+                                                  _syncPal->updateTree(ReplicaSide::Local)->rootNode()->name());
 
     for (const auto &idItem: _idsToBeRemoved) {
         if (!_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
@@ -69,8 +56,27 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _syncPal->updateTree(ReplicaSide::Remote)->setInconsistencyCheckDone();
 
-    setDone(exitCode);
+    setDone(ExitCode::Ok);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+}
+
+ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> node, const SyncPath &parentPath) {
+    ReplicaSide side = node->side();
+    assert(side == ReplicaSide::Remote ||
+           side == ReplicaSide::Local && "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
+
+    ExitCode exitCode = ExitCode::Unknown;
+    if (side == ReplicaSide::Remote) {
+        exitCode = checkRemoteTree(node, parentPath);
+    } else if (side == ReplicaSide::Local) {
+        exitCode = checkLocalTree(node, parentPath);
+    }
+
+    if (exitCode != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger, "PlatformInconsistencyCheckerWorker::check" << side << "Tree partially failed, ExitCode=" << exitCode);
+    }
+
+    return exitCode;
 }
 
 ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath) {
@@ -146,7 +152,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
             Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
-       const ExitCode exitCode = checkLocalTree(childIt->second, parentPath / localNode->name());
+        const ExitCode exitCode = checkLocalTree(childIt->second, parentPath / localNode->name());
         if (exitCode != ExitCode::Ok) {
             return exitCode;
         }
@@ -164,8 +170,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
 
     if (localNode) {
         const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        LOGW_SYNCPAL_INFO(_logger,
-                          L"Excluding local item with " << Utility::formatSyncPath(absoluteLocalPath) << L".");
+        LOGW_SYNCPAL_INFO(_logger, L"Excluding local item with " << Utility::formatSyncPath(absoluteLocalPath) << L".");
         PlatformInconsistencyCheckerUtility::renameLocalFile(
                 absoluteLocalPath, node->side() == ReplicaSide::Remote
                                            ? PlatformInconsistencyCheckerUtility::SuffixType::Conflict
@@ -175,8 +180,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
             bool found = false;
             DbNodeId dbId = -1;
             if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, *localNode->id(), dbId, found)) {
-                LOGW_WARN(_logger,
-                          L"Failed to retrieve dbId for local node: " << Utility::formatSyncPath(absoluteLocalPath));
+                LOGW_WARN(_logger, L"Failed to retrieve dbId for local node: " << Utility::formatSyncPath(absoluteLocalPath));
             }
             if (found && !_syncPal->syncDb()->deleteNode(dbId, found)) {
                 // Remove node (and childs by cascade) from DB if it exists (else ignore as it is already not in DB)
@@ -199,9 +203,8 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
                 inconsistencyType);
     _syncPal->addError(error);
 
-    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting " << node->side() << L" item with "
-                                                << Utility::formatSyncPath(node->getPath()) << L" because "
-                                                << inconsistencyType << L".");
+    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting " << node->side() << L" item with " << Utility::formatSyncPath(node->getPath())
+                                                << L" because " << inconsistencyType << L".");
 
     nodeIDs.remoteId = (remoteNode && remoteNode->id().has_value()) ? *remoteNode->id() : NodeId();
     nodeIDs.localId = (localNode && localNode->id().has_value()) ? *localNode->id() : NodeId();
