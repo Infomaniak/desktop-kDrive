@@ -20,11 +20,7 @@
 
 namespace KDC {
 
-ErrorInfo::ErrorInfo() :
-    _dbId(0), _time(0), _level(ErrorLevel::Unknown), _functionName(QString()), _syncDbId(0), _workerName(QString()),
-    _exitCode(ExitCode::Unknown), _exitCause(ExitCause::Unknown), _localNodeId(QString()), _remoteNodeId(QString()),
-    _nodeType(NodeType::Unknown), _path(QString()), _conflictType(ConflictType::None),
-    _inconsistencyType(InconsistencyType::None), _cancelType(CancelType::None) {}
+ErrorInfo::ErrorInfo() {}
 
 ErrorInfo::ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
                      ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
