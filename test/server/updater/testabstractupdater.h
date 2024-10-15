@@ -39,8 +39,8 @@ class TestAbstractUpdater final : public CppUnit::TestFixture {
         void setUp() override;
 
     protected:
-        void testSkipUnskipVersion() const;
-        void testIsVersionSkipped() const;
+        void testSkipUnskipVersion();
+        void testIsVersionSkipped();
 
     private:
         UpdaterTest _testObj;

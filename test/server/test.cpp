@@ -27,10 +27,10 @@
 #include "updater/testupdatechecker.h"
 
 namespace KDC {
-// #ifdef __APPLE__
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
-// #endif
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
+#ifdef __APPLE__
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
+#endif
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 } // namespace KDC

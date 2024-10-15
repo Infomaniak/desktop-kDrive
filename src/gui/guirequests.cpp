@@ -1261,7 +1261,7 @@ ExitCode GuiRequests::startInstaller() {
 ExitCode GuiRequests::skipUpdate(const std::string &version) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << version.c_str();
+    paramsStream << QString::fromStdString(version);
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UPDATER_SKIP_VERSION, params, results)) {

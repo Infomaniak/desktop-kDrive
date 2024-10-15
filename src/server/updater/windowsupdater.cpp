@@ -30,13 +30,13 @@ void WindowsUpdater::onUpdateFound() {
     // Check if version is already downloaded
     SyncPath filepath;
     if (!getInstallerPath(filepath)) {
-        setState(UpdateStateV2::DownloadError);
+        setState(UpdateState::DownloadError);
         return;
     }
     if (std::filesystem::exists(filepath)) {
         LOG_INFO(Log::instance()->getLogger(),
                  L"Installer already downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
-        setState(UpdateStateV2::Ready);
+        setState(UpdateState::Ready);
         return;
     }
 
@@ -46,7 +46,7 @@ void WindowsUpdater::onUpdateFound() {
 void WindowsUpdater::startInstaller() {
     SyncPath filepath;
     if (!getInstallerPath(filepath)) {
-        setState(UpdateStateV2::DownloadError);
+        setState(UpdateState::DownloadError);
         return;
     }
 
@@ -62,14 +62,14 @@ void WindowsUpdater::startInstaller() {
 void WindowsUpdater::downloadUpdate() noexcept {
     SyncPath filepath;
     if (!getInstallerPath(filepath)) {
-        setState(UpdateStateV2::DownloadError);
+        setState(UpdateState::DownloadError);
         return;
     }
 
     auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo().downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
     JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
-    setState(UpdateStateV2::Downloading);
+    setState(UpdateState::Downloading);
 }
 
 void WindowsUpdater::downloadFinished(UniqueId jobId) {
@@ -79,7 +79,7 @@ void WindowsUpdater::downloadFinished(UniqueId jobId) {
         const auto error = "Could not cast job pointer.";
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::downloadFinished", error);
         LOG_ERROR(Log::instance()->getLogger(), error);
-        setState(UpdateStateV2::DownloadError);
+        setState(UpdateState::DownloadError);
         return;
     }
 
@@ -90,27 +90,27 @@ void WindowsUpdater::downloadFinished(UniqueId jobId) {
         ss << errorCode.c_str() << " - " << errorDescr;
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::downloadFinished", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
-        setState(UpdateStateV2::DownloadError);
+        setState(UpdateState::DownloadError);
         return;
     }
 
     // Verify that the installer is present on local filesystem
     SyncPath filepath;
     if (!getInstallerPath(filepath)) {
-        setState(UpdateStateV2::DownloadError);
+        setState(UpdateState::DownloadError);
         return;
     }
     if (!std::filesystem::exists(filepath)) {
         const auto error = "Installer file not found.";
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::downloadFinished", error);
         LOG_ERROR(Log::instance()->getLogger(), error);
-        setState(UpdateStateV2::DownloadError);
+        setState(UpdateState::DownloadError);
         return;
     }
 
     LOG_INFO(Log::instance()->getLogger(),
              L"Installer downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
-    setState(UpdateStateV2::Ready);
+    setState(UpdateState::Ready);
 }
 
 bool WindowsUpdater::getInstallerPath(SyncPath &path) const {

@@ -111,7 +111,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdatButtonClicked);
 }
 
-void VersionWidget::refresh(UpdateState state /*= UpdateStateV2::Unknown*/) const {
+void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const {
     // Re-translate
     const QString releaseNoteLinkText =
             tr(R"(<a style="%1" href="%2">Show release note</a>)").arg(CommonUtility::linkStyle, releaseNoteLink);

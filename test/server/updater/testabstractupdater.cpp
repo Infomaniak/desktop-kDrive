@@ -33,7 +33,7 @@ void TestAbstractUpdater::setUp() {
     ParametersCache::instance(true);
 }
 
-void TestAbstractUpdater::testSkipUnskipVersion() const {
+void TestAbstractUpdater::testSkipUnskipVersion() {
     const std::string testStr("1.1.1.20210101");
     _testObj.skipVersion(testStr);
 
@@ -52,7 +52,7 @@ void TestAbstractUpdater::testSkipUnskipVersion() const {
     CPPUNIT_ASSERT(parameters.seenVersion().empty());
 }
 
-void TestAbstractUpdater::testIsVersionSkipped() const {
+void TestAbstractUpdater::testIsVersionSkipped() {
     const auto skippedVersion("3.3.3.20210101");
 
     CPPUNIT_ASSERT(!_testObj.isVersionSkipped(skippedVersion));
