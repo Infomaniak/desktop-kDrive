@@ -90,7 +90,7 @@ ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
     return moveJob.exitCode();
 }
 
-bool PlatformInconsistencyCheckerUtility::checkNameForbiddenChars(const SyncPath &name) {
+bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {
     for (auto c: forbiddenFilenameChars) {
         if (name.native().find(c) != std::string::npos) {
             return true;
@@ -131,12 +131,8 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
 }
 #endif
 
-bool PlatformInconsistencyCheckerUtility::checkNameSize(const SyncName &name) const {
-    if (name.size() > maxNameLengh) {
-        return true;
-    }
-
-    return false;
+bool PlatformInconsistencyCheckerUtility::isNameTooLong(const SyncName &name) const {
+    return name.size() > maxNameLengh;
 }
 
 // return false if the file name is ok
@@ -171,7 +167,7 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
     return false;
 }
 
-bool PlatformInconsistencyCheckerUtility::checkPathLength(size_t pathSize) {
+bool PlatformInconsistencyCheckerUtility::isPathTooLong(size_t pathSize) {
     return pathSize > _maxPathLength;
 }
 

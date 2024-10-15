@@ -33,17 +33,16 @@ class PlatformInconsistencyCheckerUtility {
     public:
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> instance();
 
-        SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
-        static ExitCode renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
+        bool isNameTooLong(const SyncName &name) const;
+        bool isPathTooLong(size_t pathSize);
+        bool nameHasForbiddenChars(const SyncPath &name);
 
-        bool checkNameForbiddenChars(const SyncPath &name);
 #ifdef _WIN32
         bool fixNameWithBackslash(const SyncName &name, SyncName &newName);
 #endif
-        bool checkNameSize(const SyncName &name) const;
         bool checkReservedNames(const SyncName &name);
-        bool checkPathLength(size_t pathSize);
-
+        SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
+        static ExitCode renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
     private:
         PlatformInconsistencyCheckerUtility();
 

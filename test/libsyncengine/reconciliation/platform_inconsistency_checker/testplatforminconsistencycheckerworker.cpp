@@ -81,43 +81,43 @@ void TestPlatformInconsistencyCheckerWorker::tearDown() {
 
 void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
     SyncName shortName = Str("1234567890");
-    CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->checkNameSize(shortName));
+    CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(shortName));
 
     SyncName longName = Str(
             "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456"
             "78901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012"
             "3456789012345678901234567890");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameSize(longName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(longName));
 }
 
 void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     SyncName allowedName = Str("test-test");
-    CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(allowedName));
+    CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(allowedName));
 
     SyncName forbiddenName = Str("test/test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
 
 #if defined(WIN32)
     forbiddenName = Str("test\\test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test:test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test*test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test?test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test\"test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test<test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test>test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test|test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test\ntest");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test ");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
 #elif defined(__unix__) && !defined(__APPLE__)
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');

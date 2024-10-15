@@ -347,7 +347,7 @@ bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> 
 
     // Check path size
     size_t pathSize = absoluteLocalFilePath.parent_path().native().size() + 1 + newName.size();
-    if (PlatformInconsistencyCheckerUtility::instance()->checkPathLength(pathSize)) {
+    if (PlatformInconsistencyCheckerUtility::instance()->isPathTooLong(pathSize)) {
         // Path is now too long, file needs to be moved to root directory
         return false;
     }

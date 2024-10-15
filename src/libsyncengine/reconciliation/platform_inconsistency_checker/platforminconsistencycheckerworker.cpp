@@ -126,7 +126,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
     }
 
     if (localNode->hasChangeEvent(OperationType::Create) || localNode->hasChangeEvent(OperationType::Move)) {
-        if (PlatformInconsistencyCheckerUtility::instance()->checkNameSize(localNode->name())) {
+        if (PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(localNode->name())) {
             blacklistNode(localNode, InconsistencyType::NameLength);
             return ExitCode::Ok;
         }
@@ -211,7 +211,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
 
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
     const SyncPath relativePath = remoteNode->getPath();
-    if (PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(remoteNode->name())) {
+    if (PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(remoteNode->name())) {
         blacklistNode(remoteNode, InconsistencyType::ForbiddenChar);
         return false;
     }
@@ -221,7 +221,7 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
         return false;
     }
 
-    if (PlatformInconsistencyCheckerUtility::instance()->checkNameSize(remoteNode->name())) {
+    if (PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(remoteNode->name())) {
         blacklistNode(remoteNode, InconsistencyType::NameLength);
         return false;
     }
