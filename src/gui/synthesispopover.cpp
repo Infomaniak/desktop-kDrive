@@ -554,17 +554,6 @@ void SynthesisPopover::initUI() {
 
     lockedAppVersionVBox->addSpacing(defaultPageSpacing);
 
-    // Optional label (status reported by tha app in case of Error)
-    _lockedAppUpdateOptionalLabel = new QLabel();
-    _lockedAppUpdateOptionalLabel->setObjectName("defaultTextLabel");
-    _lockedAppUpdateOptionalLabel->setAlignment(Qt::AlignHCenter);
-    _lockedAppUpdateOptionalLabel->setWordWrap(true);
-    _lockedAppUpdateOptionalLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    _lockedAppUpdateOptionalLabel->setVisible(false);
-#ifndef Q_OS_LINUX
-    lockedAppVersionVBox->addWidget(_lockedAppUpdateOptionalLabel);
-#endif
-
     // Update button
     auto *lockedAppUpdateButtonHBox = new QHBoxLayout();
     lockedAppUpdateButtonHBox->setAlignment(Qt::AlignHCenter);
