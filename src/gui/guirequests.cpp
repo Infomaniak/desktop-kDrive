@@ -1255,12 +1255,4 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
     return ExitCode::Ok;
 }
 
-// ExitCode GuiRequests::unskipUpdate() {
-//     QByteArray results;
-//     if (!CommClient::instance()->execute(RequestNum::RECONSIDER_SKIPPED_UPDATE, QByteArray(), results)) {
-//         return ExitCode::SystemError;
-//     }
-//     return ExitCode::Ok;
-// }
-
 } // namespace KDC

@@ -585,7 +585,7 @@ void SynthesisPopover::initUI() {
     _lockedAppUpdateManualLabel->setWordWrap(true);
     _lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     lockedAppVersionVBox->addWidget(_lockedAppUpdateManualLabel);
-#endif //
+#endif
 
     // Shadow
     auto *effect = new QGraphicsDropShadowEffect(this);
@@ -1099,7 +1099,9 @@ void SynthesisPopover::onUpdateAvailabalityChange(const UpdateState updateState)
 
 void SynthesisPopover::onStartInstaller() noexcept {
     try {
-        GuiRequests::startInstaller();
+        VersionInfo versionInfo;
+        GuiRequests::versionInfo(versionInfo);
+        _gui->onShowWindowsUpdateDialog(versionInfo);
     } catch (std::exception const &) {
         // Do nothing
     }
