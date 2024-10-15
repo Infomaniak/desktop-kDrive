@@ -121,7 +121,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
 #elif defined(__unix__) && !defined(__APPLE__)
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
 #endif
 }
 
