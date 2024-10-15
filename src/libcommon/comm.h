@@ -117,7 +117,7 @@ enum class RequestNum {
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
     UPDATER_SKIP_VERSION,
-    RECONSIDER_SKIPPED_UPDATE,
+    // RECONSIDER_SKIPPED_UPDATE,
     UTILITY_CRASH,
     UTILITY_QUIT,
 };
@@ -270,8 +270,8 @@ inline std::string toString(RequestNum e) {
             return "UPDATER_START_INSTALLER";
         case RequestNum::UPDATER_SKIP_VERSION:
             return "UPDATER_SKIP_VERSION";
-        case RequestNum::RECONSIDER_SKIPPED_UPDATE:
-            return "RECONSIDER_SKIPPED_UPDATE";
+        // case RequestNum::RECONSIDER_SKIPPED_UPDATE:
+        //     return "RECONSIDER_SKIPPED_UPDATE";
         case RequestNum::UTILITY_CRASH:
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:

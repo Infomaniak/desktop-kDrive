@@ -22,8 +22,6 @@
 
 namespace KDC {
 
-enum DownloadState { Unknown = 0, FindValidUpdate, DidNotFindUpdate, AbortWithError }; // TODO : useful??
-
 class SparkleUpdater final : public AbstractUpdater {
     public:
         explicit SparkleUpdater();

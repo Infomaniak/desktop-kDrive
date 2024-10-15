@@ -423,7 +423,6 @@ enum class UpdateState {
     ManualUpdateAvailable,
     Downloading,
     Ready,
-    Skipped,
     CheckError,
     DownloadError,
     UpdateError,

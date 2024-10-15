@@ -1209,8 +1209,7 @@ ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channe
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << channel;
 
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_CHANGE_CHANNEL, params, results)) {
+    if (QByteArray results; !CommClient::instance()->execute(RequestNum::UPDATER_CHANGE_CHANNEL, params, results)) {
         return ExitCode::SystemError;
     }
     return ExitCode::Ok;
@@ -1239,8 +1238,7 @@ ExitCode GuiRequests::updateState(UpdateState &state) {
 }
 
 ExitCode GuiRequests::startInstaller() {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_START_INSTALLER, QByteArray(), results)) {
+    if (QByteArray results; !CommClient::instance()->execute(RequestNum::UPDATER_START_INSTALLER, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
     return ExitCode::Ok;
@@ -1251,19 +1249,18 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << QString::fromStdString(version);
 
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_SKIP_VERSION, params, results)) {
+    if (QByteArray results; !CommClient::instance()->execute(RequestNum::UPDATER_SKIP_VERSION, params, results)) {
         return ExitCode::SystemError;
     }
     return ExitCode::Ok;
 }
 
-ExitCode GuiRequests::unskipUpdate() {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::RECONSIDER_SKIPPED_UPDATE, QByteArray(), results)) {
-        return ExitCode::SystemError;
-    }
-    return ExitCode::Ok;
-}
+// ExitCode GuiRequests::unskipUpdate() {
+//     QByteArray results;
+//     if (!CommClient::instance()->execute(RequestNum::RECONSIDER_SKIPPED_UPDATE, QByteArray(), results)) {
+//         return ExitCode::SystemError;
+//     }
+//     return ExitCode::Ok;
+// }
 
 } // namespace KDC

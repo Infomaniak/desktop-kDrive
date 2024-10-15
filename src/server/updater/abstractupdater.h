@@ -63,9 +63,9 @@ class AbstractUpdater {
         virtual void setQuitCallback(const std::function<void()> &quitCallback) { /* Redefined in child class if necessary */ }
         void setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback);
 
-        void skipVersion(const std::string &skippedVersion) const;
-        void unskipVersion() const;
-        [[nodiscard]] bool isVersionSkipped(const std::string &version) const;
+        static void skipVersion(const std::string &skippedVersion);
+        static void unskipVersion();
+        [[nodiscard]] static bool isVersionSkipped(const std::string &version);
 
     protected:
         void setState(UpdateState newState);

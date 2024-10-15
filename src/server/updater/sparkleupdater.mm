@@ -33,7 +33,6 @@
 // DelegateUpdaterObject class
 @interface DelegateUpdaterObject : NSObject <SPUUpdaterDelegate> {
 @protected
-    KDC::DownloadState _state;
     NSString *_availableVersion;
     NSString *_feedUrl;
     std::function<void()> _quitCallback;
@@ -42,7 +41,6 @@
 - (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)updater;
 - (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater;
 - (void)updaterWillRelaunchApplication:(SPUUpdater *)updater;
-- (KDC::DownloadState)downloadState;
 - (NSString *)availableVersion;
 - (void)setQuitCallback:(std::function<void()>)quitCallback;
 - (void)setSkipCallback:(std::function<void()>)skipCallback;
@@ -53,7 +51,6 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _state = KDC::Unknown;
         _availableVersion = @"";
         _feedUrl = @"";
         _quitCallback = nullptr;
@@ -98,10 +95,6 @@
     }
 }
 
-- (KDC::DownloadState)downloadState {
-    return _state;
-}
-
 - (NSString *)availableVersion {
     return _availableVersion;
 }
@@ -129,7 +122,6 @@
 - (void)updater:(SPUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)updateItem {
     (void)updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version: " << [updateItem.versionString UTF8String]);
-    _state = KDC::FindValidUpdate;
     _availableVersion = [updateItem.versionString copy];
 }
 
@@ -137,7 +129,6 @@
 - (void)updaterDidNotFindUpdate:(SPUUpdater *)update {
     (void)update;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "No valid update found");
-    _state = KDC::DidNotFindUpdate;
 }
 
 // Sent immediately before installing the specified update.
@@ -150,7 +141,6 @@
     (void)updater;
     if ([error code] != SUNoUpdateError) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error: " << [error code]);
-        _state = KDC::AbortWithError;
     }
 }
 

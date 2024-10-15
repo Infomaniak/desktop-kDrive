@@ -307,7 +307,7 @@ void ClientGui::showSynthesisDialog() {
             _synthesisPopover->setPosition(trayIconRect);
             raiseDialog(_synthesisPopover.get());
         }
-        _synthesisPopover->onUpdateAvailabalityChange();
+        _synthesisPopover->refreshLockedStatus();
     }
 }
 
@@ -322,8 +322,7 @@ int ClientGui::driveErrorsCount(int driveDbId, bool unresolved) const {
 }
 
 const QString ClientGui::folderPath(int syncDbId, const QString &filePath) const {
-    QString fullFilePath = QString();
-
+    QString fullFilePath;
     const auto syncInfoIt = _syncInfoMap.find(syncDbId);
     if (syncInfoIt != _syncInfoMap.end()) {
         fullFilePath = syncInfoIt->second.localPath() + dirSeparator + filePath;

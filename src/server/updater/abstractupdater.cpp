@@ -55,16 +55,19 @@ void AbstractUpdater::onAppVersionReceived() {
     }
 }
 
-void AbstractUpdater::skipVersion(const std::string& skippedVersion) const {
+void AbstractUpdater::skipVersion(const std::string& skippedVersion) {
     ParametersCache::instance()->parameters().setSeenVersion(skippedVersion);
     ParametersCache::instance()->save();
 }
-void AbstractUpdater::unskipVersion() const {
-    ParametersCache::instance()->parameters().setSeenVersion("");
-    ParametersCache::instance()->save();
+
+void AbstractUpdater::unskipVersion() {
+    if (!ParametersCache::instance()->parameters().seenVersion().empty()) {
+        ParametersCache::instance()->parameters().setSeenVersion("");
+        ParametersCache::instance()->save();
+    }
 }
 
-bool AbstractUpdater::isVersionSkipped(const std::string& version) const {
+bool AbstractUpdater::isVersionSkipped(const std::string& version) {
     if (version.empty()) return false;
 
     const auto seenVerison = ParametersCache::instance()->parameters().seenVersion();

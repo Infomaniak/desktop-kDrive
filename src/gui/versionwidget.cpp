@@ -147,8 +147,7 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
             break;
         }
         case UpdateState::Available:
-        case UpdateState::Ready:
-        case UpdateState::Skipped: {
+        case UpdateState::Ready: {
             statusString = tr("An update is available: %1").arg(versionStr);
             showReleaseNote = true;
             showUpdateButton = true;

@@ -52,12 +52,12 @@ void UpdateManager::startInstaller() const {
     _updater->startInstaller();
 }
 
-void UpdateManager::skipVersion(const std::string &skippedVersion) const {
-    _updater->skipVersion(skippedVersion);
+void UpdateManager::skipVersion(const std::string &skippedVersion) {
+    AbstractUpdater::skipVersion(skippedVersion);
 }
 
-void UpdateManager::unskipVersion() const {
-    _updater->unskipVersion();
+void UpdateManager::unskipVersion() {
+    AbstractUpdater::unskipVersion();
 }
 
 void UpdateManager::slotTimerFired() const {
@@ -69,8 +69,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
     switch (newState) {
         case UpdateState::UpToDate:
         case UpdateState::Checking:
-        case UpdateState::Downloading:
-        case UpdateState::Skipped: {
+        case UpdateState::Downloading: {
             // Nothing to do
             break;
         }
@@ -85,7 +84,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::Ready: {
-            if (_updater->isVersionSkipped(_updater->versionInfo().fullVersion())) break;
+            if (AbstractUpdater::isVersionSkipped(_updater->versionInfo().fullVersion())) break;
                 // The new version is ready to be installed
 #if defined(_WIN32)
             emit showUpdateDialog();

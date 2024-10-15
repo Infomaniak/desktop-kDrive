@@ -47,8 +47,8 @@ class UpdateManager final : public QObject {
         [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
 
         void startInstaller() const;
-        void skipVersion(const std::string &skippedVersion) const;
-        void unskipVersion() const;
+        static void skipVersion(const std::string &skippedVersion);
+        static void unskipVersion();
 
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 

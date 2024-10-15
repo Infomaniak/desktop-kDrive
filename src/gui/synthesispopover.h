@@ -63,6 +63,8 @@ class SynthesisPopover : public QDialog {
         void setPosition(const QRect &sysTrayIconRect);
         void forceRedraw();
 
+        void refreshLockedStatus();
+
     signals:
         void showParametersDialog(int syncDbId = 0, bool errorPage = false);
         void exit();
@@ -87,7 +89,7 @@ class SynthesisPopover : public QDialog {
         void onRefreshErrorList(int driveDbId);
         void onAppVersionLocked(bool currentVersionLocked);
         void onRefreshStatusNeeded();
-        void onUpdateAvailabalityChange();
+        void onUpdateAvailabalityChange(UpdateState updateState);
 
     private:
         std::shared_ptr<ClientGui> _gui;
@@ -127,8 +129,8 @@ class SynthesisPopover : public QDialog {
         void paintEvent(QPaintEvent *event) override;
         bool event(QEvent *event) override;
 
-        inline QColor backgroundMainColor() const { return _backgroundMainColor; }
-        inline void setBackgroundMainColor(const QColor &value) { _backgroundMainColor = value; }
+        [[nodiscard]] QColor backgroundMainColor() const { return _backgroundMainColor; }
+        void setBackgroundMainColor(const QColor &value) { _backgroundMainColor = value; }
 
         void initUI();
         QUrl syncUrl(int syncDbId, const QString &filePath);

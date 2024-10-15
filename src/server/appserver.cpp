@@ -1983,10 +1983,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             _updateManager->skipVersion(tmp.toStdString());
             break;
         }
-        case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
-            _updateManager->unskipVersion();
-            break;
-        }
+        // case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
+        //     _updateManager->unskipVersion();
+        //     break;
+        // }
         case RequestNum::UTILITY_CRASH: {
             resultStream << ExitCode::Ok;
             QTimer::singleShot(QUIT_DELAY, []() { CommonUtility::crash(); });
@@ -3906,13 +3906,14 @@ void AppServer::addError(const Error &error) {
 
         // Decrease JobManager pool capacity
         JobManager::instance()->decreasePoolCapacity();
+    } else if (error.exitCode() == ExitCode::UpdateRequired) {
+        UpdateManager::unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(error)) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email().c_str(), user.name().c_str(), std::to_string(user.userId()).c_str());
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString().c_str(),
-                                                  sentryUser);
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString(), sentryUser);
     }
 }
 
