@@ -83,11 +83,9 @@ ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(std::shared_ptr<Nod
         return ExitCode::Ok;
     }
 
-    if (remoteNode->hasChangeEvent(OperationType::Create) || remoteNode->hasChangeEvent(OperationType::Move)) {
-        if (!checkPathAndName(remoteNode)) {
-            // Item has been blacklisted
-            return ExitCode::Ok;
-        }
+    if (pathChanged(remoteNode) && checkPathAndName(remoteNode)) {
+        // Item has been blacklisted
+        return ExitCode::Ok;
     }
 
     bool checkAgainstSiblings = false;
@@ -108,7 +106,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(std::shared_ptr<Nod
 
         std::shared_ptr<Node> currentChildNode = it->second;
 
-        if (currentChildNode->hasChangeEvent(OperationType::Create) || currentChildNode->hasChangeEvent(OperationType::Move)) {
+        if (pathChanged(currentChildNode)) {
             checkAgainstSiblings = true;
         }
 
@@ -129,12 +127,9 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
     if (localNode->hasChangeEvent(OperationType::Delete)) {
         return ExitCode::Ok;
     }
-
-    if (localNode->hasChangeEvent(OperationType::Create) || localNode->hasChangeEvent(OperationType::Move)) {
-        if (PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(localNode->name())) {
-            blacklistNode(localNode, InconsistencyType::NameLength);
-            return ExitCode::Ok;
-        }
+    if (pathChanged(localNode) && PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(localNode->name())) {
+        blacklistNode(localNode, InconsistencyType::NameLength);
+        return ExitCode::Ok;
     }
 
     auto childIt = localNode->children().begin();
@@ -262,8 +257,8 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
             // Some software save their files by deleting and re-creating them (Delete-Create), or by deleting the original file
             // and renaming a temporary file that contains the latest version (Delete-Move) In those cases, we should not check
             // for name clash, it is ok to have 2 children with the same name
-            const auto oneNodeIsDeleted = [](const std::shared_ptr<Node> &node, const std::shared_ptr<Node> &prevNode) -> bool {
-                return node->hasChangeEvent(OperationType::Move | OperationType::Create) &&
+            const auto oneNodeIsDeleted = [this](const std::shared_ptr<Node> &node, const std::shared_ptr<Node> &prevNode) -> bool {
+                return pathChanged(node) &&
                        prevNode->hasChangeEvent(OperationType::Delete);
             };
 
@@ -285,6 +280,10 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
 #else
     (void) remoteParentNode;
 #endif
+}
+
+bool PlatformInconsistencyCheckerWorker::pathChanged(std::shared_ptr<Node> node) {
+    return node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Move);
 }
 
 } // namespace KDC
