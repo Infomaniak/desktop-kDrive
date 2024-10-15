@@ -242,11 +242,11 @@ void VersionWidget::onLinkActivated(const QString &link) {
 }
 
 void VersionWidget::onUpdatButtonClicked() {
-    VersionInfo versionInfo;
-    GuiRequests::versionInfo(versionInfo);
 #if defined(__APPLE__)
     GuiRequests::startInstaller();
 #else
+    VersionInfo versionInfo;
+    GuiRequests::versionInfo(versionInfo);
     emit showUpdateDialog(versionInfo);
 #endif
 }
