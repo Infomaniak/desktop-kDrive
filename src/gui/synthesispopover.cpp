@@ -1068,11 +1068,10 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
 }
 
 void SynthesisPopover::onUpdateAvailabalityChange(const UpdateState updateState) {
-    if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
+    if (!_lockedAppUpdateButton) return;
     if (_lockedAppVersionWidget->isHidden()) return;
 
     _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready || updateState == UpdateState::Available);
-    _lockedAppUpdateOptionalLabel->setVisible(updateState != UpdateState::Ready && updateState != UpdateState::Downloading);
     switch (updateState) {
         case UpdateState::Ready:
         case UpdateState::Available:
@@ -1086,25 +1085,19 @@ void SynthesisPopover::onUpdateAvailabalityChange(const UpdateState updateState)
             break;
         case UpdateState::ManualUpdateAvailable:
             _lockedAppUpdateButton->setText(tr("Manual update"));
-            //_lockedAppUpdateOptionalLabel->setText(statusString);
             break;
         default:
             _lockedAppUpdateButton->setText(tr("Unavailable"));
-            //_lockedAppUpdateOptionalLabel->setText(statusString);
             SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "AppLocked",
                                                       "406 uError received but unable to fetch an update");
             break;
     }
 }
 
-void SynthesisPopover::onStartInstaller() noexcept {
-    try {
-        VersionInfo versionInfo;
-        GuiRequests::versionInfo(versionInfo);
-        _gui->onShowWindowsUpdateDialog(versionInfo);
-    } catch (std::exception const &) {
-        // Do nothing
-    }
+void SynthesisPopover::onStartInstaller() const noexcept {
+    VersionInfo versionInfo;
+    GuiRequests::versionInfo(versionInfo);
+    _gui->onShowWindowsUpdateDialog(versionInfo);
 }
 
 void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {

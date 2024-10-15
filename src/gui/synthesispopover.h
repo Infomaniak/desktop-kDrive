@@ -121,7 +121,6 @@ class SynthesisPopover : public QDialog {
         QLabel *_lockedAppupdateAppLabel;
         QPushButton *_lockedAppUpdateButton{nullptr};
         QLabel *_lockedAppLabel{nullptr};
-        QLabel *_lockedAppUpdateOptionalLabel{nullptr};
 #ifdef Q_OS_LINUX
         QLabel *_lockedAppUpdateManualLabel{nullptr};
 #endif
@@ -177,7 +176,7 @@ class SynthesisPopover : public QDialog {
         void onSelectionChanged(bool isSelected);
         void onLinkActivated(const QString &link);
         void onUpdateSynchronizedListWidget();
-        void onStartInstaller() noexcept;
+        void onStartInstaller() const noexcept;
         void retranslateUi();
 };
 
