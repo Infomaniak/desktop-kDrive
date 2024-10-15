@@ -36,11 +36,8 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
-    checkTree(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(),
-                                                    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->name());
-
-    checkTree(_syncPal->updateTree(ReplicaSide::Local)->rootNode(),
-                                                  _syncPal->updateTree(ReplicaSide::Local)->rootNode()->name());
+    checkTree(ReplicaSide::Remote);
+    checkTree(ReplicaSide::Local);
 
     for (const auto &idItem: _idsToBeRemoved) {
         if (!_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
@@ -60,8 +57,9 @@ void PlatformInconsistencyCheckerWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
 }
 
-ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> node, const SyncPath &parentPath) {
-    ReplicaSide side = node->side();
+ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
+    std::shared_ptr<Node> node = _syncPal->updateTree(side)->rootNode();
+    const SyncPath &parentPath = node->name();
     assert(side == ReplicaSide::Remote ||
            side == ReplicaSide::Local && "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
 
@@ -73,7 +71,8 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> nod
     }
 
     if (exitCode != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger, "PlatformInconsistencyCheckerWorker::check" << side << "Tree partially failed, ExitCode=" << exitCode);
+        LOG_SYNCPAL_WARN(_logger,
+                         "PlatformInconsistencyCheckerWorker::check" << side << "Tree partially failed, ExitCode=" << exitCode);
     }
 
     return exitCode;

@@ -31,7 +31,7 @@ class PlatformInconsistencyCheckerWorker : public OperationProcessor {
         void execute() override;
 
     private:
-        ExitCode checkTree(std::shared_ptr<Node> node, const SyncPath &parentPath);
+        ExitCode checkTree(ReplicaSide side);
         ExitCode checkRemoteTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath);
         ExitCode checkLocalTree(std::shared_ptr<Node> localNode, const SyncPath &parentPath);
 
