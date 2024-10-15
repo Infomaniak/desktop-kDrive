@@ -40,6 +40,6 @@ class GetSizeJob : public AbstractTokenNetworkJob {
         virtual void setData(bool &canceled) override { canceled = false; }
 
         NodeId _nodeId;
-        int64_t _size;
+        int64_t _size{0};
 };
 } // namespace KDC
