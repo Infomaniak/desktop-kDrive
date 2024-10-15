@@ -146,7 +146,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
             Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
-       const ExitCode exitCode = checkLocalTree(childeIt->second, parentPath / localNode->name());
+       const ExitCode exitCode = checkLocalTree(childIt->second, parentPath / localNode->name());
         if (exitCode != ExitCode::Ok) {
             return exitCode;
         }
