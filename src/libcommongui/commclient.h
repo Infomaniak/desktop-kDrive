@@ -40,7 +40,7 @@ class CommClient : public QObject {
         Q_OBJECT
 
     public:
-        static std::shared_ptr<CommClient> instance(QObject *parent = nullptr);
+        static std::shared_ptr<CommClient> instance(QObject *parent = nullptr) noexcept;
         ~CommClient();
 
         CommClient(CommClient const &) = delete;

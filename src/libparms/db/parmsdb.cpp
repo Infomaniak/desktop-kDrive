@@ -514,16 +514,23 @@ namespace KDC {
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
 
 std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, const std::string &version,
-                                           bool autoDelete /*= false*/, bool test /*= false*/) {
+                                           bool autoDelete /*= false*/, bool test /*= false*/) noexcept {
     if (_instance == nullptr) {
         if (dbPath.empty()) {
-            throw std::runtime_error("ParmsDb must be initialized!");
-        } else {
+            assert(false);
+            return nullptr;
+        }
+
+        try {
             _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, version, autoDelete, test));
             if (!_instance->init(version)) {
                 _instance.reset();
-                throw std::runtime_error("ParmsDb initialisation error!");
+                assert(false);
+                return nullptr;
             }
+        } catch (...) {
+            assert(false);
+            return nullptr;
         }
     }
 

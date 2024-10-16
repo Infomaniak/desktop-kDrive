@@ -34,9 +34,14 @@ std::shared_ptr<CommClient> CommClient::_instance = 0;
 
 Q_LOGGING_CATEGORY(lcCommClient, "gui.commclient", QtInfoMsg)
 
-std::shared_ptr<CommClient> CommClient::instance(QObject *parent) {
+std::shared_ptr<CommClient> CommClient::instance(QObject *parent) noexcept {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<CommClient>(new CommClient(parent));
+        try {
+            _instance = std::shared_ptr<CommClient>(new CommClient(parent));
+        } catch (...) {
+            assert(false);
+            return nullptr;
+        }
     }
 
     return _instance;

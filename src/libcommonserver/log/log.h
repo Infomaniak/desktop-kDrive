@@ -155,7 +155,7 @@ namespace KDC {
 class COMMONSERVER_EXPORT Log {
     public:
         ~Log();
-        static std::shared_ptr<Log> instance(const log4cplus::tstring &filePath = log4cplus::tstring());
+        static std::shared_ptr<Log> instance(const log4cplus::tstring &filePath = log4cplus::tstring()) noexcept;
 
         Log(Log const &) = delete;
         void operator=(Log const &) = delete;

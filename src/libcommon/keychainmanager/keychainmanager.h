@@ -31,7 +31,7 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         Q_OBJECT
 
     public:
-        static std::shared_ptr<KeyChainManager> instance(bool testing = false);
+        static std::shared_ptr<KeyChainManager> instance(bool testing = false) noexcept;
 
         KeyChainManager(KeyChainManager const &) = delete;
         void operator=(KeyChainManager const &) = delete;

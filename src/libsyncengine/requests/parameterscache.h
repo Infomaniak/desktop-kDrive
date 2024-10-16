@@ -28,8 +28,8 @@ namespace KDC {
 
 class SYNCENGINE_EXPORT ParametersCache {
     public:
-        static std::shared_ptr<ParametersCache> instance(bool isTest = false);
-        inline static bool isExtendedLogEnabled() noexcept { return instance()->_parameters.extendedLog(); };
+        static std::shared_ptr<ParametersCache> instance(bool isTest = false) noexcept;
+        inline static bool isExtendedLogEnabled() noexcept { return instance()->_parameters.extendedLog(); }
 
         ParametersCache(ParametersCache const &) = delete;
         void operator=(ParametersCache const &) = delete;

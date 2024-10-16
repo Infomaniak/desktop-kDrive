@@ -32,7 +32,7 @@ namespace KDC {
 
 class SYNCENGINE_EXPORT SyncNodeCache {
     public:
-        static std::shared_ptr<SyncNodeCache> instance();
+        static std::shared_ptr<SyncNodeCache> instance() noexcept;
 
         SyncNodeCache(SyncNodeCache const &) = delete;
         void operator=(SyncNodeCache const &) = delete;

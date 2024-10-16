@@ -31,7 +31,7 @@ class PlatformInconsistencyCheckerUtility {
         typedef enum { SuffixTypeRename, SuffixTypeConflict, SuffixTypeOrphan, SuffixTypeBlacklisted } SuffixType;
 
     public:
-        static std::shared_ptr<PlatformInconsistencyCheckerUtility> instance();
+        static std::shared_ptr<PlatformInconsistencyCheckerUtility> instance() noexcept;
 
         SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
         static ExitCode renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);

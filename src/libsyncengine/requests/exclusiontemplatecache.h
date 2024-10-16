@@ -32,7 +32,7 @@ namespace KDC {
 
 class SYNCENGINE_EXPORT ExclusionTemplateCache {
     public:
-        static std::shared_ptr<ExclusionTemplateCache> instance();
+        static std::shared_ptr<ExclusionTemplateCache> instance() noexcept;
 
         ExclusionTemplateCache(ExclusionTemplateCache const &) = delete;
 

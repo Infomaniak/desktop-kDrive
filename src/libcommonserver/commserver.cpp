@@ -39,9 +39,14 @@ namespace KDC {
 
 std::shared_ptr<CommServer> CommServer::_instance = nullptr;
 
-std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
+std::shared_ptr<CommServer> CommServer::instance(QObject *parent) noexcept {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<CommServer>(new CommServer(parent));
+        try {
+            _instance = std::shared_ptr<CommServer>(new CommServer(parent));
+        } catch (...) {
+            assert(false);
+            return nullptr;
+        }
     }
 
     return _instance;

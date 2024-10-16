@@ -34,9 +34,14 @@ static const std::string dummyData("dummy");
 
 std::shared_ptr<KeyChainManager> KeyChainManager::_instance = nullptr;
 
-std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) {
+std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) noexcept {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(testing));
+        try {
+            _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(testing));
+        } catch (...) {
+            assert(false);
+            return nullptr;
+        }
     }
 
     return _instance;

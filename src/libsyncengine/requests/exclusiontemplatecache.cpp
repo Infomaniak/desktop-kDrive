@@ -29,11 +29,12 @@ namespace KDC {
 
 std::shared_ptr<ExclusionTemplateCache> ExclusionTemplateCache::_instance = nullptr;
 
-std::shared_ptr<ExclusionTemplateCache> ExclusionTemplateCache::instance() {
+std::shared_ptr<ExclusionTemplateCache> ExclusionTemplateCache::instance() noexcept {
     if (_instance == nullptr) {
         try {
             _instance = std::shared_ptr<ExclusionTemplateCache>(new ExclusionTemplateCache());
         } catch (std::exception const &) {
+            assert(false);
             return nullptr;
         }
     }

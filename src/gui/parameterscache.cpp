@@ -33,6 +33,7 @@ std::shared_ptr<ParametersCache> ParametersCache::instance() noexcept {
         try {
             _instance = std::shared_ptr<ParametersCache>(new ParametersCache());
         } catch (...) {
+            assert(false);
             return nullptr;
         }
     }

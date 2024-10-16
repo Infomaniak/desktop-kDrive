@@ -26,11 +26,12 @@ namespace KDC {
 
 std::shared_ptr<SyncNodeCache> SyncNodeCache::_instance = nullptr;
 
-std::shared_ptr<SyncNodeCache> SyncNodeCache::instance() {
+std::shared_ptr<SyncNodeCache> SyncNodeCache::instance() noexcept {
     if (_instance == nullptr) {
         try {
             _instance = std::shared_ptr<SyncNodeCache>(new SyncNodeCache());
         } catch (std::exception const &) {
+            assert(false);
             return nullptr;
         }
     }

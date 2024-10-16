@@ -26,11 +26,12 @@ namespace KDC {
 
 std::shared_ptr<ParametersCache> ParametersCache::_instance = nullptr;
 
-std::shared_ptr<ParametersCache> ParametersCache::instance(bool isTest /*= false*/) {
+std::shared_ptr<ParametersCache> ParametersCache::instance(bool isTest /*= false*/) noexcept {
     if (_instance == nullptr) {
         try {
             _instance = std::shared_ptr<ParametersCache>(new ParametersCache(isTest));
         } catch (std::exception const &) {
+            assert(false);
             return nullptr;
         }
     }

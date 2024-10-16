@@ -39,9 +39,9 @@ class PARMS_EXPORT ParmsDb : public Db {
     public:
         static std::shared_ptr<ParmsDb> instance(const std::filesystem::path &dbPath = std::filesystem::path(),
                                                  const std::string &version = std::string(), bool autoDelete = false,
-                                                 bool test = false);
+                                                 bool test = false) noexcept;
 
-        std::string dbType() const override { return "Parms"; };
+        std::string dbType() const override { return "Parms"; }
 
         static void reset();
 

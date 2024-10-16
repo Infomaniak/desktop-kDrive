@@ -36,7 +36,7 @@ class CommServer : public QObject {
         Q_OBJECT
 
     public:
-        static std::shared_ptr<CommServer> instance(QObject *parent = nullptr);
+        static std::shared_ptr<CommServer> instance(QObject *parent = nullptr) noexcept;
         ~CommServer();
 
         CommServer(CommServer const &) = delete;

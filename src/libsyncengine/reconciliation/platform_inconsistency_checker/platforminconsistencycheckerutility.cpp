@@ -53,9 +53,14 @@ static const std::unordered_set<std::string> reservedWinNames = {
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::_instance = nullptr;
 size_t PlatformInconsistencyCheckerUtility::_maxPathLength = 0;
 
-std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::instance() {
+std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::instance() noexcept {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<PlatformInconsistencyCheckerUtility>(new PlatformInconsistencyCheckerUtility());
+        try {
+            _instance = std::shared_ptr<PlatformInconsistencyCheckerUtility>(new PlatformInconsistencyCheckerUtility());
+        } catch (...) {
+            assert(false);
+            return nullptr;
+        }
     }
     return _instance;
 }

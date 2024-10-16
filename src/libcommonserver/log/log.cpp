@@ -39,13 +39,19 @@ Log::~Log() {
     log4cplus::Logger::shutdown();
 }
 
-std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
+std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) noexcept {
     if (_instance == nullptr) {
         if (filePath.empty()) {
-            throw std::runtime_error("Log must be initialized!");
-        } else {
+            assert(false);
+            return nullptr;
+        }
+
+        try {
             _instance = std::shared_ptr<Log>(new Log(filePath));
             _instance->checkForExpiredFiles();
+        } catch (...) {
+            assert(false);
+            return nullptr;
         }
     }
 
@@ -115,7 +121,11 @@ SyncPath Log::getLogFilePath() const {
 
 void Log::checkForExpiredFiles() {
     auto *customRollingFileAppender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
-    customRollingFileAppender->checkForExpiredFiles();
+    if (customRollingFileAppender) {
+        customRollingFileAppender->checkForExpiredFiles();
+    } else {
+        assert(false);
+    }
 }
 
 } // namespace KDC

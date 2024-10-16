@@ -27,7 +27,7 @@ namespace KDC {
 
 class Proxy {
     public:
-        static std::shared_ptr<Proxy> instance(const ProxyConfig &proxyConfig = ProxyConfig());
+        static std::shared_ptr<Proxy> instance(const ProxyConfig &proxyConfig = ProxyConfig()) noexcept;
 
         Proxy(Proxy const &) = delete;
         void operator=(Proxy const &) = delete;
