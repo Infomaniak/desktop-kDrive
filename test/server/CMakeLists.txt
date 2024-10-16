@@ -106,10 +106,12 @@ endif()
 
 # VFS plugin
 set(vfs_installdir "${BIN_OUTPUT_DIRECTORY}")
-install(TARGETS "${libsyncengine_NAME}_vfs_mac"
-        LIBRARY DESTINATION "${vfs_installdir}"
-        RUNTIME DESTINATION "${vfs_installdir}"
-)
+if (APPLE)
+    install(TARGETS "${libsyncengine_NAME}_vfs_mac"
+            LIBRARY DESTINATION "${vfs_installdir}"
+            RUNTIME DESTINATION "${vfs_installdir}"
+    )
+endif()
 
 if (APPLE)
     # Default sync exclude list
