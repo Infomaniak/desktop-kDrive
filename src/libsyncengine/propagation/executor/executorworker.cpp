@@ -367,9 +367,9 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
         }
     } else {
         if (!isLiteSyncActivated() && !enoughLocalSpace(syncOp)) {
-            _syncPal->addError(Error(_syncPal->syncDbId(), name(), _executorExitCode, _executorExitCause));
             _executorExitCode = ExitCode::SystemError;
             _executorExitCause = ExitCause::NotEnoughDiskSpace;
+            _syncPal->addError(Error(_syncPal->syncDbId(), name(), _executorExitCode, _executorExitCause));
             hasError = true;
             return;
         }
@@ -955,9 +955,9 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
         }
     } else {
         if (!enoughLocalSpace(syncOp)) {
-            _syncPal->addError(Error(_syncPal->syncDbId(), name(), _executorExitCode, _executorExitCause));
             _executorExitCode = ExitCode::SystemError;
             _executorExitCause = ExitCause::NotEnoughDiskSpace;
+            _syncPal->addError(Error(_syncPal->syncDbId(), name(), _executorExitCode, _executorExitCause));
             hasError = true;
             return;
         }
