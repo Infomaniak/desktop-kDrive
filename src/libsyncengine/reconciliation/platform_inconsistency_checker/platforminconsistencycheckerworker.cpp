@@ -83,7 +83,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(std::shared_ptr<Nod
         return ExitCode::Ok;
     }
 
-    if (pathChanged(remoteNode) && checkPathAndName(remoteNode)) {
+    if (pathChanged(remoteNode) && !checkPathAndName(remoteNode)) {
         // Item has been blacklisted
         return ExitCode::Ok;
     }
