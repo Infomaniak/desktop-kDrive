@@ -296,11 +296,7 @@ void TestUtility::testCompressFile() {
 
 void TestUtility::testCurrentVersion() {
     const std::string test = CommonUtility::currentVersion();
-#ifdef NDEBUG
-    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]\d{8}$)")));
-#else
-    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]0$)")));
-#endif
+    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}\.{1}\d{1,2}\.{1}\d{1,2}\.{1}\d{0,8}$)")));
 }
 
 } // namespace KDC
