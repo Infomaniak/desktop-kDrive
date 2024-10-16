@@ -171,21 +171,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
                                            : PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
 
         if (node->side() == ReplicaSide::Local) {
-            bool found = false;
-            DbNodeId dbId = -1;
-            if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, *localNode->id(), dbId, found)) {
-                LOGW_WARN(_logger, L"Failed to retrieve dbId for local node: " << Utility::formatSyncPath(absoluteLocalPath));
-            }
-            if (found && !_syncPal->syncDb()->deleteNode(dbId, found)) {
-                // Remove node (and childs by cascade) from DB if it exists (else ignore as it is already not in DB)
-                LOGW_WARN(_logger, L"Failed to delete node from DB: " << Utility::formatSyncPath(absoluteLocalPath));
-            }
-
-            if (!_syncPal->vfsFileStatusChanged(absoluteLocalPath, node->side() == ReplicaSide::Remote ? SyncFileStatus::Conflict
-                                                                                                       : SyncFileStatus::Error)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: "
-                                                   << Utility::formatSyncPath(absoluteLocalPath).c_str());
-            }
+            removeLocalNodeFromDb(localNode);
         }
     }
 
@@ -257,9 +243,9 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
             // Some software save their files by deleting and re-creating them (Delete-Create), or by deleting the original file
             // and renaming a temporary file that contains the latest version (Delete-Move) In those cases, we should not check
             // for name clash, it is ok to have 2 children with the same name
-            const auto oneNodeIsDeleted = [this](const std::shared_ptr<Node> &node, const std::shared_ptr<Node> &prevNode) -> bool {
-                return pathChanged(node) &&
-                       prevNode->hasChangeEvent(OperationType::Delete);
+            const auto oneNodeIsDeleted = [this](const std::shared_ptr<Node> &node,
+                                                 const std::shared_ptr<Node> &prevNode) -> bool {
+                return pathChanged(node) && prevNode->hasChangeEvent(OperationType::Delete);
             };
 
             if (oneNodeIsDeleted(currentChildNode, prevChildNode) || oneNodeIsDeleted(prevChildNode, currentChildNode)) {
@@ -282,8 +268,33 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
 #endif
 }
 
-bool PlatformInconsistencyCheckerWorker::pathChanged(std::shared_ptr<Node> node) {
+bool PlatformInconsistencyCheckerWorker::pathChanged(std::shared_ptr<Node> node) const {
     return node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Move);
+}
+
+void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<Node> localNode) {
+    if (localNode && localNode->side() == ReplicaSide::Local) {
+        bool found = false;
+        DbNodeId dbId = -1;
+        const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
+        if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, *localNode->id(), dbId, found)) {
+            LOGW_WARN(_logger, L"Failed to retrieve dbId for local node: " << Utility::formatSyncPath(absoluteLocalPath));
+        }
+        if (found && !_syncPal->syncDb()->deleteNode(dbId, found)) {
+            // Remove node (and childs by cascade) from DB if it exists (else ignore as it is already not in DB)
+            LOGW_WARN(_logger, L"Failed to delete node from DB: " << Utility::formatSyncPath(absoluteLocalPath));
+        }
+
+        if (!_syncPal->vfsFileStatusChanged(absoluteLocalPath, SyncFileStatus::Error)) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(localNode->getPath()));
+        }
+    } else {
+        LOG_WARN(_logger, localNode
+                                  ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
+                                  : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb");
+        assert(false);
+    }
 }
 
 } // namespace KDC
