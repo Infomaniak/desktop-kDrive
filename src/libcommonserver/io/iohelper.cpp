@@ -603,7 +603,7 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
     ioError = stdError2ioError(ec);
 
     if (ioError != IoError::Success) {
-        LOG_ERROR(logger(), "Impossible to retrieve tmp directory: " << ioError2StdString(ioError).c_str());
+        if (Log::isSet()) LOG_ERROR(logger(), "Impossible to retrieve tmp directory: " << ioError2StdString(ioError).c_str());
         return false;
     }
     return true;
