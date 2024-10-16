@@ -313,7 +313,7 @@ $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
 
 if ($bwod) { 	# Insert the SonarCloud build-wrapper tool for CI Analysis
 	$build_wrapper = "build-wrapper-win-x86-64" 
-	$cmake = "$buidl_wrapper --out-dir $bwod $cmake"
+	$cmake = "$build_wrapper --out-dir $bwod $cmake"
 	$buildCall = "$build_wrapper --out-dir $bwod $buildCall"
 }
 
