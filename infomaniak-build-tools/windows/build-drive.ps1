@@ -38,7 +38,7 @@ Param(
 [switch] $ci,
 
 # wo	: The path to the build wrapper output directory used by SonarCloud CI Analysis
-[string] $wo= $null,
+[string] $bwod = $null,
 
 # Upload : Flag to trigger the use of the USB-key signing certificate
 [switch] $upload,
@@ -170,7 +170,7 @@ Parameters :
 	`t`tremake`t`t: Remove all the files, then rebuild the project
 	`t-ext`t`t`t: Rebuild and redeploy the windows extension
 	`t-ci`t`t`t: Build with CI testing
-	`t-wo`t`t`t: Optional parameter to wrap the build with SonarCloud build-wrapper tool (CI Analysis). Set the path to the build wrapper output directory. The wrapper will be used iff this path is not empty.
+	`t-bwod`t`t`t: Optional parameter to wrap the build with SonarCloud build-wrapper tool (CI Analysis). Set the path to the build wrapper output directory. The wrapper will be used iff this path is not empty.
 	`t-upload`t`t: Upload flag to switch between the virtual and physical certificates. Also rebuilds the project
 	") -f Cyan
 
@@ -308,16 +308,20 @@ $args += ("'-H$path'")
 
 $cmake = ('cmake {0}'-f($args -Join ' '))
 
-Write-Host $cmake
-Invoke-Expression $cmake
-
 $buildArgs += @('--build', $buildPath, '--target all install')
 $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
 
-if ($wo) { 	# Insert the SonarCloud build-wrapper tool for CI Analysis
-	$buildCall = "build-wrapper-win-x86-64 --out-dir $wo $buildCall"
+if ($bwod) { 	# Insert the SonarCloud build-wrapper tool for CI Analysis
+	$buid_wrapper = build-wrapper-win-x86-64 
+	$cmake = "$buid_wrapper --out-dir $bwod $cmake"
+	$buildCall = "$buid_wrapper --out-dir $bwod $buildCall"
 }
 
+Write-Host "CMake command:" -f Green
+Write-Host $cmake
+Invoke-Expression $cmake
+
+Write-Host "Build command:" -f Green
 Write-Host $buildCall
 Invoke-Expression $buildCall
 
