@@ -65,6 +65,7 @@ jobs:
           ./infomaniak-build-tools/run-tests.ps1
 
       - name: Compute code coverage
+        if: false
         run : |
           rm -Force -ErrorAction SilentlyContinue BullseyeCoverageExclusions
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
@@ -74,11 +75,13 @@ jobs:
           & "covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
 
       - name: Install sonar-scanner
+        if: false
         uses: SonarSource/sonarcloud-github-c-cpp@v3
         env:
           SONAR_HOST_URL: https://sonarcloud.io
 
       - name: Run sonar-scanner
+        if: false
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.SONAR_DESKTOP_KDRIVE_TOKEN }}
