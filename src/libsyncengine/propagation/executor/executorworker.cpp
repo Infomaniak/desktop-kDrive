@@ -233,13 +233,13 @@ void ExecutorWorker::initProgressManager() {
             continue; // Do not notify UI of progress in case of pseudo conflicts
         }
 
-        if (initSyncFileItem(syncOp, syncItem)) {
+        initSyncFileItem(syncOp, syncItem);
             _syncPal->initProgress(syncItem);
         }
     }
 }
 
-bool ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) {
+void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) {
     syncItem.setType(syncOp->affectedNode()->type());
     syncItem.setConflict(syncOp->conflict().type());
     syncItem.setInconsistency(syncOp->affectedNode()->inconsistencyType());
@@ -277,7 +277,7 @@ bool ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
         }
     }
 
-    return true;
+    return;
 }
 
 void ExecutorWorker::logCorrespondingNodeErrorMsg(const SyncOpPtr syncOp) {

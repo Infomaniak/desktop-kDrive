@@ -67,7 +67,7 @@ class ExecutorWorker : public OperationProcessor {
 
     private:
         void initProgressManager();
-        bool initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
+        void initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
 
         void handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError, bool &ignored);
         void checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
