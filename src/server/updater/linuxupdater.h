@@ -17,7 +17,6 @@
  */
 
 #pragma once
-
 #include "abstractupdater.h"
 
 namespace KDC {
