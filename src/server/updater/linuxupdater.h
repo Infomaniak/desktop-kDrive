@@ -17,6 +17,7 @@
  */
 
 #pragma once
+
 #include "abstractupdater.h"
 
 namespace KDC {
@@ -24,7 +25,7 @@ namespace KDC {
 class LinuxUpdater final : public AbstractUpdater {
     public:
         void onUpdateFound() override;
-        void startInstaller() override {}
+        void startInstaller() override { /* No automatic update on Linux for now */ }
 };
 
 } // namespace KDC

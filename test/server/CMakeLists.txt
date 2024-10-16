@@ -43,6 +43,8 @@ if(APPLE)
     endif()
 elseif (WIN32)
     list(APPEND testserver_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp)
+else ()
+    list(APPEND testserver_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp)
 endif()
 
 if (WIN32)
