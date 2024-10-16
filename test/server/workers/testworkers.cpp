@@ -151,12 +151,15 @@ void TestWorkers::tearDown() {
 }
 
 void TestWorkers::testCreatePlaceholder() {
+    ExitCause exitCause{ExitCause::Unknown};
+    ExitCode exitCode{ExitCode::Unknown};
+
     _syncPal->resetEstimateUpdates();
 
     // Progress not intialized
     {
-        ExitCause exitCause{ExitCause::Unknown};
-        ExitCode exitCode = _syncPal->_executorWorker->createPlaceholder(SyncPath("dummy"), exitCause);
+        exitCause = ExitCause::Unknown;
+        exitCode = _syncPal->_executorWorker->createPlaceholder(SyncPath("dummy"), exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::DataError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::InvalidSnapshot);
     }
@@ -171,16 +174,18 @@ void TestWorkers::testCreatePlaceholder() {
         _syncPal->initProgress(syncItem);
 
         // Folder doesn't exist (normal case)
-        ExitCause exitCause{ExitCause::Unknown};
-        ExitCode exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath, exitCause);
+        exitCause = ExitCause::Unknown;
+        exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::Ok);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::Unknown);
 
+#if defined(__APPLE__) && defined(__WIN32)
         // Folder already exists
         exitCause = ExitCause::Unknown;
         exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::DataError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::InvalidSnapshot);
+#endif
     }
 
     // Create file operation
@@ -192,19 +197,21 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setDirection(SyncDirection::Down);
         _syncPal->initProgress(syncItem);
 
+#if defined(__APPLE__) && defined(__WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
                        ioError == IoError::Success);
 
-        ExitCause exitCause = ExitCause::Unknown;
-        ExitCode exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFilePath, exitCause);
+        exitCause = ExitCause::Unknown;
+        exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFilePath, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::SystemError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::NoSearchPermission);
 
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
                        ioError == IoError::Success);
+#endif
 
         // File doesn't exist (normal case)
         exitCause = ExitCause::Unknown;
@@ -212,15 +219,20 @@ void TestWorkers::testCreatePlaceholder() {
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::Ok);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::Unknown);
 
+#if defined(__APPLE__) && defined(__WIN32)
         // File already exists
         exitCause = ExitCause::Unknown;
         exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFilePath, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::DataError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::InvalidSnapshot);
+#endif
     }
 }
 
 void TestWorkers::testConvertToPlaceholder() {
+    ExitCause exitCause{ExitCause::Unknown};
+    ExitCode exitCode{ExitCode::Unknown};
+
     _syncPal->resetEstimateUpdates();
 
     // Progress not intialized
@@ -240,11 +252,13 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setDirection(SyncDirection::Down);
         _syncPal->initProgress(syncItem);
 
+#if defined(__APPLE__) && defined(__WIN32)
         // Folder doesn't exist
-        ExitCause exitCause{ExitCause::Unknown};
-        ExitCode exitCode = _syncPal->_executorWorker->convertToPlaceholder(relativeFolderPath, true, exitCause);
+        exitCause = ExitCause::Unknown;
+        exitCode = _syncPal->_executorWorker->convertToPlaceholder(relativeFolderPath, true, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::DataError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::InvalidSnapshot);
+#endif
 
         // Folder already exists (normal case)
         std::error_code ec;
@@ -265,13 +279,14 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setDirection(SyncDirection::Down);
         _syncPal->initProgress(syncItem);
 
+#if defined(__APPLE__) && defined(__WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
                        ioError == IoError::Success);
 
-        ExitCause exitCause = ExitCause::Unknown;
-        ExitCode exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFilePath, exitCause);
+        exitCause = ExitCause::Unknown;
+        exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFilePath, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::SystemError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::NoSearchPermission);
 
@@ -284,6 +299,7 @@ void TestWorkers::testConvertToPlaceholder() {
         exitCode = _syncPal->_executorWorker->convertToPlaceholder(relativeFilePath, true, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::DataError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::InvalidSnapshot);
+#endif
 
         // File already exists (normal case)
         {

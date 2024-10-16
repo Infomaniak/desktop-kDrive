@@ -23,7 +23,7 @@
 #elif defined(__WIN32)
 #include "server/vfs/win/vfs_win.h"
 #else
-#include "server/vfs/win/vfs.h"
+#include "libcommonserver/vfs.h"
 #endif
 
 #include "propagation/executor/executorworker.h"

@@ -12,8 +12,9 @@ set(testserver_SRCS
     ../test.cpp
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
-    ../../src/server/logarchiver.h ../../src/server/logarchiver.cpp
     ${CMAKE_SOURCE_DIR}/src/libcommon/updater.h ${CMAKE_SOURCE_DIR}/src/libcommon/updater.cpp
+    ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.cpp
+    ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.cpp
     ${server_srcs_path}/logarchiver.h ${server_srcs_path}/logarchiver.cpp
     ${server_srcs_path}/updater/kdcupdater.h ${server_srcs_path}/updater/kdcupdater.cpp
     ${server_srcs_path}/updater/updateinfo.h ${server_srcs_path}/updater/updateinfo.cpp
@@ -96,7 +97,8 @@ endif()
 # Loaded after liblog4cplus to avoid an initialization crash
 if (APPLE)
     target_link_libraries(${testserver_NAME}
-        "${libsyncengine_NAME}_vfs_mac" "${updater_DEPS}")
+        "${libsyncengine_NAME}_vfs_mac"
+        "${updater_DEPS}")
 else()
     target_link_libraries(${testserver_NAME}
         ${libsyncengine_NAME})
