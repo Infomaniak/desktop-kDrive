@@ -397,11 +397,12 @@ void SocketApi::fetchPrivateLinkUrlHelper(const QString &localFile, const std::f
     }
 
     // Find the syncpal associated to sync
-    std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt;
+    std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt = _syncPalMap.end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
-        if (syncPalMapIt == _syncPalMap.end()) return;
     }
+
+    if (syncPalMapIt == _syncPalMap.end()) return;
 
     FileData fileData = FileData::get(localFile);
     KDC::NodeId itemId;
@@ -927,8 +928,9 @@ void SocketApi::sendSharingContextMenuOptions(const FileData &fileData, const So
     auto syncPalMapIt = _syncPalMap.end();
     if (fileData.syncDbId) {
         syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-        if (syncPalMapIt == _syncPalMap.end()) return;
     }
+
+    if (syncPalMapIt == _syncPalMap.end()) return;
 
     const bool isOnTheServer = syncPalMapIt->second->existOnServer(QStr2Path(fileData.relativePath));
     const bool canShare = syncPalMapIt->second->canShareItem(QStr2Path(fileData.relativePath));
@@ -972,8 +974,9 @@ void SocketApi::addSharingContextMenuOptions(const FileData &fileData, QTextStre
     auto syncPalMapIt = _syncPalMap.end();
     if (fileData.syncDbId) {
         syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-        if (syncPalMapIt == _syncPalMap.end()) return;
     }
+
+    if (syncPalMapIt == _syncPalMap.end()) return;
 
     const bool isOnTheServer = syncPalMapIt->second->existOnServer(QStr2Path(fileData.relativePath));
     const bool canShare = syncPalMapIt->second->canShareItem(QStr2Path(fileData.relativePath));
@@ -1026,8 +1029,8 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
     }
 
     // Find SyncPal and Vfs associated to sync
-    std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt;
-    std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator vfsMapIt;
+    std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator syncPalMapIt = _syncPalMap.end();
+    std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator vfsMapIt = _vfsMap.end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         if (syncPalMapIt == _syncPalMap.end()) return;

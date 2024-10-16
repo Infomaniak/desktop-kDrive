@@ -80,23 +80,23 @@ class ErrorInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<ErrorInfo> &list);
 
     private:
-        int _dbId;
-        qint64 _time;
-        ErrorLevel _level;
+        int _dbId{0};
+        qint64 _time{0};
+        ErrorLevel _level{ErrorLevel::Unknown};
         QString _functionName;
-        int _syncDbId;
+        int _syncDbId{0};
         QString _workerName;
-        ExitCode _exitCode;
-        ExitCause _exitCause;
+        ExitCode _exitCode{ExitCode::Unknown};
+        ExitCause _exitCause{ExitCause::Unknown};
         QString _localNodeId;
         QString _remoteNodeId;
-        NodeType _nodeType;
+        NodeType _nodeType{NodeType::Unknown};
         QString _path;
         QString _destinationPath;
-        ConflictType _conflictType;
-        InconsistencyType _inconsistencyType;
-        CancelType _cancelType;
-        bool _autoResolved;
+        ConflictType _conflictType{ConflictType::None};
+        InconsistencyType _inconsistencyType{InconsistencyType::None};
+        CancelType _cancelType{CancelType::None};
+        bool _autoResolved{false};
 };
 
 } // namespace KDC

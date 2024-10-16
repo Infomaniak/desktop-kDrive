@@ -36,15 +36,17 @@ VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId, std
     _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
     _vfsClearFileAttributes(vfsClearFileAttributes) {}
 
-VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path) : _logger(Log::instance()->getLogger()), _rootPath(path) {}
+VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId) :
+    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId) {}
 
 bool VirtualFilesCleaner::run() {
     // Clear xattr on root path
+    assert(_vfsClearFileAttributes);
     _vfsClearFileAttributes(_syncDbId, _rootPath);
-    return removePlaceholdersRecursivly(_rootPath);
+    return removePlaceholdersRecursively(_rootPath);
 }
 
-bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPath) {
+bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPath) {
     const SyncName rootPathStr = _rootPath.native();
     try {
         std::filesystem::recursive_directory_iterator dirIt;
@@ -89,6 +91,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             bool isHydrated = false;
             bool isSyncing = false;
             int progress = 0;
+            assert(_vfsStatus);
             if (!_vfsStatus(_syncDbId, dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress)) {
                 LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(dirIt->path()).c_str());
                 _exitCode = ExitCode::SystemError;
@@ -161,13 +164,15 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             }
 
             // Clear xattr
+            assert(_vfsClearFileAttributes);
             _vfsClearFileAttributes(_syncDbId, dirIt->path());
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursivly: " << e.code() << " - " << e.what());
+        LOG_WARN(_logger,
+                 "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively: " << e.code() << " - " << e.what());
         return false;
     } catch (...) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursivly");
+        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively");
         return false;
     }
 
