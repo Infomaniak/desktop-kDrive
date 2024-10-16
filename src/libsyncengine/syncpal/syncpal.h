@@ -128,7 +128,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _vfsCreatePlaceholder = vfsCreatePlaceholder;
         }
         inline void setVfsConvertToPlaceholderCallback(bool (*vfsConvertToPlaceholder)(int, const SyncPath &,
-                                                                                       const SyncFileItem &, bool &)) {
+                                                                                       const SyncFileItem &)) {
             _vfsConvertToPlaceholder = vfsConvertToPlaceholder;
         }
         inline void setVfsUpdateMetadataCallback(bool (*vfsUpdateMetadata)(int, const SyncPath &, const SyncTime &,
@@ -217,7 +217,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool vfsSetPinState(const SyncPath &itemPath, PinState pinState);
         bool vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress);
         bool vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        bool vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item, bool &needRestart);
+        bool vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item);
         bool vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
                                const NodeId &id, std::string &error);
         bool vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
@@ -287,8 +287,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                            int &progress){nullptr};
         bool (*_vfsCreatePlaceholder)(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item){nullptr};
-        bool (*_vfsConvertToPlaceholder)(int syncDbId, const SyncPath &path, const SyncFileItem &item,
-                                         bool &needRestart){nullptr};
+        bool (*_vfsConvertToPlaceholder)(int syncDbId, const SyncPath &path, const SyncFileItem &item){nullptr};
         bool (*_vfsUpdateMetadata)(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                    const int64_t size, const NodeId &id, std::string &error){nullptr};
         bool (*_vfsUpdateFetchStatus)(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
@@ -354,6 +353,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
 
         // Progress info management
+        void createProgressInfo();
         void resetEstimateUpdates();
         void startEstimateUpdates();
         void stopEstimateUpdates();
@@ -400,6 +400,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestSnapshot;
         friend class TestLocalJobs;
         friend class TestIntegration;
+        friend class TestWorkers;
 };
 
 } // namespace KDC

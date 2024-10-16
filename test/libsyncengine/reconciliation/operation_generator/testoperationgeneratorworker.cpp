@@ -32,11 +32,11 @@ void KDC::TestOperationGeneratorWorker::setUp() {
     // Create SyncPal
     bool alreadyExists;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(syncDbPath, "3.4.0", true);
+    _syncPal = std::make_shared<SyncPal>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
 
     _syncPal->_operationsGeneratorWorker = std::make_shared<OperationGeneratorWorker>(_syncPal, "Operation Generator", "OPGE");

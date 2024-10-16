@@ -69,14 +69,14 @@ class ExecutorWorker : public OperationProcessor {
         void initProgressManager();
         bool initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
 
-        void handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError);
+        void handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError, bool &ignored);
         void checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
         bool generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
         bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
-        bool createPlaceholder(const SyncPath &relativeLocalPath);
-        bool convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated, bool &needRestart);
+        ExitCode createPlaceholder(const SyncPath &relativeLocalPath, ExitCause &exitCause);
+        ExitCode convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated, ExitCause &exitCause);
 
-        void handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError);
+        void handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError, bool &ignored);
         bool generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
 
         /**
@@ -91,11 +91,11 @@ class ExecutorWorker : public OperationProcessor {
                                       bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not
                                                         // good, function probably does too much
 
-        void handleMoveOp(SyncOpPtr syncOp, bool &hasError);
-        bool generateMoveJob(SyncOpPtr syncOp);
+        void handleMoveOp(SyncOpPtr syncOp, bool &hasError, bool &ignored, bool &bypassProgressComplete);
+        bool generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
 
-        void handleDeleteOp(SyncOpPtr syncOp, bool &hasError);
-        bool generateDeleteJob(SyncOpPtr syncOp);
+        void handleDeleteOp(SyncOpPtr syncOp, bool &hasError, bool &ignored, bool &bypassProgressComplete);
+        bool generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
 
         bool hasRight(SyncOpPtr syncOp, bool &exists);
         bool enoughLocalSpace(SyncOpPtr syncOp);
@@ -103,8 +103,9 @@ class ExecutorWorker : public OperationProcessor {
         void waitForAllJobsToFinish(bool &hasError);
         bool deleteFinishedAsyncJobs();
         bool handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue, bool downloadImpossible);
-        bool handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath);
-        void handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath);
+        bool handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
+                               bool &ignored, bool &bypassProgressComplete);
+        void handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
         void sendProgress();
 
         bool propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
@@ -137,6 +138,8 @@ class ExecutorWorker : public OperationProcessor {
         bool getFileSize(const SyncPath &path, uint64_t &size);
         void logCorrespondingNodeErrorMsg(const SyncOpPtr syncOp);
 
+        void setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status);
+
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
@@ -151,6 +154,7 @@ class ExecutorWorker : public OperationProcessor {
         bool _snapshotToInvalidate = false;
 
         friend class TestExecutorWorker;
+        friend class TestWorkers;
 };
 
 } // namespace KDC

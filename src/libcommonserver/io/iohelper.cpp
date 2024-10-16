@@ -79,6 +79,10 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 }
 #endif
 
+#ifdef __APPLE__
+bool isLocked(const SyncPath &path);
+#endif
+
 log4cplus::Logger IoHelper::_logger;
 
 IoError IoHelper::stdError2ioError(const std::error_code &ec) noexcept {
@@ -277,6 +281,47 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
 
     return true;
 }
+
+bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
+    read = false;
+    write = false;
+    exec = false;
+    ioError = IoError::Success;
+
+    ItemType itemType;
+    const bool success = getItemType(path, itemType);
+    if (!success) {
+        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        return false;
+    }
+    ioError = itemType.ioError;
+    if (ioError != IoError::Success) {
+        return isExpectedError(ioError);
+    }
+
+    std::error_code ec;
+    std::filesystem::perms perms = isLinkFollowedByDefault(itemType.linkType)
+                                           ? std::filesystem::symlink_status(path, ec).permissions()
+                                           : std::filesystem::status(path, ec).permissions();
+    if (ec) {
+        const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
+        ioError = stdError2ioError(ec);
+        if (!exists) {
+            ioError = IoError::NoSuchFileOrDirectory;
+        }
+        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
+        return isExpectedError(ioError);
+    }
+
+    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
+#if defined(__APPLE__)
+    write = isLocked(path) ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
+#elif defined(__unix__)
+    write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
+#endif
+    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
+    return true;
+}
 #endif // #if defined(__APPLE__) || defined(__unix__)
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
@@ -435,24 +480,29 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
         return false;
     }
 
-    const bool isSymlink = itemType.linkType == LinkType::Symlink;
-    if (isSymlink) {
-        // The size of a symlink file is the target path length
-        size = itemType.targetPath.native().length();
-    } else {
-        if (itemType.nodeType != NodeType::File) {
-            LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
-            return false;
-        }
+    switch (itemType.linkType) {
+        case LinkType::Symlink:
+            // The size of a symlink file is the target path length
+            size = itemType.targetPath.native().length();
+            break;
+        case LinkType::Junction:
+            // The size of a junction is 0 (consistent with IoHelper::getFileStat)
+            size = 0;
+            break;
+        default:
+            if (itemType.nodeType != NodeType::File) {
+                LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
+                return false;
+            }
 
-        std::error_code ec;
-        size = _fileSize(path, ec); // The std::filesystem implementation reports the correct size for a MacOSX alias.
-        ioError = stdError2ioError(ec);
+            std::error_code ec;
+            size = _fileSize(path, ec); // The std::filesystem implementation reports the correct size for a MacOSX alias.
+            ioError = stdError2ioError(ec);
 
-        if (ioError != IoError::Success) {
-            LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
-            return isExpectedError(ioError);
-        }
+            if (ioError != IoError::Success) {
+                LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+                return isExpectedError(ioError);
+            }
     }
 
     return true;

@@ -88,8 +88,8 @@ void TestSyncDb::setUp() {
     std::filesystem::remove(syncDbPath);
 
     // Create DB
-    _testObj = new SyncDbMock(syncDbPath.string(), "3.4.0");
-    _testObj->init("3.4.0");
+    _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _testObj->init(KDRIVE_VERSION_STRING);
     _testObj->setAutoDelete(true);
 }
 
