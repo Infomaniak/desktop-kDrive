@@ -186,8 +186,11 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     LOGW_SYNCPAL_INFO(_logger, L"Blacklisting " << node->side() << L" item with " << Utility::formatSyncPath(node->getPath())
                                                 << L" because " << inconsistencyType << L".");
 
-    nodeIDs.remoteId = (remoteNode && remoteNode->id().has_value()) ? *remoteNode->id() : NodeId();
-    nodeIDs.localId = (localNode && localNode->id().has_value()) ? *localNode->id() : NodeId();
+    auto safeNodeId = [](const std::shared_ptr<Node> &unsafeNodePtr) {
+        return (unsafeNodePtr && unsafeNodePtr->id().has_value()) ? *unsafeNodePtr->id() : NodeId();
+    };
+    nodeIDs.remoteId = safeNodeId(remoteNode);
+    nodeIDs.localId = safeNodeId(localNode);
 
     _idsToBeRemoved.emplace_back(nodeIDs);
 }
@@ -286,8 +289,7 @@ void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<N
         }
 
         if (!_syncPal->vfsFileStatusChanged(absoluteLocalPath, SyncFileStatus::Error)) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(localNode->getPath()));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(absoluteLocalPath));
         }
     } else {
         LOG_WARN(_logger, localNode
