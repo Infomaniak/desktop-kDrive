@@ -40,6 +40,7 @@ class TestSyncDb : public CppUnit::TestFixture {
         CPPUNIT_TEST(testSyncNodes);
         CPPUNIT_TEST(testCorrespondingNodeId);
         CPPUNIT_TEST(testUpdateLocalName);
+        CPPUNIT_TEST(testUpgradeTo3_6_7);
         CPPUNIT_TEST(testUpgradeTo3_6_5CheckNodeMap);
         CPPUNIT_TEST(testUpgradeTo3_6_5);
         CPPUNIT_TEST(testInit3_6_4);
@@ -54,6 +55,7 @@ class TestSyncDb : public CppUnit::TestFixture {
         void testSyncNodes();
         void testCorrespondingNodeId();
         void testUpdateLocalName();
+        void testUpgradeTo3_6_7();
         void testUpgradeTo3_6_5();
         void testUpgradeTo3_6_5CheckNodeMap();
         void testInit3_6_4();
