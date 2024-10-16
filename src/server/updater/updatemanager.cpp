@@ -18,9 +18,16 @@
 
 #include "updatemanager.h"
 
-#include "linuxupdater.h"
+#if defined(__APPLE__)
 #include "sparkleupdater.h"
+#elif defined(_WIN32)
 #include "windowsupdater.h"
+#else
+#include "linuxupdater.h"
+#endif
+
+
+
 #include "db/parmsdb.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
@@ -101,7 +108,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
 }
 
 void UpdateManager::createUpdater() {
-#if defined(__APPLE__) && defined(HAVE_SPARKLE)
+#if defined(__APPLE__)
     _updater = std::make_unique<SparkleUpdater>();
 #elif defined(_WIN32)
     _updater = std::make_unique<WindowsUpdater>();
