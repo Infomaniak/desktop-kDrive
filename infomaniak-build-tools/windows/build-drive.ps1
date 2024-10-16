@@ -312,17 +312,17 @@ $buildArgs += @('--build', $buildPath, '--target all install')
 $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
 
 if ($bwod) { 	# Insert the SonarCloud build-wrapper tool for CI Analysis
-	$buid_wrapper = build-wrapper-win-x86-64 
-	$cmake = "$buid_wrapper --out-dir $bwod $cmake"
-	$buildCall = "$buid_wrapper --out-dir $bwod $buildCall"
+	$build_wrapper = "build-wrapper-win-x86-64" 
+	$cmake = "$buidl_wrapper --out-dir $bwod $cmake"
+	$buildCall = "$build_wrapper --out-dir $bwod $buildCall"
 }
 
 Write-Host "CMake command:" -f Green
-Write-Host $cmake
+Write-Host "$cmake"
 Invoke-Expression $cmake
 
 Write-Host "Build command:" -f Green
-Write-Host $buildCall
+Write-Host "$buildCall"
 Invoke-Expression $buildCall
 
 if ($LASTEXITCODE -ne 0)
