@@ -34,9 +34,8 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
 
     connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdateManager::slotTimerFired);
 
-    // static constexpr auto checkInterval = std::chrono::hours(1);
-    static constexpr auto checkTestInterval = std::chrono::seconds(15);
-    _updateCheckTimer.start(std::chrono::milliseconds(checkTestInterval).count());
+    static constexpr auto checkInterval = std::chrono::hours(1);
+    _updateCheckTimer.start(std::chrono::milliseconds(checkInterval).count());
 
     // Setup callback for update state change notification
     const std::function<void(UpdateState)> callback = std::bind_front(&UpdateManager::onUpdateStateChange, this);
