@@ -92,7 +92,7 @@ struct SyncPalInfo {
         VirtualFileMode vfsMode{VirtualFileMode::Off};
         bool restart{false};
         bool isPaused{false};
-        bool syncHasFullyCompleted;
+        bool syncHasFullyCompleted{false};
 
         // An advanced synchronisation targets a subdirectory of a remote drive
         bool isAdvancedSync() const { return !targetPath.empty(); };

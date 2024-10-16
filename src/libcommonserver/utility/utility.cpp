@@ -296,11 +296,11 @@ void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::
 #ifdef _WIN32
 static std::unordered_map<std::string, bool> rootFsTypeMap;
 
-bool Utility::isNtfs(const SyncPath &dirPath) {
-    auto it = rootFsTypeMap.find(dirPath.root_name().string());
+bool Utility::isNtfs(const SyncPath &targetPath) {
+    auto it = rootFsTypeMap.find(targetPath.root_name().string());
     if (it == rootFsTypeMap.end()) {
-        std::string fsType = Utility::fileSystemName(dirPath);
-        auto val = rootFsTypeMap.insert({dirPath.root_name().string(), fsType == NTFS});
+        std::string fsType = Utility::fileSystemName(targetPath);
+        auto val = rootFsTypeMap.insert({targetPath.root_name().string(), fsType == NTFS});
         if (!val.second) {
             // Failed to insert into map
             return false;
@@ -311,10 +311,10 @@ bool Utility::isNtfs(const SyncPath &dirPath) {
 }
 #endif
 
-std::string Utility::fileSystemName(const SyncPath &dirPath) {
+std::string Utility::fileSystemName(const SyncPath &targetPath) {
 #if defined(__APPLE__)
     struct statfs stat;
-    if (statfs(dirPath.root_path().native().c_str(), &stat) == 0) {
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
         return stat.f_fstypename;
     }
 #elif defined(_WIN32)
@@ -322,14 +322,14 @@ std::string Utility::fileSystemName(const SyncPath &dirPath) {
     DWORD dwMaxFileNameLength = 0;
     DWORD dwFileSystemFlags = 0;
 
-    if (GetVolumeInformation(dirPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
                              szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
         return Utility::ws2s(szFileSystemName);
     } else {
         // Not all the requested information is retrieved
         DWORD dwError = GetLastError();
         LOGW_WARN(logger(),
-                  L"Error in GetVolumeInformation for " << Path2WStr(dirPath.root_name()).c_str() << L" (" << dwError << L")");
+                  L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()).c_str() << L" (" << dwError << L")");
 
         // !!! File system name can be OK or not !!!
         return Utility::ws2s(szFileSystemName);

@@ -54,6 +54,7 @@ class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateSymlink);
         CPPUNIT_TEST(testGetNodeId);
         CPPUNIT_TEST(testGetFileStat);
+        CPPUNIT_TEST(testGetRights);
         // CPPUNIT_TEST(testIsFileAccessible); // Temporary disabled: Infinite loop on Linux CI
         CPPUNIT_TEST(testFileChanged);
         CPPUNIT_TEST(testCheckIfIsHiddenFile);
@@ -89,6 +90,7 @@ class TestIo : public CppUnit::TestFixture {
         void testCreateDirectory(void);
         void testCreateSymlink(void);
         void testGetFileStat(void);
+        void testGetRights(void);
         void testIsFileAccessible(void);
         void testFileChanged(void);
         void testCheckIfIsHiddenFile(void);
@@ -98,8 +100,7 @@ class TestIo : public CppUnit::TestFixture {
 #endif
 #if defined(__APPLE__)
         void testCreateAlias(void);
-#endif
-#if defined(_WIN32)
+#elif defined(_WIN32)
         void testCreateJunction(void);
 #endif
         void testCheckIfFileIsDehydrated();

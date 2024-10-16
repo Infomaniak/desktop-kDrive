@@ -132,7 +132,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
     private:
         friend class TestParmsDb;
-        bool _test;
+        bool _test{false};
 
         static std::shared_ptr<ParmsDb> _instance;
 
