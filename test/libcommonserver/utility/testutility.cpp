@@ -416,54 +416,68 @@ void TestUtility::testFormatRequest() {
 }
 
 void TestUtility::testNormalizedSyncName() {
-    SyncName normalizedName;
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(), normalizedName) && normalizedName.empty());
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName()).empty());
 
+#ifdef _WIN32
     // The two Unicode normalizations coincide.
-    bool equal = false;
-    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str(""), equal) && equal);
-    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("a"), equal) && equal);
-    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("@"), equal) && equal);
-    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("$"), equal) && equal);
-    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("!"), equal) && equal);
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"") == Utility::normalizedSyncName(L"", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"a") == Utility::normalizedSyncName(L"a", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"@") == Utility::normalizedSyncName(L"@", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"$") == Utility::normalizedSyncName(L"$", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"!") == Utility::normalizedSyncName(L"!", Utility::UnicodeNormalization::NFD));
 
-    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("abcd"), equal) && equal);
-    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("(1234%)"), equal) && equal);
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"abcd") ==
+                   Utility::normalizedSyncName(L"abcd", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"(1234%)") ==
+                   Utility::normalizedSyncName(L"(1234%)", Utility::UnicodeNormalization::NFD));
 
     // The two Unicode normalizations don't coincide.
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("à"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("é"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("è"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("ê"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("ü"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("ö"), equal) && equal);
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"à") != Utility::normalizedSyncName(L"à", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"é") != Utility::normalizedSyncName(L"é", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"è") != Utility::normalizedSyncName(L"è", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"ê") != Utility::normalizedSyncName(L"ê", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"ü")) !=
+                   Utility::normalizedSyncName(L"ü", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"ö")) !=
+                   Utility::normalizedSyncName(L"ö", Utility::UnicodeNormalization::NFD));
 
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("aöe"), equal) && equal);
-}
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"aöe")) !=
+                   Utility::normalizedSyncName(L"aöe", Utility::UnicodeNormalization::NFD));
+#else
+    // The two Unicode normalizations coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("") == Utility::normalizedSyncName("", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("a") == Utility::normalizedSyncName("a", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("@") == Utility::normalizedSyncName("@", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("$") == Utility::normalizedSyncName("$", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("!") == Utility::normalizedSyncName("!", Utility::UnicodeNormalization::NFD));
 
-void TestUtility::testNormalizedSyncPath() {
-    SyncPath normalizedPath;
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
-#ifdef _WIN32
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("abcd") ==
+                   Utility::normalizedSyncName("abcd", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("(1234%)") ==
+                   Utility::normalizedSyncName("(1234%)", Utility::UnicodeNormalization::NFD));
+
+    // The two Unicode normalizations don't coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("à") != Utility::normalizedSyncName("à", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("é") != Utility::normalizedSyncName("é", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("è") != Utility::normalizedSyncName("è", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("ê") != Utility::normalizedSyncName("ê", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("ü")) !=
+                   Utility::normalizedSyncName("ü", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("ö")) !=
+                   Utility::normalizedSyncName("ö", Utility::UnicodeNormalization::NFD));
+
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("aöe")) !=
+                   Utility::normalizedSyncName("aöe", Utility::UnicodeNormalization::NFD));
 #endif
 }
 
-bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
-    equal = false;
-
-    SyncName nfcNormalized;
-    if (!Utility::normalizedSyncName(name, nfcNormalized)) {
-        return false;
-    }
-    SyncName nfdNormalized;
-    if (!Utility::normalizedSyncName(name, nfdNormalized, Utility::UnicodeNormalization::NFD)) {
-        return false;
-    }
-    equal = (nfcNormalized == nfdNormalized);
-    return true;
+void TestUtility::testNormalizedSyncPath() {
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
+#ifdef _WIN32
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)") == SyncPath("a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)") == SyncPath("/a/b/c"));
+#endif
 }
 
 } // namespace KDC

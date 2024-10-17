@@ -397,34 +397,16 @@ bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
 }
 #endif
 
-bool Utility::checkEqualNormalized(const SyncName &a, const SyncName &b, bool &isEqual) {
-    SyncName aNormalized;
-    if (!Utility::normalizedSyncName(a, aNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(a));
-        return false;
-    }
-    SyncName bNormalized;
-    if (!Utility::normalizedSyncName(b, bNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(b));
-        return false;
-    }
-    isEqual = (aNormalized == bNormalized);
-    return true;
+bool Utility::isEqualNormalized(const SyncName &a, const SyncName &b) {
+    const auto aNormalized = Utility::normalizedSyncName(a);
+    const auto bNormalized = Utility::normalizedSyncName(b);
+    return aNormalized == bNormalized;
 }
 
-bool Utility::checkEqualNormalized(const SyncPath &a, const SyncPath &b, bool &isEqual) {
-    SyncPath aNormalized;
-    if (!Utility::normalizedSyncPath(a, aNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
-        return false;
-    }
-    SyncPath bNormalized;
-    if (!Utility::normalizedSyncPath(b, bNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
-        return false;
-    }
-    isEqual = (aNormalized == bNormalized);
-    return true;
+bool Utility::isEqualNormalized(const SyncPath &a, const SyncPath &b) {
+    const auto aNormalized = Utility::normalizedSyncPath(a);
+    const auto bNormalized = Utility::normalizedSyncPath(b);
+    return aNormalized == bNormalized;
 }
 
 bool Utility::moveItemToTrash(const SyncPath &itemPath) {
@@ -604,13 +586,12 @@ std::string Utility::_errId(const char *file, int line) {
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName, UnicodeNormalization normalization) noexcept {
+SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization normalization) {
+#ifdef _WIN32
     if (name.empty()) {
-        normalizedName = name;
-        return true;
+        return name;
     }
 
-#ifdef _WIN32
     static const int maxIterations = 10;
     LPWSTR strResult = nullptr;
     HANDLE hHeap = GetProcessHeap();
@@ -637,7 +618,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                                                    << std::to_wstring(dwError));
                 SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
                                                           "Failed to normalize string");
-                return false;
+
+                throw std::runtime_error("Failed to normalize string");
             }
 
             // New guess is negative of the return value.
@@ -651,59 +633,53 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                                            << std::to_wstring(dwError));
         SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
                                                   "Failed to normalize string");
-        return false;
+        throw std::runtime_error("Failed to normalize string");
     }
 
-    normalizedName = SyncName(strResult);
+    SyncName syncName(strResult);
     HeapFree(hHeap, 0, strResult);
-    return true;
+    return syncName;
 #else
-    char *strResult = nullptr;
+    if (name.empty()) {
+        return SyncName(name);
+    }
+
+    char *str = nullptr;
     if (normalization == UnicodeNormalization::NFD) {
-        strResult = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
+        str = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
     } else {
-        strResult = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+        str = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
     }
 
-    if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion
-                      // has failed. e.g.: Linux can sometime send filesystem events with strange character in the path
-        return false;
+    if (!str) { // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion has
+                // failed. e.g.: Linux can sometime send filesystem events with strange character in the path
+        return ""; // TODO : we should return a boolean value to explicitly say that the conversion has failed. Output value
+                   // should be passed by reference as a parameter.
     }
 
-    normalizedName = SyncName(strResult);
-    std::free((void *) strResult);
-    return true;
+    SyncName syncName(str);
+    std::free((void *) str);
+    return syncName;
 #endif
 }
 
-bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept {
+SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
     auto segmentIt = path.begin();
-    if (segmentIt == path.end()) return true;
+    if (segmentIt == path.end()) return {};
 
     auto segment = *segmentIt;
-    if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
-        SyncName normalizedName;
-        if (!Utility::normalizedSyncName(segment, normalizedName)) {
-            LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(segment));
-            return false;
-        }
-        segment = normalizedName;
-    }
+    if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) segment = normalizedSyncName(segment);
 
-    normalizedPath = SyncPath(segment);
+    SyncPath result{segment};
     ++segmentIt;
+
     for (; segmentIt != path.end(); ++segmentIt) {
         if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
-            SyncName normalizedName;
-            if (!Utility::normalizedSyncName(*segmentIt, normalizedName)) {
-                LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*segmentIt));
-                return false;
-            }
-            normalizedPath /= normalizedName;
+            result /= normalizedSyncName(*segmentIt);
         }
     }
 
-    return true;
+    return result;
 }
 
 bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,

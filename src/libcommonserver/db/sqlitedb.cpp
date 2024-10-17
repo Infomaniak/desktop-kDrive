@@ -421,13 +421,7 @@ SyncName makeSyncName(sqlite3_value *value) {
 
 static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value **argv) {
     if (argc == 1) {
-        SyncName name(makeSyncName(argv[0]));
-        SyncName normalizedName;
-        if (!Utility::normalizedSyncName(name, normalizedName)) {
-            // TODO: Is there a better solution?
-            normalizedName = name;
-        }
-
+        SyncName normalizedName = Utility::normalizedSyncName(makeSyncName(argv[0]));
         if (!normalizedName.empty()) {
 #ifdef _WIN32
             sqlite3_result_text16(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);

@@ -23,19 +23,11 @@
 namespace KDC::testhelpers {
 
 SyncName makeNfdSyncName() {
-    SyncName nfdNormalized;
-    if (!Utility::normalizedSyncName(Str("ééé"), nfdNormalized, Utility::UnicodeNormalization::NFD)) {
-        assert(false);
-    }
-    return nfdNormalized;
+    return Utility::normalizedSyncName(Str("ééé"), Utility::UnicodeNormalization::NFD);
 }
 
 SyncName makeNfcSyncName() {
-    SyncName nfcNormalized;
-    if (!Utility::normalizedSyncName(Str("ééé"), nfcNormalized)) {
-        assert(false);
-    }
-    return nfcNormalized;
+    return Utility::normalizedSyncName(Str("ééé"), Utility::UnicodeNormalization::NFC);
 }
 
 void generateOrEditTestFile(const SyncPath& path) {

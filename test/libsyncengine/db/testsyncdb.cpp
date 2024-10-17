@@ -270,10 +270,7 @@ void TestSyncDb::testUpgradeTo3_6_5() {
 
         SyncName remoteName; // From the sync database.
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, *initialDbNodes[i].nodeIdRemote(), remoteName, found) && found);
-
-        SyncName normalizedRemoteName;
-        CPPUNIT_ASSERT(Utility::normalizedSyncName(initialDbNodes[i].nameRemote(), normalizedRemoteName) &&
-                       remoteName == normalizedRemoteName);
+        CPPUNIT_ASSERT(remoteName == Utility::normalizedSyncName(initialDbNodes[i].nameRemote()));
     }
 
     ParmsDb::instance()->close();
