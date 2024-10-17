@@ -1022,36 +1022,21 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
     return ExitCode::Ok;
 }
 
-bool SyncPal::checkExistOnServer(const SyncPath &path, bool &exist) const {
-    exist = false;
-
+bool SyncPal::existOnServer(const SyncPath &path) const {
     // Path is normalized on server side
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
-    }
+    const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
     const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
-    exist = !nodeId.empty();
-    return true;
+    return !nodeId.empty();
 }
 
-bool SyncPal::checkCanShareItem(const SyncPath &path, bool &canShare) const {
-    canShare = false;
-
+bool SyncPal::canShareItem(const SyncPath &path) const {
     // Path is normalized on server side
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
-    }
-
-    const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
+    const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
+    const NodeId nodeId = _remoteSnapshot->itemId(path);
     if (!nodeId.empty()) {
-        canShare = _remoteSnapshot->canShare(nodeId);
+        return _remoteSnapshot->canShare(nodeId);
     }
-
-    return true;
+    return false;
 }
 
 ExitCode SyncPal::syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet) {

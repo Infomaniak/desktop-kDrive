@@ -613,13 +613,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
         if (!JsonParserUtility::extractValue(dirObj, nameKey, tmp)) {
             return ExitCode::BackError;
         }
-
-        SyncName name;
-        if (!Utility::normalizedSyncName(tmp, name)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
-            // Ignore the folder
-            continue;
-        }
+        SyncName name = Utility::normalizedSyncName(tmp);
 
         std::string parentId;
         if (!JsonParserUtility::extractValue(dirObj, parentIdKey, parentId)) {
@@ -631,12 +625,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
             if (!JsonParserUtility::extractValue(dirObj, pathKey, tmp)) {
                 return ExitCode::BackError;
             }
-            if (!Utility::normalizedSyncName(tmp, path)) {
-                LOGW_WARN(Log::instance()->getLogger(),
-                          L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
-                // Ignore the folder
-                continue;
-            }
+            path = Utility::normalizedSyncName(tmp);
         }
 
         NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name),

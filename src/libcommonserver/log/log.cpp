@@ -42,6 +42,7 @@ Log::~Log() {
 std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
     if (_instance == nullptr) {
         if (filePath.empty()) {
+            assert(false);
             return nullptr;
         }
 

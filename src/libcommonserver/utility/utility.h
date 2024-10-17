@@ -106,18 +106,16 @@ struct COMMONSERVER_EXPORT Utility {
          * Normalize the SyncName parameters before comparing them.
          * @param a SyncName value to be compared.
          * @param b Other SyncName value to be compared.
-         * @param isEqual true if the normalized strings are equal.
-         * @return true if no normalization issue.
+         * @return true if the normalized strings are equal.
          */
-        static bool checkEqualNormalized(const SyncName &a, const SyncName &b, bool &isEqual);
+        static bool isEqualNormalized(const SyncName &a, const SyncName &b);
         /**
          * Normalize the SyncPath parameters before comparing them.
          * @param a SyncPath value to be compared.
          * @param b Other SyncPath value to be compared.
-         * @param isEqual true if the normalized strings are equal.
-         * @return true if no normalization issue.
+         * @return true if the normalized paths are equal.
          */
-        static bool checkEqualNormalized(const SyncPath &a, const SyncPath &b, bool &isEqual);
+        static bool isEqualNormalized(const SyncPath &a, const SyncPath &b);
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
@@ -157,9 +155,8 @@ struct COMMONSERVER_EXPORT Utility {
 
 
         enum class UnicodeNormalization { NFC, NFD };
-        static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
-                                       UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
-        static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept;
+        static SyncName normalizedSyncName(const SyncName &name, UnicodeNormalization normalization = UnicodeNormalization::NFC);
+        static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;
 
 #ifdef _WIN32
         static bool fileExists(DWORD dwordError) noexcept;

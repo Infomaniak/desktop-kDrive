@@ -606,26 +606,29 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    if (Log::instance()) {
-        SyncPath filePath = Log::instance()->getLogFilePath();
-        if (!filePath.empty()) {
-            directoryPath = filePath.parent_path();
+    //!\ Don't use IoHelper::logger() here, as Log::_instance may not be initialized yet. /!\_
+    try {
+        if (directoryPath = Log::instance()->getLogFilePath().parent_path(); !directoryPath.empty()) {
+            return true;
         } else {
-            LOG_WARN(logger(), "Empty log file path");
-            return false;
+            throw std::runtime_error("Log directory path is empty.");
         }
-    } else {
-        // Generate directory path
-        if (!tempDirectoryPath(directoryPath, ioError)) {
-            return false;
+    } catch (const std::exception &e) {
+        if (Log::isSet()) {
+            LOG_WARN(logger(), "Error in IoHelper::logDirectoryPath: " << e.what());
         }
-
-        static const std::string LOGDIR_SUFFIX = "-logdir/";
-        const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
-        directoryPath /= logDirName;
+        // We can't log the error, so we just generate the path for the logger to initialize.
     }
 
-    return true;
+    if (!tempDirectoryPath(directoryPath, ioError)) {
+        return false;
+    }
+
+    static const std::string LOGDIR_SUFFIX = "-logdir/";
+    const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
+    directoryPath /= logDirName;
+
+    return ioError == IoError::Success;
 }
 
 bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {

@@ -152,13 +152,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     if (!snapshot->exists(nodeId) || movedIntoUnsyncedFolder) {
-        bool isInDeletedFolder = false;
-        if (!checkPathInDeletedFolder(dbPath, isInDeletedFolder)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::checkPathInDeletedFolder: " << Utility::formatSyncPath(dbPath));
-            return ExitCode::SystemError;
-        }
-
-        if (!isInDeletedFolder) {
+        if (!pathInDeletedFolder(dbPath)) {
             // Check that the file/directory really does not exist on replica
             bool isExcluded = false;
             if (const ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); exitCode != ExitCode::Ok) {
@@ -202,8 +196,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                 bool exists = false;
 
                 if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                                       << Utility::formatIoError(localPath, ioError).c_str());
+                    LOGW_WARN(_logger,
+                              L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError).c_str());
                     return ExitCode::SystemError;
                 }
                 checkTemplate = exists;
@@ -217,11 +211,10 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), dbPath, warn,
                                                                                        isExcluded, ioError);
             if (!success) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                                                   << Utility::formatIoError(dbPath, ioError).c_str());
+                LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                                           << Utility::formatIoError(dbPath, ioError).c_str());
                 return ExitCode::SystemError;
             }
-
             if (isExcluded) {
                 // The item is excluded
                 return ExitCode::Ok;
@@ -236,11 +229,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         logOperationGeneration(snapshot->side(), fsOp);
 
         if (dbNode.type() == NodeType::Directory) {
-            if (!addFolderToDelete(dbPath)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in ComputeFSOperationWorker::addFolderToDelete: "
-                                                   << Utility::formatSyncPath(dbPath).c_str());
-                return ExitCode::SystemError;
-            }
+            addFolderToDelete(dbPath);
         }
         return ExitCode::Ok;
     }
@@ -263,13 +252,13 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
         bool exists = false;
         if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError).c_str());
+            LOGW_WARN(_logger,
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError).c_str());
             return ExitCode::SystemError;
         }
         if (!exists) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - "
-                                                << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - "
+                                        << Utility::formatSyncPath(absolutePath).c_str());
             setExitCause(ExitCause::InvalidSnapshot);
             return ExitCode::DataError;
         }
@@ -912,13 +901,8 @@ void ComputeFSOperationWorker::updateUnsyncedList() {
                                          _localTmpUnsyncedList); // Only tmp list on local side
 }
 
-bool ComputeFSOperationWorker::addFolderToDelete(const SyncPath &path) {
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
-    }
-
+void ComputeFSOperationWorker::addFolderToDelete(const SyncPath &path) {
+    SyncPath normalizedPath = Utility::normalizedSyncPath(path);
     // Remove sub dirs
     auto dirPathToDeleteSetIt = _dirPathToDeleteSet.begin();
     while (dirPathToDeleteSetIt != _dirPathToDeleteSet.end()) {
@@ -931,28 +915,18 @@ bool ComputeFSOperationWorker::addFolderToDelete(const SyncPath &path) {
 
     // Insert dir
     _dirPathToDeleteSet.insert(normalizedPath);
-
-    return true;
 }
 
-bool ComputeFSOperationWorker::checkPathInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder) {
-    isInDeletedFolder = false;
-
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
-        return false;
-    }
-
+bool ComputeFSOperationWorker::pathInDeletedFolder(const SyncPath &path) {
+    SyncPath normalizedPath = Utility::normalizedSyncPath(path);
     for (auto dirPathToDeleteSetIt = _dirPathToDeleteSet.begin(); dirPathToDeleteSetIt != _dirPathToDeleteSet.end();
          ++dirPathToDeleteSetIt) {
         if (CommonUtility::isSubDir(*dirPathToDeleteSetIt, normalizedPath)) {
-            isInDeletedFolder = true;
-            break;
+            return true;
         }
     }
 
-    return true;
+    return false;
 }
 
 } // namespace KDC
