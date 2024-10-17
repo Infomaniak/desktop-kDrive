@@ -18,10 +18,6 @@
 
 #pragma once
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#endif
-
 #include "qtsingleapplication.h"
 #include "libcommonserver/commserver.h"
 #include "syncpal/syncpal.h"
@@ -44,6 +40,7 @@
 #include <QTimer>
 
 namespace KDC {
+class UpdateManager;
 
 class Theme;
 /**
@@ -119,6 +116,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
+
+        std::unique_ptr<UpdateManager> _updateManager;
 
         void parseOptions(const QStringList &);
         void initLogging() noexcept(false);
@@ -244,11 +243,13 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onSendFilesNotifications();
         void onRestartSyncs();
         void onScheduleAppRestart();
-        void onShowWindowsUpdateErrorDialog();
+        void onShowWindowsUpdateDialog();
+        void onUpdateStateChanged(UpdateState state);
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
         void onRestartClientReceived();
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
+        void onSendNotifAsked(const QString &title, const QString &message);
 
     signals:
         void socketApiExecuteCommandDirect(const QString &commandLine);

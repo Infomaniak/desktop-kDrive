@@ -23,8 +23,7 @@ namespace KDC {
 SynchronizedItem::SynchronizedItem(int syncDbId, const QString &filePath, const QString &fileId, SyncFileStatus status,
                                    SyncDirection direction, NodeType type, const QString &fullFilePath, const QDateTime &dateTime,
                                    const QString &error) :
-    _syncDbId(syncDbId),
-    _filePath(filePath), _fileId(fileId), _status(status), _direction(direction), _type(type), _fullFilePath(fullFilePath),
-    _dateTime(dateTime), _error(error), _displayed(false) {}
+    _syncDbId(syncDbId), _filePath(filePath), _fileId(fileId), _status(status), _direction(direction), _type(type),
+    _fullFilePath(fullFilePath), _dateTime(dateTime), _error(error), _displayed(false) {}
 
 } // namespace KDC

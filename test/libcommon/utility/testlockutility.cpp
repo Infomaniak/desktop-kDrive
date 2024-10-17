@@ -16,29 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "testlockutility.h"
+#include "libcommon/utility/lockutility.h"
 
-#include <QString>
 namespace KDC {
 
-class UpdateInfo {
-    public:
-        void setVersion(const QString &v);
-        QString version() const;
-        void setVersionString(const QString &v);
-        QString versionString() const;
-        void setWeb(const QString &v);
-        QString web() const;
-        void setDownloadUrl(const QString &v);
-        QString downloadUrl() const;
-
-        static UpdateInfo parseString(const QString &xml, bool *ok);
-
-    private:
-        QString mVersion;
-        QString mVersionString;
-        QString mWeb;
-        QString mDownloadUrl;
-};
+void TestLockUtility::testLock() {
+    LockUtility lock;
+    CPPUNIT_ASSERT(lock.lock());
+    CPPUNIT_ASSERT(!lock.lock());
+    lock.unlock();
+    CPPUNIT_ASSERT(lock.lock());
+}
 
 } // namespace KDC

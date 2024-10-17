@@ -26,6 +26,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QMutex>
+#include <QObject>
 #include <QWaitCondition>
 
 namespace KDC {

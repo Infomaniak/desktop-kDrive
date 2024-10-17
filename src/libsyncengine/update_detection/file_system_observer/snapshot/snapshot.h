@@ -84,6 +84,7 @@ class Snapshot : public SharedObject {
         void setValid(bool newIsValid);
 
         bool checkIntegrityRecursively();
+
     private:
         void removeChildrenRecursively(const NodeId &parentId);
         bool checkIntegrityRecursively(const NodeId &parentId);

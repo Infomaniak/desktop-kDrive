@@ -39,10 +39,9 @@ Q_LOGGING_CATEGORY(lcServerBaseFolderDialog, "gui.serverbasefolderdialog", QtInf
 
 ServerBaseFolderDialog::ServerBaseFolderDialog(std::shared_ptr<ClientGui> gui, int driveDbId, const QString &localFolderName,
                                                const QString &localFolderPath, QWidget *parent) :
-    CustomDialog(true, parent),
-    _gui(gui), _driveDbId(driveDbId), _localFolderName(localFolderName), _localFolderPath(localFolderPath),
-    _infoIconLabel(nullptr), _availableSpaceTextLabel(nullptr), _folderTreeItemWidget(nullptr), _backButton(nullptr),
-    _continueButton(nullptr), _infoIconColor(QColor()), _infoIconSize(QSize()), _okToContinue(false),
+    CustomDialog(true, parent), _gui(gui), _driveDbId(driveDbId), _localFolderName(localFolderName),
+    _localFolderPath(localFolderPath), _infoIconLabel(nullptr), _availableSpaceTextLabel(nullptr), _folderTreeItemWidget(nullptr),
+    _backButton(nullptr), _continueButton(nullptr), _infoIconColor(QColor()), _infoIconSize(QSize()), _okToContinue(false),
     _serverFolderBasePath(QString()), _serverFolderList(QList<QPair<QString, QString>>()) {
     initUI();
     updateUI();
