@@ -461,8 +461,8 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
     GetFileListJob job(_syncPal->driveDbId(), parentId);
     ExitCode exitCode = job.runSynchronously();
     if (exitCode != ExitCode::Ok) {
-        LOGW_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
-                                           << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << exitCode);
+        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
+                                          << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << exitCode);
         _executorExitCode = exitCode;
         _executorExitCause = ExitCause::Unknown;
         return false;
@@ -470,8 +470,8 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
 
     Poco::JSON::Object::Ptr resObj = job.jsonRes();
     if (!resObj) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
         _executorExitCode = ExitCode::BackError;
         _executorExitCause = ExitCause::ApiErr;
         return false;
@@ -479,8 +479,8 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
 
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
     if (!dataArray) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
         _executorExitCode = ExitCode::BackError;
         _executorExitCause = ExitCause::ApiErr;
         return false;
@@ -490,8 +490,8 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
         Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
         std::string name;
         if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                             "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
             _executorExitCode = ExitCode::BackError;
             _executorExitCause = ExitCause::ApiErr;
             return false;
@@ -804,49 +804,7 @@ ExitCode ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath, Ex
     if (!_syncPal->vfsCreatePlaceholder(relativeLocalPath, syncItem)) {
         // TODO: vfs functions should output an ioError parameter
         // Check if the item already exists on local replica
-        SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
-        bool exists = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                               << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
-            return ExitCode::SystemError;
-        }
-
-        if (ioError == IoError::AccessDenied) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-            exitCause = ExitCause::NoSearchPermission;
-            return ExitCode::SystemError;
-        }
-
-        if (exists) {
-            exitCause = ExitCause::InvalidSnapshot;
-            return ExitCode::DataError;
-        } else {
-            // Check if the parent folder exists on local replica
-            bool parentExists = false;
-            if (!IoHelper::checkIfPathExists(absoluteLocalFilePath.parent_path(), parentExists, ioError)) {
-                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                           << Utility::formatIoError(absoluteLocalFilePath.parent_path(), ioError).c_str());
-                return ExitCode::SystemError;
-            }
-
-            if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger, L"Item misses search permission: "
-                                           << Utility::formatSyncPath(absoluteLocalFilePath.parent_path()).c_str());
-                exitCause = ExitCause::NoSearchPermission;
-                return ExitCode::SystemError;
-            }
-
-            if (!parentExists) {
-                exitCause = ExitCause::InvalidSnapshot;
-                return ExitCode::DataError;
-            }
-        }
-
-        exitCause = ExitCause::FileAccessError;
-        return ExitCode::SystemError;
+        return processCreateOrConvertToPlaceholderError(relativeLocalPath, true, exitCause);
     }
 
     return ExitCode::Ok;
@@ -894,29 +852,7 @@ ExitCode ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
     if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem)) {
         // TODO: vfs functions should output an ioError parameter
         // Check that the item exists on local replica
-        SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
-        bool exists = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                               << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
-            return ExitCode::SystemError;
-        }
-
-        if (ioError == IoError::AccessDenied) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-            exitCause = ExitCause::NoSearchPermission;
-            return ExitCode::SystemError;
-        }
-
-        if (!exists) {
-            exitCause = ExitCause::InvalidSnapshot;
-            return ExitCode::DataError;
-        }
-
-        exitCause = ExitCause::FileAccessError;
-        return ExitCode::SystemError;
+        return processCreateOrConvertToPlaceholderError(relativeLocalPath, false, exitCause);
     }
 
     if (!_syncPal->vfsSetPinState(absoluteLocalFilePath, hydrated ? PinState::AlwaysLocal : PinState::OnlineOnly)) {
@@ -926,6 +862,57 @@ ExitCode ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
     }
 
     return ExitCode::Ok;
+}
+
+ExitCode ExecutorWorker::processCreateOrConvertToPlaceholderError(const SyncPath &relativeLocalPath, bool create,
+                                                                  ExitCause &exitCause) {
+    // TODO: Simplify/remove this function when vfs functions will output an ioError parameter
+    exitCause = ExitCause::Unknown;
+
+    SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
+    bool exists = false;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
+                                           << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
+        return ExitCode::SystemError;
+    }
+
+    if (ioError == IoError::AccessDenied) {
+        LOGW_SYNCPAL_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
+        exitCause = ExitCause::NoSearchPermission;
+        return ExitCode::SystemError;
+    }
+
+    if ((create && exists) || (!create && !exists)) {
+        exitCause = ExitCause::InvalidSnapshot;
+        return ExitCode::DataError;
+    }
+
+    if (create) {
+        // Check if the parent folder exists on local replica
+        bool parentExists = false;
+        if (!IoHelper::checkIfPathExists(absoluteLocalFilePath.parent_path(), parentExists, ioError)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
+                                       << Utility::formatIoError(absoluteLocalFilePath.parent_path(), ioError).c_str());
+            return ExitCode::SystemError;
+        }
+
+        if (ioError == IoError::AccessDenied) {
+            LOGW_WARN(_logger,
+                      L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath.parent_path()).c_str());
+            exitCause = ExitCause::NoSearchPermission;
+            return ExitCode::SystemError;
+        }
+
+        if (!parentExists) {
+            exitCause = ExitCause::InvalidSnapshot;
+            return ExitCode::DataError;
+        }
+    }
+
+    exitCause = ExitCause::FileAccessError;
+    return ExitCode::SystemError;
 }
 
 // !!! When returning with hasError == true, _executorExitCode and _executorExitCause must be set !!!

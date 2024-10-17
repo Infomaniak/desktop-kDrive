@@ -150,6 +150,7 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitCode createPlaceholder(const SyncPath &relativeLocalPath, ExitCause &exitCause);
         ExitCode convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated, ExitCause &exitCause);
+        ExitCode processCreateOrConvertToPlaceholderError(const SyncPath &relativeLocalPath, bool create, ExitCause &exitCause);
 
         void initProgressManager();
         bool initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
