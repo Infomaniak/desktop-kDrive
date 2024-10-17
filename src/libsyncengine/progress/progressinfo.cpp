@@ -77,35 +77,34 @@ void ProgressInfo::updateEstimates() {
 }
 
 void ProgressInfo::initProgress(const SyncFileItem &item) {
-    SyncPath path = item.newPath().has_value() ? item.newPath().value() : item.path();
+    const SyncPath path = item.newPath().has_value() ? item.newPath().value() : item.path();
     ProgressItem progressItem;
     progressItem.setItem(item);
     progressItem.progress().setTotal(item.size());
     progressItem.progress().setCompleted(0);
 
-    _currentItems[path].push(progressItem);
+    _currentItems[Utility::normalizedSyncName(path)].push(progressItem);
 
     _fileProgress.setTotal(_fileProgress.total() + 1);
     _sizeProgress.setTotal(_sizeProgress.total() + item.size());
 }
 
 bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
-    auto it = _currentItems.find(path);
-    if (_currentItems.find(path) == _currentItems.end() || it->second.empty()) {
+    const auto it = _currentItems.find(Utility::normalizedSyncName(path));
+    if (it == _currentItems.end() || it->second.empty()) {
         return false;
     }
     item = it->second.front().item();
     return true;
 }
 
-void ProgressInfo::setProgress(const SyncPath &path, int64_t completed) {
-    auto it = _currentItems.find(path);
+void ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
+    const auto it = _currentItems.find(Utility::normalizedSyncName(path));
     if (it == _currentItems.end() || it->second.empty()) {
         return;
     }
 
-    SyncFileItem &item = it->second.front().item();
-    if (!shouldCountProgress(item)) {
+    if (const SyncFileItem &item = it->second.front().item(); !shouldCountProgress(item)) {
         return;
     }
 
