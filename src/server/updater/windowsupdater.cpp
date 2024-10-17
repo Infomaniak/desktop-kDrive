@@ -17,12 +17,11 @@
  */
 
 #include "windowsupdater.h"
-#include "libcommon/utility/utility.h"
+#include "log/log.h"
 #include "jobs/network/directdownloadjob.h"
 #include "jobs/jobmanager.h"
-#include "log/sentry/sentryhandler.h"
-#include "log/log.h"
 #include "io/iohelper.h"
+#include "libcommonserver/utility/utility.h" // Path2WStr
 
 namespace KDC {
 
@@ -34,8 +33,8 @@ void WindowsUpdater::onUpdateFound() {
         return;
     }
     if (std::filesystem::exists(filepath)) {
-        LOG_INFO(Log::instance()->getLogger(),
-                 L"Installer already downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Installer already downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
         setState(UpdateState::Ready);
         return;
     }
@@ -108,8 +107,8 @@ void WindowsUpdater::downloadFinished(UniqueId jobId) {
         return;
     }
 
-    LOG_INFO(Log::instance()->getLogger(),
-             L"Installer downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
+    LOGW_INFO(Log::instance()->getLogger(),
+              L"Installer downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
     setState(UpdateState::Ready);
 }
 

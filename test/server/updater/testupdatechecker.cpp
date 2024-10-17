@@ -22,6 +22,7 @@
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "server/updater/updatechecker.h"
+#include "utility/utility.h"
 
 namespace KDC {
 
@@ -33,30 +34,30 @@ static const std::string smallVersionJsonUpdateStr =
 class GetAppVersionJobTest final : public GetAppVersionJob {
     public:
         GetAppVersionJobTest(const Platform platform, const std::string &appID, const bool updateShouldBeAvailable) :
-            GetAppVersionJob(platform, appID), _updateShoudBeAvailable(updateShouldBeAvailable) {}
+            GetAppVersionJob(platform, appID), _updateShouldBeAvailable(updateShouldBeAvailable) {}
 
         void runJob() noexcept override {
-            const std::istringstream iss(_updateShoudBeAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
+            const std::istringstream iss(_updateShouldBeAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
             std::istream is(iss.rdbuf());
             GetAppVersionJob::handleResponse(is);
         }
 
     private:
-        bool _updateShoudBeAvailable{false};
+        bool _updateShouldBeAvailable{false};
 };
 
 class UpdateCheckerTest final : public UpdateChecker {
     public:
-        void setUpdateShoudBeAvailable(const bool val) { _updateShoudBeAvailable = val; }
+        void setUpdateShoudBeAvailable(const bool val) { _updateShouldBeAvailable = val; }
 
     private:
         ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
             static const std::string appUid = "1234567890";
-            job = std::make_shared<GetAppVersionJobTest>(CommonUtility::platform(), appUid, _updateShoudBeAvailable);
+            job = std::make_shared<GetAppVersionJobTest>(CommonUtility::platform(), appUid, _updateShouldBeAvailable);
             return ExitCode::Ok;
         }
 
-        bool _updateShoudBeAvailable{false};
+        bool _updateShouldBeAvailable{false};
 };
 
 void TestUpdateChecker::testCheckUpdateAvailable() { // Version is higher than current version

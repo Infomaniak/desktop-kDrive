@@ -18,10 +18,6 @@
 
 #pragma once
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#endif
-
 #include "qtsingleapplication.h"
 #include "libcommonserver/commserver.h"
 #include "syncpal/syncpal.h"

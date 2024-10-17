@@ -43,6 +43,7 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <sentry.h>
+#include <WinSock2.h>
 
 namespace KDC {
 

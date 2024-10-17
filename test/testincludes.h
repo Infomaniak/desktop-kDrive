@@ -30,9 +30,8 @@
 #include <cppunit/CompilerOutputter.h>
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */
 #endif
-
-#include "libcommonserver/utility/utility.h"
 
 int runTestSuite(const std::string &logFileName);
