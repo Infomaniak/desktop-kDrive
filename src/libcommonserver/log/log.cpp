@@ -42,8 +42,10 @@ Log::~Log() {
 std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
     if (_instance == nullptr) {
         if (filePath.empty()) {
-            throw std::runtime_error("Log must be initialized!");
-        } else {
+            return nullptr;
+        }
+
+        try {
             _instance = std::shared_ptr<Log>(new Log(filePath));
             _instance->checkForExpiredFiles();
         }
