@@ -63,20 +63,26 @@ class ExecutorWorker : public OperationProcessor {
         void executorCallback(UniqueId jobId);
 
     protected:
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns
         void execute() override;
 
     private:
-        void initProgressManager();
-        bool initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
-
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
         void handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError, bool &ignored);
-        void checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
-        bool generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
-        bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
-        ExitCode createPlaceholder(const SyncPath &relativeLocalPath, ExitCause &exitCause);
-        ExitCode convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated, ExitCause &exitCause);
 
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
+        bool checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
+        bool generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
+        bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
         void handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError, bool &ignored);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
 
         /**
@@ -85,43 +91,74 @@ class ExecutorWorker : public OperationProcessor {
          * @param syncOp : the operation to propagate.
          * @param absolutePath : absolute local path of the affected file.
          * @return `true` if the date is modified successfully.
+         * @note _executorExitCode and _executorExitCause must be set when the function returns false
          */
         bool fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
                                       bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not
                                                         // good, function probably does too much
 
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
         void handleMoveOp(SyncOpPtr syncOp, bool &hasError, bool &ignored, bool &bypassProgressComplete);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
 
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
         void handleDeleteOp(SyncOpPtr syncOp, bool &hasError, bool &ignored, bool &bypassProgressComplete);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
 
-        bool hasRight(SyncOpPtr syncOp, bool &exists);
-        bool enoughLocalSpace(SyncOpPtr syncOp);
-
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
         void waitForAllJobsToFinish(bool &hasError);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool deleteFinishedAsyncJobs();
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue, bool downloadImpossible);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                bool &ignored, bool &bypassProgressComplete);
-        void handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
-        void sendProgress();
 
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
                                         std::shared_ptr<Node> &node);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
                                       std::shared_ptr<Node> &node);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool propagateMoveToDbAndTree(SyncOpPtr syncOp);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool propagateDeleteToDbAndTree(SyncOpPtr syncOp);
+
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
         bool deleteFromDb(std::shared_ptr<Node> node);
 
+        ExitCode createPlaceholder(const SyncPath &relativeLocalPath, ExitCause &exitCause);
+        ExitCode convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated, ExitCause &exitCause);
+
+        void initProgressManager();
+        bool initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
+        void handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
+        void sendProgress();
+        bool hasRight(SyncOpPtr syncOp, bool &exists);
+        bool enoughLocalSpace(SyncOpPtr syncOp);
         bool runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
-
         void cancelAllOngoingJobs(bool reschedule = false);
-
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
         inline bool isLiteSyncActivated() { return _syncPal->vfsMode() != VirtualFileMode::Off; }

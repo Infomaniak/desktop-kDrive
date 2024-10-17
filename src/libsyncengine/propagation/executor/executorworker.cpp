@@ -321,7 +321,6 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
         bool isDehydratedPlaceholder = false;
         if (!checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in checkLiteSyncInfoForCreate");
-            // _executorExitCode and _executorExitCause are set by the above function
             hasError = true;
             return;
         }
@@ -361,7 +360,6 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
                     syncOp->affectedNode()->lastmodified(), node)) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-            // _executorExitCode and _executorExitCause are set by the above function
             hasError = true;
             return;
         }
@@ -411,7 +409,6 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
         }
 
         if (!generateCreateJob(syncOp, job)) {
-            // _executorExitCode and _executorExitCause are set by the above function
             hasError = true;
             return;
         }
@@ -422,7 +419,11 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
                 std::shared_ptr<CreateDirJob> createDirJob = std::dynamic_pointer_cast<CreateDirJob>(job);
                 if (createDirJob && (createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST ||
                                      createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN)) {
-                    checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
+                    if (!checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId())) {
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded");
+                        hasError = true;
+                        return;
+                    }
                 }
 
                 if (syncOp->targetSide() == ReplicaSide::Local) {
@@ -453,44 +454,72 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
     }
 }
 
-void ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId) {
+bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId) {
     bool alreadyExist = false;
 
     // List all items in parent dir
     GetFileListJob job(_syncPal->driveDbId(), parentId);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    if (exitCode != ExitCode::Ok) {
+        LOGW_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
+                                           << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << exitCode);
+        _executorExitCode = exitCode;
+        _executorExitCause = ExitCause::Unknown;
+        return false;
+    }
 
-    try {
-        Poco::JSON::Object::Ptr resObj = job.jsonRes();
-        Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-            Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-            if (obj) {
-                std::string name;
-                if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
-                    return;
-                }
+    Poco::JSON::Object::Ptr resObj = job.jsonRes();
+    if (!resObj) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+        _executorExitCode = ExitCode::BackError;
+        _executorExitCause = ExitCause::ApiErr;
+        return false;
+    }
 
-                if (name == absolutePath.filename().string()) {
-                    alreadyExist = true;
-                }
-            }
+    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+    if (!dataArray) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+        _executorExitCode = ExitCode::BackError;
+        _executorExitCause = ExitCause::ApiErr;
+        return false;
+    }
+
+    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
+        Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
+        std::string name;
+        if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+            _executorExitCode = ExitCode::BackError;
+            _executorExitCause = ExitCause::ApiErr;
+            return false;
         }
-    } catch (...) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Failed to check if file: " << Utility::formatSyncPath(absolutePath).c_str() << L" already exist.");
+
+        if (name == absolutePath.filename().string()) {
+            alreadyExist = true;
+            break;
+        }
     }
 
     if (!alreadyExist) {
-        return;
+        return true;
     }
 
-    // The item already exist, exclude it
-    PlatformInconsistencyCheckerUtility::renameLocalFile(absolutePath,
-                                                         PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
+    // The item already exists, exclude it
+    exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(absolutePath,
+                                                                    PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
+    if (exitCode != ExitCode::Ok) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to rename file: " << Utility::formatSyncPath(absolutePath).c_str());
+        _executorExitCode = exitCode;
+        _executorExitCause = ExitCause::Unknown;
+        return false;
+    }
 
     _executorExitCode = ExitCode::DataError;
     _executorExitCause = ExitCause::FileAlreadyExist;
+    return false;
 }
 
 // !!! When returning false, _executorExitCode and _executorExitCause must be set !!!
@@ -563,7 +592,6 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                                             newNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-                // _executorExitCode and _executorExitCause are set by the above function
                 return false;
             }
 
@@ -926,7 +954,6 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
         bool isSyncing = false;
         if (!checkLiteSyncInfoForEdit(syncOp, absoluteLocalFilePath, ignoreItem, isSyncing)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in checkLiteSyncInfoForEdit");
-            // _executorExitCode and _executorExitCause are set by the above function
             hasError = true;
             return;
         }
@@ -949,7 +976,6 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
                     syncOp->affectedNode()->lastmodified(), node)) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-            // _executorExitCode and _executorExitCause are set by the above function
             hasError = true;
             return;
         }
@@ -969,7 +995,6 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
         }
 
         if (!generateEditJob(syncOp, job)) {
-            // _executorExitCode and _executorExitCause are set by the above function
             hasError = true;
             return;
         }
@@ -1143,7 +1168,6 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &
         if (isPlaceholder && !isHydrated) {
             ignoreItem = true;
             return fixModificationDate(syncOp, absolutePath);
-            // _executorExitCode and _executorExitCause are set by the above function
         }
     } else {
         if (isPlaceholder) {
@@ -1214,7 +1238,6 @@ void ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &hasError, bool &ignore
         if (syncOp->hasConflict()) {
             bool propagateChange = true;
             hasError = propagateConflictToDbAndTree(syncOp, propagateChange);
-            // _executorExitCode and _executorExitCause are set by the above function
 
             Error err(_syncPal->syncDbId(),
                       syncOp->conflict().localNode() != nullptr
@@ -1240,7 +1263,6 @@ void ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &hasError, bool &ignore
         if (!propagateMoveToDbAndTree(syncOp)) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-            // _executorExitCode and _executorExitCause are set by the above function
             hasError = true;
             return;
         }
@@ -1252,7 +1274,6 @@ void ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &hasError, bool &ignore
         }
 
         if (!generateMoveJob(syncOp, ignored, bypassProgressComplete)) {
-            // _executorExitCode and _executorExitCause are set by the above function
             hasError = true;
             return;
         }
@@ -1387,7 +1408,6 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypa
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode = nullptr;
         if (!propagateChangeToDbAndTree(syncOp, job, newNode)) {
-            // _executorExitCode and _executorExitCause are set by the above function
             return false;
         }
 
@@ -1412,7 +1432,6 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypa
     }
 
     return handleFinishedJob(job, syncOp, syncOp->affectedNode()->getPath(), ignored, bypassProgressComplete);
-    // _executorExitCode and _executorExitCause are set by the above function
 }
 
 // !!! When returning with hasError == true, _executorExitCode and _executorExitCause must be set !!!
@@ -1434,7 +1453,6 @@ void ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &hasError, bool &igno
                     ConflictType::EditDelete) { // Error message handled with move operation in case Edit-Delete conflict
             bool propagateChange = true;
             hasError = propagateConflictToDbAndTree(syncOp, propagateChange);
-            // _executorExitCode and _executorExitCause are set by the above function
 
             Error err(_syncPal->syncDbId(),
                       syncOp->conflict().localNode() != nullptr
@@ -1458,7 +1476,6 @@ void ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &hasError, bool &igno
         }
 
         if (!propagateDeleteToDbAndTree(syncOp)) {
-            // _executorExitCode and _executorExitCause are set by the above function
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
             hasError = true;
@@ -1472,7 +1489,6 @@ void ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &hasError, bool &igno
         }
 
         if (!generateDeleteJob(syncOp, ignored, bypassProgressComplete)) {
-            // _executorExitCode and _executorExitCause are set by the above function
             hasError = true;
             return;
         }
@@ -1534,7 +1550,6 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &by
     job->setAffectedFilePath(relativeLocalFilePath);
     job->runSynchronously();
     return handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
-    // _executorExitCode and _executorExitCause are set by the above function
 }
 
 bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
@@ -1688,6 +1703,8 @@ bool ExecutorWorker::enoughLocalSpace(SyncOpPtr syncOp) {
 }
 
 void ExecutorWorker::waitForAllJobsToFinish(bool &hasError) {
+    hasError = false;
+
     while (!_ongoingJobs.empty()) {
         if (stopAsked()) {
             cancelAllOngoingJobs();
@@ -1719,6 +1736,7 @@ void ExecutorWorker::waitForAllJobsToFinish(bool &hasError) {
 
 bool ExecutorWorker::deleteFinishedAsyncJobs() {
     bool hasError = false;
+
     while (!_terminatedJobs.empty()) {
         // Delete all terminated jobs
         if (!hasError && _ongoingJobs.find(_terminatedJobs.front()) != _ongoingJobs.end()) {
@@ -1875,7 +1893,6 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         job->exitCode() == ExitCode::BackError && details::isManagedBackError(job->exitCause())) {
         return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue,
                                       networkJob && networkJob->isDownloadImpossible());
-        // _executorExitCode and _executorExitCause are set by the above function
     }
 
     if (job->exitCode() != ExitCode::Ok) {
@@ -1923,7 +1940,6 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode;
         if (!propagateChangeToDbAndTree(syncOp, job, newNode)) {
-            // _executorExitCode and _executorExitCause are set by the above function
             cancelAllOngoingJobs();
             return false;
         }
@@ -2062,7 +2078,6 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
                 if (localNodeFoundInDb) {
                     // Remove local node from DB
                     if (!deleteFromDb(syncOp->conflict().localNode())) {
-                        // _executorExitCode and _executorExitCause are set by the above function
                         propagateChange = false;
                         return true;
                     }
@@ -2124,7 +2139,6 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
     if (syncOp->hasConflict()) {
         bool propagateChange = true;
         bool hasError = propagateConflictToDbAndTree(syncOp, propagateChange);
-        // _executorExitCode and _executorExitCause are set by the above function
         if (!propagateChange || hasError) {
             return !hasError;
         }
@@ -2165,19 +2179,15 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
 
             if (syncOp->type() == OperationType::Create) {
                 return propagateCreateToDbAndTree(syncOp, nodeId, modtime, node);
-                // _executorExitCode and _executorExitCause are set by the above function
             } else {
                 return propagateEditToDbAndTree(syncOp, nodeId, modtime, node);
-                // _executorExitCode and _executorExitCause are set by the above function
             }
         }
         case OperationType::Move: {
             return propagateMoveToDbAndTree(syncOp);
-            // _executorExitCode and _executorExitCause are set by the above function
         }
         case OperationType::Delete: {
             return propagateDeleteToDbAndTree(syncOp);
-            // _executorExitCode and _executorExitCause are set by the above function
         }
         default: {
             LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type " << syncOp->type() << L" on file "
@@ -2564,7 +2574,6 @@ bool ExecutorWorker::propagateDeleteToDbAndTree(SyncOpPtr syncOp) {
     // 2. Remove the entry from the database. If nX is a directory node, also remove all entries for each node n ∈ S. This
     // avoids that the object(s) are detected again by compute_ops() on the next sync iteration
     if (!deleteFromDb(syncOp->affectedNode())) {
-        // _executorExitCode and _executorExitCause are set by the above function
         return false;
     }
 
