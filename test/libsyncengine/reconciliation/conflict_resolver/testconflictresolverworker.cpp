@@ -138,7 +138,7 @@ void TestConflictResolverWorker::testCreateCreate() {
 
     std::shared_ptr<Node> rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAAB =
-            std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAB.txt"),
+            std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAB.txt"),
                                    NodeType::File, OperationType::Create, "rAAB", testhelpers::defaultTime,
                                    testhelpers::defaultTime, testhelpers::defaultFileSize, rNodeAA);
     CPPUNIT_ASSERT(rNodeAA->insertChildren(rNodeAAB));
@@ -610,7 +610,7 @@ void TestConflictResolverWorker::testMoveMoveSource() {
 void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
     // Initial state : Node AAA is orphan.
     const SyncName orphanName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-            "AAA", PlatformInconsistencyCheckerUtility::SuffixTypeOrphan);
+            "AAA", PlatformInconsistencyCheckerUtility::SuffixType::Orphan);
 
     std::shared_ptr<Node> lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
     lNodeAAA->setName(orphanName);

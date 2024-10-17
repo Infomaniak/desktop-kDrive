@@ -246,7 +246,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
             SyncPath destPath;
             PlatformInconsistencyCheckerUtility::renameLocalFile(
-                    absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
+                    absolutePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted, &destPath);
 
             Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictType::None,
                       InconsistencyType::None, CancelType::MoveToBinFailed, destPath);

@@ -34,6 +34,7 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testNameClash);
         CPPUNIT_TEST(testNameClashAfterRename);
         CPPUNIT_TEST(testExecute);
+        CPPUNIT_TEST(testNameSizeLocalTree);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -47,10 +48,12 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
         void testNameClash();
         void testNameClashAfterRename();
         void testExecute();
+        void testNameSizeLocalTree();
 
     private:
         std::shared_ptr<SyncPal> _syncPal{nullptr};
         LocalTemporaryDirectory _tempDir{"testNameClashAfterRename"};
+        void initUpdateTree(ReplicaSide side);
 };
 
 } // namespace KDC

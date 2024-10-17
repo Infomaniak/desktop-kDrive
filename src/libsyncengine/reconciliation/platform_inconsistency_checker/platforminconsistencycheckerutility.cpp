@@ -40,7 +40,7 @@ static const char forbiddenFilenameChars[] = {'/', '\0'};
 #endif
 #endif
 
-#define MAX_NAME_LENGTH 255
+static const int maxNameLengh = 255; // Max filename length is uniformized to 255 characters for all platforms and backends
 
 namespace KDC {
 
@@ -62,7 +62,7 @@ std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyChecke
 
 SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPath &name, SuffixType suffixType) {
     SyncName suffix = generateSuffix(suffixType);
-    SyncName sub = name.stem().native().substr(0, MAX_NAME_LENGTH - suffix.size() - name.extension().native().size());
+    const SyncName sub = name.stem().native().substr(0, maxNameLengh - suffix.size() - name.extension().native().size());
 
 #ifdef _WIN32
     SyncName nameStr(name.native());
@@ -90,7 +90,7 @@ ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
     return moveJob.exitCode();
 }
 
-bool PlatformInconsistencyCheckerUtility::checkNameForbiddenChars(const SyncPath &name) {
+bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {
     for (auto c: forbiddenFilenameChars) {
         if (name.native().find(c) != std::string::npos) {
             return true;
@@ -131,12 +131,8 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
 }
 #endif
 
-bool PlatformInconsistencyCheckerUtility::checkNameSize(const SyncName &name) {
-    if (name.size() > MAX_NAME_LENGTH) {
-        return true;
-    }
-
-    return false;
+bool PlatformInconsistencyCheckerUtility::isNameTooLong(const SyncName &name) const {
+    return name.size() > maxNameLengh;
 }
 
 // return false if the file name is ok
@@ -171,7 +167,7 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
     return false;
 }
 
-bool PlatformInconsistencyCheckerUtility::checkPathLength(size_t pathSize) {
+bool PlatformInconsistencyCheckerUtility::isPathTooLong(size_t pathSize) {
     return pathSize > _maxPathLength;
 }
 
@@ -189,7 +185,7 @@ void PlatformInconsistencyCheckerUtility::setMaxPath() {
     _maxPathLength = CommonUtility::maxPathLength();
 }
 
-SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixType /*= SuffixTypeRename*/) {
+SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixType) {
     std::time_t now = std::time(nullptr);
     std::tm tm = *std::localtime(&now);
 
@@ -198,16 +194,13 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     ss << std::put_time(&tm, Str("%Y%m%d_%H%M%S"));
 
     switch (suffixType) {
-        case SuffixTypeRename:
-            suffix = Str("_renamed_");
-            break;
-        case SuffixTypeConflict:
+        case SuffixType::Conflict:
             suffix = Str("_conflict_");
             break;
-        case SuffixTypeOrphan:
+        case SuffixType::Orphan:
             suffix = Str("_orphan_");
             break;
-        case SuffixTypeBlacklisted:
+        case SuffixType::Blacklisted:
             suffix = Str("_blacklisted_");
             break;
     }

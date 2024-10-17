@@ -28,28 +28,27 @@ namespace KDC {
 
 class PlatformInconsistencyCheckerUtility {
     public:
-        typedef enum { SuffixTypeRename, SuffixTypeConflict, SuffixTypeOrphan, SuffixTypeBlacklisted } SuffixType;
+        enum class SuffixType { Conflict, Orphan, Blacklisted };
 
     public:
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> instance();
 
-        SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
-        static ExitCode renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
+        bool isNameTooLong(const SyncName &name) const;
+        bool isPathTooLong(size_t pathSize);
+        bool nameHasForbiddenChars(const SyncPath &name);
 
-        bool checkNameForbiddenChars(const SyncPath &name);
 #ifdef _WIN32
         bool fixNameWithBackslash(const SyncName &name, SyncName &newName);
 #endif
-        bool checkNameSize(const SyncName &name);
         bool checkReservedNames(const SyncName &name);
-        bool checkPathLength(size_t pathSize);
-
+        SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
+        static ExitCode renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
     private:
         PlatformInconsistencyCheckerUtility();
 
         SyncName charToHex(unsigned int c);
         void setMaxPath();
-        SyncName generateSuffix(SuffixType suffixType = SuffixTypeRename);
+        SyncName generateSuffix(SuffixType suffixType);
 
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> _instance;
         static size_t _maxPathLength;
