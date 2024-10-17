@@ -340,7 +340,7 @@ bool VfsWin::dehydratePlaceholder(const QString &path) {
     return true;
 }
 
-bool VfsWin::convertToPlaceholder(const QString &path, const SyncFileItem &item, bool &needRestart) {
+bool VfsWin::convertToPlaceholder(const QString &path, const SyncFileItem &item) {
     LOGW_DEBUG(logger(), L"convertToPlaceholder: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
     if (path.isEmpty()) {

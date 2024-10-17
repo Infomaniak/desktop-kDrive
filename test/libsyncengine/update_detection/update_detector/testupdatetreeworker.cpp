@@ -29,7 +29,7 @@ void TestUpdateTreeWorker::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Create DB

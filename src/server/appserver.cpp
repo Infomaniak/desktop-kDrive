@@ -2425,18 +2425,15 @@ bool AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeLocal
     return true;
 }
 
-bool AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item, bool &needRestart) {
+bool AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item) {
     if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
 
-    if (!_vfsMap[syncDbId]->convertToPlaceholder(SyncName2QStr(path.native()), item, needRestart)) {
-        if (!needRestart) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::convertToPlaceholder for syncDbId="
-                                                            << syncDbId << L" and path=" << Path2WStr(item.path()).c_str());
-        }
-
+    if (!_vfsMap[syncDbId]->convertToPlaceholder(SyncName2QStr(path.native()), item)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::convertToPlaceholder for syncDbId="
+                                                        << syncDbId << L" and path=" << Path2WStr(item.path()).c_str());
         return false;
     }
 

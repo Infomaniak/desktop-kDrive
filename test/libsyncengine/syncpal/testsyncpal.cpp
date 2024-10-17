@@ -47,7 +47,7 @@ void TestSyncPal::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
@@ -75,7 +75,7 @@ void TestSyncPal::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
+    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), KDRIVE_VERSION_STRING));
 }
 
 void TestSyncPal::tearDown() {
