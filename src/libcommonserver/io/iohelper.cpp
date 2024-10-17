@@ -597,16 +597,12 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     return true;
 }
 
+// Warning : never log anything in this method. If the logger is not set, the app will crash.
 bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     std::error_code ec;
     directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
     ioError = stdError2ioError(ec);
-
-    if (ioError != IoError::Success) {
-        if (Log::isSet()) LOG_ERROR(logger(), "Impossible to retrieve tmp directory: " << ioError2StdString(ioError).c_str());
-        return false;
-    }
-    return true;
+    return ioError == IoError::Success;
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
@@ -618,13 +614,12 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
             throw std::runtime_error("Log directory path is empty.");
         }
     } catch (const std::exception &e) {
-        if (Log::isSet()) {
-            LOG_WARN(logger(), "Error in IoHelper::logDirectoryPath: " << e.what());
-        }
+        if (Log::isSet()) LOG_WARN(logger(), "Error in IoHelper::logDirectoryPath: " << e.what());
         // We can't log the error, so we just generate the path for the logger to initialize.
     }
 
     if (!tempDirectoryPath(directoryPath, ioError)) {
+        if (Log::instance()) LOG_ERROR(logger(), "Impossible to retrieve tmp directory: " << ioError2StdString(ioError).c_str());
         return false;
     }
 
