@@ -133,7 +133,15 @@ bool LocalDeleteJob::canRun() {
     // the local item should be deleted.
     // Note: the other remote move operations are not relevant: they generate Move jobs.
 
-    if (matchRelativePaths(syncInfo().targetPath, Utility::normalizedSyncPath(_relativePath), remoteRelativePath)) {
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(_relativePath, normalizedPath)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativePath));
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
+        return false;
+    }
+
+    if (matchRelativePaths(syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
