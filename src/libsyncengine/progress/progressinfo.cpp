@@ -21,8 +21,7 @@
 
 namespace KDC {
 
-ProgressInfo::ProgressInfo(std::shared_ptr<SyncPal> syncPal) :
-    _syncPal(syncPal), _totalSizeOfCompletedJobs(0), _maxFilesPerSecond(0), _maxBytesPerSecond(0), _update(false) {
+ProgressInfo::ProgressInfo(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {
     reset();
 }
 
@@ -112,8 +111,8 @@ void ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
     recomputeCompletedSize();
 }
 
-void ProgressInfo::setProgressComplete(const SyncPath &path, SyncFileStatus status) {
-    auto it = _currentItems.find(path);
+void ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatus status) {
+    const auto it = _currentItems.find(Utility::normalizedSyncName(path));
     if (it == _currentItems.end() || it->second.empty()) {
         return;
     }
@@ -180,15 +179,6 @@ int64_t ProgressInfo::optimisticEta() const {
 
 bool ProgressInfo::trustEta() const {
     return totalProgress().estimatedEta() < 100 * optimisticEta();
-}
-
-Estimates ProgressInfo::fileProgress(const SyncFileItem &item) {
-    auto it = _currentItems.find(item.path());
-    if (it == _currentItems.end() || it->second.empty()) {
-        return Estimates();
-    }
-
-    return it->second.front().progress().estimates();
 }
 
 void ProgressInfo::recomputeCompletedSize() {
