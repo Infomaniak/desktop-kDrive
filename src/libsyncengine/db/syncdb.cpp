@@ -620,9 +620,16 @@ bool SyncDb::initData() {
     return true;
 }
 
-void SyncDb::updateNames(const char *queryId, const SyncName &localName, const SyncName &remoteName) {
+bool SyncDb::updateNames(const char *queryId, const SyncName &localName, const SyncName &remoteName) {
     ASSERT(queryBindValue(queryId, 2, localName))
-    ASSERT(queryBindValue(queryId, 3, Utility::normalizedSyncName(remoteName)))
+
+    SyncName remoteNormalizedName;
+    if (!Utility::normalizedSyncName(remoteName, remoteNormalizedName)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(remoteName));
+        return false;
+    }
+    ASSERT(queryBindValue(queryId, 3, remoteNormalizedName))
+    return true;
 }
 
 bool SyncDb::checkNodeIds(const DbNode &node) {
@@ -651,7 +658,7 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
 
     ASSERT(queryResetAndClearBindings(queryId))
     ASSERT(queryBindValue(queryId, 1, (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())))
-    updateNames(queryId, node.nameLocal(), node.nameRemote());
+    if (!updateNames(queryId, node.nameLocal(), node.nameRemote())) return false;
     ASSERT(queryBindValue(queryId, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())))
     ASSERT(queryBindValue(queryId, 5, (node.nodeIdRemote() ? dbtype(node.nodeIdRemote().value()) : std::monostate())))
     ASSERT(queryBindValue(queryId, 6, (node.created() ? dbtype(node.created().value()) : std::monostate())))
@@ -677,11 +684,17 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
 
     if (!checkNodeIds(node)) return false;
 
+    SyncName remoteNormalizedName;
+    if (!Utility::normalizedSyncName(node.nameRemote(), remoteNormalizedName)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(node.nameRemote()));
+        return false;
+    }
+
     ASSERT(queryResetAndClearBindings(UPDATE_NODE_REQUEST_ID))
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())))
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, node.nameLocal()))
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())))
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, remoteNormalizedName))
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 4,
                           (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())))
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 5,
@@ -2322,8 +2335,19 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
         SyncName nameLocal;
         ASSERT(querySyncNameValue(requestId, 1, nameLocal));
 
-        const bool sameLocalEncodings = (Utility::normalizedSyncName(nameLocal, Utility::UnicodeNormalization::NFC) ==
-                                         Utility::normalizedSyncName(nameLocal, Utility::UnicodeNormalization::NFD));
+        SyncName nfcNormalizedName;
+        if (!Utility::normalizedSyncName(nameLocal, nfcNormalizedName, Utility::UnicodeNormalization::NFC)) {
+            LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
+            return false;
+        }
+
+        SyncName nfdNormalizedName;
+        if (!Utility::normalizedSyncName(nameLocal, nfdNormalizedName, Utility::UnicodeNormalization::NFD)) {
+            LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
+            return false;
+        }
+
+        const bool sameLocalEncodings = (nfcNormalizedName == nfdNormalizedName);
 
         if (sameLocalEncodings) continue;
 

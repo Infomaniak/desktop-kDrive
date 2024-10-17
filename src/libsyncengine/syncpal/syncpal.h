@@ -178,8 +178,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
 
         // TODO : not ideal, to be refactored
-        bool existOnServer(const SyncPath &path) const;
-        bool canShareItem(const SyncPath &path) const;
+        bool checkExistOnServer(const SyncPath &path, bool &exist) const;
+        bool checkCanShareItem(const SyncPath &path, bool &canShare) const;
 
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
         ExitCode syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet);
