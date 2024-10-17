@@ -3062,16 +3062,21 @@ ExitCode AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
     return ExitCode::Ok;
 }
 
-void AppServer::initLogging() {
-    // Setup log4cplus
+bool AppServer::initLogging() noexcept {
     IoError ioError = IoError::Success;
     SyncPath logDirPath;
     if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
         throw std::runtime_error("Error in initLogging: failed to get the log directory path.");
     }
 
+    // Setup log4cplus
     const std::filesystem::path logFilePath = logDirPath / Utility::logFileNameWithTime();
-    _logger = Log::instance(Path2WStr(logFilePath))->getLogger();
+    if (!Log::instance(Path2WStr(logFilePath))) {
+        assert(false);
+        return false;
+    }
+
+    _logger = Log::instance()->getLogger();
 
     LOGW_INFO(_logger, Utility::s2ws(QString::fromLatin1("%1 locale:[%2] version:[%4] os:[%5]")
                                              .arg(_theme->appName(), QLocale::system().name(), _theme->version(),

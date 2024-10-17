@@ -91,8 +91,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
 
-        void addFolderToDelete(const SyncPath &path);
-        bool pathInDeletedFolder(const SyncPath &path);
+        bool addFolderToDelete(const SyncPath &path);
+        bool checkPathInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
 
         friend class TestComputeFSOperationWorker;
 };
