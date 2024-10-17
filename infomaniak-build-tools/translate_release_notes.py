@@ -22,6 +22,7 @@ import datetime
 import deepl
 import errno
 import os
+from pathlib import Path
 import re
 import shutil
 import subprocess
@@ -54,18 +55,23 @@ parser.add_argument('-v', '--version', metavar="", type=version_regex, help='The
 parser.add_argument('-d', '--date', metavar="", type=int, help='The planned release date (defaults to today)', default=datetime.date.today().strftime('%Y%m%d'))
 args = parser.parse_args()
 
-if not os.path.isfile(f"kDrive-template.html"):
-    sys.exit("Unable to find kDrive-template.html.");
+if not os.path.isfile("kDrive-template.html"):
+    sys.exit("Unable to find 'kDrive-template.html'.")
 
 fullName = f"kDrive-{args.version}.{args.date}"
-dirPath = f"../release_notes/{fullName}"
+dirPath = Path(__file__).parent.parent / "release_notes"
+
+if not dirPath.exists():
+    sys.exit(f"Release notes path does not exist: '{dirPath}'. \nAborting.")
+
+dirPath = dirPath / Path(fullName)
 
 deepl_key = os.getenv("DEEPL_AUTH_KEY")
 if not deepl_key:
-    sys.exit("error: The DeepL API key is not set in env");
+    sys.exit("error: The DeepL API key is not set in env")
 translator = deepl.Translator(deepl_key)
 
-target_lang = [
+target_languages = [
     'FR',
     'DE',
     'ES',
@@ -78,16 +84,15 @@ os_list = [
     'macOS'
 ]
 
-def split_os(lang):
-    lang_ext = f"-{lang.lower()}" if lang != 'en' else ""
+def split_os(lang, fullName):
+    lang_ext = lang.lower()
 
     for os_name in os_list:
-        os_ext = f"-{os_name.lower()}" if os_name != 'macOS' else ""
-        if os_name != 'macOS':
-            shutil.copyfile(f"{fullName}{lang_ext}.html", f"{fullName}{os_ext}{lang_ext}.html")
-        with open(f"{fullName}{os_ext}{lang_ext}.html", "r") as f:
+        os_ext = os_name.lower()
+        shutil.copyfile(f"{fullName}-{lang_ext}.html", f"{fullName}-{os_ext}-{lang_ext}.html")
+        with open(f"{fullName}-{os_ext}-{lang_ext}.html", "r") as f:
             lines = f.readlines()
-        with open(f"{fullName}{os_ext}{lang_ext}.html", "w") as f:
+        with open(f"{fullName}-{os_ext}-{lang_ext}.html", "w") as f:
             for line in lines:
                 if any(os_note in line for os_note in os_list):
                     if (f"<li>{os_name}" in line):
@@ -96,29 +101,26 @@ def split_os(lang):
                     f.write(line)
 
 print(f"Generating Release Notes for kDrive-{args.version}.{args.date}")
+Path(dirPath).mkdir(mode=0o755, exist_ok=True)
 
-try:
-    os.mkdir(dirPath, mode = 0o755)
-except OSError as exc:
-    if exc.errno != errno.EEXIST:
-        raise
-    pass
-
-shutil.copyfile("kDrive-template.html", f"{dirPath}/{fullName}.html")
+shutil.copyfile("kDrive-template.html", f"{dirPath}/{fullName}-en.html")
 os.chdir(dirPath)
 
 try:
-    for lang in target_lang:
+    for target_lang in target_languages:
+        print(f" - Notes for language {target_lang}")
         translator.translate_document_from_filepath(
-            f"{fullName}.html",
-            f"{fullName}-{lang.lower()}.html",
-            target_lang=lang,
+            f"{fullName}-en.html",
+            f"{fullName}-{target_lang.lower()}.html",
+            target_lang=target_lang,
         )
-        split_os(lang)
+        split_os(target_lang, fullName)
+        Path(f"{fullName}-{target_lang.lower()}.html").unlink()
 except Exception as e:
     print(e)
 
-split_os('en')
+split_os('en', fullName)
+Path(f"{fullName}-en.html").unlink() # Remove english template
 
 subprocess.run(['../../infomaniak-build-tools/encode.sh'], shell=True)
 
