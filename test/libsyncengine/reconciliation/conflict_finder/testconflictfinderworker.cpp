@@ -18,21 +18,21 @@
 
 #include "testconflictfinderworker.h"
 
+#include "test_utility/testhelpers.h"
+
 using namespace CppUnit;
 
 namespace KDC {
-
-const std::string version = "3.4.0";
 
 void TestConflictFinderWorker::setUp() {
     // Create SyncPal
     bool alreadyExists;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(syncDbPath, "3.4.0", true));
+    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(syncDbPath, KDRIVE_VERSION_STRING, true));
     _syncPal->syncDb()->setAutoDelete(true);
 
     _syncPal->_conflictFinderWorker =
@@ -521,7 +521,8 @@ void TestConflictFinderWorker::testCase55b() {
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
 
     // Conflict Situation
-    nodeA->setChangeEvents(OperationType::Move | OperationType::Edit);
+    nodeA->setChangeEvents(
+        OperationType::Edit);
     nodeA->setMoveOrigin("A");
     nodeA->setName(Str("B"));
     rNodeA->setChangeEvents(OperationType::Edit);

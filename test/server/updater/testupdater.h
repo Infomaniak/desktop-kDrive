@@ -18,8 +18,6 @@
 
 #include "testincludes.h"
 
-#include <log4cplus/logger.h>
-#include <QApplication>
 #include "server/updater/kdcupdater.h"
 #ifdef __APPLE__
 #include "server/updater/sparkleupdater.h"

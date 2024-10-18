@@ -47,7 +47,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     const User user(1, 1, "dummy");
@@ -63,7 +63,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
@@ -81,47 +81,47 @@ void TestPlatformInconsistencyCheckerWorker::tearDown() {
 
 void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
     SyncName shortName = Str("1234567890");
-    CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->checkNameSize(shortName));
+    CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(shortName));
 
     SyncName longName = Str(
             "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456"
             "78901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012"
             "3456789012345678901234567890");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameSize(longName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(longName));
 }
 
 void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     SyncName allowedName = Str("test-test");
-    CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(allowedName));
+    CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(allowedName));
 
     SyncName forbiddenName = Str("test/test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
 
 #if defined(WIN32)
     forbiddenName = Str("test\\test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test:test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test*test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test?test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test\"test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test<test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test>test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test|test");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test\ntest");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
     forbiddenName = Str("test ");
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
 #elif defined(__unix__) && !defined(__APPLE__)
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
-    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+    CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(forbiddenName));
 #endif
 }
 
@@ -145,14 +145,14 @@ void TestPlatformInconsistencyCheckerWorker::testCheckReservedNames() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testNameClash() {
-    const auto parentNode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(),
-                                                   Str("parentNode"), NodeType::Directory, OperationType::Create, "parentID", 0,
-                                                   0, 12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    const auto parentNode = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("parentNode"),
+                                                   NodeType::Directory, OperationType::Create, "parentID", 0, 0, 12345,
+                                                   _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    const auto nodeLower = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("a"),
-                                                  NodeType::File, OperationType::Create, "a", 0, 0, 12345, parentNode);
-    const auto nodeUpper = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"),
-                                                  NodeType::File, OperationType::Create, "A", 0, 0, 12345, parentNode);
+    const auto nodeLower = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("a"), NodeType::File,
+                                                  OperationType::Create, "a", 0, 0, 12345, parentNode);
+    const auto nodeUpper = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"), NodeType::File,
+                                                  OperationType::Create, "A", 0, 0, 12345, parentNode);
 
     CPPUNIT_ASSERT(parentNode->insertChildren(nodeLower));
     CPPUNIT_ASSERT(parentNode->insertChildren(nodeUpper));
@@ -242,14 +242,14 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testExecute() {
-    const auto parentNode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(),
-                                                   Str("parentNode"), NodeType::Directory, OperationType::Create, "parentID", 0,
-                                                   0, 12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    const auto parentNode = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("parentNode"),
+                                                   NodeType::Directory, OperationType::Create, "parentID", 0, 0, 12345,
+                                                   _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    const auto nodeLower = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("a"), NodeType::File,
-                                                  OperationType::Create, "a", 0, 0, 12345, parentNode);
-    const auto nodeUpper = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("A"), NodeType::File,
-                                                  OperationType::Create, "A", 0, 0, 12345, parentNode);
+    const auto nodeLower = std::make_shared<Node>(ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Create, "a", 0, 0,
+                                                  12345, parentNode);
+    const auto nodeUpper = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::Create, "A", 0, 0,
+                                                  12345, parentNode);
 
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(parentNode));
     CPPUNIT_ASSERT(parentNode->insertChildren(nodeLower));
@@ -265,7 +265,14 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
                                 !_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id())) ||
                                (!_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
                                 _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
-
+    LOG_DEBUG(Log::instance()->getLogger(),
+              "TestPlatformInconsistencyCheckerWorker::testExecute()"
+              "Upper Node exists: "
+                      << _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()));
+    LOG_DEBUG(Log::instance()->getLogger(),
+              "TestPlatformInconsistencyCheckerWorker::testExecute()"
+              "Lower Node exists: "
+                      << _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(*parentNode->id()));
 
 #if defined(WIN32) || defined(__APPLE__)
@@ -274,6 +281,85 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
                    _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
 #endif
+}
+
+void TestPlatformInconsistencyCheckerWorker::testNameSizeLocalTree() {
+    initUpdateTree(ReplicaSide::Local);
+
+    _syncPal->_platformInconsistencyCheckerWorker->execute();
+
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->exists("testNode"));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->exists("aNode"));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->exists("ANode"));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("longNameANode"));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("testNode2"));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("bNode"));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("BNode"));
+}
+
+void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {
+    /* Initial tree structure:
+     *  |
+     *  +-- /test (dir) CREATE
+     *  |   |
+     *  |   +-- a.txt (file) CREATE
+     *  |   +-- A.txt (file) CREATE
+     *  |   +-- aaaaaaaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaaa.txt (file)  [maxNameLengh +1] CREATE
+     *  |
+     *  +-- /testDiraaaaaaaaaaaaaaa...aaaaaaaaaaaaaaaaa  (dir)  [maxNameLengh +1] MOVE
+     *  |   |
+     *  |   +-- b.txt (file) NONE
+     *  |   +-- B.txt (file) NONE
+     */
+
+    const auto testNode =
+            std::make_shared<Node>(_syncPal->updateTree(side)->side(), Str2SyncName("test"), NodeType::Directory,
+                                   OperationType::Create, "testNode", 0, 0, 12345, _syncPal->updateTree(side)->rootNode());
+
+    const auto aNode = std::make_shared<Node>(_syncPal->updateTree(side)->side(), Str2SyncName("a.txt"), NodeType::File,
+                                              OperationType::Create, "aNode", 0, 0, 12345, testNode);
+
+    const auto ANode = std::make_shared<Node>(_syncPal->updateTree(side)->side(), Str2SyncName("A.txt"), NodeType::File,
+                                              OperationType::Create, "ANode", 0, 0, 12345, testNode);
+
+    const auto longNameANode = std::make_shared<Node>(
+            std::nullopt, _syncPal->updateTree(side)->side(),
+            Str2SyncName("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                         "aaaaaaaaaaaa"
+                         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.txt"),
+            NodeType::File, OperationType::Create, "longNameANode", 0, 0, 12345, testNode);
+
+    const auto testNode2 = std::make_shared<Node>(
+            std::nullopt, _syncPal->updateTree(side)->side(),
+            Str2SyncName("testDiraaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                         "aaaaaaaaaaaa"
+                         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+            NodeType::Directory, OperationType::Move, "testNode2", 0, 0, 12345, _syncPal->updateTree(side)->rootNode());
+
+    const auto bNode = std::make_shared<Node>(_syncPal->updateTree(side)->side(), Str2SyncName("b.txt"), NodeType::File,
+                                              OperationType::None, "bNode", 0, 0, 12345, testNode2);
+
+    const auto BNode = std::make_shared<Node>(_syncPal->updateTree(side)->side(), Str2SyncName("B.txt"), NodeType::File,
+                                              OperationType::None, "BNode", 0, 0, 12345, testNode2);
+
+
+    CPPUNIT_ASSERT(_syncPal->updateTree(side)->rootNode()->insertChildren(testNode));
+    CPPUNIT_ASSERT(testNode->insertChildren(aNode));
+    CPPUNIT_ASSERT(testNode->insertChildren(ANode));
+    CPPUNIT_ASSERT(testNode->insertChildren(longNameANode));
+    CPPUNIT_ASSERT(_syncPal->updateTree(side)->rootNode()->insertChildren(testNode2));
+    CPPUNIT_ASSERT(testNode2->insertChildren(bNode));
+    CPPUNIT_ASSERT(testNode2->insertChildren(BNode));
+
+    _syncPal->updateTree(side)->insertNode(testNode);
+    _syncPal->updateTree(side)->insertNode(aNode);
+    _syncPal->updateTree(side)->insertNode(ANode);
+    _syncPal->updateTree(side)->insertNode(longNameANode);
+    _syncPal->updateTree(side)->insertNode(testNode2);
+    _syncPal->updateTree(side)->insertNode(bNode);
+    _syncPal->updateTree(side)->insertNode(BNode);
 }
 
 } // namespace KDC
