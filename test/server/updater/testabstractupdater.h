@@ -23,12 +23,6 @@
 
 namespace KDC {
 
-class UpdaterTest final : public AbstractUpdater {
-    public:
-        void startInstaller() override {}
-        void onUpdateFound() override {}
-};
-
 class TestAbstractUpdater final : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestAbstractUpdater);
         CPPUNIT_TEST(testSkipUnskipVersion);
@@ -41,9 +35,6 @@ class TestAbstractUpdater final : public CppUnit::TestFixture {
     protected:
         void testSkipUnskipVersion();
         void testIsVersionSkipped();
-
-    private:
-        UpdaterTest _testObj;
 };
 
 } // namespace KDC

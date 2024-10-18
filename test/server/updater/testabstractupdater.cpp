@@ -21,6 +21,8 @@
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
 
+#include <version.h>
+
 namespace KDC {
 
 void TestAbstractUpdater::setUp() {
@@ -35,7 +37,7 @@ void TestAbstractUpdater::setUp() {
 
 void TestAbstractUpdater::testSkipUnskipVersion() {
     const std::string testStr("1.1.1.20210101");
-    _testObj.skipVersion(testStr);
+    AbstractUpdater::skipVersion(testStr);
 
     CPPUNIT_ASSERT_EQUAL(testStr, ParametersCache::instance()->parameters().seenVersion());
 
@@ -44,7 +46,7 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
     ParmsDb::instance()->selectParameters(parameters, found);
     CPPUNIT_ASSERT(parameters.seenVersion() == testStr);
 
-    _testObj.unskipVersion();
+    AbstractUpdater::unskipVersion();
 
     CPPUNIT_ASSERT(ParametersCache::instance()->parameters().seenVersion().empty());
 
@@ -55,45 +57,45 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
 void TestAbstractUpdater::testIsVersionSkipped() {
     const auto skippedVersion("3.3.3.20210101");
 
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped(skippedVersion));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));
 
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("4.3.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.5.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.6.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.3.20210109"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("4.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.5.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.6.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20210109"));
 
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("2.3.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.1.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.0.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.3.20200101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("2.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.1.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 
-    _testObj.skipVersion(skippedVersion);
+    AbstractUpdater::skipVersion(skippedVersion);
 
-    CPPUNIT_ASSERT(_testObj.isVersionSkipped(skippedVersion));
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped(skippedVersion));
 
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("4.3.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.5.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.6.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.3.20210109"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("4.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.5.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.6.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20210109"));
 
-    CPPUNIT_ASSERT(_testObj.isVersionSkipped("2.3.3.20210101"));
-    CPPUNIT_ASSERT(_testObj.isVersionSkipped("3.1.3.20210101"));
-    CPPUNIT_ASSERT(_testObj.isVersionSkipped("3.3.0.20210101"));
-    CPPUNIT_ASSERT(_testObj.isVersionSkipped("3.3.3.20200101"));
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("2.3.3.20210101"));
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.1.3.20210101"));
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 
-    _testObj.unskipVersion();
+    AbstractUpdater::unskipVersion();
 
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped(skippedVersion));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));
 
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("4.3.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.5.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.6.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.3.20210109"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("4.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.5.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.6.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20210109"));
 
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("2.3.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.1.3.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.0.20210101"));
-    CPPUNIT_ASSERT(!_testObj.isVersionSkipped("3.3.3.20200101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("2.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.1.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 }
 
 } // namespace KDC
