@@ -78,6 +78,7 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Unknown, ec);
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, eca);
+    CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(ei));
 
     ei = {ExitCode::Ok};
     ec = ei;
@@ -86,6 +87,7 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ec);
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, eca);
+    CPPUNIT_ASSERT_EQUAL(100, static_cast<int>(ei));
 
     ei = {ExitCode::NetworkError, ExitCause::DbAccessError};
     ec = ei;
@@ -94,10 +96,13 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::NetworkError, ec);
     CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, ei.cause());
     CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, eca);
+    CPPUNIT_ASSERT_EQUAL(302, static_cast<int>(ei));
+
 
     ec = ExitCode::BackError;
     ei = ec;
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, ei.code());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
+    CPPUNIT_ASSERT_EQUAL(700, static_cast<int>(ei));
 }
 } // namespace KDC
