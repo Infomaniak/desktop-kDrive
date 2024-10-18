@@ -763,19 +763,22 @@ ExitCode ServerRequests::migrateSelectiveSync(int syncDbId, std::pair<SyncPath, 
     }
 
 
-    ExitCode code;
     QList<QPair<QString, SyncNodeType>> list;
-    code = loadOldSelectiveSyncTable(dbPath, list);
+    ExitCode exitCode = loadOldSelectiveSyncTable(dbPath, list);
+    if (exitCode != ExitCode::Ok) {
+        return exitCode;
+    }
 
     for (auto &pair: list) {
         std::filesystem::path path(QStr2Path(pair.first));
         SyncNodeType type = pair.second;
         if (!ParmsDb::instance()->insertMigrationSelectiveSync(MigrationSelectiveSync(syncDbId, path, type))) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertMigrationSelectiveSync");
             return ExitCode::DbError;
         }
     }
 
-    return code;
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
@@ -2353,8 +2356,8 @@ ExitCode ServerRequests::loadOldSelectiveSyncTable(const SyncPath &syncDbPath, Q
 
         oldSyncDb.close();
     } catch (std::runtime_error &err) {
-        LOG_ERROR(Log::instance()->getLogger(),
-                  "Error loadOldSelectiveSyncTable has failed, oldSyncDb may not exists or is corrupted " << err.what());
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error getting old selective sync list, oldSyncDb may not exists or is corrupted. error=" << err.what());
         return ExitCode::DbError;
     }
 

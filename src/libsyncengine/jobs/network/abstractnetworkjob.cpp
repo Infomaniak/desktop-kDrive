@@ -70,7 +70,6 @@ AbstractNetworkJob::AbstractNetworkJob() {
                 } else {
                     LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e).c_str());
                     throw std::runtime_error(ABSTRACTNETWORKJOB_NEW_ERROR_MSG);
-                    break;
                 }
             } catch (std::exception &e) {
                 if (trials < _trials) {

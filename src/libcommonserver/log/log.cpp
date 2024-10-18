@@ -48,6 +48,8 @@ std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
         try {
             _instance = std::shared_ptr<Log>(new Log(filePath));
             _instance->checkForExpiredFiles();
+        } catch (...) {
+            return nullptr;
         }
     }
 

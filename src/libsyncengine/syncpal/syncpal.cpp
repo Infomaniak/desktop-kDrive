@@ -633,16 +633,14 @@ bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &vers
     // Create/open sync DB
     try {
         _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), version, targetNodeId));
-        if (!_syncDb->init(version)) {
-            _syncDb.reset();
-            LOG_SYNCPAL_ERROR(_logger, "Database initialisation error");
-
-            return false;
-        }
-
     } catch (std::exception const &) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::SyncDb");
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath));
+        return false;
+    }
 
+    if (!_syncDb->init(version)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::init: " << Utility::formatSyncPath(syncDbPath));
+        _syncDb.reset();
         return false;
     }
 

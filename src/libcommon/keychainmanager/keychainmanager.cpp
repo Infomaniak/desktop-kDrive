@@ -36,7 +36,11 @@ std::shared_ptr<KeyChainManager> KeyChainManager::_instance = nullptr;
 
 std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(testing));
+        try {
+            _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(testing));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     return _instance;

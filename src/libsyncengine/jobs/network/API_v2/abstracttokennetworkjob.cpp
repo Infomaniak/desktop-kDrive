@@ -49,6 +49,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
     _apiType(apiType),
     _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
     if (!ParmsDb::instance()) {
+        assert(false);
         LOG_WARN(_logger, "ParmsDb must be initialized!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
@@ -56,6 +57,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
     if (((_apiType == ApiType::Drive || _apiType == ApiType::NotifyDrive) && _driveDbId == 0 &&
          (_userDbId == 0 || _driveId == 0)) ||
         ((_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) && _userDbId == 0)) {
+        assert(false);
         LOG_WARN(_logger, "Invalid parameters!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }

@@ -122,10 +122,18 @@ AppServer::AppServer(int &argc, char **argv) :
     setApplicationVersion(_theme->version());
 
     // Setup logging with default parameters
-    initLogging();
+    if (!initLogging()) {
+        throw std::runtime_error("Unable to init logging.");
+    }
+
+    if (isRunning()) {
+        LOG_INFO(_logger, "AppServer already running");
+        return;
+    }
 
     parseOptions(arguments());
-    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked || isRunning()) {
+    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+        LOG_INFO(_logger, "Command line options processed");
         return;
     }
 
@@ -152,40 +160,39 @@ AppServer::AppServer(int &argc, char **argv) :
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExist);
     if (parmsDbPath.empty()) {
         LOG_WARN(_logger, "Error in Db::makeDbName");
-        throw std::runtime_error("Unable to create parameters database.");
-        return;
+        throw std::runtime_error("Unable to get ParmsDb path.");
     }
 
     bool newDbExists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError)) {
+    if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError) || ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
-        throw std::runtime_error("Unable to check if parmsdb exists.");
-        return;
+        throw std::runtime_error("Unable to check if ParmsDb exists.");
     }
 
     std::filesystem::path pre334ConfigFilePath =
             std::filesystem::path(QStr2SyncName(MigrationParams::configDir().filePath(MigrationParams::configFileName())));
     bool oldConfigExists;
-    if (!IoHelper::checkIfPathExists(pre334ConfigFilePath, oldConfigExists, ioError)) {
+    if (!IoHelper::checkIfPathExists(pre334ConfigFilePath, oldConfigExists, ioError) || ioError != IoError::Success) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(pre334ConfigFilePath, ioError).c_str());
-        throw std::runtime_error("Unable to check if pre 3.3.4 config exists.");
-        return;
+        throw std::runtime_error("Unable to check if a pre 3.3.4 config exists.");
     }
 
     LOGW_INFO(_logger, L"New DB exists : " << Path2WStr(parmsDbPath).c_str() << L" => " << newDbExists);
     LOGW_INFO(_logger, L"Old config exists : " << Path2WStr(pre334ConfigFilePath).c_str() << L" => " << oldConfigExists);
 
-    try {
-        ParmsDb::instance(parmsDbPath, _theme->version().toStdString());
-    } catch (const std::exception &) {
-        throw std::runtime_error("Unable to open parameters database.");
-        return;
+    // Init ParmsDb instance
+    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString())) {
+        LOG_WARN(_logger, "Error in ParmsDb::instance");
+        throw std::runtime_error("Unable to initialize ParmsDb.");
     }
 
     // Clear old server errors
-    clearErrors(0);
+    if (clearErrors(0) != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in AppServer::clearErrors");
+        throw std::runtime_error("Unable to clear old errors.");
+    }
 
     bool migrateFromPre334 = !newDbExists && oldConfigExists;
     if (migrateFromPre334) {
@@ -204,6 +211,12 @@ AppServer::AppServer(int &argc, char **argv) :
         }
     }
 
+    // Init KeyChainManager instance
+    if (!KeyChainManager::instance()) {
+        LOG_WARN(_logger, "Error in KeyChainManager::instance");
+        throw std::runtime_error("Unable to initialize key chain manager.");
+    }
+
 #if defined(__unix__) && !defined(__APPLE__)
     // For access to keyring in order to promt authentication popup
     KeyChainManager::instance()->writeDummyTest();
@@ -211,13 +224,9 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
 
     // Init ParametersCache instance
-    try {
-        ParametersCache::instance();
-    } catch (std::exception const &) {
+    if (!ParametersCache::instance()) {
         LOG_WARN(_logger, "Error in ParametersCache::instance");
-        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         throw std::runtime_error("Unable to initialize parameters cache.");
-        return;
     }
 
     // Setup translations
@@ -232,13 +241,9 @@ AppServer::AppServer(int &argc, char **argv) :
     }
 
     // Init ExclusionTemplateCache instance
-    try {
-        ExclusionTemplateCache::instance();
-    } catch (std::exception const &) {
+    if (!ExclusionTemplateCache::instance()) {
         LOG_WARN(_logger, "Error in ExclusionTemplateCache::instance");
-        addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         throw std::runtime_error("Unable to initialize exclusion template cache.");
-        return;
     }
 
 #ifdef Q_OS_WIN
@@ -251,7 +256,10 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
 
     // Setup proxy
-    setupProxy();
+    if (!setupProxy()) {
+        LOG_WARN(_logger, "Error in AppServer::setupProxy");
+        throw std::runtime_error("Unable to initialize proxy.");
+    }
 
     // Setup auto start
 #ifdef NDEBUG
@@ -300,8 +308,12 @@ AppServer::AppServer(int &argc, char **argv) :
     _socketApi->setGetThumbnailCallback(&ServerRequests::getThumbnail);
     _socketApi->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
 
-    // Start CommServer
-    CommServer::instance();
+    // Init CommServer instance
+    if (!CommServer::instance()) {
+        LOG_WARN(_logger, "Error in CommServer::instance");
+        throw std::runtime_error("Unable to initialize CommServer.");
+    }
+
     connect(CommServer::instance().get(), &CommServer::requestReceived, this, &AppServer::onRequestReceived);
     connect(CommServer::instance().get(), &CommServer::restartClient, this, &AppServer::onRestartClientReceived);
 
@@ -314,7 +326,6 @@ AppServer::AppServer(int &argc, char **argv) :
         addError(Error(errId(), exitCode, ExitCause::Unknown));
         if (exitCode != ExitCode::NetworkError && exitCode != ExitCode::UpdateRequired) {
             throw std::runtime_error("Failed to load user data.");
-            return;
         }
     }
 
@@ -325,6 +336,7 @@ AppServer::AppServer(int &argc, char **argv) :
     bool shouldQuit = false;
     handleCrashRecovery(shouldQuit);
     if (shouldQuit) {
+        LOG_WARN(_logger, "Crash loop detected");
         QTimer::singleShot(0, this, &AppServer::quit);
         return;
     }
@@ -332,50 +344,13 @@ AppServer::AppServer(int &argc, char **argv) :
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
 
-    // Check if a log Upload has been interrupted
-    AppStateValue appStateValue = LogUploadState::None;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
-        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
-    }
-
-    if (auto logUploadState = std::get<LogUploadState>(appStateValue);
-        logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
-        LOG_ERROR(_logger, "App was closed during log upload, resetting upload status.");
-        if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-        }
-    } else if (logUploadState ==
-               LogUploadState::CancelRequested) { // If interrupted while cancelling, consider it has been cancelled
-        if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Canceled, found) || !found) {
-            LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
-        }
-    }
-
-    appStateValue = "";
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
-        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
-    }
-
-    if (const auto logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
-        UploadSessionCancelJob cancelJob(UploadSessionType::Log, logUploadToken);
-        if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
-        } else {
-            LOG_INFO(_logger, "Previous Log upload api call cancelled");
-            if (bool found = false;
-                !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
-                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-            }
-        }
-    }
+    // Process possible interrupted logs upload
+    processInterruptedLogsUpload();
 
     // Start client
     if (!startClient()) {
         LOG_ERROR(_logger, "Error in startClient");
         throw std::runtime_error("Failed to start kDrive client.");
-        return;
     }
 
     // Send syncs progress
@@ -3066,7 +3041,7 @@ bool AppServer::initLogging() noexcept {
     IoError ioError = IoError::Success;
     SyncPath logDirPath;
     if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
-        throw std::runtime_error("Error in initLogging: failed to get the log directory path.");
+        return false;
     }
 
     // Setup log4cplus
@@ -3083,10 +3058,11 @@ bool AppServer::initLogging() noexcept {
                                                   KDC::CommonUtility::platformName())
                                              .toStdString())
                                .c_str());
+    return true;
 }
 
-void AppServer::setupProxy() {
-    Proxy::instance(ParametersCache::instance()->parameters().proxyConfig());
+bool AppServer::setupProxy() noexcept {
+    return Proxy::instance(ParametersCache::instance()->parameters().proxyConfig()) != nullptr;
 }
 
 void AppServer::handleCrashRecovery(bool &shouldQuit) {
@@ -3100,20 +3076,20 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
         LOG_INFO(_logger, "Last session requested to not restart the server.");
         shouldQuit = _crashRecovered;
         if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
-            LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
         }
         return;
     }
 
     std::string timestampStr;
     if (_crashRecovered) {
-        LOG_WARN(_logger, "Server auto restart after a crash.");
+        LOG_INFO(_logger, "Server auto restart after a crash.");
 
         if (serverCrashedRecently()) {
-            LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
+            LOG_INFO(_logger, "Server crashed twice in a short time, exiting");
             QMessageBox::warning(nullptr, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
             if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
-                LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
             }
             shouldQuit = true;
         } else {
@@ -3130,7 +3106,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
 
     KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
     if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
-        LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
     }
 }
 
@@ -3176,6 +3152,46 @@ bool AppServer::clientCrashedRecently(int seconds) {
     } else {
         LOG_WARN(_logger, "Client crashed recently: " << diff << " seconds ago");
         return true;
+    }
+}
+
+void AppServer::processInterruptedLogsUpload() {
+    AppStateValue appStateValue = LogUploadState::None;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+    }
+
+    if (auto logUploadState = std::get<LogUploadState>(appStateValue);
+        logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
+        LOG_DEBUG(_logger, "App was closed during log upload, resetting upload status.");
+        if (bool found = false;
+            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        }
+    } else if (logUploadState ==
+               LogUploadState::CancelRequested) { // If interrupted while cancelling, consider it has been cancelled
+        if (bool found = false;
+            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Canceled, found) || !found) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        }
+    }
+
+    appStateValue = "";
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+    }
+
+    if (const auto logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
+        UploadSessionCancelJob cancelJob(UploadSessionType::Log, logUploadToken);
+        if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCode::Ok) {
+            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
+        } else {
+            LOG_INFO(_logger, "Previous Log upload api call cancelled");
+            if (bool found = false;
+                !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            }
+        }
     }
 }
 
@@ -3233,21 +3249,19 @@ void AppServer::clearSyncNodes() {
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExist);
     if (parmsDbPath.empty()) {
         LOG_WARN(_logger, "Error in Db::makeDbName");
-        throw std::runtime_error("Unable to create parameters database.");
-        return;
+        throw std::runtime_error("Unable to get ParmsDb path.");
     }
 
-    try {
-        ParmsDb::instance(parmsDbPath, _theme->version().toStdString());
-    } catch (const std::exception &) {
-        throw std::runtime_error("Unable to open parameters database.");
-        return;
+    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString())) {
+        LOG_WARN(_logger, "Error in ParmsDb::instance");
+        throw std::runtime_error("Unable to initialize ParmsDb.");
     }
 
     // Get sync list
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
+        throw std::runtime_error("Unable to get syncs list.");
     }
 
     // Clear node tables
@@ -3281,23 +3295,21 @@ void AppServer::clearKeychainKeys() {
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExist);
     if (parmsDbPath.empty()) {
         LOG_WARN(_logger, "Error in Db::makeDbName");
-        throw std::runtime_error("Unable to create parameters database.");
-        return;
+        throw std::runtime_error("Unable to get ParmsDb path.");
     }
 
-    try {
-        ParmsDb::instance(parmsDbPath, _theme->version().toStdString());
-    } catch (const std::exception &) {
-        throw std::runtime_error("Unable to open parameters database.");
-        return;
+    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString())) {
+        LOG_WARN(_logger, "Error in ParmsDb::instance");
+        throw std::runtime_error("Unable to initialize ParmsDb.");
     }
 
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
         LOG_WARN(_logger, "Error in  ParmsDb::selectAllUsers");
-        throw std::runtime_error("Error in ParmsDb::selectAllUsers");
+        throw std::runtime_error("Unable to select users.");
         return;
     }
+
     for (const auto &user: userList) {
         KeyChainManager::instance()->deleteToken(user.keychainKey());
     }
