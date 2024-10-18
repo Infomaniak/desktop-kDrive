@@ -74,6 +74,8 @@ class SyncFileItem {
 
         inline bool isDirectory() const { return _type == NodeType::Directory; }
 
+        bool operator==(const SyncFileItem &) const = default;
+
     private:
         NodeType _type{NodeType::Unknown};
         SyncPath _path; // Sync folder relative filesystem path

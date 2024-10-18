@@ -1036,8 +1036,7 @@ bool SyncPal::existOnServer(const SyncPath &path) const {
 bool SyncPal::canShareItem(const SyncPath &path) const {
     // Path is normalized on server side
     const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
-    const NodeId nodeId = _remoteSnapshot->itemId(path);
-    if (!nodeId.empty()) {
+    if (const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath); !nodeId.empty()) {
         return _remoteSnapshot->canShare(nodeId);
     }
     return false;
