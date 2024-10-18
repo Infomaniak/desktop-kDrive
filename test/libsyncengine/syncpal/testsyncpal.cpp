@@ -152,6 +152,53 @@ void TestSyncPal::testCopySnapshots() {
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local, true)->isValid() !=
                    _syncPal->snapshot(ReplicaSide::Local, false)->isValid());
 }
+void TestSyncPal::testSyncFileItem() {
+    _syncPal->_progressInfo = std::make_shared<ProgressInfo>(_syncPal);
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->completedSize());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->completedFiles());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->totalSize());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->totalFiles());
+
+    const SyncPath nfcPath = SyncPath(Str("/") + testhelpers::makeNfcSyncName() + Str("/test.txt")).native();
+    const SyncPath nfdPath = SyncPath(Str("/") + testhelpers::makeNfdSyncName() + Str("/test.txt")).native();
+    SyncFileItem initItem;
+    initItem.setType(NodeType::File);
+    initItem.setPath(nfcPath);
+    initItem.setLocalNodeId("l123");
+    initItem.setDirection(SyncDirection::Up);
+    initItem.setInstruction(SyncFileInstruction::Put);
+    initItem.setSize(testhelpers::defaultFileSize);
+    initItem.setModTime(testhelpers::defaultTime);
+    _syncPal->initProgress(initItem);
+
+    SyncFileItem testItem;
+    CPPUNIT_ASSERT(_syncPal->getSyncFileItem(nfcPath, testItem));
+    CPPUNIT_ASSERT(testItem == initItem);
+    CPPUNIT_ASSERT(_syncPal->getSyncFileItem(nfdPath, testItem));
+    CPPUNIT_ASSERT(testItem == initItem);
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->completedSize());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->completedFiles());
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, _syncPal->_progressInfo->totalSize());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->totalFiles());
+
+    constexpr int64_t progress = 15;
+    _syncPal->setProgress(nfdPath, progress);
+    CPPUNIT_ASSERT(_syncPal->getSyncFileItem(nfdPath, testItem));
+
+    CPPUNIT_ASSERT_EQUAL(progress, _syncPal->_progressInfo->completedSize());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->completedFiles());
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, _syncPal->_progressInfo->totalSize());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->totalFiles());
+
+    _syncPal->setProgressComplete(nfdPath, SyncFileStatus::Success);
+
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, _syncPal->_progressInfo->completedSize());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->completedFiles());
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, _syncPal->_progressInfo->totalSize());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->totalFiles());
+}
 
 void TestSyncPal::testAll() {
     // Start sync
