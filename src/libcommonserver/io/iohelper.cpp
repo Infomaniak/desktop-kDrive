@@ -619,7 +619,7 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
     }
 
     if (!tempDirectoryPath(directoryPath, ioError)) {
-        if (Log::instance()) LOG_ERROR(logger(), "Impossible to retrieve tmp directory: " << ioError2StdString(ioError).c_str());
+        if (Log::isSet()) LOG_ERROR(logger(), "Impossible to retrieve tmp directory: " << ioError2StdString(ioError).c_str());
         return false;
     }
 
