@@ -56,7 +56,7 @@ void TestComputeFSOperationWorker::setUp() {
     /// Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     /// Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
@@ -75,7 +75,7 @@ void TestComputeFSOperationWorker::setUp() {
     Sync sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
     ParmsDb::instance()->insertSync(sync);
 
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
 
     /// Insert node "AC" in blacklist

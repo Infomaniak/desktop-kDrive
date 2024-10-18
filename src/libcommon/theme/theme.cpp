@@ -24,7 +24,6 @@
 #include <QtCore>
 #include <QtGui>
 #include <QStyle>
-#include <QApplication>
 #include <QSslSocket>
 
 namespace KDC {
