@@ -36,6 +36,8 @@
     <true/>
     <key>SUPublicEDKey</key>
     <string>vEgyy9fsnrE5Xn9dPVXLy5zI4UY8UvSkDRpDMo4pOSU=</string>
+    <key>SUFeedURL</key>
+    <string>@APPLICATION_UPDATE_URL@</string>
     <key>SUAutomaticallyUpdate</key>
     <true/>
     <key>LSMinimumSystemVersion</key>
