@@ -74,7 +74,7 @@ class VfsWin : public Vfs {
 
         bool createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
         bool dehydratePlaceholder(const QString &path) override;
-        bool convertToPlaceholder(const QString &path, const SyncFileItem &item, bool &needRestart) override;
+        bool convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
         void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
         virtual void clearFileAttributes(const QString &path) override;
 

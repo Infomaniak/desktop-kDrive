@@ -18,13 +18,14 @@
 
 #include "testexecutorworker.h"
 
-#include <memory>
 #include "propagation/executor/executorworker.h"
 #include "io/filestat.h"
 #include "io/iohelper.h"
 #include "keychainmanager/keychainmanager.h"
 #include "network/proxy.h"
 #include "test_utility/testhelpers.h"
+
+#include <memory>
 
 namespace KDC {
 
@@ -42,7 +43,7 @@ void TestExecutorWorker::setUp() {
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     std::filesystem::remove(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId(12321);
@@ -67,7 +68,7 @@ void TestExecutorWorker::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(_sync.dbId(), "3.4.0");
+    _syncPal = std::make_shared<SyncPal>(_sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createWorkers();
     _syncPal->syncDb()->setAutoDelete(true);
 }
