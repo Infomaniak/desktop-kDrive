@@ -82,14 +82,14 @@ void ProgressInfo::initProgress(const SyncFileItem &item) {
     progressItem.progress().setTotal(item.size());
     progressItem.progress().setCompleted(0);
 
-    _currentItems[Utility::normalizedSyncName(path)].push(progressItem);
+    _currentItems[Utility::normalizedSyncPath(path)].push(progressItem);
 
     _fileProgress.setTotal(_fileProgress.total() + 1);
     _sizeProgress.setTotal(_sizeProgress.total() + item.size());
 }
 
 bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
-    const auto it = _currentItems.find(Utility::normalizedSyncName(path));
+    const auto it = _currentItems.find(Utility::normalizedSyncPath(path));
     if (it == _currentItems.end() || it->second.empty()) {
         return false;
     }
@@ -98,7 +98,7 @@ bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
 }
 
 void ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
-    const auto it = _currentItems.find(Utility::normalizedSyncName(path));
+    const auto it = _currentItems.find(Utility::normalizedSyncPath(path));
     if (it == _currentItems.end() || it->second.empty()) {
         return;
     }
@@ -112,7 +112,7 @@ void ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
 }
 
 void ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatus status) {
-    const auto it = _currentItems.find(Utility::normalizedSyncName(path));
+    const auto it = _currentItems.find(Utility::normalizedSyncPath(path));
     if (it == _currentItems.end() || it->second.empty()) {
         return;
     }
@@ -133,7 +133,7 @@ void ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
 
     it->second.pop();
     if (it->second.empty()) {
-        _currentItems.erase(path);
+        _currentItems.erase(Utility::normalizedSyncPath(path));
     }
     recomputeCompletedSize();
 }

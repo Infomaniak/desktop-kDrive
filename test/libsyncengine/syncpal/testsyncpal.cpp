@@ -160,8 +160,8 @@ void TestSyncPal::testSyncFileItem() {
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->totalSize());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), _syncPal->_progressInfo->totalFiles());
 
-    const SyncPath nfcPath = "/ééé/test.txt";
-    const SyncPath nfdPath = "/ééé/test.txt";
+    const SyncPath nfcPath = SyncPath(Str("/") + testhelpers::makeNfcSyncName() + Str("/test.txt")).native();
+    const SyncPath nfdPath = SyncPath(Str("/") + testhelpers::makeNfdSyncName() + Str("/test.txt")).native();
     SyncFileItem initItem;
     initItem.setType(NodeType::File);
     initItem.setPath(nfcPath);
