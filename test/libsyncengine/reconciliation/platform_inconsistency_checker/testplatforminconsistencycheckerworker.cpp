@@ -47,7 +47,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     const User user(1, 1, "dummy");
@@ -63,7 +63,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 

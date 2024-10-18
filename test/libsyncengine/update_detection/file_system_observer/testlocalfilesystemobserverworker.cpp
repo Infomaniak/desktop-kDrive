@@ -68,7 +68,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     bool alreadyExists = false;
     const SyncPath parmsDbPath = Db::makeDbName(alreadyExists, true);
 
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
     ParametersCache::instance()->parameters().setSyncHiddenFiles(true);
 
@@ -79,7 +79,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     const SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists, true);
 
     // Create SyncPal
-    _syncPal = std::make_shared<SyncPalTest>(syncDbPath, "3.4.0", true);
+    _syncPal = std::make_shared<SyncPalTest>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->setLocalPath(_rootFolderPath);
 
