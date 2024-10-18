@@ -49,6 +49,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
     _apiType(apiType),
     _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
     if (!ParmsDb::instance()) {
+        assert(false);
         LOG_WARN(_logger, "ParmsDb must be initialized!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
@@ -56,6 +57,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
     if (((_apiType == ApiType::Drive || _apiType == ApiType::NotifyDrive) && _driveDbId == 0 &&
          (_userDbId == 0 || _driveId == 0)) ||
         ((_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) && _userDbId == 0)) {
+        assert(false);
         LOG_WARN(_logger, "Invalid parameters!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
@@ -293,11 +295,13 @@ std::string AbstractTokenNetworkJob::loadToken() {
         // Fetch the drive identifier of the first available sync.
         std::vector<Sync> syncList;
         if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+            assert(false);
             LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
             throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
         }
 
         if (syncList.empty()) {
+            assert(false);
             LOG_WARN(_logger, "No sync found");
             throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
         }
@@ -320,10 +324,12 @@ std::string AbstractTokenNetworkJob::loadToken() {
                     Drive drive;
                     bool found;
                     if (!ParmsDb::instance()->selectDrive(_driveDbId, drive, found)) {
+                        assert(false);
                         LOG_WARN(_logger, "Error in ParmsDb::selectDrive");
                         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
                     }
                     if (!found) {
+                        assert(false);
                         LOG_WARN(_logger, "Drive not found for driveDbId=" << _driveDbId);
                         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
                     }
@@ -333,10 +339,12 @@ std::string AbstractTokenNetworkJob::loadToken() {
                     // Get account
                     Account account;
                     if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
+                        assert(false);
                         LOG_WARN(_logger, "Error in ParmsDb::selectAccount");
                         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
                     }
                     if (!found) {
+                        assert(false);
                         LOG_WARN(_logger, "Account not found for accountDbId=" << drive.accountDbId());
                         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
                     }
@@ -347,10 +355,12 @@ std::string AbstractTokenNetworkJob::loadToken() {
                         // Get user
                         User user;
                         if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
+                            assert(false);
                             LOG_WARN(_logger, "Error in ParmsDb::selectUser");
                             throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
                         }
                         if (!found) {
+                            assert(false);
                             LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
                             throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
                         }
@@ -376,6 +386,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
                 _userId = it->second.second;
                 token = it->second.first->apiToken().accessToken();
             } else {
+                assert(false);
                 LOG_WARN(_logger, "User cache not set for userDbId=" << _userDbId);
                 throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
             }
@@ -393,10 +404,12 @@ std::string AbstractTokenNetworkJob::loadToken() {
                 User user;
                 bool found = false;
                 if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
+                    assert(false);
                     LOG_WARN(_logger, "Error in ParmsDb::selectUser");
                     throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
                 }
                 if (!found) {
+                    assert(false);
                     LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
                     throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
                 }

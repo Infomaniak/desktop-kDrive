@@ -40,6 +40,7 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
+        assert(false);
         std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
         LOGW_WARN(_logger, exceptionMessage.c_str());
         throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());

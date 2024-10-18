@@ -41,7 +41,11 @@ std::shared_ptr<CommServer> CommServer::_instance = nullptr;
 
 std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<CommServer>(new CommServer(parent));
+        try {
+            _instance = std::shared_ptr<CommServer>(new CommServer(parent));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     return _instance;

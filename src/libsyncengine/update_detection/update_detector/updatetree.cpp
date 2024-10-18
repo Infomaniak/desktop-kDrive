@@ -18,6 +18,9 @@
 
 #include "updatetree.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/log/log.h"
+
+#include <log4cplus/loggingmacros.h>
 
 #define MAX_DEPTH 1000
 
@@ -91,7 +94,16 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
     for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
         for (const auto &childNode: tmpNode->children()) {
-            if (Utility::isEqualNormalized(*nameIt, childNode.second->name())) {
+            bool isEqual = false;
+            if (!Utility::checkEqualNormalized(*nameIt, childNode.second->name(), isEqual)) {
+                LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkEqualNormalized: "
+                                                                << Utility::formatSyncName(*nameIt) << L" / "
+                                                                << Utility::formatSyncName(childNode.second->name()));
+                // Ignore child node
+                continue;
+            }
+
+            if (isEqual) {
                 tmpChildNode = childNode.second;
                 break;
             }

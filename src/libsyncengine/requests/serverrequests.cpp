@@ -613,7 +613,13 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
         if (!JsonParserUtility::extractValue(dirObj, nameKey, tmp)) {
             return ExitCode::BackError;
         }
-        SyncName name = Utility::normalizedSyncName(tmp);
+
+        SyncName name;
+        if (!Utility::normalizedSyncName(tmp, name)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
+            // Ignore the folder
+            continue;
+        }
 
         std::string parentId;
         if (!JsonParserUtility::extractValue(dirObj, parentIdKey, parentId)) {
@@ -625,7 +631,12 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
             if (!JsonParserUtility::extractValue(dirObj, pathKey, tmp)) {
                 return ExitCode::BackError;
             }
-            path = Utility::normalizedSyncName(tmp);
+            if (!Utility::normalizedSyncName(tmp, path)) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
+                // Ignore the folder
+                continue;
+            }
         }
 
         NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name),
@@ -752,19 +763,22 @@ ExitCode ServerRequests::migrateSelectiveSync(int syncDbId, std::pair<SyncPath, 
     }
 
 
-    ExitCode code;
     QList<QPair<QString, SyncNodeType>> list;
-    code = loadOldSelectiveSyncTable(dbPath, list);
+    ExitCode exitCode = loadOldSelectiveSyncTable(dbPath, list);
+    if (exitCode != ExitCode::Ok) {
+        return exitCode;
+    }
 
     for (auto &pair: list) {
         std::filesystem::path path(QStr2Path(pair.first));
         SyncNodeType type = pair.second;
         if (!ParmsDb::instance()->insertMigrationSelectiveSync(MigrationSelectiveSync(syncDbId, path, type))) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertMigrationSelectiveSync");
             return ExitCode::DbError;
         }
     }
 
-    return code;
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
@@ -1163,8 +1177,9 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
     try {
         job = std::make_shared<CreateDirJob>(driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
                                              QStr2SyncName(dirName));
-    } catch (std::exception const &) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId);
+    } catch (std::exception const &e) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in CreateDirJob::CreateDirJob for driveDbId="
+                                                        << driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
         return ExitCode::DataError;
     }
 
@@ -1702,8 +1717,9 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     std::shared_ptr<GetInfoDriveJob> job = nullptr;
     try {
         job = std::make_shared<GetInfoDriveJob>(drive.dbId());
-    } catch (std::exception const &) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId());
+    } catch (std::exception const &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId() << " : " << e.what());
         return ExitCode::DataError;
     }
 
@@ -1807,9 +1823,9 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     std::shared_ptr<GetThumbnailJob> job = nullptr;
     try {
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);
-    } catch (std::exception const &) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetThumbnailJob::GetThumbnailJob for driveDbId=" << driveDbId << " and nodeId=" << nodeId.c_str());
+    } catch (std::exception const &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetThumbnailJob::GetThumbnailJob for driveDbId="
+                                                       << driveDbId << " and nodeId=" << nodeId.c_str() << " : " << e.what());
         return ExitCode::DataError;
     }
 
@@ -1844,7 +1860,7 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     } catch (std::exception const &e) {
         std::string what = e.what();
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " what = " << what.c_str());
+                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " : " << what.c_str());
         if (what == invalidToken) {
             return ExitCode::InvalidToken;
         }
@@ -1913,13 +1929,19 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
 }
 
 ExitCode ServerRequests::loadUserAvatar(User &user) {
-    GetAvatarJob getAvatarJob = GetAvatarJob(user.avatarUrl());
-    ExitCode exitCode = getAvatarJob.runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        return exitCode;
+    try {
+        GetAvatarJob getAvatarJob = GetAvatarJob(user.avatarUrl());
+        ExitCode exitCode = getAvatarJob.runSynchronously();
+        if (exitCode != ExitCode::Ok) {
+            return exitCode;
+        }
+
+        user.setAvatar(getAvatarJob.avatar());
+    } catch (std::runtime_error &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetAvatarJob::GetAvatarJob: error=" << e.what());
+        return ExitCode::SystemError;
     }
 
-    user.setAvatar(getAvatarJob.avatar());
     return ExitCode::Ok;
 }
 
@@ -2342,8 +2364,8 @@ ExitCode ServerRequests::loadOldSelectiveSyncTable(const SyncPath &syncDbPath, Q
 
         oldSyncDb.close();
     } catch (std::runtime_error &err) {
-        LOG_ERROR(Log::instance()->getLogger(),
-                  "Error loadOldSelectiveSyncTable has failed, oldSyncDb may not exists or is corrupted " << err.what());
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error getting old selective sync list, oldSyncDb may not exists or is corrupted. error=" << err.what());
         return ExitCode::DbError;
     }
 

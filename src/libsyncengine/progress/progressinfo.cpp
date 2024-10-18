@@ -75,21 +75,34 @@ void ProgressInfo::updateEstimates() {
     _maxBytesPerSecond = std::max(_sizeProgress.progressPerSec(), _maxBytesPerSecond);
 }
 
-void ProgressInfo::initProgress(const SyncFileItem &item) {
+bool ProgressInfo::initProgress(const SyncFileItem &item) {
     const SyncPath path = item.newPath().has_value() ? item.newPath().value() : item.path();
     ProgressItem progressItem;
     progressItem.setItem(item);
     progressItem.progress().setTotal(item.size());
     progressItem.progress().setCompleted(0);
 
-    _currentItems[Utility::normalizedSyncPath(path)].push(progressItem);
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+
+    _currentItems[normalizedPath].push(progressItem);
 
     _fileProgress.setTotal(_fileProgress.total() + 1);
     _sizeProgress.setTotal(_sizeProgress.total() + item.size());
+    return true;
 }
 
 bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
-    const auto it = _currentItems.find(Utility::normalizedSyncPath(path));
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+
+    const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
         return false;
     }
@@ -97,24 +110,37 @@ bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
     return true;
 }
 
-void ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
-    const auto it = _currentItems.find(Utility::normalizedSyncPath(path));
+bool ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+
+    const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
-        return;
+        return false;
     }
 
     if (const SyncFileItem &item = it->second.front().item(); !shouldCountProgress(item)) {
-        return;
+        return true;
     }
 
     it->second.front().progress().setCompleted(completed);
     recomputeCompletedSize();
+    return true;
 }
 
-void ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatus status) {
-    const auto it = _currentItems.find(Utility::normalizedSyncPath(path));
+bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatus status) {
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+
+    const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
-        return;
+        return false;
     }
 
     SyncFileItem &item = it->second.front().item();
@@ -123,7 +149,7 @@ void ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
     _syncPal->addCompletedItem(_syncPal->syncDbId(), item);
 
     if (!shouldCountProgress(item)) {
-        return;
+        return true;
     }
 
     _fileProgress.setCompleted(_fileProgress.completed() + 1);
@@ -133,9 +159,10 @@ void ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
 
     it->second.pop();
     if (it->second.empty()) {
-        _currentItems.erase(Utility::normalizedSyncPath(path));
+        _currentItems.erase(normalizedPath);
     }
     recomputeCompletedSize();
+    return true;
 }
 
 bool ProgressInfo::isSizeDependent(const SyncFileItem &item) const {

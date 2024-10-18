@@ -41,10 +41,10 @@ class ProgressInfo {
         void setUpdate(bool value) { _update = value; }
         [[nodiscard]] bool update() const { return _update; }
         void updateEstimates();
-        void initProgress(const SyncFileItem &item);
-        void setProgress(const SyncPath &path, int64_t completed);
-        void setProgressComplete(const SyncPath &path, SyncFileStatus status);
-        bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
+        [[nodiscard]] bool initProgress(const SyncFileItem &item);
+        [[nodiscard]] bool setProgress(const SyncPath &path, int64_t completed);
+        [[nodiscard]] bool setProgressComplete(const SyncPath &path, SyncFileStatus status);
+        [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
         [[nodiscard]] int64_t totalFiles() const { return _fileProgress.total(); }
         [[nodiscard]] int64_t completedFiles() const { return _fileProgress.completed(); }

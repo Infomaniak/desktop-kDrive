@@ -507,13 +507,18 @@ std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, 
                                            bool autoDelete /*= false*/, bool test /*= false*/) {
     if (_instance == nullptr) {
         if (dbPath.empty()) {
-            throw std::runtime_error("ParmsDb must be initialized!");
-        } else {
+            return nullptr;
+        }
+
+        try {
             _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, version, autoDelete, test));
-            if (!_instance->init(version)) {
-                _instance.reset();
-                throw std::runtime_error("ParmsDb initialisation error!");
-            }
+        } catch (...) {
+            return nullptr;
+        }
+
+        if (!_instance->init(version)) {
+            _instance.reset();
+            return nullptr;
         }
     }
 
@@ -532,7 +537,6 @@ ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version
 
     if (!checkConnect(version)) {
         throw std::runtime_error("Cannot open DB!");
-        return;
     }
 
     LOG_INFO(_logger, "ParmsDb initialization done");

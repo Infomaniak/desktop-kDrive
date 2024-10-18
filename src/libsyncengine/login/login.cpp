@@ -48,28 +48,34 @@ Login::~Login() {}
 ExitCode Login::requestToken(const std::string &authorizationCode, const std::string &codeVerifier /*= ""*/) {
     LOG_DEBUG(_logger, "Start token request");
 
-    GetTokenJob job(authorizationCode, codeVerifier);
-    ExitCode exitCode = job.runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << exitCode);
-        _error = std::string();
-        _errorDescr = std::string();
-        return exitCode;
-    }
+    try {
+        GetTokenJob job(authorizationCode, codeVerifier);
+        ExitCode exitCode = job.runSynchronously();
+        if (exitCode != ExitCode::Ok) {
+            LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << exitCode);
+            _error = std::string();
+            _errorDescr = std::string();
+            return exitCode;
+        }
 
-    LOG_DEBUG(_logger, "job.runSynchronously() done");
-    std::string errorCode;
-    std::string errorDescr;
-    if (job.hasErrorApi(&errorCode, &errorDescr)) {
-        LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : "
-                                   << KDC::Utility::s2ws(errorCode).c_str() << L" - " << KDC::Utility::s2ws(errorDescr).c_str());
-        _error = errorCode;
-        _errorDescr = errorDescr;
-        return ExitCode::BackError;
-    }
+        LOG_DEBUG(_logger, "job.runSynchronously() done");
+        std::string errorCode;
+        std::string errorDescr;
+        if (job.hasErrorApi(&errorCode, &errorDescr)) {
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : " << KDC::Utility::s2ws(errorCode).c_str()
+                                                                                      << L" - "
+                                                                                      << KDC::Utility::s2ws(errorDescr).c_str());
+            _error = errorCode;
+            _errorDescr = errorDescr;
+            return ExitCode::BackError;
+        }
 
-    LOG_DEBUG(_logger, "job.hasErrorApi done");
-    _apiToken = job.apiToken();
+        LOG_DEBUG(_logger, "job.hasErrorApi done");
+        _apiToken = job.apiToken();
+    } catch (std::runtime_error &e) {
+        LOG_WARN(_logger, "Error in GetTokenJob::GetTokenJob: error=" << e.what());
+        return ExitCode::SystemError;
+    }
 
     LOG_DEBUG(_logger, "KeyChainManager.writeToken");
     if (!KeyChainManager::instance()->writeToken(_keychainKey, _apiToken.rawData())) {
@@ -125,21 +131,26 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
 
     LOG_DEBUG(Log::instance()->getLogger(), "Dummy test passed");
 
-    RefreshTokenJob job(apiToken);
-    ExitCode exitCode = job.runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::runSynchronously : " << exitCode);
-        job.hasErrorApi(&error, &errorDescr);
-        return exitCode;
-    }
+    try {
+        RefreshTokenJob job(apiToken);
+        ExitCode exitCode = job.runSynchronously();
+        if (exitCode != ExitCode::Ok) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::runSynchronously : " << exitCode);
+            job.hasErrorApi(&error, &errorDescr);
+            return exitCode;
+        }
 
-    if (job.hasErrorApi(&error, &errorDescr)) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Failed to retrieve authentication token. Error : " << error.c_str() << " - " << errorDescr.c_str());
-        return ExitCode::NetworkError;
-    }
+        if (job.hasErrorApi(&error, &errorDescr)) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Failed to retrieve authentication token. Error : " << error.c_str() << " - " << errorDescr.c_str());
+            return ExitCode::NetworkError;
+        }
 
-    apiToken = job.apiToken();
+        apiToken = job.apiToken();
+    } catch (std::runtime_error &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::RefreshTokenJob: error=" << e.what());
+        return ExitCode::SystemError;
+    }
 
     LOG_DEBUG(Log::instance()->getLogger(), "Token successfully refreshed");
 

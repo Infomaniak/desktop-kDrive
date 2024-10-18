@@ -195,6 +195,10 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
     }
 
     _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
+    if (!_instance) {
+        assert(false);
+        return;
+    }
 
     if (appType == KDC::AppType::None) {
         _instance->_isSentryActivated = false;
