@@ -22,8 +22,7 @@ namespace KDC {
 
 ProxyConfigInfo::ProxyConfigInfo(ProxyType type, const QString &hostName, int port, bool needsAuth, const QString &user,
                                  const QString &pwd) :
-    _type(type),
-    _hostName(hostName), _port(port), _needsAuth(needsAuth), _user(user), _pwd(pwd) {}
+    _type(type), _hostName(hostName), _port(port), _needsAuth(needsAuth), _user(user), _pwd(pwd) {}
 
 QDataStream &operator>>(QDataStream &in, ProxyConfigInfo &proxyConfigInfo) {
     in >> proxyConfigInfo._type >> proxyConfigInfo._hostName >> proxyConfigInfo._port >> proxyConfigInfo._needsAuth >>

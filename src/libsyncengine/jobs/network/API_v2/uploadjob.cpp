@@ -30,8 +30,8 @@ namespace KDC {
 
 UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
                      SyncTime modtime) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _filePath(filepath), _filename(filename), _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _filePath(filepath), _filename(filename),
+    _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;

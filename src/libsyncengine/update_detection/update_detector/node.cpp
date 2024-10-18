@@ -27,8 +27,7 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
            std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
-    _idb(idb),
-    _side(side), _name(name), _type(type), _changeEvents(changeEvents), _id(id), _createdAt(createdAt),
+    _idb(idb), _side(side), _name(name), _type(type), _changeEvents(changeEvents), _id(id), _createdAt(createdAt),
     _lastModified(lastmodified), _size(size), _moveOrigin(moveOrigin), _moveOriginParentDbId(moveOriginParentDbId),
     _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
     setParentNode(parentNode);

@@ -23,8 +23,8 @@ namespace KDC {
 
 CopyToDirectoryJob::CopyToDirectoryJob(int driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId,
                                        const SyncName &newName) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _remoteFileId(remoteFileId), _remoteDestId(remoteDestId), _newName(newName) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteFileId(remoteFileId), _remoteDestId(remoteDestId),
+    _newName(newName) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 

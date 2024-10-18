@@ -174,8 +174,7 @@ static void rolloverFiles(const log4cplus::tstring &filename, unsigned int maxBa
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::tstring &filename, long maxFileSize, int maxBackupIndex,
                                                      bool immediateFlush, bool createDirs) :
     RollingFileAppender(filename, LONG_MAX /*Let us handle a custom rollover*/, maxBackupIndex, immediateFlush, createDirs),
-    _maxFileSize(maxFileSize), _lastExpireCheck() {
-}
+    _maxFileSize(maxFileSize), _lastExpireCheck() {}
 
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties) :
     RollingFileAppender(properties), _lastExpireCheck() {}
@@ -199,7 +198,6 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
 
     // Rotate log file if needed after appending to it.
     if (out.tellp() > _maxFileSize) customRollover(true);
-
 }
 
 void CustomRollingFileAppender::customRollover(bool alreadyLocked) {
@@ -289,7 +287,8 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
     // Archive previous log files and delete expired files
     IoError ioError = IoError::Success;
     SyncPath logDirPath;
-    if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoError::Success) {
+    std::string errorMsg;
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError, &errorMsg) || ioError != IoError::Success) {
         return;
     }
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);

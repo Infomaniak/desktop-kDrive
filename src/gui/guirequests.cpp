@@ -1204,4 +1204,55 @@ ExitCode GuiRequests::checkCommStatus() {
     return exitCode;
 }
 
+ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channel) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << channel;
+
+    if (QByteArray results; !CommClient::instance()->execute(RequestNum::UPDATER_CHANGE_CHANNEL, params, results)) {
+        return ExitCode::SystemError;
+    }
+    return ExitCode::Ok;
+}
+
+ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo) {
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSION_INFO, {}, results)) {
+        return ExitCode::SystemError;
+    }
+
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> versionInfo;
+    return ExitCode::Ok;
+}
+
+ExitCode GuiRequests::updateState(UpdateState &state) {
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_STATE, QByteArray(), results)) {
+        return ExitCode::SystemError;
+    }
+
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> state;
+    return ExitCode::Ok;
+}
+
+ExitCode GuiRequests::startInstaller() {
+    if (QByteArray results; !CommClient::instance()->execute(RequestNum::UPDATER_START_INSTALLER, QByteArray(), results)) {
+        return ExitCode::SystemError;
+    }
+    return ExitCode::Ok;
+}
+
+ExitCode GuiRequests::skipUpdate(const std::string &version) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << QString::fromStdString(version);
+
+    if (QByteArray results; !CommClient::instance()->execute(RequestNum::UPDATER_SKIP_VERSION, params, results)) {
+        return ExitCode::SystemError;
+    }
+    return ExitCode::Ok;
+}
+
 } // namespace KDC

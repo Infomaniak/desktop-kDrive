@@ -43,6 +43,7 @@
 #include <AccCtrl.h>
 #define SECURITY_WIN32
 #include <security.h>
+#include <winioctl.h>
 
 constexpr int MAX_GET_RIGHTS_DURATION_MS = 60;
 namespace KDC {

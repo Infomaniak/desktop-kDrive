@@ -316,7 +316,9 @@ ExitCode ServerRequests::getParameters(ParametersInfo &parametersInfo) {
 
 ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) {
     parametersInfoToParameters(parametersInfo, ParametersCache::instance()->parameters());
-    return ParametersCache::instance()->save();
+    auto exitCode = ExitCode::Ok;
+    ParametersCache::instance()->save(&exitCode);
+    return exitCode;
 }
 
 ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error) {

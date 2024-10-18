@@ -127,5 +127,12 @@ struct GuiRequests {
         static ExitCode sendLogToSupport(bool sendArchivedLogs);
         static ExitCode cancelLogUploadToSupport();
         static ExitCode crash();
+
+        static ExitCode changeDistributionChannel(DistributionChannel channel);
+        static ExitCode versionInfo(VersionInfo &versionInfo);
+        static ExitCode updateState(UpdateState &state);
+        static ExitCode startInstaller();
+        static ExitCode skipUpdate(const std::string &version);
+        // static ExitCode unskipUpdate();
 };
 } // namespace KDC

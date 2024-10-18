@@ -16,29 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include <QObject>
-#include <QString>
-
-#include "libcommon/utility/types.h"
+#include "testlockutility.h"
+#include "libcommon/utility/lockutility.h"
 
 namespace KDC {
 
-class Updater : public QObject {
-        Q_OBJECT
-
-    public:
-        explicit Updater(QObject *parent = NULL);
-
-        virtual QString version() const = 0;
-        virtual bool isKDCUpdater() = 0;
-        virtual bool isSparkleUpdater() = 0;
-        virtual QString statusString() const = 0;
-        virtual bool downloadCompleted() const = 0;
-        virtual bool updateFound() const = 0;
-        virtual void startInstaller() const = 0;
-        virtual UpdateState updateState() const = 0;
-};
+void TestLockUtility::testLock() {
+    LockUtility lock;
+    CPPUNIT_ASSERT(lock.lock());
+    CPPUNIT_ASSERT(!lock.lock());
+    lock.unlock();
+    CPPUNIT_ASSERT(lock.lock());
+}
 
 } // namespace KDC

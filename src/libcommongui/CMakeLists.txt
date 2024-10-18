@@ -5,6 +5,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 set(libcommongui_SRCS
     utility/utility.h utility/utility.cpp
     logger.h logger.cpp
+        utility/widgetsignalblocker.h
 )
 
 add_library(${libcommongui_NAME} STATIC ${libcommongui_SRCS})

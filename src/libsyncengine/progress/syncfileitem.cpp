@@ -26,16 +26,14 @@ SyncFileItem::SyncFileItem(NodeType type, const SyncPath &path, const std::optio
                            const std::optional<NodeId> &localNodeId, const std::optional<NodeId> &remoteNodeId,
                            SyncDirection direction, SyncFileInstruction instruction, SyncFileStatus status, ConflictType conflict,
                            InconsistencyType inconsistency, CancelType cancelType, int64_t size, bool dehydrated) :
-    _type(type),
-    _path(path), _newPath(newPath), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _direction(direction),
+    _type(type), _path(path), _newPath(newPath), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _direction(direction),
     _instruction(instruction), _status(status), _conflict(conflict), _inconsistency(inconsistency), _cancelType(cancelType),
     _size(size), _dehydrated(dehydrated) {}
 
 SyncFileItem::SyncFileItem(NodeType type, const SyncPath &path, const std::optional<NodeId> &localNodeId,
                            const std::optional<NodeId> &remoteNodeId, SyncDirection direction, SyncFileInstruction instruction,
                            ConflictType conflict, int64_t size) :
-    _type(type),
-    _path(path), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _direction(direction), _instruction(instruction),
-    _conflict(conflict), _size(size) {}
+    _type(type), _path(path), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _direction(direction),
+    _instruction(instruction), _conflict(conflict), _size(size) {}
 
 } // namespace KDC

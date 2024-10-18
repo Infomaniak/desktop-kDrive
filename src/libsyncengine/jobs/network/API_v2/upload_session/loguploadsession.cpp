@@ -45,8 +45,8 @@ std::shared_ptr<UploadSessionFinishJob> LogUploadSession::createFinishJob() {
     SyncTime modtimeIn =
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Log, getFilePath(), getSessionToken(),
-                                                    getTotalChunkHash(), getTotalChunks(), modtimeIn);
+    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Log, getFilePath(), getSessionToken(), getTotalChunkHash(),
+                                                    getTotalChunks(), modtimeIn);
 }
 
 std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {

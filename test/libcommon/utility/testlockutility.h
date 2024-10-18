@@ -16,10 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "updater.h"
+#pragma once
+
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 namespace KDC {
 
-Updater::Updater(QObject *) {}
+class TestLockUtility : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestLockUtility);
+        CPPUNIT_TEST(testLock);
+        CPPUNIT_TEST_SUITE_END();
+
+    protected:
+        void testLock();
+};
 
 } // namespace KDC

@@ -18,27 +18,18 @@
 
 #pragma once
 
-#include <QString>
+#include "testincludes.h"
+
 namespace KDC {
 
-class UpdateInfo {
+class TestUpdateChecker final : public CppUnit::TestFixture {
     public:
-        void setVersion(const QString &v);
-        QString version() const;
-        void setVersionString(const QString &v);
-        QString versionString() const;
-        void setWeb(const QString &v);
-        QString web() const;
-        void setDownloadUrl(const QString &v);
-        QString downloadUrl() const;
+        CPPUNIT_TEST_SUITE(TestUpdateChecker);
+        CPPUNIT_TEST(testCheckUpdateAvailable);
+        CPPUNIT_TEST_SUITE_END();
 
-        static UpdateInfo parseString(const QString &xml, bool *ok);
-
-    private:
-        QString mVersion;
-        QString mVersionString;
-        QString mWeb;
-        QString mDownloadUrl;
+    protected:
+        void testCheckUpdateAvailable();
 };
 
 } // namespace KDC
