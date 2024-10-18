@@ -663,45 +663,54 @@ void SyncPal::updateEstimates() {
     _progressInfo->updateEstimates();
 }
 
-void SyncPal::initProgress(const SyncFileItem &item) {
-    _progressInfo->initProgress(item);
+bool SyncPal::initProgress(const SyncFileItem &item) {
+    return _progressInfo->initProgress(item);
 }
 
-void SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
-    _progressInfo->setProgress(relativePath, current);
+bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
+    if (!_progressInfo->setProgress(relativePath, current)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgress");
+        return false;
+    }
 
     bool found;
     if (!_syncDb->setStatus(ReplicaSide::Remote, relativePath, SyncFileStatus::Syncing, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setStatus");
-        return;
+        return false;
     }
     if (!found) {
         SyncFileItem item;
         if (!getSyncFileItem(relativePath, item)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::getSyncFileItem");
-            return;
+            return false;
         }
         if (item.instruction() != SyncFileInstruction::Get && item.instruction() != SyncFileInstruction::Put) {
             LOGW_SYNCPAL_WARN(_logger, L"Node not found : " << Utility::formatSyncPath(relativePath).c_str());
-            return;
+            return false;
         }
     }
+    return true;
 }
 
-void SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status) {
-    _progressInfo->setProgressComplete(relativeLocalPath, status);
+bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status) {
+    if (!_progressInfo->setProgressComplete(relativeLocalPath, status)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgressComplete");
+        return false;
+    }
+
     vfsFileStatusChanged(localPath() / relativeLocalPath, status);
 
     bool found;
     if (!_syncDb->setStatus(ReplicaSide::Local, relativeLocalPath, status, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setStatus");
-        return;
+        return false;
     }
     if (!found) {
         // Can happen for a dehydrated placeholder
         LOGW_SYNCPAL_DEBUG(_logger, L"Node not found : " << Utility::formatSyncPath(relativeLocalPath).c_str());
-        return;
+        return false;
     }
+    return true;
 }
 
 void SyncPal::directDownloadCallback(UniqueId jobId) {

@@ -234,7 +234,9 @@ void ExecutorWorker::initProgressManager() {
         }
 
         if (initSyncFileItem(syncOp, syncItem)) {
-            _syncPal->initProgress(syncItem);
+            if (!_syncPal->initProgress(syncItem)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::initProgress: id=" << syncOpId);
+            }
         }
     }
 }
@@ -300,7 +302,9 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
         relativeLocalFilePath = syncOp->affectedNode()->getPath();
     }
 
-    _syncPal->setProgressComplete(relativeLocalFilePath, status);
+    if (!_syncPal->setProgressComplete(relativeLocalFilePath, status)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgressComplete: " << Utility::formatSyncPath(relativeLocalFilePath));
+    }
 }
 
 // !!! When returning with hasError == true, _executorExitCode and _executorExitCause must be set !!!
@@ -2036,7 +2040,10 @@ void ExecutorWorker::sendProgress() {
 
         for (const auto &jobInfo: _ongoingJobs) {
             if (jobInfo.second->isProgressTracked() && jobInfo.second->progressChanged()) {
-                _syncPal->setProgress(jobInfo.second->affectedFilePath(), jobInfo.second->getProgress());
+                if (!_syncPal->setProgress(jobInfo.second->affectedFilePath(), jobInfo.second->getProgress())) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: "
+                                                       << Utility::formatSyncPath(jobInfo.second->affectedFilePath()));
+                }
             }
         }
     }

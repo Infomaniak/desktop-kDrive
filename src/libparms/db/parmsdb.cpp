@@ -513,12 +513,10 @@ std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, 
         try {
             _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, version, autoDelete, test));
         } catch (...) {
-            LOG_WARN(_logger, "Error in ParmsDb::ParmsDb");
             return nullptr;
         }
 
         if (!_instance->init(version)) {
-            LOG_WARN(_logger, "Error in ParmsDb::init");
             _instance.reset();
             return nullptr;
         }
