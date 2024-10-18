@@ -10,8 +10,10 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(testserver_SRCS
     ../test.cpp
-    ../test_utility/localtemporarydirectory.cpp
-    ../../src/server/logarchiver.h ../../src/server/logarchiver.cpp
+    ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+    ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
+    ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.cpp
+    ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.cpp
     ${server_srcs_path}/logarchiver.h ${server_srcs_path}/logarchiver.cpp
     ${server_srcs_path}/updater/updatemanager.h ${server_srcs_path}/updater/updatemanager.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -20,6 +22,7 @@ set(testserver_SRCS
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
+    workers/testworkers.h workers/testworkers.cpp
 )
 
 if(APPLE)
@@ -55,7 +58,7 @@ if (WIN32)
     include_directories("C:/Program Files (x86)/libzip/include")
 else ()
     include_directories("/usr/local/include")
-endif ()
+endif()
 
 add_executable(${testserver_NAME} ${testserver_SRCS})
 
@@ -76,7 +79,7 @@ elseif (APPLE)
 else ()
     target_link_libraries(${testserver_NAME}
             "/usr/local/lib/liblog4cplusU.so")
-endif ()
+endif()
 
 if (WIN32)
     target_link_libraries(${testserver_NAME}
@@ -90,17 +93,29 @@ elseif (APPLE)
 else ()
     target_link_libraries(${testserver_NAME}
             "/usr/local/lib/libcppunit.so")
-endif ()
+endif()
 
 
 # Loaded after liblog4cplus to avoid an initialization crash
 if (APPLE)
     target_link_libraries(${testserver_NAME}
-        "${libsyncengine_NAME}_vfs_mac" "${updater_DEPS}")
+        "${libsyncengine_NAME}_vfs_mac"
+        "${updater_DEPS}")
 else()
     target_link_libraries(${testserver_NAME}
-            ${libsyncengine_NAME})
-endif ()
+        ${libsyncengine_NAME})
+endif()
+
+# Install
+
+# VFS plugin
+set(vfs_installdir "${BIN_OUTPUT_DIRECTORY}")
+if (APPLE)
+    install(TARGETS "${libsyncengine_NAME}_vfs_mac"
+            LIBRARY DESTINATION "${vfs_installdir}"
+            RUNTIME DESTINATION "${vfs_installdir}"
+    )
+endif()
 
 if (APPLE)
     # Default sync exclude list
@@ -113,4 +128,4 @@ if (APPLE)
         message(STATUS \"Fixing library paths for ${testserver_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         " COMPONENT RUNTIME)
-endif ()
+endif()

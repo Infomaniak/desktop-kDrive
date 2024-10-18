@@ -27,7 +27,7 @@ void TestAbstractUpdater::setUp() {
     // Init parmsDb
     bool alreadyExists = false;
     const std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Setup parameters cache in test mode
     ParametersCache::instance(true);
