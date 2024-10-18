@@ -203,7 +203,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static bool vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                               int &progress);
         static bool vfsCreatePlaceholder(int syncDbIdconst, const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        static bool vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item, bool &needRestart);
+        static bool vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item);
         static bool vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                       const int64_t size, const NodeId &id, std::string &error);
         static bool vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,

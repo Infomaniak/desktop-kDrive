@@ -1005,13 +1005,27 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     }
 
     QString path = localSyncPath + "/" + relativePath;
-    std::string stdPath = path.toStdString();
 
-    if (fileStat->st_mode == S_IFDIR || fileStat->st_mode == S_IFREG) {
-        int flags = fileStat->st_mode == S_IFDIR ? O_DIRECTORY | O_CREAT                           // Directory
-                                                 : O_CREAT | FWRITE | O_NONBLOCK;                  // File
-        int mode = fileStat->st_mode == S_IFDIR ? S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH  // Rights rwxr-xr-x
-                                                : S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;           // Rights rw-r--r--
+    if (fileStat->st_mode == S_IFDIR) {
+        SyncPath dirPath{QStr2Path(path)};
+        IoError ioError = IoError::Success;
+        if (!IoHelper::createDirectory(dirPath, ioError)) {
+            LOGW_WARN(_logger,
+                      L"Call to IoHelper::createDirectory failed: "
+                          << Utility::formatSyncPath(dirPath).c_str());
+            return false;
+        }
+
+        if (ioError != IoError::Success) {
+            LOGW_WARN(_logger,
+                      L"Failed to create directory: "
+                          << Utility::formatIoError(dirPath, ioError).c_str());
+            return false;
+        }
+    } else if (fileStat->st_mode == S_IFREG) {
+        std::string stdPath = QStr2Str(path);
+        int flags = O_CREAT | FWRITE | O_NONBLOCK;
+        int mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // Rights rw-r--r--
 
         int fd = open(stdPath.c_str(), flags, mode);
         if (fd == -1) {
