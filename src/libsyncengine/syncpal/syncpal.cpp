@@ -787,8 +787,8 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
             return ExitCode::SystemError;
         }
         job->setAffectedFilePath(localPath);
-    } catch (std::exception const &) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob");
+    } catch (std::exception const &e) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
         return ExitCode::Unknown;
     }

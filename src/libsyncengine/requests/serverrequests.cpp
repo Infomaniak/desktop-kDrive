@@ -1177,8 +1177,9 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
     try {
         job = std::make_shared<CreateDirJob>(driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
                                              QStr2SyncName(dirName));
-    } catch (std::exception const &) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId);
+    } catch (std::exception const &e) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in CreateDirJob::CreateDirJob for driveDbId="
+                                                        << driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
         return ExitCode::DataError;
     }
 
@@ -1716,8 +1717,9 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     std::shared_ptr<GetInfoDriveJob> job = nullptr;
     try {
         job = std::make_shared<GetInfoDriveJob>(drive.dbId());
-    } catch (std::exception const &) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId());
+    } catch (std::exception const &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId() << " : " << e.what());
         return ExitCode::DataError;
     }
 
@@ -1821,9 +1823,9 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     std::shared_ptr<GetThumbnailJob> job = nullptr;
     try {
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);
-    } catch (std::exception const &) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetThumbnailJob::GetThumbnailJob for driveDbId=" << driveDbId << " and nodeId=" << nodeId.c_str());
+    } catch (std::exception const &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetThumbnailJob::GetThumbnailJob for driveDbId="
+                                                       << driveDbId << " and nodeId=" << nodeId.c_str() << " : " << e.what());
         return ExitCode::DataError;
     }
 
@@ -1858,7 +1860,7 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     } catch (std::exception const &e) {
         std::string what = e.what();
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " what = " << what.c_str());
+                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " : " << what.c_str());
         if (what == invalidToken) {
             return ExitCode::InvalidToken;
         }
@@ -1927,13 +1929,19 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
 }
 
 ExitCode ServerRequests::loadUserAvatar(User &user) {
-    GetAvatarJob getAvatarJob = GetAvatarJob(user.avatarUrl());
-    ExitCode exitCode = getAvatarJob.runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        return exitCode;
+    try {
+        GetAvatarJob getAvatarJob = GetAvatarJob(user.avatarUrl());
+        ExitCode exitCode = getAvatarJob.runSynchronously();
+        if (exitCode != ExitCode::Ok) {
+            return exitCode;
+        }
+
+        user.setAvatar(getAvatarJob.avatar());
+    } catch (std::runtime_error &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetAvatarJob::GetAvatarJob: error=" << e.what());
+        return ExitCode::SystemError;
     }
 
-    user.setAvatar(getAvatarJob.avatar());
     return ExitCode::Ok;
 }
 

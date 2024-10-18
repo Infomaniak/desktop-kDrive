@@ -48,7 +48,12 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
 
     const auto &appUid = std::get<std::string>(appStateValue);
     if (!_getAppVersionJob) {
-        _getAppVersionJob = new GetAppVersionJob(CommonUtility::platform(), appUid);
+        try {
+            _getAppVersionJob = new GetAppVersionJob(CommonUtility::platform(), appUid);
+        } catch (std::runtime_error &e) {
+            LOG_WARN(_logger, "Error in GetAppVersionJob::GetAppVersionJob: error=" << e.what());
+            return ExitCode::SystemError;
+        }
     }
     _getAppVersionJob->runSynchronously();
 

@@ -462,38 +462,19 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
     bool alreadyExist = false;
 
     // List all items in parent dir
-    GetFileListJob job(_syncPal->driveDbId(), parentId);
-    ExitCode exitCode = job.runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
-                                          << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << exitCode);
-        _executorExitCode = exitCode;
-        _executorExitCause = ExitCause::Unknown;
-        return false;
-    }
+    try {
+        GetFileListJob job(_syncPal->driveDbId(), parentId);
+        ExitCode exitCode = job.runSynchronously();
+        if (exitCode != ExitCode::Ok) {
+            LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
+                                              << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << exitCode);
+            _executorExitCode = exitCode;
+            _executorExitCause = ExitCause::Unknown;
+            return false;
+        }
 
-    Poco::JSON::Object::Ptr resObj = job.jsonRes();
-    if (!resObj) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
-        _executorExitCode = ExitCode::BackError;
-        _executorExitCause = ExitCause::ApiErr;
-        return false;
-    }
-
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    if (!dataArray) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
-        _executorExitCode = ExitCode::BackError;
-        _executorExitCause = ExitCause::ApiErr;
-        return false;
-    }
-
-    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-        Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-        std::string name;
-        if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
+        Poco::JSON::Object::Ptr resObj = job.jsonRes();
+        if (!resObj) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                              "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
             _executorExitCode = ExitCode::BackError;
@@ -501,10 +482,37 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
             return false;
         }
 
-        if (name == absolutePath.filename().string()) {
-            alreadyExist = true;
-            break;
+        Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+        if (!dataArray) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                             "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+            _executorExitCode = ExitCode::BackError;
+            _executorExitCause = ExitCause::ApiErr;
+            return false;
         }
+
+        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
+            Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
+            std::string name;
+            if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
+                LOG_SYNCPAL_WARN(
+                        Log::instance()->getLogger(),
+                        "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+                _executorExitCode = ExitCode::BackError;
+                _executorExitCause = ExitCause::ApiErr;
+                return false;
+            }
+
+            if (name == absolutePath.filename().string()) {
+                alreadyExist = true;
+                break;
+            }
+        }
+    } catch (std::exception const &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetFileListJob::GetFileListJob for driveDbId=" << _syncPal->driveDbId()
+                                                                          << " nodeId=" << parentId.c_str() << " : " << e.what());
+        return false;
     }
 
     if (!alreadyExist) {
@@ -512,8 +520,8 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
     }
 
     // The item already exists, exclude it
-    exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(absolutePath,
-                                                                    PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+    ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(
+            absolutePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
     if (exitCode != ExitCode::Ok) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to rename file: " << Utility::formatSyncPath(absolutePath).c_str());
         _executorExitCode = exitCode;
@@ -1360,10 +1368,18 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypa
                     _executorExitCause = ExitCause::Unknown;
                     return false;
                 }
-                job = std::make_shared<MoveJob>(_syncPal->driveDbId(), absoluteDestLocalFilePath,
-                                                correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
-                                                remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string(),
-                                                syncOp->newName());
+                try {
+                    job = std::make_shared<MoveJob>(
+                            _syncPal->driveDbId(), absoluteDestLocalFilePath,
+                            correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
+                            remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string(), syncOp->newName());
+                } catch (std::exception &e) {
+                    LOGW_SYNCPAL_WARN(_logger,
+                                      "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
+                    _executorExitCode = ExitCode::DataError;
+                    _executorExitCause = ExitCause::Unknown;
+                    return false;
+                }
             }
 
             if (syncOp->hasConflict()) {

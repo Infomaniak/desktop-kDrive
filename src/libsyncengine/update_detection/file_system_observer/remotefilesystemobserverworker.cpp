@@ -273,7 +273,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     } catch (std::exception const &e) {
         std::string what = e.what();
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
-                                          << _driveDbId << " what =" << what.c_str());
+                                          << _driveDbId << " : " << what.c_str());
         if (what == invalidToken) {
             return ExitCode::InvalidToken;
         }
@@ -703,26 +703,34 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
 
 ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights,
                                                                   SnapshotItem &snapshotItem) {
-    GetFileInfoJob job(_syncPal->driveDbId(), nodeId);
-    job.runSynchronously();
-    if (job.hasHttpError() || job.exitCode() != ExitCode::Ok) {
-        if (job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-            job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
-            hasRights = false;
-            return ExitCode::Ok;
+    try {
+        GetFileInfoJob job(_syncPal->driveDbId(), nodeId);
+        job.runSynchronously();
+        if (job.hasHttpError() || job.exitCode() != ExitCode::Ok) {
+            if (job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+                job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+                hasRights = false;
+                return ExitCode::Ok;
+            }
+
+            LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
+                                               << SyncName2WStr(snapshotItem.name()).c_str() << L" ("
+                                               << Utility::s2ws(snapshotItem.id()).c_str() << L")");
+            invalidateSnapshot();
+            return ExitCode::BackError;
         }
 
-        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                           << SyncName2WStr(snapshotItem.name()).c_str() << L" ("
-                                           << Utility::s2ws(snapshotItem.id()).c_str() << L")");
-        invalidateSnapshot();
-        return ExitCode::BackError;
+        snapshotItem.setCreatedAt(job.creationTime());
+        snapshotItem.setLastModified(job.modtime());
+        snapshotItem.setSize(job.size());
+        snapshotItem.setIsLink(job.isLink());
+    } catch (std::exception const &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetFileInfoJob::GetFileInfoJob for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str()
+                                                                          << " : " << e.what());
+        return ExitCode::DataError;
     }
 
-    snapshotItem.setCreatedAt(job.creationTime());
-    snapshotItem.setLastModified(job.modtime());
-    snapshotItem.setSize(job.size());
-    snapshotItem.setIsLink(job.isLink());
     hasRights = true;
     return ExitCode::Ok;
 }
