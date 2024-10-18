@@ -75,15 +75,11 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     subLayout->addWidget(releaseNoteLabel);
 
     auto *webview = new WebView(this);
-    Language language = ParametersCache::instance()->parametersInfo().language();
-    QString languageCode = KDC::CommonUtility::languageCode(language);
-
-    if (languageCode.isEmpty() || languageCode.startsWith("en")) {
-        webview->setUrl(QUrl(QString("%1-%2-win.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str())));
-    } else {
-        webview->setUrl(
-                QUrl(QString("%1-%2-win-%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), languageCode.left(2))));
-    }
+    const Language language = ParametersCache::instance()->parametersInfo().language();
+    QString languageCode = CommonUtility::languageCode(language);
+    if (languageCode.isEmpty()) languageCode = "en";
+    webview->setUrl(QUrl(
+            QString("%1-%2-win-%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), languageCode.left(2))));
     subLayout->addWidget(webview);
 
     auto *hLayout = new QHBoxLayout();

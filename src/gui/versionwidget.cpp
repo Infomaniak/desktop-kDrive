@@ -188,7 +188,7 @@ void VersionWidget::showAboutDialog() {
 void VersionWidget::showReleaseNote() const {
     QString os;
 #if defined(__APPLE__)
-    os = ""; // In order to works with Sparkle, the URL must have the same name as the package. So do not add the os for macOS
+    os = "-macos";
 #elif defined(_WIN32)
     os = "-win";
 #else
@@ -199,13 +199,9 @@ void VersionWidget::showReleaseNote() const {
     GuiRequests::versionInfo(versionInfo);
 
     const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
-    if (const QString languageCode = CommonUtility::languageCode(appLanguage);
-        CommonUtility::languageCodeIsEnglish(languageCode)) {
-        QDesktopServices::openUrl(QUrl(QString("%1-%2%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), os)));
-    } else {
-        QDesktopServices::openUrl(
-                QUrl(QString("%1-%2%3-%4.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), os, languageCode)));
-    }
+    const QString languageCode = CommonUtility::languageCode(appLanguage);
+    QDesktopServices::openUrl(
+            QUrl(QString("%1-%2%3-%4.html").arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), os, languageCode)));
 }
 
 void VersionWidget::showDownloadPage() const {
