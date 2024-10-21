@@ -60,14 +60,15 @@ class UpdateCheckerTest final : public UpdateChecker {
         bool _updateShouldBeAvailable{false};
 };
 
-void TestUpdateChecker::testCheckUpdateAvailable() { // Version is higher than current version
+void TestUpdateChecker::testCheckUpdateAvailable() {
+    // Version is higher than current version
     {
         UpdateCheckerTest testObj;
         UniqueId jobId = 0;
         testObj.setUpdateShoudBeAvailable(true);
         testObj.checkUpdateAvailability(DistributionChannel::Internal, &jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT_EQUAL(true, testObj.versionInfo().isValid());
+        CPPUNIT_ASSERT(testObj.versionInfo().isValid());
     }
 
     // Version is lower than current version
@@ -77,7 +78,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() { // Version is higher than c
         testObj.setUpdateShoudBeAvailable(false);
         testObj.checkUpdateAvailability(DistributionChannel::Internal, &jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT_EQUAL(true, testObj.versionInfo().isValid());
+        CPPUNIT_ASSERT(testObj.versionInfo().isValid());
     }
 }
 
