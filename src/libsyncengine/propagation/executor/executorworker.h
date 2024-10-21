@@ -63,6 +63,7 @@ class ExecutorWorker : public OperationProcessor {
         void executorCallback(UniqueId jobId);
 
     protected:
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns
         void execute() override;
 
     private:
@@ -70,12 +71,12 @@ class ExecutorWorker : public OperationProcessor {
         void initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
 
         ExitInfo handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored);
-        void checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
+        ExitInfo checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
         ExitInfo generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
         ExitInfo checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath);
         ExitInfo convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated);
-
+        ExitInfo processCreateOrConvertToPlaceholderError(const SyncPath &relativeLocalPath, bool create);
         ExitInfo handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored);
         ExitInfo generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
 
@@ -85,11 +86,12 @@ class ExecutorWorker : public OperationProcessor {
          * @param syncOp : the operation to propagate.
          * @param absolutePath : absolute local path of the affected file.
          * @return `true` if the date is modified successfully.
+         * @note _executorExitCode and _executorExitCause must be set when the function returns false
          */
         ExitInfo fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath);
         ExitInfo checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
-                                      bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not
-                                                        // good, function probably does too much
+                                          bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not
+                                                            // good, function probably does too much
 
         ExitInfo handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
@@ -97,32 +99,32 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
 
-        bool hasRight(SyncOpPtr syncOp, bool &exists);
-        bool enoughLocalSpace(SyncOpPtr syncOp);
+        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
+        void waitForAllJobsToFinish(bool &hasError);
 
         ExitInfo waitForAllJobsToFinish();
         ExitInfo deleteFinishedAsyncJobs();
         ExitInfo handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue,
                                         bool downloadImpossible);
         ExitInfo handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
-                               bool &ignored, bool &bypassProgressComplete);
+                                   bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
         void sendProgress();
+        bool hasRight(SyncOpPtr syncOp, bool &exists);
+        bool enoughLocalSpace(SyncOpPtr syncOp);
 
         ExitInfo propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
         ExitInfo propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
         ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                        std::shared_ptr<Node> &node);
+                                            std::shared_ptr<Node> &node);
         ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                      std::shared_ptr<Node> &node);
+                                          std::shared_ptr<Node> &node);
         ExitInfo propagateMoveToDbAndTree(SyncOpPtr syncOp);
         ExitInfo propagateDeleteToDbAndTree(SyncOpPtr syncOp);
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);
 
         ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
-
         void cancelAllOngoingJobs(bool reschedule = false);
-
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
         inline bool isLiteSyncActivated() { return _syncPal->vfsMode() != VirtualFileMode::Off; }
