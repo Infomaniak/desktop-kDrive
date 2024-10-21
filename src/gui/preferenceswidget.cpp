@@ -470,6 +470,7 @@ void PreferencesWidget::onLanguageChange() {
     CommonUtility::setupTranslations(QApplication::instance(), language);
 
     retranslateUi();
+    _versionWidget->refresh();
 }
 
 void PreferencesWidget::onMoveToTrashSwitchClicked(bool checked) {
