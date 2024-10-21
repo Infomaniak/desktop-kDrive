@@ -682,36 +682,40 @@ SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
     return result;
 }
 
-bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
+bool Utility::checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
                                        IoError &ioError) {
+    return checkIfDirEntryIsManaged(*dirIt, isManaged, isLink, ioError);
+}
+
+bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError) {
     isManaged = true;
     isLink = false;
     ioError = IoError::Success;
 
     ItemType itemType;
-    bool result = IoHelper::getItemType(dirIt->path(), itemType);
+    bool result = IoHelper::getItemType(dirEntry.path(), itemType);
     ioError = itemType.ioError;
     if (!result) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirIt->path(), ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError).c_str());
         return false;
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirIt->path(), ioError).c_str());
+        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError).c_str());
         return true;
     }
 
     isLink = itemType.linkType != LinkType::None;
-    if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
-        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
+    if (!dirEntry.is_directory() && !dirEntry.is_regular_file() && !isLink) {
+        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path()).c_str()
                                        << L" because it's not a directory, a regular file or a symlink");
         isManaged = false;
         return true;
     }
 
-    if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
+    if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(),
-                  L"Ignore " << formatSyncPath(dirIt->path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
+                  L"Ignore " << formatSyncPath(dirEntry.path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
         isManaged = false;
         return true;
     }
