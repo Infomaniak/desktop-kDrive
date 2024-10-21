@@ -694,7 +694,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
             }
             exitCode = GuiRequests::syncStop(syncDbId);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : " << exitCode;
+                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " code=" << exitCode;
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
@@ -706,7 +706,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
             }
             exitCode = GuiRequests::syncStart(syncDbId);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : " << exitCode;
+                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " code=" << exitCode;
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatus::Starting);

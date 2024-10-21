@@ -69,14 +69,14 @@ void RemoteFileSystemObserverWorker::execute() {
         if (!_snapshot->isValid()) {
             exitCode = generateInitialSnapshot();
             if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << exitCode);
+                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
                 break;
             }
         }
 
         exitCode = processEvents();
         if (exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents : " << exitCode);
+            LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: code=" << exitCode);
             break;
         }
 
@@ -176,14 +176,14 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
             job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, _cursor);
         } catch (std::exception const &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
-                                              << _driveDbId << " : " << e.what());
+                                              << _driveDbId << " error=" << e.what());
             exitCode = ExitCode::DataError;
             break;
         }
 
         exitCode = job->runSynchronously();
         if (exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob::runSynchronously : " << exitCode);
+            LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob::runSynchronously: code=" << exitCode);
             break;
         }
 
@@ -273,7 +273,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     } catch (std::exception const &e) {
         std::string what = e.what();
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
-                                          << _driveDbId << " : " << what.c_str());
+                                          << _driveDbId << " error=" << what.c_str());
         if (what == invalidToken) {
             return ExitCode::InvalidToken;
         }
@@ -400,7 +400,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
         try {
             notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor);
         } catch (std::exception const &e) {
-            LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " : " << e.what());
+            LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
             return ExitCode::DataError;
         }
 
@@ -727,7 +727,7 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetFileInfoJob::GetFileInfoJob for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str()
-                                                                          << " : " << e.what());
+                                                                          << " error=" << e.what());
         return ExitCode::DataError;
     }
 

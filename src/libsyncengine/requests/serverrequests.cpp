@@ -333,7 +333,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
     int syncDbId = 0;
     ExitCode exitCode = syncForPath(syncList, parentFolder, syncDbId);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath: code=" << exitCode);
         return exitCode;
     }
 
@@ -348,7 +348,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
     forever {
         exitCode = checkPathValidityForNewFolder(syncList, driveDbId, folder, error);
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder : " << exitCode);
+            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: code=" << exitCode);
             return exitCode;
         }
 
@@ -383,7 +383,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     Login login(keychainKey);
     exitCode = login.requestToken(code.toStdString(), codeVerifier.toStdString());
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken: code=" << exitCode);
         error = login.error();
         errorDescr = login.errorDescr();
         return exitCode;
@@ -392,7 +392,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     // Create or update user
     exitCode = processRequestTokenFinished(login, userInfo, userCreated);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished: code=" << exitCode);
         return exitCode;
     }
 
@@ -407,7 +407,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::GetFileInfoJob for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << e.what());
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -416,7 +416,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " code=" << exitCode);
         return exitCode;
     }
 
@@ -471,14 +471,14 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
         job = std::make_shared<GetDrivesListJob>(userDbId);
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " : " << e.what());
+                 "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
         return ExitCode::DataError;
     }
 
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " : " << exitCode);
+                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " code=" << exitCode);
         return exitCode;
     }
 
@@ -556,7 +556,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
             job = std::make_shared<GetRootFileListJob>(userDbId, driveId, 1, true);
         } catch (std::exception const &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
-                                                           << userDbId << " driveId=" << driveId << " : " << e.what());
+                                                           << userDbId << " driveId=" << driveId << " error=" << e.what());
             return ExitCode::DataError;
         }
     } else {
@@ -565,8 +565,8 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
                                                                                      true);
         } catch (std::exception const &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
-                                                           << userDbId << " driveId=" << driveId
-                                                           << " nodeId=" << nodeId.toStdString().c_str() << " : " << e.what());
+                                                           << userDbId << " driveId=" << driveId << " nodeId="
+                                                           << nodeId.toStdString().c_str() << " error=" << e.what());
             return ExitCode::DataError;
         }
     }
@@ -576,7 +576,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " code=" << exitCode);
         return exitCode;
     }
 
@@ -678,7 +678,7 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     QList<NodeInfo> list;
     ExitCode exitCode = getSubFolders(userDbId, driveId, QString(), list);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders: code=" << exitCode);
         return exitCode;
     }
 
@@ -706,7 +706,7 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
             names.pop_back();
             exitCode = getSubFolders(userDbId, driveId, current.nodeId(), list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders : " << exitCode);
+                LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders: code=" << exitCode);
                 return exitCode;
             }
         }
@@ -719,7 +719,7 @@ ExitCode ServerRequests::getPathByNodeId(int userDbId, int driveId, const QStrin
     NodeInfo nodeInfo;
     ExitCode exitCode = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: code=" << exitCode);
         return exitCode;
     }
 
@@ -1060,11 +1060,11 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     if (exitCause == ExitCause::OperationCanceled) {
         IoHelper::deleteItem(logUploadTempFolder, ioError);
         LOG_INFO(Log::instance()->getLogger(),
-                 "LogArchiver::generateLogsSupportArchive canceled: " << exitCode << " : " << exitCause);
+                 "LogArchiver::generateLogsSupportArchive canceled: code=" << exitCode << " cause=" << exitCause);
         return ExitCode::Ok;
     } else if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in LogArchiver::generateLogsSupportArchive: " << exitCode << " : " << exitCause);
+                 "Error in LogArchiver::generateLogsSupportArchive: code=" << exitCode << " cause=" << exitCause);
         IoHelper::deleteItem(logUploadTempFolder, ioError);
         return exitCode;
     }
@@ -1079,8 +1079,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     try {
         uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
     } catch (std::exception const &e) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in LogUploadSession::LogUploadSession: " << Utility::s2ws(e.what()).c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
         return ExitCode::SystemError;
     };
 
@@ -1115,7 +1114,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
+        LOG_WARN(Log::instance()->getLogger(), "Error during log upload: code=" << exitCode << " cause=" << exitCause);
         // We do not delete the archive here. The path is stored in the app state so that the user can still try to upload it
         // manually.
         return exitCode;
@@ -1178,8 +1177,8 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
         job = std::make_shared<CreateDirJob>(driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
                                              QStr2SyncName(dirName));
     } catch (std::exception const &e) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in CreateDirJob::CreateDirJob for driveDbId="
-                                                        << driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1217,7 +1216,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
-                                                       << driveDbId << " nodeId=" << nodeId.c_str() << " : " << e.what());
+                                                       << driveDbId << " nodeId=" << nodeId.c_str() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1230,15 +1229,17 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
             try {
                 job2 = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
             } catch (std::exception const &e) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetFileLinkJob::GetFileLinkJob for driveDbId="
-                                                               << driveDbId << " nodeId=" << nodeId.c_str() << " : " << e.what());
+                LOG_WARN(Log::instance()->getLogger(),
+                         "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
+                                                                                  << " error=" << e.what());
                 return ExitCode::DataError;
             }
 
             exitCode = job2->runSynchronously();
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetFileLinkJob::GetFileLinkJob for driveDbId="
-                                                               << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
+                LOG_WARN(Log::instance()->getLogger(),
+                         "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
+                                                                                  << " code=" << exitCode);
                 return exitCode;
             }
 
@@ -1265,7 +1266,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
             return ExitCode::Ok;
         } else {
             LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
-                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
+                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " code=" << exitCode);
             return exitCode;
         }
     }
@@ -1307,7 +1308,7 @@ ExitCode ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::GetSizeJob for userDbId=" << userDbId << " driveId=" << driveId
-                                                                 << " nodeId=" << nodeId.c_str() << " : " << e.what());
+                                                                 << " nodeId=" << nodeId.c_str() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1315,7 +1316,7 @@ ExitCode ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
-                                                                       << " nodeId=" << nodeId.c_str() << " : " << exitCode);
+                                                                       << " nodeId=" << nodeId.c_str() << " code=" << exitCode);
         return exitCode;
     }
 
@@ -1719,7 +1720,7 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         job = std::make_shared<GetInfoDriveJob>(drive.dbId());
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId() << " : " << e.what());
+                 "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1825,7 +1826,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetThumbnailJob::GetThumbnailJob for driveDbId="
-                                                       << driveDbId << " and nodeId=" << nodeId.c_str() << " : " << e.what());
+                                                       << driveDbId << " and nodeId=" << nodeId.c_str() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1860,7 +1861,7 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     } catch (std::exception const &e) {
         std::string what = e.what();
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " : " << what.c_str());
+                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " error=" << what.c_str());
         if (what == invalidToken) {
             return ExitCode::InvalidToken;
         }
@@ -2040,7 +2041,7 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
                                                        QString &error) {
     ExitCode exitCode = checkPathValidityRecursive(path, error);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive: code=" << exitCode);
         return exitCode;
     }
 

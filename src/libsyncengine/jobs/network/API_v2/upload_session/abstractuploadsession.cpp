@@ -238,7 +238,7 @@ bool AbstractUploadSession::startSession() {
 
         _sessionStarted = true;
     } catch (std::exception const &e) {
-        LOG_WARN(_logger, "Error in UploadSessionStartJob: " << e.what());
+        LOG_WARN(_logger, "Error in UploadSessionStartJob: error=" << e.what());
         _exitCode = ExitCode::DataError;
         return false;
     }
@@ -312,7 +312,7 @@ bool AbstractUploadSession::sendChunks() {
         try {
             chunkJob = createChunkJob(chunkContent, chunkNb, actualChunkSize);
         } catch (std::exception const &e) {
-            LOG_ERROR(_logger, "Error in UploadSessionChunkJob::UploadSessionChunkJob: " << e.what());
+            LOG_ERROR(_logger, "Error in UploadSessionChunkJob::UploadSessionChunkJob: error=" << e.what());
             jobCreationError = true;
             break;
         }
@@ -412,8 +412,8 @@ bool AbstractUploadSession::closeSession() {
         auto finishJob = createFinishJob();
         const ExitCode exitCode = finishJob->runSynchronously();
         if (exitCode != ExitCode::Ok || finishJob->hasHttpError()) {
-            LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously - exit code: "
-                                       << exitCode << L", file: " << Path2WStr(_filePath.filename()).c_str());
+            LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: exit code="
+                                       << exitCode << L" file=" << Path2WStr(_filePath.filename()).c_str());
             return false;
         }
 
@@ -423,7 +423,7 @@ bool AbstractUploadSession::closeSession() {
         }
 
     } catch (std::exception const &e) {
-        LOG_WARN(_logger, "Error in UploadSessionFinishJob: " << e.what());
+        LOG_WARN(_logger, "Error in UploadSessionFinishJob: error=" << e.what());
         _exitCode = ExitCode::DataError;
         return false;
     }
@@ -463,7 +463,7 @@ bool AbstractUploadSession::cancelSession() {
 
         const ExitCode exitCode = cancelJob->runSynchronously();
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
+            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously: code=" << exitCode);
             _exitCode = exitCode;
             return false;
         }
@@ -474,7 +474,7 @@ bool AbstractUploadSession::cancelSession() {
         }
 
     } catch (std::exception const &e) {
-        LOG_WARN(_logger, "Error in UploadSessionCancelJob: " << e.what());
+        LOG_WARN(_logger, "Error in UploadSessionCancelJob: error=" << e.what());
         _exitCode = ExitCode::DataError;
         return false;
     }

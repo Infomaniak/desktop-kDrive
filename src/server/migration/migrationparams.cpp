@@ -759,7 +759,7 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
         GetTokenFromAppPasswordJob job(email, appPassword);
         ExitCode exitCode = job.runSynchronously();
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in GetTokenFromAppPasswordJob::runSynchronously : " << exitCode);
+            LOG_WARN(_logger, "Error in GetTokenFromAppPasswordJob::runSynchronously: code=" << exitCode);
             errorCode = std::string();
             errorDescr = std::string();
             return exitCode;
@@ -767,9 +767,9 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
         if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : " << KDC::Utility::s2ws(errorCode).c_str()
-                                                                                      << L" - "
-                                                                                      << KDC::Utility::s2ws(errorDescr).c_str());
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::Utility::s2ws(errorCode).c_str()
+                                                                                   << L" descr="
+                                                                                   << KDC::Utility::s2ws(errorDescr).c_str());
             return ExitCode::BackError;
         }
 

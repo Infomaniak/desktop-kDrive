@@ -92,7 +92,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
                 return ExitCode::InvalidToken; // Currently, we can't send logs if no drive is found
             }
         } catch (const std::runtime_error &e) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in generateLogsSupportArchive: " << e.what());
+            LOG_WARN(Log::instance()->getLogger(), "Error in generateLogsSupportArchive: error=" << e.what());
             exitCause = ExitCause::DbAccessError;
             return ExitCode::DbError;
         }
@@ -478,9 +478,9 @@ ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath &outputPath, Ex
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
         }
     } catch (const std::runtime_error &e) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in generateUserDescriptionFile: " << e.what());
-        file << "Unable to retrieve user ID(s) - " << e.what() << std::endl;
-        file << "Drive ID(s): Unable to retrieve drive ID(s) - " << e.what() << std::endl;
+        LOG_WARN(Log::instance()->getLogger(), "Error in generateUserDescriptionFile: error=" << e.what());
+        file << "Unable to retrieve user ID(s): error=" << e.what() << std::endl;
+        file << "Drive ID(s): Unable to retrieve drive ID(s): error=" << e.what() << std::endl;
     }
 
     file.close();

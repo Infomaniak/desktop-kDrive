@@ -52,7 +52,7 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
         GetTokenJob job(authorizationCode, codeVerifier);
         ExitCode exitCode = job.runSynchronously();
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << exitCode);
+            LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously: code=" << exitCode);
             _error = std::string();
             _errorDescr = std::string();
             return exitCode;
@@ -135,7 +135,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
         RefreshTokenJob job(apiToken);
         ExitCode exitCode = job.runSynchronously();
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::runSynchronously : " << exitCode);
+            LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::runSynchronously: code=" << exitCode);
             job.hasErrorApi(&error, &errorDescr);
             return exitCode;
         }

@@ -44,7 +44,7 @@ ParametersCache::ParametersCache() {
     // Load parameters
     const ExitCode exitCode = GuiRequests::getParameters(_parametersInfo);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcAppParameters()) << "Error in Requests::getParameters : " << exitCode;
+        qCWarning(lcAppParameters()) << "Error in Requests::getParameters: code=" << exitCode;
         throw std::runtime_error("Failed to create ParametersCache instance!");
     }
 }

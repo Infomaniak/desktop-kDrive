@@ -322,7 +322,7 @@ AppServer::AppServer(int &argc, char **argv) :
     if (exitCode == ExitCode::InvalidToken) {
         // The user will be asked to enter its credentials later
     } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo : " << exitCode);
+        LOG_WARN(_logger, "Error in updateAllUsersInfo: code=" << exitCode);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
         if (exitCode != ExitCode::NetworkError && exitCode != ExitCode::UpdateRequired) {
             throw std::runtime_error("Failed to load user data.");
@@ -403,14 +403,14 @@ void AppServer::stopSyncTask(int syncDbId) {
     // Stop sync and remove it from syncPalMap
     ExitCode exitCode = stopSyncPal(syncDbId, false, true, true);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in stopSyncPal : " << exitCode);
+        LOG_WARN(_logger, "Error in stopSyncPal: code=" << exitCode);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
     }
 
     // Stop Vfs
     exitCode = stopVfs(syncDbId, true);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in stopVfs : " << exitCode);
+        LOG_WARN(_logger, "Error in stopVfs: code=" << exitCode);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
     }
 
@@ -437,7 +437,7 @@ void AppServer::deleteAccountIfNeeded(int accountDbId) {
         if (exitCode == ExitCode::Ok) {
             sendAccountRemoved(accountDbId);
         } else {
-            LOG_WARN(_logger, "Error in ServerRequests::deleteAccount: " << exitCode);
+            LOG_WARN(_logger, "Error in ServerRequests::deleteAccount: code=" << exitCode);
             addError(Error(errId(), exitCode, ExitCause::Unknown));
         }
     }
@@ -448,7 +448,7 @@ void AppServer::deleteDrive(int driveDbId, int accountDbId) {
     if (exitCode == ExitCode::Ok) {
         sendDriveRemoved(driveDbId);
     } else {
-        LOG_WARN(_logger, "Error in Requests::deleteDrive : " << exitCode);
+        LOG_WARN(_logger, "Error in Requests::deleteDrive: code=" << exitCode);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
         sendDriveDeletionFailed(driveDbId);
     }
@@ -541,7 +541,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             std::string errorDescr;
             ExitCode exitCode = ServerRequests::requestToken(code, codeVerifier, userInfo, userCreated, error, errorDescr);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::requestToken : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::requestToken: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
             updateSentryUser();
@@ -564,7 +564,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QList<int> list;
             ExitCode exitCode = ServerRequests::getUserDbIdList(list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getUserDbIdList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getUserDbIdList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -576,7 +576,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QList<UserInfo> list;
             ExitCode exitCode = ServerRequests::getUserInfoList(list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getUserInfoList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getUserInfoList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -611,7 +611,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 if (exitCode == ExitCode::Ok) {
                     sendUserRemoved(userDbId);
                 } else {
-                    LOG_WARN(_logger, "Error in Requests::deleteUser : " << exitCode);
+                    LOG_WARN(_logger, "Error in Requests::deleteUser: code=" << exitCode);
                     addError(Error(errId(), exitCode, ExitCause::Unknown));
                 }
             });
@@ -627,7 +627,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QList<ErrorInfo> list;
             ExitCode exitCode = ServerRequests::getErrorInfoList(level, syncDbId, limit, list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getErrorInfoList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getErrorInfoList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -661,7 +661,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             for (auto &sync: syncs) {
                 exitCode = ServerRequests::getConflictErrorInfoList(sync.dbId(), filter2, list);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in Requests::getConflictErrorInfoList : " << exitCode);
+                    LOG_WARN(_logger, "Error in Requests::getConflictErrorInfoList: code=" << exitCode);
                     addError(Error(errId(), exitCode, ExitCause::Unknown));
                 }
             }
@@ -673,7 +673,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         case RequestNum::ERROR_DELETE_SERVER: {
             ExitCode exitCode = clearErrors(0, false);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in AppServer::clearErrors : " << exitCode);
+                LOG_WARN(_logger, "Error in AppServer::clearErrors: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -690,7 +690,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             ExitCode exitCode = clearErrors(syncDbId, autoResolved);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in AppServer::clearErrors : " << exitCode);
+                LOG_WARN(_logger, "Error in AppServer::clearErrors: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -700,7 +700,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         case RequestNum::ERROR_DELETE_INVALIDTOKEN: {
             ExitCode exitCode = ServerRequests::deleteInvalidTokenErrors();
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::userLoggedIn : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::userLoggedIn: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -778,7 +778,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             int userId;
             ExitCode exitCode = ServerRequests::getUserIdFromUserDbId(userDbId, userId);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getUserIdFromUserDbId : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getUserIdFromUserDbId: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -790,7 +790,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QList<AccountInfo> list;
             ExitCode exitCode = ServerRequests::getAccountInfoList(list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getAccountInfoList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getAccountInfoList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -802,7 +802,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QList<DriveInfo> list;
             ExitCode exitCode = ServerRequests::getDriveInfoList(list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveInfoList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getDriveInfoList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -818,7 +818,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             DriveInfo driveInfo;
             ExitCode exitCode = ServerRequests::getDriveInfo(driveDbId, driveInfo);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveInfo : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getDriveInfo: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -834,7 +834,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             int driveId;
             ExitCode exitCode = ServerRequests::getDriveIdFromDriveDbId(driveDbId, driveId);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveIdFromDriveDbId : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getDriveIdFromDriveDbId: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -850,7 +850,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             int driveId;
             ExitCode exitCode = ServerRequests::getDriveIdFromSyncDbId(syncDbId, driveId);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveIdFromSyncDbId : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getDriveIdFromSyncDbId: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -872,7 +872,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             ExitCode exitCode = ServerRequests::updateDrive(driveInfo);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::updateDrive : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::updateDrive: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -914,7 +914,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExitCode exitCode;
             exitCode = ServerRequests::getSyncInfoList(list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getSyncInfoList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getSyncInfoList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -958,7 +958,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             exitCode = initSyncPal(sync, std::unordered_set<NodeId>(), std::unordered_set<NodeId>(), std::unordered_set<NodeId>(),
                                    true, resumedByUser, false);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode);
+                LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                 addError(Error(errId(), exitCode, exitCause));
                 resultStream << toInt(exitCode);
                 break;
@@ -980,7 +980,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Stop SyncPal
                 ExitCode exitCode = stopSyncPal(syncDbId, true);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in stopSyncPal : " << exitCode);
+                    LOG_WARN(_logger, "Error in stopSyncPal: code=" << exitCode);
                     addError(Error(errId(), exitCode, ExitCause::Unknown));
                 }
 
@@ -1098,7 +1098,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " - exitCode=" << exitCode);
+                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
 
                     // Stop sync and remove it from syncPalMap
@@ -1122,7 +1122,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     // Delete sync from DB
                     exitCode = ServerRequests::deleteSync(syncInfo.dbId());
                     if (exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in Requests::deleteSync : " << exitCode);
+                        LOG_WARN(_logger, "Error in Requests::deleteSync: code=" << exitCode);
                         addError(Error(errId(), exitCode, ExitCause::Unknown));
                     }
 
@@ -1186,7 +1186,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode);
+                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
                 }
 
@@ -1240,7 +1240,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     // Let the client remove the sync-related GUI elements.
                     sendSyncRemoved(syncDbId);
                 } else {
-                    LOG_WARN(_logger, "Error in Requests::deleteSync : " << exitCode);
+                    LOG_WARN(_logger, "Error in Requests::deleteSync: code=" << exitCode);
                     addError(Error(errId(), exitCode, ExitCause::Unknown));
                     // Let the client unlock the sync-related GUI elements.
                     sendSyncDeletionFailed(syncDbId);
@@ -1310,7 +1310,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             std::unordered_set<NodeId> nodeIdSet;
             ExitCode exitCode = _syncPalMap[syncDbId]->syncIdSet(type, nodeIdSet);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in SyncPal::getSyncIdSet : " << exitCode);
+                LOG_WARN(_logger, "Error in SyncPal::getSyncIdSet: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -1345,7 +1345,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             ExitCode exitCode = _syncPalMap[syncDbId]->setSyncIdSet(type, nodeIdSet2);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet : " << exitCode);
+                LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -1370,7 +1370,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExitCode exitCode = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
                                                                 _syncPalMap[syncDbId]->driveId(), nodeId, path);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in AppServer::getPathByNodeId : " << exitCode);
+                LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -1553,7 +1553,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QList<ExclusionTemplateInfo> list;
             ExitCode exitCode = ServerRequests::getExclusionTemplateList(def, list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getExclusionTemplateList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getExclusionTemplateList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -1570,7 +1570,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             ExitCode exitCode = ServerRequests::setExclusionTemplateList(def, list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
                 resultStream << toInt(exitCode);
                 break;
@@ -1607,7 +1607,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QList<ExclusionAppInfo> list;
             ExitCode exitCode = ServerRequests::getExclusionAppList(def, list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getExclusionAppList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::getExclusionAppList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -1624,7 +1624,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             ExitCode exitCode = ServerRequests::setExclusionAppList(def, list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::setExclusionAppList : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::setExclusionAppList: code=" << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
@@ -2042,12 +2042,12 @@ ExitCode AppServer::clearErrors(int syncDbId, bool autoResolved /*= false*/) {
     if (syncDbId == 0) {
         exitCode = ServerRequests::deleteErrorsServer();
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in ServerRequests::deleteErrorsServer : " << exitCode);
+            LOG_WARN(_logger, "Error in ServerRequests::deleteErrorsServer: code=" << exitCode);
         }
     } else {
         exitCode = ServerRequests::deleteErrorsForSync(syncDbId, autoResolved);
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in ServerRequests::deleteErrorsForSync : " << exitCode);
+            LOG_WARN(_logger, "Error in ServerRequests::deleteErrorsForSync: code=" << exitCode);
         }
     }
 
@@ -2121,7 +2121,7 @@ void AppServer::cancelLogUpload() {
     }
 
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport : " << exitCode << " | " << exitCause);
+        LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport: code=" << exitCode << " cause=" << exitCause);
         addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
         sendLogUploadStatusUpdated(LogUploadState::Failed, 0); // Considered as a failure, in case the operation was not
                                                                // canceled, the gui will receive updated status quickly.
@@ -2169,7 +2169,7 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
         return;
     } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);
+        LOG_WARN(_logger, "Error in Requests::sendLogToSupport: code=" << exitCode << " cause=" << exitCause);
         addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
     }
     sendLogUploadStatusUpdated(exitCode == ExitCode::Ok ? LogUploadState::Success : LogUploadState::Failed, 0);
@@ -2613,7 +2613,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
     bool updated = false;
     ExitCode exitCode = ServerRequests::loadUserInfo(user, updated);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::loadUserInfo : " << exitCode);
+        LOG_WARN(_logger, "Error in Requests::loadUserInfo: code=" << exitCode);
         if (exitCode == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
             UserInfo userInfo;
@@ -2660,7 +2660,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
             bool accountUpdated = false;
             exitCode = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::loadDriveInfo : " << exitCode);
+                LOG_WARN(_logger, "Error in Requests::loadDriveInfo: code=" << exitCode);
                 return exitCode;
             }
 
@@ -2754,7 +2754,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
                     if (driveList.size() == 0) {
                         exitCode = ServerRequests::deleteAccount(account.dbId());
                         if (exitCode != ExitCode::Ok) {
-                            LOG_WARN(_logger, "Error in Requests::deleteAccount : " << exitCode);
+                            LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitCode);
                             return exitCode;
                         }
 
@@ -2816,8 +2816,7 @@ ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
     ExitCause exitCause = ExitCause::Unknown;
     const ExitCode exitCode = createAndStartVfs(sync, exitCause);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger,
-                 "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode << ", pausing.");
+        LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " code=" << exitCode << ", pausing.");
         addError(Error(sync.dbId(), errId(), exitCode, exitCause));
 
         // Set sync's paused flag
@@ -2921,7 +2920,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                 exitCode =
                         initSyncPal(sync, blackList, undecidedList, QSet<QString>(), !user.keychainKey().empty(), false, false);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode);
+                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(sync.dbId(), errId(), exitCode, ExitCause::Unknown));
                     mainExitCode = exitCode;
                 }
@@ -3181,7 +3180,7 @@ void AppServer::processInterruptedLogsUpload() {
     if (const auto logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
         UploadSessionCancelJob cancelJob(UploadSessionType::Log, logUploadToken);
         if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
+            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously: code=" << exitCode);
         } else {
             LOG_INFO(_logger, "Previous Log upload api call cancelled");
             if (bool found = false;
@@ -3460,7 +3459,7 @@ ExitCode AppServer::updateAllUsersInfo() {
 
         ExitCode exitCode = updateUserInfo(user);
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in updateUserInfo : " << exitCode);
+            LOG_WARN(_logger, "Error in updateUserInfo: code=" << exitCode);
             return exitCode;
         }
     }
@@ -4186,7 +4185,7 @@ void AppServer::sendSyncAdded(const SyncInfo &syncInfo) {
 void AppServer::onLoadInfo() {
     ExitCode exitCode = updateAllUsersInfo();
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo : " << exitCode);
+        LOG_WARN(_logger, "Error in updateAllUsersInfo: code=" << exitCode);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
     }
 }
@@ -4230,7 +4229,7 @@ void AppServer::onUpdateSyncsProgress() {
         ExitCode exitCode = syncPal->syncIdSet(SyncNodeType::UndecidedList, undecidedSet);
         if (exitCode != ExitCode::Ok) {
             addError(Error(syncDbId, errId(), exitCode, ExitCause::Unknown));
-            LOG_WARN(_logger, "Error in SyncPal::syncIdSet : " << exitCode);
+            LOG_WARN(_logger, "Error in SyncPal::syncIdSet: code=" << exitCode);
             return;
         }
 
@@ -4243,7 +4242,7 @@ void AppServer::onUpdateSyncsProgress() {
                 exitCode = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
                                                            QString::fromStdString(nodeId), path);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in Requests::getPathByNodeId : " << exitCode);
+                    LOG_WARN(_logger, "Error in Requests::getPathByNodeId: code=" << exitCode);
                     continue;
                 }
 

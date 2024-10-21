@@ -1322,7 +1322,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
                                                                 uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
+                LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously: code=" << exitCode);
                 if (exitCode == ExitCode::NetworkError) {
                     return exitCode;
                 }
@@ -1333,7 +1333,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
                                                                    << " has already been canceled or has expired.");
             }
         } catch (std::exception const &e) {
-            LOG_WARN(_logger, "Error in UploadSessionCancelJob: " << e.what());
+            LOG_WARN(_logger, "Error in UploadSessionCancelJob: error=" << e.what());
             return ExitCode::BackError;
         }
     }

@@ -736,7 +736,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
     try {
         exitCode = updateNodeWithDb(_updateTree->rootNode());
     } catch (std::exception &e) {
-        LOG_WARN(_logger, "updateNodeWithDb failed - err= " << e.what());
+        LOG_WARN(_logger, "updateNodeWithDb failed: error=" << e.what());
         return ExitCode::DataError;
     }
 
