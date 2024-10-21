@@ -35,6 +35,7 @@ class TestWorkers : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestWorkers);
         CPPUNIT_TEST(testCreatePlaceholder);
         CPPUNIT_TEST(testConvertToPlaceholder);
+        CPPUNIT_TEST(testHandleOpsExecutionError);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -42,6 +43,7 @@ class TestWorkers : public CppUnit::TestFixture {
         void tearDown() override;
         void testCreatePlaceholder();
         void testConvertToPlaceholder();
+        void testHandleOpsExecutionError();
 
     protected:
         static bool createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);

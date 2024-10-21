@@ -296,4 +296,17 @@ void TestWorkers::testConvertToPlaceholder() {
     }
 }
 
+void TestWorkers::testHandleOpsExecutionError() {
+    SyncOpPtr opPtr = std::make_shared<SyncOperation>();
+    _syncPal->_executorWorker->handleOpsExecutionError(opPtr, ExitInfo(ExitCode::DataError, ExitCause::Unknown));
+    _syncPal->_executorWorker->handleOpsExecutionError(opPtr, ExitInfo(ExitCode::DataError, ExitCause::InvalidSnapshot));
+    _syncPal->_executorWorker->handleOpsExecutionError(opPtr, ExitInfo(ExitCode::DataError, ExitCause::DbEntryNotFound));
+    _syncPal->_executorWorker->handleOpsExecutionError(opPtr, ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
+    _syncPal->_executorWorker->handleOpsExecutionError(opPtr, ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError));
+    _syncPal->_executorWorker->handleOpsExecutionError(opPtr, ExitInfo(ExitCode::SystemError, ExitCause::DriveNotRenew));
+
+
+}
+
+
 } // namespace KDC
