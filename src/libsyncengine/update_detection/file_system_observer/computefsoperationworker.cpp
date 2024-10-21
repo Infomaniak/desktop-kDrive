@@ -155,19 +155,16 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         if (!pathInDeletedFolder(dbPath)) {
             // Check that the file/directory really does not exist on replica
             bool isExcluded = false;
-            if (const ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); exitCode != ExitCode::Ok) {
-                if (exitCode == ExitCode::NoWritePermission) {
+            if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
+                if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::FileAccessError) {
                     // Blacklist node
-                    _syncPal->blacklistTemporarily(nodeId, dbPath, side);
-                    Error error(_syncPal->syncDbId(), "", "", NodeType::Directory, dbPath, ConflictType::None,
-                                InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
-                    _syncPal->addError(error);
+                    _syncPal->handleAccessDeniedItem(dbPath, nodeId);                   
 
                     // Update unsynced list cache
                     updateUnsyncedList();
                     return ExitCode::Ok;
                 } else {
-                    return exitCode;
+                    return exitInfo;
                 }
             }
 
@@ -794,7 +791,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
-ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
+ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
                                                      bool &isExcluded) {
     if (side != ReplicaSide::Local) return ExitCode::Ok;
 
@@ -815,28 +812,17 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
         if (ioError == IoError::InvalidFileName) {
             // Observed on MacOSX under special circumstances; see getItemType unit test edge cases.
             setExitCause(ExitCause::InvalidName);
-        } else
-            setExitCause(ExitCause::FileAccessError);
+            return {ExitCode::SystemError, ExitCause::InvalidName};
 
-        return ExitCode::SystemError;
+        } else if (ioError == IoError::AccessDenied) {
+            setExitCause(ExitCause::FileAccessError);
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+        setExitCause(ExitCause::Unknown);
+        return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
     if (!existsWithSameId) return ExitCode::Ok;
-
-    bool readPermission = false;
-    bool writePermission = false;
-    bool execPermission = false;
-    if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, ioError)) {
-        LOGW_WARN(_logger, L"Error in Utility::getRights for " << Utility::formatSyncPath(absolutePath).c_str());
-        setExitCause(ExitCause::FileAccessError);
-        return ExitCode::SystemError;
-    }
-
-    if (!writePermission) {
-        LOGW_DEBUG(_logger,
-                   L"Item with " << Utility::formatSyncPath(absolutePath).c_str() << L" doesn't have write permissions!");
-        return ExitCode::NoWritePermission;
-    }
 
     // Check if file is synced
     bool isWarning = false;
@@ -846,14 +832,14 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     if (!success) {
         LOGW_WARN(_logger,
                   L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError).c_str());
-        setExitCause(ExitCause::FileAccessError);
-        return ExitCode::SystemError;
+        setExitCause(ExitCause::Unknown);
+        return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item with " << Utility::formatSyncPath(absolutePath).c_str() << L" misses search permissions!");
-        setExitCause(ExitCause::NoSearchPermission);
-        return ExitCode::SystemError;
+        setExitCause(ExitCause::FileAccessError);
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (isExcluded) return ExitCode::Ok;
@@ -871,8 +857,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
                                               "Unwanted local delete operation averted");
 
     setExitCause(ExitCause::InvalidSnapshot);
-
-    return ExitCode::DataError; // We need to rebuild the local snapshot from scratch.
+    return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the local snapshot from scratch.
 }
 
 void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot,
