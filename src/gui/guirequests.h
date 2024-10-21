@@ -59,7 +59,7 @@ struct GuiRequests {
         static ExitCode setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<QString> &syncIdSet);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
-        static ExitCode getNodePath(int syncDbId, QString nodeId, QString &path);
+        static ExitCode getNodePath(int syncDbId, const QString &nodeId, QString &path);
         static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getNameExcluded(const QString &name, bool excluded);
@@ -71,7 +71,7 @@ struct GuiRequests {
         static ExitCode getFetchingAppList(QHash<QString, QString> &appTable);
 #endif
         static ExitCode getErrorInfoList(ErrorLevel level, int syncDbId, int limit, QList<ErrorInfo> &list);
-        static ExitCode getConflictList(int driveDbId, QList<ConflictType> filter, QList<ErrorInfo> &list);
+        static ExitCode getConflictList(int driveDbId, const QList<ConflictType> &filter, QList<ErrorInfo> &list);
         static ExitCode deleteErrorsServer();
         static ExitCode deleteErrorsForSync(int syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
@@ -90,12 +90,12 @@ struct GuiRequests {
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, int &userDbId, QString &error,
                                      QString &errorDescr);
         static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);
-        static ExitCode addSync(int userDbId, int accountId, int driveId, const QString localFolderPath,
+        static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                QSet<QString> blackList, QSet<QString> whiteList, int &syncDbId);
+                                const QSet<QString> &blackList, const QSet<QString> &whiteList, int &syncDbId);
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                const QString &serverFolderNodeId, bool liteSync, QSet<QString> blackList,
-                                QSet<QString> whiteList, int &syncDbId);
+                                const QString &serverFolderNodeId, bool liteSync, const QSet<QString> &blackList,
+                                const QSet<QString> &whiteList, int &syncDbId);
         static ExitCode startSyncs(int userDbId);
         static ExitCode getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
         static ExitCode getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
@@ -133,6 +133,5 @@ struct GuiRequests {
         static ExitCode updateState(UpdateState &state);
         static ExitCode startInstaller();
         static ExitCode skipUpdate(const std::string &version);
-        // static ExitCode unskipUpdate();
 };
 } // namespace KDC

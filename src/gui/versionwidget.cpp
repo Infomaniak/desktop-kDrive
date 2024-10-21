@@ -65,7 +65,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     _updateStatusLabel->setWordWrap(true);
     versionVBox->addWidget(_updateStatusLabel);
 
-    // TODO : add it back later
+    // TODO : add it back later (version 3.6.8 or 4.0)
     // const auto channelBox = new QHBoxLayout(this);
     // _prodButton = new QRadioButton(tr("Prod"), this);
     // channelBox->addWidget(_prodButton);
@@ -78,11 +78,11 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     // channelBox->addStretch();
     // versionVBox->addLayout(channelBox);
 
-    _showReleaseNoteLabel = new QLabel(this);
-    _showReleaseNoteLabel->setObjectName("boldTextLabel");
-    _showReleaseNoteLabel->setWordWrap(true);
-    _showReleaseNoteLabel->setVisible(false);
-    versionVBox->addWidget(_showReleaseNoteLabel);
+    _showReleaseNotesLabel = new QLabel(this);
+    _showReleaseNotesLabel->setObjectName("boldTextLabel");
+    _showReleaseNotesLabel->setWordWrap(true);
+    _showReleaseNotesLabel->setVisible(false);
+    versionVBox->addWidget(_showReleaseNotesLabel);
 
     static const QString versionNumberLinkText =
             tr(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING);
@@ -102,20 +102,21 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
 
     refresh();
 
+    // TODO : add it back later (version 3.6.8 or 4.0)
     // connect(_prodButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
     // connect(_betaButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
     // connect(_internalButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
     connect(_updateStatusLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_versionNumberLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
-    connect(_showReleaseNoteLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
-    connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdatButtonClicked);
+    connect(_showReleaseNotesLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
+    connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdateButtonClicked);
 }
 
 void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const {
     // Re-translate
     const QString releaseNoteLinkText =
             tr(R"(<a style="%1" href="%2">Show release note</a>)").arg(CommonUtility::linkStyle, releaseNoteLink);
-    _showReleaseNoteLabel->setText(releaseNoteLinkText);
+    _showReleaseNotesLabel->setText(releaseNoteLinkText);
 
     _versionLabel->setText(tr("Version"));
     _updateButton->setText(tr("UPDATE"));
@@ -175,7 +176,7 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
     }
 
     _updateStatusLabel->setText(statusString);
-    _showReleaseNoteLabel->setVisible(showReleaseNote);
+    _showReleaseNotesLabel->setVisible(showReleaseNote);
     _updateButton->setVisible(showUpdateButton);
 }
 
@@ -185,7 +186,7 @@ void VersionWidget::showAboutDialog() {
     dialog.execAndMoveToCenter(GuiUtility::getTopLevelWidget(this));
 }
 
-void VersionWidget::showReleaseNote() const {
+void VersionWidget::showReleaseNotes() const {
     QString os;
 #if defined(__APPLE__)
     os = "-macos";
@@ -231,12 +232,12 @@ void VersionWidget::onLinkActivated(const QString &link) {
     if (link == versionLink)
         showAboutDialog();
     else if (link == releaseNoteLink)
-        showReleaseNote();
+        showReleaseNotes();
     else if (link == downloadPageLink)
         showDownloadPage();
 }
 
-void VersionWidget::onUpdatButtonClicked() {
+void VersionWidget::onUpdateButtonClicked() {
 #if defined(__APPLE__)
     GuiRequests::startInstaller();
 #else

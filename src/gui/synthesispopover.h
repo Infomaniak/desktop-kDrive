@@ -89,7 +89,7 @@ class SynthesisPopover : public QDialog {
         void onRefreshErrorList(int driveDbId);
         void onAppVersionLocked(bool currentVersionLocked);
         void onRefreshStatusNeeded();
-        void onUpdateAvailabalityChange(UpdateState updateState);
+        void onUpdateAvailabilityChange(UpdateState updateState);
 
     private:
         std::shared_ptr<ClientGui> _gui;

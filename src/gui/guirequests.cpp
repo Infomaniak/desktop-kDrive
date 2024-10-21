@@ -32,7 +32,7 @@ ExitCode GuiRequests::getUserDbIdList(QList<int> &list) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
@@ -42,11 +42,11 @@ ExitCode GuiRequests::getUserDbIdList(QList<int> &list) {
 
 ExitCode GuiRequests::getUserInfoList(QList<UserInfo> &list) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::USER_INFOLIST, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::USER_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
@@ -54,7 +54,7 @@ ExitCode GuiRequests::getUserInfoList(QList<UserInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getUserIdFromUserDbId(int userDbId, int &userId) {
+ExitCode GuiRequests::getUserIdFromUserDbId(const int userDbId, int &userId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userDbId;
@@ -64,7 +64,7 @@ ExitCode GuiRequests::getUserIdFromUserDbId(int userDbId, int &userId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> userId;
@@ -72,7 +72,7 @@ ExitCode GuiRequests::getUserIdFromUserDbId(int userDbId, int &userId) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getErrorInfoList(ErrorLevel level, int syncDbId, int limit, QList<ErrorInfo> &list) {
+ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const int syncDbId, const int limit, QList<ErrorInfo> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << level;
@@ -84,7 +84,7 @@ ExitCode GuiRequests::getErrorInfoList(ErrorLevel level, int syncDbId, int limit
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
@@ -92,7 +92,7 @@ ExitCode GuiRequests::getErrorInfoList(ErrorLevel level, int syncDbId, int limit
     return exitCode;
 }
 
-ExitCode GuiRequests::getConflictList(int driveDbId, QList<ConflictType> filter, QList<ErrorInfo> &list) {
+ExitCode GuiRequests::getConflictList(const int driveDbId, const QList<ConflictType> &filter, QList<ErrorInfo> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -113,18 +113,18 @@ ExitCode GuiRequests::getConflictList(int driveDbId, QList<ConflictType> filter,
 
 ExitCode GuiRequests::deleteErrorsServer() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_DELETE_SERVER, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_DELETE_SERVER, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
+ExitCode GuiRequests::deleteErrorsForSync(const int syncDbId, const bool autoResolved) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -135,7 +135,7 @@ ExitCode GuiRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -144,18 +144,18 @@ ExitCode GuiRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
 
 ExitCode GuiRequests::deleteInvalidTokenErrors() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_DELETE_INVALIDTOKEN, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_DELETE_INVALIDTOKEN, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::resolveConflictErrors(int driveDbId, bool keepLocalVersion) {
+ExitCode GuiRequests::resolveConflictErrors(const int driveDbId, const bool keepLocalVersion) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -166,14 +166,14 @@ ExitCode GuiRequests::resolveConflictErrors(int driveDbId, bool keepLocalVersion
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::resolveUnsupportedCharErrors(int driveDbId) {
+ExitCode GuiRequests::resolveUnsupportedCharErrors(const int driveDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -183,14 +183,14 @@ ExitCode GuiRequests::resolveUnsupportedCharErrors(int driveDbId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::setSupportsVirtualFiles(int syncDbId, bool value) {
+ExitCode GuiRequests::setSupportsVirtualFiles(const int syncDbId, const bool value) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -201,14 +201,14 @@ ExitCode GuiRequests::setSupportsVirtualFiles(int syncDbId, bool value) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::setRootPinState(int syncDbId, PinState pinState) {
+ExitCode GuiRequests::setRootPinState(const int syncDbId, const PinState pinState) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -219,14 +219,14 @@ ExitCode GuiRequests::setRootPinState(int syncDbId, PinState pinState) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::deleteUser(int userDbId) {
+ExitCode GuiRequests::deleteUser(const int userDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userDbId;
@@ -236,7 +236,7 @@ ExitCode GuiRequests::deleteUser(int userDbId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -245,11 +245,11 @@ ExitCode GuiRequests::deleteUser(int userDbId) {
 
 ExitCode GuiRequests::getAccountInfoList(QList<AccountInfo> &list) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ACCOUNT_INFOLIST, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::ACCOUNT_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
@@ -259,11 +259,11 @@ ExitCode GuiRequests::getAccountInfoList(QList<AccountInfo> &list) {
 
 ExitCode GuiRequests::getDriveInfoList(QList<DriveInfo> &list) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_INFOLIST, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
@@ -271,7 +271,7 @@ ExitCode GuiRequests::getDriveInfoList(QList<DriveInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getDriveIdFromDriveDbId(int driveDbId, int &driveId) {
+ExitCode GuiRequests::getDriveIdFromDriveDbId(const int driveDbId, int &driveId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -281,7 +281,7 @@ ExitCode GuiRequests::getDriveIdFromDriveDbId(int driveDbId, int &driveId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> driveId;
@@ -289,7 +289,7 @@ ExitCode GuiRequests::getDriveIdFromDriveDbId(int driveDbId, int &driveId) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getDriveIdFromSyncDbId(int syncDbId, int &driveId) {
+ExitCode GuiRequests::getDriveIdFromSyncDbId(const int syncDbId, int &driveId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -299,7 +299,7 @@ ExitCode GuiRequests::getDriveIdFromSyncDbId(int syncDbId, int &driveId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> driveId;
@@ -309,11 +309,11 @@ ExitCode GuiRequests::getDriveIdFromSyncDbId(int syncDbId, int &driveId) {
 
 ExitCode GuiRequests::getDriveDefaultColor(QColor &color) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_DEFAULTCOLOR, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_DEFAULTCOLOR, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> color;
@@ -331,14 +331,14 @@ ExitCode GuiRequests::updateDrive(const DriveInfo &driveInfo) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::deleteDrive(int driveDbId) {
+ExitCode GuiRequests::deleteDrive(const int driveDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -348,7 +348,7 @@ ExitCode GuiRequests::deleteDrive(int driveDbId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -357,11 +357,11 @@ ExitCode GuiRequests::deleteDrive(int driveDbId) {
 
 ExitCode GuiRequests::getSyncInfoList(QList<SyncInfo> &list) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_INFOLIST, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
@@ -369,7 +369,7 @@ ExitCode GuiRequests::getSyncInfoList(QList<SyncInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::syncStart(int syncDbId) {
+ExitCode GuiRequests::syncStart(const int syncDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -379,14 +379,14 @@ ExitCode GuiRequests::syncStart(int syncDbId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::syncStop(int syncDbId) {
+ExitCode GuiRequests::syncStop(const int syncDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -396,14 +396,14 @@ ExitCode GuiRequests::syncStop(int syncDbId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::getSyncStatus(int syncDbId, SyncStatus &status) {
+ExitCode GuiRequests::getSyncStatus(const int syncDbId, SyncStatus &status) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -413,7 +413,7 @@ ExitCode GuiRequests::getSyncStatus(int syncDbId, SyncStatus &status) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> status;
@@ -421,7 +421,7 @@ ExitCode GuiRequests::getSyncStatus(int syncDbId, SyncStatus &status) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getSyncIsRunning(int syncDbId, bool &running) {
+ExitCode GuiRequests::getSyncIsRunning(const int syncDbId, bool &running) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -431,7 +431,7 @@ ExitCode GuiRequests::getSyncIsRunning(int syncDbId, bool &running) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> running;
@@ -439,7 +439,7 @@ ExitCode GuiRequests::getSyncIsRunning(int syncDbId, bool &running) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getSyncIdSet(int syncDbId, SyncNodeType type, QSet<QString> &syncIdSet) {
+ExitCode GuiRequests::getSyncIdSet(const int syncDbId, const SyncNodeType type, QSet<QString> &syncIdSet) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -450,7 +450,7 @@ ExitCode GuiRequests::getSyncIdSet(int syncDbId, SyncNodeType type, QSet<QString
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> syncIdSet;
@@ -458,7 +458,7 @@ ExitCode GuiRequests::getSyncIdSet(int syncDbId, SyncNodeType type, QSet<QString
     return exitCode;
 }
 
-ExitCode GuiRequests::setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<QString> &syncIdSet) {
+ExitCode GuiRequests::setSyncIdSet(const int syncDbId, const SyncNodeType type, const QSet<QString> &syncIdSet) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -470,7 +470,7 @@ ExitCode GuiRequests::setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<Q
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -479,11 +479,11 @@ ExitCode GuiRequests::setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<Q
 
 ExitCode GuiRequests::getParameters(ParametersInfo &parametersInfo) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::PARAMETERS_INFO, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::PARAMETERS_INFO, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> parametersInfo;
@@ -501,14 +501,14 @@ ExitCode GuiRequests::updateParameters(const ParametersInfo &parametersInfo) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::getNodePath(int syncDbId, QString nodeId, QString &path) {
+ExitCode GuiRequests::getNodePath(const int syncDbId, const QString &nodeId, QString &path) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -519,7 +519,7 @@ ExitCode GuiRequests::getNodePath(int syncDbId, QString nodeId, QString &path) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> path;
@@ -527,7 +527,7 @@ ExitCode GuiRequests::getNodePath(int syncDbId, QString nodeId, QString &path) {
     return exitCode;
 }
 
-ExitCode GuiRequests::findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error) {
+ExitCode GuiRequests::findGoodPathForNewSync(const int driveDbId, const QString &basePath, QString &path, QString &error) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -538,7 +538,7 @@ ExitCode GuiRequests::findGoodPathForNewSync(int driveDbId, const QString &baseP
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> path;
@@ -550,11 +550,11 @@ ExitCode GuiRequests::findGoodPathForNewSync(int driveDbId, const QString &baseP
 #ifdef Q_OS_WIN
 ExitCode GuiRequests::showInExplorerNavigationPane(bool &show) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_SHOWSHORTCUT, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_SHOWSHORTCUT, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> show;
@@ -572,7 +572,7 @@ ExitCode GuiRequests::setShowInExplorerNavigationPane(const bool &show) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -592,7 +592,7 @@ ExitCode GuiRequests::requestToken(const QString &code, const QString &codeVerif
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     if (exitCode == ExitCode::Ok) {
@@ -605,8 +605,8 @@ ExitCode GuiRequests::requestToken(const QString &code, const QString &codeVerif
     return exitCode;
 }
 
-ExitCode GuiRequests::getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo,
-                                  bool withPath /*= false*/) {
+ExitCode GuiRequests::getNodeInfo(const int userDbId, const int driveId, const QString &nodeId, NodeInfo &nodeInfo,
+                                  const bool withPath /*= false*/) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userDbId;
@@ -619,7 +619,7 @@ ExitCode GuiRequests::getNodeInfo(int userDbId, int driveId, const QString &node
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> nodeInfo;
@@ -627,7 +627,7 @@ ExitCode GuiRequests::getNodeInfo(int userDbId, int driveId, const QString &node
     return exitCode;
 }
 
-ExitCode GuiRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list) {
+ExitCode GuiRequests::getUserAvailableDrives(const int userDbId, QHash<int, DriveAvailableInfo> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userDbId;
@@ -637,7 +637,7 @@ ExitCode GuiRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAvail
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
@@ -645,9 +645,9 @@ ExitCode GuiRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAvail
     return exitCode;
 }
 
-ExitCode GuiRequests::addSync(int userDbId, int accountId, int driveId, const QString localFolderPath,
-                              const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                              QSet<QString> blackList, QSet<QString> whiteList, int &syncDbId) {
+ExitCode GuiRequests::addSync(const int userDbId, const int accountId, const int driveId, const QString &localFolderPath,
+                              const QString &serverFolderPath, const QString &serverFolderNodeId, const bool liteSync,
+                              const QSet<QString> &blackList, const QSet<QString> &whiteList, int &syncDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userDbId;
@@ -665,7 +665,7 @@ ExitCode GuiRequests::addSync(int userDbId, int accountId, int driveId, const QS
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     if (exitCode == ExitCode::Ok) {
@@ -675,9 +675,9 @@ ExitCode GuiRequests::addSync(int userDbId, int accountId, int driveId, const QS
     return exitCode;
 }
 
-ExitCode GuiRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                              const QString &serverFolderNodeId, bool liteSync, QSet<QString> blackList, QSet<QString> whiteList,
-                              int &syncDbId) {
+ExitCode GuiRequests::addSync(const int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
+                              const QString &serverFolderNodeId, const bool liteSync, const QSet<QString> &blackList,
+                              const QSet<QString> &whiteList, int &syncDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
@@ -693,7 +693,7 @@ ExitCode GuiRequests::addSync(int driveDbId, const QString &localFolderPath, con
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     if (exitCode == ExitCode::Ok) {
@@ -703,7 +703,7 @@ ExitCode GuiRequests::addSync(int driveDbId, const QString &localFolderPath, con
     return exitCode;
 }
 
-ExitCode GuiRequests::startSyncs(int userDbId) {
+ExitCode GuiRequests::startSyncs(const int userDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userDbId;
@@ -713,14 +713,14 @@ ExitCode GuiRequests::startSyncs(int userDbId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::deleteSync(int syncDbId) {
+ExitCode GuiRequests::deleteSync(const int syncDbId) {
     const auto params = QByteArray(ArgsReader(syncDbId));
 
     QByteArray results;
@@ -728,13 +728,13 @@ ExitCode GuiRequests::deleteSync(int syncDbId) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode = ExitCode::Ok;
+    auto exitCode = ExitCode::Ok;
     ArgsWriter(results).write(exitCode);
 
     return exitCode;
 }
 
-ExitCode GuiRequests::propagateSyncListChange(int syncDbId, bool restartSync) {
+ExitCode GuiRequests::propagateSyncListChange(const int syncDbId, const bool restartSync) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -745,7 +745,7 @@ ExitCode GuiRequests::propagateSyncListChange(int syncDbId, bool restartSync) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -754,11 +754,11 @@ ExitCode GuiRequests::propagateSyncListChange(int syncDbId, bool restartSync) {
 
 ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> mode;
@@ -768,11 +768,11 @@ ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
 
 ExitCode GuiRequests::propagateExcludeListChange() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, QByteArray(), results, COMM_LONG_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, {}, results, COMM_LONG_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -781,11 +781,11 @@ ExitCode GuiRequests::propagateExcludeListChange() {
 
 ExitCode GuiRequests::hasSystemLaunchOnStartup(bool &enabled) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> enabled;
@@ -795,11 +795,11 @@ ExitCode GuiRequests::hasSystemLaunchOnStartup(bool &enabled) {
 
 ExitCode GuiRequests::hasLaunchOnStartup(bool &enabled) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_HASLAUNCHONSTARTUP, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_HASLAUNCHONSTARTUP, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> enabled;
@@ -807,7 +807,7 @@ ExitCode GuiRequests::hasLaunchOnStartup(bool &enabled) {
     return exitCode;
 }
 
-ExitCode GuiRequests::setLaunchOnStartup(bool enabled) {
+ExitCode GuiRequests::setLaunchOnStartup(const bool enabled) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << enabled;
@@ -817,14 +817,14 @@ ExitCode GuiRequests::setLaunchOnStartup(bool enabled) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode = ExitCode::Unknown;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::getAppState(AppStateKey key, AppStateValue &value) {
+ExitCode GuiRequests::getAppState(const AppStateKey key, AppStateValue &value) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << key;
@@ -834,7 +834,7 @@ ExitCode GuiRequests::getAppState(AppStateKey key, AppStateValue &value) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode = ExitCode::Unknown;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     if (exitCode != ExitCode::Ok) {
@@ -844,17 +844,17 @@ ExitCode GuiRequests::getAppState(AppStateKey key, AppStateValue &value) {
     QString valueQStr;
     resultStream >> valueQStr;
 
-    if (std::string valueStr = valueQStr.toStdString(); !CommonUtility::stringToAppStateValue(valueStr, value)) {
+    if (const std::string valueStr = valueQStr.toStdString(); !CommonUtility::stringToAppStateValue(valueStr, value)) {
         return ExitCode::SystemError;
     }
     return exitCode;
 }
 
-ExitCode GuiRequests::updateAppState(AppStateKey key, const AppStateValue &value) {
+ExitCode GuiRequests::updateAppState(const AppStateKey key, const AppStateValue &value) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << key;
-    std::string valueStr = "";
+    std::string valueStr;
     if (!CommonUtility::appStateValueToString(value, valueStr)) {
         return ExitCode::SystemError;
     }
@@ -865,7 +865,7 @@ ExitCode GuiRequests::updateAppState(AppStateKey key, const AppStateValue &value
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode = ExitCode::Unknown;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -874,13 +874,12 @@ ExitCode GuiRequests::updateAppState(AppStateKey key, const AppStateValue &value
 
 ExitCode GuiRequests::getLogDirEstimatedSize(uint64_t &size) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results,
-                                         COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, {}, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
     qint64 sizeQt = 0;
-    ExitCode exitCode = ExitCode::Ok;
+    auto exitCode = ExitCode::Ok;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> sizeQt;
@@ -889,7 +888,7 @@ ExitCode GuiRequests::getLogDirEstimatedSize(uint64_t &size) {
     return exitCode;
 }
 
-ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
+ExitCode GuiRequests::sendLogToSupport(const bool sendArchivedLogs) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << sendArchivedLogs;
@@ -900,7 +899,7 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode = ExitCode::Ok;
+    auto exitCode = ExitCode::Ok;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -909,12 +908,12 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
 
 ExitCode GuiRequests::cancelLogUploadToSupport() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, QByteArray(), results,
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, {}, results,
                                          COMM_SHORT_TIMEOUT)) { // Short timeout because the operation is asynchronous
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode = ExitCode::Ok;
+    auto exitCode = ExitCode::Ok;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -923,11 +922,11 @@ ExitCode GuiRequests::cancelLogUploadToSupport() {
 
 ExitCode GuiRequests::crash() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_CRASH, QByteArray(), results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_CRASH, {}, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode = ExitCode::Ok;
+    auto exitCode = ExitCode::Ok;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -948,7 +947,7 @@ ExitCode GuiRequests::getSubFolders(int userDbId, int driveId, const QString &no
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
@@ -968,7 +967,7 @@ ExitCode GuiRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> list;
@@ -988,7 +987,7 @@ ExitCode GuiRequests::createMissingFolders(int driveDbId, const QList<QPair<QStr
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> nodeId;
@@ -1007,7 +1006,7 @@ ExitCode GuiRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, QSt
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> linkUrl;
@@ -1027,7 +1026,7 @@ ExitCode GuiRequests::getFolderSize(int userDbId, int driveId, const QString &no
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -1045,7 +1044,7 @@ ExitCode GuiRequests::getPrivateLinkUrl(int driveDbId, const QString &fileId, QS
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> linkUrl;
@@ -1063,7 +1062,7 @@ ExitCode GuiRequests::getNameExcluded(const QString &name, bool excluded) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> excluded;
@@ -1081,7 +1080,7 @@ ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplate
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> templateList;
@@ -1100,7 +1099,7 @@ ExitCode GuiRequests::setExclusionTemplateList(bool def, const QList<ExclusionTe
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -1118,7 +1117,7 @@ ExitCode GuiRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &app
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> appList;
@@ -1137,7 +1136,7 @@ ExitCode GuiRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -1145,14 +1144,12 @@ ExitCode GuiRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo
 }
 
 ExitCode GuiRequests::getFetchingAppList(QHash<QString, QString> &appTable) {
-    QByteArray params;
-
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::GET_FETCHING_APP_LIST, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::GET_FETCHING_APP_LIST, {}, results, COMM_AVERAGE_TIMEOUT)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> appTable;
@@ -1161,7 +1158,7 @@ ExitCode GuiRequests::getFetchingAppList(QHash<QString, QString> &appTable) {
 }
 #endif
 
-ExitCode GuiRequests::activateLoadInfo(bool activate) {
+ExitCode GuiRequests::activateLoadInfo(const bool activate) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << activate;
@@ -1171,7 +1168,7 @@ ExitCode GuiRequests::activateLoadInfo(bool activate) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -1180,11 +1177,11 @@ ExitCode GuiRequests::activateLoadInfo(bool activate) {
 
 ExitCode GuiRequests::askForStatus() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_ASKFORSTATUS, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_ASKFORSTATUS, {}, results)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -1193,11 +1190,11 @@ ExitCode GuiRequests::askForStatus() {
 
 ExitCode GuiRequests::checkCommStatus() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_CHECKCOMMSTATUS, QByteArray(), results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_CHECKCOMMSTATUS, {}, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
-    ExitCode exitCode;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -1209,7 +1206,7 @@ ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channe
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << channel;
 
-    if (QByteArray results; !CommClient::instance()->execute(RequestNum::UPDATER_CHANGE_CHANNEL, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_CHANGE_CHANNEL, params)) {
         return ExitCode::SystemError;
     }
     return ExitCode::Ok;
@@ -1228,7 +1225,7 @@ ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo) {
 
 ExitCode GuiRequests::updateState(UpdateState &state) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_STATE, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_STATE, {}, results)) {
         return ExitCode::SystemError;
     }
 
@@ -1238,7 +1235,7 @@ ExitCode GuiRequests::updateState(UpdateState &state) {
 }
 
 ExitCode GuiRequests::startInstaller() {
-    if (QByteArray results; !CommClient::instance()->execute(RequestNum::UPDATER_START_INSTALLER, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_START_INSTALLER)) {
         return ExitCode::SystemError;
     }
     return ExitCode::Ok;
@@ -1249,7 +1246,7 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << QString::fromStdString(version);
 
-    if (QByteArray results; !CommClient::instance()->execute(RequestNum::UPDATER_SKIP_VERSION, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_SKIP_VERSION, params)) {
         return ExitCode::SystemError;
     }
     return ExitCode::Ok;

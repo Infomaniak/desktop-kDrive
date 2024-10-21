@@ -44,7 +44,7 @@ class VersionWidget final : public QWidget {
         void refresh(UpdateState state = UpdateState::Unknown) const;
 
         void showAboutDialog();
-        void showReleaseNote() const;
+        void showReleaseNotes() const;
         void showDownloadPage() const;
 
     signals:
@@ -56,7 +56,7 @@ class VersionWidget final : public QWidget {
     private slots:
         void onChannelButtonClicked() const;
         void onLinkActivated(const QString &link);
-        void onUpdatButtonClicked();
+        void onUpdateButtonClicked();
 
     private:
         void refreshChannelButtons(DistributionChannel channel) const;
@@ -67,7 +67,7 @@ class VersionWidget final : public QWidget {
 
         QLabel *_versionLabel{nullptr};
         QLabel *_updateStatusLabel{nullptr};
-        QLabel *_showReleaseNoteLabel{nullptr};
+        QLabel *_showReleaseNotesLabel{nullptr};
         QLabel *_versionNumberLabel{nullptr};
         QPushButton *_updateButton{nullptr};
 };

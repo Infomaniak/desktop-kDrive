@@ -202,7 +202,7 @@ void SynthesisPopover::forceRedraw() {
 void SynthesisPopover::refreshLockedStatus() {
     auto updateState = UpdateState::Unknown;
     GuiRequests::updateState(updateState);
-    onUpdateAvailabalityChange(updateState);
+    onUpdateAvailabilityChange(updateState);
 }
 
 void SynthesisPopover::changeEvent(QEvent *event) {
@@ -600,7 +600,7 @@ void SynthesisPopover::initUI() {
     connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
 
     connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
-    connect(_gui.get(), &ClientGui::updateStateChanged, this, &SynthesisPopover::onUpdateAvailabalityChange,
+    connect(_gui.get(), &ClientGui::updateStateChanged, this, &SynthesisPopover::onUpdateAvailabilityChange,
             Qt::UniqueConnection);
 }
 
@@ -1056,7 +1056,7 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
     }
 }
 
-void SynthesisPopover::onUpdateAvailabalityChange(const UpdateState updateState) {
+void SynthesisPopover::onUpdateAvailabilityChange(const UpdateState updateState) {
     if (!_lockedAppUpdateButton) return;
     if (_lockedAppVersionWidget->isHidden()) return;
 
@@ -1078,7 +1078,7 @@ void SynthesisPopover::onUpdateAvailabalityChange(const UpdateState updateState)
         default:
             _lockedAppUpdateButton->setText(tr("Unavailable"));
             SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "AppLocked",
-                                                      "406 uError received but unable to fetch an update");
+                                                      "406 Error received but unable to fetch an update");
             break;
     }
 }
