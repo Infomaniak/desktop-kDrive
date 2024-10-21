@@ -277,6 +277,15 @@ void TestSyncDb::testUpgradeTo3_6_5() {
     ParmsDb::reset();
 }
 
+void TestSyncDb::testUpgradeTo3_6_7() {
+    createParmsDb(_testObj->dbPath(), SyncPath("local_sync_dir_does_not_exist"));
+
+    CPPUNIT_ASSERT(_testObj->upgrade("3.6.4", "3.6.7"));
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+}
+
 void TestSyncDb::testInit3_6_4() {
     SyncDbMock testDb(_testObj->dbPath().string(), "3.6.4");
     const LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_5");

@@ -497,10 +497,11 @@ bool Snapshot::checkIntegrityRecursively(const NodeId &parentId) {
 
         auto result = names.insert(_items[*childId].name());
         if (!result.second) {
-            LOG_ERROR(Log::instance()->getLogger(),
-                      "Snapshot integrity check failed, the folder named: \""
-                              << SyncName2Str(parentItem.name()).c_str() << "\"(" << parentItem.id().c_str() << ") contains: \""
-                              << SyncName2Str(_items[*childId].name()).c_str() << "\" twice with two differents NodeId");
+            LOGW_WARN(Log::instance()->getLogger(), L"Snapshot integrity check failed, the folder named: \""
+                                                            << SyncName2WStr(parentItem.name()).c_str() << L"\"("
+                                                            << Utility::s2ws(parentItem.id()).c_str() << L") contains: \""
+                                                            << SyncName2WStr(_items[*childId].name()).c_str()
+                                                            << L"\" twice with two differents NodeId");
             return false;
         }
     }

@@ -69,12 +69,12 @@ void TestUpdateTree::testConstructors() {
 
 void TestUpdateTree::testInsertionOfFileNamesWithDifferentEncodings() {
     CPPUNIT_ASSERT(_myTree->_nodes.empty());
-    auto node1 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None,
+    auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None,
                                         "l1", 0, 0, 12345, _myTree->rootNode());
 
-    const auto node2 = std::make_shared<Node>(std::nullopt, _myTree->side(), testhelpers::makeNfcSyncName(), NodeType::Directory,
+    const auto node2 = std::make_shared<Node>(_myTree->side(), testhelpers::makeNfcSyncName(), NodeType::Directory,
                                               OperationType::None, "l2", 0, 0, 12345, node1);
-    const auto node3 = std::make_shared<Node>(std::nullopt, _myTree->side(), testhelpers::makeNfdSyncName(), NodeType::Directory,
+    const auto node3 = std::make_shared<Node>(_myTree->side(), testhelpers::makeNfdSyncName(), NodeType::Directory,
                                               OperationType::None, "l3", 0, 0, 12345, node1);
 
     CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1") / testhelpers::makeNfcSyncName(), node2->getPath());
@@ -83,31 +83,31 @@ void TestUpdateTree::testInsertionOfFileNamesWithDifferentEncodings() {
 
 void TestUpdateTree::testAll() {
     CPPUNIT_ASSERT(_myTree->_nodes.empty());
-    auto node1 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None,
+    auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None,
                                         "l1", 0, 0, 12345, _myTree->rootNode());
     _myTree->insertNode(node1);
     CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
 
 
-    auto node2 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::None,
+    auto node2 = std::make_shared<Node>(_myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::None,
                                         "l2", 0, 0, 12345, _myTree->rootNode());
-    auto node3 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::None,
+    auto node3 = std::make_shared<Node>(_myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::None,
                                         "l3", 0, 0, 12345, _myTree->rootNode());
-    auto node4 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::None,
+    auto node4 = std::make_shared<Node>(_myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::None,
                                         "l4", 0, 0, 12345, _myTree->rootNode());
-    auto node11 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None,
+    auto node11 = std::make_shared<Node>(_myTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None,
                                          "l11", 0, 0, 12345, node1);
-    auto node111 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1.1.1"), NodeType::Directory,
+    auto node111 = std::make_shared<Node>(_myTree->side(), Str("Dir 1.1.1"), NodeType::Directory,
                                           OperationType::None, "l111", 0, 0, 12345, node11);
-    auto node1111 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("File 1.1.1.1"), NodeType::File,
+    auto node1111 = std::make_shared<Node>(_myTree->side(), Str("File 1.1.1.1"), NodeType::File,
                                            OperationType::None, "l1111", 0, 0, 12345, node111);
-    auto node31 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 3.1"), NodeType::Directory, OperationType::None,
+    auto node31 = std::make_shared<Node>(_myTree->side(), Str("Dir 3.1"), NodeType::Directory, OperationType::None,
                                          "l31", 0, 0, 12345, node3);
-    auto node41 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 4.1"), NodeType::Directory, OperationType::None,
+    auto node41 = std::make_shared<Node>(_myTree->side(), Str("Dir 4.1"), NodeType::Directory, OperationType::None,
                                          "l41", 0, 0, 12345, node4);
-    auto node411 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 4.1.1"), NodeType::Directory,
+    auto node411 = std::make_shared<Node>(_myTree->side(), Str("Dir 4.1.1"), NodeType::Directory,
                                           OperationType::None, "l411", 0, 0, 12345, node41);
-    auto node4111 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("File 4.1.1.1"), NodeType::File,
+    auto node4111 = std::make_shared<Node>(_myTree->side(), Str("File 4.1.1.1"), NodeType::File,
                                            OperationType::None, "l4111", 0, 0, 12345, node411);
 
     CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node1));
@@ -142,22 +142,22 @@ void TestUpdateTree::testAll() {
 }
 
 void TestUpdateTree::testChangeEvents() {
-    std::shared_ptr<Node> node = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 0"), NodeType::Directory,
+    std::shared_ptr<Node> node = std::make_shared<Node>(_myTree->side(), Str("Dir 0"), NodeType::Directory,
                                                         OperationType::None, "0", 0, 0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeCreate =
-            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::Create, "l1",
+            std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::Create, "l1",
                                    0, 0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeEdit =
-            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::Edit, "l2", 0,
+            std::make_shared<Node>(_myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::Edit, "l2", 0,
                                    0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeMove =
-            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::Move, "l3", 0,
+            std::make_shared<Node>(_myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::Move, "l3", 0,
                                    0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeDelete =
-            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::Delete, "l4",
+            std::make_shared<Node>(_myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::Delete, "l4",
                                    0, 0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeMoveEdit =
-            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 5"), NodeType::Directory,
+            std::make_shared<Node>(_myTree->side(), Str("Dir 5"), NodeType::Directory,
                                    OperationType::Move | OperationType::Edit, "l5", 0, 0, 12345, _myTree->rootNode());
 
     CPPUNIT_ASSERT(!node->hasChangeEvent());

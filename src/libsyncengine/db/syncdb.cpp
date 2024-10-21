@@ -2393,8 +2393,6 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
 
     LOG_DEBUG(_logger, "Upgrade < 3.6.7 Sync DB");
 
-    normalizeRemoteNames();
-
     Sync sync;
     bool found = false;
     ParmsDb::instance()->selectSync(_dbPath, sync, found);
@@ -2405,6 +2403,21 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
 
     const SyncPath &localDrivePath = sync.localPath();
 
+    bool exists = false;
+    IoError existenceCheckError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(localDrivePath, exists, existenceCheckError)) {
+        LOGW_WARN(_logger,
+                  L"Error in IoHelper::checkIfPathExists" << Utility::formatIoError(localDrivePath, existenceCheckError));
+        return false;
+    }
+    if (!exists) {
+        LOGW_INFO(_logger, L"The synchronisation folder " << Utility::formatSyncPath(localDrivePath)
+                                                          << L" does not exist anymore. No Sync DB upgrade to do.");
+        return true;
+    }
+
+    if (!normalizeRemoteNames()) return false;
+
     NamedNodeMap namedNodeMap;
     if (!selectNamesWithDistinctEncodings(namedNodeMap)) return false;
 
@@ -2412,8 +2425,8 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
     IoError ioError = IoError::Success;
     IoHelper::getDirectoryIterator(localDrivePath, true, ioError, dir);
     if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(localDrivePath, ioError).c_str());
-        return false;
+        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(localDrivePath, ioError));
+        return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
     }
 
     SyncNameMap localNames;

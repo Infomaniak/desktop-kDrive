@@ -174,7 +174,7 @@ void TestWorkers::testCreatePlaceholder() {
         CPPUNIT_ASSERT_EQUAL(exitInfo.code(), ExitCode::Ok);
         CPPUNIT_ASSERT_EQUAL(exitInfo.cause(), ExitCause::Unknown);
 
-#if defined(__APPLE__) && defined(__WIN32)
+#if defined(__APPLE__) || defined(__WIN32)
         // Folder already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
         CPPUNIT_ASSERT_EQUAL(exitInfo.code(), ExitCode::DataError);
@@ -191,7 +191,7 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setDirection(SyncDirection::Down);
         _syncPal->initProgress(syncItem);
 
-#if defined(__APPLE__) && defined(__WIN32)
+#if defined(__APPLE__) || defined(__WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
@@ -211,7 +211,7 @@ void TestWorkers::testCreatePlaceholder() {
         CPPUNIT_ASSERT_EQUAL(exitInfo.code(), ExitCode::Ok);
         CPPUNIT_ASSERT_EQUAL(exitInfo.cause(), ExitCause::Unknown);
 
-#if defined(__APPLE__) && defined(__WIN32)
+#if defined(__APPLE__) || defined(__WIN32)
         // File already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
         CPPUNIT_ASSERT_EQUAL(exitInfo.code(), ExitCode::DataError);
@@ -239,7 +239,7 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setDirection(SyncDirection::Down);
         _syncPal->initProgress(syncItem);
 
-#if defined(__APPLE__) && defined(__WIN32)
+#if defined(__APPLE__) || defined(__WIN32)
         // Folder doesn't exist
         exitInfo = _syncPal->_executorWorker->convertToPlaceholder(relativeFolderPath, true);
         CPPUNIT_ASSERT_EQUAL(exitInfo.code(), ExitCode::DataError);
@@ -264,7 +264,7 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setDirection(SyncDirection::Down);
         _syncPal->initProgress(syncItem);
 
-#if defined(__APPLE__) && defined(__WIN32)
+#if defined(__APPLE__) || defined(__WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
