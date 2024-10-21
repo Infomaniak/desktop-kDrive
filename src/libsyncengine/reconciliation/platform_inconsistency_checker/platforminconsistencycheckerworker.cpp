@@ -40,10 +40,10 @@ void PlatformInconsistencyCheckerWorker::execute() {
                                   _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->name());
 
     for (const auto &idItem: _idsToBeRemoved) {
-        if (!_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
+        if (!idItem.remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.remoteId.c_str()));
         }
-        if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(idItem.localId)) {
+        if (!idItem.localId.empty() && !_syncPal->updateTree(ReplicaSide::Local)->deleteNode(idItem.localId)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.localId.c_str()));
         }
     }
