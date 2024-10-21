@@ -111,6 +111,7 @@ class Node {
         [[nodiscard]] bool isRoot() const;
         [[nodiscard]] bool isCommonDocumentsFolder() const;
         [[nodiscard]] bool isSharedFolder() const;
+        [[nodiscard]] bool isParentOf(std::shared_ptr<const Node> potentialChild) const;
 
         [[nodiscard]] SyncPath getPath() const;
 
@@ -141,7 +142,7 @@ class Node {
         bool _isTmp = false;
 
         [[nodiscard]] bool isParentValid(std::shared_ptr<const Node> parentNode) const;
-        friend class TestUpdateTree;
+        friend class TestNode;
 };
 
 } // namespace KDC

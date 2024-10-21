@@ -20,6 +20,7 @@
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/log/log.h"
 
 namespace KDC {
 
@@ -174,16 +175,25 @@ SyncPath Node::getPath() const {
     return path;
 }
 
-bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
-    if (!parentNode) return true; // `parentNode` is the root node, hence a valid parent. Stop climbing up the tree.
-
-    while (parentNode) {
-        if (parentNode->id() == _id)
-            return false; // This node is a parent of `parentNode`, hence `parentNode` is not a valid parent.
-        parentNode = parentNode->parentNode();
+bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
+    if (!potentialChild) return false; // `parentNode` is the root node, 
+    if (potentialChild->id().has_value() && potentialChild->id() == _id) return false; // `parentNode` is the root node
+    while (potentialChild) {
+        if (!potentialChild->id().has_value()) {
+            LOG_ERROR(Log::instance()->getLogger(), "Node::isParentOf Node has no id");
+            assert(false && "Node has no id");
+            return false;
+        }
+        if (*potentialChild->id() == *_id)
+            return true; // This node is a parent of `potentialChild`
+        potentialChild = potentialChild->parentNode();
     }
 
-    return true;
+    return false;
+}
+
+bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
+    return !isParentOf(parentNode);
 }
 
 } // namespace KDC
