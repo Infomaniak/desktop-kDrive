@@ -341,12 +341,12 @@ bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> 
                                                     bool isOrphanNode /*= false*/) const {
     SyncPath absoluteLocalFilePath = _syncPal->localPath() / node->getPath();
     newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-            absoluteLocalFilePath, isOrphanNode ? PlatformInconsistencyCheckerUtility::SuffixTypeOrphan
-                                                : PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
+            absoluteLocalFilePath, isOrphanNode ? PlatformInconsistencyCheckerUtility::SuffixType::Orphan
+                                                : PlatformInconsistencyCheckerUtility::SuffixType::Conflict);
 
     // Check path size
     size_t pathSize = absoluteLocalFilePath.parent_path().native().size() + 1 + newName.size();
-    if (PlatformInconsistencyCheckerUtility::instance()->checkPathLength(pathSize)) {
+    if (PlatformInconsistencyCheckerUtility::instance()->isPathTooLong(pathSize)) {
         // Path is now too long, file needs to be moved to root directory
         return false;
     }

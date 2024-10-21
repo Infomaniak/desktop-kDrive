@@ -328,7 +328,7 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
         if (isDehydratedPlaceholder) {
             // Blacklist dehydrated placeholder
             PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilePath,
-                                                                 PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
+                                                                 PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
 
             // Remove from update tree
             if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
@@ -509,7 +509,7 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
 
     // The item already exists, exclude it
     exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(absolutePath,
-                                                                    PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
+                                                                    PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
     if (exitCode != ExitCode::Ok) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to rename file: " << Utility::formatSyncPath(absolutePath).c_str());
         _executorExitCode = exitCode;
@@ -1969,7 +1969,7 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
             ignored = true;
             removeFromDb = false;
             PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilePath,
-                                                                 PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
+                                                                 PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
             break;
         }
         case OperationType::Move: {
@@ -1988,7 +1988,7 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
             // Rename the file so as not to lose any information
             SyncPath newSyncPath;
             PlatformInconsistencyCheckerUtility::renameLocalFile(
-                    absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict, &newSyncPath);
+                    absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, &newSyncPath);
 
             // Exclude file from sync
             if (!_syncPal->vfsFileStatusChanged(newSyncPath, SyncFileStatus::Ignored)) {
@@ -2668,7 +2668,7 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
             LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(localCreateDirJob->destFilePath()).c_str()
                                                  << L" already exist. Blacklisting it on local replica.");
             PlatformInconsistencyCheckerUtility::renameLocalFile(_syncPal->localPath() / localCreateDirJob->destFilePath(),
-                                                                 PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
+                                                                 PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
         }
         return false;
     } else if (job->exitCode() != ExitCode::Ok) {
