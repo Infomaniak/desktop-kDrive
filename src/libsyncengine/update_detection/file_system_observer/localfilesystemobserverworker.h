@@ -38,7 +38,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
 
     protected:
         virtual void execute() override;
-        ExitCode exploreDir(const SyncPath &absoluteParentDirPath);
+        ExitInfo exploreDir(const SyncPath &absoluteParentDirPath);
 
         SyncPath _rootFolder;
         //    std::unique_ptr<ContentChecksumWorker> _checksumWorker = nullptr;
