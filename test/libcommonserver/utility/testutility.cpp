@@ -431,14 +431,14 @@ void TestUtility::testNormalizedSyncName() {
     CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("(1234%)"), equal) && equal);
 
     // The two Unicode normalizations don't coincide.
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("à"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("é"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("è"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("ê"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("ü"), equal) && equal);
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("ö"), equal) && equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("à"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("é"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("è"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("ê"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("ü"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("ö"), equal) && !equal);
 
-    CPPUNIT_ASSERT(!checkNfcAndNfdNamesEqual(Str("aöe"), equal) && equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("aöe"), equal) && !equal);
 }
 
 void TestUtility::testNormalizedSyncPath() {

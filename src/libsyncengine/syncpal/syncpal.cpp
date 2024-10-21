@@ -708,7 +708,6 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
     if (!found) {
         // Can happen for a dehydrated placeholder
         LOGW_SYNCPAL_DEBUG(_logger, L"Node not found : " << Utility::formatSyncPath(relativeLocalPath).c_str());
-        return false;
     }
     return true;
 }
