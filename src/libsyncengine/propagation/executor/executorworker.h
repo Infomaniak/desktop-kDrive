@@ -141,6 +141,11 @@ class ExecutorWorker : public OperationProcessor {
 
         void setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status);
 
+        ExitInfo handleOpsExecutionError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+        ExitInfo handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+
+        ExitInfo removeDependentOps(SyncOpPtr syncOp);
+
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
