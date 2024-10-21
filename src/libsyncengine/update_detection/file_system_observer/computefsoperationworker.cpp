@@ -185,7 +185,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
             // Do not propagate delete if the path is too long.
             const size_t pathSize = localPath.native().size();
-            if (PlatformInconsistencyCheckerUtility::instance()->checkPathLength(pathSize)) {
+            if (PlatformInconsistencyCheckerUtility::instance()->isPathTooLong(pathSize)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Path length too long (" << pathSize << L" characters) for item with "
                                                                      << Utility::formatSyncPath(localPath).c_str()
                                                                      << L". Item is ignored.");
@@ -781,7 +781,7 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<const Snapshot> re
 bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const {
     const SyncPath absolutePath = _syncPal->localPath() / path;
     const size_t pathSize = absolutePath.native().size();
-    if (PlatformInconsistencyCheckerUtility::instance()->checkPathLength(pathSize)) {
+    if (PlatformInconsistencyCheckerUtility::instance()->isPathTooLong(pathSize)) {
         LOGW_SYNCPAL_WARN(_logger, L"Path length too long (" << pathSize << L" characters) for item with "
                                                              << Utility::formatSyncPath(absolutePath).c_str()
                                                              << L". Item is ignored.");

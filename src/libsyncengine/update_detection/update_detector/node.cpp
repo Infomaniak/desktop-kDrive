@@ -33,6 +33,12 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
     setParentNode(parentNode);
 }
 
+Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
+           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size,
+           std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
+    Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode, moveOrigin,
+         moveOriginParentDbId) {}
+
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode) :
     _side(side), _name(name), _type(type), _isTmp(true) {
     _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
