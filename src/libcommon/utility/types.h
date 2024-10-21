@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#pragma onceExitInfo
 
 #include <string>
 #include <filesystem>
@@ -238,7 +238,7 @@ struct ExitInfo {
         const ExitCause &cause() const { return _cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
-        operator bool() const { return _code == ExitCode::Ok; }
+        constexpr operator bool() const { return _code == ExitCode::Ok; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
 
@@ -420,8 +420,8 @@ struct ItemType {
         SyncPath targetPath;
         // The value of the data member `ioError` is `IoError::NoSuchFileOrDirectory` if
         // - the file or directory indicated by `path` doesn't exist
-        // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different
-        // from `LinkType::Unknown`) and its target doesn't exist.
+        // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
+        // `LinkType::Unknown`) and its target doesn't exist.
         IoError ioError{IoError::Success};
 };
 
@@ -460,8 +460,7 @@ struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
         std::string changeLog; // List of changes in this version
         std::uint64_t buildVersion = 0; // Example: 20240816
-        std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server
-                                       // 2005, ...
+        std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
         [[nodiscard]] bool isValid() const {
@@ -484,8 +483,7 @@ enum class SentryConfidentialityLevel {
 };
 std::string toString(SentryConfidentialityLevel e);
 
-// Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in
-// libcommon/utility/utility.cpp
+// Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
 
 /*
@@ -544,8 +542,8 @@ inline bool bitWiseEnumToBool(const C a) {
 }
 
 namespace typesUtility {
-std::wstring stringToWideString(const std::string &str); // Convert string to wstring (We can't use the s2ws of Utility
-                                                         // because it's in libCommonServer and it includes types.h)
+std::wstring stringToWideString(const std::string &str); // Convert string to wstring (We can't use the s2ws of Utility because
+                                                         // it's in libCommonServer and it includes types.h)
 } // namespace typesUtility
 
 // Stream Operator (toString)
