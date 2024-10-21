@@ -1138,7 +1138,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
         DbNodeId dbId = -1;
         bool found = false;
         if (!_syncDb->dbId(ReplicaSide::Local, localFileInfo.first, dbId, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << localFileInfo.first.c_str());
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for LocalNodeId=" << localFileInfo.first.c_str());
             return ExitCode::DbError;
         }
         if (found) {
@@ -1413,6 +1413,53 @@ void SyncPal::refreshTmpBlacklist() {
 
 void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
+}
+
+void SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, const NodeId &LocalNodeId, ExitCause cause) {
+
+    Error error(syncDbId(), "", "", NodeType::Unknown, relativePath, ConflictType::None, InconsistencyType::None,
+                CancelType::None, "", ExitCode::SystemError, cause);
+    addError(error);
+    LOGW_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(LocalNodeId)
+                                 << L" is blacklisted temporarily because of access denied");
+
+    std::optional<NodeId> remoteNodeId;
+    SyncPath remotePath;
+
+    // Try to found the corresponding node in Db
+    NodeId correspondingNodeId;
+    if (bool found = false; !_syncDb->correspondingNodeId(ReplicaSide::Local, LocalNodeId, correspondingNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
+    }
+    if (bool found = false; !_syncDb->path(ReplicaSide::Remote, correspondingNodeId, remotePath, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
+    }
+    remoteNodeId = correspondingNodeId;
+
+    // If the corresponding node is not found, try to found the node in the snapshot
+    if (remoteNodeId->empty()) {
+        remoteNodeId = snapshotCopy(ReplicaSide::Remote)->itemId(relativePath);
+        if (remoteNodeId->empty()) {
+            LOGW_WARN(_logger, L"SyncPal::handleAccessDeniedItem Item " << Utility::formatSyncPath(relativePath)
+                                                                        << L" does not exist on the remote side.");
+            return;
+        }
+        remotePath = relativePath;
+    }
+
+    if (!LocalNodeId.empty()) { // If the file/dir already exist on local FS, it will be blacklisted.
+        if (_tmpBlacklistManager->isTmpBlacklisted(LocalNodeId, ReplicaSide::Local)) {
+            LOGW_INFO(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(LocalNodeId)
+                                        << L" or one of its parent is already blacklisted temporarily.");
+            return;
+        }
+
+        _tmpBlacklistManager->blacklistItem(LocalNodeId, relativePath, ReplicaSide::Local);
+    }
+
+    if (remoteNodeId.has_value() && !remoteNodeId->empty() && !remotePath.empty()) {
+        _tmpBlacklistManager->blacklistItem(*remoteNodeId, remotePath, ReplicaSide::Remote);
+    }
 }
 
 void SyncPal::copySnapshots() {
