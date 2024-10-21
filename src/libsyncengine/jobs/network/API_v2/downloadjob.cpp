@@ -194,7 +194,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     if (isLink) {
         // Create link
         LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType.c_str());
-        if (!createLink(mimeType, linkData)) {
+        if (!createLink(mimeType, linkData)) { // We consider this as a permission denied error
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::FileAccessError;
             return false;
@@ -212,7 +212,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         if (!IoHelper::tempDirectoryPath(tmpPath, ioError)) {
             LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpPath, ioError).c_str());
             _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
+            _exitCause = ExitCause::Unknown;
             return false;
         }
 
@@ -400,7 +400,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitCause = ExitCause::Unknown;
         return false;
     }
 
@@ -412,7 +412,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath).c_str());
         _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::NoSearchPermission;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
@@ -550,12 +550,22 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
             }
         }
 #endif
-        else if (ec) {
+        else if (ec.value() == ERROR_ACCESS_DENIED) {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
+            return false;
+        } else if (ec) {
             bool exists = false;
             IoError ioError = IoError::Success;
             if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                            << Utility::formatIoError(_localpath.parent_path(), ioError).c_str());
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::Unknown;
+                return false;
+            }
+            if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_localpath.parent_path()).c_str());
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::FileAccessError;
                 return false;

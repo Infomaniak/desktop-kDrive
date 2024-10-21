@@ -299,7 +299,7 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            exitCause = ExitCause::FileAccessError;
+            exitCause = ExitCause::NotFound;
         }
         return ExitCode::SystemError;
     }

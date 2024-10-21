@@ -202,7 +202,8 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
                 ioError = IoError::NoSuchFileOrDirectory;
                 return true;
             }
-            if (counter) {
+            ioError = dWordError2ioError(dwError, logger());
+            if (counter && ioError != IoError::AccessDenied) {
                 retry = true;
                 Utility::msleep(10);
                 LOGW_DEBUG(logger(), L"Retrying to get handle: " << Utility::formatSyncPath(path.parent_path()).c_str());
@@ -210,7 +211,6 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
                 continue;
             }
 
-            ioError = dWordError2ioError(dwError, logger());
             LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatIoError(path.parent_path(), ioError).c_str());
 
             return isExpectedError(ioError);

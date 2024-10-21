@@ -66,7 +66,13 @@ bool UploadJob::canRun() {
     bool exists;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
@@ -74,7 +80,7 @@ bool UploadJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger,
-                   L"Item does not exist anymore. Aborting current sync and restart - path=" << Path2WStr(_filePath).c_str());
+                   L"Item does not exist anymore. Aborting current sync and restart - path=" << Path2WStr(_filePath));
         _exitCode = ExitCode::NeedRestart;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
@@ -184,7 +190,7 @@ std::string UploadJob::getContentType(bool &canceled) {
 bool UploadJob::readFile() {
     std::ifstream file(_filePath, std::ios_base::in | std::ios_base::binary);
     if (!file.is_open()) {
-        LOGW_WARN(_logger, L"Failed to open file - path=" << Path2WStr(_filePath).c_str());
+        LOGW_WARN(_logger, L"Failed to open file - path=" << Path2WStr(_filePath));
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
@@ -244,7 +250,7 @@ bool UploadJob::readLink() {
             if (!exists) {
                 LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_filePath).c_str());
                 _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::FileAccessError;
+                _exitCause = ExitCause::NotFound;
                 return false;
             }
 
@@ -278,14 +284,14 @@ bool UploadJob::readLink() {
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(_logger, L"File doesn't exist - " << Utility::formatSyncPath(_filePath).c_str());
             _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
+            _exitCause = ExitCause::NotFound;
             return false;
         }
 
         if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File misses search permissions - " << Utility::formatSyncPath(_filePath).c_str());
             _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::NoSearchPermission;
+            _exitCause = ExitCause::FileAccessError;
             return false;
         }
 #endif
@@ -303,7 +309,7 @@ bool UploadJob::readLink() {
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_filePath).c_str());
             _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
+            _exitCause = ExitCause::NotFound;
 
             return false;
         }
@@ -311,7 +317,7 @@ bool UploadJob::readLink() {
         if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File with insufficient access rights - path=" << Path2WStr(_filePath).c_str());
             _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::NoSearchPermission;
+            _exitCause = ExitCause::FileAccessError;
 
             return false;
         }

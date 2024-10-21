@@ -37,6 +37,12 @@ bool LocalCopyJob::canRun() {
     if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError).c_str());
         _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_dest).c_str());
+        _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
     }
@@ -52,6 +58,12 @@ bool LocalCopyJob::canRun() {
     // Check that source file still exists
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError).c_str());
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_source).c_str());
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
@@ -82,12 +94,12 @@ void LocalCopyJob::runJob() {
                                                    << Utility::s2ws(fsError.what()).c_str() << L" (" << fsError.code().value()
                                                    << L")");
         _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitCause = ExitCause::Unknown;
     } catch (...) {
         LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str()
                                                    << L": Unknown error");
         _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitCause = ExitCause::Unknown;
     }
 }
 

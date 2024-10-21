@@ -641,22 +641,22 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, itemType.ioError).c_str());
-        setExitCause(ExitCause::FileAccessError);
-        return ExitCode::SystemError;
+        setExitCause(ExitCause::Unknown);
+        return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger,
                           L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str() << L" doesn't exist");
         setExitCause(ExitCause::SyncDirDoesntExist);
-        return ExitCode::SystemError;
+        return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str()
                                                        << L" misses read permission");
         setExitCause(ExitCause::SyncDirReadError);
-        return ExitCode::SystemError;
+        return {ExitCode::SystemError, ExitCause::SyncDirReadError};
     }
 
     if (itemType.linkType != LinkType::None) {
@@ -867,7 +867,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                          "Error caught in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " - " << e.what());
-        setExitCause(ExitCause::FileAccessError);
+        setExitCause(ExitCause::Unknown);
         return ExitCode::SystemError;
     } catch (...) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in LocalFileSystemObserverWorker::exploreDir");

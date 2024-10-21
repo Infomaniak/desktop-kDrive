@@ -178,7 +178,6 @@ enum class ExitCode {
     LogicError, // Consequence of faulty logic within the program such as violating logical preconditions or class
                 // invariants and may be preventable
     TokenRefreshed,
-    NoWritePermission,
     RateLimited,
     InvalidSync, // The sync configuration is not valid
     InvalidOperation,
@@ -224,7 +223,6 @@ enum class ExitCause {
     LiteSyncNotAllowed,
     NetworkTimeout,
     SocketsDefuncted, // macOS: sockets defuncted by kernel
-    NoSearchPermission,
     NotFound,
     QuotaExceeded,
     FullListParsingError,
