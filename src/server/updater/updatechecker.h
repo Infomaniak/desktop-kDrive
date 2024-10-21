@@ -35,7 +35,7 @@ class UpdateChecker {
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if the job has been succesfully created.
          */
-        ExitCode checkUpdateAvailable(DistributionChannel channel, UniqueId *id = nullptr);
+        ExitCode checkUpdateAvailability(DistributionChannel channel, UniqueId *id = nullptr);
 
         void setCallback(const std::function<void()> &callback);
 
@@ -49,7 +49,7 @@ class UpdateChecker {
         void versionInfoReceived(UniqueId jobId);
 
         /**
-         * @brief Create a shared pointer to the `GetAppVersionJob`. Override this methid in test class to test different
+         * @brief Create a shared pointer to the `GetAppVersionJob`. Override this method in test class to test different
          * scenarios.
          * @param job The `GetAppVersionJob` we want to use in `checkUpdateAvailable()`.
          * @return ExitCode::Ok if the job has been succesfully created.

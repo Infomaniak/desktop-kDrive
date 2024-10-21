@@ -44,7 +44,7 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     _updateCheckTimer.start(std::chrono::milliseconds(checkInterval).count());
 
     // Setup callback for update state change notification
-    const std::function<void(UpdateState)> callback = std::bind_front(&UpdateManager::onUpdateStateChange, this);
+    const std::function<void(UpdateState)> callback = std::bind_front(&UpdateManager::onUpdateStateChanged, this);
     _updater->setStateChangeCallback(callback);
     connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
@@ -55,14 +55,6 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
 void UpdateManager::startInstaller() const {
     LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
     _updater->startInstaller();
-}
-
-void UpdateManager::skipVersion(const std::string &skippedVersion) {
-    AbstractUpdater::skipVersion(skippedVersion);
-}
-
-void UpdateManager::unskipVersion() {
-    AbstractUpdater::unskipVersion();
 }
 
 void UpdateManager::slotTimerFired() const {
@@ -117,7 +109,7 @@ void UpdateManager::createUpdater() {
 #endif
 }
 
-void UpdateManager::onUpdateStateChange(const UpdateState newState) {
+void UpdateManager::onUpdateStateChanged(const UpdateState newState) {
     // Emit signal in order to run `slotUpdateStateChanged` in main thread
     emit updateStateChanged(newState);
 }

@@ -47,9 +47,6 @@ class UpdateManager final : public QObject {
         [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
 
         void startInstaller() const;
-        static void skipVersion(const std::string &skippedVersion);
-        static void unskipVersion();
-
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
     signals:
@@ -68,7 +65,7 @@ class UpdateManager final : public QObject {
          */
         void createUpdater();
 
-        void onUpdateStateChange(UpdateState newState);
+        void onUpdateStateChanged(UpdateState newState);
 
         [[nodiscard]] DistributionChannel readDistributionChannelFromDb() const;
 

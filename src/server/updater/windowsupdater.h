@@ -30,7 +30,6 @@ class WindowsUpdater final : public AbstractUpdater {
     private:
         /**
          * @brief Start the synchronous download of the new version installer.
-         * @return
          */
         virtual void downloadUpdate() noexcept;
 
@@ -40,7 +39,7 @@ class WindowsUpdater final : public AbstractUpdater {
         void downloadFinished(UniqueId jobId);
 
         /**
-         * Build the destination path where the installer should be download.
+         * Build the destination path where the installer should be downloaded.
          * @return the absolute path to the installer file.
          */
         [[nodiscard]] bool getInstallerPath(SyncPath &path) const;

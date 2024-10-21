@@ -27,7 +27,7 @@
 
 namespace KDC {
 
-ExitCode UpdateChecker::checkUpdateAvailable(const DistributionChannel channel, UniqueId *id /*= nullptr*/) {
+ExitCode UpdateChecker::checkUpdateAvailability(const DistributionChannel channel, UniqueId *id /*= nullptr*/) {
     _channel = channel;
 
     std::shared_ptr<AbstractNetworkJob> job;

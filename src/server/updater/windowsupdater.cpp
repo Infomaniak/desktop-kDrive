@@ -33,8 +33,8 @@ void WindowsUpdater::onUpdateFound() {
         return;
     }
     if (std::filesystem::exists(filepath)) {
-        LOGW_INFO(Log::instance()->getLogger(),
-                  L"Installer already downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
+        LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
+                                                                                    << L". Update is ready to be installed.");
         setState(UpdateState::Ready);
         return;
     }
@@ -49,7 +49,7 @@ void WindowsUpdater::startInstaller() {
         return;
     }
 
-    LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << Path2WStr(filepath).c_str());
+    LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << Utility::formatSyncPath(filepath));
 
     auto *updaterThread = new std::jthread([filepath] {
         const auto cmd = filepath.string() + " /S /launch";
@@ -71,7 +71,7 @@ void WindowsUpdater::downloadUpdate() noexcept {
     setState(UpdateState::Downloading);
 }
 
-void WindowsUpdater::downloadFinished(UniqueId jobId) {
+void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     auto job = JobManager::instance()->getJob(jobId);
     const auto downloadJob = std::dynamic_pointer_cast<DirectDownloadJob>(job);
     if (!downloadJob) {
@@ -86,7 +86,7 @@ void WindowsUpdater::downloadFinished(UniqueId jobId) {
     std::string errorDescr;
     if (downloadJob->hasErrorApi(&errorCode, &errorDescr)) {
         std::stringstream ss;
-        ss << errorCode.c_str() << " - " << errorDescr;
+        ss << errorCode << " - " << errorDescr;
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::downloadFinished", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
         setState(UpdateState::DownloadError);
@@ -108,7 +108,7 @@ void WindowsUpdater::downloadFinished(UniqueId jobId) {
     }
 
     LOGW_INFO(Log::instance()->getLogger(),
-              L"Installer downloaded at: " << Path2WStr(filepath).c_str() << L". Update is ready to be installed.");
+              L"Installer downloaded at: " << Utility::formatSyncPath(filepath) << L". Update is ready to be installed.");
     setState(UpdateState::Ready);
 }
 

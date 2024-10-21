@@ -31,7 +31,7 @@ AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_unique<UpdateCheck
 
 ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel channel, UniqueId* id /*= nullptr*/) {
     setState(UpdateState::Checking);
-    return _updateChecker->checkUpdateAvailable(channel, id);
+    return _updateChecker->checkUpdateAvailability(channel, id);
 }
 
 void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateState)>& stateChangeCallback) {
