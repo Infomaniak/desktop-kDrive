@@ -1319,91 +1319,89 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypa
         SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
         job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
     } else {
-        try {
-            // Target side is remote, so affected node is on local side.
-            std::shared_ptr<Node> correspondingNode = syncOp->correspondingNode();
-            if (!correspondingNode) {
-                LOGW_SYNCPAL_WARN(_logger, L"Corresponding node not found for item "
-                                                   << Utility::formatSyncPath(syncOp->affectedNode()->getPath()).c_str());
-                _executorExitCode = ExitCode::DataError;
-                _executorExitCause = ExitCause::Unknown;
-                return false;
-            }
-
-            // Get the new parent node
-            std::shared_ptr<Node> parentNode =
-                    syncOp->newParentNode() ? syncOp->newParentNode() : syncOp->affectedNode()->parentNode();
-            if (!parentNode) {
-                LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item "
-                                                   << Utility::formatSyncPath(correspondingNode->getPath()).c_str());
-                _executorExitCode = ExitCode::DataError;
-                _executorExitCause = ExitCause::Unknown;
-                return false;
-            }
-
-            relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
-            relativeOriginLocalFilePath = correspondingNode->getPath();
-            absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
-            SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
-            job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
-
-            if (relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
-                // This is just a rename
-                job = std::make_shared<RenameJob>(_syncPal->driveDbId(),
-                                                  correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
-                                                  absoluteDestLocalFilePath);
-            } else {
-                // This is a move
-
-                // For all conflict involving an "undo move" operation, the correct parent is already stored in the syncOp
-                std::shared_ptr<Node> remoteParentNode =
-                        syncOp->conflict().type() == ConflictType::MoveParentDelete ||
-                                        syncOp->conflict().type() == ConflictType::MoveMoveSource ||
-                                        syncOp->conflict().type() == ConflictType::MoveMoveCycle
-                                ? parentNode
-                                : correspondingNodeInOtherTree(parentNode);
-                if (!remoteParentNode) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item " << Path2WStr(parentNode->getPath()).c_str());
-                    _executorExitCode = ExitCode::DataError;
-                    _executorExitCause = ExitCause::Unknown;
-                    return false;
-                }
-                try {
-                    job = std::make_shared<MoveJob>(
-                            _syncPal->driveDbId(), absoluteDestLocalFilePath,
-                            correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
-                            remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string(), syncOp->newName());
-                } catch (std::exception &e) {
-                    LOGW_SYNCPAL_WARN(_logger,
-                                      "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
-                    _executorExitCode = ExitCode::DataError;
-                    _executorExitCause = ExitCause::Unknown;
-                    return false;
-                }
-            }
-
-            if (syncOp->hasConflict()) {
-                job->setBypassCheck(true);
-            }
-
-            // Set callbacks
-            if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-                std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-                        std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4);
-                job->setVfsForceStatusCallback(vfsForceStatusCallback);
-
-                std::function<bool(const SyncPath &, bool &, bool &, bool &, int &)> vfsStatusCallback =
-                        std::bind(&SyncPal::vfsStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-                job->setVfsStatusCallback(vfsStatusCallback);
-            }
-        } catch (std::exception const &e) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in MoveJob::MoveJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                   << Utility::s2ws(e.what()).c_str());
+        // Target side is remote, so affected node is on local side.
+        std::shared_ptr<Node> correspondingNode = syncOp->correspondingNode();
+        if (!correspondingNode) {
+            LOGW_SYNCPAL_WARN(_logger, L"Corresponding node not found for item "
+                                               << Utility::formatSyncPath(syncOp->affectedNode()->getPath()).c_str());
             _executorExitCode = ExitCode::DataError;
             _executorExitCause = ExitCause::Unknown;
             return false;
+        }
+
+        // Get the new parent node
+        std::shared_ptr<Node> parentNode =
+                syncOp->newParentNode() ? syncOp->newParentNode() : syncOp->affectedNode()->parentNode();
+        if (!parentNode) {
+            LOGW_SYNCPAL_WARN(
+                    _logger, L"Parent node not found for item " << Utility::formatSyncPath(correspondingNode->getPath()).c_str());
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
+            return false;
+        }
+
+        relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
+        relativeOriginLocalFilePath = correspondingNode->getPath();
+        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
+        SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
+        job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
+
+        if (relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
+            // This is just a rename
+            try {
+                job = std::make_shared<RenameJob>(_syncPal->driveDbId(),
+                                                  correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
+                                                  absoluteDestLocalFilePath);
+            } catch (std::exception const &e) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in RenameJob::RenameJob for driveDbId=" << _syncPal->driveDbId() << L" : "
+                                                                                           << Utility::s2ws(e.what()).c_str());
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
+                return false;
+            }
+        } else {
+            // This is a move
+
+            // For all conflict involving an "undo move" operation, the correct parent is already stored in the syncOp
+            std::shared_ptr<Node> remoteParentNode = syncOp->conflict().type() == ConflictType::MoveParentDelete ||
+                                                                     syncOp->conflict().type() == ConflictType::MoveMoveSource ||
+                                                                     syncOp->conflict().type() == ConflictType::MoveMoveCycle
+                                                             ? parentNode
+                                                             : correspondingNodeInOtherTree(parentNode);
+            if (!remoteParentNode) {
+                LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item " << Path2WStr(parentNode->getPath()).c_str());
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
+                return false;
+            }
+            try {
+                job = std::make_shared<MoveJob>(_syncPal->driveDbId(), absoluteDestLocalFilePath,
+                                                correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
+                                                remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string(),
+                                                syncOp->newName());
+            } catch (std::exception &e) {
+                LOGW_SYNCPAL_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
+                return false;
+            }
+        }
+
+        if (syncOp->hasConflict()) {
+            job->setBypassCheck(true);
+        }
+
+        // Set callbacks
+        if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
+            std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+                    std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
+                              std::placeholders::_3, std::placeholders::_4);
+            job->setVfsForceStatusCallback(vfsForceStatusCallback);
+
+            std::function<bool(const SyncPath &, bool &, bool &, bool &, int &)> vfsStatusCallback =
+                    std::bind(&SyncPal::vfsStatus, _syncPal, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+                              std::placeholders::_4, std::placeholders::_5);
+            job->setVfsStatusCallback(vfsStatusCallback);
         }
     }
 
