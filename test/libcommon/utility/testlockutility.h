@@ -26,10 +26,12 @@ namespace KDC {
 class TestLockUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLockUtility);
         CPPUNIT_TEST(testLock);
+        CPPUNIT_TEST(testLockMultiThread);
         CPPUNIT_TEST_SUITE_END();
 
     protected:
         void testLock();
+        void testLockMultiThread();
 };
 
 } // namespace KDC

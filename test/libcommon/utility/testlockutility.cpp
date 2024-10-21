@@ -18,6 +18,9 @@
 
 #include "testlockutility.h"
 #include "libcommon/utility/lockutility.h"
+#include "utility/utility.h"
+
+#include <thread>
 
 namespace KDC {
 
@@ -27,6 +30,44 @@ void TestLockUtility::testLock() {
     CPPUNIT_ASSERT(!lock.lock());
     lock.unlock();
     CPPUNIT_ASSERT(lock.lock());
+}
+
+int randomSleepTime() {
+    return std::rand() / ((RAND_MAX + 1u) / 10) + 1; // Generates random value between 1 and 10
+}
+
+constexpr unsigned int nbThread = 3;
+constexpr unsigned int nbTest = 5;
+static unsigned int alreadyLockedCounter = 0;
+static unsigned int lockAcquiredCounter = 0;
+static LockUtility lock;
+void testCallback() {
+    int i = 0;
+    while (i < nbTest) {
+        Utility::msleep(randomSleepTime());
+        if (!lock.lock()) {
+            alreadyLockedCounter++;
+            Utility::msleep(randomSleepTime());
+            continue;
+        }
+        lockAcquiredCounter++;
+        Utility::msleep(10);
+        lock.unlock();
+        i++;
+    }
+}
+
+void TestLockUtility::testLockMultiThread() {
+    std::thread threadArray[nbThread];
+    for (auto &t: threadArray) {
+        std::thread tmp(&testCallback);
+        t = std::move(tmp);
+    }
+    for (auto &t: threadArray) {
+        t.join();
+    }
+    CPPUNIT_ASSERT(alreadyLockedCounter > 0);
+    CPPUNIT_ASSERT_EQUAL(nbTest * nbThread, lockAcquiredCounter);
 }
 
 } // namespace KDC
