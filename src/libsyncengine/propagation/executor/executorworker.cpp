@@ -2142,10 +2142,10 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
         return {ExitCode::DbError, ExitCause::DbAccessError};
-        if (!found) {
-            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->correspondingNode()->idb());
-            return {ExitCode::DataError, ExitCause::DbEntryNotFound};
-        }
+    }
+    if (!found) {
+        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->correspondingNode()->idb());
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     // 2. Update the database entry, to avoid detecting the edit operation again.
