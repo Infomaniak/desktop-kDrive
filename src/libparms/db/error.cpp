@@ -17,6 +17,7 @@
  */
 
 #include "error.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <ctime>
 #include <sstream>
@@ -93,6 +94,13 @@ bool Error::isSimilarTo(const Error &other) const {
             return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) && (_workerName == other.workerName());
         }
         case ErrorLevel::Node: {
+            if (_exitCode == ExitCode::SystemError && _exitCause == ExitCause::FileAccessError &&
+                other.exitCode() == ExitCode::SystemError && other.exitCause() == ExitCause::FileAccessError &&
+                (Utility::startsWith(_path.lexically_normal(), other.path().lexically_normal()) ||
+                 Utility::startsWith(other.path().lexically_normal(), _path.lexically_normal()))) {
+                return true;
+            }
+
             return (_conflictType == other.conflictType()) && (_inconsistencyType == other.inconsistencyType()) &&
                    (_cancelType == other.cancelType()) && (_path == other.path() && _destinationPath == other.destinationPath());
         }
