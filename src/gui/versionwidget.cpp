@@ -189,20 +189,22 @@ void VersionWidget::showAboutDialog() {
 void VersionWidget::showReleaseNotes() const {
     QString os;
 #if defined(__APPLE__)
-    os = "-macos";
+    os = "macos";
 #elif defined(_WIN32)
-    os = "-win";
+    os = "win";
 #else
-    os = "-linux";
+    os = "linux";
 #endif
 
     VersionInfo versionInfo;
     GuiRequests::versionInfo(versionInfo);
 
     const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
-    const QString languageCode = CommonUtility::languageCode(appLanguage);
+    QString languageCode = CommonUtility::languageCode(appLanguage);
+    if (languageCode.isEmpty()) languageCode = "en";
     QDesktopServices::openUrl(
-            QUrl(QString("%1-%2%3-%4.html").arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), os, languageCode)));
+            QUrl(QString("%1-%2-%3-%4.html")
+                         .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), os, languageCode.left(2))));
 }
 
 void VersionWidget::showDownloadPage() const {
