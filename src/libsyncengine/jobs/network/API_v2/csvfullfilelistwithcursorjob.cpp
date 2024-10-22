@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -29,9 +28,11 @@
 
 #define API_TIMEOUT 900
 
+static const std::string endOfFileDelimiter("#EOF");
+
 namespace KDC {
 
-SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger){};
+SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger) {};
 
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                                    const std::exception &exc) {
@@ -188,7 +189,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
     }
 }
 
-bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore) {
+bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof) {
     error = false;
     ignore = false;
 
@@ -209,8 +210,13 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
         }
     }
 
-    ParsingState state;
+    if (line == endOfFileDelimiter) {
+        LOG_INFO(_logger, "End of file reached");
+        eof = true;
+        return false;
+    }
 
+    ParsingState state;
     while (state.readNextLine) {
         state.readNextLine = false;
 
@@ -256,8 +262,8 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
 CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId,
                                                            std::unordered_set<NodeId> blacklist /*= {}*/, bool zip /*= true*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _dirId(dirId), _blacklist(blacklist), _zip(zip), _snapshotItemHandler(_logger) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _dirId(dirId), _blacklist(blacklist), _zip(zip),
+    _snapshotItemHandler(_logger) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = API_TIMEOUT + 15;
 
@@ -266,11 +272,11 @@ CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(int driveDbId, const 
     }
 }
 
-bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool &ignore) {
+bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool &ignore, bool &eof) {
     error = false;
     ignore = false;
 
-    return _snapshotItemHandler.getItem(item, _ss, error, ignore);
+    return _snapshotItemHandler.getItem(item, _ss, error, ignore, eof);
 }
 
 std::string CsvFullFileListWithCursorJob::getCursor() {
@@ -286,7 +292,7 @@ std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
 void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");
-    uri.addQueryParameter("format", "csv");
+    uri.addQueryParameter("format", "safe_csv");
     if (!_blacklist.empty()) {
         std::string str = Utility::list2str(_blacklist);
         if (!str.empty()) {
@@ -307,28 +313,17 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
 
     // Check that the stringstream is not empty (network issues)
     _ss.seekg(0, std::ios_base::end);
-    int length = _ss.tellg();
+    const auto length = _ss.tellg();
     if (length == 0) {
         LOG_ERROR(_logger, "Reply " << jobId() << " received with empty content.");
         return false;
     }
 
-    // Check that the stringstream ends by a LF (0x0A)
-    _ss.seekg(length - 1, std::ios_base::beg);
-    char lastChar = 0x00;
-    _ss.read(&lastChar, 1);
     _ss.seekg(0, std::ios_base::beg);
-    if (lastChar != 0x0A) {
-        LOGW_WARN(_logger, L"Reply " << jobId() << L" received with bad content - length=" << length << L" value="
-                                     << Utility::s2ws(_ss.str()).c_str());
-        return false;
-    }
-
     if (isExtendedLog()) {
         LOGW_DEBUG(_logger,
                    L"Reply " << jobId() << L" received - length=" << length << L" value=" << Utility::s2ws(_ss.str()).c_str());
     }
-
     return true;
 }
 
