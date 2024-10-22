@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QProcess>
 #include "windowsupdater.h"
 #include "log/log.h"
 #include "jobs/network/directdownloadjob.h"
@@ -48,14 +49,9 @@ void WindowsUpdater::startInstaller() {
         setState(UpdateState::DownloadError);
         return;
     }
-
     LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << Utility::formatSyncPath(filepath));
-
-    auto *updaterThread = new std::jthread([filepath] {
-        const auto cmd = filepath.string() + " /S /launch";
-        std::system(cmd.c_str());
-    });
-    updaterThread->detach();
+    auto cmd = filepath.wstring() + L" /S /launch";
+    Utility::runDetachedProcess(cmd);
 }
 
 void WindowsUpdater::downloadUpdate() noexcept {
