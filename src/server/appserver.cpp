@@ -23,7 +23,7 @@
 #include "libcommonserver/vfs.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
-#include "logarchiver.h"
+#include "logarchiver/logarchiverhelper.h"
 #include "keychainmanager/keychainmanager.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
@@ -256,6 +256,16 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
 
     // Setup proxy
+    if (ParametersCache::instance()->parameters().proxyConfig().type() == ProxyType::Undefined) {
+        // Migration issue?
+        LOG_WARN(_logger, "Proxy type is undefined, fix it");
+        ExitCode exitCode = ServerRequests::fixProxyConfig();
+        if (exitCode != ExitCode::Ok) {
+            LOG_WARN(_logger, "Error in ServerRequests::fixProxyConfig: code=" << exitCode);
+            throw std::runtime_error("Unable to fix proxy type.");
+        }
+    }
+
     if (!setupProxy()) {
         LOG_WARN(_logger, "Error in AppServer::setupProxy");
         throw std::runtime_error("Unable to initialize proxy.");
@@ -2096,7 +2106,7 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
 
 void AppServer::cancelLogUpload() {
     ExitCause exitCause = ExitCause::Unknown;
-    ExitCode exitCode = ServerRequests::cancelLogToSupport(exitCause);
+    ExitCode exitCode = LogArchiverHelper::cancelLogToSupport(exitCause);
     if (exitCause == ExitCause::OperationCanceled) {
         LOG_WARN(_logger, "Operation already canceled");
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
@@ -2162,14 +2172,14 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
     };
 
     ExitCause exitCause = ExitCause::Unknown;
-    ExitCode exitCode = ServerRequests::sendLogToSupport(includeArchivedLogs, progressFunc, exitCause);
+    ExitCode exitCode = LogArchiverHelper::sendLogToSupport(includeArchivedLogs, progressFunc, exitCause);
 
     if (exitCause == ExitCause::OperationCanceled) {
         LOG_DEBUG(_logger, "Log transfert canceled");
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
         return;
     } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::sendLogToSupport: code=" << exitCode << " cause=" << exitCause);
+        LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: code=" << exitCode << " cause=" << exitCause);
         addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
     }
     sendLogUploadStatusUpdated(exitCode == ExitCode::Ok ? LogUploadState::Success : LogUploadState::Failed, 0);
