@@ -28,7 +28,7 @@
 
 #define API_TIMEOUT 900
 
-constexpr std::string endOfFileDelimiter = "#EOF";
+static const std::string endOfFileDelimiter("#EOF");
 
 namespace KDC {
 

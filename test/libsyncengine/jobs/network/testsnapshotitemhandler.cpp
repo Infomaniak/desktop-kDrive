@@ -26,7 +26,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-constexpr std::string endOfFileDelimiter = "#EOF";
+static const std::string endOfFileDelimiter("#EOF");
 
 namespace snapshotitem_checker {
 std::string makeMessage(const CppUnit::Exception &e) {
