@@ -452,7 +452,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
-    while (job.getItem(item, error, ignore)) {
+    bool eof = false;
+    while (job.getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
         }
@@ -464,6 +465,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
 
     CPPUNIT_ASSERT(!cursor.empty());
     CPPUNIT_ASSERT(counter == 5);
+    CPPUNIT_ASSERT(eof);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
@@ -476,7 +478,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
-    while (job.getItem(item, error, ignore)) {
+    bool eof = false;
+    while (job.getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
         }
@@ -488,6 +491,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
 
     CPPUNIT_ASSERT(!cursor.empty());
     CPPUNIT_ASSERT(counter == 5);
+    CPPUNIT_ASSERT(eof);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorJsonBlacklist() {
@@ -526,7 +530,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
-    while (job.getItem(item, error, ignore)) {
+    bool eof = false;
+    while (job.getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
         }
@@ -538,6 +543,29 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
 
     CPPUNIT_ASSERT(!cursor.empty());
     CPPUNIT_ASSERT(counter == 0);
+    CPPUNIT_ASSERT(eof);
+}
+
+void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
+    CsvFullFileListWithCursorJob job(_driveDbId, "1");
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+
+    int counter = 0;
+    const std::string cursor = job.getCursor();
+    SnapshotItem item;
+    bool error = false;
+    bool ignore = false;
+    bool eof = false;
+    // Call getItem only once to simulate a troncated CSV file
+    job.getItem(item, error, ignore, eof);
+    if (item.parentId() == pictureDirRemoteId) {
+        counter++;
+    }
+
+    CPPUNIT_ASSERT(!cursor.empty());
+    CPPUNIT_ASSERT_LESS(5, counter);
+    CPPUNIT_ASSERT(!eof);
 }
 
 void TestNetworkJobs::testGetInfoUser() {

@@ -42,6 +42,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
         CPPUNIT_TEST(testFullFileListWithCursorJsonBlacklist);
         CPPUNIT_TEST(testFullFileListWithCursorCsvBlacklist);
+        CPPUNIT_TEST(testFullFileListWithCursorMissingEof);
         CPPUNIT_TEST(testGetInfoUser);
         CPPUNIT_TEST(testGetInfoDrive);
         CPPUNIT_TEST(testThumbnail);
@@ -79,6 +80,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testFullFileListWithCursorCsvZip();
         void testFullFileListWithCursorJsonBlacklist();
         void testFullFileListWithCursorCsvBlacklist();
+        void testFullFileListWithCursorMissingEof();
         void testGetInfoUser();
         void testGetInfoDrive();
         void testThumbnail();
