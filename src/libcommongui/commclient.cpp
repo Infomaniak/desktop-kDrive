@@ -198,6 +198,7 @@ void CommClient::onDisconnected() {
 
     QTcpSocket *socket = reinterpret_cast<QTcpSocket *>(sender());
     socket->deleteLater();
+    _tcpConnection = nullptr;
 
     emit disconnected();
 }
