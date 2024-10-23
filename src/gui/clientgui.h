@@ -115,7 +115,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onErrorsCleared(int syncDbId);
         void onFixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors);
         void onNewDriveWizard();
-        void onShowWindowsUpdateDialog(const VersionInfo &versionInfo);
+        void onShowWindowsUpdateDialog(const KDC::VersionInfo &versionInfo) const;
 
     private:
         QScopedPointer<Systray> _tray;

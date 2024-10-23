@@ -758,17 +758,16 @@ void ClientGui::onNewDriveWizard() {
     raiseDialog(_addDriveWizard.get());
 }
 
-void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) {
-    static LockUtility lock;
-    if (!lock.lock()) return;
+
+void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const {
+    static std::mutex mutex;
+    if (const std::unique_lock lock(mutex, std::try_to_lock); !lock.owns_lock()) return;
 
     if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
         GuiRequests::startInstaller();
     } else if (dialog.skip()) {
         GuiRequests::skipUpdate(versionInfo.fullVersion());
     }
-
-    lock.unlock();
 }
 
 void ClientGui::onDisableNotifications(NotificationsDisabled type, QDateTime value) {
