@@ -153,9 +153,11 @@ ExitCode LogArchiverHelper::sendLogToSupport(bool includeArchivedLog,
         woss << std::put_time(&tm, "%m,%d,%y,%H,%M,%S");
         uploadDate = woss.str();
 
-        if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) || !found ||
-            !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string{}, found) || !found) {
+        if (std::pair<bool, bool> found{false, false};
+            !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found.first) ||
+            !found.first ||
+            !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string{}, found.second) ||
+            !found.second) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         }
     }
