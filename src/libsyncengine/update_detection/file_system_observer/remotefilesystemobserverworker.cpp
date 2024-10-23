@@ -703,33 +703,35 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
 
 ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights,
                                                                   SnapshotItem &snapshotItem) {
+    std::unique_ptr<GetFileInfoJob> job;
     try {
-        GetFileInfoJob job(_syncPal->driveDbId(), nodeId);
-        job.runSynchronously();
-        if (job.hasHttpError() || job.exitCode() != ExitCode::Ok) {
-            if (job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-                job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
-                hasRights = false;
-                return ExitCode::Ok;
-            }
-
-            LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                               << SyncName2WStr(snapshotItem.name()).c_str() << L" ("
-                                               << Utility::s2ws(snapshotItem.id()).c_str() << L")");
-            invalidateSnapshot();
-            return ExitCode::BackError;
-        }
-
-        snapshotItem.setCreatedAt(job.creationTime());
-        snapshotItem.setLastModified(job.modtime());
-        snapshotItem.setSize(job.size());
-        snapshotItem.setIsLink(job.isLink());
+        job = std::make_unique<GetFileInfoJob>(_syncPal->driveDbId(), nodeId);
     } catch (std::exception const &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetFileInfoJob::GetFileInfoJob for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str()
                                                                           << " error=" << e.what());
         return ExitCode::DataError;
     }
+
+    job->runSynchronously();
+    if (job->hasHttpError() || job->exitCode() != ExitCode::Ok) {
+        if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+            job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+            hasRights = false;
+            return ExitCode::Ok;
+        }
+
+        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
+                                           << SyncName2WStr(snapshotItem.name()).c_str() << L" ("
+                                           << Utility::s2ws(snapshotItem.id()).c_str() << L")");
+        invalidateSnapshot();
+        return ExitCode::BackError;
+    }
+
+    snapshotItem.setCreatedAt(job->creationTime());
+    snapshotItem.setLastModified(job->modtime());
+    snapshotItem.setSize(job->size());
+    snapshotItem.setIsLink(job->isLink());
 
     hasRights = true;
     return ExitCode::Ok;

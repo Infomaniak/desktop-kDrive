@@ -126,14 +126,14 @@ AppServer::AppServer(int &argc, char **argv) :
         throw std::runtime_error("Unable to init logging.");
     }
 
-    if (isRunning()) {
-        LOG_INFO(_logger, "AppServer already running");
-        return;
-    }
-
     parseOptions(arguments());
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
         LOG_INFO(_logger, "Command line options processed");
+        return;
+    }
+
+    if (isRunning()) {
+        LOG_INFO(_logger, "AppServer already running");
         return;
     }
 
