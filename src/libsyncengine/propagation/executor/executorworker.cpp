@@ -1629,7 +1629,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                     return false;
                 }
 
-                return _syncPal->_remoteSnapshot->canWrite(*newCorrespondingParentNode->id());
+                return true;
             }
             case OperationType::Edit: {
                 if (!exists) {
@@ -1642,7 +1642,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                     return false;
                 }
 
-                return _syncPal->_remoteSnapshot->canWrite(*correspondingNode->id());
+                return true;
             }
             case OperationType::Move:
             case OperationType::Delete: {
