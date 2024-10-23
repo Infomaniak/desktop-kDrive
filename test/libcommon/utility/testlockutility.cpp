@@ -25,11 +25,16 @@
 namespace KDC {
 
 void TestLockUtility::testLock() {
-    LockUtility lock;
-    CPPUNIT_ASSERT(lock.lock());
-    CPPUNIT_ASSERT(!lock.lock());
-    lock.unlock();
-    CPPUNIT_ASSERT(lock.lock());
+    static std::mutex mutex;
+    {
+        LockUtility lock(mutex);
+        CPPUNIT_ASSERT(lock.ownLock());
+        CPPUNIT_ASSERT(!mutex.try_lock()); // mutex is locked
+        LockUtility lock2(mutex);
+        CPPUNIT_ASSERT(!lock2.ownLock());
+        CPPUNIT_ASSERT(lock.ownLock());
+    }
+    CPPUNIT_ASSERT(mutex.try_lock()); // lock has been released
 }
 
 int randomSleepTime() {
@@ -40,19 +45,19 @@ constexpr unsigned int nbThread = 3;
 constexpr unsigned int nbTest = 5;
 static unsigned int alreadyLockedCounter = 0;
 static unsigned int lockAcquiredCounter = 0;
-static LockUtility lock;
+static std::mutex mutex;
 void testCallback() {
     int i = 0;
     while (i < nbTest) {
+        LockUtility lock(mutex);
         Utility::msleep(randomSleepTime());
-        if (!lock.lock()) {
+        if (!lock.ownLock()) {
             alreadyLockedCounter++;
             Utility::msleep(randomSleepTime());
             continue;
         }
         lockAcquiredCounter++;
         Utility::msleep(10);
-        lock.unlock();
         i++;
     }
 }

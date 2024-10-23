@@ -28,24 +28,15 @@ namespace KDC {
 
 class LockUtility {
     public:
-        /**
-         * Acquire the lock.
-         * @return Return false if already locked.
-         */
-        [[nodiscard]] bool lock() {
-            const std::scoped_lock lock(_mutex);
-            if (_isLocked) return false;
-            _isLocked = true;
-            return _isLocked;
+        explicit LockUtility(std::mutex &mutex) : _mutex(mutex) { _ownLock = mutex.try_lock(); }
+        ~LockUtility() {
+            if (_ownLock) _mutex.unlock();
         }
-        /**
-         * Release the lock.
-         */
-        void unlock() { _isLocked = false; }
+        [[nodiscard]] bool ownLock() const { return _ownLock; }
 
     private:
-        std::mutex _mutex;
-        bool _isLocked{false};
+        std::mutex &_mutex;
+        bool _ownLock{false};
 };
 
 } // namespace KDC

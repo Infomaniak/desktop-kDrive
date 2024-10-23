@@ -457,9 +457,9 @@ void ClientGui::setupSynthesisPopover() {
     _workaroundManualVisibility = true;
 #endif
 
-    qCInfo(lcClientGui) << "Tray menu workarounds:"
-                        << "noabouttoshow:" << _workaroundNoAboutToShowUpdate << "fakedoubleclick:" << _workaroundFakeDoubleClick
-                        << "showhide:" << _workaroundShowAndHideTray << "manualvisibility:" << _workaroundManualVisibility;
+    qCInfo(lcClientGui) << "Tray menu workarounds:" << "noabouttoshow:" << _workaroundNoAboutToShowUpdate
+                        << "fakedoubleclick:" << _workaroundFakeDoubleClick << "showhide:" << _workaroundShowAndHideTray
+                        << "manualvisibility:" << _workaroundManualVisibility;
 
     connect(&_delayedTrayUpdateTimer, &QTimer::timeout, this, &ClientGui::onUpdateSystray);
     _delayedTrayUpdateTimer.setInterval(2 * 1000);
@@ -761,8 +761,8 @@ void ClientGui::onNewDriveWizard() {
 
 void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const {
     static std::mutex mutex;
-    if (const std::unique_lock lock(mutex, std::try_to_lock); !lock.owns_lock()) return;
-
+    LockUtility lock(mutex);
+    if (!lock.ownLock()) return;
     if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
         GuiRequests::startInstaller();
     } else if (dialog.skip()) {
