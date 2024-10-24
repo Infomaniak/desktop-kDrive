@@ -30,6 +30,7 @@ namespace KDC {
 struct COMMONSERVER_EXPORT JsonParserUtility {
         template<typename T>
         static bool extractValue(const Poco::JSON::Object::Ptr obj, const std::string &key, T &val, const bool mandatory = true) {
+            val = T();
             if (!obj) {
                 LOG_WARN(Log::instance()->getLogger(), "JSON object is NULL");
                 return false;
