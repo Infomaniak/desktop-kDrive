@@ -1434,7 +1434,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
     if (localNodeId.empty()) {
         // The file does not exit yet on local FS, we do not have sufficient right on the parrent.
         LOGW_DEBUG(_logger,
-                   L"Item " << Utility::formatSyncPath(relativePath) << "isn't present local FS, blacklisting the parrent.");
+                   L"Item " << Utility::formatSyncPath(relativePath) << L"isn't present local FS, blacklisting the parrent.");
         return handleAccessDeniedItem(relativePath.parent_path(), cause);
     }
     Error error(syncDbId(), "", "", relativePath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativePath,

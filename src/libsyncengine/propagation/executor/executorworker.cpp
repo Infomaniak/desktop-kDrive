@@ -1260,7 +1260,8 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode = nullptr;
         if (ExitInfo exitInfo = propagateChangeToDbAndTree(syncOp, job, newNode); !exitInfo) {
-            LOGW_WARN(_logger, L"Failed to propagate changes in DB or update tree for: " << syncOp->affectedNode()->name());
+            LOGW_WARN(_logger,
+                      L"Failed to propagate changes in DB or update tree for: " << SyncName2WStr(syncOp->affectedNode()->name()));
             return exitInfo;
         }
 
@@ -2629,8 +2630,8 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo o
     if (ExitInfo exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
                 absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
         !exitInfo) {
-        LOGW_WARN(_logger, "Failed to blacklist file: " << Utility::formatSyncPath(absoluteLocalPath) << " ExitCode::"
-                                                        << exitInfo.code() << " ExitCause::" << exitInfo.cause());
+        LOGW_WARN(_logger, L"Failed to blacklist file: " << Utility::formatSyncPath(absoluteLocalPath) << L" ExitCode::"
+                                                        << exitInfo.code() << L" ExitCause::" << exitInfo.cause());
         return ExitCode::DataError; // The synchronization will be re-started.
     }
 
