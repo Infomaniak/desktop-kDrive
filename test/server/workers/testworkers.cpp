@@ -264,7 +264,7 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setDirection(SyncDirection::Down);
         _syncPal->initProgress(syncItem);
 
-#if defined(__APPLE__) || defined(__WIN32)
+#if defined(__APPLE__) || defined(_WIN32)
         // Folder access denied
         IoError ioError{IoError::Unknown};
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, false, false, false, ioError) &&
@@ -272,7 +272,7 @@ void TestWorkers::testConvertToPlaceholder() {
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
         CPPUNIT_ASSERT_EQUAL(exitInfo.code(), ExitCode::SystemError);
-        CPPUNIT_ASSERT_EQUAL(exitInfo.cause(), ExitCause::NoSearchPermission);
+        CPPUNIT_ASSERT_EQUAL(exitInfo.cause(), ExitCause::FileAccessError);
 
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
