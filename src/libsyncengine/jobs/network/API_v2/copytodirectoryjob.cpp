@@ -58,14 +58,14 @@ std::string CopyToDirectoryJob::getSpecificUrl() {
     return str;
 }
 
-void CopyToDirectoryJob::setData(bool &canceled) {
+ExitInfo CopyToDirectoryJob::setData() {
     Poco::JSON::Object json;
     json.set("name", _newName);
 
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

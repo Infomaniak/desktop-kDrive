@@ -3883,7 +3883,9 @@ void AppServer::addError(const Error &error) {
         if (!existingError.isSimilarTo(error)) continue;
         // Update existing error time
         existingError.setTime(error.time());
-
+        auto shorterPath =
+                (existingError.path().string().size() > error.path().string().size()) ? error.path() : existingError.path();
+        existingError.setPath(shorterPath);
         bool found = false;
         if (!ParmsDb::instance()->updateError(existingError, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateError");
@@ -3951,7 +3953,7 @@ void AppServer::addError(const Error &error) {
         JobManager::instance()->decreasePoolCapacity();
     }
 
-    if (!ServerRequests::isAutoResolvedError(error)) {
+    if (!ServerRequests::isAutoResolvedError(error) && errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email().c_str(), user.name().c_str(), std::to_string(user.userId()).c_str());
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString().c_str(),

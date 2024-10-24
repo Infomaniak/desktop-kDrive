@@ -60,6 +60,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(isSubDir);
         CPPUNIT_TEST(testNormalizedSyncName);
         CPPUNIT_TEST(testNormalizedSyncPath);
+        CPPUNIT_TEST(testIsSameOrParentPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -104,6 +105,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testcheckIfDirEntryIsManaged();
         void testNormalizedSyncName();
         void testNormalizedSyncPath();
+        void testIsSameOrParentPath();
 
     private:
         std::unique_ptr<Utility> _testObj;

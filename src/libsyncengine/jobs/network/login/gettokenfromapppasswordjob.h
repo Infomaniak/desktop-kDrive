@@ -27,7 +27,7 @@ class GetTokenFromAppPasswordJob : public AbstractLoginJob {
         GetTokenFromAppPasswordJob(const std::string &username, const std::string &password);
 
     private:
-        virtual void setData(bool &canceled) override;
+        virtual ExitInfo setData() override;
 
         std::string _username;
         std::string _password;

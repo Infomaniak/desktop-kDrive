@@ -39,6 +39,12 @@ bool LocalMoveJob::canRun() {
         if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError).c_str());
             _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
+            return false;
+        }
+        if (ioError == IoError::AccessDenied) {
+            LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_dest).c_str());
+            _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::FileAccessError;
             return false;
         }
@@ -79,7 +85,7 @@ void LocalMoveJob::runJob() {
     std::error_code ec;
     std::filesystem::rename(_source, _dest, ec);
 
-    if (ec.value() != 0) {
+    if (ec.value() != 0) { // We consider this as a permission denied error
         LOGW_WARN(_logger, L"Failed to rename " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str() << L": "
                                                 << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
         _exitCode = ExitCode::SystemError;

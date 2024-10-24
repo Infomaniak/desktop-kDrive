@@ -117,7 +117,7 @@ class AbstractNetworkJob : public AbstractJob {
         std::string _octetStreamRes;
 
         virtual void setQueryParameters(Poco::URI &, bool &canceled) = 0;
-        virtual void setData(bool &canceled) = 0;
+        virtual ExitInfo setData() = 0;
 
         virtual std::string getContentType(bool &canceled) = 0;
 

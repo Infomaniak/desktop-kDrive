@@ -51,7 +51,7 @@ std::string CreateDirJob::getSpecificUrl() {
     return str;
 }
 
-void CreateDirJob::setData(bool &canceled) {
+ExitInfo CreateDirJob::setData() {
     Poco::JSON::Object json;
     json.set("name", _name);
     if (!_color.empty()) {
@@ -61,7 +61,7 @@ void CreateDirJob::setData(bool &canceled) {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 bool CreateDirJob::handleResponse(std::istream &is) {

@@ -136,10 +136,10 @@ void AbstractNetworkJob::runJob() noexcept {
         }
 
         bool canceled = false;
-        setData(canceled); // Must be called before setQueryParameters
-        if (canceled) {
+        if (ExitInfo exitInfo = setData(); !exitInfo) { // Must be called before setQueryParameters
             LOG_WARN(_logger, "Job " << jobId() << " is cancelled");
-            _exitCode = ExitCode::DataError;
+            _exitCode = exitInfo.code();
+            _exitCause = exitInfo.cause();
             break;
         }
 

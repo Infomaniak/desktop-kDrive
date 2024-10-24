@@ -40,7 +40,7 @@ GetTokenJob::~GetTokenJob() {
 #endif
 }
 
-void GetTokenJob::setData(bool &canceled) {
+ExitInfo GetTokenJob::setData() {
     Poco::URI uri;
     uri.addQueryParameter(grantTypeKey, grantTypeAuthorization);
     uri.addQueryParameter(codeKey, _authorizationCode);
@@ -49,7 +49,7 @@ void GetTokenJob::setData(bool &canceled) {
     uri.addQueryParameter(redirectUriKey, REDIRECT_URI);
 
     _data = uri.getRawQuery();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

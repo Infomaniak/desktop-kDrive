@@ -29,7 +29,7 @@ class InitFileListWithCursorJob : public AbstractTokenNetworkJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual void setData(bool &canceled) override { canceled = false; }
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _dirId;
 };

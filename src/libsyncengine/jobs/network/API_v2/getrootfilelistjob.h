@@ -33,7 +33,7 @@ class GetRootFileListJob : public AbstractTokenNetworkJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        virtual void setData(bool &canceled) override { canceled = false; }
+        inline virtual ExitInfo setData() override { return ExitCode::Ok;  }
 
         uint64_t _page;
         bool _dirOnly;

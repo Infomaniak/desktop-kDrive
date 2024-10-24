@@ -913,7 +913,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
             nextEntry = *_dirIterator;
             return true;
         } catch (std::filesystem::filesystem_error &) {
-            _dirIterator.disable_recursion_pending();
+            disableRecursionPending();
             return next(nextEntry, endOfDirectory, ioError);
         }
 

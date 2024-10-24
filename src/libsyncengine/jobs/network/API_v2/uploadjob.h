@@ -47,11 +47,11 @@ class UploadJob : public AbstractTokenNetworkJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &canceled) override;
-        virtual void setData(bool &canceled) override;
+        virtual ExitInfo setData() override;
         virtual std::string getContentType(bool &canceled) override;
 
-        bool readFile();
-        bool readLink();
+        ExitInfo readFile();
+        ExitInfo readLink();
 
         SyncPath _filePath;
         SyncName _filename;

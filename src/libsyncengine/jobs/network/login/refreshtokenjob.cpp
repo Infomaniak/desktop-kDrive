@@ -41,7 +41,7 @@ RefreshTokenJob::~RefreshTokenJob() {
 #endif
 }
 
-void RefreshTokenJob::setData(bool &canceled) {
+ExitInfo RefreshTokenJob::setData() {
     Poco::URI uri;
     uri.addQueryParameter(grantTypeKey, refreshTokenKey);
     uri.addQueryParameter(refreshTokenKey, _apiToken.refreshToken().c_str());
@@ -49,7 +49,7 @@ void RefreshTokenJob::setData(bool &canceled) {
     uri.addQueryParameter(durationKey, infiniteKey);
 
     _data = uri.getRawQuery();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

@@ -40,12 +40,12 @@ class FolderWatcher {
 
         // The FolderWatcher can only become unreliable on Linux
         inline bool isReliable() const { return _isReliable; }
-
+        ExitInfo exitInfo() const { return _exitInfo; }
     protected:
         // Implement this method in your subclass with the code you want your thread to run
         virtual void startWatching() = 0;
         virtual void stopWatching() = 0;
-
+        void setExitInfo(ExitInfo exitInfo) { _exitInfo = exitInfo; }
         log4cplus::Logger _logger;
         LocalFileSystemObserverWorker *_parent;
         SyncPath _folder;
@@ -56,6 +56,7 @@ class FolderWatcher {
         static void *executeFunc(void *thisWorker);
 
         std::unique_ptr<std::thread> _thread = nullptr;
+        ExitInfo _exitInfo = ExitCode::Ok;
 };
 
 } // namespace KDC

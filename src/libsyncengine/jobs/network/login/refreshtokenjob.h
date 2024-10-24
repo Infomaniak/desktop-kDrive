@@ -29,7 +29,7 @@ class RefreshTokenJob : public AbstractLoginJob {
         ~RefreshTokenJob();
 
     private:
-        virtual void setData(bool &canceled) override;
+        virtual ExitInfo setData() override;
 };
 
 } // namespace KDC

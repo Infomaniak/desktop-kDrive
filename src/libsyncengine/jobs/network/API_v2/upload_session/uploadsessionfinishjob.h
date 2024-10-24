@@ -42,7 +42,7 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual void setData(bool &) override;
+        inline virtual ExitInfo setData() override;
 
         std::string _totalChunkHash;
         uint64_t _totalChunks = 0;

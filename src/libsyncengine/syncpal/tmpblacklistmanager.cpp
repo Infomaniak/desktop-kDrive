@@ -89,6 +89,17 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
     }
 
     insertInBlacklist(nodeId, side);
+
+    std::list<NodeId> toBeRemoved;
+    for (const auto &errorInfo: errors) {
+        if (Utility::isSameOrChildPath(errorInfo.second.path, relativePath) && errorInfo.first != nodeId) {
+            toBeRemoved.push_back(errorInfo.first);
+        }
+    }
+
+    for (const auto &id: toBeRemoved) {
+        removeItemFromTmpBlacklist(id, side);
+    }
 }
 
 void TmpBlacklistManager::refreshBlacklist() {
@@ -131,10 +142,38 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
     errors.erase(nodeId);
 }
 
+void TmpBlacklistManager::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
+    NodeId removedId;
+    NodeId localId;
+
+    // Find the node id of the item to be removed
+    for (const auto &[nodeId, tmpInfo]: _localErrors) {
+        if (Utility::isSameOrChildPath(tmpInfo.path, relativePath)) {
+            localId = nodeId;
+            break;
+        }
+    }
+
+    for (const auto &[nodeId, tmpInfo]: _remoteErrors) {
+        if (Utility::isSameOrChildPath(tmpInfo.path, relativePath)) {
+            removedId = nodeId;
+            break;
+        }
+    }
+
+    if (!localId.empty()) {
+        removeItemFromTmpBlacklist(localId, ReplicaSide::Local);
+    }
+
+    if (!removedId.empty()) {
+        removeItemFromTmpBlacklist(removedId, ReplicaSide::Remote);
+    }
+}
+
 bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const {
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     for (const auto &errorInfo: errors) {
-        if (Utility::startsWith(path, errorInfo.second.path)) return true;
+        if (Utility::isSameOrChildPath(path, errorInfo.second.path)) return true;
     }
 
     return false;

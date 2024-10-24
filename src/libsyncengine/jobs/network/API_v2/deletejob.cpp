@@ -56,6 +56,11 @@ bool DeleteJob::canRun() {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
     }
@@ -67,7 +72,7 @@ bool DeleteJob::canRun() {
             LOGW_WARN(_logger,
                       L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
             _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
+            _exitCause = ExitCause::Unknown;
             return false;
         }
 
@@ -79,7 +84,7 @@ bool DeleteJob::canRun() {
         } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
             _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::NoSearchPermission;
+            _exitCause = ExitCause::FileAccessError;
             return false;
         }
 
