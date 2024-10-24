@@ -124,7 +124,7 @@ void TestWorkers::setUp() {
 #if defined(__APPLE__)
     _vfsPtr = std::unique_ptr<VfsMac>(new VfsMac(vfsSetupParams));
 #elif defined(_WIN32)
-    _vfsPtr = std::unique_ptr<VfsWin>(new VfsWin(vfsSetupParams));
+    _vfsPtr = std::unique_ptr<VfsWin>(new VfsWin(vfsSetupParams, nullptr));
 #else
     _vfsPtr = std::unique_ptr<VfsOff>(new VfsOff(vfsSetupParams));
 #endif

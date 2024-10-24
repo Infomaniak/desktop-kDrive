@@ -20,7 +20,7 @@
 
 #if defined(__APPLE__)
 #include "server/vfs/mac/vfs_mac.h"
-#elif defined(__WIN32)
+#elif defined(_WIN32)
 #include "server/vfs/win/vfs_win.h"
 #else
 #include "libcommonserver/vfs.h"
