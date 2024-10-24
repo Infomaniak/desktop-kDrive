@@ -488,12 +488,12 @@ void TestUtility::testIsSameOrParentPath() {
     CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a/b/c", "a/b/c1"));
     CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a/b/c1", "a/b/c"));
     CPPUNIT_ASSERT(!Utility::isSameOrChildPath("/a/b/c", "a/b/c"));
-
+    
+    CPPUNIT_ASSERT(Utility::isSameOrChildPath("", ""));
     CPPUNIT_ASSERT(Utility::isSameOrChildPath("a/b/c", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("", ""));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a", ""));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a/b/c", "a/b"));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a/b/c", "a"));
+    CPPUNIT_ASSERT(Utility::isSameOrChildPath("a", ""));
+    CPPUNIT_ASSERT(Utility::isSameOrChildPath("a/b/c", "a/b"));
+    CPPUNIT_ASSERT(Utility::isSameOrChildPath("a/b/c", "a"));
 }
 
 } // namespace KDC
