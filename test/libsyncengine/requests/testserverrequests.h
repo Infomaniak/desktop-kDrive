@@ -16,30 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "proxy.h"
-
-#include <stdexcept>
+#include "testincludes.h"
 
 namespace KDC {
 
-std::shared_ptr<Proxy> Proxy::_instance = nullptr;
+class TestServerRequests : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestServerRequests);
+        CPPUNIT_TEST(testFixProxyConfig);
+        CPPUNIT_TEST_SUITE_END();
 
-std::shared_ptr<Proxy> Proxy::instance(const ProxyConfig &proxyConfig) {
-    if (_instance == nullptr) {
-        if (proxyConfig.type() == ProxyType::Undefined) {
-            return nullptr;
-        }
+    public:
+        void setUp(void) final;
+        void tearDown() override;
+        void testFixProxyConfig();
 
-        try {
-            _instance = std::shared_ptr<Proxy>(new Proxy(proxyConfig));
-        } catch (...) {
-            return nullptr;
-        }
-    }
-
-    return _instance;
-}
-
-Proxy::Proxy(const ProxyConfig &proxyConfig) : _proxyConfig(proxyConfig) {}
+    protected:
+        log4cplus::Logger _logger;
+};
 
 } // namespace KDC

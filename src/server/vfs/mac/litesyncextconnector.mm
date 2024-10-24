@@ -704,7 +704,11 @@ LiteSyncExtConnector::LiteSyncExtConnector(log4cplus::Logger logger, ExecuteComm
 
 LiteSyncExtConnector *LiteSyncExtConnector::instance(log4cplus::Logger logger, ExecuteCommand executeCommand) {
     if (_liteSyncExtConnector == nullptr) {
-        _liteSyncExtConnector = new LiteSyncExtConnector(logger, executeCommand);
+        try {
+            _liteSyncExtConnector = new LiteSyncExtConnector(logger, executeCommand);
+        } catch (std::exception const &) {
+            return nullptr;
+        }
     }
 
     return _liteSyncExtConnector;

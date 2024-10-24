@@ -171,7 +171,7 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setPath(relativeFolderPath);
         syncItem.setType(NodeType::Directory);
         syncItem.setDirection(SyncDirection::Down);
-        _syncPal->initProgress(syncItem);
+        CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
         // Folder doesn't exist (normal case)
         exitCause = ExitCause::Unknown;
@@ -195,7 +195,7 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setPath(relativeFilePath);
         syncItem.setType(NodeType::File);
         syncItem.setDirection(SyncDirection::Down);
-        _syncPal->initProgress(syncItem);
+        CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
 #if defined(__APPLE__) || defined(__WIN32)
         // Folder access denied
@@ -250,7 +250,7 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setPath(relativeFolderPath);
         syncItem.setType(NodeType::Directory);
         syncItem.setDirection(SyncDirection::Down);
-        _syncPal->initProgress(syncItem);
+        CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
 #if defined(__APPLE__) || defined(__WIN32)
         // Folder doesn't exist
@@ -277,7 +277,7 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setPath(relativeFilePath);
         syncItem.setType(NodeType::File);
         syncItem.setDirection(SyncDirection::Down);
-        _syncPal->initProgress(syncItem);
+        CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
 #if defined(__APPLE__) || defined(__WIN32)
         // Folder access denied

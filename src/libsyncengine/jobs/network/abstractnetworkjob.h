@@ -38,7 +38,9 @@ class AbstractJob;
 
 class AbstractNetworkJob : public AbstractJob {
     public:
+        /// @exception std::runtime_error
         AbstractNetworkJob();
+
         ~AbstractNetworkJob() override;
 
         bool hasHttpError() const;

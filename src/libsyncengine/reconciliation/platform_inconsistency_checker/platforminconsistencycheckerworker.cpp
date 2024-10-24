@@ -72,7 +72,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
 
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(_logger,
-                         "PlatformInconsistencyCheckerWorker::check" << side << "Tree partially failed, ExitCode=" << exitCode);
+                         "PlatformInconsistencyCheckerWorker::check" << side << "Tree partially failed: code=" << exitCode);
     }
 
     return exitCode;

@@ -413,7 +413,7 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: code=" << exitCode;
 
     return {};
 }
@@ -602,7 +602,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: code=" << exitCode;
 
     return {};
 }

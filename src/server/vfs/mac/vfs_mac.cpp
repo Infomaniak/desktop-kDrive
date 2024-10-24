@@ -41,16 +41,10 @@ VfsMac::VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent) :
     Utility::setLogger(logger());
     IoHelper::setLogger(logger());
 
-    try {
-        _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams._executeCommand);
-    } catch (const std::runtime_error &) {
-        LOG_WARN(logger(), "Error getting LiteSyncExtConnector instance");
-        throw std::runtime_error("Error getting LiteSyncExtConnector instance!");
-    }
-
-    if (_connector == nullptr) {
-        LOG_WARN(logger(), "Error getting LiteSyncExtConnector instance");
-        throw std::runtime_error("Error getting LiteSyncExtConnector instance!");
+    _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams._executeCommand);
+    if (!_connector) {
+        LOG_WARN(logger(), "Error in LiteSyncExtConnector::instance");
+        throw std::runtime_error("Unable to initialize LiteSyncExtConnector.");
     }
 
     // Start hydration/dehydration workers
@@ -484,7 +478,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder: " << e.code() << " - " << e.what());
+        LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder: code=" << e.code() << " error=" << e.what());
     } catch (...) {
         LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder");
     }

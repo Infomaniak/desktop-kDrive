@@ -234,7 +234,9 @@ void ExecutorWorker::initProgressManager() {
         }
 
         if (initSyncFileItem(syncOp, syncItem)) {
-            _syncPal->initProgress(syncItem);
+            if (!_syncPal->initProgress(syncItem)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::initProgress: id=" << syncOpId);
+            }
         }
     }
 }
@@ -300,7 +302,9 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
         relativeLocalFilePath = syncOp->affectedNode()->getPath();
     }
 
-    _syncPal->setProgressComplete(relativeLocalFilePath, status);
+    if (!_syncPal->setProgressComplete(relativeLocalFilePath, status)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgressComplete: " << Utility::formatSyncPath(relativeLocalFilePath));
+    }
 }
 
 // !!! When returning with hasError == true, _executorExitCode and _executorExitCause must be set !!!
@@ -458,38 +462,19 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
     bool alreadyExist = false;
 
     // List all items in parent dir
-    GetFileListJob job(_syncPal->driveDbId(), parentId);
-    ExitCode exitCode = job.runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
-                                          << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << exitCode);
-        _executorExitCode = exitCode;
-        _executorExitCause = ExitCause::Unknown;
-        return false;
-    }
+    try {
+        GetFileListJob job(_syncPal->driveDbId(), parentId);
+        ExitCode exitCode = job.runSynchronously();
+        if (exitCode != ExitCode::Ok) {
+            LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
+                                              << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " code=" << exitCode);
+            _executorExitCode = exitCode;
+            _executorExitCause = ExitCause::Unknown;
+            return false;
+        }
 
-    Poco::JSON::Object::Ptr resObj = job.jsonRes();
-    if (!resObj) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
-        _executorExitCode = ExitCode::BackError;
-        _executorExitCause = ExitCause::ApiErr;
-        return false;
-    }
-
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    if (!dataArray) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
-        _executorExitCode = ExitCode::BackError;
-        _executorExitCause = ExitCause::ApiErr;
-        return false;
-    }
-
-    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-        Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-        std::string name;
-        if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
+        Poco::JSON::Object::Ptr resObj = job.jsonRes();
+        if (!resObj) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                              "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
             _executorExitCode = ExitCode::BackError;
@@ -497,10 +482,37 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
             return false;
         }
 
-        if (name == absolutePath.filename().string()) {
-            alreadyExist = true;
-            break;
+        Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+        if (!dataArray) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                             "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+            _executorExitCode = ExitCode::BackError;
+            _executorExitCause = ExitCause::ApiErr;
+            return false;
         }
+
+        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
+            Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
+            std::string name;
+            if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
+                LOG_SYNCPAL_WARN(
+                        Log::instance()->getLogger(),
+                        "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+                _executorExitCode = ExitCode::BackError;
+                _executorExitCause = ExitCause::ApiErr;
+                return false;
+            }
+
+            if (name == absolutePath.filename().string()) {
+                alreadyExist = true;
+                break;
+            }
+        }
+    } catch (std::exception const &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for driveDbId="
+                                                       << _syncPal->driveDbId() << " nodeId=" << parentId.c_str()
+                                                       << " error=" << e.what());
+        return false;
     }
 
     if (!alreadyExist) {
@@ -508,8 +520,8 @@ bool ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
     }
 
     // The item already exists, exclude it
-    exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(absolutePath,
-                                                                    PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+    ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(
+            absolutePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
     if (exitCode != ExitCode::Ok) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to rename file: " << Utility::formatSyncPath(absolutePath).c_str());
         _executorExitCode = exitCode;
@@ -641,8 +653,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                                 syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
                                 true);
                     } catch (std::exception const &e) {
-                        LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId="
-                                                           << _syncPal->driveDbId() << L" : " << Utility::s2ws(e.what()).c_str());
+                        LOG_SYNCPAL_WARN(_logger, "Error in DownloadJob::DownloadJob for driveDbId=" << _syncPal->driveDbId()
+                                                                                                     << " error=" << e.what());
                         _executorExitCode = ExitCode::DataError;
                         _executorExitCause = ExitCause::Unknown;
                         return false;
@@ -677,8 +689,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                         newCorrespondingParentNode->id().has_value() ? *newCorrespondingParentNode->id() : std::string(),
                         syncOp->newName());
             } catch (std::exception const &e) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in CreateDirJob::CreateDirJob for driveDbId="
-                                                   << _syncPal->driveDbId() << L" : " << Utility::s2ws(e.what()).c_str());
+                LOG_SYNCPAL_WARN(_logger, "Error in CreateDirJob::CreateDirJob for driveDbId=" << _syncPal->driveDbId()
+                                                                                               << " error=" << e.what());
                 _executorExitCode = ExitCode::DataError;
                 _executorExitCause = ExitCause::Unknown;
                 return false;
@@ -709,8 +721,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                             syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
                             isLiteSyncActivated(), uploadSessionParallelJobs);
                 } catch (std::exception const &e) {
-                    LOGW_SYNCPAL_WARN(_logger,
-                                      L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()).c_str());
+                    LOG_SYNCPAL_WARN(_logger, "Error in DriveUploadSession::DriveUploadSession: error=" << e.what());
                     _executorExitCode = ExitCode::DataError;
                     _executorExitCause = ExitCause::Unknown;
                     return false;
@@ -722,8 +733,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                             newCorrespondingParentNode->id().has_value() ? *newCorrespondingParentNode->id() : std::string(),
                             syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0);
                 } catch (std::exception const &e) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId="
-                                                       << _syncPal->driveDbId() << L" : " << Utility::s2ws(e.what()).c_str());
+                    LOG_SYNCPAL_WARN(_logger, "Error in UploadJob::UploadJob for driveDbId=" << _syncPal->driveDbId()
+                                                                                             << " error=" << e.what());
                     _executorExitCode = ExitCode::DataError;
                     _executorExitCause = ExitCause::Unknown;
                     return false;
@@ -1002,8 +1013,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                     syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
                     syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0, false);
         } catch (std::exception const &e) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                           << Utility::s2ws(e.what()).c_str());
+            LOG_SYNCPAL_WARN(_logger, "Error in DownloadJob::DownloadJob for driveDbId=" << _syncPal->driveDbId()
+                                                                                         << " error=" << e.what());
             _executorExitCode = ExitCode::DataError;
             _executorExitCause = ExitCause::Unknown;
             return false;
@@ -1065,8 +1076,7 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
                         isLiteSyncActivated(), uploadSessionParallelJobs);
             } catch (std::exception const &e) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()).c_str());
+                LOG_SYNCPAL_WARN(_logger, "Error in DriveUploadSession::DriveUploadSession: error=" << e.what());
                 _executorExitCode = ExitCode::DataError;
                 _executorExitCause = ExitCause::Unknown;
                 return false;
@@ -1078,8 +1088,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                         syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0);
             } catch (std::exception const &e) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                           << Utility::s2ws(e.what()).c_str());
+                LOG_SYNCPAL_WARN(_logger, "Error in UploadJob::UploadJob for driveDbId=" << _syncPal->driveDbId()
+                                                                                         << " error=" << e.what());
                 _executorExitCode = ExitCode::DataError;
                 _executorExitCause = ExitCause::Unknown;
                 return false;
@@ -1307,83 +1317,89 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypa
         SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
         job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
     } else {
-        try {
-            // Target side is remote, so affected node is on local side.
-            std::shared_ptr<Node> correspondingNode = syncOp->correspondingNode();
-            if (!correspondingNode) {
-                LOGW_SYNCPAL_WARN(_logger, L"Corresponding node not found for item "
-                                                   << Utility::formatSyncPath(syncOp->affectedNode()->getPath()).c_str());
-                _executorExitCode = ExitCode::DataError;
-                _executorExitCause = ExitCause::Unknown;
-                return false;
-            }
+        // Target side is remote, so affected node is on local side.
+        std::shared_ptr<Node> correspondingNode = syncOp->correspondingNode();
+        if (!correspondingNode) {
+            LOGW_SYNCPAL_WARN(_logger, L"Corresponding node not found for item "
+                                               << Utility::formatSyncPath(syncOp->affectedNode()->getPath()).c_str());
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
+            return false;
+        }
 
-            // Get the new parent node
-            std::shared_ptr<Node> parentNode =
-                    syncOp->newParentNode() ? syncOp->newParentNode() : syncOp->affectedNode()->parentNode();
-            if (!parentNode) {
-                LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item "
-                                                   << Utility::formatSyncPath(correspondingNode->getPath()).c_str());
-                _executorExitCode = ExitCode::DataError;
-                _executorExitCause = ExitCause::Unknown;
-                return false;
-            }
+        // Get the new parent node
+        std::shared_ptr<Node> parentNode =
+                syncOp->newParentNode() ? syncOp->newParentNode() : syncOp->affectedNode()->parentNode();
+        if (!parentNode) {
+            LOGW_SYNCPAL_WARN(
+                    _logger, L"Parent node not found for item " << Utility::formatSyncPath(correspondingNode->getPath()).c_str());
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
+            return false;
+        }
 
-            relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
-            relativeOriginLocalFilePath = correspondingNode->getPath();
-            absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
-            SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
-            job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
+        relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
+        relativeOriginLocalFilePath = correspondingNode->getPath();
+        absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
+        SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
+        job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
 
-            if (relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
-                // This is just a rename
+        if (relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
+            // This is just a rename
+            try {
                 job = std::make_shared<RenameJob>(_syncPal->driveDbId(),
                                                   correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
                                                   absoluteDestLocalFilePath);
-            } else {
-                // This is a move
+            } catch (std::exception const &e) {
+                LOG_SYNCPAL_WARN(_logger, "Error in RenameJob::RenameJob for driveDbId=" << _syncPal->driveDbId()
+                                                                                         << " error=" << e.what());
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
+                return false;
+            }
+        } else {
+            // This is a move
 
-                // For all conflict involving an "undo move" operation, the correct parent is already stored in the syncOp
-                std::shared_ptr<Node> remoteParentNode =
-                        syncOp->conflict().type() == ConflictType::MoveParentDelete ||
-                                        syncOp->conflict().type() == ConflictType::MoveMoveSource ||
-                                        syncOp->conflict().type() == ConflictType::MoveMoveCycle
-                                ? parentNode
-                                : correspondingNodeInOtherTree(parentNode);
-                if (!remoteParentNode) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item " << Path2WStr(parentNode->getPath()).c_str());
-                    _executorExitCode = ExitCode::DataError;
-                    _executorExitCause = ExitCause::Unknown;
-                    return false;
-                }
+            // For all conflict involving an "undo move" operation, the correct parent is already stored in the syncOp
+            std::shared_ptr<Node> remoteParentNode = syncOp->conflict().type() == ConflictType::MoveParentDelete ||
+                                                                     syncOp->conflict().type() == ConflictType::MoveMoveSource ||
+                                                                     syncOp->conflict().type() == ConflictType::MoveMoveCycle
+                                                             ? parentNode
+                                                             : correspondingNodeInOtherTree(parentNode);
+            if (!remoteParentNode) {
+                LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item " << Path2WStr(parentNode->getPath()).c_str());
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
+                return false;
+            }
+            try {
                 job = std::make_shared<MoveJob>(_syncPal->driveDbId(), absoluteDestLocalFilePath,
                                                 correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
                                                 remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string(),
                                                 syncOp->newName());
+            } catch (std::exception &e) {
+                LOG_SYNCPAL_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
+                return false;
             }
+        }
 
-            if (syncOp->hasConflict()) {
-                job->setBypassCheck(true);
-            }
+        if (syncOp->hasConflict()) {
+            job->setBypassCheck(true);
+        }
 
-            // Set callbacks
-            if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-                std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-                        std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4);
-                job->setVfsForceStatusCallback(vfsForceStatusCallback);
+        // Set callbacks
+        if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
+            std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+                    std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
+                              std::placeholders::_3, std::placeholders::_4);
+            job->setVfsForceStatusCallback(vfsForceStatusCallback);
 
-                std::function<bool(const SyncPath &, bool &, bool &, bool &, int &)> vfsStatusCallback =
-                        std::bind(&SyncPal::vfsStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-                job->setVfsStatusCallback(vfsStatusCallback);
-            }
-        } catch (std::exception const &e) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in MoveJob::MoveJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                   << Utility::s2ws(e.what()).c_str());
-            _executorExitCode = ExitCode::DataError;
-            _executorExitCause = ExitCause::Unknown;
-            return false;
+            std::function<bool(const SyncPath &, bool &, bool &, bool &, int &)> vfsStatusCallback =
+                    std::bind(&SyncPal::vfsStatus, _syncPal, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+                              std::placeholders::_4, std::placeholders::_5);
+            job->setVfsStatusCallback(vfsStatusCallback);
         }
     }
 
@@ -1521,8 +1537,8 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &by
                     _syncPal->driveDbId(), syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
                     syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(), absoluteLocalFilePath);
         } catch (std::exception const &e) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in DeleteJob::DeleteJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                       << Utility::s2ws(e.what()).c_str());
+            LOG_SYNCPAL_WARN(_logger,
+                             "Error in DeleteJob::DeleteJob for driveDbId=" << _syncPal->driveDbId() << " error=" << e.what());
             _executorExitCode = ExitCode::DataError;
             _executorExitCause = ExitCause::Unknown;
             return false;
@@ -2036,7 +2052,10 @@ void ExecutorWorker::sendProgress() {
 
         for (const auto &jobInfo: _ongoingJobs) {
             if (jobInfo.second->isProgressTracked() && jobInfo.second->progressChanged()) {
-                _syncPal->setProgress(jobInfo.second->affectedFilePath(), jobInfo.second->getProgress());
+                if (!_syncPal->setProgress(jobInfo.second->affectedFilePath(), jobInfo.second->getProgress())) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: "
+                                                       << Utility::formatSyncPath(jobInfo.second->affectedFilePath()));
+                }
             }
         }
     }

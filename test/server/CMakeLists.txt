@@ -15,7 +15,7 @@ set(testserver_SRCS
     ${CMAKE_SOURCE_DIR}/src/libcommon/updater.h ${CMAKE_SOURCE_DIR}/src/libcommon/updater.cpp
     ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.cpp
     ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.cpp
-    ${server_srcs_path}/logarchiver.h ${server_srcs_path}/logarchiver.cpp
+    ${server_srcs_path}/logarchiver/logarchiver.h ${server_srcs_path}/logarchiver/logarchiver.cpp
     ${server_srcs_path}/updater/kdcupdater.h ${server_srcs_path}/updater/kdcupdater.cpp
     ${server_srcs_path}/updater/updateinfo.h ${server_srcs_path}/updater/updateinfo.cpp
     ${server_srcs_path}/updater/updaterserver.h ${server_srcs_path}/updater/updaterserver.cpp

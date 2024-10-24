@@ -132,7 +132,7 @@ ExitCode ExcludeListPropagator::checkItems() {
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Error caught in ExcludeListPropagator::checkItems: " << e.code() << " - " << e.what());
+                         "Error caught in ExcludeListPropagator::checkItems: code=" << e.code() << " error=" << e.what());
         return ExitCode::SystemError;
     } catch (...) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in ExcludeListPropagator::checkItems");
