@@ -39,13 +39,6 @@ std::shared_ptr<ParametersCache> ParametersCache::instance(const bool isTest /*=
 }
 
 ParametersCache::ParametersCache(bool isTest /*= false*/) {
-    try {
-        ParmsDb::instance();
-    } catch (ParmsDb::ParmsDbIsNotInitializedException &) {
-        // ParmsDB is not initialized, behave as test
-        isTest = true;
-    }
-
     if (isTest) {
         // In test, use extended log by default
         _parameters.setExtendedLog(true);

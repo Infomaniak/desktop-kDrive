@@ -29,13 +29,7 @@
 #include "config.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/sentryhandler.h"
-
-#undef CONSOLE_DEBUG
-#ifdef CONSOLE_DEBUG
-#include <iostream>
-#endif
 #include "guirequests.h"
-
 
 #include <QActionGroup>
 #include <QApplication>
@@ -1078,7 +1072,7 @@ void SynthesisPopover::onUpdateAvailabilityChange(const UpdateState updateState)
         default:
             _lockedAppUpdateButton->setText(tr("Unavailable"));
             SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "AppLocked",
-                                                      "406 Error received but unable to fetch an update");
+                                                      "426 Error received but unable to fetch an update");
             break;
     }
 }

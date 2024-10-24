@@ -262,9 +262,9 @@ inline std::string toString(RequestNum e) {
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
             return "UTILITY_GET_LOG_ESTIMATED_SIZE";
         case RequestNum::UPDATER_VERSION_INFO:
-            return "UPDATER_VERSION";
+            return "UPDATER_VERSION_INFO";
         case RequestNum::UPDATER_STATE:
-            return "UPDATER_STATUS";
+            return "UPDATER_STATE";
         case RequestNum::UPDATER_START_INSTALLER:
             return "UPDATER_START_INSTALLER";
         case RequestNum::UPDATER_SKIP_VERSION:

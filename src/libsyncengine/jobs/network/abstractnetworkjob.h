@@ -58,7 +58,7 @@ class AbstractNetworkJob : public AbstractJob {
         virtual bool handleResponse(std::istream &inputStream) = 0;
         virtual bool handleError(std::istream &inputStream, const Poco::URI &uri) = 0;
 
-        virtual std::string getSpecificUrl() { return ""; }
+        virtual std::string getSpecificUrl() = 0;
         virtual std::string getUrl() = 0;
 
         void unzip(std::istream &inputStream, std::stringstream &ss);

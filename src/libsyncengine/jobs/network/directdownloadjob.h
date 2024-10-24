@@ -31,6 +31,7 @@ class DirectDownloadJob final : public AbstractNetworkJob {
 
     protected:
         std::string getUrl() override { return _url; }
+        std::string getSpecificUrl() override { return ""; }
 
     private:
         bool handleResponse(std::istream &inputStream) override;

@@ -287,8 +287,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
     // Archive previous log files and delete expired files
     IoError ioError = IoError::Success;
     SyncPath logDirPath;
-    std::string errorMsg;
-    if (!IoHelper::logDirectoryPath(logDirPath, ioError, &errorMsg) || ioError != IoError::Success) {
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoError::Success) {
         return;
     }
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
