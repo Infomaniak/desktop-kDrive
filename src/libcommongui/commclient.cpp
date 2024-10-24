@@ -292,7 +292,8 @@ void CommClient::stop() {
         if (_tcpConnection->isOpen()) {
             _tcpConnection->close();
         }
-        _tcpConnection->deleteLater();
+        // Test again the pointer value since it might has been set to nullptr in CommClient::onDisconnected()
+        if (_tcpConnection) _tcpConnection->deleteLater();
     }
 
     _instance = nullptr;
