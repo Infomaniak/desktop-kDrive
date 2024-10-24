@@ -550,7 +550,7 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
             }
         }
 #endif
-        else if (ec.value() == ERROR_ACCESS_DENIED) {
+        else if (IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied) {
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::FileAccessError;
             return false;
