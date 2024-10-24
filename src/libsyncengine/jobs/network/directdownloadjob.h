@@ -16,10 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "updater.h"
+#pragma once
+
+#include "utility/types.h"
+#include "abstractnetworkjob.h"
 
 namespace KDC {
 
-Updater::Updater(QObject *) {}
+class DirectDownloadJob final : public AbstractNetworkJob {
+    public:
+        DirectDownloadJob(const SyncPath &destinationFile, const std::string &url);
+
+        [[nodiscard]] const SyncPath &getDestinationFile() const { return _destinationFile; }
+
+    protected:
+        std::string getUrl() override { return _url; }
+        std::string getSpecificUrl() override { return ""; }
+
+    private:
+        bool handleResponse(std::istream &inputStream) override;
+        bool handleError(std::istream &is, const Poco::URI &uri) override;
+
+        const SyncPath _destinationFile;
+        const std::string _url;
+};
 
 } // namespace KDC

@@ -24,11 +24,11 @@ ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart
                                NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
                                bool purgeOldLogs, bool syncHiddenFiles, bool useBigFolderSizeLimit, qint64 bigFolderSizeLimit,
                                bool darkTheme, bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu) :
-    _language(language),
-    _monoIcons(monoIcons), _autoStart(autoStart), _moveToTrash(moveToTrash), _notificationsDisabled(notificationsDisabled),
-    _useLog(useLog), _logLevel(logLevel), _extendedLog(extendedLog), _purgeOldLogs(purgeOldLogs),
-    _syncHiddenFiles(syncHiddenFiles), _useBigFolderSizeLimit(useBigFolderSizeLimit), _bigFolderSizeLimit(bigFolderSizeLimit),
-    _darkTheme(darkTheme), _showShortcuts(showShortcuts), _dialogGeometry(dialogGeometry), _maxAllowedCpu(maxAllowedCpu) {}
+    _language(language), _monoIcons(monoIcons), _autoStart(autoStart), _moveToTrash(moveToTrash),
+    _notificationsDisabled(notificationsDisabled), _useLog(useLog), _logLevel(logLevel), _extendedLog(extendedLog),
+    _purgeOldLogs(purgeOldLogs), _syncHiddenFiles(syncHiddenFiles), _useBigFolderSizeLimit(useBigFolderSizeLimit),
+    _bigFolderSizeLimit(bigFolderSizeLimit), _darkTheme(darkTheme), _showShortcuts(showShortcuts),
+    _dialogGeometry(dialogGeometry), _maxAllowedCpu(maxAllowedCpu) {}
 
 ParametersInfo::ParametersInfo() :
     _language(Language::Default), _monoIcons(false), _autoStart(true), _moveToTrash(true),

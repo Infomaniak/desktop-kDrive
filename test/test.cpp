@@ -20,6 +20,7 @@
 
 #include "libcommonserver/log/log.h"
 #include "libcommon/log/sentry/sentryhandler.h"
+#include "utility/utility.h"
 
 #include <log4cplus/initializer.h>
 

@@ -51,9 +51,8 @@ Q_LOGGING_CATEGORY(lcBaseFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInf
 
 BaseFolderTreeItemWidget::BaseFolderTreeItemWidget(std::shared_ptr<ClientGui> gui, int driveDbId, bool displayRoot,
                                                    QWidget *parent) :
-    QTreeWidget(parent),
-    _gui(gui), _driveDbId(driveDbId), _displayRoot(displayRoot), _folderIconColor(QColor()), _folderIconSize(QSize()),
-    _inserting(false) {
+    QTreeWidget(parent), _gui(gui), _driveDbId(driveDbId), _displayRoot(displayRoot), _folderIconColor(QColor()),
+    _folderIconSize(QSize()), _inserting(false) {
     initUI();
 }
 

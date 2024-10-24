@@ -29,8 +29,7 @@
 #include <minwindef.h>
 #include <urlmon.h>
 
-#define THUMBNAIL_MIME_TYPE_LIST \
-    { L"image", L"video" }
+#define THUMBNAIL_MIME_TYPE_LIST {L"image", L"video"}
 
 // IInitializeWithItem
 IFACEMETHODIMP ThumbnailProvider::Initialize(_In_ IShellItem *item, _In_ DWORD mode) {

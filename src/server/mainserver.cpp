@@ -21,7 +21,6 @@
 #include "version.h"
 #include "common/utility.h"
 #include "libcommon/asserts.h"
-#include "updater/updaterserver.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/sentryhandler.h"
@@ -171,13 +170,6 @@ int main(int argc, char **argv) {
 
         appPtr->showAlreadyRunning();
         return 0;
-    }
-
-    // If handleStartup returns true, main() needs to terminate here, e.g. because the updater is triggered
-    KDC::UpdaterServer *updater = KDC::UpdaterServer::instance();
-    if (updater && updater->handleStartup()) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Update in progress, exiting...");
-        return 1;
     }
 
     return appPtr->exec();

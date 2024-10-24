@@ -713,40 +713,25 @@ std::string toString(const LogUploadState e) {
 
 std::string toString(const UpdateState e) {
     switch (e) {
-        case UpdateState::Error:
-            return "Error";
-        case UpdateState::None:
-            return "None";
+        case UpdateState::UpToDate:
+            return "UpToDate";
         case UpdateState::Checking:
             return "Checking";
+        case UpdateState::Available:
+            return "Available";
         case UpdateState::Downloading:
             return "Downloading";
         case UpdateState::Ready:
             return "Ready";
-        case UpdateState::ManualOnly:
-            return "ManualOnly";
-        case UpdateState::Skipped:
-            return "Skipped";
+        case UpdateState::DownloadError:
+            return "DownloadError";
+        case UpdateState::CheckError:
+            return "CheckError";
         default:
             return noConversionStr;
     }
 }
-std::string toString(const UpdateStateV2 e) {
-    switch (e) {
-        case UpdateStateV2::UpToDate:
-            return "UpToDate";
-        case UpdateStateV2::Available:
-            return "Available";
-        case UpdateStateV2::Downloading:
-            return "Downloading";
-        case UpdateStateV2::Ready:
-            return "Ready";
-        case UpdateStateV2::Error:
-            return "Error";
-        default:
-            return noConversionStr;
-    }
-}
+
 std::string toString(const DistributionChannel e) {
     switch (e) {
         case DistributionChannel::Prod:

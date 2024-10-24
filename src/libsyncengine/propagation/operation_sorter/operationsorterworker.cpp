@@ -26,8 +26,7 @@ namespace KDC {
 
 OperationSorterWorker::OperationSorterWorker(std::shared_ptr<SyncPal> syncPal, const std::string name,
                                              const std::string &shortName) :
-    OperationProcessor(syncPal, name, shortName),
-    _hasOrderChanged(false) {}
+    OperationProcessor(syncPal, name, shortName), _hasOrderChanged(false) {}
 
 void OperationSorterWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);

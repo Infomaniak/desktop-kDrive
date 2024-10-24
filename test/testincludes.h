@@ -33,6 +33,4 @@
 #define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */
 #endif
 
-#include "libcommonserver/utility/utility.h"
-
 int runTestSuite(const std::string &logFileName);

@@ -18,27 +18,31 @@
 
 #pragma once
 
-#include <QObject>
-#include <QString>
-
-#include "libcommon/utility/types.h"
+#include "abstractupdater.h"
 
 namespace KDC {
 
-class Updater : public QObject {
-        Q_OBJECT
-
+class WindowsUpdater final : public AbstractUpdater {
     public:
-        explicit Updater(QObject *parent = NULL);
+        void onUpdateFound() override;
+        void startInstaller() override;
 
-        virtual QString version() const = 0;
-        virtual bool isKDCUpdater() = 0;
-        virtual bool isSparkleUpdater() = 0;
-        virtual QString statusString() const = 0;
-        virtual bool downloadCompleted() const = 0;
-        virtual bool updateFound() const = 0;
-        virtual void startInstaller() const = 0;
-        virtual UpdateState updateState() const = 0;
+    private:
+        /**
+         * @brief Start the synchronous download of the new version installer.
+         */
+        virtual void downloadUpdate() noexcept;
+
+        /**
+         * @brief Callback to notify that the download is finished.
+         */
+        void downloadFinished(UniqueId jobId);
+
+        /**
+         * Build the destination path where the installer should be downloaded.
+         * @return the absolute path to the installer file.
+         */
+        [[nodiscard]] bool getInstallerPath(SyncPath &path) const;
 };
 
 } // namespace KDC

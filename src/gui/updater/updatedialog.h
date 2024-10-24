@@ -18,27 +18,27 @@
 
 #pragma once
 
-#include <QString>
+#include "../customdialog.h"
+#include "utility/types.h"
+
 namespace KDC {
 
-class UpdateInfo {
-    public:
-        void setVersion(const QString &v);
-        QString version() const;
-        void setVersionString(const QString &v);
-        QString versionString() const;
-        void setWeb(const QString &v);
-        QString web() const;
-        void setDownloadUrl(const QString &v);
-        QString downloadUrl() const;
+class UpdateDialog : public CustomDialog {
+        Q_OBJECT
 
-        static UpdateInfo parseString(const QString &xml, bool *ok);
+    public:
+        explicit UpdateDialog(const VersionInfo &versionInfo, QWidget *parent = nullptr);
+        ~UpdateDialog() override;
+
+        void reject() override;
+
+        [[nodiscard]] bool skip() const { return _skip; }
 
     private:
-        QString mVersion;
-        QString mVersionString;
-        QString mWeb;
-        QString mDownloadUrl;
+        void initUi(const VersionInfo &versionInfo);
+
+        QPushButton *_skipButton{nullptr};
+        bool _skip{false};
 };
 
 } // namespace KDC

@@ -27,8 +27,7 @@ UniqueId FSOperation::_nextId = 0;
 FSOperation::FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType, SyncTime createdAt /*= 0*/,
                          SyncTime lastModified /*= 0*/, int64_t size /*= 0*/, const SyncPath &path /*= ""*/,
                          const SyncPath &destinationPath /*= ""*/) :
-    _id(_nextId++),
-    _operationType(operationType), _nodeId(nodeId), _objectType(objectType), _createdAt(createdAt), _lastModified(lastModified),
-    _size(size), _path(path), _destinationPath(destinationPath) {}
+    _id(_nextId++), _operationType(operationType), _nodeId(nodeId), _objectType(objectType), _createdAt(createdAt),
+    _lastModified(lastModified), _size(size), _path(path), _destinationPath(destinationPath) {}
 
 } // namespace KDC

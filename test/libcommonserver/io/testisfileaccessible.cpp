@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define WIN32_LEAN_AND_MEAN
-
 #include "testio.h"
 
 #include "libcommonserver/utility/utility.h"

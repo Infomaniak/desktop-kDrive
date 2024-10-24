@@ -26,7 +26,7 @@ namespace KDC {
 
 std::shared_ptr<ParametersCache> ParametersCache::_instance = nullptr;
 
-std::shared_ptr<ParametersCache> ParametersCache::instance(bool isTest /*= false*/) {
+std::shared_ptr<ParametersCache> ParametersCache::instance(const bool isTest /*= false*/) {
     if (_instance == nullptr) {
         try {
             _instance = std::shared_ptr<ParametersCache>(new ParametersCache(isTest));
@@ -57,27 +57,31 @@ ParametersCache::ParametersCache(bool isTest /*= false*/) {
     }
 }
 
-ExitCode ParametersCache::save() {
+void ParametersCache::save(ExitCode *exitCode /*= nullptr*/) const {
     // Get old parameters
     Parameters oldParameters;
     bool found = false;
     if (!ParmsDb::instance()->selectParameters(oldParameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectParameters");
-        return ExitCode::DbError;
+        if (exitCode) *exitCode = ExitCode::DbError;
+        return;
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
-        return ExitCode::DataError;
+        if (exitCode) *exitCode = ExitCode::DataError;
+        return;
     }
 
     // Update parameters
     if (!ParmsDb::instance()->updateParameters(_parameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateParameters");
-        return ExitCode::DbError;
+        if (exitCode) *exitCode = ExitCode::DbError;
+        return;
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
-        return ExitCode::DataError;
+        if (exitCode) *exitCode = ExitCode::DataError;
+        return;
     }
 
     // Check if Log parameters have been updated
@@ -85,14 +89,15 @@ ExitCode ParametersCache::save() {
         oldParameters.purgeOldLogs() != _parameters.purgeOldLogs()) {
         if (!Log::instance()->configure(_parameters.useLog(), _parameters.logLevel(), _parameters.purgeOldLogs())) {
             LOG_WARN(Log::instance()->getLogger(), "Error in Log::configure");
-            return ExitCode::SystemError;
+            if (exitCode) *exitCode = ExitCode::SystemError;
+            return;
         }
     }
 
-    return ExitCode::Ok;
+    if (exitCode) *exitCode = ExitCode::Ok;
 }
 
-void ParametersCache::setUploadSessionParallelThreads(int count) {
+void ParametersCache::setUploadSessionParallelThreads(const int count) {
     _parameters.setUploadSessionParallelJobs(count);
     save();
 }

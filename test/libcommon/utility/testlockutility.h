@@ -18,29 +18,20 @@
 
 #pragma once
 
-#include "../customdialog.h"
-
-// #include "../updater/updateinfo.h"
-
-class QTextEdit;
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 namespace KDC {
 
-class UpdateErrorDialog : public CustomDialog {
-        Q_OBJECT
+class TestLockUtility : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestLockUtility);
+        CPPUNIT_TEST(testLock);
+        CPPUNIT_TEST(testLockMultiThread);
+        CPPUNIT_TEST_SUITE_END();
 
-    public:
-        explicit UpdateErrorDialog(const QString &targetVersion, const QString &targetVersionString, const QString &clientVersion,
-                                   QWidget *parent = nullptr);
-        virtual ~UpdateErrorDialog();
-
-    signals:
-        void skip();
-        void askagain();
-        void retry();
-
-    private:
-        void initUi(const QString &targetVersion, const QString &targetVersionString, const QString &clientVersion);
+    protected:
+        void testLock();
+        void testLockMultiThread();
 };
 
 } // namespace KDC

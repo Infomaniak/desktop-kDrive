@@ -231,7 +231,8 @@ CommClient::~CommClient() {
     }
 }
 
-bool CommClient::execute(RequestNum num, const QByteArray &params, QByteArray &results, int timeout /*= COMM_SHORT_TIMEOUT*/) {
+bool CommClient::execute(const RequestNum num, const QByteArray &params, QByteArray &results,
+                         const int timeout /*= COMM_SHORT_TIMEOUT*/) {
     if (!_tcpConnection) {
         return false;
     }
@@ -274,6 +275,16 @@ bool CommClient::execute(RequestNum num, const QByteArray &params, QByteArray &r
     bool ret = waitLoop.exec(QEventLoop::ExcludeUserInputEvents);
 
     return ret;
+}
+
+bool CommClient::execute(const RequestNum num, const QByteArray &params, const int timeout) {
+    QByteArray result;
+    return execute(num, params, result, timeout);
+}
+
+bool CommClient::execute(const RequestNum num, const int timeout) {
+    QByteArray results;
+    return execute(num, {}, results, timeout);
 }
 
 void CommClient::stop() {

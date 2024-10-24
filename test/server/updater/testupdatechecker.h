@@ -16,36 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "testincludes.h"
 
-#include "server/updater/kdcupdater.h"
-#ifdef __APPLE__
-#include "server/updater/sparkleupdater.h"
-#endif
-
-using namespace CppUnit;
-
 namespace KDC {
-class TestUpdater : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestUpdater);
-        CPPUNIT_TEST(testUpdateInfoVersionParseString);
-        CPPUNIT_TEST(testIsKDCorSparkleUpdater);
-        CPPUNIT_TEST(testUpdateSucceeded);
+
+class TestUpdateChecker final : public CppUnit::TestFixture {
+    public:
+        CPPUNIT_TEST_SUITE(TestUpdateChecker);
+        CPPUNIT_TEST(testCheckUpdateAvailable);
         CPPUNIT_TEST_SUITE_END();
 
-    public:
-        void setUp(void) final;
-        void testUpdateInfoVersionParseString(void);
-        void testIsKDCorSparkleUpdater(void);
-        void testUpdateSucceeded(void);
-
     protected:
-        log4cplus::Logger _logger;
-#ifdef __APPLE__
-        SparkleUpdater* _updater;
-#else
-        KDCUpdater* _updater;
-#endif
+        void testCheckUpdateAvailable();
 };
 
 } // namespace KDC
