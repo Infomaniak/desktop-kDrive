@@ -24,7 +24,7 @@ namespace KDC {
 
 class SparkleUpdater final : public AbstractUpdater {
     public:
-        explicit SparkleUpdater();
+        SparkleUpdater();
         ~SparkleUpdater() override;
 
         void onUpdateFound() override;

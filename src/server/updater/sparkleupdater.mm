@@ -166,8 +166,6 @@
 
 @end
 
-//
-
 // SparkleUpdater class
 namespace KDC {
 
@@ -247,6 +245,7 @@ void SparkleUpdater::deleteUpdater() {
     [d->updater release];
     [d->updaterDelegate release];
     [d->spuStandardUserDriver release];
+    [d->delegateUserDriverObject release];
 }
 
 bool SparkleUpdater::startSparkleUpdater() {

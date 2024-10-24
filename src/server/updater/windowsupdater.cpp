@@ -75,6 +75,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::downloadFinished", error);
         LOG_ERROR(Log::instance()->getLogger(), error);
         setState(UpdateState::DownloadError);
+        assert(false);
         return;
     }
 
