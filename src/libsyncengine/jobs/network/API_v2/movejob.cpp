@@ -89,7 +89,7 @@ std::string MoveJob::getSpecificUrl() {
     return str;
 }
 
-void MoveJob::setData(bool &canceled) {
+ExitInfo MoveJob::setData() {
     Poco::JSON::Object json;
     if (!_name.empty()) {
         json.set("name", _name);
@@ -98,7 +98,7 @@ void MoveJob::setData(bool &canceled) {
         json.stringify(ss);
         _data = ss.str();
     }
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

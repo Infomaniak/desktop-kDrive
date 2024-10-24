@@ -158,7 +158,9 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
                 if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::FileAccessError) {
                     // Blacklist node
-                    _syncPal->handleAccessDeniedItem(dbPath, nodeId);                   
+                    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(dbPath); !exitInfo) {
+                        return exitInfo;
+                    }
 
                     // Update unsynced list cache
                     updateUnsyncedList();

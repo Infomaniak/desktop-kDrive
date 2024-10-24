@@ -31,7 +31,7 @@ class UploadSessionCancelJob : public AbstractUploadSessionJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual void setData(bool &) override {}
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
 };

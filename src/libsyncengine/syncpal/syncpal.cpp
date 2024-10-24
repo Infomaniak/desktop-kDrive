@@ -1406,6 +1406,10 @@ void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativ
     _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
 }
 
+bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const {
+    return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
+}
+
 void SyncPal::refreshTmpBlacklist() {
     _tmpBlacklistManager->refreshBlacklist();
 }
@@ -1414,51 +1418,51 @@ void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side)
     _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
 }
 
-void SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, const NodeId &LocalNodeId, ExitCause cause) {
+void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
+    _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
+}
 
-    Error error(syncDbId(), "", "", NodeType::Unknown, relativePath, ConflictType::None, InconsistencyType::None,
-                CancelType::None, "", ExitCode::SystemError, cause);
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause) {
+    if (relativePath.empty()) {
+        LOGW_SYNCPAL_WARN(_logger, L"Access error on root folder");
+        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
+    }
+
+    NodeId localNodeId;
+    localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath);
+
+    if (localNodeId.empty()) {
+        // The file does not exit yet on local FS, we do not have sufficient right on the parrent.
+        LOGW_DEBUG(_logger,
+                   L"Item " << Utility::formatSyncPath(relativePath) << "isn't present local FS, blacklisting the parrent.");
+        return handleAccessDeniedItem(relativePath.parent_path(), cause);
+    }
+    Error error(syncDbId(), "", "", relativePath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativePath,
+                ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
     addError(error);
-    LOGW_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(LocalNodeId)
-                                 << L" is blacklisted temporarily because of access denied");
+    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(localNodeId)
+                                         << L" is blacklisted temporarily because of access denied");
 
-    std::optional<NodeId> remoteNodeId;
-    SyncPath remotePath;
-
-    // Try to found the corresponding node in Db
     NodeId correspondingNodeId;
-    if (bool found = false; !_syncDb->correspondingNodeId(ReplicaSide::Local, LocalNodeId, correspondingNodeId, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
-    }
-    if (bool found = false; !_syncDb->path(ReplicaSide::Remote, correspondingNodeId, remotePath, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-    }
-    remoteNodeId = correspondingNodeId;
-
-    // If the corresponding node is not found, try to found the node in the snapshot
-    if (remoteNodeId->empty()) {
-        remoteNodeId = snapshotCopy(ReplicaSide::Remote)->itemId(relativePath);
-        if (remoteNodeId->empty()) {
-            LOGW_WARN(_logger, L"SyncPal::handleAccessDeniedItem Item " << Utility::formatSyncPath(relativePath)
-                                                                        << L" does not exist on the remote side.");
-            return;
-        }
-        remotePath = relativePath;
+    bool found;
+    correspondingNodeId = snapshot(ReplicaSide::Remote)->itemId(relativePath);
+    if (correspondingNodeId.empty() &&
+        !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, correspondingNodeId, found)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::correspondingNodeId");
+        return {ExitCode::DbError, ExitCause::Unknown};
     }
 
-    if (!LocalNodeId.empty()) { // If the file/dir already exist on local FS, it will be blacklisted.
-        if (_tmpBlacklistManager->isTmpBlacklisted(LocalNodeId, ReplicaSide::Local)) {
-            LOGW_INFO(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(LocalNodeId)
-                                        << L" or one of its parent is already blacklisted temporarily.");
-            return;
-        }
+    _tmpBlacklistManager->blacklistItem(localNodeId, relativePath, ReplicaSide::Local);
+    if (!correspondingNodeId.empty()) _tmpBlacklistManager->blacklistItem(correspondingNodeId, relativePath, ReplicaSide::Remote);
 
-        _tmpBlacklistManager->blacklistItem(LocalNodeId, relativePath, ReplicaSide::Local);
+    if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
     }
 
-    if (remoteNodeId.has_value() && !remoteNodeId->empty() && !remotePath.empty()) {
-        _tmpBlacklistManager->blacklistItem(*remoteNodeId, remotePath, ReplicaSide::Remote);
+    if (!correspondingNodeId.empty() && !updateTree(ReplicaSide::Remote)->deleteNode(correspondingNodeId)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
     }
+    return ExitCode::Ok;
 }
 
 void SyncPal::copySnapshots() {

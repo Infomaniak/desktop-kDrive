@@ -250,7 +250,6 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     if ((isNtfs && !NT_SUCCESS(status)) ||
         (!isNtfs && dwError != 0)) { // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we
                                      // also check GetLastError
-        LOGW_DEBUG(logger(), L"Error in zwQueryDirectoryFile: " << Utility::formatSyncPath(path.parent_path()).c_str());
         CloseHandle(hParent);
 
         if (!NT_SUCCESS(status)) {
@@ -258,6 +257,8 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
         } else if (dwError != 0) {
             ioError = dWordError2ioError(dwError, logger());
         }
+        LOGW_DEBUG(logger(), L"Error in zwQueryDirectoryFile: " << Utility::formatIoError(path, ioError));
+
         return isExpectedError(ioError);
     }
 
@@ -469,7 +470,7 @@ void IoHelper::initRightsWindowsApi() {
 }
 
 // Always return false if ioError != IoError::Success, caller should call _isExpectedError
-static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
+[[deprecated]] static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger, bool inherite = false) noexcept {
     PACL pACLold = nullptr; // Current ACL
     PACL pACLnew = nullptr; // New ACL
@@ -552,7 +553,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     return true;
 }
 
-static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
+[[deprecated]] static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {
     ioError = IoError::Success;
     read = false;
@@ -721,7 +722,7 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
     ioError = IoError::Success;
 
     HANDLE hFile =
-            CreateFileW(Path2WStr(path).c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+            CreateFileW(Path2WStr(path).c_str(), 0,  FILE_SHARE_READ | FILE_SHARE_WRITE,
                         NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());

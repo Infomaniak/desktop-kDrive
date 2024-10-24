@@ -424,14 +424,9 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCaus
                       "Synchronization will resume as soon as the folder is accessible.")
                     .arg(err);
 
-        case ExitCause::SyncDirReadError:
+        case ExitCause::SyncDirAccesError:
             return tr("The synchronization folder is inaccessible (error %1).<br>"
-                      "Please check that you have read access to this folder.")
-                    .arg(err);
-
-        case ExitCause::SyncDirWriteError:
-            return tr("The synchronization folder is inaccessible (error %1).<br>"
-                      "Please check that you have write access to this folder.")
+                      "Please check that you have read and write access to this folder.")
                     .arg(err);
 
         case ExitCause::NotEnoughDiskSpace:
@@ -832,7 +827,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
             if (errorInfo.exitCause() == ExitCause::FileAccessError) {
                 return tr(
                         "Can't access item.<br>"
-                        "Please fix the write permissions and restart the synchronization.");
+                        "Please fix the read and write permissions.");
             }
 
             if (errorInfo.exitCause() == ExitCause::MoveToTrashFailed) {

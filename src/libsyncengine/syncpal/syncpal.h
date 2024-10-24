@@ -252,12 +252,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
         virtual int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
         virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
+        virtual bool isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const;
         virtual void refreshTmpBlacklist();
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
+        virtual void removeItemFromTmpBlacklist(const SyncPath &relativePath);
 
-        // If the item already exists on the local side, path and nodeId are required. Else, only the remote path is required.
-        void handleAccessDeniedItem(const SyncPath &relativePath, const NodeId &nodeId = NodeId(),
-                                         ExitCause cause = ExitCause::FileAccessError);
+        ExitInfo handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause = ExitCause::FileAccessError);
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 

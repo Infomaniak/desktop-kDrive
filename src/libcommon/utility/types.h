@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma onceExitInfo
+#pragma once
 
 #include <string>
 #include <filesystem>
@@ -195,8 +195,7 @@ enum class ExitCause {
     DbEntryNotFound,
     InvalidSnapshot,
     SyncDirDoesntExist,
-    SyncDirReadError,
-    SyncDirWriteError,
+    SyncDirAccesError,
     HttpErr,
     HttpErrForbidden,
     RedirectionError,

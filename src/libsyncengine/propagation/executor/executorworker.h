@@ -145,6 +145,7 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo handleOpsExecutionError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
         ExitInfo handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+        ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
 

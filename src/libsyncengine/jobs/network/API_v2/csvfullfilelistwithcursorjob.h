@@ -89,7 +89,7 @@ class CsvFullFileListWithCursorJob : public AbstractTokenNetworkJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &uri, bool &) override;
-        inline virtual void setData(bool &canceled) override { canceled = false; }
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         virtual bool handleResponse(std::istream &is) override;
 

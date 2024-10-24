@@ -45,7 +45,7 @@ std::string UploadSessionStartJob::getSpecificUrl() {
     return str;
 }
 
-void UploadSessionStartJob::setData(bool &canceled) {
+ExitInfo UploadSessionStartJob::setData() {
     Poco::JSON::Object json;
     using namespace std::chrono;
     auto timestamp = duration_cast<seconds>(time_point_cast<seconds>(system_clock::now()).time_since_epoch());
@@ -74,7 +74,7 @@ void UploadSessionStartJob::setData(bool &canceled) {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

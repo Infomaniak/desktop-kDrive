@@ -162,6 +162,9 @@ void ExecutorWorker::execute() {
                     increaseErrorCount(syncOp);
                     cancelAllOngoingJobs();
                     break;
+                } else {
+                    setProgressComplete(syncOp, SyncFileStatus::Error);
+                    continue;
                 }
             }
 
@@ -406,15 +409,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                         return exitInfoCheckAlreadyExcluded;
                     }
                 }
-
-                if (syncOp->targetSide() == ReplicaSide::Local) {
-                    return job->exitCode() == ExitCode::NeedRestart ? ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)
-                                                                    : ExitInfo(job->exitCode(), job->exitCause());
-                } else if (syncOp->targetSide() == ReplicaSide::Remote) {
-                    return job->exitCode() == ExitCode::NeedRestart ? ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist)
-                                                                    : ExitInfo(job->exitCode(), job->exitCause());
-                }
-                return ExitCode::LogicError;
+                return exitInfo;
             }
 
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
@@ -475,18 +470,9 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     if (!alreadyExist) {
         return ExitCode::Ok;
     }
-
-    // The item already exists, exclude it
-    exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(absolutePath,
-                                                                    PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
-    if (exitCode != ExitCode::Ok) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to rename file: " << Utility::formatSyncPath(absolutePath).c_str());
-        return exitCode;
-    }
     return {ExitCode::DataError, ExitCause::FileAlreadyExist};
 }
 
-// !!! When returning false, _executorExitCode and _executorExitCause must be set !!!
 ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept {
     // 1. If omit-flag is False, propagate the file or directory to replica Y, because the object is missing there.
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
@@ -905,6 +891,7 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
             return exitInfo;
         }
     }
+    return ExitCode::Ok;
 }
 // !!! When returning false, _executorExitCode and _executorExitCause must be set !!!
 ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) {
@@ -1155,6 +1142,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
             return exitInfo;
         }
     }
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
@@ -1354,6 +1342,7 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
             return exitInfo;
         }
     }
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
@@ -1553,6 +1542,7 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
 
         sendProgress();
     }
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
@@ -1724,13 +1714,15 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
             return {job->exitCode(), job->exitCause()};
 
         } else { // The error is managed and the execution can continue.
+            LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitCode() << L" " << job->exitCause() << L" on "
+                                                                << syncOp->type() << L" operation for "
+                                                                << Utility::formatSyncPath(syncOp->affectedNode()->getPath()));
             return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
     } else {
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode;
-        if (ExitInfo exitInfo = propagateChangeToDbAndTree(syncOp, job, newNode); exitInfo) {
-            // function
+        if (ExitInfo exitInfo = propagateChangeToDbAndTree(syncOp, job, newNode); !exitInfo) {
             cancelAllOngoingJobs();
             return exitInfo;
         }
@@ -1771,9 +1763,9 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         case OperationType::Create: {
             cancelType = CancelType::Create;
             ignored = true;
-            removeFromDb = false;
-            PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilePath,
-                                                                 PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+            // If the rename failed (the file doesn't exist), it is a forbiden download, we should keep it in DB.
+            removeFromDb = PlatformInconsistencyCheckerUtility::renameLocalFile(
+                    absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
             break;
         }
         case OperationType::Move: {
@@ -2407,24 +2399,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
         }
     }
 
-    if (job->exitCode() == ExitCode::NeedRestart) {
-        // Special case: not an error but sync needs to be restarted
-        _syncPal->setRestart(true);
-        return ExitCode::NeedRestart;
-    } else if ((syncOp->targetSide() == ReplicaSide::Local && job->exitCode() == ExitCode::DataError &&
-                job->exitCause() == ExitCause::FileAlreadyExist) ||
-               (syncOp->targetSide() == ReplicaSide::Remote && job->exitCode() == ExitCode::BackError &&
-                job->exitCause() == ExitCause::FileAlreadyExist)) {
-        auto localCreateDirJob(std::dynamic_pointer_cast<LocalCreateDirJob>(job));
-        if (localCreateDirJob) {
-            LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(localCreateDirJob->destFilePath()).c_str()
-                                                 << L" already exist. Blacklisting it on "
-                                                    L"local replica.");
-            PlatformInconsistencyCheckerUtility::renameLocalFile(_syncPal->localPath() / localCreateDirJob->destFilePath(),
-                                                                 PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
-        }
-        return ExitCode::NeedRestart;
-    } else if (job->exitCode() != ExitCode::Ok) {
+    if (job->exitCode() != ExitCode::Ok) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to create directory: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
         return {job->exitCode(), job->exitCause()};
     }
@@ -2570,6 +2545,10 @@ ExitInfo ExecutorWorker::handleOpsExecutionError(SyncOpPtr syncOp, ExitInfo opsE
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveToTrashFailed)): {
             return handleOpsFileAccessError(syncOp, opsExitInfo);
         }
+        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist)):
+        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)): {
+            return handleOpsAlreadyExistError(syncOp, opsExitInfo);
+        }
         default: {
             break;
         }
@@ -2582,39 +2561,87 @@ ExitInfo ExecutorWorker::handleOpsExecutionError(SyncOpPtr syncOp, ExitInfo opsE
 ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
         // The item does not exist yet locally, we will only tmpBlacklist the remote item
-        _syncPal->handleAccessDeniedItem(syncOp->affectedNode()->getPath());
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->affectedNode()->getPath()); !exitInfo) {
+            return exitInfo;
+        }
     } else {
         // Both local and remote item will be temporarily blacklisted
         auto localNode = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
         if (!localNode) return ExitCode::LogicError;
         SyncPath relativeLocalFilePath = localNode->getPath();
-        SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
         NodeId localNodeId = localNode->id().has_value() ? *localNode->id() : NodeId();
-        _syncPal->handleAccessDeniedItem(absoluteLocalFilePath, localNodeId, opsExitInfo.cause());
-        _syncPal->blacklistTemporarily(syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(),
-                                       syncOp->nodePath(ReplicaSide::Local), otherSide(syncOp->targetSide()));
-        Error error(_syncPal->syncDbId(), "", "", NodeType::Directory,
-                    _syncPal->localPath() / syncOp->nodePath(ReplicaSide::Local), ConflictType::None, InconsistencyType::None,
-                    CancelType::None, "", opsExitInfo.code(), opsExitInfo.cause());
-        _syncPal->addError(error);
-
-        if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                               << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-            return ExitCode::DataError;
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, opsExitInfo.cause()); !exitInfo) {
+            return exitInfo;
         }
+    }
+    _syncPal->setRestart(true);
+    return removeDependentOps(syncOp);
+}
 
-        if (syncOp->correspondingNode()) {
-            if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
+ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
+    // If the file/directory already exist either on local or remote side, we blacklist it localy and the remote verson will be
+    // downloaded again.
+
+    if (syncOp->type() != OperationType::Create &&
+        syncOp->type() != OperationType::Move) { // The above handling is only for create and move/rename operations.
+        return opsExitInfo;
+    }
+
+    SyncPath relativeLocalPath;
+    SyncPath relativeRemotePath;
+    if (syncOp->targetSide() == ReplicaSide::Local) {
+        relativeRemotePath = syncOp->affectedNode()->getPath();
+        // In case of a create the corresponding node is not set, remote and local relative path are the same
+        relativeLocalPath = syncOp->correspondingNode() ? syncOp->correspondingNode()->parentNode()->getPath() / syncOp->newName()
+                                                        : relativeRemotePath;
+
+        if (_syncPal->isTmpBlacklisted(relativeLocalPath, ReplicaSide::Local)) {
+            LOGW_SYNCPAL_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath)
+                                                << L" is already blacklisted locally, blacklisting remote corresponding node.");
+            _syncPal->blacklistTemporarily(
+                    syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), relativeLocalPath,
+                    ReplicaSide::Remote);
+            if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                                   << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+                return ExitCode::DataError;
+            }
+
+            if (syncOp->correspondingNode() && !targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
                                                    << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
                 return ExitCode::DataError;
             }
+            _syncPal->setRestart(true);
+            return removeDependentOps(syncOp);
         }
+    } else if (syncOp->targetSide() == ReplicaSide::Remote) {
+        relativeLocalPath = syncOp->affectedNode()->parentNode()->getPath() / syncOp->newName();
+    } else {
+        return ExitCode::LogicError;
     }
 
-    removeDependentOps(syncOp);
-    return ExitCode::Ok;
+    SyncPath absoluteLocalPath = _syncPal->localPath() / relativeLocalPath;
+    LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalPath)
+                                         << L" already exist. Blacklisting it on "
+                                            L"local replica.");
+
+    if (ExitInfo exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
+                absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+        !exitInfo) {
+        LOGW_WARN(_logger, "Failed to blacklist file: " << Utility::formatSyncPath(absoluteLocalPath) << " ExitCode::"
+                                                        << exitInfo.code() << " ExitCause::" << exitInfo.cause());
+        return ExitCode::DataError; // The synchronization will be re-started.
+    }
+
+
+    _syncPal->setRestart(true);
+    if (ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
+                                           << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+        return exitInfo;
+    }
+    return removeDependentOps(syncOp);
 }
 
 ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
@@ -2634,7 +2661,8 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
         auto remoteNode2 =
                 syncOp2->affectedNode()->side() == ReplicaSide::Remote ? syncOp2->affectedNode() : syncOp2->correspondingNode();
         SyncName nodeName = localNode2 ? localNode2->name() : SyncName();
-        nodeName = (nodeName.empty() && remoteNode2) ? remoteNode2->name() : SyncName();
+        if (nodeName.empty()) nodeName = remoteNode2 ? remoteNode2->name() : SyncName();
+
         if (localNode && localNode2 && (*localNode->id() == *localNode2->id() || localNode->isParentOf(localNode2))) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << SyncName2WStr(nodeName)
                                                      << L" because it depends on " << syncOp->type() << L" operation on "
@@ -2646,7 +2674,7 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
         if (remoteNode && remoteNode2 && (*remoteNode->id() == *remoteNode2->id() || remoteNode->isParentOf(remoteNode2))) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << SyncName2WStr(nodeName)
                                                      << L" because it depends on " << syncOp->type() << L" operation on "
-                                                     << SyncName2WStr(nodeName) << L"wich failed.");
+                                                     << SyncName2WStr(remoteNode->name()) << L"wich failed.");
             dependentOps.push_back(opId);
         }
     }
@@ -2659,7 +2687,6 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
     }
     if (!dependentOps.empty()) {
         LOGW_SYNCPAL_DEBUG(_logger, L"Removed " << dependentOps.size() << L" dependent operations.");
-        _syncPal->setRestart(true);
     }
 
     return ExitCode::Ok;

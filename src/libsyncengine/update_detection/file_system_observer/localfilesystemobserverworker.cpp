@@ -84,9 +84,16 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
         OperationType opTypeFromOS = changedItem.second;
-        SyncPath absolutePath = changedItem.first.native();
-        SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
+        const SyncPath absolutePath = changedItem.first.native();
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
 
+        if (_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local)) {
+            _syncPal->removeItemFromTmpBlacklist(relativePath);
+            if (opTypeFromOS == OperationType::Edit) {
+                NodeId itemId = _snapshot->itemId(relativePath);
+                if (!itemId.empty()) _snapshot->setLastModified(itemId, 0);
+            }
+        }
         // Check if exists with same nodeId
         if (opTypeFromOS == OperationType::Delete) {
             NodeId prevNodeId = _snapshot->itemId(relativePath);
@@ -226,7 +233,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (opTypeFromOS == OperationType::Edit) {
             // Filter out hydration/dehydration
             bool changed = false;
-            IoError ioError = IoError::Success;
             const bool success = IoHelper::checkIfFileChanged(absolutePath, _snapshot->size(nodeId),
                                                               _snapshot->lastModified(nodeId), changed, ioError);
             if (!success) {
@@ -283,21 +289,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
                 continue;
             }
-        } else if (opTypeFromOS == OperationType::Rights) {
-            bool writePermission = false;
-            bool readPermission = false;
-            bool execPermission = false;
-            if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::getRights: " << Utility::formatSyncPath(absolutePath).c_str());
-                invalidateSnapshot();
-                return;
-            }
-            if (!writePermission) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str()
-                                                      << L" doesn't have write permissions!");
-                sendAccessDeniedError(absolutePath);
-            }
-        }
+        } 
 
         bool itemExistsInSnapshot = _snapshot->exists(nodeId);
         if (!itemExistsInSnapshot) {
@@ -437,6 +429,12 @@ void LocalFileSystemObserverWorker::execute() {
     for (;;) {
         if (stopAsked()) {
             exitCode = ExitCode::Ok;
+            invalidateSnapshot();
+            break;
+        }
+        if (!_folderWatcher->exitInfo()) {
+            exitCode = _folderWatcher->exitInfo().code();
+            setExitCause(_folderWatcher->exitInfo().cause());
             invalidateSnapshot();
             break;
         }
@@ -591,20 +589,7 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     if (isExcluded) {
         return;
     }
-
-    NodeId nodeId;
-    if (!IoHelper::getNodeId(absolutePath, nodeId)) {
-        nodeId = _snapshot->itemId(relativePath);
-    } 
-    if(!nodeId.empty()){
-        _syncPal->handleAccessDeniedItem(absolutePath, nodeId);
-    } else {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to handle access denied error (nodeId not found) for " << Utility::formatSyncPath(absolutePath));
-    }
-
-    Error error(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictType::None, InconsistencyType::None,
-                CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
-    _syncPal->addError(error);
+    _syncPal->handleAccessDeniedItem(relativePath);
 }
 
 ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath) {
@@ -629,8 +614,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     if (itemType.ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str()
                                                        << L" misses read permission");
-        setExitCause(ExitCause::SyncDirReadError);
-        return {ExitCode::SystemError, ExitCause::SyncDirReadError};
+        setExitCause(ExitCause::SyncDirAccesError);
+        return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
     }
 
     if (itemType.linkType != LinkType::None) {
@@ -657,8 +642,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         if (ioError == IoError::AccessDenied) {
             LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str()
                                                            << L" misses read permission");
-            setExitCause(ExitCause::SyncDirReadError);
-            return {ExitCode::SystemError, ExitCause::SyncDirReadError};
+            setExitCause(ExitCause::SyncDirAccesError);
+            return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
         }
 
 

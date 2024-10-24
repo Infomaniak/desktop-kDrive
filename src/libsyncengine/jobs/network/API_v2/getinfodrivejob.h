@@ -32,7 +32,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
 
     private:
         virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
-        virtual void setData(bool &canceled) override { canceled = false; }
+        inline virtual ExitInfo setData() override { return ExitCode::Ok;  }
 };
 
 } // namespace KDC

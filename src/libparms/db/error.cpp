@@ -96,8 +96,8 @@ bool Error::isSimilarTo(const Error &other) const {
         case ErrorLevel::Node: {
             if (_exitCode == ExitCode::SystemError && _exitCause == ExitCause::FileAccessError &&
                 other.exitCode() == ExitCode::SystemError && other.exitCause() == ExitCause::FileAccessError &&
-                (Utility::startsWith(_path.lexically_normal(), other.path().lexically_normal()) ||
-                 Utility::startsWith(other.path().lexically_normal(), _path.lexically_normal()))) {
+                (Utility::isSameOrChildPath(_path.lexically_normal(), other.path().lexically_normal()) ||
+                 Utility::isSameOrChildPath(other.path().lexically_normal(), _path.lexically_normal()))) {
                 return true;
             }
 
