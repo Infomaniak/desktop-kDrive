@@ -143,7 +143,9 @@ class ExecutorWorker : public OperationProcessor {
 
         void setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status);
 
-        ExitInfo handleOpsExecutionError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+        // This methode will return ExitCode::Ok if the error is safely managed and the executor can continue. Else, it will
+        // return opsExitInfo.
+        ExitInfo handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
         ExitInfo handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
         ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
 

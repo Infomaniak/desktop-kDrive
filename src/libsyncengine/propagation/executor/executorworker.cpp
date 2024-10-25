@@ -148,18 +148,19 @@ void ExecutorWorker::execute() {
                 }
             }
 
+            // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
             if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
                 setProgressComplete(syncOp, SyncFileStatus::Error);
                 continue;
             }
 
             if (!executorExitInfo) {
-                executorExitInfo = handleOpsExecutionError(syncOp, executorExitInfo);
-                if (!executorExitInfo) {
+                executorExitInfo = handleExecutorError(syncOp, executorExitInfo);
+                if (!executorExitInfo) { // If the error is not handled, stop the execution
                     increaseErrorCount(syncOp);
                     cancelAllOngoingJobs();
                     break;
-                } else {
+                } else { // If the error is handled, continue the execution
                     setProgressComplete(syncOp, SyncFileStatus::Error);
                     continue;
                 }
@@ -1706,7 +1707,7 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
                                   L"Error in handleForbiddenAction for item: " << Utility::formatSyncPath(relativeLocalPath));
                 return exitInfo;
             }
-        } else if (!handleOpsExecutionError(syncOp, {job->exitCode(), job->exitCause()})) {
+        } else if (!handleExecutorError(syncOp, {job->exitCode(), job->exitCause()})) {
             // Cancel all queued jobs
             LOGW_SYNCPAL_WARN(_logger,
                               L"Cancelling jobs. exit code: " << job->exitCode() << L" exit cause: " << job->exitCause());
@@ -2529,10 +2530,10 @@ ExitInfo ExecutorWorker::getFileSize(const SyncPath &path, uint64_t &size) {
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::handleOpsExecutionError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
-    assert((syncOp && !opsExitInfo) && "syncOp is nullptr in ExecutorWorker::handleOpsExecutionError");
+ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
+    assert((syncOp && !opsExitInfo) && "syncOp is nullptr in ExecutorWorker::handleExecutorError");
     if (!syncOp) {
-        LOG_WARN(_logger, "syncOp is nullptr in ExecutorWorker::handleOpsExecutionError");
+        LOG_WARN(_logger, "syncOp is nullptr in ExecutorWorker::handleExecutorError");
         return ExitCode::DataError;
     }
     if (opsExitInfo) {
@@ -2554,7 +2555,7 @@ ExitInfo ExecutorWorker::handleOpsExecutionError(SyncOpPtr syncOp, ExitInfo opsE
         }
     };
     LOG_WARN(_logger,
-             "Unhandled error in ExecutorWorker::handleOpsExecutionError: " << opsExitInfo.code() << " " << opsExitInfo.cause());
+             "Unhandled error in ExecutorWorker::handleExecutorError: " << opsExitInfo.code() << " " << opsExitInfo.cause());
     return opsExitInfo;
 }
 
@@ -2630,7 +2631,7 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo o
                 absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
         !exitInfo) {
         LOGW_WARN(_logger, L"Failed to blacklist file: " << Utility::formatSyncPath(absoluteLocalPath) << L" ExitCode::"
-                                                        << exitInfo.code() << L" ExitCause::" << exitInfo.cause());
+                                                         << exitInfo.code() << L" ExitCause::" << exitInfo.cause());
         return ExitCode::DataError; // The synchronization will be re-started.
     }
 
