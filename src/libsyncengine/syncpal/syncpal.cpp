@@ -1427,6 +1427,9 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
         LOGW_SYNCPAL_WARN(_logger, L"Access error on root folder");
         return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
     }
+    Error error(syncDbId(), "", "", relativePath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativePath,
+                ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
+    addError(error);
 
     NodeId localNodeId;
     if (localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath); localNodeId.empty()) {
@@ -1436,9 +1439,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
         return handleAccessDeniedItem(relativePath.parent_path(), cause);
     }
 
-    Error error(syncDbId(), "", "", relativePath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativePath,
-                ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
-    addError(error);
+    
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of access denied");
 

@@ -3883,9 +3883,6 @@ void AppServer::addError(const Error &error) {
         if (!existingError.isSimilarTo(error)) continue;
         // Update existing error time
         existingError.setTime(error.time());
-        auto shorterPath =
-                (existingError.path().string().size() > error.path().string().size()) ? error.path() : existingError.path();
-        existingError.setPath(shorterPath);
         bool found = false;
         if (!ParmsDb::instance()->updateError(existingError, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateError");
@@ -3904,6 +3901,8 @@ void AppServer::addError(const Error &error) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertError");
         return;
     }
+    if (!errorAlreadyExists) errorList.push_back(error);
+
 
     User user;
     if (error.syncDbId() && ServerRequests::getUserFromSyncDbId(error.syncDbId(), user) != ExitCode::Ok) {
@@ -3951,6 +3950,35 @@ void AppServer::addError(const Error &error) {
 
         // Decrease JobManager pool capacity
         JobManager::instance()->decreasePoolCapacity();
+    } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
+        // Remove child errors
+        std::unordered_set<int64_t> toBeRemovedErrorIds;
+        for (const Error &parentError : errorList) {
+            for (const Error &childError : errorList) {
+                if (Utility::isSameOrChildPath(childError.path(), parentError.path()) &&
+                    childError.dbId() != parentError.dbId()) {
+                    toBeRemovedErrorIds.insert(childError.dbId());
+                }
+            }
+        }
+        for (int errorId : toBeRemovedErrorIds) {
+            bool found = false;
+            if (!ParmsDb::instance()->deleteError(errorId, found)) {
+                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+                return;
+            }
+            if (!found) {
+                LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << errorId);
+                return;
+            }
+        }
+        if (toBeRemovedErrorIds.size() > 0)
+            if (ServerRequests::isDisplayableError(error)) {
+                // Notify the client
+                sendErrorsCleared(error.syncDbId());
+            }
+
+    
     }
 
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
