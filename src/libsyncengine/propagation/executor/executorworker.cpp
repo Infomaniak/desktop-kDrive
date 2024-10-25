@@ -154,9 +154,6 @@ void ExecutorWorker::execute() {
             }
 
             if (!executorExitInfo) {
-                if (!bypassProgressComplete) {
-                    setProgressComplete(syncOp, SyncFileStatus::Error);
-                }
                 executorExitInfo = handleOpsExecutionError(syncOp, executorExitInfo);
                 if (!executorExitInfo) {
                     increaseErrorCount(syncOp);
@@ -165,6 +162,9 @@ void ExecutorWorker::execute() {
                 } else {
                     setProgressComplete(syncOp, SyncFileStatus::Error);
                     continue;
+                }
+                if (!bypassProgressComplete) {
+                    setProgressComplete(syncOp, SyncFileStatus::Error);
                 }
             }
 

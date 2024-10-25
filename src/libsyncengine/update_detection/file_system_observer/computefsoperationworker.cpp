@@ -156,7 +156,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             // Check that the file/directory really does not exist on replica
             bool isExcluded = false;
             if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
-                if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::FileAccessError) {
+                if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)) {
                     // Blacklist node
                     if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(dbPath); !exitInfo) {
                         return exitInfo;
@@ -821,7 +821,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
         setExitCause(ExitCause::Unknown);
-        return {ExitCode::SystemError, ExitCause::Unknown};
+        return ExitCode::SystemError;
     }
 
     if (!existsWithSameId) return ExitCode::Ok;
@@ -835,13 +835,13 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
         LOGW_WARN(_logger,
                   L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError).c_str());
         setExitCause(ExitCause::Unknown);
-        return {ExitCode::SystemError, ExitCause::Unknown};
+        return ExitCode::SystemError;
     }
 
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item with " << Utility::formatSyncPath(absolutePath).c_str() << L" misses search permissions!");
         setExitCause(ExitCause::FileAccessError);
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return ExitCode::SystemError;
     }
 
     if (isExcluded) return ExitCode::Ok;

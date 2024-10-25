@@ -470,7 +470,7 @@ void IoHelper::initRightsWindowsApi() {
 }
 
 // Always return false if ioError != IoError::Success, caller should call _isExpectedError
-[[deprecated]] static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
+static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger, bool inherite = false) noexcept {
     PACL pACLold = nullptr; // Current ACL
     PACL pACLnew = nullptr; // New ACL
@@ -553,7 +553,7 @@ void IoHelper::initRightsWindowsApi() {
     return true;
 }
 
-[[deprecated]] static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
+static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {
     ioError = IoError::Success;
     read = false;

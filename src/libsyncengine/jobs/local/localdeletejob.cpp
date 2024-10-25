@@ -182,10 +182,15 @@ void LocalDeleteJob::runJob() {
     LOGW_DEBUG(_logger, L"Delete item with " << Utility::formatSyncPath(_absolutePath).c_str());
     std::error_code ec;
     std::filesystem::remove_all(_absolutePath, ec);
-    if (ec) { // We consider this as a permission denied error 
+    if (ec) { 
         LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(_absolutePath, ec).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError; 
+        if (IoHelper::stdError2ioError(ec) == IoError::AccessDenied) {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
+        } else {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
+        }
         return;
     }
 

@@ -289,7 +289,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
                 continue;
             }
-        } 
+        }
 
         bool itemExistsInSnapshot = _snapshot->exists(nodeId);
         if (!itemExistsInSnapshot) {
@@ -601,7 +601,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         LOGW_WARN(_logger,
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, itemType.ioError).c_str());
         setExitCause(ExitCause::Unknown);
-        return {ExitCode::SystemError, ExitCause::Unknown};
+        return ExitCode::SystemError;
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
@@ -629,7 +629,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: "
                                                << Utility::formatIoError(absoluteParentDirPath, ioError).c_str());
             setExitCause(ExitCause::Unknown);
-            return {ExitCode::SystemError, ExitCause::Unknown};
+            return ExitCode::SystemError;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
@@ -645,7 +645,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             setExitCause(ExitCause::SyncDirAccesError);
             return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
         }
-
 
         DirectoryEntry entry;
         bool endOfDirectory = false;
@@ -664,35 +663,32 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             bool toExclude = false;
             bool denyFullControl = false;
             bool isLink = false;
-            if (!toExclude) {
-                // Check if the directory entry is managed
-                bool isManaged = false;
-                IoError ioError = IoError::Success;
-                if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
-                                                       << Utility::formatSyncPath(absolutePath).c_str());
-                    dirIt.disableRecursionPending();
-                    continue;
-                }
-                if (ioError == IoError::NoSuchFileOrDirectory) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore: "
-                                                        << Utility::formatSyncPath(absolutePath).c_str());
-                    dirIt.disableRecursionPending();
-                    continue;
-                }
-                if (ioError == IoError::AccessDenied) {
-                    LOGW_SYNCPAL_DEBUG(_logger,
-                                       L"Directory misses search permission: " << Utility::formatSyncPath(absolutePath).c_str());
-                    dirIt.disableRecursionPending();
-                    sendAccessDeniedError(absolutePath);
-                    continue;
-                }
 
-                if (!isManaged) {
-                    LOGW_SYNCPAL_DEBUG(_logger,
-                                       L"Directory entry is not managed: " << Utility::formatSyncPath(absolutePath).c_str());
-                    toExclude = true;
-                }
+            // Check if the directory entry is managed
+            bool isManaged = false;
+            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
+                                                   << Utility::formatSyncPath(absolutePath).c_str());
+                dirIt.disableRecursionPending();
+                continue;
+            }
+            if (ioError == IoError::NoSuchFileOrDirectory) {
+                LOGW_SYNCPAL_DEBUG(_logger,
+                                   L"Directory entry does not exist anymore: " << Utility::formatSyncPath(absolutePath).c_str());
+                dirIt.disableRecursionPending();
+                continue;
+            }
+            if (ioError == IoError::AccessDenied) {
+                LOGW_SYNCPAL_DEBUG(_logger,
+                                   L"Directory misses search permission: " << Utility::formatSyncPath(absolutePath).c_str());
+                dirIt.disableRecursionPending();
+                sendAccessDeniedError(absolutePath);
+                continue;
+            }
+
+            if (!isManaged) {
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed: " << Utility::formatSyncPath(absolutePath).c_str());
+                toExclude = true;
             }
 
             if (!toExclude) {

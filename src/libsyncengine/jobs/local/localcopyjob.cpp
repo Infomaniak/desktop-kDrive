@@ -93,6 +93,13 @@ void LocalCopyJob::runJob() {
         LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str() << L": "
                                                    << Utility::s2ws(fsError.what()).c_str() << L" (" << fsError.code().value()
                                                    << L")");
+        if (IoHelper::stdError2ioError(fsError.code()) == IoError::AccessDenied) {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
+        } else {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
+        }
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::Unknown;
     } catch (...) {

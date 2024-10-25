@@ -1137,7 +1137,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
         DbNodeId dbId = -1;
         bool found = false;
         if (!_syncDb->dbId(ReplicaSide::Local, localFileInfo.first, dbId, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for LocalNodeId=" << localFileInfo.first.c_str());
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << localFileInfo.first.c_str());
             return ExitCode::DbError;
         }
         if (found) {
@@ -1429,14 +1429,13 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
     }
 
     NodeId localNodeId;
-    localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath);
-
-    if (localNodeId.empty()) {
+    if (localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath); localNodeId.empty()) {
         // The file does not exit yet on local FS, we do not have sufficient right on the parrent.
         LOGW_DEBUG(_logger,
                    L"Item " << Utility::formatSyncPath(relativePath) << L"isn't present local FS, blacklisting the parrent.");
         return handleAccessDeniedItem(relativePath.parent_path(), cause);
     }
+
     Error error(syncDbId(), "", "", relativePath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativePath,
                 ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
     addError(error);
@@ -1444,24 +1443,26 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
                                          << L" is blacklisted temporarily because of access denied");
 
     NodeId correspondingNodeId;
-    bool found;
     correspondingNodeId = snapshot(ReplicaSide::Remote)->itemId(relativePath);
-    if (correspondingNodeId.empty() &&
-        !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, correspondingNodeId, found)) {
+    if (bool found; correspondingNodeId.empty() &&
+                    !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, correspondingNodeId, found)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::correspondingNodeId");
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 
+    // Blacklist the item
     _tmpBlacklistManager->blacklistItem(localNodeId, relativePath, ReplicaSide::Local);
-    if (!correspondingNodeId.empty()) _tmpBlacklistManager->blacklistItem(correspondingNodeId, relativePath, ReplicaSide::Remote);
-
     if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
     }
 
-    if (!correspondingNodeId.empty() && !updateTree(ReplicaSide::Remote)->deleteNode(correspondingNodeId)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
+    if (!correspondingNodeId.empty()) {
+        _tmpBlacklistManager->blacklistItem(correspondingNodeId, relativePath, ReplicaSide::Remote);
+        if (!updateTree(ReplicaSide::Remote)->deleteNode(correspondingNodeId)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
+        }
     }
+
     return ExitCode::Ok;
 }
 

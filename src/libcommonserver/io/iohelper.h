@@ -428,7 +428,7 @@ struct IoHelper {
         static std::unique_ptr<BYTE[]> _psid;
         static TRUSTEE _trustee;
         static std::mutex _initRightsWindowsApiMutex;
-        [[deprecated]]  static void initRightsWindowsApi();
+        static void initRightsWindowsApi();
 #endif
 };
 

@@ -3953,7 +3953,7 @@ void AppServer::addError(const Error &error) {
         JobManager::instance()->decreasePoolCapacity();
     }
 
-    if (!ServerRequests::isAutoResolvedError(error) && errorAlreadyExists) {
+    if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email().c_str(), user.name().c_str(), std::to_string(user.userId()).c_str());
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString().c_str(),
