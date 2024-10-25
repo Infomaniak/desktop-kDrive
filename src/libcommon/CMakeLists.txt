@@ -23,7 +23,6 @@ set(libcommon_SRCS
     utility/types.cpp
     utility/utility.h utility/utility.cpp
     utility/jsonparserutility.h
-    utility/lockutility.h
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
     info/userinfo.h info/userinfo.cpp

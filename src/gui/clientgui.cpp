@@ -25,7 +25,6 @@
 #include "libcommongui/utility/utility.h"
 #include "libcommon/theme/theme.h"
 #include "gui/updater/updatedialog.h"
-#include "utility/lockutility.h"
 
 #include <QClipboard>
 #include <QDesktopServices>
@@ -761,8 +760,8 @@ void ClientGui::onNewDriveWizard() {
 
 void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const {
     static std::mutex mutex;
-    LockUtility lock(mutex);
-    if (!lock.ownLock()) return;
+    std::unique_lock lock(mutex, std::try_to_lock);
+    if (!lock.owns_lock()) return;
     if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
         GuiRequests::startInstaller();
     } else if (dialog.skip()) {
