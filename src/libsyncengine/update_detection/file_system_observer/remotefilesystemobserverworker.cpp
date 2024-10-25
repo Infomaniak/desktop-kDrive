@@ -45,8 +45,7 @@ namespace KDC {
 
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                                const std::string &shortName) :
-    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote),
-    _driveDbId(syncPal->driveDbId()) {}
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote), _driveDbId(syncPal->driveDbId()) {}
 
 RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~RemoteFileSystemObserverWorker");
@@ -317,12 +316,15 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
+    bool eof = false;
     std::unordered_set<SyncName> existingFiles;
     uint64_t itemCount = 0;
-    while (job->getItem(item, error, ignore)) {
+    while (job->getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
         }
+
+        if (eof) break;
 
         itemCount++;
 
@@ -372,6 +374,14 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                                                     << (item.type() == NodeType::Directory) << L", size:" << item.size());
             }
         }
+    }
+
+    if (!eof) {
+        const std::string msg = "Failed to parse CSV reply: missing EOF delimiter";
+        LOG_SYNCPAL_WARN(_logger, msg.c_str());
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", "msg");
+        setExitCause(ExitCause::FullListParsingError);
+        return ExitCode::NetworkError;
     }
 
     // Delete orphans

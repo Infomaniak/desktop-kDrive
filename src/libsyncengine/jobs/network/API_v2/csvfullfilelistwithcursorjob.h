@@ -58,9 +58,10 @@ class SnapshotItemHandler {
          * @param ss stringstream containg the CSV file
          * @param error `true` if parsing fails
          * @param ignore `true` if a line is ignored due to a non critical parsing issue
+         * @param eof `true` if the end of file (i.e. a line containg the end of file delimiter) has been reached
          * @return `true` if there are more lines to be read
          */
-        bool getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore);
+        bool getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof);
 
     private:
         bool _ignoreFirstLine = true;
@@ -81,9 +82,10 @@ class CsvFullFileListWithCursorJob : public AbstractTokenNetworkJob {
          * @param item : item extracted from line of the CSV file
          * @param error : blocking error, stop the process
          * @param ignore : parsing issue, non blocking, just ignore the item
+         * @param eof : whether the end of file has been reached or not
          * @return if return == true, continue parsing
          */
-        bool getItem(SnapshotItem &item, bool &error, bool &ignore);
+        bool getItem(SnapshotItem &item, bool &error, bool &ignore, bool &eof);
         std::string getCursor();
 
     private:
