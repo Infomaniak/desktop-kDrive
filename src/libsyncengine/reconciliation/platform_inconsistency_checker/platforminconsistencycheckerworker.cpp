@@ -131,9 +131,9 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
         blacklistNode(localNode, InconsistencyType::NameLength);
         return ExitCode::Ok;
     }
-
-    auto childIt = localNode->children().begin();
-    for (; childIt != localNode->children().end(); childIt++) {
+    auto childCopy = localNode->children();
+    auto childIt = childCopy.begin();
+    for (; childIt != childCopy.end(); childIt++) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -225,8 +225,9 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
 void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode) {
 #if defined(__APPLE__) || defined(_WIN32)
     std::unordered_map<SyncName, std::shared_ptr<Node>> processedNodesByName; // key: lowercase name
-    auto it = remoteParentNode->children().begin();
-    for (; it != remoteParentNode->children().end(); it++) {
+    auto childrenCopy = remoteParentNode->children();
+    auto it = childrenCopy.begin();
+    for (; it != childrenCopy.end(); it++) {
         if (stopAsked()) {
             return;
         }
