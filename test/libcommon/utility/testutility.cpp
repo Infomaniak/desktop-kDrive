@@ -22,6 +22,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
 #include <iostream>
+#include <regex>
 
 namespace KDC {
 
@@ -292,4 +293,10 @@ void TestUtility::testCompressFile() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, error);
     CPPUNIT_ASSERT(exists);
 }
+
+void TestUtility::testCurrentVersion() {
+    const std::string test = CommonUtility::currentVersion();
+    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}\.{1}\d{1,2}\.{1}\d{1,2}\.{1}\d{0,8}$)")));
+}
+
 } // namespace KDC

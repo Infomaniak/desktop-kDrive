@@ -30,6 +30,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testStringToAppStateValue);
         CPPUNIT_TEST(testArgsWriter);
         CPPUNIT_TEST(testCompressFile);
+        CPPUNIT_TEST(testCurrentVersion);
         CPPUNIT_TEST_SUITE_END();
 
     protected:
@@ -38,6 +39,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testStringToAppStateValue();
         void testArgsWriter();
         void testCompressFile();
+        void testCurrentVersion();
 };
 
 } // namespace KDC

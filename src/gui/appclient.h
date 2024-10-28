@@ -21,7 +21,6 @@
 #include "qtsingleapplication.h"
 #include "clientgui.h"
 #include "libcommongui/commclient.h"
-#include "updater/updaterclient.h"
 #include "config.h"
 
 #include <QApplication>
@@ -89,6 +88,9 @@ class AppClient : public SharedTools::QtSingleApplication {
         void errorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         void errorsCleared(int syncDbId);
         void logUploadStatusUpdated(LogUploadState status, int percent);
+        // Updater
+        void updateStateChanged(UpdateState state);
+        void showWindowsUpdateDialog(const VersionInfo &versionInfo);
 
     public slots:
         void onWizardDone(int);
@@ -127,7 +129,6 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool _logFlush = false;
         bool _logDebug = false;
         bool _debugCrash = false;
-        QScopedPointer<UpdaterClient> _updaterClient;
         bool _quitInProcess = false;
 
     private slots:

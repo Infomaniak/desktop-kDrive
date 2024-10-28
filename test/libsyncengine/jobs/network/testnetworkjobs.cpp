@@ -53,6 +53,7 @@
 
 #include "jobs/network/getappversionjob.h"
 #include "test_utility/testhelpers.h"
+#include "jobs/network/directdownloadjob.h"
 
 using namespace CppUnit;
 
@@ -905,6 +906,17 @@ void TestNetworkJobs::testGetAppVersionInfo() {
     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+}
+
+void TestNetworkJobs::testDirectDownload() {
+    const LocalTemporaryDirectory temporaryDirectory("testDirectDownload");
+    SyncPath localDestFilePath = temporaryDirectory.path() / "testInstaller.exe";
+
+    DirectDownloadJob job(localDestFilePath,
+                          "https://download.storage.infomaniak.com/drive/desktopclient/kDrive-3.6.1.20240604.exe");
+    job.runSynchronously();
+    CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+    CPPUNIT_ASSERT_EQUAL(119771744, static_cast<int>(std::filesystem::file_size(localDestFilePath)));
 }
 
 bool TestNetworkJobs::createTestFiles() {
