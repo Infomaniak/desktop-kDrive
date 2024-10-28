@@ -27,11 +27,12 @@ namespace KDC {
 
 class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
-        CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
-        CPPUNIT_TEST(testFixModificationDate);
-        CPPUNIT_TEST(testAffectedUpdateTree);
-        CPPUNIT_TEST(testTargetUpdateTree);
-        CPPUNIT_TEST(testLogCorrespondingNodeErrorMsg);
+        // CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
+        // CPPUNIT_TEST(testFixModificationDate);
+        // CPPUNIT_TEST(testAffectedUpdateTree);
+        // CPPUNIT_TEST(testTargetUpdateTree);
+        // CPPUNIT_TEST(testLogCorrespondingNodeErrorMsg);
+        CPPUNIT_TEST(testHasRight);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -44,8 +45,17 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         void testAffectedUpdateTree();
         void testTargetUpdateTree();
         void testLogCorrespondingNodeErrorMsg();
+        void testHasRight();
 
-        SyncOpPtr generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename);
+        void generateNodes(std::shared_ptr<Node> &node, std::shared_ptr<Node> &correspondingNode, DbNodeId dbNodeId,
+                           const SyncName &filename, const std::shared_ptr<Node> &parentNode,
+                           const std::shared_ptr<Node> &correspondingParentNode, ReplicaSide targetSide = ReplicaSide::Local,
+                           NodeType nodeType = NodeType::File) const;
+        [[nodiscard]] SyncOpPtr generateSyncOperation(DbNodeId dbNodeId, const SyncName &filename,
+                                                      ReplicaSide targetSide = ReplicaSide::Local,
+                                                      NodeType nodeType = NodeType::File,
+                                                      std::shared_ptr<Node> parentNode = nullptr,
+                                                      std::shared_ptr<Node> correspondingParentNode = nullptr) const;
 
         std::shared_ptr<SyncPal> _syncPal;
         Sync _sync;

@@ -829,11 +829,11 @@ bool Utility::cpuUsageByProcess(double &percent) {
     return cpuUsageByProcess_private(percent);
 }
 
-SyncPath Utility::commonDocumentsFolderName() {
+SyncName Utility::commonDocumentsFolderName() {
     return Str2SyncName(COMMON_DOC_FOLDER);
 }
 
-SyncPath Utility::sharedFolderName() {
+SyncName Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
 

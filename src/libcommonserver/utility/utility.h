@@ -174,8 +174,8 @@ struct COMMONSERVER_EXPORT Utility {
         static bool cpuUsage(uint64_t &previousTotalTicks, uint64_t &_previousIdleTicks, double &percent);
         static bool cpuUsageByProcess(double &percent);
 
-        static SyncPath commonDocumentsFolderName();
-        static SyncPath sharedFolderName();
+        static SyncName commonDocumentsFolderName();
+        static SyncName sharedFolderName();
 
     private:
         static log4cplus::Logger _logger;

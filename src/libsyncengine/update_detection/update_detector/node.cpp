@@ -27,8 +27,7 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
            std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
-    _idb(idb),
-    _side(side), _name(name), _type(type), _changeEvents(changeEvents), _id(id), _createdAt(createdAt),
+    _idb(idb), _side(side), _name(name), _type(type), _changeEvents(changeEvents), _id(id), _createdAt(createdAt),
     _lastModified(lastmodified), _size(size), _moveOrigin(moveOrigin), _moveOriginParentDbId(moveOriginParentDbId),
     _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
     setParentNode(parentNode);
@@ -148,14 +147,14 @@ bool Node::isRoot() const {
 }
 
 bool Node::isCommonDocumentsFolder() const {
-    if (_parentNode && _parentNode->isRoot() && _name == Utility::commonDocumentsFolderName()) {
+    if (_parentNode && _parentNode->isRoot() && _type == NodeType::Directory && _name == Utility::commonDocumentsFolderName()) {
         return true;
     }
     return false;
 }
 
 bool Node::isSharedFolder() const {
-    if (_parentNode && _parentNode->isRoot() && _name == Utility::sharedFolderName()) {
+    if (_parentNode && _parentNode->isRoot() && _type == NodeType::Directory && _name == Utility::sharedFolderName()) {
         return true;
     }
     return false;

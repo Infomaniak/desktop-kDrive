@@ -1620,8 +1620,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                     return false;
                 }
 
-                if (newCorrespondingParentNode->isCommonDocumentsFolder() &&
-                    syncOp->affectedNode()->type() == NodeType::Directory) {
+                if (newCorrespondingParentNode->isCommonDocumentsFolder()) {
                     return true;
                 }
 
