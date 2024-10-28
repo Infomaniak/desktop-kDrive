@@ -27,11 +27,11 @@ namespace KDC {
 
 class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
-        // CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
-        // CPPUNIT_TEST(testFixModificationDate);
-        // CPPUNIT_TEST(testAffectedUpdateTree);
-        // CPPUNIT_TEST(testTargetUpdateTree);
-        // CPPUNIT_TEST(testLogCorrespondingNodeErrorMsg);
+        CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
+        CPPUNIT_TEST(testFixModificationDate);
+        CPPUNIT_TEST(testAffectedUpdateTree);
+        CPPUNIT_TEST(testTargetUpdateTree);
+        CPPUNIT_TEST(testLogCorrespondingNodeErrorMsg);
         CPPUNIT_TEST(testHasRight);
         CPPUNIT_TEST_SUITE_END();
 
