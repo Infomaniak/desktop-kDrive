@@ -48,8 +48,7 @@ static const char undecidedFolderProperty[] = "undecidedFolder";
 Q_LOGGING_CATEGORY(lcBigFoldersDialog, "gui.bigfoldersdialog", QtInfoMsg)
 
 BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncInfoClient, QSet<QString>>> &syncsUndecidedMap,
-                                   const DriveInfo &driveInfo, QWidget *parent) :
-    CustomDialog(true, parent) {
+                                   const DriveInfo &driveInfo, QWidget *parent) : CustomDialog(true, parent) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     // Text

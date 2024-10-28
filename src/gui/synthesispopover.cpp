@@ -29,12 +29,8 @@
 #include "config.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/sentryhandler.h"
-#include "updater/updaterclient.h"
+#include "guirequests.h"
 
-#undef CONSOLE_DEBUG
-#ifdef CONSOLE_DEBUG
-#include <iostream>
-#endif
 #include <QActionGroup>
 #include <QApplication>
 #include <QBoxLayout>
@@ -197,6 +193,11 @@ void SynthesisPopover::forceRedraw() {
     });
 #endif
 }
+void SynthesisPopover::refreshLockedStatus() {
+    auto updateState = UpdateState::Unknown;
+    GuiRequests::updateState(updateState);
+    onUpdateAvailabilityChange(updateState);
+}
 
 void SynthesisPopover::changeEvent(QEvent *event) {
     QDialog::changeEvent(event);
@@ -212,7 +213,7 @@ void SynthesisPopover::changeEvent(QEvent *event) {
 }
 
 void SynthesisPopover::paintEvent(QPaintEvent *event) {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
 
     QScreen *screen = QGuiApplication::screenAt(_sysTrayIconRect.center());
     if (!screen) {
@@ -547,17 +548,6 @@ void SynthesisPopover::initUI() {
 
     lockedAppVersionVBox->addSpacing(defaultPageSpacing);
 
-    // Optional label (status reported by tha app in case of Error)
-    _lockedAppUpdateOptionalLabel = new QLabel();
-    _lockedAppUpdateOptionalLabel->setObjectName("defaultTextLabel");
-    _lockedAppUpdateOptionalLabel->setAlignment(Qt::AlignHCenter);
-    _lockedAppUpdateOptionalLabel->setWordWrap(true);
-    _lockedAppUpdateOptionalLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    _lockedAppUpdateOptionalLabel->setVisible(false);
-#ifndef Q_OS_LINUX
-    lockedAppVersionVBox->addWidget(_lockedAppUpdateOptionalLabel);
-#endif
-
     // Update button
     auto *lockedAppUpdateButtonHBox = new QHBoxLayout();
     lockedAppUpdateButtonHBox->setAlignment(Qt::AlignHCenter);
@@ -578,7 +568,7 @@ void SynthesisPopover::initUI() {
     _lockedAppUpdateManualLabel->setWordWrap(true);
     _lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     lockedAppVersionVBox->addWidget(_lockedAppUpdateManualLabel);
-#endif //
+#endif
 
     // Shadow
     auto *effect = new QGraphicsDropShadowEffect(this);
@@ -602,7 +592,9 @@ void SynthesisPopover::initUI() {
     connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
     connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
     connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
-    connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &SynthesisPopover::onUpdateAvailabalityChange,
+
+    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
+    connect(_gui.get(), &ClientGui::updateStateChanged, this, &SynthesisPopover::onUpdateAvailabilityChange,
             Qt::UniqueConnection);
 }
 
@@ -1058,57 +1050,37 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
     }
 }
 
-void SynthesisPopover::onUpdateAvailabalityChange() {
-    if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
+void SynthesisPopover::onUpdateAvailabilityChange(const UpdateState updateState) {
+    if (!_lockedAppUpdateButton) return;
     if (_lockedAppVersionWidget->isHidden()) return;
-    QString statusString;
-    UpdateState updateState = UpdateState::Error;
-    try {
-        if (!UpdaterClient::instance()->isSparkleUpdater()) {
-            statusString = UpdaterClient::instance()->statusString();
-            updateState = UpdaterClient::instance()->updateState();
-        } else {
-            updateState = UpdateState::Ready; // On macOS, we just start the installer (Sparkle does the rest)
-        }
-    } catch (std::exception const &) {
-        return;
-    }
 
-    _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready);
-    _lockedAppUpdateOptionalLabel->setVisible(updateState != UpdateState::Ready && updateState != UpdateState::Downloading);
+    _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready || updateState == UpdateState::Available);
     switch (updateState) {
         case UpdateState::Ready:
+        case UpdateState::Available:
             _lockedAppUpdateButton->setText(tr("Update"));
             break;
         case UpdateState::Downloading:
             _lockedAppUpdateButton->setText(tr("Update download in progress"));
             break;
-        case UpdateState::Skipped:
-            UpdaterClient::instance()->unskipUpdate();
         case UpdateState::Checking:
             _lockedAppUpdateButton->setText(tr("Looking for update..."));
             break;
-        case UpdateState::ManualOnly:
+        case UpdateState::ManualUpdateAvailable:
             _lockedAppUpdateButton->setText(tr("Manual update"));
-            _lockedAppUpdateOptionalLabel->setText(statusString);
             break;
         default:
             _lockedAppUpdateButton->setText(tr("Unavailable"));
-            _lockedAppUpdateOptionalLabel->setText(statusString);
-            SentryHandler::instance()->captureMessage(
-                    SentryLevel::Fatal, "AppLocked",
-                    "406 Error received but unable to fetch an update: " + statusString.toStdString());
+            SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "AppLocked",
+                                                      "426 Error received but unable to fetch an update");
             break;
     }
-    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
 }
 
-void SynthesisPopover::onStartInstaller() noexcept {
-    try {
-        UpdaterClient::instance()->startInstaller();
-    } catch (std::exception const &) {
-        // Do nothing
-    }
+void SynthesisPopover::onStartInstaller() const noexcept {
+    VersionInfo versionInfo;
+    GuiRequests::versionInfo(versionInfo);
+    _gui->onShowWindowsUpdateDialog(versionInfo);
 }
 
 void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
@@ -1117,7 +1089,7 @@ void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
         _lockedAppVersionWidget->show();
         setFixedSize(lockedWindowSize);
         _gui->closeAllExcept(this);
-        onUpdateAvailabalityChange();
+        refreshLockedStatus();
     } else if (!currentVersionLocked && _mainWidget->isHidden()) {
         _lockedAppVersionWidget->hide();
         _mainWidget->show();

@@ -231,7 +231,8 @@ CommClient::~CommClient() {
     }
 }
 
-bool CommClient::execute(RequestNum num, const QByteArray &params, QByteArray &results, int timeout /*= COMM_SHORT_TIMEOUT*/) {
+bool CommClient::execute(const RequestNum num, const QByteArray &params, QByteArray &results,
+                         const int timeout /*= COMM_SHORT_TIMEOUT*/) {
     if (!_tcpConnection) {
         return false;
     }
@@ -276,6 +277,16 @@ bool CommClient::execute(RequestNum num, const QByteArray &params, QByteArray &r
     return ret;
 }
 
+bool CommClient::execute(const RequestNum num, const QByteArray &params, const int timeout) {
+    QByteArray result;
+    return execute(num, params, result, timeout);
+}
+
+bool CommClient::execute(const RequestNum num, const int timeout) {
+    QByteArray results;
+    return execute(num, {}, results, timeout);
+}
+
 void CommClient::stop() {
     _requestWorker->stop();
 
@@ -292,7 +303,8 @@ void CommClient::stop() {
         if (_tcpConnection->isOpen()) {
             _tcpConnection->close();
         }
-        _tcpConnection->deleteLater();
+        // Test again the pointer value since it might has been set to nullptr in CommClient::onDisconnected()
+        if (_tcpConnection) _tcpConnection->deleteLater();
     }
 
     _instance = nullptr;

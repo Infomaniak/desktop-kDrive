@@ -33,8 +33,7 @@ namespace KDC {
 
 ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal, bool keepLocalVersion,
                                                      std::vector<Error> &errors) :
-    _syncPal(syncPal),
-    _keepLocalVersion(keepLocalVersion), _errors(std::move(errors)) {}
+    _syncPal(syncPal), _keepLocalVersion(keepLocalVersion), _errors(std::move(errors)) {}
 
 void ConflictingFilesCorrector::runJob() {
     for (auto &error: _errors) {

@@ -161,6 +161,7 @@ struct COMMONSERVER_EXPORT Utility {
 #ifdef _WIN32
         static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
+        static bool runDetachedProcess(std::wstring cmd);
 #endif
         static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
                                              IoError &ioError);

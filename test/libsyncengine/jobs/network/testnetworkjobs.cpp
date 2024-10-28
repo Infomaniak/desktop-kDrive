@@ -53,6 +53,7 @@
 
 #include "jobs/network/getappversionjob.h"
 #include "test_utility/testhelpers.h"
+#include "jobs/network/directdownloadjob.h"
 
 using namespace CppUnit;
 
@@ -451,7 +452,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
-    while (job.getItem(item, error, ignore)) {
+    bool eof = false;
+    while (job.getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
         }
@@ -463,6 +465,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
 
     CPPUNIT_ASSERT(!cursor.empty());
     CPPUNIT_ASSERT(counter == 5);
+    CPPUNIT_ASSERT(eof);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
@@ -475,7 +478,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
-    while (job.getItem(item, error, ignore)) {
+    bool eof = false;
+    while (job.getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
         }
@@ -487,6 +491,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
 
     CPPUNIT_ASSERT(!cursor.empty());
     CPPUNIT_ASSERT(counter == 5);
+    CPPUNIT_ASSERT(eof);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorJsonBlacklist() {
@@ -525,7 +530,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
-    while (job.getItem(item, error, ignore)) {
+    bool eof = false;
+    while (job.getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
         }
@@ -537,6 +543,29 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
 
     CPPUNIT_ASSERT(!cursor.empty());
     CPPUNIT_ASSERT(counter == 0);
+    CPPUNIT_ASSERT(eof);
+}
+
+void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
+    CsvFullFileListWithCursorJob job(_driveDbId, "1");
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+
+    int counter = 0;
+    const std::string cursor = job.getCursor();
+    SnapshotItem item;
+    bool error = false;
+    bool ignore = false;
+    bool eof = false;
+    // Call getItem only once to simulate a troncated CSV file
+    job.getItem(item, error, ignore, eof);
+    if (item.parentId() == pictureDirRemoteId) {
+        counter++;
+    }
+
+    CPPUNIT_ASSERT(!cursor.empty());
+    CPPUNIT_ASSERT_LESS(5, counter);
+    CPPUNIT_ASSERT(!eof);
 }
 
 void TestNetworkJobs::testGetInfoUser() {
@@ -877,6 +906,17 @@ void TestNetworkJobs::testGetAppVersionInfo() {
     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+}
+
+void TestNetworkJobs::testDirectDownload() {
+    const LocalTemporaryDirectory temporaryDirectory("testDirectDownload");
+    SyncPath localDestFilePath = temporaryDirectory.path() / "testInstaller.exe";
+
+    DirectDownloadJob job(localDestFilePath,
+                          "https://download.storage.infomaniak.com/drive/desktopclient/kDrive-3.6.1.20240604.exe");
+    job.runSynchronously();
+    CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+    CPPUNIT_ASSERT_EQUAL(119771744, static_cast<int>(std::filesystem::file_size(localDestFilePath)));
 }
 
 bool TestNetworkJobs::createTestFiles() {
