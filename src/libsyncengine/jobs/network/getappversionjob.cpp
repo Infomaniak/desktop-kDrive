@@ -18,6 +18,7 @@
 
 #include "getappversionjob.h"
 #include "utility/jsonparserutility.h"
+#include "utility/utility.h"
 
 #include <config.h>
 
@@ -68,24 +69,16 @@ std::string GetAppVersionJob::getContentType(bool &canceled) {
     return {};
 }
 
-bool GetAppVersionJob::handleError(std::istream &is, const Poco::URI &uri) {
-    // TODO
+bool GetAppVersionJob::handleError(std::istream &, const Poco::URI &uri) {
+    LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str());
     return false;
 }
 
 DistributionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) const {
-    if (val == versionTypeProdKey) {
-        return DistributionChannel::Prod;
-    }
-    if (val == versionTypeNextKey) {
-        return DistributionChannel::Next;
-    }
-    if (val == versionTypeBetaKey) {
-        return DistributionChannel::Beta;
-    }
-    if (val == versionTypeInternalKey) {
-        return DistributionChannel::Internal;
-    }
+    if (val == versionTypeProdKey) return DistributionChannel::Prod;
+    if (val == versionTypeNextKey) return DistributionChannel::Next;
+    if (val == versionTypeBetaKey) return DistributionChannel::Beta;
+    if (val == versionTypeInternalKey) return DistributionChannel::Internal;
     return DistributionChannel::Unknown;
 }
 
@@ -111,10 +104,8 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
         }
 
         const DistributionChannel channel = toDistributionChannel(versionType);
+        _versionInfo[channel].channel = channel;
         if (!JsonParserUtility::extractValue(obj, tagKey, _versionInfo[channel].tag)) {
-            return false;
-        }
-        if (!JsonParserUtility::extractValue(obj, changeLogKey, _versionInfo[channel].changeLog)) {
             return false;
         }
         if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionInfo[channel].buildVersion)) {

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "customcombobox.h"
+#include "versionwidget.h"
 #include "widgetwithcustomtooltip.h"
 
 #include <QColor>
@@ -55,34 +56,13 @@ struct LargeFolderConfirmation : public QObject { // Derived from QObject becaus
         CustomSwitch *_switch{nullptr};
 };
 
-// A struct holding together the up-to-date status of the application, an update button
-// and the application version with an hyperlink to the release notes.
-struct VersionWidget {
-        explicit VersionWidget(QBoxLayout *parentBox, const QString &versionNumberLinkText);
-        void updateStatus(QString status, bool updateAvailable, const QString &releaseNoteLinkText);
-        void setVersionLabelText(const QString &text);
-
-        const QPushButton *updateButton() const { return _updateButton; };
-        void setUpdateButtonText(const QString &text);
-        const QLabel *updateStatusLabel() const { return _updateStatusLabel; };
-        const QLabel *showReleaseNoteLabel() const { return _showReleaseNoteLabel; };
-        const QLabel *versionNumberLabel() const { return _versionNumberLabel; };
-
-    private:
-        QLabel *_versionLabel{nullptr};
-        QLabel *_updateStatusLabel{nullptr};
-        QLabel *_showReleaseNoteLabel{nullptr};
-        QLabel *_versionNumberLabel{nullptr};
-        QPushButton *_updateButton{nullptr};
-};
-
 class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
 
     public:
         explicit PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-        void showErrorBanner(bool unresolvedErrors);
+        void showErrorBanner(bool unresolvedErrors) const;
 
     signals:
         void setStyle(bool darkTheme);
@@ -94,7 +74,7 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         std::shared_ptr<ClientGui> _gui;
 
         std::unique_ptr<LargeFolderConfirmation> _largeFolderConfirmation;
-        std::unique_ptr<VersionWidget> _versionWidget;
+        VersionWidget *_versionWidget;
         CustomComboBox *_languageSelectorComboBox{nullptr};
         QLabel *_generalLabel{nullptr};
         QLabel *_darkThemeLabel{nullptr};
@@ -114,7 +94,6 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void showEvent(QShowEvent *event) override;
 
         void clearUndecidedLists();
-        void updateStatus(QString status, bool updateAvailable);
 
     private slots:
         void onFolderConfirmationSwitchClicked(bool checked = false);
@@ -132,10 +111,8 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onProxyServerWidgetClicked();
         void onLiteSyncWidgetClicked();
         void onLinkActivated(const QString &link);
-        void onUpdateInfo();
-        void onStartInstaller();
 
-        void retranslateUi();
+        void retranslateUi() const;
 };
 
 } // namespace KDC

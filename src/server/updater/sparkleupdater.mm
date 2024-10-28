@@ -16,38 +16,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Sparkle/Sparkle.h>
+#include "sparkleupdater.h"
 
+#include "updatechecker.h"
 #include "common/utility.h"
 #include "libcommon/utility/utility.h"
-#include "sparkleupdater.h"
-#include "libcommonserver/log/log.h"
 #include "libparms/db/parmsdb.h"
+#include "requests/parameterscache.h"
 
+#include "libcommonserver/log/log.h"
 #include <log4cplus/loggingmacros.h>
+
+#include <Sparkle/Sparkle.h>
+#include <Sparkle/SPUUpdaterDelegate.h>
 
 // DelegateUpdaterObject class
 @interface DelegateUpdaterObject : NSObject <SPUUpdaterDelegate> {
 @protected
-    KDC::DownloadState _state;
     NSString *_availableVersion;
-    KDC::QuitCallback _quitCallback;
+    NSString *_feedUrl;
+    std::function<void()> _quitCallback;
+    std::function<void()> _skipCallback;
 }
 - (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)updater;
 - (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater;
 - (void)updaterWillRelaunchApplication:(SPUUpdater *)updater;
-- (KDC::DownloadState)downloadState;
 - (NSString *)availableVersion;
-- (void)setQuitCallback:(KDC::QuitCallback)quitCallback;
+- (void)setQuitCallback:(std::function<void()>)quitCallback;
+- (void)setSkipCallback:(std::function<void()>)skipCallback;
+- (void)updater:(SPUUpdater *)updater userDidMakeChoice:(SPUUserUpdateChoice)choice forUpdate:(SUAppcastItem *)updateItem state:(SPUUserUpdateState *)state;
 @end
 
 @implementation DelegateUpdaterObject  //(SUUpdaterDelegateInformalProtocol)
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _state = KDC::Unknown;
         _availableVersion = @"";
+        _feedUrl = @"";
         _quitCallback = nullptr;
+        _skipCallback = nullptr;
     }
     return self;
 }
@@ -56,6 +63,14 @@
     (void)updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "may check: YES");
     return YES;
+}
+
+- (nullable NSString *)feedURLStringForUpdater:(SPUUpdater *)updater {
+    return _feedUrl;
+}
+
+- (void)setCustomFeedUrl:(std::string)url {
+    _feedUrl = [NSString stringWithUTF8String:url.c_str()];
 }
 
 - (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater {
@@ -80,32 +95,40 @@
     }
 }
 
-- (KDC::DownloadState)downloadState {
-    return _state;
-}
-
 - (NSString *)availableVersion {
     return _availableVersion;
 }
 
-- (void)setQuitCallback:(KDC::QuitCallback)quitCallback {
+- (void)setQuitCallback:(std::function<void()>)quitCallback {
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Set quitCallback");
     _quitCallback = quitCallback;
 }
 
+- (void)setSkipCallback:(std::function<void()>)skipCallback {
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Set skipCallback");
+    _skipCallback = skipCallback;
+}
+
+- (void)updater:(SPUUpdater *)updater userDidMakeChoice:(SPUUserUpdateChoice)choice forUpdate:(SUAppcastItem *)updateItem state:(SPUUserUpdateState *)state {
+    if (choice == SPUUserUpdateChoiceSkip) {
+        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version " << [updateItem.versionString UTF8String] << " skipped!");
+        if (_skipCallback) {
+            _skipCallback();
+        }
+    }
+}
+
 // Sent when a valid update is found by the update driver.
-- (void)updater:(SPUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)update {
+- (void)updater:(SPUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)updateItem {
     (void)updater;
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version: " << update.versionString);
-    _state = KDC::FindValidUpdate;
-    _availableVersion = [update.versionString copy];
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version: " << [updateItem.versionString UTF8String]);
+    _availableVersion = [updateItem.versionString copy];
 }
 
 // Sent when a valid update is not found.
 - (void)updaterDidNotFindUpdate:(SPUUpdater *)update {
     (void)update;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "No valid update found");
-    _state = KDC::DidNotFindUpdate;
 }
 
 // Sent immediately before installing the specified update.
@@ -118,7 +141,6 @@
     (void)updater;
     if ([error code] != SUNoUpdateError) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error: " << [error code]);
-        _state = KDC::AbortWithError;
     }
 }
 
@@ -155,11 +177,38 @@ class SparkleUpdater::Private {
         DelegateUserDriverObject *delegateUserDriverObject;
 };
 
-// Delete ~/Library//Preferences/864VDCS2QY.com.infomaniak.drive.desktopclient.plist to re-test
-SparkleUpdater::SparkleUpdater(const QUrl &appCastUrl) : UpdaterServer() {
+SparkleUpdater::SparkleUpdater() {
     d = new Private;
+}
+
+SparkleUpdater::~SparkleUpdater() {
+    deleteUpdater();
+    delete d;
+}
+
+void SparkleUpdater::onUpdateFound() {
+    if (isVersionSkipped(versionInfo().fullVersion())) return;
+    startInstaller();
+}
+
+void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) {
+    [d->updaterDelegate setQuitCallback:quitCallback];
+}
+
+void SparkleUpdater::startInstaller() {
+    reset(versionInfo().downloadUrl);
+
+    [d->updater checkForUpdates];
+    [d->spuStandardUserDriver showUpdateInFocus];
+}
+
+void SparkleUpdater::reset(const std::string &url) {
+    [d->spuStandardUserDriver dismissUpdateInstallation];
+    deleteUpdater();
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
+    const std::function<void()> skipCallback = std::bind_front(&SparkleUpdater::skipVersionCallback, this);
+    [d->updaterDelegate setSkipCallback:skipCallback];
     [d->updaterDelegate retain];
 
     d->delegateUserDriverObject = [[DelegateUserDriverObject alloc] init];
@@ -178,73 +227,45 @@ SparkleUpdater::SparkleUpdater(const QUrl &appCastUrl) : UpdaterServer() {
     [d->updater setSendsSystemProfile:NO];
     [d->updater retain];
 
-    setUpdateUrl(appCastUrl);
-
     // Sparkle 1.8 required
     NSString *userAgent = [NSString stringWithUTF8String:KDC::CommonUtility::userAgentString().c_str()];
     [d->updater setUserAgentString:userAgent];
+
+    // Migrate away from using `-[SPUUpdater setFeedURL:]`
+    [d->updater clearFeedURLFromUserDefaults];
+
+    [d->updaterDelegate setCustomFeedUrl:url];
+
+    if(startSparkleUpdater()) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
+    }
 }
 
-SparkleUpdater::~SparkleUpdater() {
+void SparkleUpdater::deleteUpdater() {
     [d->updater release];
     [d->updaterDelegate release];
     [d->spuStandardUserDriver release];
-    delete d;
+    [d->delegateUserDriverObject release];
 }
 
-void SparkleUpdater::setUpdateUrl(const QUrl &url) {
-    NSURL *nsurl = [NSURL URLWithString:[NSString stringWithUTF8String:url.toString().toUtf8().data()]];
-    [d->updater setFeedURL:nsurl];
-}
-
-void SparkleUpdater::setQuitCallback(const QuitCallback &quitCallback) {
-    [d->updaterDelegate setQuitCallback:quitCallback];
-}
-
-bool SparkleUpdater::startUpdater() {
-    NSError *error;
+bool SparkleUpdater::startSparkleUpdater() {
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Starting updater...");
+    NSError *error = nullptr;
     bool success = [d->updater startUpdater:&error];
 
     if (!success) {
         if (error) {
-            LOG_DEBUG(KDC::Log::instance()->getLogger(), "Error in startUpdater " << error.description.UTF8String);
+            LOG_WARN(KDC::Log::instance()->getLogger(), "Error in startUpdater " << error.description.UTF8String);
+            setState(UpdateState::UpdateError);
         }
         return false;
     }
+
     return true;
 }
 
-void SparkleUpdater::checkForUpdate() {
-    if (startUpdater()) {
-        [d->updater checkForUpdates];
-        [d->spuStandardUserDriver showUpdateInFocus];
-    }
-}
-
-void SparkleUpdater::backgroundCheckForUpdate() {
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "launching background check");
-
-    if (startUpdater() && !d->updater.sessionInProgress) {
-        [d->updater checkForUpdatesInBackground];
-    }
-    [d->spuStandardUserDriver showUpdateInFocus];
-}
-
-int SparkleUpdater::state() const {
-    return [d->updaterDelegate downloadState];
-}
-
-QString SparkleUpdater::version() const {
-    return [[d->updaterDelegate availableVersion] UTF8String];
-}
-
-bool SparkleUpdater::updateFound() const {
-    DownloadState state = [d->updaterDelegate downloadState];
-    return state == FindValidUpdate;
-}
-
-void SparkleUpdater::slotStartInstaller() {
-    checkForUpdate();
+void SparkleUpdater::skipVersionCallback() {
+    skipVersion(versionInfo().fullVersion());
 }
 
 }  // namespace KDC

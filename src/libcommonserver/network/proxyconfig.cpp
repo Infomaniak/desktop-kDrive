@@ -22,7 +22,6 @@ namespace KDC {
 
 ProxyConfig::ProxyConfig(ProxyType type, const std::string &hostName, int port, bool needsAuth, const std::string &user,
                          const std::string &pwd) :
-    _type(type),
-    _hostName(hostName), _port(port), _needsAuth(needsAuth), _user(user), _token(pwd) {}
+    _type(type), _hostName(hostName), _port(port), _needsAuth(needsAuth), _user(user), _token(pwd) {}
 
 } // namespace KDC
