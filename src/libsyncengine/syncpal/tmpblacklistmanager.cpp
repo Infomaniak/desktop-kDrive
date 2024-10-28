@@ -143,7 +143,7 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
 }
 
 void TmpBlacklistManager::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
-    NodeId removedId;
+    NodeId remotedId;
     NodeId localId;
 
     // Find the node id of the item to be removed
@@ -156,7 +156,7 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const SyncPath &relativePat
 
     for (const auto &[nodeId, tmpInfo]: _remoteErrors) {
         if (Utility::isSameOrChildPath(tmpInfo.path, relativePath)) {
-            removedId = nodeId;
+            remotedId = nodeId;
             break;
         }
     }
@@ -165,8 +165,8 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const SyncPath &relativePat
         removeItemFromTmpBlacklist(localId, ReplicaSide::Local);
     }
 
-    if (!removedId.empty()) {
-        removeItemFromTmpBlacklist(removedId, ReplicaSide::Remote);
+    if (!remotedId.empty()) {
+        removeItemFromTmpBlacklist(remotedId, ReplicaSide::Remote);
     }
 }
 
