@@ -729,6 +729,21 @@ ExitInfo ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
                                            << Utility::formatSyncPath(relativeLocalPath).c_str());
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     }
+
+    bool exists = false;
+    IoError ioError = IoError::Success;
+    SyncPath absoluteLocalPath = _syncPal->localPath() / relativeLocalPath;
+    if (!IoHelper::checkIfPathExists(absoluteLocalPath, exists, ioError)) {
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteLocalPath, ioError));
+        return ExitCode::SystemError;
+    }
+
+    if (exists) {
+        LOGW_WARN(_logger, L"Item already exists: " << Utility::formatSyncPath(absoluteLocalPath));
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+    }
+
     if (!_syncPal->vfsCreatePlaceholder(relativeLocalPath, syncItem)) {
         // TODO: vfs functions should output an ioError parameter
         // Check if the item already exists on local replica
@@ -802,8 +817,10 @@ ExitInfo ExecutorWorker::processCreateOrConvertToPlaceholderError(const SyncPath
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
-    if ((create && exists) || (!create && !exists)) {
-        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+    if (create && exists){
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }else if (!create && !exists){
+        return {ExitCode::DataError, ExitCause::FileAlreadyExist};
     }
 
     if (create) {
