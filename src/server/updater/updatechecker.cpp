@@ -67,7 +67,8 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
     } else {
         DistributionChannel channel = _channel;
-        // Check if there is a progressive update ongoing
+        // hasProdNext() is true if and only if the running application has been elected for an upgrade in the context of a
+        // progressive update
         if (channel == DistributionChannel::Prod && getAppVersionJobPtr->hasProdNext()) channel = DistributionChannel::Next;
 
         _versionInfo = getAppVersionJobPtr->getVersionInfo(channel);
