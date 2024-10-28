@@ -139,15 +139,15 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (exists) {
             ItemType itemType;
             if (!IoHelper::getItemType(absolutePath, itemType)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getItemType: "
-                                                   << Utility::formatIoError(absolutePath, itemType.ioError).c_str());
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, itemType.ioError));
                 invalidateSnapshot();
                 return;
             }
             if (itemType.ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: " << Utility::formatSyncPath(absolutePath)
-                                                                             << L" with ioError: " << itemType.ioError
-                                                                             << L". Blacklisting it temporarily");
+                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: "
+                                                    << Utility::formatIoError(absolutePath, itemType.ioError)
+                                                    << L". Blacklisting it temporarily");
                 sendAccessDeniedError(absolutePath);
                 continue;
             }
@@ -627,21 +627,19 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         IoHelper::DirectoryIterator dirIt;
         if (!IoHelper::getDirectoryIterator(absoluteParentDirPath, true, ioError, dirIt)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: "
-                                               << Utility::formatIoError(absoluteParentDirPath, ioError).c_str());
+                                               << Utility::formatIoError(absoluteParentDirPath, ioError));
             setExitCause(ExitCause::Unknown);
             return ExitCode::SystemError;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str() << L" doesn't exist");
+            LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatIoError(absoluteParentDirPath, ioError));
             setExitCause(ExitCause::SyncDirDoesntExist);
             return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
         }
 
         if (ioError == IoError::AccessDenied) {
-            LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str()
-                                                           << L" misses read permission");
+            LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatIoError(absoluteParentDirPath, ioError));
             setExitCause(ExitCause::SyncDirAccesError);
             return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
         }
@@ -650,7 +648,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         bool endOfDirectory = false;
         while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(entry.path()).c_str() << L" found");
+                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(entry.path()) << L" found");
             }
 
             if (stopAsked()) {
@@ -668,26 +666,26 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             bool isManaged = false;
             if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
-                                                   << Utility::formatSyncPath(absolutePath).c_str());
+                                                   << Utility::formatIoError(absoluteParentDirPath, ioError));
                 dirIt.disableRecursionPending();
                 continue;
             }
             if (ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry does not exist anymore: " << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore: "
+                                                    << Utility::formatIoError(absoluteParentDirPath, ioError));
                 dirIt.disableRecursionPending();
                 continue;
             }
             if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory misses search permission: " << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission: "
+                                                    << Utility::formatIoError(absoluteParentDirPath, ioError));
                 dirIt.disableRecursionPending();
                 sendAccessDeniedError(absolutePath);
                 continue;
             }
 
             if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed: " << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed: " << Utility::formatSyncPath(absolutePath));
                 toExclude = true;
             }
 
@@ -785,9 +783,9 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 continue;
             }
             if (itemType.ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: " << Utility::formatSyncPath(absolutePath).c_str()
-                                                                             << L" with ioError: " << itemType.ioError
-                                                                             << L". Blacklisting it temporarily");
+                LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: "
+                                                    << Utility::formatIoError(absoluteParentDirPath, ioError)
+                                                    << L". Blacklisting it temporarily");
                 sendAccessDeniedError(absolutePath);
             }
 

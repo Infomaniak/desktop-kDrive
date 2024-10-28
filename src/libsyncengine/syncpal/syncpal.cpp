@@ -1424,7 +1424,7 @@ void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
 
 ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause) {
     if (relativePath.empty()) {
-        LOGW_SYNCPAL_WARN(_logger, L"Access error on root folder");
+        LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
         return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
     }
     Error error(syncDbId(), "", "", relativePath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativePath,
@@ -1433,21 +1433,21 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
 
     NodeId localNodeId;
     if (localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath); localNodeId.empty()) {
-        // The file does not exit yet on local FS, we do not have sufficient right on the parrent.
+        // The file does not exit yet on local file system, or we do not have sufficient right on a parent folder.
         LOGW_DEBUG(_logger,
-                   L"Item " << Utility::formatSyncPath(relativePath) << L"isn't present local FS, blacklisting the parrent.");
+                   L"Item " << Utility::formatSyncPath(relativePath) << L"is not present local file system, blacklisting the parent item.");
         return handleAccessDeniedItem(relativePath.parent_path(), cause);
     }
 
     
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(localNodeId)
-                                         << L" is blacklisted temporarily because of access denied");
+                                         << L" is blacklisted temporarily because of denied access.");
 
     NodeId correspondingNodeId;
     correspondingNodeId = snapshot(ReplicaSide::Remote)->itemId(relativePath);
     if (bool found; correspondingNodeId.empty() &&
                     !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, correspondingNodeId, found)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::correspondingNodeId");
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 

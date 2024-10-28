@@ -565,7 +565,7 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
                 return false;
             }
             if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_localpath.parent_path()).c_str());
+                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_localpath.parent_path()));
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::FileAccessError;
                 return false;

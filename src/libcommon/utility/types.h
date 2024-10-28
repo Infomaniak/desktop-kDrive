@@ -116,18 +116,18 @@ template<class C> // Any enum class
 concept EnumClass = std::is_enum_v<C>;
 
 template<class C> // Any enum class that can be converted to (and from) int
-concept IntableEnum = EnumClass<C> && std::is_convertible_v<std::underlying_type_t<C>, int>;
+concept IntegralEnum = EnumClass<C> && std::is_convertible_v<std::underlying_type_t<C>, int>;
 
 template<class C> // Any enum class that  can be printed (with enumClassToString)
 concept PrintableEnum = EnumClass<C> && requires(C e) { toString(e); };
 
 // Converters
-template<IntableEnum C>
+template<IntegralEnum C>
 inline constexpr int toInt(C e) {
     return static_cast<int>(e);
 }
 
-template<IntableEnum C>
+template<IntegralEnum C>
 inline constexpr C fromInt(int e) {
     return static_cast<C>(e);
 }
@@ -499,7 +499,7 @@ using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
 
 // Concepts
 template<class C> // Any enum class we want to allow bitwise operations (OperationType & InconsistencyType)
-concept AllowBitWiseOpEnum = IntableEnum<C> && (std::is_same_v<C, OperationType> || std::is_same_v<C, InconsistencyType>);
+concept AllowBitWiseOpEnum = IntegralEnum<C> && (std::is_same_v<C, OperationType> || std::is_same_v<C, InconsistencyType>);
 
 // Operators
 template<AllowBitWiseOpEnum C>
