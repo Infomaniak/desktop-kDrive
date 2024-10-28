@@ -183,7 +183,7 @@ SyncPath Node::getPath() const {
 
 bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
     if (!potentialChild) return false; // `parentNode` is the root node, 
-    if (potentialChild->id().has_value() && potentialChild->id() == _id) return false; // `parentNode` is the root node
+    if (potentialChild->id().has_value() && potentialChild->id() == _id) return false; // potentialChild cannot be its own parent
     while (potentialChild) {
         if (!potentialChild->id().has_value()) {
             LOG_ERROR(Log::instance()->getLogger(), "Node::isParentOf Node has no id");
