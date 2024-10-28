@@ -17,8 +17,8 @@
  */
 #include "localtemporarydirectory.h"
 
-#include "io/filestat.h"
-#include "io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <sstream>
 

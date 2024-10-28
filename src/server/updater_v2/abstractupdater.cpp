@@ -20,11 +20,10 @@
 #include "abstractupdater.h"
 
 #include "db/parmsdb.h"
-#include "../../libsyncengine/jobs/network/API_v2/downloadjob.h"
-#include "jobs/network/getappversionjob.h"
+#include "libsyncengine/jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
-#include "log/log.h"
-#include "utility/utility.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/log/log.h"
 
 namespace KDC {
 

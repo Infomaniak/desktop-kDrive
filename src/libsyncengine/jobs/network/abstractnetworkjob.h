@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "libsyncengine/jobs/abstractjob.h"
 
 #include <string>
 #include <unordered_map>

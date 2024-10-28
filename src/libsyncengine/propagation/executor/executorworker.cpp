@@ -826,7 +826,7 @@ ExitCode ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
 #ifdef __APPLE__
     // VfsMac::convertToPlaceholder needs only SyncFileItem::_dehydrated
     syncItem.setDehydrated(!hydrated);
-#elif __WIN32
+#elif _WIN32
     // VfsWin::convertToPlaceholder needs only SyncFileItem::_localNodeId
     FileStat fileStat;
     IoError ioError = IoError::Success;

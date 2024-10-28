@@ -1,25 +1,29 @@
 project(testserver)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Svg)
-find_package(log4cplus 2.1.0 REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML Net)
 
 set(CMAKE_AUTOMOC ON)
 set(testserver_NAME ${APPLICATION_NAME}_test_server)
-set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
+
+set(server_SRCS
+    ../../src/libcommon/updater.h ../../src/libcommon/updater.cpp
+    ../../src/libcommonserver/vfs.h ../../src/libcommonserver/vfs.cpp
+    ../../src/libcommonserver/plugin.h ../../src/libcommonserver/plugin.cpp
+    ../../src/server/logarchiver.h ../../src/server/logarchiver.cpp
+    ../../src/server/socketapi.h ../../src/server/socketapi.cpp
+    ../../src/server/socketlistener.h ../../src/server/socketlistener.cpp
+    ../../src/server/updater/kdcupdater.h ../../src/server/updater/kdcupdater.cpp
+    ../../src/server/updater/updateinfo.h ../../src/server/updater/updateinfo.cpp
+    ../../src/server/updater/updaterserver.h ../../src/server/updater/updaterserver.cpp
+    ../../src/server/updater_v2/abstractupdater.h ../../src/server/updater_v2/abstractupdater.cpp
+)
 
 set(testserver_SRCS
-    ../test.cpp
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
-    ${CMAKE_SOURCE_DIR}/src/libcommon/updater.h ${CMAKE_SOURCE_DIR}/src/libcommon/updater.cpp
-    ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.cpp
-    ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.cpp
-    ${server_srcs_path}/logarchiver.h ${server_srcs_path}/logarchiver.cpp
-    ${server_srcs_path}/updater/kdcupdater.h ${server_srcs_path}/updater/kdcupdater.cpp
-    ${server_srcs_path}/updater/updateinfo.h ${server_srcs_path}/updater/updateinfo.cpp
-    ${server_srcs_path}/updater/updaterserver.h ${server_srcs_path}/updater/updaterserver.cpp
-    ${server_srcs_path}/updater_v2/abstractupdater.h ${server_srcs_path}/updater_v2/abstractupdater.cpp
+    ../test.cpp
+
     test.cpp
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdater.h updater/testupdater.cpp
@@ -29,16 +33,10 @@ set(testserver_SRCS
 
 if(APPLE)
     list(APPEND testserver_SRCS  vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
-    list(APPEND server_SRCS socketapisocket_mac.mm)
-    set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
-
-    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
-    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
-        list(APPEND testserver_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater_mac.mm)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
@@ -58,63 +56,50 @@ else ()
     include_directories("/usr/local/include")
 endif()
 
-add_executable(${testserver_NAME} ${testserver_SRCS})
+add_executable(${testserver_NAME}
+    ${server_SRCS}
+    ${testserver_SRCS})
 
 set_target_properties(${testserver_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
 target_link_libraries(${testserver_NAME}
-        Qt6::Core Qt6::Gui
-        Poco::XML Poco::Net
+        Qt6::Svg
+        ${libcommon_NAME}
+        ${libsyncengine_NAME}
+        updater
 )
 
-if (WIN32)
-    target_link_libraries(${testserver_NAME}
-            log4cplus::log4cplusU)
-elseif (APPLE)
-    target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/liblog4cplusU.dylib")
-else ()
-    target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/liblog4cplusU.so")
-endif()
-
-if (WIN32)
-    target_link_libraries(${testserver_NAME}
-            debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
-            optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
-elseif (APPLE)
-    target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/libcppunit.dylib")
-else ()
-    target_link_libraries(${testserver_NAME}
-            "/usr/local/lib/libcppunit.so")
-endif()
-
-
-# Loaded after liblog4cplus to avoid an initialization crash
 if (APPLE)
     target_link_libraries(${testserver_NAME}
         "${libsyncengine_NAME}_vfs_mac"
         "${updater_DEPS}")
-else()
+elseif (WIN32)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
+    find_library(LIBSYNCENGINE_VFS_STATIC_LIBRARY
+        NAMES "${libsyncengine_NAME}_vfs_win"
+        PATHS "${CMAKE_BINARY_DIR}/src/server/vfs/win"
+        NO_DEFAULT_PATH
+        NO_CACHE)
     target_link_libraries(${testserver_NAME}
-        ${libsyncengine_NAME})
+        "${LIBSYNCENGINE_VFS_STATIC_LIBRARY}")
+endif()
+
+if (WIN32)
+    target_link_libraries(${testserver_NAME}
+        debug
+        "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
+        optimized
+        "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
+elseif (APPLE)
+    target_link_libraries(${testserver_NAME}
+        "/usr/local/lib/libcppunit.dylib")
+else ()
+    target_link_libraries(${testserver_NAME}
+        "/usr/local/lib/libcppunit.so")
 endif()
 
 # Install
-
-# VFS plugin
-set(vfs_installdir "${BIN_OUTPUT_DIRECTORY}")
-if (APPLE)
-    install(TARGETS "${libsyncengine_NAME}_vfs_mac"
-            LIBRARY DESTINATION "${vfs_installdir}"
-            RUNTIME DESTINATION "${vfs_installdir}"
-    )
-endif()
-
 if (APPLE)
     # Default sync exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/sync-exclude-osx.lst DESTINATION ${BIN_OUTPUT_DIRECTORY} RENAME sync-exclude.lst)
@@ -122,8 +107,27 @@ if (APPLE)
     # Default Lite Sync app exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
 
+    #Vfs
+    install(TARGETS "${libsyncengine_NAME}_vfs_mac"
+            LIBRARY DESTINATION "${BIN_OUTPUT_DIRECTORY}"
+            RUNTIME DESTINATION "${BIN_OUTPUT_DIRECTORY}")
+
     install(CODE "
         message(STATUS \"Fixing library paths for ${testserver_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         " COMPONENT RUNTIME)
+elseif (WIN32)
+    #Vfs
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
+    find_library(VFS_SHARED_LIBRARY
+        NAMES vfs
+        PATHS ${VFS_DIRECTORY}
+        NO_DEFAULT_PATH
+        NO_CACHE)
+    install(FILES ${VFS_SHARED_LIBRARY}
+        DESTINATION ${BIN_OUTPUT_DIRECTORY})
+
+    install(TARGETS "${libsyncengine_NAME}_vfs_win"
+        LIBRARY DESTINATION "${BIN_OUTPUT_DIRECTORY}"
+        RUNTIME DESTINATION "${BIN_OUTPUT_DIRECTORY}")
 endif()

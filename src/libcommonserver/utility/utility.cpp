@@ -48,8 +48,6 @@
 #include <sstream>
 #include <ctime>
 
-#include <sentry.h>
-
 #ifndef _WIN32
 #include <utf8proc.h>
 #endif

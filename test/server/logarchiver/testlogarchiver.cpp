@@ -18,11 +18,11 @@
 
 #include "testlogarchiver.h"
 #include "server/logarchiver.h"
-#include "libcommonserver/log/log.h"
-#include "test_utility/localtemporarydirectory.h"
-#include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/db/db.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include <log4cplus/loggingmacros.h>
 

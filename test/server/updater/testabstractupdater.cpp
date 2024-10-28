@@ -21,8 +21,7 @@
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
-#include "jobs/network/getappversionjob.h"
-#include "keychainmanager/keychainmanager.h"
+#include "libsyncengine/jobs/network/getappversionjob.h"
 
 #include <regex>
 

@@ -17,10 +17,11 @@
  */
 
 #include "testupdater.h"
-#include "libsyncengine/requests/parameterscache.h"
 
 #include "version.h"
 #include "libcommonserver/log/log.h"
+#include "libsyncengine/requests/parameterscache.h"
+
 #include <log4cplus/loggingmacros.h>
 #include <iostream>
 

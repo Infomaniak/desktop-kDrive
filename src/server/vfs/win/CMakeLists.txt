@@ -24,4 +24,10 @@ set_target_properties("${libsyncengine_NAME}_vfs_win" PROPERTIES
     AUTOMOC TRUE
 )
 
+# For testing: Export symbols to be able to link the library statically
+GENERATE_EXPORT_HEADER("${libsyncengine_NAME}_vfs_win"
+    BASE_NAME "${libsyncengine_NAME}_vfs_win"
+    EXPORT_MACRO_NAME SYNCENGINEVFS_EXPORT
+    EXPORT_FILE_NAME syncenginevfslib.h
+)
 

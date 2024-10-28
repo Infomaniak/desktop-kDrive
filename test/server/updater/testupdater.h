@@ -23,6 +23,8 @@
 #include "server/updater/sparkleupdater.h"
 #endif
 
+#include <log4cplus/logger.h>
+
 using namespace CppUnit;
 
 namespace KDC {

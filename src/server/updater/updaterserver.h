@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "../libcommon/updater.h"
+#include "libcommon/updater.h"
 
 #include <QLoggingCategory>
 #include <QObject>

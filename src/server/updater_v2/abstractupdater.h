@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "jobs/network/getappversionjob.h"
+#include "libsyncengine/jobs/network/getappversionjob.h"
 #include "utility/types.h"
 
 
