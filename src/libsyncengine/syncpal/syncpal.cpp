@@ -382,7 +382,7 @@ bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
 }
 
 bool SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
-    if (!_vfsPinState) {
+    if (!_vfsSetPinState) {
         return false;
     }
 
@@ -405,12 +405,12 @@ bool SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const Sync
     return _vfsCreatePlaceholder(syncDbId(), relativeLocalPath, item);
 }
 
-bool SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item, bool &needRestart) {
+bool SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
     if (!_vfsConvertToPlaceholder) {
         return false;
     }
 
-    return _vfsConvertToPlaceholder(syncDbId(), path, item, needRestart);
+    return _vfsConvertToPlaceholder(syncDbId(), path, item);
 }
 
 bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
@@ -489,7 +489,7 @@ bool SyncPal::wipeVirtualFiles() {
 
 bool SyncPal::wipeOldPlaceholders() {
     LOG_SYNCPAL_INFO(_logger, "Wiping old placeholders files");
-    VirtualFilesCleaner virtualFileCleaner(localPath());
+    VirtualFilesCleaner virtualFileCleaner(localPath(), syncDbId());
     std::vector<SyncPath> failedToRemovePlaceholders;
     if (!virtualFileCleaner.removeDehydratedPlaceholders(failedToRemovePlaceholders)) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
@@ -998,6 +998,10 @@ std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) const {
     return (side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree);
 }
 
+void SyncPal::createProgressInfo() {
+    _progressInfo = std::shared_ptr<ProgressInfo>(new ProgressInfo(shared_from_this()));
+}
+
 ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const {
     DbNodeId dbNodeId = -1;
     bool found = false;
@@ -1032,8 +1036,7 @@ bool SyncPal::existOnServer(const SyncPath &path) const {
 bool SyncPal::canShareItem(const SyncPath &path) const {
     // Path is normalized on server side
     const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
-    const NodeId nodeId = _remoteSnapshot->itemId(path);
-    if (!nodeId.empty()) {
+    if (const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath); !nodeId.empty()) {
         return _remoteSnapshot->canShare(nodeId);
     }
     return false;
@@ -1123,7 +1126,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
     for (const auto &localFileInfo: localFileMap) {
         SyncPath destPath;
         if (ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(
-                    localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixTypeConflict, &destPath);
+                    localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, &destPath);
             exitCode != ExitCode::Ok) {
             LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Path2WStr(localFileInfo.second).c_str() << L" into "
                                                           << Path2WStr(destPath).c_str());
@@ -1176,7 +1179,7 @@ void SyncPal::start() {
     SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpLocalBlacklist, std::unordered_set<NodeId>());
 
     // Create ProgressInfo
-    _progressInfo = std::shared_ptr<ProgressInfo>(new ProgressInfo(shared_from_this()));
+    createProgressInfo();
 
     // Create workers
     createWorkers();

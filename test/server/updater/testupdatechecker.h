@@ -18,27 +18,18 @@
 
 #pragma once
 
-#include <QObject>
-#include <QString>
-
-#include "libcommon/utility/types.h"
+#include "testincludes.h"
 
 namespace KDC {
 
-class Updater : public QObject {
-        Q_OBJECT
-
+class TestUpdateChecker final : public CppUnit::TestFixture {
     public:
-        explicit Updater(QObject *parent = NULL);
+        CPPUNIT_TEST_SUITE(TestUpdateChecker);
+        CPPUNIT_TEST(testCheckUpdateAvailable);
+        CPPUNIT_TEST_SUITE_END();
 
-        virtual QString version() const = 0;
-        virtual bool isKDCUpdater() = 0;
-        virtual bool isSparkleUpdater() = 0;
-        virtual QString statusString() const = 0;
-        virtual bool downloadCompleted() const = 0;
-        virtual bool updateFound() const = 0;
-        virtual void startInstaller() const = 0;
-        virtual UpdateState updateState() const = 0;
+    protected:
+        void testCheckUpdateAvailable();
 };
 
 } // namespace KDC

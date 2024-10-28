@@ -25,8 +25,8 @@ using namespace CppUnit;
 namespace KDC {
 
 struct RightsSet {
-        RightsSet(int rights) : read(rights & 4), write(rights & 2), execute(rights & 1){};
-        RightsSet(bool read, bool write, bool execute) : read(read), write(write), execute(execute){};
+        RightsSet(int rights) : read(rights & 4), write(rights & 2), execute(rights & 1) {};
+        RightsSet(bool read, bool write, bool execute) : read(read), write(write), execute(execute) {};
         bool read;
         bool write;
         bool execute;
@@ -75,9 +75,9 @@ void TestIo::testCheckSetAndGetRights() {
         IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
         for (int i = 0; i < 2; i++) { // Test Windows API and fallback method
 #endif
-            for (int baseRigths = 0; baseRigths < 7; baseRigths++) {
-                for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                    auto rightsSet = RightsSet(baseRigths);
+            for (int baseRights = 0; baseRights < 7; baseRights++) {
+                for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
+                    auto rightsSet = RightsSet(baseRights);
 #ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue; // Skip the test if the rights are not supported by the current method
@@ -102,7 +102,7 @@ void TestIo::testCheckSetAndGetRights() {
                         CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                     }
 
-                    rightsSet = RightsSet(targetRigths);
+                    rightsSet = RightsSet(targetRights);
 #ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue; // Skip the test if the rights are not supported by the current method
@@ -187,10 +187,10 @@ void TestIo::testCheckSetAndGetRights() {
         IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
         for (int i = 0; i < 2; i++) { // Test Windows API and fallback method
 #endif
-            for (int baseRigths = 0; baseRigths < 7;
-                 baseRigths++) { // Test all the possible rights and the all the possible order of rights modification
-                for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                    auto rightsSet = RightsSet(baseRigths);
+            for (int baseRights = 0; baseRights < 7;
+                 baseRights++) { // Test all the possible rights and the all the possible order of rights modification
+                for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
+                    auto rightsSet = RightsSet(baseRights);
 #ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue; // Skip the test if the rights are not supported by the current method
@@ -214,7 +214,7 @@ void TestIo::testCheckSetAndGetRights() {
                         CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                     }
 
-                    rightsSet = RightsSet(targetRigths);
+                    rightsSet = RightsSet(targetRights);
 #ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue; // Skip the test if the rights are not supported by the current method
@@ -348,10 +348,10 @@ void TestIo::testCheckSetAndGetRights() {
          *  ...
          */
         IoHelper::_setRightsWindowsApiInheritance = true;
-        for (int baseRigths = 0; baseRigths < 7;
-             baseRigths++) { // Test all the possible rights and the all the possible order of rights modification
-            for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                auto rightsSet = RightsSet(baseRigths);
+        for (int baseRights = 0; baseRights < 7;
+             baseRights++) { // Test all the possible rights and the all the possible order of rights modification
+            for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
+                auto rightsSet = RightsSet(baseRights);
                 bool result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoError::Success;
                 if (!result) {
@@ -374,7 +374,7 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
 
-                rightsSet = RightsSet(targetRigths);
+                rightsSet = RightsSet(targetRights);
                 result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoError::Success;
                 if (!result) {
@@ -445,10 +445,10 @@ void TestIo::testCheckSetAndGetRights() {
          *  ...
          */
         IoHelper::_setRightsWindowsApiInheritance = true;
-        for (int baseRigths = 0; baseRigths < 7;
-             baseRigths++) { // Test all the possible rights and the all the possible order of rights modification
-            for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                auto rightsSet = RightsSet(baseRigths);
+        for (int baseRights = 0; baseRights < 7;
+             baseRights++) { // Test all the possible rights and the all the possible order of rights modification
+            for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
+                auto rightsSet = RightsSet(baseRights);
                 bool result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoError::Success;
                 if (!result) {
@@ -470,7 +470,7 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
 
-                rightsSet = RightsSet(targetRigths);
+                rightsSet = RightsSet(targetRights);
                 result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoError::Success;
                 if (!result) {

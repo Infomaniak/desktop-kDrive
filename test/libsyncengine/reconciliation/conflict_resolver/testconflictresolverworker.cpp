@@ -29,11 +29,11 @@ void TestConflictResolverWorker::setUp() {
     // Create SyncPal
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(syncDbPath, "3.4.0", true);
+    _syncPal = std::make_shared<SyncPal>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
 
     _syncPal->_conflictResolverWorker = std::make_shared<ConflictResolverWorker>(_syncPal, "Conflict Resolver", "CORE");
@@ -138,7 +138,7 @@ void TestConflictResolverWorker::testCreateCreate() {
 
     std::shared_ptr<Node> rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAAB =
-            std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAB.txt"),
+            std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAB.txt"),
                                    NodeType::File, OperationType::Create, "rAAB", testhelpers::defaultTime,
                                    testhelpers::defaultTime, testhelpers::defaultFileSize, rNodeAA);
     CPPUNIT_ASSERT(rNodeAA->insertChildren(rNodeAAB));
@@ -610,7 +610,7 @@ void TestConflictResolverWorker::testMoveMoveSource() {
 void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
     // Initial state : Node AAA is orphan.
     const SyncName orphanName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-            "AAA", PlatformInconsistencyCheckerUtility::SuffixTypeOrphan);
+            "AAA", PlatformInconsistencyCheckerUtility::SuffixType::Orphan);
 
     std::shared_ptr<Node> lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
     lNodeAAA->setName(orphanName);

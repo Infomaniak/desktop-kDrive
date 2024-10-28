@@ -20,18 +20,13 @@
 
 namespace KDC {
 
-ErrorInfo::ErrorInfo() :
-    _dbId(0), _time(0), _level(ErrorLevel::Unknown), _functionName(QString()), _syncDbId(0), _workerName(QString()),
-    _exitCode(ExitCode::Unknown), _exitCause(ExitCause::Unknown), _localNodeId(QString()), _remoteNodeId(QString()),
-    _nodeType(NodeType::Unknown), _path(QString()), _conflictType(ConflictType::None),
-    _inconsistencyType(InconsistencyType::None), _cancelType(CancelType::None) {}
+ErrorInfo::ErrorInfo() {}
 
 ErrorInfo::ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
                      ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
                      NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
                      CancelType cancelType /*= CancelType::None*/, const QString &destinationPath /*= ""*/) :
-    _time(time),
-    _level(level), _functionName(functionName), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitCode),
+    _time(time), _level(level), _functionName(functionName), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitCode),
     _exitCause(exitCause), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _nodeType(nodeType), _path(path),
     _destinationPath(destinationPath), _conflictType(conflictType), _inconsistencyType(inconsistencyType),
     _cancelType(cancelType) {}
@@ -41,10 +36,9 @@ ErrorInfo::ErrorInfo(int dbId, qint64 time, ErrorLevel level, const QString &fun
                      const QString &remoteNodeId, NodeType nodeType, const QString &path, ConflictType conflictType,
                      InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
                      const QString &destinationPath /*= ""*/) :
-    _dbId(dbId),
-    _time(time), _level(level), _functionName(functionName), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitCode),
-    _exitCause(exitCause), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _nodeType(nodeType), _path(path),
-    _destinationPath(destinationPath), _conflictType(conflictType), _inconsistencyType(inconsistencyType),
+    _dbId(dbId), _time(time), _level(level), _functionName(functionName), _syncDbId(syncDbId), _workerName(workerName),
+    _exitCode(exitCode), _exitCause(exitCause), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _nodeType(nodeType),
+    _path(path), _destinationPath(destinationPath), _conflictType(conflictType), _inconsistencyType(inconsistencyType),
     _cancelType(cancelType) {}
 
 QDataStream &operator>>(QDataStream &in, ErrorInfo &errorInfo) {

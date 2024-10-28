@@ -161,6 +161,7 @@ if (WIN32)
     add_definitions(-D_WIN32_WINNT=0x0600)
     add_definitions(-DWINVER=0x0600)
     add_definitions(-DNTDDI_VERSION=0x0A000003)
+    add_definitions(-DWIN32_LEAN_AND_MEAN)
 endif (WIN32)
 
 if (UNIX)

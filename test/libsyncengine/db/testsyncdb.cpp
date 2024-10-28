@@ -88,8 +88,8 @@ void TestSyncDb::setUp() {
     std::filesystem::remove(syncDbPath);
 
     // Create DB
-    _testObj = new SyncDbMock(syncDbPath.string(), "3.4.0");
-    _testObj->init("3.4.0");
+    _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _testObj->init(KDRIVE_VERSION_STRING);
     _testObj->setAutoDelete(true);
 }
 
@@ -272,6 +272,15 @@ void TestSyncDb::testUpgradeTo3_6_5() {
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, *initialDbNodes[i].nodeIdRemote(), remoteName, found) && found);
         CPPUNIT_ASSERT(remoteName == Utility::normalizedSyncName(initialDbNodes[i].nameRemote()));
     }
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+}
+
+void TestSyncDb::testUpgradeTo3_6_7() {
+    createParmsDb(_testObj->dbPath(), SyncPath("local_sync_dir_does_not_exist"));
+
+    CPPUNIT_ASSERT(_testObj->upgrade("3.6.4", "3.6.7"));
 
     ParmsDb::instance()->close();
     ParmsDb::reset();

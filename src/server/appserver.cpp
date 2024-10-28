@@ -19,7 +19,6 @@
 #include "appserver.h"
 #include "libcommon/asserts.h"
 #include "common/utility.h"
-#include "updater/kdcupdater.h"
 #include "libcommonserver/vfs.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
@@ -54,6 +53,8 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
+
+#include "updater/updatemanager.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -153,7 +154,6 @@ AppServer::AppServer(int &argc, char **argv) :
     if (parmsDbPath.empty()) {
         LOG_WARN(_logger, "Error in Db::makeDbName");
         throw std::runtime_error("Unable to create parameters database.");
-        return;
     }
 
     bool newDbExists = false;
@@ -161,7 +161,6 @@ AppServer::AppServer(int &argc, char **argv) :
     if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
         throw std::runtime_error("Unable to check if parmsdb exists.");
-        return;
     }
 
     std::filesystem::path pre334ConfigFilePath =
@@ -171,7 +170,6 @@ AppServer::AppServer(int &argc, char **argv) :
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(pre334ConfigFilePath, ioError).c_str());
         throw std::runtime_error("Unable to check if pre 3.3.4 config exists.");
-        return;
     }
 
     LOGW_INFO(_logger, L"New DB exists : " << Path2WStr(parmsDbPath).c_str() << L" => " << newDbExists);
@@ -181,7 +179,6 @@ AppServer::AppServer(int &argc, char **argv) :
         ParmsDb::instance(parmsDbPath, _theme->version().toStdString());
     } catch (const std::exception &) {
         throw std::runtime_error("Unable to open parameters database.");
-        return;
     }
 
     // Clear old server errors
@@ -217,7 +214,6 @@ AppServer::AppServer(int &argc, char **argv) :
         LOG_WARN(_logger, "Error in ParametersCache::instance");
         addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         throw std::runtime_error("Unable to initialize parameters cache.");
-        return;
     }
 
     // Setup translations
@@ -238,7 +234,6 @@ AppServer::AppServer(int &argc, char **argv) :
         LOG_WARN(_logger, "Error in ExclusionTemplateCache::instance");
         addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         throw std::runtime_error("Unable to initialize exclusion template cache.");
-        return;
     }
 
 #ifdef Q_OS_WIN
@@ -280,19 +275,17 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-#ifdef Q_OS_MACOS
-    // Init Updater
-    const QuitCallback quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    UpdaterServer::instance()->setQuitCallback(quitCallback);
-#endif
-
     // Update checks
-    UpdaterScheduler *updaterScheduler = new UpdaterScheduler(this);
-    connect(updaterScheduler, &UpdaterScheduler::requestRestart, this, &AppServer::onScheduleAppRestart);
-
-#ifdef Q_OS_WIN
-    connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
+    _updateManager = std::make_unique<UpdateManager>(this);
+    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
+#ifdef Q_OS_MACOS
+    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    _updateManager->setQuitCallback(quitCallback);
 #endif
+
+    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
 
     // Init socket api
     _socketApi.reset(new SocketApi(_syncPalMap, _vfsMap));
@@ -1962,68 +1955,32 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::UPDATER_VERSION: {
-            QString version = UpdaterServer::instance()->version();
-
-            resultStream << version;
-            break;
-        }
-        case RequestNum::UPDATER_ISKDCUPDATER: {
-            bool ret = UpdaterServer::instance()->isKDCUpdater();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_ISSPARKLEUPDATER: {
-            bool ret = UpdaterServer::instance()->isSparkleUpdater();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_STATUSSTRING: {
-            QString status = UpdaterServer::instance()->statusString();
-
-            resultStream << status;
-            break;
-        }
-        case RequestNum::UPDATER_STATUS: {
-            UpdateState status = UpdaterServer::instance()->updateState();
-            resultStream << status;
-            break;
-        }
-        case RequestNum::UPDATER_DOWNLOADCOMPLETED: {
-            bool ret = UpdaterServer::instance()->downloadCompleted();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_UPDATEFOUND: {
-            bool ret = UpdaterServer::instance()->updateFound();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_STARTINSTALLER: {
-            UpdaterServer::instance()->startInstaller();
-            break;
-        }
-        case RequestNum::UPDATER_UPDATE_DIALOG_RESULT: {
-            bool skip;
+        case RequestNum::UPDATER_CHANGE_CHANNEL: {
+            auto channel = DistributionChannel::Unknown;
             QDataStream paramsStream(params);
-            paramsStream >> skip;
-
-            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            if (skip) {
-                updater->wipeUpdateData();
-                updater->slotSetSeenVersion();
-            } else {
-                updater->slotStartInstaller();
-            }
+            paramsStream >> channel;
+            _updateManager->setDistributionChannel(channel);
             break;
         }
-        case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
-            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            updater->slotUnsetSeenVersion();
+        case RequestNum::UPDATER_VERSION_INFO: {
+            VersionInfo versionInfo = _updateManager->versionInfo();
+            resultStream << versionInfo;
+            break;
+        }
+        case RequestNum::UPDATER_STATE: {
+            UpdateState state = _updateManager->state();
+            resultStream << state;
+            break;
+        }
+        case RequestNum::UPDATER_START_INSTALLER: {
+            _updateManager->startInstaller();
+            break;
+        }
+        case RequestNum::UPDATER_SKIP_VERSION: {
+            QString tmp;
+            QDataStream paramsStream(params);
+            paramsStream >> tmp;
+            AbstractUpdater::skipVersion(tmp.toStdString());
             break;
         }
         case RequestNum::UTILITY_CRASH: {
@@ -2230,31 +2187,21 @@ void AppServer::onScheduleAppRestart() {
     _appRestartRequired = true;
 }
 
-void AppServer::onShowWindowsUpdateErrorDialog() {
-    static bool alreadyAsked = false; // Ask only once
-    if (!alreadyAsked) {
-        NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-        if (updater) {
-            if (updater->autoUpdateAttempted()) { // Try auto update first
-                alreadyAsked = true;
+void AppServer::onShowWindowsUpdateDialog() {
+    int id = 0;
 
-                // Notify client
-                int id = 0;
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << _updateManager->versionInfo();
+    CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
+}
 
-                QString targetVersion;
-                QString targetVersionString;
-                QString clientVersion;
-                updater->getVersions(targetVersion, targetVersionString, clientVersion);
-
-                QByteArray params;
-                QDataStream paramsStream(&params, QIODevice::WriteOnly);
-                paramsStream << targetVersion;
-                paramsStream << targetVersionString;
-                paramsStream << clientVersion;
-                CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
-            }
-        }
-    }
+void AppServer::onUpdateStateChanged(const UpdateState state) {
+    int id = 0;
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << state;
+    CommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params, id);
 }
 
 void AppServer::onRestartClientReceived() {
@@ -2272,7 +2219,6 @@ void AppServer::onRestartClientReceived() {
     }
 #else
     LOG_INFO(_logger, "Client disconnected");
-    quit = true;
 #endif
 
     if (quit) {
@@ -2288,6 +2234,10 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
     } else if (message == showSettingsMsg) {
         showSettings();
     }
+}
+
+void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
+    sendShowNotification(title, message);
 }
 
 void AppServer::sendShowNotification(const QString &title, const QString &message) {
@@ -2425,18 +2375,15 @@ bool AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeLocal
     return true;
 }
 
-bool AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item, bool &needRestart) {
+bool AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item) {
     if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
 
-    if (!_vfsMap[syncDbId]->convertToPlaceholder(SyncName2QStr(path.native()), item, needRestart)) {
-        if (!needRestart) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::convertToPlaceholder for syncDbId="
-                                                            << syncDbId << L" and path=" << Path2WStr(item.path()).c_str());
-        }
-
+    if (!_vfsMap[syncDbId]->convertToPlaceholder(SyncName2QStr(path.native()), item)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::convertToPlaceholder for syncDbId="
+                                                        << syncDbId << L" and path=" << Path2WStr(item.path()).c_str());
         return false;
     }
 
@@ -3952,13 +3899,14 @@ void AppServer::addError(const Error &error) {
 
         // Decrease JobManager pool capacity
         JobManager::instance()->decreasePoolCapacity();
+    } else if (error.exitCode() == ExitCode::UpdateRequired) {
+        AbstractUpdater::unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(error)) {
         // Send error to sentry only for technical errors
-        SentryUser sentryUser(user.email().c_str(), user.name().c_str(), std::to_string(user.userId()).c_str());
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString().c_str(),
-                                                  sentryUser);
+        SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString(), sentryUser);
     }
 }
 

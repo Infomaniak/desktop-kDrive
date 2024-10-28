@@ -142,7 +142,7 @@ class Vfs : public QObject {
          * new placeholder shall supersede, for rename-replace actions with new downloads,
          * for example.
          */
-        virtual bool convertToPlaceholder(const QString &path, const KDC::SyncFileItem &item, bool &needRestart) = 0;
+        virtual bool convertToPlaceholder(const QString &path, const KDC::SyncFileItem &item) = 0;
 
         virtual bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                        bool &finished) = 0;
@@ -217,10 +217,10 @@ class Vfs : public QObject {
         VfsSetupParams _vfsSetupParams;
 
         // Callbacks
-        void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status);
-        void (*_syncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool &syncing);
-        void (*_setSyncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool syncing);
-        void (*_exclusionAppList)(QString &appList);
+        void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status) = nullptr;
+        void (*_syncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool &syncing) = nullptr;
+        void (*_setSyncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool syncing) = nullptr;
+        void (*_exclusionAppList)(QString &appList) = nullptr;
 
         inline bool extendedLog() { return _extendedLog; }
 
@@ -272,7 +272,7 @@ class VfsOff : public Vfs {
         bool updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &, QString *) override { return true; }
         bool createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return true; }
         bool dehydratePlaceholder(const QString &) override { return true; }
-        bool convertToPlaceholder(const QString &, const KDC::SyncFileItem &, bool &) override { return true; }
+        bool convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return true; }
         bool updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return true; }
         bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
 

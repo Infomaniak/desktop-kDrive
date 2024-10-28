@@ -28,6 +28,7 @@ set(syncengine_SRCS
     jobs/network/login/refreshtokenjob.h jobs/network/login/refreshtokenjob.cpp
     jobs/network/login/gettokenfromapppasswordjob.h jobs/network/login/gettokenfromapppasswordjob.cpp
     jobs/network/getappversionjob.h jobs/network/getappversionjob.cpp
+    jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
     ### API v2 jobs
     jobs/network/API_v2/abstracttokennetworkjob.h jobs/network/API_v2/abstracttokennetworkjob.cpp
     jobs/network/API_v2/getrootfilelistjob.h jobs/network/API_v2/getrootfilelistjob.cpp
