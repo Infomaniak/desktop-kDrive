@@ -2681,7 +2681,7 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
         SyncName nodeName = localNode2 ? localNode2->name() : SyncName();
         if (nodeName.empty()) nodeName = remoteNode2 ? remoteNode2->name() : SyncName();
 
-        if (localNode && localNode2 && (*localNode->id() == *localNode2->id() || localNode->isParentOf(localNode2))) {
+        if (localNode && localNode2 && (localNode->isParentOf(localNode2))) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << SyncName2WStr(nodeName)
                                                      << L" because it depends on " << syncOp->type() << L" operation on "
                                                      << SyncName2WStr(localNode->name()) << L" wich failed.");
@@ -2689,7 +2689,7 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
             continue;
         }
 
-        if (remoteNode && remoteNode2 && (*remoteNode->id() == *remoteNode2->id() || remoteNode->isParentOf(remoteNode2))) {
+        if (remoteNode && remoteNode2 && (remoteNode->isParentOf(remoteNode2))) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << SyncName2WStr(nodeName)
                                                      << L" because it depends on " << syncOp->type() << L" operation on "
                                                      << SyncName2WStr(remoteNode->name()) << L"wich failed.");

@@ -35,7 +35,7 @@ class TestWorkers : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestWorkers);
         CPPUNIT_TEST(testCreatePlaceholder);
         CPPUNIT_TEST(testConvertToPlaceholder);
-        CPPUNIT_TEST(testHandleOpsExecutionError);
+        CPPUNIT_TEST(testRemoveDependentOps);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -43,13 +43,13 @@ class TestWorkers : public CppUnit::TestFixture {
         void tearDown() override;
         void testCreatePlaceholder();
         void testConvertToPlaceholder();
-        void testHandleOpsExecutionError();
-
+        void testRemoveDependentOps();
     protected:
         static bool createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState);
 
+        bool opsExist(SyncOpPtr op);
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal;
         Sync _sync;

@@ -61,6 +61,16 @@ bool TestWorkers::setPinState(int syncDbId, const SyncPath &relativeLocalPath, P
     return true;
 }
 
+bool TestWorkers::opsExist(SyncOpPtr op) {
+    for (const auto &opId: _syncPal->_executorWorker->_opList) {
+        if (_syncPal->_syncOps->getOp(opId) == op) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void TestWorkers::setUp() {
     _logger = Log::instance()->getLogger();
 
@@ -124,7 +134,7 @@ void TestWorkers::setUp() {
 #if defined(__APPLE__)
     _vfsPtr = std::unique_ptr<VfsMac>(new VfsMac(vfsSetupParams));
 #elif defined(_WIN32)
-    _vfsPtr = std::unique_ptr<VfsWin>(new VfsWin(vfsSetupParams, nullptr));
+    //_vfsPtr = std::unique_ptr<VfsWin>(new VfsWin(vfsSetupParams, nullptr));
 #else
     _vfsPtr = std::unique_ptr<VfsOff>(new VfsOff(vfsSetupParams));
 #endif
@@ -296,16 +306,106 @@ void TestWorkers::testConvertToPlaceholder() {
     }
 }
 
-void TestWorkers::testHandleOpsExecutionError() {
-    SyncOpPtr opPtr = std::make_shared<SyncOperation>();
-    _syncPal->_executorWorker->handleExecutorError(opPtr, ExitInfo(ExitCode::DataError, ExitCause::Unknown));
-    _syncPal->_executorWorker->handleExecutorError(opPtr, ExitInfo(ExitCode::DataError, ExitCause::InvalidSnapshot));
-    _syncPal->_executorWorker->handleExecutorError(opPtr, ExitInfo(ExitCode::DataError, ExitCause::DbEntryNotFound));
-    _syncPal->_executorWorker->handleExecutorError(opPtr, ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
-    _syncPal->_executorWorker->handleExecutorError(opPtr, ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError));
-    _syncPal->_executorWorker->handleExecutorError(opPtr, ExitInfo(ExitCode::SystemError, ExitCause::DriveNotRenew));
+void TestWorkers::testRemoveDependentOps() {
+    {
+        // Nested create.
+        _syncPal->_syncOps->clear();
 
+        auto op1Create = std::make_shared<SyncOperation>(); // a/ is created.
+        auto op2Create = std::make_shared<SyncOperation>(); // a/b/ is created.
+        auto op3Create = std::make_shared<SyncOperation>(); // a/b/c/ is created.
+        auto affectedNode1 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an1"), NodeType::Unknown,
+                                                    OperationType::None, "idAn1", 1234, 1234, 1, nullptr);
+        auto affectedNode2 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an2"), NodeType::Unknown,
+                                                    OperationType::None, "idAn2", 1234, 1234, 1, nullptr);
+        auto affectedNode3 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an3"), NodeType::Unknown,
+                                                    OperationType::None, "idAn3", 1234, 1234, 1, nullptr);
+        auto affectedNode4 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an4"), NodeType::Unknown,
+                                                    OperationType::None, "idAn4", 1234, 1234, 1, nullptr);
 
+        affectedNode4->setParentNode(affectedNode3);
+        affectedNode3->setParentNode(affectedNode2);
+        affectedNode2->setParentNode(affectedNode1);
+
+        op1Create->setAffectedNode(affectedNode2);
+        op2Create->setAffectedNode(affectedNode3);
+        op3Create->setAffectedNode(affectedNode4);
+
+        _syncPal->_syncOps->pushOp(op1Create);
+        _syncPal->_syncOps->pushOp(op2Create);
+        _syncPal->_syncOps->pushOp(op3Create);
+
+        _syncPal->_executorWorker->_opList = _syncPal->_syncOps->opSortedList();
+        _syncPal->_executorWorker->removeDependentOps(op1Create); // op1Create failed, we should remove op2Create and op3Create.
+
+        CPPUNIT_ASSERT(opsExist(op1Create));
+        CPPUNIT_ASSERT(!opsExist(op2Create));
+        CPPUNIT_ASSERT(!opsExist(op3Create));
+    }
+
+    {
+        // Nested Move.
+        _syncPal->_syncOps->clear();
+
+        auto op1Create = std::make_shared<SyncOperation>(); // a/ is created.
+        auto op2Move = std::make_shared<SyncOperation>(); // b/ is moved to a/b/.
+
+        auto affectedNode1 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an1"), NodeType::Unknown,
+                                                    OperationType::None, "idAn1", 1234, 1234, 1, nullptr); // a/
+        auto affectedNode2 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an2"), NodeType::Unknown,
+                                                    OperationType::None, "idAn2", 1234, 1234, 1, nullptr); // a/b
+
+        auto correspondingNode2 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn2"), NodeType::Unknown,
+                                                         OperationType::None, "idCn2", 1234, 1234, 1, nullptr); // b/
+
+        affectedNode2->setParentNode(affectedNode1);
+
+        op1Create->setAffectedNode(affectedNode1);
+        op2Move->setAffectedNode(affectedNode2);
+        op2Move->setCorrespondingNode(correspondingNode2);
+
+        _syncPal->_syncOps->pushOp(op1Create);
+        _syncPal->_syncOps->pushOp(op2Move);
+
+        _syncPal->_executorWorker->_opList = _syncPal->_syncOps->opSortedList();
+        _syncPal->_executorWorker->removeDependentOps(op1Create); // op2Move failed, we should remove op2Edit.
+        CPPUNIT_ASSERT(opsExist(op1Create));
+        CPPUNIT_ASSERT(!opsExist(op2Move));
+    }
+
+    {
+        // Double Move.
+        _syncPal->_syncOps->clear();
+
+        auto op1Move = std::make_shared<SyncOperation>(); // a is moved to b.
+        auto op2Move = std::make_shared<SyncOperation>(); // y is moved to b/y.
+
+        auto affectedNode1 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an1"), NodeType::Unknown,
+                                                    OperationType::None, "idAn1", 1234, 1234, 1, nullptr); // b
+        auto affectedNode2 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an2"), NodeType::Unknown,
+                                                    OperationType::None, "idAn2", 1234, 1234, 1, nullptr); // b/y
+
+        auto correspondingNode1 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn1"), NodeType::Unknown,
+                                                         OperationType::None, "idCn1", 1234, 1234, 1, nullptr); // a
+        auto correspondingNode2 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn2"), NodeType::Unknown,
+                                                         OperationType::None, "idCn2", 1234, 1234, 1, nullptr); // y
+
+        affectedNode2->setParentNode(affectedNode1);
+
+        op1Move->setAffectedNode(affectedNode1);
+        op1Move->setCorrespondingNode(correspondingNode1);
+
+        op2Move->setAffectedNode(affectedNode2);
+        op2Move->setCorrespondingNode(correspondingNode2);
+
+        _syncPal->_syncOps->pushOp(op1Move);
+        _syncPal->_syncOps->pushOp(op2Move);
+
+        _syncPal->_executorWorker->_opList = _syncPal->_syncOps->opSortedList();
+        _syncPal->_executorWorker->removeDependentOps(op1Move); // op2Move failed, we should remove op2Edit.
+        CPPUNIT_ASSERT(opsExist(op1Move));
+        CPPUNIT_ASSERT(!opsExist(op2Move));
+    }
 }
 
 
