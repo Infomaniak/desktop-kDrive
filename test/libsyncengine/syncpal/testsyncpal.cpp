@@ -29,9 +29,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-// const std::string testExecutorFolderRemoteId = "75";        // In common documents
-const std::string testExecutorFolderRemoteId = "5007"; // In root
-
 void TestSyncPal::setUp() {
     const testhelpers::TestVariables testVariables;
 

@@ -102,12 +102,12 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 #if defined(__APPLE__)
     struct statvfs stat;
     if (statvfs(path.c_str(), &stat) == 0) {
-        return (int64_t) stat.f_bavail * stat.f_frsize;
+        return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
 #elif defined(__unix__)
     struct statvfs64 stat;
     if (statvfs64(path.c_str(), &stat) == 0) {
-        return (int64_t) stat.f_bavail * stat.f_frsize;
+        return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
 #elif defined(_WIN32)
     ULARGE_INTEGER freeBytes;
@@ -155,7 +155,7 @@ bool Utility::setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::Syn
     return true;
 }
 
-bool Utility::isCreationDateValid(uint64_t creationDate) {
+bool Utility::isCreationDateValid(int64_t creationDate) {
     if (creationDate == 0 || creationDate == 443779200) {
         // Do not upload or save on DB invalid dates
         // 443779200 correspond to "Tuesday 24 January 1984 08:00:00" which is a default date set by macOS
@@ -351,13 +351,13 @@ bool Utility::startsWithInsensitive(const std::string &str, const std::string &p
 }
 
 bool Utility::endsWith(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
-                                                     [](char c1, char c2) { return c1 == c2; });
+    return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
+                                                     suffix.begin(), [](char c1, char c2) { return c1 == c2; });
 }
 
 bool Utility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
     return str.size() >= suffix.size() &&
-           std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
+           std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(), suffix.begin(),
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
 
@@ -450,7 +450,7 @@ void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capit
     size_t i;
     int c;
     for (i = 0, c = str[0] & 0xFF; i < hexstr.size(); c = str[i / 2] & 0xFF) {
-        hexstr[i++] = c > 0x9F ? (c / 16 - 9) | a : c / 16 | '0';
+        hexstr[i++] = c > 0x9F ? static_cast<char>(c / 16 - 9) | a : static_cast<char>(c / 16) | '0';
         hexstr[i++] = (c & 0xF) > 9 ? (c % 16 - 9) | a : c % 16 | '0';
     }
 }
@@ -460,7 +460,7 @@ void Utility::strhex2str(const std::string &hexstr, std::string &str) {
     str.resize((hexstr.size() + 1) / 2);
 
     for (size_t i = 0, j = 0; i < str.size(); i++, j++) {
-        str[i] = (hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) << 4, j++;
+        str[i] = static_cast<char>((hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) << 4), j++;
         str[i] |= (hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) & 0xF;
     }
 }
@@ -796,6 +796,37 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     return true;
 }
+
+bool Utility::runDetachedProcess(std::wstring cmd) {
+    PROCESS_INFORMATION pinfo;
+    STARTUPINFOW startupInfo = {sizeof(STARTUPINFO),
+                                0,
+                                0,
+                                0,
+                                (ulong) CW_USEDEFAULT,
+                                (ulong) CW_USEDEFAULT,
+                                (ulong) CW_USEDEFAULT,
+                                (ulong) CW_USEDEFAULT,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0};
+    bool success = success = CreateProcess(0, cmd.data(), 0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0, 0,
+                                           &startupInfo, &pinfo);
+
+    if (success) {
+        CloseHandle(pinfo.hThread);
+        CloseHandle(pinfo.hProcess);
+    }
+    return success;
+}
+
 #endif
 
 

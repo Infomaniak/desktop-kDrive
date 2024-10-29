@@ -82,7 +82,6 @@ void TestLogArchiver::testCopyLogsTo() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         uint64_t tempDirSize = 0;
-        bool tooDeep = false;
         IoHelper::getDirectorySize(tempDir.path(), tempDirSize, err, 0);
         CPPUNIT_ASSERT(err == IoError::Success || err == IoError::MaxDepthExceeded);
         CPPUNIT_ASSERT_GREATER(logDirsize, tempDirSize);

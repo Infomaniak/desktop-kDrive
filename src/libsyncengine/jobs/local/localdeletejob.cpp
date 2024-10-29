@@ -58,9 +58,9 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
 
 LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash /* = false */) :
-    _syncInfo(syncPalInfo),
-    _relativePath(relativePath), _absolutePath(syncPalInfo.localPath / relativePath),
-    _isDehydratedPlaceholder(isDehydratedPlaceholder), _remoteNodeId(remoteId), _forceToTrash(forceToTrash) {}
+    _absolutePath(syncPalInfo.localPath / relativePath),
+    _syncInfo(syncPalInfo), _relativePath(relativePath), _isDehydratedPlaceholder(isDehydratedPlaceholder),
+    _remoteNodeId(remoteId), _forceToTrash(forceToTrash) {}
 
 LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) : _absolutePath(absolutePath) {
     setBypassCheck(true);

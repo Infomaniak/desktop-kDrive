@@ -313,7 +313,9 @@ ExitCode ServerRequests::getParameters(ParametersInfo &parametersInfo) {
 
 ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) {
     parametersInfoToParameters(parametersInfo, ParametersCache::instance()->parameters());
-    return ParametersCache::instance()->save();
+    auto exitCode = ExitCode::Ok;
+    ParametersCache::instance()->save(&exitCode);
+    return exitCode;
 }
 
 ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error) {
@@ -896,11 +898,7 @@ ExitCode ServerRequests::fixProxyConfig() {
     ProxyConfig proxyConfig = ParametersCache::instance()->parameters().proxyConfig();
     proxyConfig.setType(ProxyType::None);
     ParametersCache::instance()->parameters().setProxyConfig(proxyConfig);
-    const ExitCode exitCode = ParametersCache::instance()->save();
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::updateParameters");
-        return exitCode;
-    }
+    ParametersCache::instance()->save();
     return ExitCode::Ok;
 }
 

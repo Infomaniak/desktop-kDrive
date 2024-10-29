@@ -114,7 +114,7 @@ static void readList(const sentry_value_t event, std::stringstream &ss, int leve
     }
 
     const list_t *l = (list_t *) valueAsThing(event)->payload._ptr;
-    const std::string indent(level, ' ');
+    const std::string indent(static_cast<size_t>(level), ' ');
     for (size_t i = 0; i < l->len; i++) {
         ss << indent.c_str() << "val=";
         printValue(ss, l->items[i], level);
@@ -132,7 +132,7 @@ static void readObject(const sentry_value_t event, std::stringstream &ss, int le
     }
 
     const obj_t *obj = (obj_t *) thing->payload._ptr;
-    const std::string indent(level, ' ');
+    const std::string indent(static_cast<size_t>(level), ' ');
     for (size_t i = 0; i < obj->len; i++) {
         char *key = obj->pairs[i].k;
         ss << indent.c_str() << "key=" << key << " val=";
@@ -238,7 +238,7 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
 #endif
     sentry_options_set_release(options, KDRIVE_VERSION_STRING);
     sentry_options_set_debug(options, false);
-    sentry_options_set_max_breadcrumbs(options, breadCrumbsSize);
+    sentry_options_set_max_breadcrumbs(options, static_cast<size_t>(breadCrumbsSize));
 
     // !!! Not Supported in Crashpad on macOS & Limitations in Crashpad on Windows for Fast-fail Crashes !!!
     // See https://docs.sentry.io/platforms/native/configuration/filtering/
@@ -301,7 +301,7 @@ void SentryHandler::sendEventToSentry(const SentryLevel level, const std::string
 
 void SentryHandler::setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit) {
     assert(maxCaptureCountBeforeRateLimit > 0 && "Max capture count before rate limit must be greater than 0");
-    _sentryMaxCaptureCountBeforeRateLimit = std::max(1, maxCaptureCountBeforeRateLimit);
+    _sentryMaxCaptureCountBeforeRateLimit = static_cast<unsigned int>(std::max(1, maxCaptureCountBeforeRateLimit));
 }
 
 void SentryHandler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) {
@@ -436,6 +436,5 @@ SentryHandler::~SentryHandler() {
 
 SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
                                         SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
-    title(title),
-    message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
+    title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 } // namespace KDC

@@ -26,8 +26,7 @@ ErrorInfo::ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName,
                      ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
                      NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
                      CancelType cancelType /*= CancelType::None*/, const QString &destinationPath /*= ""*/) :
-    _time(time),
-    _level(level), _functionName(functionName), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitCode),
+    _time(time), _level(level), _functionName(functionName), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitCode),
     _exitCause(exitCause), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _nodeType(nodeType), _path(path),
     _destinationPath(destinationPath), _conflictType(conflictType), _inconsistencyType(inconsistencyType),
     _cancelType(cancelType) {}
@@ -37,10 +36,9 @@ ErrorInfo::ErrorInfo(int dbId, qint64 time, ErrorLevel level, const QString &fun
                      const QString &remoteNodeId, NodeType nodeType, const QString &path, ConflictType conflictType,
                      InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
                      const QString &destinationPath /*= ""*/) :
-    _dbId(dbId),
-    _time(time), _level(level), _functionName(functionName), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitCode),
-    _exitCause(exitCause), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _nodeType(nodeType), _path(path),
-    _destinationPath(destinationPath), _conflictType(conflictType), _inconsistencyType(inconsistencyType),
+    _dbId(dbId), _time(time), _level(level), _functionName(functionName), _syncDbId(syncDbId), _workerName(workerName),
+    _exitCode(exitCode), _exitCause(exitCause), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _nodeType(nodeType),
+    _path(path), _destinationPath(destinationPath), _conflictType(conflictType), _inconsistencyType(inconsistencyType),
     _cancelType(cancelType) {}
 
 QDataStream &operator>>(QDataStream &in, ErrorInfo &errorInfo) {
@@ -71,9 +69,9 @@ QDataStream &operator>>(QDataStream &in, QList<ErrorInfo> &list) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<ErrorInfo> &list) {
-    int count = list.size();
+    auto count = list.size();
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (auto i = 0; i < list.size(); i++) {
         ErrorInfo errorInfo = list[i];
         out << errorInfo;
     }

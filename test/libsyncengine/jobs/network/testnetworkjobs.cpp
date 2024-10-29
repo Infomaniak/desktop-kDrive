@@ -53,6 +53,7 @@
 
 #include "jobs/network/getappversionjob.h"
 #include "test_utility/testhelpers.h"
+#include "jobs/network/directdownloadjob.h"
 
 using namespace CppUnit;
 
@@ -71,7 +72,7 @@ static const std::string bigFileName = "big_text_file.txt";
 static const std::string dummyDirName = "dummy_dir";
 static const std::string dummyFileName = "picture.jpg";
 
-int TestNetworkJobs::_nbParalleleThreads = 10;
+uint64_t TestNetworkJobs::_nbParalleleThreads = 10;
 
 void TestNetworkJobs::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
@@ -766,7 +767,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
 
     ExitCode exitCode = ExitCode::Unknown;
     NodeId newNodeId;
-    int initialNbParalleleThreads = _nbParalleleThreads;
+    uint64_t initialNbParalleleThreads = _nbParalleleThreads;
     while (_nbParalleleThreads > 0) {
         LOG_DEBUG(Log::instance()->getLogger(),
                   "$$$$$ testDriveUploadSessionAsynchronous - " << _nbParalleleThreads << " threads");
@@ -780,7 +781,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
-                _nbParalleleThreads = static_cast<int>(std::floor(_nbParalleleThreads / 2.0));
+                _nbParalleleThreads = static_cast<uint64_t>(std::floor(_nbParalleleThreads / 2.0));
             } else {
                 break;
             }
@@ -822,7 +823,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
-                _nbParalleleThreads = static_cast<int>(std::floor(_nbParalleleThreads / 2.0));
+                _nbParalleleThreads = static_cast<uint64_t>(std::floor(_nbParalleleThreads / 2.0));
             } else {
                 break;
             }
@@ -905,6 +906,17 @@ void TestNetworkJobs::testGetAppVersionInfo() {
     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+}
+
+void TestNetworkJobs::testDirectDownload() {
+    const LocalTemporaryDirectory temporaryDirectory("testDirectDownload");
+    SyncPath localDestFilePath = temporaryDirectory.path() / "testInstaller.exe";
+
+    DirectDownloadJob job(localDestFilePath,
+                          "https://download.storage.infomaniak.com/drive/desktopclient/kDrive-3.6.1.20240604.exe");
+    job.runSynchronously();
+    CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+    CPPUNIT_ASSERT_EQUAL(119771744, static_cast<int>(std::filesystem::file_size(localDestFilePath)));
 }
 
 bool TestNetworkJobs::createTestFiles() {

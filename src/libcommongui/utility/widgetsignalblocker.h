@@ -17,30 +17,20 @@
  */
 
 #pragma once
-
-#include "../customdialog.h"
-
-// #include "../updater/updateinfo.h"
-
-class QTextEdit;
+#include <QWidget>
 
 namespace KDC {
 
-class UpdateErrorDialog : public CustomDialog {
-        Q_OBJECT
-
+class WidgetSignalBlocker {
     public:
-        explicit UpdateErrorDialog(const QString &targetVersion, const QString &targetVersionString, const QString &clientVersion,
-                                   QWidget *parent = nullptr);
-        virtual ~UpdateErrorDialog();
+        WidgetSignalBlocker(WidgetSignalBlocker &) = delete;
+        explicit WidgetSignalBlocker(QWidget *w) : _widget(w) { _widget->blockSignals(true); }
+        ~WidgetSignalBlocker() { _widget->blockSignals(false); }
 
-    signals:
-        void skip();
-        void askagain();
-        void retry();
+        WidgetSignalBlocker &operator=(WidgetSignalBlocker &) = delete;
 
     private:
-        void initUi(const QString &targetVersion, const QString &targetVersionString, const QString &clientVersion);
+        QWidget *_widget{nullptr};
 };
 
 } // namespace KDC

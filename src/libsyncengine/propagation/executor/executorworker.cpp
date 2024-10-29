@@ -20,13 +20,13 @@
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
-#include "../../jobs/network/API_v2/createdirjob.h"
-#include "../../jobs/network/API_v2/deletejob.h"
-#include "../../jobs/network/API_v2/downloadjob.h"
-#include "../../jobs/network/API_v2/movejob.h"
-#include "../../jobs/network/API_v2/renamejob.h"
-#include "../../jobs/network/API_v2/uploadjob.h"
-#include "../../jobs/network/API_v2/getfilelistjob.h"
+#include "jobs/network/API_v2/createdirjob.h"
+#include "jobs/network/API_v2/deletejob.h"
+#include "jobs/network/API_v2/downloadjob.h"
+#include "jobs/network/API_v2/movejob.h"
+#include "jobs/network/API_v2/renamejob.h"
+#include "jobs/network/API_v2/uploadjob.h"
+#include "jobs/network/API_v2/getfilelistjob.h"
 #include "jobs/network/API_v2/upload_session/driveuploadsession.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
@@ -103,7 +103,7 @@ void ExecutorWorker::execute() {
                 }
             }
 
-            if (JobManager::instance()->countManagedJobs() > JobManager::instance()->maxNbThreads() * 2) {
+            if (JobManager::instance()->countManagedJobs() > static_cast<size_t>(JobManager::instance()->maxNbThreads() * 2)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Maximum number of jobs reached");
                 }

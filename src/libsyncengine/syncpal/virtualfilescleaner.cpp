@@ -33,8 +33,7 @@ namespace KDC {
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
                                          bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
                                          bool (*vfsClearFileAttributes)(int, const SyncPath &)) :
-    _logger(Log::instance()->getLogger()),
-    _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
+    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
     _vfsClearFileAttributes(vfsClearFileAttributes) {}
 
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId) :
@@ -201,6 +200,7 @@ bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_direct
 }
 
 bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, std::filesystem::recursive_directory_iterator &dirIt) {
+    (void) path;
     std::error_code ec;
     dirIt = std::filesystem::recursive_directory_iterator(_rootPath, std::filesystem::directory_options::skip_permission_denied,
                                                           ec);

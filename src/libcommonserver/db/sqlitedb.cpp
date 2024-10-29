@@ -304,7 +304,7 @@ bool SqliteDb::queryBlobValue(const std::string &id, int index, std::shared_ptr<
     if (_queries.find(id) != _queries.end()) {
         const QueryInfo &queryInfo = _queries.at(id);
         if (queryInfo._result._hasData) {
-            size_t blobSize = queryInfo._query->blobSize(index);
+            size_t blobSize = static_cast<size_t>(queryInfo._query->blobSize(index));
             if (blobSize) {
                 const unsigned char *blob = (const unsigned char *) queryInfo._query->blobValue(index);
                 value = std::shared_ptr<std::vector<char>>(new std::vector<char>(blob, blob + blobSize));

@@ -20,7 +20,6 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/asserts.h"
 #include "libcommonserver/utility/utility.h"
-#include "utility/utility.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
 
@@ -95,6 +94,10 @@
 
 #define UPDATE_PARAMETERS_JOB_REQUEST_ID "update_parameters_job"
 #define UPDATE_PARAMETERS_JOB_REQUEST "UPDATE parameters SET uploadSessionParallelJobs=?1, jobPoolCapacityFactor=?2;"
+
+// TODO : will be added later
+// #define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID "alter_parameters_add_distribution"
+// #define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST "ALTER TABLE parameters ADD COLUMN distributionChannel INTEGER;"
 
 //
 // user
@@ -499,6 +502,10 @@
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID "select_migration_selectivesync"
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST "SELECT syncDbId, path, type FROM migration_selectivesync;"
 
+// Check column existance
+#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
+#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('?1') WHERE name='?2';"
+
 namespace KDC {
 
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
@@ -594,6 +601,7 @@ bool ParmsDb::insertDefaultParameters() {
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    //    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_PARAMETERS_REQUEST_ID);
@@ -909,9 +917,6 @@ bool ParmsDb::create(bool &retry) {
 }
 
 bool ParmsDb::prepare() {
-    int errId;
-    std::string error;
-
     // Parameters
     if (!prepareQuery(INSERT_PARAMETERS_REQUEST_ID, INSERT_PARAMETERS_REQUEST)) return false;
     if (!prepareQuery(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST)) return false;
@@ -996,7 +1001,7 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVersion*/) {
+bool ParmsDb::upgrade(const std::string & /*fromVersion*/, const std::string & /*toVersion*/) {
     const std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
@@ -1125,6 +1130,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
     ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    //    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_PARAMETERS_REQUEST_ID);
@@ -1242,6 +1248,10 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
 
     ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 28, intResult));
     parameters.setJobPoolCapacityFactor(intResult);
+
+    // TODO : not supported for now
+    // ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
+    // parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
 
     ASSERT(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 
@@ -2924,7 +2934,7 @@ bool ParmsDb::deleteErrors(ErrorLevel level) {
     return true;
 }
 
-bool ParmsDb::deleteError(int dbId, bool &found) {
+bool ParmsDb::deleteError(int64_t dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     int errId;

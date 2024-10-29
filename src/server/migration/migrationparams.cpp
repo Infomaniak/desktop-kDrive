@@ -346,7 +346,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     if (user.keychainKey().empty()) {
         std::string oldAccountStr = settings.group().toStdString();
         std::string oldAccountId = oldAccountStr.substr(oldAccountStr.size() - 1); // get last char
-        std::string urlKey = strDriveUrl.toStdString()[strDriveUrl.size() - 1] == '/'
+        std::string urlKey = strDriveUrl.toStdString()[static_cast<unsigned long>(strDriveUrl.size() - 1)] == '/'
                                      ? strDriveUrl.toStdString()
                                      : strDriveUrl.toStdString() + "/"; // add "/" to url if necessary
 

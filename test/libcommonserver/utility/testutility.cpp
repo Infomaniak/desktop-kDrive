@@ -65,7 +65,7 @@ void TestUtility::testIsCreationDateValid(void) {
     auto currentTimePoint = std::chrono::time_point_cast<std::chrono::seconds>(currentTime);
     auto currentTimestamp = currentTimePoint.time_since_epoch().count();
 
-    for (int i = 10; i < currentTimestamp; i += 2629743) { // step of one month
+    for (int64_t i = 10; i < currentTimestamp; i += 2629743) { // step of one month
         CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(i));
     }
     CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(currentTimestamp));

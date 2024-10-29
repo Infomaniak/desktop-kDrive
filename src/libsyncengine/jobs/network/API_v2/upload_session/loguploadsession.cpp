@@ -45,15 +45,17 @@ std::shared_ptr<UploadSessionFinishJob> LogUploadSession::createFinishJob() {
     SyncTime modtimeIn =
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Log, getFilePath(), getSessionToken(),
-                                                    getTotalChunkHash(), getTotalChunks(), modtimeIn);
+    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Log, getFilePath(), getSessionToken(), getTotalChunkHash(),
+                                                    getTotalChunks(), modtimeIn);
 }
 
 std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Log, getSessionToken());
 }
 
-bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
+bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob, std::string uploadToken) {
+    (void) startJob;
+
     AppStateValue appStateValue = "";
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::selectAppState");
@@ -86,6 +88,8 @@ bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionS
 }
 
 bool LogUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+    (void) finishJob;
+
     if (bool found = true; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
     }

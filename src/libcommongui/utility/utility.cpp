@@ -33,7 +33,7 @@ struct Period {
         const char *name;
         quint64 msec;
 
-        QString description(quint64 value) const { return QCoreApplication::translate("Utility", name, 0, value); }
+        QString description(int value) const { return QCoreApplication::translate("Utility", name, 0, value); }
 };
 // QTBUG-3945 and issue #4855: QT_TRANSLATE_NOOP does not work with plural form because lupdate
 // limitation unless we fake more arguments
@@ -48,7 +48,7 @@ Q_DECL_CONSTEXPR Period periods[] = {{QT_TRANSLATE_NOOP("Utility", "%n year(s)",
                                      {QT_TRANSLATE_NOOP("Utility", "%n second(s)", 0, _), 1000LL},
                                      {0, 0}};
 
-void CommonGuiUtility::sleep(int sec) {
+void CommonGuiUtility::sleep(unsigned long sec) {
     QThread::sleep(sec);
 }
 
@@ -63,7 +63,7 @@ QString CommonGuiUtility::durationToDescriptiveString1(quint64 msecs) {
         p++;
     }
 
-    quint64 amount = qRound(double(msecs) / periods[p].msec);
+    int amount = qRound(double(msecs) / periods[p].msec);
     return periods[p].description(amount);
 }
 

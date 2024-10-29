@@ -24,6 +24,7 @@
 #include "parameterscache.h"
 #include "libcommongui/utility/utility.h"
 #include "libcommon/theme/theme.h"
+#include "gui/updater/updatedialog.h"
 
 #include <QClipboard>
 #include <QDesktopServices>
@@ -79,6 +80,8 @@ ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(_app, &AppClient::errorsCleared, this, &ClientGui::onErrorsCleared);
     connect(_app, &AppClient::folderSizeCompleted, this, &ClientGui::folderSizeCompleted);
     connect(_app, &AppClient::fixConflictingFilesCompleted, this, &ClientGui::onFixConflictingFilesCompleted);
+    connect(_app, &AppClient::updateStateChanged, this, &ClientGui::updateStateChanged);
+    connect(_app, &AppClient::showWindowsUpdateDialog, this, &ClientGui::onShowWindowsUpdateDialog, Qt::QueuedConnection);
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
     connect(this, &ClientGui::appVersionLocked, this, &ClientGui::onAppVersionLocked);
@@ -102,7 +105,7 @@ void ClientGui::init() {
             qCWarning(lcClientGui()) << "loadInfoMaps failed for trial=" << trial;
             error = true;
             if (trial < INIT_TRIALS) {
-                KDC::CommonGuiUtility::sleep(2 ^ trial);
+                KDC::CommonGuiUtility::sleep(static_cast<unsigned long>(2 ^ trial));
             }
         }
     }
@@ -303,7 +306,7 @@ void ClientGui::showSynthesisDialog() {
             _synthesisPopover->setPosition(trayIconRect);
             raiseDialog(_synthesisPopover.get());
         }
-        _synthesisPopover->onUpdateAvailabalityChange();
+        _synthesisPopover->refreshLockedStatus();
     }
 }
 
@@ -318,8 +321,7 @@ int ClientGui::driveErrorsCount(int driveDbId, bool unresolved) const {
 }
 
 const QString ClientGui::folderPath(int syncDbId, const QString &filePath) const {
-    QString fullFilePath = QString();
-
+    QString fullFilePath;
     const auto syncInfoIt = _syncInfoMap.find(syncDbId);
     if (syncInfoIt != _syncInfoMap.end()) {
         fullFilePath = syncInfoIt->second.localPath() + dirSeparator + filePath;
@@ -454,9 +456,9 @@ void ClientGui::setupSynthesisPopover() {
     _workaroundManualVisibility = true;
 #endif
 
-    qCInfo(lcClientGui) << "Tray menu workarounds:"
-                        << "noabouttoshow:" << _workaroundNoAboutToShowUpdate << "fakedoubleclick:" << _workaroundFakeDoubleClick
-                        << "showhide:" << _workaroundShowAndHideTray << "manualvisibility:" << _workaroundManualVisibility;
+    qCInfo(lcClientGui) << "Tray menu workarounds:" << "noabouttoshow:" << _workaroundNoAboutToShowUpdate
+                        << "fakedoubleclick:" << _workaroundFakeDoubleClick << "showhide:" << _workaroundShowAndHideTray
+                        << "manualvisibility:" << _workaroundManualVisibility;
 
     connect(&_delayedTrayUpdateTimer, &QTimer::timeout, this, &ClientGui::onUpdateSystray);
     _delayedTrayUpdateTimer.setInterval(2 * 1000);
@@ -509,6 +511,7 @@ void ClientGui::updateSystrayNeeded() {
 }
 
 void ClientGui::resetSystray(bool currentVersionLocked) {
+    (void) currentVersionLocked;
     _tray.reset(new Systray());
     _tray->setParent(this);
 
@@ -590,8 +593,6 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
         unsigned int idleSeen = 0;
         unsigned int abortOrPausedSeen = 0;
         unsigned int runSeen = 0;
-        unsigned int various = 0; // TODO: not used ?
-
 
         for (const auto &syncInfoMapIt: _syncInfoMap) {
             if (syncInfoMapIt.second.paused()) {
@@ -600,7 +601,6 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
                 switch (syncInfoMapIt.second.status()) {
                     case SyncStatus::Undefined:
                     case SyncStatus::Starting:
-                        various++;
                         break;
                     case SyncStatus::Running:
                         runSeen++;
@@ -753,6 +753,18 @@ void ClientGui::onNewDriveWizard() {
     }
 
     raiseDialog(_addDriveWizard.get());
+}
+
+
+void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const {
+    static std::mutex mutex;
+    std::unique_lock lock(mutex, std::try_to_lock);
+    if (!lock.owns_lock()) return;
+    if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
+        GuiRequests::startInstaller();
+    } else if (dialog.skip()) {
+        GuiRequests::skipUpdate(versionInfo.fullVersion());
+    }
 }
 
 void ClientGui::onDisableNotifications(NotificationsDisabled type, QDateTime value) {
@@ -970,6 +982,8 @@ void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
 void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
 #ifdef Q_OS_LINUX
     resetSystray(currentVersionLocked);
+#else
+    (void) currentVersionLocked;
 #endif
 }
 

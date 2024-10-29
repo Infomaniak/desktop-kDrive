@@ -29,9 +29,6 @@ class TestServerRequests : public CppUnit::TestFixture {
         void setUp(void) final;
         void tearDown() override;
         void testFixProxyConfig();
-
-    protected:
-        log4cplus::Logger _logger;
 };
 
 } // namespace KDC

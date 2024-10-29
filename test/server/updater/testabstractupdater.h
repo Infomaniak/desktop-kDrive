@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -20,24 +19,22 @@
 #pragma once
 
 #include "testincludes.h"
-#include "server/updater_v2/abstractupdater.h"
-#include "utility/types.h"
-using namespace CppUnit;
+#include "server/updater/abstractupdater.h"
 
 namespace KDC {
-class TestAbstractUpdater : public CppUnit::TestFixture {
-    public:
+
+class TestAbstractUpdater final : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestAbstractUpdater);
-        CPPUNIT_TEST(testCheckUpdateAvailable);
-        CPPUNIT_TEST(testCurrentVersion);
+        CPPUNIT_TEST(testSkipUnskipVersion);
+        CPPUNIT_TEST(testIsVersionSkipped);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
-        void tearDown() override;
 
     protected:
-        void testCheckUpdateAvailable();
-        void testCurrentVersion();
+        void testSkipUnskipVersion();
+        void testIsVersionSkipped();
 };
+
 } // namespace KDC

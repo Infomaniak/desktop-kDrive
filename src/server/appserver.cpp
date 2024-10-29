@@ -19,7 +19,6 @@
 #include "appserver.h"
 #include "libcommon/asserts.h"
 #include "common/utility.h"
-#include "updater/kdcupdater.h"
 #include "libcommonserver/vfs.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
@@ -54,6 +53,8 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
+
+#include "updater/updatemanager.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -298,19 +299,17 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-#ifdef Q_OS_MACOS
-    // Init Updater
-    const QuitCallback quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    UpdaterServer::instance()->setQuitCallback(quitCallback);
-#endif
-
     // Update checks
-    UpdaterScheduler *updaterScheduler = new UpdaterScheduler(this);
-    connect(updaterScheduler, &UpdaterScheduler::requestRestart, this, &AppServer::onScheduleAppRestart);
-
-#ifdef Q_OS_WIN
-    connect(updaterScheduler, &UpdaterScheduler::updaterAnnouncement, this, &AppServer::onShowWindowsUpdateErrorDialog);
+    _updateManager = std::make_unique<UpdateManager>(this);
+    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
+#ifdef Q_OS_MACOS
+    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    _updateManager->setQuitCallback(quitCallback);
 #endif
+
+    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
 
     // Init socket api
     _socketApi.reset(new SocketApi(_syncPalMap, _vfsMap));
@@ -1866,7 +1865,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             uint64_t logSize = 0;
             IoError ioError = IoError::Success;
             bool res = LogArchiver::getLogDirEstimatedSize(logSize, ioError);
-            if (ioError != IoError::Success) {
+            if (!res || ioError != IoError::Success) {
                 LOG_WARN(_logger,
                          "Error in LogArchiver::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError).c_str());
 
@@ -1947,68 +1946,32 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::UPDATER_VERSION: {
-            QString version = UpdaterServer::instance()->version();
-
-            resultStream << version;
-            break;
-        }
-        case RequestNum::UPDATER_ISKDCUPDATER: {
-            bool ret = UpdaterServer::instance()->isKDCUpdater();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_ISSPARKLEUPDATER: {
-            bool ret = UpdaterServer::instance()->isSparkleUpdater();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_STATUSSTRING: {
-            QString status = UpdaterServer::instance()->statusString();
-
-            resultStream << status;
-            break;
-        }
-        case RequestNum::UPDATER_STATUS: {
-            UpdateState status = UpdaterServer::instance()->updateState();
-            resultStream << status;
-            break;
-        }
-        case RequestNum::UPDATER_DOWNLOADCOMPLETED: {
-            bool ret = UpdaterServer::instance()->downloadCompleted();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_UPDATEFOUND: {
-            bool ret = UpdaterServer::instance()->updateFound();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_STARTINSTALLER: {
-            UpdaterServer::instance()->startInstaller();
-            break;
-        }
-        case RequestNum::UPDATER_UPDATE_DIALOG_RESULT: {
-            bool skip;
+        case RequestNum::UPDATER_CHANGE_CHANNEL: {
+            auto channel = DistributionChannel::Unknown;
             QDataStream paramsStream(params);
-            paramsStream >> skip;
-
-            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            if (skip) {
-                updater->wipeUpdateData();
-                updater->slotSetSeenVersion();
-            } else {
-                updater->slotStartInstaller();
-            }
+            paramsStream >> channel;
+            _updateManager->setDistributionChannel(channel);
             break;
         }
-        case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
-            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            updater->slotUnsetSeenVersion();
+        case RequestNum::UPDATER_VERSION_INFO: {
+            VersionInfo versionInfo = _updateManager->versionInfo();
+            resultStream << versionInfo;
+            break;
+        }
+        case RequestNum::UPDATER_STATE: {
+            UpdateState state = _updateManager->state();
+            resultStream << state;
+            break;
+        }
+        case RequestNum::UPDATER_START_INSTALLER: {
+            _updateManager->startInstaller();
+            break;
+        }
+        case RequestNum::UPDATER_SKIP_VERSION: {
+            QString tmp;
+            QDataStream paramsStream(params);
+            paramsStream >> tmp;
+            AbstractUpdater::skipVersion(tmp.toStdString());
             break;
         }
         case RequestNum::UTILITY_CRASH: {
@@ -2215,31 +2178,21 @@ void AppServer::onScheduleAppRestart() {
     _appRestartRequired = true;
 }
 
-void AppServer::onShowWindowsUpdateErrorDialog() {
-    static bool alreadyAsked = false; // Ask only once
-    if (!alreadyAsked) {
-        NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-        if (updater) {
-            if (updater->autoUpdateAttempted()) { // Try auto update first
-                alreadyAsked = true;
+void AppServer::onShowWindowsUpdateDialog() {
+    int id = 0;
 
-                // Notify client
-                int id = 0;
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << _updateManager->versionInfo();
+    CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
+}
 
-                QString targetVersion;
-                QString targetVersionString;
-                QString clientVersion;
-                updater->getVersions(targetVersion, targetVersionString, clientVersion);
-
-                QByteArray params;
-                QDataStream paramsStream(&params, QIODevice::WriteOnly);
-                paramsStream << targetVersion;
-                paramsStream << targetVersionString;
-                paramsStream << clientVersion;
-                CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
-            }
-        }
-    }
+void AppServer::onUpdateStateChanged(const UpdateState state) {
+    int id = 0;
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << state;
+    CommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params, id);
 }
 
 void AppServer::onRestartClientReceived() {
@@ -2257,7 +2210,6 @@ void AppServer::onRestartClientReceived() {
     }
 #else
     LOG_INFO(_logger, "Client disconnected");
-    quit = true;
 #endif
 
     if (quit) {
@@ -2273,6 +2225,10 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
     } else if (message == showSettingsMsg) {
         showSettings();
     }
+}
+
+void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
+    sendShowNotification(title, message);
 }
 
 void AppServer::sendShowNotification(const QString &title, const QString &message) {
@@ -3485,7 +3441,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
     std::chrono::duration<double, std::milli> elapsed_ms = std::chrono::steady_clock::now() - _lastSyncPalStart;
     if (elapsed_ms.count() < START_SYNCPALS_TIME_GAP) {
         // Shifts the start of the next sync
-        Utility::msleep(START_SYNCPALS_TIME_GAP - elapsed_ms.count());
+        Utility::msleep(START_SYNCPALS_TIME_GAP - static_cast<int>(elapsed_ms.count()));
     }
     _lastSyncPalStart = std::chrono::steady_clock::now();
 
@@ -3975,13 +3931,14 @@ void AppServer::addError(const Error &error) {
 
         // Decrease JobManager pool capacity
         JobManager::instance()->decreasePoolCapacity();
+    } else if (error.exitCode() == ExitCode::UpdateRequired) {
+        AbstractUpdater::unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(error)) {
         // Send error to sentry only for technical errors
-        SentryUser sentryUser(user.email().c_str(), user.name().c_str(), std::to_string(user.userId()).c_str());
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString().c_str(),
-                                                  sentryUser);
+        SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString(), sentryUser);
     }
 }
 

@@ -33,8 +33,7 @@ static const QString dateFormat = "d MMM yyyy - HH:mm";
 
 GenericErrorItemWidget::GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg,
                                                const ErrorInfo &errorInfo, QWidget *parent) :
-    AbstractFileItemWidget(parent),
-    _gui(gui), _errorInfo(errorInfo), _errorMsg(errorMsg) {
+    AbstractFileItemWidget(parent), _gui(gui), _errorInfo(errorInfo), _errorMsg(errorMsg) {
     init();
 }
 

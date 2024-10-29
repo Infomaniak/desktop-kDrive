@@ -201,6 +201,8 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
 }
 
 bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
+    (void) absolutePath;
+    (void) ioError;
     return true;
 }
 
@@ -598,10 +600,10 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
 }
 
 bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    // Warning: never log anything in this method. If the logger is not set, the app will crash.
     std::error_code ec;
     directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
     ioError = stdError2ioError(ec);
-
     return ioError == IoError::Success;
 }
 

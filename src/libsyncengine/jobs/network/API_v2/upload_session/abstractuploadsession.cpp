@@ -36,8 +36,7 @@ namespace KDC {
 
 AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
                                              uint64_t nbParalleleThread /*= 1*/) :
-    _logger(Log::instance()->getLogger()),
-    _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
+    _logger(Log::instance()->getLogger()), _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
@@ -66,7 +65,7 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
 
     _isAsynchrounous = _nbParalleleThread > 1;
     setProgress(0);
-    setProgressExpectedFinalValue(_filesize);
+    setProgressExpectedFinalValue(static_cast<int64_t>(_filesize));
 }
 
 void AbstractUploadSession::runJob() {
@@ -130,7 +129,7 @@ void AbstractUploadSession::uploadChunkCallback(UniqueId jobId) {
         }
 
         _threadCounter--;
-        addProgress(jobInfo.mapped()->chunkSize());
+        addProgress(static_cast<int64_t>(jobInfo.mapped()->chunkSize()));
         LOG_INFO(_logger,
                  "Session " << _sessionToken.c_str() << ", thread " << jobId << " finished. " << _threadCounter << " running");
     }
@@ -305,7 +304,7 @@ bool AbstractUploadSession::sendChunks() {
             break;
         }
 
-        const auto chunkContent = std::string(memblock.get(), actualChunkSize);
+        const auto chunkContent = std::string(memblock.get(), static_cast<size_t>(actualChunkSize));
 
         std::shared_ptr<UploadSessionChunkJob> chunkJob;
         try {

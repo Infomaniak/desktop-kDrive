@@ -55,7 +55,7 @@ void TestLog::testLargeLogRolling(void) {
     auto *customRollingFileAppender = static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get());
 
     const int maxSize = 1024; // 1KB
-    const int previousMaxSize = customRollingFileAppender->getMaxFileSize();
+    const long previousMaxSize = customRollingFileAppender->getMaxFileSize();
     customRollingFileAppender->setMaxFileSize(maxSize);
 
     LOG_DEBUG(_logger, "Ensure the log file is created");
@@ -97,7 +97,7 @@ void TestLog::testExpiredLogFiles(void) {
     Utility::msleep(1000);
     appender->checkForExpiredFiles();
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file should be deleted
-    appender->setExpire(CommonUtility::logsPurgeRate * 24 * 3600); 
+    appender->setExpire(CommonUtility::logsPurgeRate * 24 * 3600);
 }
 
 int TestLog::countFilesInDirectory(const SyncPath &directory) const {

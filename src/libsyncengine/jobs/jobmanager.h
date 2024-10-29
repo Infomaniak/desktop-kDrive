@@ -68,7 +68,7 @@ class JobManager {
 
         std::shared_ptr<AbstractJob> getJob(const UniqueId &jobId);
         inline size_t countManagedJobs() { return _managedJobs.size(); }
-        inline size_t maxNbThreads() { return _maxNbThread; }
+        inline int maxNbThreads() { return _maxNbThread; }
 
         void setPoolCapacity(int count); // For testing purpose
         void decreasePoolCapacity();

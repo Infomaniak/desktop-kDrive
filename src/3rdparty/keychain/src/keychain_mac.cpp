@@ -31,7 +31,7 @@
 
 namespace {
 
-const SecKeychainRef defaultUserKeychain = NULL;  // NULL means 'default'
+const SecKeychainRef defaultUserKeychain = NULL; // NULL means 'default'
 
 /*! \brief Converts a CFString to a std::string
  *
@@ -44,11 +44,11 @@ std::string CFStringToStdString(const CFStringRef cfstring) {
         return std::string(ccstr);
     }
 
-    auto utf16Pairs = CFStringGetLength(cfstring);
-    auto maxUtf8Bytes = CFStringGetMaximumSizeForEncoding(utf16Pairs, kCFStringEncodingUTF8);
+    const auto utf16Pairs = CFStringGetLength(cfstring);
+    const auto maxUtf8Bytes = CFStringGetMaximumSizeForEncoding(utf16Pairs, kCFStringEncodingUTF8);
 
-    std::vector<char> cstr(maxUtf8Bytes, '\0');
-    auto result = CFStringGetCString(cfstring, cstr.data(), cstr.size(), kCFStringEncodingUTF8);
+    std::vector<char> cstr(static_cast<size_t>(maxUtf8Bytes), '\0');
+    const auto result = CFStringGetCString(cfstring, cstr.data(), static_cast<long>(cstr.size()), kCFStringEncodingUTF8);
 
     return result ? std::string(cstr.data()) : std::string();
 }
@@ -90,9 +90,9 @@ void updateError(keychain::Error &err, OSStatus status) {
             break;
 
         // potential errors in case the user needs to unlock the keychain first
-        case errSecUserCanceled:         // user pressed the Cancel button
-        case errSecAuthFailed:           // too many failed password attempts
-        case errSecInteractionRequired:  // user interaction required but not allowed
+        case errSecUserCanceled: // user pressed the Cancel button
+        case errSecAuthFailed: // too many failed password attempts
+        case errSecInteractionRequired: // user interaction required but not allowed
             err.type = keychain::ErrorType::AccessDenied;
             break;
 
@@ -110,8 +110,8 @@ OSStatus modifyPassword(const std::string &serviceName, const std::string &user,
     SecKeychainItemRef item = NULL;
     OSStatus status = SecKeychainFindGenericPassword(defaultUserKeychain, static_cast<UInt32>(serviceName.length()),
                                                      serviceName.data(), static_cast<UInt32>(user.length()), user.data(),
-                                                     NULL,  // unused output parameter
-                                                     NULL,  // unused output parameter
+                                                     NULL, // unused output parameter
+                                                     NULL, // unused output parameter
                                                      &item);
 
     if (status == errSecSuccess) {
@@ -125,7 +125,7 @@ OSStatus modifyPassword(const std::string &serviceName, const std::string &user,
     return status;
 }
 
-}  // namespace
+} // namespace
 
 namespace keychain {
 
@@ -134,9 +134,10 @@ void setPassword(const std::string &package, const std::string &service, const s
     err = Error{};
     const auto serviceName = makeServiceName(package, service);
 
-    OSStatus status = SecKeychainAddGenericPassword(
-        defaultUserKeychain, static_cast<UInt32>(serviceName.length()), serviceName.data(), static_cast<UInt32>(user.length()),
-        user.data(), static_cast<UInt32>(password.length()), password.data(), NULL /* unused output parameter */);
+    OSStatus status =
+            SecKeychainAddGenericPassword(defaultUserKeychain, static_cast<UInt32>(serviceName.length()), serviceName.data(),
+                                          static_cast<UInt32>(user.length()), user.data(), static_cast<UInt32>(password.length()),
+                                          password.data(), NULL /* unused output parameter */);
 
     if (status == errSecDuplicateItem) {
         // password exists -- override
@@ -177,8 +178,8 @@ void deletePassword(const std::string &package, const std::string &service, cons
 
     OSStatus status = SecKeychainFindGenericPassword(defaultUserKeychain, static_cast<UInt32>(serviceName.length()),
                                                      serviceName.data(), static_cast<UInt32>(user.length()), user.data(),
-                                                     NULL,  // unused output parameter
-                                                     NULL,  // unused output parameter
+                                                     NULL, // unused output parameter
+                                                     NULL, // unused output parameter
                                                      &item);
 
     if (status != errSecSuccess) {
@@ -195,4 +196,4 @@ void deletePassword(const std::string &package, const std::string &service, cons
     }
 }
 
-}  // namespace keychain
+} // namespace keychain

@@ -70,7 +70,7 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     bool hasCreateOrEditChangeEvent =
             (node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Edit)) &&
-            (correspondingNode->hasChangeEvent(OperationType::Create) | correspondingNode->hasChangeEvent(OperationType::Edit));
+            (correspondingNode->hasChangeEvent(OperationType::Create) || correspondingNode->hasChangeEvent(OperationType::Edit));
 
     if (node->type() == NodeType::File && correspondingNode->type() == node->type() && hasCreateOrEditChangeEvent &&
         hasSameContent) {

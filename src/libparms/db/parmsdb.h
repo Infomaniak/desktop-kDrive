@@ -41,7 +41,7 @@ class PARMS_EXPORT ParmsDb : public Db {
                                                  const std::string &version = std::string(), bool autoDelete = false,
                                                  bool test = false);
 
-        std::string dbType() const override { return "Parms"; };
+        std::string dbType() const override { return "Parms"; }
 
         static void reset();
 
@@ -122,7 +122,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs);
         bool selectConflicts(int syncDbId, ConflictType filter, std::vector<Error> &errs);
         bool deleteErrors(ErrorLevel level);
-        bool deleteError(int dbId, bool &found);
+        bool deleteError(int64_t dbId, bool &found);
 
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
@@ -140,7 +140,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertDefaultParameters();
         bool insertDefaultAppState();
-        bool insertAppState(AppStateKey key, const std::string &value);
+        bool insertAppState(AppStateKey key, const std::string &value, bool noEmptyValue = false);
         bool updateExclusionTemplates();
 
         bool createAppState();

@@ -63,7 +63,7 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
             // Manage the case when CFStringGetCStringPtr returns NULL (for instance if the string contains accented characters)
             CFIndex pathLength = CFStringGetLength(pathRef);
             CFIndex pathMaxSize = CFStringGetMaximumSizeForEncoding(pathLength, kCFStringEncodingUTF8) + 1;
-            pathBuf = (char *) malloc(pathMaxSize);
+            pathBuf = (char *) malloc(static_cast<size_t>(pathMaxSize));
             CFStringGetCString(pathRef, pathBuf, pathMaxSize, kCFStringEncodingUTF8);
         }
 

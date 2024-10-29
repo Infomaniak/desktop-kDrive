@@ -31,7 +31,7 @@ static const QString dirSeparator = "/";
 namespace KDC {
 
 struct COMMONGUI_EXPORT CommonGuiUtility {
-        static void sleep(int sec);
+        static void sleep(unsigned long sec);
         static QString durationToDescriptiveString1(quint64 msecs);
 
         static void setupFavLink(const QString &folder);

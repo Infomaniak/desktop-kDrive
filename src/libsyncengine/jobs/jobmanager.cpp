@@ -116,7 +116,7 @@ void JobManager::decreasePoolCapacity() {
     if (JobManager::instance()->maxNbThreads() > threadPoolMinCapacity) {
         // Decrease pool capacity
         // TODO: Store the pool capacity in DB?
-        _maxNbThread -= std::ceil((JobManager::instance()->maxNbThreads() - threadPoolMinCapacity) / 2.0);
+        _maxNbThread -= static_cast<int>(std::ceil((JobManager::instance()->maxNbThreads() - threadPoolMinCapacity) / 2.0));
         Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
         LOG_DEBUG(Log::instance()->getLogger(), "Job Manager capacity set to " << _maxNbThread);
     } else {
@@ -256,7 +256,7 @@ void JobManager::adjustMaxNbThread() {
     }
 
     maxTmpNbThread = std::max(maxTmpNbThread, threadPoolMinCapacity);
-    int threadMultiplier = _cpuUsageThreshold * 10;
+    int threadMultiplier = static_cast<int>(_cpuUsageThreshold * 10);
     _maxNbThread = std::min(maxTmpNbThread, threadMultiplier * static_cast<int>(std::thread::hardware_concurrency()));
 
     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());

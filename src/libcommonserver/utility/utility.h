@@ -62,7 +62,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
         static bool setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
-        static bool isCreationDateValid(uint64_t creationDate);
+        static bool isCreationDateValid(int64_t creationDate);
 
         static std::wstring s2ws(const std::string &str);
         static std::string ws2s(const std::wstring &wstr);
@@ -164,6 +164,7 @@ struct COMMONSERVER_EXPORT Utility {
 #ifdef _WIN32
         static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
+        static bool runDetachedProcess(std::wstring cmd);
 #endif
         static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
                                              IoError &ioError);

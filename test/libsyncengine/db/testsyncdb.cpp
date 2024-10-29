@@ -259,7 +259,7 @@ void TestSyncDb::testUpgradeTo3_6_5() {
     CPPUNIT_ASSERT_EQUAL(initialDbNodes.size(), syncFilesInfo.localCreationFileNames.size());
 
     const auto actualSystemFileNames = getActualSystemFileNames(localTmpDir.path());
-    for (int i = 0; i < initialDbNodes.size(); ++i) {
+    for (size_t i = 0; i < initialDbNodes.size(); ++i) {
         SyncName localName; // From the sync database.
         bool found = false;
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, *initialDbNodes[i].nodeIdLocal(), localName, found) && found);

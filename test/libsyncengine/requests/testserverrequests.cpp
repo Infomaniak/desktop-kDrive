@@ -42,7 +42,7 @@ void TestServerRequests::testFixProxyConfig() {
     ProxyConfig proxyConfig = ParametersCache::instance()->parameters().proxyConfig();
     proxyConfig.setType(ProxyType::Undefined);
     ParametersCache::instance()->parameters().setProxyConfig(proxyConfig);
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ParametersCache::instance()->save());
+    ParametersCache::instance()->save();
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::fixProxyConfig());
 

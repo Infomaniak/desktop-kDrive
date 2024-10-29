@@ -40,6 +40,7 @@ class DbNode {
                const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatus::Unknown, bool syncing = false);
 
         DbNode();
+        virtual ~DbNode() = default;
 
         inline DbNodeId nodeId() const { return _nodeId; }
         inline std::optional<DbNodeId> parentNodeId() const { return _parentNodeId; }

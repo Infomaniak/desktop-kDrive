@@ -36,7 +36,6 @@ constexpr char API_PREFIX_PROFILE[] = "/profile";
 
 constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG[] = "Failed to create AbstractTokenNetworkJob instance!";
 constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN[] = "Invalid Token";
-constexpr char ABSTRACTTOKENNETWORKJOB_EXEC_ERROR_MSG[] = "Failed to execute AbstractTokenNetworkJob!";
 
 constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 
@@ -46,8 +45,7 @@ std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToAp
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId,
                                                  bool returnJson /*= true*/) :
-    _apiType(apiType),
-    _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
+    _apiType(apiType), _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
     if (!ParmsDb::instance()) {
         assert(false);
         LOG_WARN(_logger, "ParmsDb must be initialized!");
@@ -220,6 +218,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
                 _exitCode = ExitCode::TokenRefreshed;
                 return true;
             }
+            return false;
         }
 
         case KDC::NetworkErrorCode::productMaintenance:

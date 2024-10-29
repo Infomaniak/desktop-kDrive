@@ -43,7 +43,7 @@ class AbstractNetworkJob : public AbstractJob {
 
         ~AbstractNetworkJob() override;
 
-        bool hasHttpError() const;
+        [[nodiscard]] bool hasHttpError(std::string *errorCode = nullptr) const;
         bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr) const;
         [[nodiscard]] inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         void abort() override;
@@ -58,10 +58,6 @@ class AbstractNetworkJob : public AbstractJob {
         virtual void addRawHeader(const std::string &key, const std::string &value) final;
 
         virtual bool handleResponse(std::istream &inputStream) = 0;
-        /**
-         * Return true if the error has been automatically resolved (e.g.: token expired)
-         * Otherwise return false
-         */
         virtual bool handleError(std::istream &inputStream, const Poco::URI &uri) = 0;
 
         virtual std::string getSpecificUrl() = 0;
@@ -92,7 +88,7 @@ class AbstractNetworkJob : public AbstractJob {
         struct TimeoutHelper {
                 void add(std::chrono::duration<double> duration);
 
-                [[nodiscard]] inline int value() const { return _maxDuration; }
+                [[nodiscard]] inline unsigned int value() const { return _maxDuration; }
                 inline bool isTimeoutDetected() { return count() >= TIMEOUT_THRESHOLD; }
 
             private:
@@ -118,10 +114,13 @@ class AbstractNetworkJob : public AbstractJob {
         Poco::JSON::Object::Ptr _jsonRes{nullptr};
         std::string _octetStreamRes;
 
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) = 0;
-        virtual void setData(bool &canceled) = 0;
+        virtual void setQueryParameters(Poco::URI &, bool &canceled) { canceled = false; };
+        virtual void setData(bool &canceled) { canceled = false; };
 
-        virtual std::string getContentType(bool &canceled) = 0;
+        virtual std::string getContentType(bool &canceled) {
+            canceled = false;
+            return {};
+        }
 
         std::unique_ptr<Poco::Net::HTTPSClientSession> _session;
         std::recursive_mutex _mutexSession;

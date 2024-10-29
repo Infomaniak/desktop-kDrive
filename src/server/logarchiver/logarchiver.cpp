@@ -44,8 +44,8 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     for (int i = 0; i < 2; i++) { // Retry once in case a log file is archived/created during the first iteration
         result = IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoError::Success) {
-            size *= 0.8; // The compressed logs will be smaller than the original ones. We estimate at worst 80% of the
-                         // original size.
+            size = static_cast<uint64_t>(size * 0.8); // The compressed logs will be smaller than the original ones. We estimate
+                                                      // at worst 80% of the original size.
             return true;
         }
     }
@@ -395,8 +395,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
             continue; // Don't process the file
         }
 
-        std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
-                                                             &destPath, &totalSize, &fileSize](int progressPercent) {
+        std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &destPath,
+                                                             &totalSize, &fileSize](unsigned int progressPercent) {
             auto parametersCacheInstance = ParametersCache::instance();
             if (parametersCacheInstance && parametersCacheInstance->parameters().extendedLog()) {
                 LOG_DEBUG(Log::instance()->getLogger(),
@@ -404,7 +404,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
                                                       << " - total compression step percent: "
                                                       << (compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
             }
-            canceled = !safeProgressCallback((compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
+            canceled =
+                    !safeProgressCallback(static_cast<int>((compressedFilesSize * 100 + progressPercent * fileSize) / totalSize));
             return !canceled;
         };
 
