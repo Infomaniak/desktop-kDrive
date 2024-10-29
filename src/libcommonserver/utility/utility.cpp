@@ -408,7 +408,7 @@ bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, boo
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(b));
         return false;
     }
-    isEqual = (aNormalized == bNormalized);
+    areSame = (aNormalized == bNormalized);
     return true;
 }
 
@@ -423,7 +423,7 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
         return false;
     }
-    isEqual = (aNormalized == bNormalized);
+    areSame = (aNormalized == bNormalized);
     return true;
 }
 
