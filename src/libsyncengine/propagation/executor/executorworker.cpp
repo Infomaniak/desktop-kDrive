@@ -649,7 +649,6 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()).c_str());
                     return ExitCode::DataError;
-                    ;
                 }
             } else {
                 try {
