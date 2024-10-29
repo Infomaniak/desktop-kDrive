@@ -331,7 +331,7 @@ void TestExecutorWorker::testHasRight() {
 
     /// Normal case with Move operation
     {
-        const auto filename = CommonUtility::generateRandomStringAlphaNum();
+        const auto filename = Str2SyncName(CommonUtility::generateRandomStringAlphaNum());
         const auto syncOp = generateSyncOperation(++dbNodeId, filename, targetSide, NodeType::File);
         syncOp->setType(OperationType::Move);
         bool exists = false;
@@ -340,7 +340,7 @@ void TestExecutorWorker::testHasRight() {
 
     /// Normal case with Delete operation
     {
-        const auto filename = CommonUtility::generateRandomStringAlphaNum();
+        const auto filename = Str2SyncName(CommonUtility::generateRandomStringAlphaNum());
         const auto syncOp = generateSyncOperation(++dbNodeId, filename, targetSide, NodeType::File);
         syncOp->setType(OperationType::Delete);
         bool exists = false;
