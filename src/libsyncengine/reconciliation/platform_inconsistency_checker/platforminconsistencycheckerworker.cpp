@@ -131,9 +131,8 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
         blacklistNode(localNode, InconsistencyType::NameLength);
         return ExitCode::Ok;
     }
-    auto childCopy = localNode->children();
-    auto childIt = childCopy.begin();
-    for (; childIt != childCopy.end(); childIt++) {
+    auto it = localNode->children().begin();
+    for (; it != localNode->children().end(); it++) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -146,7 +145,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
             Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
-        const ExitCode exitCode = checkLocalTree(childIt->second, parentPath / localNode->name());
+        const ExitCode exitCode = checkLocalTree(it->second, parentPath / localNode->name());
         if (exitCode != ExitCode::Ok) {
             return exitCode;
         }
@@ -191,14 +190,6 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     };
     nodeIDs.remoteId = safeNodeId(remoteNode);
     nodeIDs.localId = safeNodeId(localNode);
-    if (!nodeIDs.localId.empty() && !_syncPal->updateTree(ReplicaSide::Local)->deleteNode(nodeIDs.localId)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node " << Utility::formatSyncPath(node->getPath()));
-    }
-
-    if (!nodeIDs.remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(nodeIDs.remoteId)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node " << Utility::formatSyncPath(node->getPath()));
-    }
-
     _idsToBeRemoved.emplace_back(nodeIDs);
 }
 
