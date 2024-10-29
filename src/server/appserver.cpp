@@ -3972,7 +3972,7 @@ void AppServer::addError(const Error &error) {
                 return;
             }
         }
-        if (toBeRemovedErrorIds.size() > 0)
+        if (!toBeRemovedErrorIds.empty())
             if (ServerRequests::isDisplayableError(error)) {
                 // Notify the client
                 sendErrorsCleared(error.syncDbId());

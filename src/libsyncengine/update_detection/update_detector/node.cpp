@@ -186,7 +186,7 @@ bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
     if (potentialChild->id().has_value() && potentialChild->id() == _id) return false; // potentialChild cannot be its own parent
     while (potentialChild) {
         if (!potentialChild->id().has_value()) {
-            LOG_ERROR(Log::instance()->getLogger(), "Node::isParentOf Node has no id");
+            LOG_ERROR(Log::instance()->getLogger(), "Error in Node::isParentOf: Node has no id.");
             assert(false && "Node has no id");
             return false;
         }
