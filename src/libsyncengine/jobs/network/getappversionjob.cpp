@@ -24,6 +24,7 @@
 
 namespace KDC {
 
+static const std::string hasProdNextKey = "has_prod_next";
 static const std::string applicationKey = "application";
 static const std::string publishedVersionsKey = "published_versions";
 static const std::string versionTypeProdKey = "production";
@@ -89,6 +90,10 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
 
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
     if (!dataObj) return false;
+
+    if (!JsonParserUtility::extractValue(dataObj, hasProdNextKey, _hasProdNext)) {
+        return false;
+    }
 
     const Poco::JSON::Object::Ptr applicationObj = JsonParserUtility::extractJsonObject(dataObj, applicationKey);
     if (!applicationObj) return false;
