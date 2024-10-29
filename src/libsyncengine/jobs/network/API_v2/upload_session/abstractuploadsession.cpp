@@ -190,7 +190,7 @@ bool AbstractUploadSession::initChunks() {
         _chunkSize = chunkMaxSize;
     }
 
-    _totalChunks = (uint64_t) std::ceil(_filesize / (double) _chunkSize);
+    _totalChunks = static_cast<uint64_t>(std::ceil(static_cast<double>(_filesize) / static_cast<double>(_chunkSize)));
     if (_totalChunks > maxTotalChunks) {
         LOGW_WARN(_logger,
                   L"Impossible to upload file " << Path2WStr(_filePath.filename()).c_str() << L" because it is too big!");

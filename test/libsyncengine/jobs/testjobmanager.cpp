@@ -417,7 +417,7 @@ void TestJobManager::generateBigFiles(const SyncPath &dirPath, int size, int cou
         bigFilePath = SyncPath(dirPath) / fileName.str();
         {
             std::ofstream ofs(bigFilePath, std::ios_base::in | std::ios_base::trunc);
-            for (int i = 0; i < static_cast<int>(round(static_cast<unsigned long>(size * 1000000) / str.length())); i++) {
+            for (int i = 0; i < static_cast<int>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length()))); i++) {
                 ofs << str;
             }
         }

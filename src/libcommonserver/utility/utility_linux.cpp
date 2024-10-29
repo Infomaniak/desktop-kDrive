@@ -104,7 +104,7 @@ static int moveItemToTrash_private(const SyncPath &itemPath) {
 }
 
 int parseLineForRamStatus(char *line) {
-    int i = strlen(line);
+    int i = static_cast<int>(strlen(line));
     const char *p = line;
     while (*p < '0' || *p > '9') p++;
     line[i - 3] = '\0';
@@ -147,7 +147,7 @@ static bool ramCurrentlyUsedByProcess_private(uint64_t &ram, int &errorCode) {
 
     while (fgets(line, 128, file) != nullptr) {
         if (strncmp(line, "VmRSS:", 6) == 0) {
-            ram = parseLineForRamStatus(line);
+            ram = static_cast<uint64_t>(parseLineForRamStatus(line));
             break;
         }
     }
@@ -198,10 +198,10 @@ static bool cpuUsage_private(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow
         return false;
     } else {
         total = (totalUser - lastTotalUser) + (totalUserLow - lastTotalUserLow) + (totalSys - lastTotalSys);
-        percent = total;
+        percent = static_cast<double>(total);
         if (total > 0) {
             total += (totalIdle - lastTotalIdle);
-            percent /= total;
+            percent /= static_cast<double>(total);
             percent *= 100;
         } else {
             percent = 0;

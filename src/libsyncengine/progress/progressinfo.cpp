@@ -194,14 +194,14 @@ Estimates ProgressInfo::totalProgress() const {
             1.0 - std::max(0.0, std::min((trans - transL * _maxBytesPerSecond) / ((transU - transL) * _maxBytesPerSecond), 1.0));
 
     double beOptimistic = nearMaxFps * slowTransfer;
-    size.setEstimatedEta(int64_t((1.0 - beOptimistic) * size.estimatedEta() + beOptimistic * optimisticEta()));
+    size.setEstimatedEta(static_cast<int64_t>(((1.0 - beOptimistic) * static_cast<double>(size.estimatedEta()) + beOptimistic * static_cast<double>(optimisticEta()))));
 
     return size;
 }
 
 int64_t ProgressInfo::optimisticEta() const {
-    return static_cast<int64_t>(_fileProgress.remaining() / _maxFilesPerSecond * 1000 +
-                                _sizeProgress.remaining() / _maxBytesPerSecond * 1000);
+    return static_cast<int64_t>(static_cast<double>(_fileProgress.remaining()) / _maxFilesPerSecond * 1000 +
+                                static_cast<double>(_sizeProgress.remaining()) / _maxBytesPerSecond * 1000);
 }
 
 bool ProgressInfo::trustEta() const {
