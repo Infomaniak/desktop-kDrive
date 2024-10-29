@@ -252,11 +252,11 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
     // Remove the entry and all subentries
     while (it != _pathToWatch.end()) {
         auto itPath = it->first;
-        if (Utility::isSameOrChildPath(itPath, dirPath)) {
+        if (Utility::isDescendantOrEqual(itPath, dirPath)) {
             break;
         }
 
-        if (itPath != dirPath && Utility::isSameOrChildPath(itPath, pathSlash)) {
+        if (itPath != dirPath && Utility::isDescendantOrEqual(itPath, pathSlash)) {
             // order is 'foo', 'foo bar', 'foo/bar'
             ++it;
             continue;

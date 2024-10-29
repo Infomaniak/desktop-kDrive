@@ -408,9 +408,9 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 continue;
             }
 
-            if (Utility::isSameOrChildPath(SyncPath(localDbPath).lexically_normal(),
+            if (Utility::isDescendantOrEqual(SyncPath(localDbPath).lexically_normal(),
                                     SyncPath(remoteDbPath.native() + Str("/")).lexically_normal()) ||
-                Utility::isSameOrChildPath(SyncPath(remoteDbPath).lexically_normal(),
+                Utility::isDescendantOrEqual(SyncPath(remoteDbPath).lexically_normal(),
                                     SyncPath(localDbPath.native() + Str("/")).lexically_normal())) {
                 continue;
             }

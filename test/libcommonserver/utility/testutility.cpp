@@ -481,19 +481,19 @@ void TestUtility::testNormalizedSyncPath() {
 }
 
 void TestUtility::testIsSameOrParentPath() {
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("", "a"));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a", "a/b"));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a/b", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a/b/c", "a/b/c1"));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("a/b/c1", "a/b/c"));
-    CPPUNIT_ASSERT(!Utility::isSameOrChildPath("/a/b/c", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("", "a"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c", "a/b/c1"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c1", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("/a/b/c", "a/b/c"));
     
-    CPPUNIT_ASSERT(Utility::isSameOrChildPath("", ""));
-    CPPUNIT_ASSERT(Utility::isSameOrChildPath("a/b/c", "a/b/c"));
-    CPPUNIT_ASSERT(Utility::isSameOrChildPath("a", ""));
-    CPPUNIT_ASSERT(Utility::isSameOrChildPath("a/b/c", "a/b"));
-    CPPUNIT_ASSERT(Utility::isSameOrChildPath("a/b/c", "a"));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("", ""));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b/c"));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a", ""));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b"));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a"));
 }
 
 } // namespace KDC

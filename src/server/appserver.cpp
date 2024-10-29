@@ -3905,7 +3905,7 @@ void AppServer::addError(const Error &error) {
         std::unordered_set<int64_t> toBeRemovedErrorIds;
         for (const Error &parentError: errorList) {
             for (const Error &childError: errorList) {
-                if (Utility::isSameOrChildPath(childError.path(), parentError.path()) &&
+                if (Utility::isDescendantOrEqual(childError.path(), parentError.path()) &&
                     childError.dbId() != parentError.dbId()) {
                     toBeRemovedErrorIds.insert(childError.dbId());
                 }

@@ -409,7 +409,7 @@ bool Utility::isEqualNormalized(const SyncPath &a, const SyncPath &b) {
     return aNormalized == bNormalized;
 }
 
-bool Utility::isSameOrChildPath(const SyncPath &potentialChild, const SyncPath &path) {
+bool Utility::isDescendantOrEqual(const SyncPath &potentialChild, const SyncPath &path) {
     if (path == potentialChild) return true;
     for (auto it = potentialChild.begin(), it2 = path.begin(); it != potentialChild.end(); ++it, ++it2) {
         if (it2 == path.end()) {
