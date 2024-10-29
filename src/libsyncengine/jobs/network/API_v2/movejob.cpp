@@ -62,7 +62,7 @@ bool MoveJob::canRun() {
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_destFilepath));
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilepath));
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
