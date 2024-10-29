@@ -58,6 +58,7 @@ std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyChecke
         try {
             _instance = std::shared_ptr<PlatformInconsistencyCheckerUtility>(new PlatformInconsistencyCheckerUtility());
         } catch (...) {
+            assert(false);
             return nullptr;
         }
     }
