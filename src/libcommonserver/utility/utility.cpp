@@ -334,6 +334,8 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         // !!! File system name can be OK or not !!!
         return Utility::ws2s(szFileSystemName);
     }
+#else
+    (void)targetPath;
 #endif
 
     return std::string();
@@ -451,7 +453,7 @@ void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capit
     int c;
     for (i = 0, c = str[0] & 0xFF; i < hexstr.size(); c = str[i / 2] & 0xFF) {
         hexstr[i++] = c > 0x9F ? static_cast<char>(c / 16 - 9) | a : static_cast<char>(c / 16) | '0';
-        hexstr[i++] = (c & 0xF) > 9 ? (c % 16 - 9) | a : c % 16 | '0';
+        hexstr[i++] = (c & 0xF) > 9 ? static_cast<char>(c % 16 - 9) | a : static_cast<char>(c % 16) | '0';
     }
 }
 

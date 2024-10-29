@@ -781,7 +781,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
-                _nbParalleleThreads = static_cast<uint64_t>(std::floor(_nbParalleleThreads / 2.0));
+                _nbParalleleThreads = static_cast<uint64_t>(std::floor(static_cast<double>(_nbParalleleThreads) / 2.0));
             } else {
                 break;
             }
@@ -823,7 +823,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
-                _nbParalleleThreads = static_cast<uint64_t>(std::floor(_nbParalleleThreads / 2.0));
+                _nbParalleleThreads = static_cast<uint64_t>(std::floor(static_cast<double>(_nbParalleleThreads) / 2.0));
             } else {
                 break;
             }

@@ -28,7 +28,7 @@ namespace KDC {
 
 class ErrorInfo {
     public:
-        ErrorInfo(int dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
+        ErrorInfo(int64_t dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
                   ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
                   NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
                   CancelType cancelType = CancelType::None, const QString &destinationPath = "");

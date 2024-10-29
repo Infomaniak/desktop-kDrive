@@ -278,6 +278,7 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
 #if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(exactly1exist);
 #else
+    (void)exactly1exist;
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
                    _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
 #endif

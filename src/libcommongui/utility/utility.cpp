@@ -63,7 +63,7 @@ QString CommonGuiUtility::durationToDescriptiveString1(quint64 msecs) {
         p++;
     }
 
-    int amount = qRound(double(msecs) / periods[p].msec);
+    int amount = qRound(static_cast<double>(msecs) / static_cast<double>(periods[p].msec));
     return periods[p].description(amount);
 }
 
@@ -89,7 +89,7 @@ QString CommonGuiUtility::octetsToString(qint64 octets) {
     static const qint64 gb = THE_FACTOR * mb;
 
     QString s;
-    qreal value = octets;
+    qreal value = static_cast<double>(octets);
 
     // Whether we care about decimals: only for GB/MB and only
     // if it's less than 10 units.
