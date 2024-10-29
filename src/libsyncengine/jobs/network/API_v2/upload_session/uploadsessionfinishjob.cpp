@@ -25,8 +25,8 @@ namespace KDC {
 UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                uint64_t totalChunks, SyncTime modtime) :
-    AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken),
-    _totalChunkHash(totalChunkHash), _totalChunks(totalChunks), _modtimeIn(modtime) {
+    AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken), _totalChunkHash(totalChunkHash),
+    _totalChunks(totalChunks), _modtimeIn(modtime) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 

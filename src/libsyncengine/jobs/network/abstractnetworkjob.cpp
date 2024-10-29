@@ -230,8 +230,12 @@ void AbstractNetworkJob::runJob() noexcept {
     }
 }
 
-bool AbstractNetworkJob::hasHttpError() const {
-    return _resHttp.getStatus() != Poco::Net::HTTPResponse::HTTP_OK;
+bool AbstractNetworkJob::hasHttpError(std::string *errorCode /*= nullptr*/) const {
+    if (_resHttp.getStatus() != Poco::Net::HTTPResponse::HTTP_OK) {
+        if (errorCode) *errorCode = std::to_string(_resHttp.getStatus());
+        return true;
+    }
+    return false;
 }
 
 bool AbstractNetworkJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) const {

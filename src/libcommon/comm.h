@@ -112,19 +112,15 @@ enum class RequestNum {
     UTILITY_SEND_LOG_TO_SUPPORT,
     UTILITY_CANCEL_LOG_TO_SUPPORT,
     UTILITY_GET_LOG_ESTIMATED_SIZE,
-    UPDATER_VERSION,
-    UPDATER_ISKDCUPDATER,
-    UPDATER_ISSPARKLEUPDATER,
-    UPDATER_STATUSSTRING,
-    UPDATER_STATUS,
-    UPDATER_DOWNLOADCOMPLETED,
-    UPDATER_UPDATEFOUND,
-    UPDATER_STARTINSTALLER,
-    UPDATER_UPDATE_DIALOG_RESULT,
-    RECONSIDER_SKIPPED_UPDATE,
+    UPDATER_CHANGE_CHANNEL,
+    UPDATER_VERSION_INFO,
+    UPDATER_STATE,
+    UPDATER_START_INSTALLER,
+    UPDATER_SKIP_VERSION,
     UTILITY_CRASH,
     UTILITY_QUIT,
 };
+
 inline std::string toString(RequestNum e) {
     switch (e) {
         case RequestNum::LOGIN_REQUESTTOKEN:
@@ -265,26 +261,14 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
             return "UTILITY_GET_LOG_ESTIMATED_SIZE";
-        case RequestNum::UPDATER_VERSION:
-            return "UPDATER_VERSION";
-        case RequestNum::UPDATER_ISKDCUPDATER:
-            return "UPDATER_ISKDCUPDATER";
-        case RequestNum::UPDATER_ISSPARKLEUPDATER:
-            return "UPDATER_ISSPARKLEUPDATER";
-        case RequestNum::UPDATER_STATUSSTRING:
-            return "UPDATER_STATUSSTRING";
-        case RequestNum::UPDATER_STATUS:
-            return "UPDATER_STATUS";
-        case RequestNum::UPDATER_DOWNLOADCOMPLETED:
-            return "UPDATER_DOWNLOADCOMPLETED";
-        case RequestNum::UPDATER_UPDATEFOUND:
-            return "UPDATER_UPDATEFOUND";
-        case RequestNum::UPDATER_STARTINSTALLER:
-            return "UPDATER_STARTINSTALLER";
-        case RequestNum::UPDATER_UPDATE_DIALOG_RESULT:
-            return "UPDATER_UPDATE_DIALOG_RESULT";
-        case RequestNum::RECONSIDER_SKIPPED_UPDATE:
-            return "RECONSIDER_SKIPPED_UPDATE";
+        case RequestNum::UPDATER_VERSION_INFO:
+            return "UPDATER_VERSION_INFO";
+        case RequestNum::UPDATER_STATE:
+            return "UPDATER_STATE";
+        case RequestNum::UPDATER_START_INSTALLER:
+            return "UPDATER_START_INSTALLER";
+        case RequestNum::UPDATER_SKIP_VERSION:
+            return "UPDATER_SKIP_VERSION";
         case RequestNum::UTILITY_CRASH:
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
@@ -323,6 +307,7 @@ enum class SignalNum {
     NODE_FIX_CONFLICTED_FILES_COMPLETED,
     // Updater
     UPDATER_SHOW_DIALOG,
+    UPDATER_STATE_CHANGED,
     // Utility
     UTILITY_SHOW_NOTIFICATION,
     UTILITY_NEW_BIG_FOLDER,
@@ -380,6 +365,8 @@ inline std::string toString(SignalNum e) {
             return "NODE_FIX_CONFLICTED_FILES_COMPLETED";
         case SignalNum::UPDATER_SHOW_DIALOG:
             return "UPDATER_SHOW_DIALOG";
+        case SignalNum::UPDATER_STATE_CHANGED:
+            return "UPDATER_STATE_CHANGED";
         case SignalNum::UTILITY_SHOW_NOTIFICATION:
             return "UTILITY_SHOW_NOTIFICATION";
         case SignalNum::UTILITY_NEW_BIG_FOLDER:

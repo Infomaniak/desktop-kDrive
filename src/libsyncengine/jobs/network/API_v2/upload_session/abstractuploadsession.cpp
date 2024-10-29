@@ -36,8 +36,7 @@ namespace KDC {
 
 AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
                                              uint64_t nbParalleleThread /*= 1*/) :
-    _logger(Log::instance()->getLogger()),
-    _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
+    _logger(Log::instance()->getLogger()), _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);

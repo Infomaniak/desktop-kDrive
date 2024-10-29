@@ -176,7 +176,8 @@ void FolderWatcher_win::watchChanges() {
 
             if (!skip) {
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"Operation " << opType << (converted ? L"(converted) " : L"") << L" detected on item with "
+                    LOGW_DEBUG(_logger, L"Operation " << opType << (converted ? L"(converted) " : L"")
+                                                      << L" detected on item with "
                                                       << Utility::formatSyncPath(longfilepath));
                 }
 

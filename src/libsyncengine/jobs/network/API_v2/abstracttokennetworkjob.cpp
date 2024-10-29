@@ -46,8 +46,7 @@ std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToAp
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId,
                                                  bool returnJson /*= true*/) :
-    _apiType(apiType),
-    _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
+    _apiType(apiType), _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
     if (!ParmsDb::instance()) {
         LOG_WARN(_logger, "ParmsDb must be initialized!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
