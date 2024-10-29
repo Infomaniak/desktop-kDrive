@@ -360,7 +360,7 @@ void TestExecutorWorker::testHasRight() {
         CPPUNIT_ASSERT(!exists);
     }
 
-    /// Create operation but local file already exist
+    /// Create operation but local file already exists
     {
         const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
         testhelpers::generateOrEditTestFile(path);
@@ -371,7 +371,7 @@ void TestExecutorWorker::testHasRight() {
         CPPUNIT_ASSERT(exists);
     }
 
-    /// Create operation but local file already exist and does not have write permission
+    /// Create operation but local file already exists and does not have write permission
     {
         const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
         testhelpers::generateOrEditTestFile(path);
