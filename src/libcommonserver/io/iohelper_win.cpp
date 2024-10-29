@@ -65,16 +65,17 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
             return IoError::InvalidArgument;
         case ERROR_FILENAME_EXCED_RANGE:
             return IoError::FileNameTooLong;
+        case ERROR_BAD_NETPATH:
         case ERROR_FILE_NOT_FOUND:
         case ERROR_INVALID_DRIVE:
-        case ERROR_PATH_NOT_FOUND:
         case ERROR_INVALID_NAME:
+        case ERROR_PATH_NOT_FOUND:
             return IoError::NoSuchFileOrDirectory;
         case ERROR_NOT_SAME_DEVICE:
             return IoError::CrossDeviceLink;
         default:
             if (Log::isSet()) {
-                LOG_WARN(logger, "Unhandled DWORD error - error=" << error);
+                LOG_WARN(logger, "Unhandled DWORD error: " << CommonUtility::getLastErrorMessage(error));
             }
             return IoError::Unknown;
     }
@@ -119,10 +120,6 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
     return FileTimeToUnixTime(&ft, remainder);
 }
 
-bool fileExistsFromCode(int code) noexcept {
-    return (code != ERROR_FILE_NOT_FOUND) && (code != ERROR_PATH_NOT_FOUND) && (code != ERROR_INVALID_DRIVE);
-}
-
 } // namespace
 
 int IoHelper::_getAndSetRightsMethod = -1; // -1: not initialized, 0: Windows API, 1: std::filesystem
@@ -130,10 +127,6 @@ bool IoHelper::_setRightsWindowsApiInheritance = false;
 std::unique_ptr<BYTE[]> IoHelper::_psid = nullptr;
 TRUSTEE IoHelper::_trustee = {nullptr};
 std::mutex IoHelper::_initRightsWindowsApiMutex;
-
-bool IoHelper::fileExists(const std::error_code &ec) noexcept {
-    return fileExistsFromCode(ec.value());
-}
 
 IoError IoHelper::stdError2ioError(int error) noexcept {
     return dWordError2ioError(static_cast<DWORD>(error), logger());
@@ -203,7 +196,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
         if (hParent == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
-            if (!fileExistsFromCode(dwError)) {
+            if (!CommonUtility::fileExists(dwError)) {
                 ioError = IoError::NoSuchFileOrDirectory;
                 return true;
             }
