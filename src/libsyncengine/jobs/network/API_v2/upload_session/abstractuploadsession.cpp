@@ -172,7 +172,7 @@ bool AbstractUploadSession::canRun() {
         return false;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_filePath));
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;

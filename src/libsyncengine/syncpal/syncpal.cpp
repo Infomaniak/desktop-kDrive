@@ -1441,7 +1441,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
 
     
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(localNodeId)
-                                         << L" is blacklisted temporarily because of denied access.");
+                                         << L" is blacklisted temporarily because of a denied access.");
 
     NodeId correspondingNodeId;
     correspondingNodeId = snapshot(ReplicaSide::Remote)->itemId(relativePath);
