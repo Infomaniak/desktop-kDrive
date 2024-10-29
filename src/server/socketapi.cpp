@@ -92,7 +92,8 @@ struct ListenerHasSocketPred {
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
                      const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+    QObject(parent),
+    _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
@@ -1402,7 +1403,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
         std::error_code ec;
         data.isDirectory = std::filesystem::is_directory(tmpPath, ec);
         if (!data.isDirectory && ec.value() != 0) {
-            const bool exists = IoHelper::fileExists(ec);
+            const bool exists = CommonUtility::fileExists(ec);
             if (!exists) {
                 // Item doesn't exist anymore
                 LOGW_DEBUG(KDC::Log::instance()->getLogger(),

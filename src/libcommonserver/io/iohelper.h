@@ -62,8 +62,6 @@ struct IoHelper {
         static IoError posixError2ioError(int error) noexcept;
         static std::string ioError2StdString(IoError ioError) noexcept;
 
-        static bool fileExists(const std::error_code &ec) noexcept;
-
         //! Get the item type of the item indicated by `path`.
         /*!
           \param path is the file system path of the inspected item.

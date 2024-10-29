@@ -326,27 +326,19 @@ bool Utilities::readNextValue(std::wstring &message, std::wstring &value) {
     return true;
 }
 
-std::wstring Utilities::getLastErrorMessage() {
-    DWORD errorMessageID = ::GetLastError();
-    if (errorMessageID == 0) return std::wstring();
+namespace {
 
-    LPWSTR messageBuffer = nullptr;
-    size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                 NULL, errorMessageID, NULL, (LPWSTR) &messageBuffer, 0, NULL);
-
-    // Escape quotes
-    std::wstring msg = std::wstring(messageBuffer, size);
-    // msg = std::regex_replace(msg, std::wregex(L"'"), L"");
-
-    std::wostringstream message;
-    message << errorMessageID << L" - " << msg;
-
-    LocalFree(messageBuffer);
-
-    return message.str();
+bool fileExists(DWORD dwError) noexcept {
+    return (code != ERROR_FILE_NOT_FOUND) && (code != ERROR_PATH_NOT_FOUND) && (code != ERROR_INVALID_DRIVE) &&
+           (code != ERROR_BAD_NETPATH);
 }
 
-bool Utilities::checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJunction, bool &exists) {
+bool fileExists(const std::error_code &code) noexcept {
+    return fileExists(static_cast<DWORD>(code.value()));
+}
+} // namespace
+
+bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunction, bool &exists) {
     isSymlink = false;
     isJunction = false;
     exists = true;
@@ -354,14 +346,8 @@ bool Utilities::checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJuncti
     HANDLE hFile = CreateFileW(path, FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
-        DWORD dwError = GetLastError();
-        exists = (dwError != ERROR_FILE_NOT_FOUND && dwError != ERROR_PATH_NOT_FOUND && dwError != ERROR_INVALID_DRIVE);
-        if (!exists) {
-            // Path doesn't exist
-            return true;
-        }
-
-        return false;
+        exists = fileExists(GetLastError());
+        return !exists;
     }
 
     BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
@@ -372,17 +358,13 @@ bool Utilities::checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJuncti
         DWORD dwError = GetLastError();
         CloseHandle(hFile);
 
-        bool notReparsePoint = (dwError == ERROR_NOT_A_REPARSE_POINT);
+        const bool notReparsePoint = (dwError == ERROR_NOT_A_REPARSE_POINT);
         if (notReparsePoint) {
             return true;
-        } else {
-            exists = (dwError != ERROR_FILE_NOT_FOUND && dwError != ERROR_PATH_NOT_FOUND && dwError != ERROR_INVALID_DRIVE);
-            if (!exists) {
-                // Path doesn't exist
-                return true;
-            }
-            return false;
         }
+
+        exists = fileExists(GetLastError());
+        return !exists;
     }
 
     CloseHandle(hFile);
@@ -393,13 +375,13 @@ bool Utilities::checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJuncti
     return true;
 }
 
-bool Utilities::checkIfDirectory(const wchar_t *path, bool &isDirectory, bool &exists) {
+bool Utilities::checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool &exists) {
     exists = true;
 
     std::error_code ec;
     isDirectory = std::filesystem::is_directory(std::filesystem::path(path), ec);
     if (!isDirectory && ec.value() != 0) {
-        exists = (ec.value() != ERROR_FILE_NOT_FOUND && ec.value() != ERROR_PATH_NOT_FOUND && ec.value() != ERROR_INVALID_DRIVE);
+        exists = fileExists(ec);
         if (!exists) {
             return true;
         }
@@ -417,8 +399,8 @@ bool Utilities::getCreateFileFlagsAndAttributes(const wchar_t *path, DWORD &dwFl
 
     bool isSymlink = false;
     bool isJunction = false;
-    if (!Utilities::checkIfLink(path, isSymlink, isJunction, exists)) {
-        TRACE_ERROR(L"Error in Utilities::checkIfLink: %ls", path);
+    if (!Utilities::checkIfIsLink(path, isSymlink, isJunction, exists)) {
+        TRACE_ERROR(L"Error in Utilities::checkIfIsLink: %ls", path);
         return false;
     }
 
@@ -433,7 +415,7 @@ bool Utilities::getCreateFileFlagsAndAttributes(const wchar_t *path, DWORD &dwFl
         dwFlagsAndAttributes = FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS;
     } else {
         bool isDirectory = false;
-        if (!Utilities::checkIfDirectory(path, isDirectory, exists)) {
+        if (!Utilities::checkIfIsDirectory(path, isDirectory, exists)) {
             TRACE_ERROR(L"Error in Utilities::checkIfDirectory : %ls", path);
             return false;
         }
