@@ -29,6 +29,7 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
+#include "gui/updater/updatedialog.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QMenu>
@@ -129,8 +130,6 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     KDC::GuiUtility::setStyle(qApp);
 
     CommonUtility::setupTranslations(QApplication::instance(), ParametersCache::instance()->parametersInfo().language());
-
-    _updaterClient.reset(new UpdaterClient);
 
 #ifdef PLUGINDIR
     // Setup extra plugin search path
@@ -433,15 +432,15 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::UPDATER_SHOW_DIALOG: {
-            QString targetVersion;
-            QString targetVersionString;
-            QString clientVersion;
-            paramsStream >> targetVersion;
-            paramsStream >> targetVersionString;
-            paramsStream >> clientVersion;
-            QTimer::singleShot(500, this, [this, targetVersion, targetVersionString, clientVersion]() {
-                _updaterClient->showWindowsUpdaterDialog(targetVersion, targetVersionString, clientVersion);
-            });
+            VersionInfo versionInfo;
+            paramsStream >> versionInfo;
+            emit showWindowsUpdateDialog(versionInfo);
+            break;
+        }
+        case SignalNum::UPDATER_STATE_CHANGED: {
+            auto state = UpdateState::Unknown;
+            paramsStream >> state;
+            emit updateStateChanged(state);
             break;
         }
         case SignalNum::UTILITY_SHOW_SETTINGS: {
