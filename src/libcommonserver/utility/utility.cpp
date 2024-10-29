@@ -397,7 +397,7 @@ bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
 }
 #endif
 
-bool Utility::checkEqualNormalized(const SyncName &a, const SyncName &b, bool &isEqual) {
+bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame) {
     SyncName aNormalized;
     if (!Utility::normalizedSyncName(a, aNormalized)) {
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(a));
@@ -412,7 +412,7 @@ bool Utility::checkEqualNormalized(const SyncName &a, const SyncName &b, bool &i
     return true;
 }
 
-bool Utility::checkEqualNormalized(const SyncPath &a, const SyncPath &b, bool &isEqual) {
+bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame) {
     SyncPath aNormalized;
     if (!Utility::normalizedSyncPath(a, aNormalized)) {
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));

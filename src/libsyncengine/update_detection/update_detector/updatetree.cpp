@@ -95,8 +95,8 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
         for (const auto &childNode: tmpNode->children()) {
             bool isEqual = false;
-            if (!Utility::checkEqualNormalized(*nameIt, childNode.second->name(), isEqual)) {
-                LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkEqualNormalized: "
+            if (!Utility::checkIfSameNormalization(*nameIt, childNode.second->name(), isEqual)) {
+                LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfSameNormalization: "
                                                                 << Utility::formatSyncName(*nameIt) << L" / "
                                                                 << Utility::formatSyncName(childNode.second->name()));
                 // Ignore child node

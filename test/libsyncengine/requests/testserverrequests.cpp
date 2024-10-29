@@ -42,11 +42,11 @@ void TestServerRequests::testFixProxyConfig() {
     ProxyConfig proxyConfig = ParametersCache::instance()->parameters().proxyConfig();
     proxyConfig.setType(ProxyType::Undefined);
     ParametersCache::instance()->parameters().setProxyConfig(proxyConfig);
-    CPPUNIT_ASSERT_EQUAL(ParametersCache::instance()->save(), ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ParametersCache::instance()->save());
 
-    CPPUNIT_ASSERT_EQUAL(ServerRequests::fixProxyConfig(), ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::fixProxyConfig());
 
-    CPPUNIT_ASSERT_EQUAL(ParametersCache::instance()->parameters().proxyConfig().type(), ProxyType::None);
+    CPPUNIT_ASSERT_EQUAL(ProxyType::None, ParametersCache::instance()->parameters().proxyConfig().type());
 }
 
 } // namespace KDC

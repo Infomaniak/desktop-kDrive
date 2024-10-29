@@ -27,6 +27,7 @@ std::shared_ptr<Proxy> Proxy::_instance = nullptr;
 std::shared_ptr<Proxy> Proxy::instance(const ProxyConfig &proxyConfig) {
     if (_instance == nullptr) {
         if (proxyConfig.type() == ProxyType::Undefined) {
+            assert(false);
             return nullptr;
         }
 

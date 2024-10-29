@@ -42,8 +42,8 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     // Move-Move (Source) pseudo-conflict
     bool isEqual = false;
-    if (!Utility::checkEqualNormalized(node->name(), correspondingNode->name(), isEqual)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkEqualNormalized: "
+    if (!Utility::checkIfSameNormalization(node->name(), correspondingNode->name(), isEqual)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfSameNormalization: "
                                                         << Utility::formatSyncName(node->name()) << L" / "
                                                         << Utility::formatSyncName(correspondingNode->name()));
         return false;

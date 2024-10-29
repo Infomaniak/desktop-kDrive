@@ -109,7 +109,7 @@ struct COMMONSERVER_EXPORT Utility {
          * @param isEqual true if the normalized strings are equal.
          * @return true if no normalization issue.
          */
-        static bool checkEqualNormalized(const SyncName &a, const SyncName &b, bool &isEqual);
+        static bool checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame);
         /**
          * Normalize the SyncPath parameters before comparing them.
          * @param a SyncPath value to be compared.
@@ -117,7 +117,7 @@ struct COMMONSERVER_EXPORT Utility {
          * @param isEqual true if the normalized strings are equal.
          * @return true if no normalization issue.
          */
-        static bool checkEqualNormalized(const SyncPath &a, const SyncPath &b, bool &isEqual);
+        static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__

@@ -507,6 +507,7 @@ std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, 
                                            bool autoDelete /*= false*/, bool test /*= false*/) {
     if (_instance == nullptr) {
         if (dbPath.empty()) {
+            assert(false);
             return nullptr;
         }
 
