@@ -29,15 +29,15 @@ namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName),
-    _syncDb(syncPal->_syncDb), _localSnapshot(syncPal->_localSnapshot), _remoteSnapshot(syncPal->_remoteSnapshot) {}
+    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _localSnapshot(syncPal->_localSnapshot),
+    _remoteSnapshot(syncPal->_remoteSnapshot) {}
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb,
                                                    const std::shared_ptr<Snapshot> testLocalSnapshot,
                                                    const std::shared_ptr<Snapshot> testRemoteSnapshot, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(nullptr, name, shortName, true),
-    _syncDb(testSyncDb), _localSnapshot(testLocalSnapshot), _remoteSnapshot(testRemoteSnapshot) {}
+    ISyncWorker(nullptr, name, shortName, true), _syncDb(testSyncDb), _localSnapshot(testLocalSnapshot),
+    _remoteSnapshot(testRemoteSnapshot) {}
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -240,7 +240,11 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     SyncPath snapshotPath;
-    if (!snapshot->path(nodeId, snapshotPath)) {
+    if (bool ignore = false; !snapshot->path(nodeId, snapshotPath, ignore)) {
+        if (ignore) {
+            notifyIgnoredItem(nodeId, snapshotPath, dbNode.type());
+            return ExitCode::Ok;
+        }
         LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << SyncName2WStr(dbName).c_str() << L" ("
                                                                                       << Utility::s2ws(nodeId).c_str() << L")");
         setExitCause(ExitCause::InvalidSnapshot);
@@ -467,8 +471,13 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
             }
 
             SyncPath snapshotPath;
-            if (!snapshot->path(nodeId, snapshotPath)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << Utility::s2ws(nodeId).c_str());
+            if (bool ignore = false; !snapshot->path(nodeId, snapshotPath, ignore)) {
+                if (ignore) {
+                    notifyIgnoredItem(nodeId, snapshotPath, type);
+                    continue;
+                }
+
+                LOG_SYNCPAL_WARN(_logger, "Failed to retrieve path from snapshot for item " << nodeId.c_str());
                 setExitCause(ExitCause::InvalidSnapshot);
                 return ExitCode::DataError;
             }
@@ -586,7 +595,13 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
     if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
         localSnapshotLastModified == remoteSnapshotLastModified) {
         SyncPath localSnapshotPath;
-        if (!_syncPal->snapshot(ReplicaSide::Local, true)->path(dbNode.nodeIdLocal().value(), localSnapshotPath)) {
+        if (bool ignore = false;
+            !_syncPal->snapshot(ReplicaSide::Local, true)->path(dbNode.nodeIdLocal().value(), localSnapshotPath, ignore)) {
+            if (ignore) {
+                notifyIgnoredItem(dbNode.nodeIdLocal().value(), localSnapshotPath, dbNode.type());
+                return ExitCode::Ok;
+            }
+
             LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
                                                << SyncName2WStr(dbNode.nameLocal()).c_str() << L" ("
                                                << Utility::s2ws(dbNode.nodeIdLocal().value()).c_str() << L")");
@@ -748,7 +763,12 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<const Snapshot> re
     // On first sync after migration from version under 3.4.0, the DB is empty but a big folder might as been whitelisted
     // Therefor check also with path
     SyncPath relativePath;
-    if (remoteSnapshot->path(remoteNodeId, relativePath)) {
+    if (bool ignore = false; remoteSnapshot->path(remoteNodeId, relativePath, ignore)) {
+        if (ignore) {
+            notifyIgnoredItem(remoteNodeId, relativePath, remoteSnapshot->type(remoteNodeId));
+            return false;
+        }
+
         localNodeId = _syncPal->snapshotCopy(ReplicaSide::Local)->itemId(relativePath);
         if (!localNodeId.empty()) {
             // We already synchronize the item locally, keep it
@@ -927,6 +947,12 @@ bool ComputeFSOperationWorker::pathInDeletedFolder(const SyncPath &path) {
     }
 
     return false;
+}
+
+void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const SyncPath &path, NodeType nodeType) {
+    LOGW_SYNCPAL_INFO(_logger, L"Item (or one of its descendant) has been ignored: " << Utility::formatSyncPath(path));
+    Error err(_syncPal->syncDbId(), "", nodeId, nodeType, path, ConflictType::None, InconsistencyType::ReservedName);
+    _syncPal->addError(err);
 }
 
 } // namespace KDC

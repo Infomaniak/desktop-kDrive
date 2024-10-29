@@ -206,8 +206,9 @@ bool Snapshot::setParentId(const NodeId &itemId, const NodeId &newParentId) {
     return false;
 }
 
-bool Snapshot::path(const NodeId &itemId, SyncPath &path) const noexcept {
+bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept {
     path.clear();
+    ignore = false;
 
     if (itemId.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Snapshot::path: empty item ID argument.");
@@ -235,12 +236,16 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path) const noexcept {
     }
 
     // Construct path
-    SyncPath tmp;
+    SyncPath tmpParentPath;
     while (!names.empty()) {
-        tmp /= names.back();
+        path /= names.back();
         names.pop_back();
+        if (path.parent_path() != tmpParentPath) {
+            ignore = true;
+            return false;
+        }
+        tmpParentPath = path;
     }
-    path = tmp;
     return ok;
 }
 

@@ -26,12 +26,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-void TestSnapshot::setUp() {
-    ParametersCache::instance(true);
-}
-
-void TestSnapshot::tearDown() {}
-
 /**
  * Tree:
  *
@@ -45,100 +39,213 @@ void TestSnapshot::tearDown() {}
  *      AAA
  */
 
-void TestSnapshot::testSnapshot() {
-    const NodeId rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
+void TestSnapshot::setUp() {
+    ParametersCache::instance(true);
 
+    _rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
     const DbNode dummyRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
                                NodeType::Directory, 0, std::nullopt);
-    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+    _snapshot = std::make_unique<Snapshot>(ReplicaSide::Local, dummyRootNode);
 
     // Insert node A
-    const SnapshotItem itemA("a", rootNodeId, Str("A"), 1640995201, -1640995201, NodeType::Directory, 123, false, true, true);
-    snapshot.updateItem(itemA);
-    CPPUNIT_ASSERT(snapshot.exists("a"));
-    CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(snapshot.name("a")));
-    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, snapshot.type("a"));
-    std::unordered_set<NodeId> childrenIds;
-    snapshot.getChildrenIds(rootNodeId, childrenIds);
-    CPPUNIT_ASSERT(childrenIds.contains("a"));
-
-    // Update node A
-    snapshot.updateItem(
-            SnapshotItem("a", rootNodeId, Str("A*"), 1640995202, 1640995202, NodeType::Directory, 123, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(std::string("A*"), SyncName2Str(snapshot.name("a")));
+    const SnapshotItem itemA("a", _rootNodeId, Str("A"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                             testhelpers::defaultFileSize, false, true, true);
+    _snapshot->updateItem(itemA);
 
     // Insert node B
-    const SnapshotItem itemB("b", rootNodeId, Str("B"), 1640995203, 1640995203, NodeType::Directory, 123, false, true, true);
-    snapshot.updateItem(itemB);
-    CPPUNIT_ASSERT(snapshot.exists("b"));
-    snapshot.getChildrenIds(rootNodeId, childrenIds);
-    CPPUNIT_ASSERT(childrenIds.contains("b"));
+    const SnapshotItem itemB("b", _rootNodeId, Str("B"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                             testhelpers::defaultFileSize, false, true, true);
+    _snapshot->updateItem(itemB);
 
     // Insert child nodes
-    const SnapshotItem itemAA("aa", "a", Str("AA"), 1640995204, 1640995204, NodeType::Directory, 123, false, true, true);
-    snapshot.updateItem(itemAA);
-    CPPUNIT_ASSERT(snapshot.exists("aa"));
-    snapshot.getChildrenIds("a", childrenIds);
+    const SnapshotItem itemAA("aa", "a", Str("AA"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                              testhelpers::defaultFileSize, false, true, true);
+    _snapshot->updateItem(itemAA);
+
+    const SnapshotItem itemAAA("aaa", "aa", Str("AAA"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                               testhelpers::defaultFileSize, false, true, true);
+    _snapshot->updateItem(itemAAA);
+}
+
+void TestSnapshot::tearDown() {}
+
+void TestSnapshot::testSnapshot() {
+    CPPUNIT_ASSERT(_snapshot->exists("a"));
+    CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(_snapshot->name("a")));
+    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, _snapshot->type("a"));
+    std::unordered_set<NodeId> childrenIds;
+    _snapshot->getChildrenIds(_rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("a"));
+
+    CPPUNIT_ASSERT(_snapshot->exists("b"));
+    _snapshot->getChildrenIds(_rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("b"));
+
+    CPPUNIT_ASSERT(_snapshot->exists("aa"));
+    _snapshot->getChildrenIds("a", childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("aa"));
 
-    const SnapshotItem itemAAA("aaa", "aa", Str("AAA"), 1640995205, 1640995205, NodeType::File, 123, false, true, true);
-    snapshot.updateItem(itemAAA);
-    CPPUNIT_ASSERT(snapshot.exists("aaa"));
-    snapshot.getChildrenIds("aa", childrenIds);
+    CPPUNIT_ASSERT(_snapshot->exists("aaa"));
+    _snapshot->getChildrenIds("aa", childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("aaa"));
 
+    // Update node A
+    _snapshot->updateItem(SnapshotItem("a", _rootNodeId, Str("A*"), testhelpers::defaultTime, testhelpers::defaultTime + 1,
+                                       NodeType::Directory, testhelpers::defaultFileSize, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(std::string("A*"), SyncName2Str(_snapshot->name("a")));
     SyncPath path;
-    snapshot.path("aaa", path);
+    bool ignore = false;
+    _snapshot->path("aaa", path, ignore);
     CPPUNIT_ASSERT_EQUAL(SyncPath("A*/AA/AAA"), path);
-    CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(snapshot.name("aaa")));
-    CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(1640995205), snapshot.lastModified("aaa"));
-    CPPUNIT_ASSERT_EQUAL(NodeType::File, snapshot.type("aaa"));
-    CPPUNIT_ASSERT(snapshot.contentChecksum("aaa").empty()); // Checksum never computed for now
-    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), snapshot.itemId(std::filesystem::path("A*/AA/AAA")));
+    CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(_snapshot->name("aaa")));
+    CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime), _snapshot->lastModified("aaa"));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, _snapshot->type("aaa"));
+    CPPUNIT_ASSERT(_snapshot->contentChecksum("aaa").empty()); // Checksum never computed for now
+    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), _snapshot->itemId(std::filesystem::path("A*/AA/AAA")));
 
     // Move node AA under B
-    snapshot.updateItem(SnapshotItem("aa", "b", Str("AA"), 1640995204, -1640995204, NodeType::Directory, 123, false, true, true));
-    CPPUNIT_ASSERT(snapshot.parentId("aa") == "b");
-    snapshot.getChildrenIds("b", childrenIds);
+    _snapshot->updateItem(SnapshotItem("aa", "b", Str("AA"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                       NodeType::Directory, testhelpers::defaultFileSize, false, true, true));
+    CPPUNIT_ASSERT(_snapshot->parentId("aa") == "b");
+    _snapshot->getChildrenIds("b", childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("aa"));
-    snapshot.getChildrenIds("a", childrenIds);
+    _snapshot->getChildrenIds("a", childrenIds);
     CPPUNIT_ASSERT(childrenIds.empty());
 
     // Remove node B
-    snapshot.removeItem("b");
-    snapshot.getChildrenIds(rootNodeId, childrenIds);
-    CPPUNIT_ASSERT(!snapshot.exists("aaa"));
-    CPPUNIT_ASSERT(!snapshot.exists("aa"));
-    CPPUNIT_ASSERT(!snapshot.exists("b"));
+    _snapshot->removeItem("b");
+    _snapshot->getChildrenIds(_rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(!_snapshot->exists("aaa"));
+    CPPUNIT_ASSERT(!_snapshot->exists("aa"));
+    CPPUNIT_ASSERT(!_snapshot->exists("b"));
     CPPUNIT_ASSERT(!childrenIds.contains("b"));
 
     // Reset snapshot
-    snapshot.init();
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), snapshot.nbItems());
+    _snapshot->init();
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), _snapshot->nbItems());
 }
 
 void TestSnapshot::testSnapshotInsertionWithDifferentEncodings() {
-    const NodeId rootNodeId = *SyncDb::driveRootNode().nodeIdLocal();
-
-    const DbNode dummyRootNode(0, std::nullopt, Str("Local Drive"), SyncName(), "1", "1", std::nullopt, std::nullopt,
-                               std::nullopt, NodeType::Directory, 0, std::nullopt);
-    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
-
-    const SnapshotItem nfcItem("A", rootNodeId, testhelpers::makeNfcSyncName(), 1640995201, -1640995201, NodeType::Directory, 123,
-                               false, true, true);
-    const SnapshotItem nfdItem("B", rootNodeId, testhelpers::makeNfdSyncName(), 1640995201, -1640995201, NodeType::Directory, 123,
-                               false, true, true);
+    const SnapshotItem nfcItem("A", _rootNodeId, testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
+                               -testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
+    const SnapshotItem nfdItem("B", _rootNodeId, testhelpers::makeNfdSyncName(), testhelpers::defaultTime,
+                               -testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
     {
-        snapshot.updateItem(nfcItem);
+        _snapshot->updateItem(nfcItem);
         SyncPath syncPath;
-        snapshot.path("A", syncPath);
+        bool ignore = false;
+        _snapshot->path("A", syncPath, ignore);
         CPPUNIT_ASSERT_EQUAL(SyncPath(testhelpers::makeNfcSyncName()), syncPath);
     }
     {
-        snapshot.updateItem(nfdItem);
+        _snapshot->updateItem(nfdItem);
         SyncPath syncPath;
-        snapshot.path("B", syncPath);
+        bool ignore = false;
+        _snapshot->path("B", syncPath, ignore);
         CPPUNIT_ASSERT_EQUAL(SyncPath(testhelpers::makeNfdSyncName()), syncPath);
+    }
+}
+
+void TestSnapshot::testPath() {
+    {
+        const auto id = CommonUtility::generateRandomStringAlphaNum();
+        const auto name = Str("test");
+        const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                                testhelpers::defaultFileSize, false, true, true);
+        _snapshot->updateItem(item);
+        SyncPath path;
+        bool ignore = false;
+        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
+        CPPUNIT_ASSERT(!ignore);
+    }
+
+    {
+        const auto id = CommonUtility::generateRandomStringAlphaNum();
+        const auto name = Str("E:S");
+        const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                                testhelpers::defaultFileSize, false, true, true);
+        _snapshot->updateItem(item);
+        SyncPath path;
+        bool ignore = false;
+        // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
+        // (https://en.cppreference.com/w/cpp/filesystem/path/append)
+#ifdef _WIN32
+        CPPUNIT_ASSERT(!_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(ignore);
+#else
+        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
+        CPPUNIT_ASSERT(!ignore);
+#endif
+
+        const auto childId = CommonUtility::generateRandomStringAlphaNum();
+        const auto childName = Str("test");
+        const SnapshotItem childItem(childId, id, childName, testhelpers::defaultTime, testhelpers::defaultTime,
+                                     NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
+        _snapshot->updateItem(childItem);
+#ifdef _WIN32
+        CPPUNIT_ASSERT(!_snapshot->path(childId, path, ignore));
+        CPPUNIT_ASSERT(ignore);
+#else
+        CPPUNIT_ASSERT(_snapshot->path(childId, path, ignore));
+        CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name / childName, path);
+        CPPUNIT_ASSERT(!ignore);
+#endif
+    }
+
+    {
+        const auto id = CommonUtility::generateRandomStringAlphaNum();
+        const auto name = Str("a:b");
+        const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                                testhelpers::defaultFileSize, false, true, true);
+        _snapshot->updateItem(item);
+        SyncPath path;
+        bool ignore = false;
+        // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
+        // (https://en.cppreference.com/w/cpp/filesystem/path/append)
+#ifdef _WIN32
+        CPPUNIT_ASSERT(!_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(ignore);
+#else
+        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
+        CPPUNIT_ASSERT(!ignore);
+#endif
+    }
+
+    {
+        const auto id = CommonUtility::generateRandomStringAlphaNum();
+        const auto name = Str("C:");
+        const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                                testhelpers::defaultFileSize, false, true, true);
+        _snapshot->updateItem(item);
+
+        SyncPath path;
+        bool ignore = false;
+        // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
+        // (https://en.cppreference.com/w/cpp/filesystem/path/append)
+#ifdef _WIN32
+        CPPUNIT_ASSERT(!_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT(ignore);
+#else
+        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
+        CPPUNIT_ASSERT(!ignore);
+#endif
+    }
+
+    {
+        const auto id = CommonUtility::generateRandomStringAlphaNum();
+        const auto name = Str("aa:b");
+        const SnapshotItem item(id, "a", name, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                                testhelpers::defaultFileSize, false, true, true);
+        _snapshot->updateItem(item);
+        SyncPath path;
+        bool ignore = false;
+        CPPUNIT_ASSERT(_snapshot->path(id, path, ignore));
+        CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
+        CPPUNIT_ASSERT(!ignore);
     }
 }
 
