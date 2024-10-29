@@ -3953,15 +3953,15 @@ void AppServer::addError(const Error &error) {
     } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
         // Remove child errors
         std::unordered_set<int64_t> toBeRemovedErrorIds;
-        for (const Error &parentError : errorList) {
-            for (const Error &childError : errorList) {
+        for (const Error &parentError: errorList) {
+            for (const Error &childError: errorList) {
                 if (Utility::isSameOrChildPath(childError.path(), parentError.path()) &&
                     childError.dbId() != parentError.dbId()) {
                     toBeRemovedErrorIds.insert(childError.dbId());
                 }
             }
         }
-        for (int errorId : toBeRemovedErrorIds) {
+        for (int errorId: toBeRemovedErrorIds) {
             bool found = false;
             if (!ParmsDb::instance()->deleteError(errorId, found)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
@@ -3972,13 +3972,7 @@ void AppServer::addError(const Error &error) {
                 return;
             }
         }
-        if (!toBeRemovedErrorIds.empty())
-            if (ServerRequests::isDisplayableError(error)) {
-                // Notify the client
-                sendErrorsCleared(error.syncDbId());
-            }
-
-    
+        if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(error.syncDbId());
     }
 
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
