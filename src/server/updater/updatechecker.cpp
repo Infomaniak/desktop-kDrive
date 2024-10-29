@@ -66,7 +66,12 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
     } else {
-        _versionInfo = getAppVersionJobPtr->getVersionInfo(_channel);
+        DistributionChannel channel = _channel;
+        // hasProdNext() is true if and only if the running application has been elected for an upgrade in the context of a
+        // progressive update
+        if (channel == DistributionChannel::Prod && getAppVersionJobPtr->hasProdNext()) channel = DistributionChannel::Next;
+
+        _versionInfo = getAppVersionJobPtr->getVersionInfo(channel);
         if (!_versionInfo.isValid()) {
             std::string error = "Invalid version info!";
             SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);

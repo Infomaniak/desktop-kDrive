@@ -26,10 +26,13 @@ namespace KDC {
 class GetAppVersionJob : public AbstractNetworkJob {
     public:
         GetAppVersionJob(Platform platform, const std::string &appID);
+        ~GetAppVersionJob() override = default;
 
         const VersionInfo &getVersionInfo(const DistributionChannel channel) { return _versionInfo[channel]; }
 
         std::string getUrl() override { return INFOMANIAK_API_URL + getSpecificUrl(); }
+
+        [[nodiscard]] bool hasProdNext() const { return _hasProdNext; }
 
     protected:
         bool handleResponse(std::istream &is) override;
@@ -46,6 +49,8 @@ class GetAppVersionJob : public AbstractNetworkJob {
         const Platform _platform{Platform::Unknown};
         const std::string _appId;
 
+        bool _hasProdNext{false};
         std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;
 };
+
 } // namespace KDC
