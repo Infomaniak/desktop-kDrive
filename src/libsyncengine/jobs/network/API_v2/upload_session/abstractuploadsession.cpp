@@ -235,7 +235,7 @@ bool AbstractUploadSession::startSession() {
         }
 
         _sessionStarted = true;
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionStartJob: error=" << e.what());
         _exitCode = ExitCode::DataError;
         return false;
@@ -309,7 +309,7 @@ bool AbstractUploadSession::sendChunks() {
         std::shared_ptr<UploadSessionChunkJob> chunkJob;
         try {
             chunkJob = createChunkJob(chunkContent, chunkNb, actualChunkSize);
-        } catch (std::exception const &e) {
+        } catch (const std::exception &e) {
             LOG_ERROR(_logger, "Error in UploadSessionChunkJob::UploadSessionChunkJob: error=" << e.what());
             jobCreationError = true;
             break;
@@ -420,7 +420,7 @@ bool AbstractUploadSession::closeSession() {
             return false;
         }
 
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionFinishJob: error=" << e.what());
         _exitCode = ExitCode::DataError;
         return false;
@@ -471,7 +471,7 @@ bool AbstractUploadSession::cancelSession() {
             return false;
         }
 
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionCancelJob: error=" << e.what());
         _exitCode = ExitCode::DataError;
         return false;

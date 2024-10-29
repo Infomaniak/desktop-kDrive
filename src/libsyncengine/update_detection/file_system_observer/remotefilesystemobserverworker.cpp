@@ -173,7 +173,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
 
         try {
             job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, _cursor);
-        } catch (std::exception const &e) {
+        } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
                                               << _driveDbId << " error=" << e.what());
             exitCode = ExitCode::DataError;
@@ -269,7 +269,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         std::unordered_set<NodeId> blackList;
         SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
         job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, dirId, blackList, true);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         std::string what = e.what();
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
                                           << _driveDbId << " error=" << what.c_str());
@@ -409,7 +409,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
         std::shared_ptr<LongPollJob> notifyJob = nullptr;
         try {
             notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor);
-        } catch (std::exception const &e) {
+        } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
             return ExitCode::DataError;
         }
@@ -716,7 +716,7 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     std::unique_ptr<GetFileInfoJob> job;
     try {
         job = std::make_unique<GetFileInfoJob>(_syncPal->driveDbId(), nodeId);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetFileInfoJob::GetFileInfoJob for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str()
                                                                           << " error=" << e.what());

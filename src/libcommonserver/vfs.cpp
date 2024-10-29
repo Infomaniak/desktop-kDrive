@@ -226,7 +226,7 @@ std::unique_ptr<Vfs> KDC::createVfsFromPlugin(KDC::VirtualFileMode virtualFileMo
     std::unique_ptr<Vfs> vfs;
     try {
         vfs = std::unique_ptr<Vfs>(qobject_cast<Vfs *>(factory->create(vfsSetupParams)));
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         error = "Error creating VFS instance from plugin=" + pluginPath + " error=" + e.what();
         return nullptr;
     }

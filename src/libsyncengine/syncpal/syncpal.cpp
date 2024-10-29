@@ -673,7 +673,7 @@ bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
         return false;
     }
 
-    bool found;
+    bool found = false;
     if (!_syncDb->setStatus(ReplicaSide::Remote, relativePath, SyncFileStatus::Syncing, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setStatus");
         return false;
@@ -700,7 +700,7 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
 
     vfsFileStatusChanged(localPath() / relativeLocalPath, status);
 
-    bool found;
+    bool found = false;
     if (!_syncDb->setStatus(ReplicaSide::Local, relativeLocalPath, status, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setStatus");
         return false;
@@ -786,7 +786,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
             return ExitCode::SystemError;
         }
         job->setAffectedFilePath(localPath);
-    } catch (std::exception const &e) {
+    } catch (const std::exception const &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
         return ExitCode::Unknown;
@@ -1032,8 +1032,8 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
     return ExitCode::Ok;
 }
 
-bool SyncPal::checkExistOnServer(const SyncPath &path, bool &exist) const {
-    exist = false;
+bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
+    exists = false;
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -1042,11 +1042,11 @@ bool SyncPal::checkExistOnServer(const SyncPath &path, bool &exist) const {
         return false;
     }
     const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
-    exist = !nodeId.empty();
+    exists = !nodeId.empty();
     return true;
 }
 
-bool SyncPal::checkCanShareItem(const SyncPath &path, bool &canShare) const {
+bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
     // Path is normalized on server side
@@ -1331,7 +1331,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
                 LOG_SYNCPAL_WARN(_logger, "Upload Session Token: " << uploadSessionToken.token().c_str()
                                                                    << " has already been canceled or has expired.");
             }
-        } catch (std::exception const &e) {
+        } catch (const std::exception &e) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob: error=" << e.what());
             return ExitCode::BackError;
         }

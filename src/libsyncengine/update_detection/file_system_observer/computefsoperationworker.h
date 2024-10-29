@@ -92,7 +92,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
 
         bool addFolderToDelete(const SyncPath &path);
-        bool checkPathInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
+        bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
 
         friend class TestComputeFSOperationWorker;
 };

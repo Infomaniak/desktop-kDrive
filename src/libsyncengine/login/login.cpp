@@ -50,7 +50,7 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
 
     try {
         GetTokenJob job(authorizationCode, codeVerifier);
-        ExitCode exitCode = job.runSynchronously();
+        const ExitCode exitCode = job.runSynchronously();
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously: code=" << exitCode);
             _error = std::string();
@@ -72,7 +72,7 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
 
         LOG_DEBUG(_logger, "job.hasErrorApi done");
         _apiToken = job.apiToken();
-    } catch (std::runtime_error &e) {
+    } catch (const std::runtime_error &e) {
         LOG_WARN(_logger, "Error in GetTokenJob::GetTokenJob: error=" << e.what());
         return ExitCode::SystemError;
     }
@@ -133,7 +133,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
 
     try {
         RefreshTokenJob job(apiToken);
-        ExitCode exitCode = job.runSynchronously();
+        const ExitCode exitCode = job.runSynchronously();
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::runSynchronously: code=" << exitCode);
             job.hasErrorApi(&error, &errorDescr);
@@ -147,7 +147,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
         }
 
         apiToken = job.apiToken();
-    } catch (std::runtime_error &e) {
+    } catch (const std::runtime_error &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::RefreshTokenJob: error=" << e.what());
         return ExitCode::SystemError;
     }

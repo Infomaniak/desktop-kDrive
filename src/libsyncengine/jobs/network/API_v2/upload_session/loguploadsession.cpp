@@ -65,7 +65,7 @@ bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionS
         std::unique_ptr<UploadSessionCancelJob> cancelJob;
         try {
             cancelJob = std::make_unique<UploadSessionCancelJob>(UploadSessionType::Log, logUploadToken);
-        } catch (std::runtime_error &e) {
+        } catch (const std::runtime_error &e) {
             LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::UploadSessionCancelJob: error=" << e.what());
             return false;
         }

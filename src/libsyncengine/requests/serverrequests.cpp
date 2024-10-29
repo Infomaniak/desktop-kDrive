@@ -403,7 +403,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     std::shared_ptr<GetFileInfoJob> job;
     try {
         job = std::make_shared<GetFileInfoJob>(userDbId, driveId, nodeId.toStdString());
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::GetFileInfoJob for userDbId="
                                                        << userDbId << " driveId=" << driveId
                                                        << " nodeId=" << nodeId.toStdString().c_str() << " error=" << e.what());
@@ -468,7 +468,7 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     std::shared_ptr<GetDrivesListJob> job = nullptr;
     try {
         job = std::make_shared<GetDrivesListJob>(userDbId);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
         return ExitCode::DataError;
@@ -553,7 +553,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
     if (nodeId.isEmpty()) {
         try {
             job = std::make_shared<GetRootFileListJob>(userDbId, driveId, 1, true);
-        } catch (std::exception const &e) {
+        } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
                                                            << userDbId << " driveId=" << driveId << " error=" << e.what());
             return ExitCode::DataError;
@@ -562,7 +562,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
         try {
             job = (std::shared_ptr<GetFileListJob>) std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), 1,
                                                                                      true);
-        } catch (std::exception const &e) {
+        } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
                                                            << userDbId << " driveId=" << driveId << " nodeId="
                                                            << nodeId.toStdString().c_str() << " error=" << e.what());
@@ -1023,7 +1023,7 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
     try {
         job = std::make_shared<CreateDirJob>(driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
                                              QStr2SyncName(dirName));
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
         return ExitCode::DataError;
@@ -1061,7 +1061,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
     std::shared_ptr<PostFileLinkJob> job;
     try {
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
                                                        << driveDbId << " nodeId=" << nodeId.c_str() << " error=" << e.what());
         return ExitCode::DataError;
@@ -1075,7 +1075,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
             std::shared_ptr<GetFileLinkJob> job2;
             try {
                 job2 = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
-            } catch (std::exception const &e) {
+            } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(),
                          "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
                                                                                   << " error=" << e.what());
@@ -1152,7 +1152,7 @@ ExitCode ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     std::shared_ptr<GetSizeJob> job = nullptr;
     try {
         job = std::make_shared<GetSizeJob>(userDbId, driveId, nodeId);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::GetSizeJob for userDbId=" << userDbId << " driveId=" << driveId
                                                                  << " nodeId=" << nodeId.c_str() << " error=" << e.what());
@@ -1565,7 +1565,7 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     std::shared_ptr<GetInfoDriveJob> job = nullptr;
     try {
         job = std::make_shared<GetInfoDriveJob>(drive.dbId());
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId() << " error=" << e.what());
         return ExitCode::DataError;
@@ -1671,7 +1671,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     std::shared_ptr<GetThumbnailJob> job = nullptr;
     try {
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetThumbnailJob::GetThumbnailJob for driveDbId="
                                                        << driveDbId << " and nodeId=" << nodeId.c_str() << " error=" << e.what());
         return ExitCode::DataError;
@@ -1705,7 +1705,7 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     std::shared_ptr<GetInfoUserJob> job = nullptr;
     try {
         job = std::make_shared<GetInfoUserJob>(user.dbId());
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         std::string what = e.what();
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " error=" << what.c_str());
@@ -1779,13 +1779,13 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
 ExitCode ServerRequests::loadUserAvatar(User &user) {
     try {
         GetAvatarJob getAvatarJob = GetAvatarJob(user.avatarUrl());
-        ExitCode exitCode = getAvatarJob.runSynchronously();
+        const ExitCode exitCode = getAvatarJob.runSynchronously();
         if (exitCode != ExitCode::Ok) {
             return exitCode;
         }
 
         user.setAvatar(getAvatarJob.avatar());
-    } catch (std::runtime_error &e) {
+    } catch (const std::runtime_error &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetAvatarJob::GetAvatarJob: error=" << e.what());
         return ExitCode::SystemError;
     }
@@ -2213,7 +2213,7 @@ ExitCode ServerRequests::loadOldSelectiveSyncTable(const SyncPath &syncDbPath, Q
         oldSyncDb.close();
     } catch (std::runtime_error &err) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error getting old selective sync list, oldSyncDb may not exists or is corrupted. error=" << err.what());
+                 "Error getting old selective sync list, oldSyncDb may not exist anymore or is corrupted. error=" << err.what());
         return ExitCode::DbError;
     }
 

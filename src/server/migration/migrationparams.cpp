@@ -757,7 +757,7 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
     try {
         std::string errorDescr, errorCode;
         GetTokenFromAppPasswordJob job(email, appPassword);
-        ExitCode exitCode = job.runSynchronously();
+        const ExitCode exitCode = job.runSynchronously();
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in GetTokenFromAppPasswordJob::runSynchronously: code=" << exitCode);
             errorCode = std::string();
@@ -775,7 +775,7 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
 
         LOG_DEBUG(_logger, "job.hasErrorApi done");
         apiToken = job.apiToken();
-    } catch (std::runtime_error &e) {
+    } catch (const std::runtime_error &e) {
         LOG_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
         return ExitCode::SystemError;
     }

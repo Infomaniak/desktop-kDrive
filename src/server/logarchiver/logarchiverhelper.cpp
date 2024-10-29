@@ -101,7 +101,7 @@ ExitCode LogArchiverHelper::sendLogToSupport(bool includeArchivedLog,
     std::shared_ptr<LogUploadSession> uploadSessionLog = nullptr;
     try {
         uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
         return ExitCode::SystemError;
     };
