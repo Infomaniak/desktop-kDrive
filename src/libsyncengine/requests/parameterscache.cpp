@@ -49,11 +49,12 @@ ParametersCache::ParametersCache(bool isTest /*= false*/) {
     bool found = false;
     if (!ParmsDb::instance()->selectParameters(_parameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectParameters");
-        throw std::runtime_error("Failed to create ParametersCache instance!");
+        throw std::runtime_error("Failed to read parameters");
     }
     if (!found) {
+        assert(false);
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
-        throw std::runtime_error("Failed to create ParametersCache instance!");
+        throw std::runtime_error("Failed to read parameters");
     }
 }
 

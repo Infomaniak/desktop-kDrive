@@ -31,7 +31,7 @@ ErrorInfo::ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName,
     _destinationPath(destinationPath), _conflictType(conflictType), _inconsistencyType(inconsistencyType),
     _cancelType(cancelType) {}
 
-ErrorInfo::ErrorInfo(int dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId,
+ErrorInfo::ErrorInfo(int64_t dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId,
                      const QString &workerName, ExitCode exitCode, ExitCause exitCause, const QString &localNodeId,
                      const QString &remoteNodeId, NodeType nodeType, const QString &path, ConflictType conflictType,
                      InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
@@ -42,18 +42,21 @@ ErrorInfo::ErrorInfo(int dbId, qint64 time, ErrorLevel level, const QString &fun
     _cancelType(cancelType) {}
 
 QDataStream &operator>>(QDataStream &in, ErrorInfo &errorInfo) {
-    in >> errorInfo._dbId >> errorInfo._time >> errorInfo._level >> errorInfo._functionName >> errorInfo._syncDbId >>
+    qint64 dbId = 0;
+    in >> dbId >> errorInfo._time >> errorInfo._level >> errorInfo._functionName >> errorInfo._syncDbId >>
             errorInfo._workerName >> errorInfo._exitCode >> errorInfo._exitCause >> errorInfo._localNodeId >>
             errorInfo._remoteNodeId >> errorInfo._nodeType >> errorInfo._path >> errorInfo._destinationPath >>
             errorInfo._conflictType >> errorInfo._inconsistencyType >> errorInfo._cancelType >> errorInfo._autoResolved;
+    errorInfo._dbId = static_cast<int64_t>(dbId);
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const ErrorInfo &errorInfo) {
-    out << errorInfo._dbId << errorInfo._time << errorInfo._level << errorInfo._functionName << errorInfo._syncDbId
-        << errorInfo._workerName << errorInfo._exitCode << errorInfo._exitCause << errorInfo._localNodeId
-        << errorInfo._remoteNodeId << errorInfo._nodeType << errorInfo._path << errorInfo._destinationPath
-        << errorInfo._conflictType << errorInfo._inconsistencyType << errorInfo._cancelType << errorInfo._autoResolved;
+    qint64 dbId = static_cast<qint64>(errorInfo._dbId);
+    out << dbId << errorInfo._time << errorInfo._level << errorInfo._functionName << errorInfo._syncDbId << errorInfo._workerName
+        << errorInfo._exitCode << errorInfo._exitCause << errorInfo._localNodeId << errorInfo._remoteNodeId << errorInfo._nodeType
+        << errorInfo._path << errorInfo._destinationPath << errorInfo._conflictType << errorInfo._inconsistencyType
+        << errorInfo._cancelType << errorInfo._autoResolved;
     return out;
 }
 
@@ -69,9 +72,9 @@ QDataStream &operator>>(QDataStream &in, QList<ErrorInfo> &list) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<ErrorInfo> &list) {
-    int count = list.size();
+    auto count = list.size();
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (auto i = 0; i < list.size(); i++) {
         ErrorInfo errorInfo = list[i];
         out << errorInfo;
     }

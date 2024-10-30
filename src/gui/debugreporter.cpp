@@ -121,7 +121,7 @@ void DebugReporter::onProgress(qint64 done, qint64 total) {
         m_reply->abort();
     } else {
         if (total > 0) {
-            setValue(100 * done / total);
+            setValue(static_cast<int>(100 * done / total));
         }
     }
 }

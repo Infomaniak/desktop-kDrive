@@ -36,9 +36,9 @@ QDataStream &operator<<(QDataStream &out, const ExclusionAppInfo &exclusionAppIn
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<ExclusionAppInfo> &list) {
-    int count = list.size();
+    auto count = list.size();
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (auto i = 0; i < list.size(); i++) {
         ExclusionAppInfo exclusionAppInfo = list[i];
         out << exclusionAppInfo;
     }
@@ -46,9 +46,9 @@ QDataStream &operator<<(QDataStream &out, const QList<ExclusionAppInfo> &list) {
 }
 
 QDataStream &operator>>(QDataStream &in, QList<ExclusionAppInfo> &list) {
-    int count = 0;
+    auto count = 0;
     in >> count;
-    for (int i = 0; i < count; i++) {
+    for (auto i = 0; i < count; i++) {
         ExclusionAppInfo *exclusionAppInfo = new ExclusionAppInfo();
         in >> *exclusionAppInfo;
         list.push_back(*exclusionAppInfo);

@@ -38,7 +38,9 @@ class AbstractJob;
 
 class AbstractNetworkJob : public AbstractJob {
     public:
+        /// @exception std::runtime_error
         AbstractNetworkJob();
+
         ~AbstractNetworkJob() override;
 
         [[nodiscard]] bool hasHttpError(std::string *errorCode = nullptr) const;
@@ -86,7 +88,7 @@ class AbstractNetworkJob : public AbstractJob {
         struct TimeoutHelper {
                 void add(std::chrono::duration<double> duration);
 
-                [[nodiscard]] inline int value() const { return _maxDuration; }
+                [[nodiscard]] inline unsigned int value() const { return _maxDuration; }
                 inline bool isTimeoutDetected() { return count() >= TIMEOUT_THRESHOLD; }
 
             private:

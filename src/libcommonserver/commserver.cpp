@@ -41,7 +41,11 @@ std::shared_ptr<CommServer> CommServer::_instance = nullptr;
 
 std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<CommServer>(new CommServer(parent));
+        try {
+            _instance = std::shared_ptr<CommServer>(new CommServer(parent));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     return _instance;
@@ -242,7 +246,7 @@ void CommServer::onSendReply(int id, const QByteArray &result) {
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd rpl " << id);
 
-        _tcpSocket->write(KDC::CommonUtility::toQByteArray(reply.count()));
+        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(reply.count())));
         _tcpSocket->write(reply);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();
@@ -276,7 +280,7 @@ void CommServer::onSendSignal(int id, SignalNum num, const QByteArray &params) {
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << num);
 
-        _tcpSocket->write(KDC::CommonUtility::toQByteArray(signal.count()));
+        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(signal.count())));
         _tcpSocket->write(signal);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();

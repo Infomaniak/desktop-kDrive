@@ -30,7 +30,7 @@ class SYNCENGINE_EXPORT ParametersCache {
     public:
         static std::shared_ptr<ParametersCache> instance(bool isTest = false);
         // If _instance is not initialized, use extended log by default
-        static bool isExtendedLogEnabled() noexcept { return instance() ? instance()->_parameters.extendedLog() : true; };
+        static bool isExtendedLogEnabled() noexcept { return instance() ? instance()->_parameters.extendedLog() : true; }
 
         ParametersCache(ParametersCache const &) = delete;
         void operator=(ParametersCache const &) = delete;

@@ -54,7 +54,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _rootFolderPath = _tempDir.path() / "sync_folder";
     _subDirPath = _rootFolderPath / "sub_dir";
     Poco::File(Path2Str(_subDirPath)).createDirectories();
-    for (int i = 0; i < nbFileInTestDir; i++) {
+    for (uint64_t i = 0; i < nbFileInTestDir; i++) {
         std::string filename = "test" + std::to_string(i) + ".txt";
         SyncPath filepath = _subDirPath / filename;
         testhelpers::generateOrEditTestFile(filepath);

@@ -102,12 +102,12 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 #if defined(__APPLE__)
     struct statvfs stat;
     if (statvfs(path.c_str(), &stat) == 0) {
-        return (int64_t) stat.f_bavail * stat.f_frsize;
+        return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
 #elif defined(__unix__)
     struct statvfs64 stat;
     if (statvfs64(path.c_str(), &stat) == 0) {
-        return (int64_t) stat.f_bavail * stat.f_frsize;
+        return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
 #elif defined(_WIN32)
     ULARGE_INTEGER freeBytes;
@@ -155,7 +155,7 @@ bool Utility::setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::Syn
     return true;
 }
 
-bool Utility::isCreationDateValid(uint64_t creationDate) {
+bool Utility::isCreationDateValid(int64_t creationDate) {
     if (creationDate == 0 || creationDate == 443779200) {
         // Do not upload or save on DB invalid dates
         // 443779200 correspond to "Tuesday 24 January 1984 08:00:00" which is a default date set by macOS
@@ -334,6 +334,8 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         // !!! File system name can be OK or not !!!
         return Utility::ws2s(szFileSystemName);
     }
+#else
+    (void)targetPath;
 #endif
 
     return std::string();
@@ -351,13 +353,13 @@ bool Utility::startsWithInsensitive(const std::string &str, const std::string &p
 }
 
 bool Utility::endsWith(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
-                                                     [](char c1, char c2) { return c1 == c2; });
+    return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
+                                                     suffix.begin(), [](char c1, char c2) { return c1 == c2; });
 }
 
 bool Utility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
     return str.size() >= suffix.size() &&
-           std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
+           std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(), suffix.begin(),
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
 
@@ -397,16 +399,34 @@ bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
 }
 #endif
 
-bool Utility::isEqualNormalized(const SyncName &a, const SyncName &b) {
-    const auto aNormalized = Utility::normalizedSyncName(a);
-    const auto bNormalized = Utility::normalizedSyncName(b);
-    return aNormalized == bNormalized;
+bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame) {
+    SyncName aNormalized;
+    if (!Utility::normalizedSyncName(a, aNormalized)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(a));
+        return false;
+    }
+    SyncName bNormalized;
+    if (!Utility::normalizedSyncName(b, bNormalized)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(b));
+        return false;
+    }
+    areSame = (aNormalized == bNormalized);
+    return true;
 }
 
-bool Utility::isEqualNormalized(const SyncPath &a, const SyncPath &b) {
-    const auto aNormalized = Utility::normalizedSyncPath(a);
-    const auto bNormalized = Utility::normalizedSyncPath(b);
-    return aNormalized == bNormalized;
+bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame) {
+    SyncPath aNormalized;
+    if (!Utility::normalizedSyncPath(a, aNormalized)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
+        return false;
+    }
+    SyncPath bNormalized;
+    if (!Utility::normalizedSyncPath(b, bNormalized)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
+        return false;
+    }
+    areSame = (aNormalized == bNormalized);
+    return true;
 }
 
 bool Utility::isDescendantOrEqual(const SyncPath &potentialChild, const SyncPath &path) {
@@ -445,8 +465,8 @@ void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capit
     size_t i;
     int c;
     for (i = 0, c = str[0] & 0xFF; i < hexstr.size(); c = str[i / 2] & 0xFF) {
-        hexstr[i++] = c > 0x9F ? (c / 16 - 9) | a : c / 16 | '0';
-        hexstr[i++] = (c & 0xF) > 9 ? (c % 16 - 9) | a : c % 16 | '0';
+        hexstr[i++] = c > 0x9F ? static_cast<char>(c / 16 - 9) | a : static_cast<char>(c / 16) | '0';
+        hexstr[i++] = (c & 0xF) > 9 ? static_cast<char>(c % 16 - 9) | a : static_cast<char>(c % 16) | '0';
     }
 }
 
@@ -455,7 +475,7 @@ void Utility::strhex2str(const std::string &hexstr, std::string &str) {
     str.resize((hexstr.size() + 1) / 2);
 
     for (size_t i = 0, j = 0; i < str.size(); i++, j++) {
-        str[i] = (hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) << 4, j++;
+        str[i] = static_cast<char>((hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) << 4), j++;
         str[i] |= (hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) & 0xF;
     }
 }
@@ -599,12 +619,13 @@ std::string Utility::_errId(const char *file, int line) {
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization normalization) {
-#ifdef _WIN32
+bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName, UnicodeNormalization normalization) noexcept {
     if (name.empty()) {
-        return name;
+        normalizedName = name;
+        return true;
     }
 
+#ifdef _WIN32
     static const int maxIterations = 10;
     LPWSTR strResult = nullptr;
     HANDLE hHeap = GetProcessHeap();
@@ -631,8 +652,7 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
                                                                    << std::to_wstring(dwError));
                 SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
                                                           "Failed to normalize string");
-
-                throw std::runtime_error("Failed to normalize string");
+                return false;
             }
 
             // New guess is negative of the return value.
@@ -646,53 +666,59 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
                                                            << std::to_wstring(dwError));
         SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
                                                   "Failed to normalize string");
-        throw std::runtime_error("Failed to normalize string");
+        return false;
     }
 
-    SyncName syncName(strResult);
+    normalizedName = SyncName(strResult);
     HeapFree(hHeap, 0, strResult);
-    return syncName;
+    return true;
 #else
-    if (name.empty()) {
-        return SyncName(name);
-    }
-
-    char *str = nullptr;
+    char *strResult = nullptr;
     if (normalization == UnicodeNormalization::NFD) {
-        str = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
+        strResult = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
     } else {
-        str = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+        strResult = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
     }
 
-    if (!str) { // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion has
-                // failed. e.g.: Linux can sometime send filesystem events with strange character in the path
-        return ""; // TODO : we should return a boolean value to explicitly say that the conversion has failed. Output value
-                   // should be passed by reference as a parameter.
+    if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion
+                      // has failed. e.g.: Linux can sometime send filesystem events with strange character in the path
+        return false;
     }
 
-    SyncName syncName(str);
-    std::free((void *) str);
-    return syncName;
+    normalizedName = SyncName(strResult);
+    std::free((void *) strResult);
+    return true;
 #endif
 }
 
-SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
+bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept {
     auto segmentIt = path.begin();
-    if (segmentIt == path.end()) return {};
+    if (segmentIt == path.end()) return true;
 
     auto segment = *segmentIt;
-    if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) segment = normalizedSyncName(segment);
+    if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
+        SyncName normalizedName;
+        if (!Utility::normalizedSyncName(segment, normalizedName)) {
+            LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(segment));
+            return false;
+        }
+        segment = normalizedName;
+    }
 
-    SyncPath result{segment};
+    normalizedPath = SyncPath(segment);
     ++segmentIt;
-
     for (; segmentIt != path.end(); ++segmentIt) {
         if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
-            result /= normalizedSyncName(*segmentIt);
+            SyncName normalizedName;
+            if (!Utility::normalizedSyncName(*segmentIt, normalizedName)) {
+                LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*segmentIt));
+                return false;
+            }
+            normalizedPath /= normalizedName;
         }
     }
 
-    return result;
+    return true;
 }
 
 bool Utility::checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,

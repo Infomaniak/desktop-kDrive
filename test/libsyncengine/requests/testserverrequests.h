@@ -16,33 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
 #include "testincludes.h"
-#include "syncpal/syncpal.h"
-
-using namespace CppUnit;
 
 namespace KDC {
 
-class TestLocalJobs : public CppUnit::TestFixture {
-    public:
-        CPPUNIT_TEST_SUITE(TestLocalJobs);
-        CPPUNIT_TEST(testLocalJobs);
-        CPPUNIT_TEST(testLocalDeleteJob);
-        CPPUNIT_TEST(testDeleteFilesWithDuplicateNames);
+class TestServerRequests : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestServerRequests);
+        CPPUNIT_TEST(testFixProxyConfig);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp() override;
-
-    protected:
-        void testLocalJobs();
-        void testLocalDeleteJob();
-        void testDeleteFilesWithDuplicateNames();
-
-    private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        void setUp(void) final;
+        void tearDown() override;
+        void testFixProxyConfig();
 };
 
 } // namespace KDC

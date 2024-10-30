@@ -62,7 +62,6 @@ static const int boxVBMargin = 5;
 static const int boxVSpacing = 20;
 static const int defaultPageSpacing = 20;
 static const int defaultLogoIconSize = 50;
-static const int maxLogFilesToSend = 25;
 
 Q_LOGGING_CATEGORY(lcParametersDialog, "gui.parametersdialog", QtInfoMsg)
 
@@ -412,7 +411,7 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: code=" << exitCode;
 
     return {};
 }
@@ -587,7 +586,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: code=" << exitCode;
 
     return {};
 }
@@ -668,9 +667,7 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
 }
 
 QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const {
-    const auto inconsistencyTypeInt = static_cast<int>(inconsistencyType);
     QString text;
-
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::Case)) {
         text +=
                 tr("An existing file/directory has an identical name with the same case options (same upper and lower case "
@@ -833,6 +830,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
             if (errorInfo.exitCause() == ExitCause::MoveToTrashFailed) {
                 return tr("Move to trash failed.");
             }
+            return tr("System error.");
         }
         case ExitCode::BackError: {
             return getBackErrorText(errorInfo);

@@ -108,6 +108,6 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         NodeId _dummyLocalFileId;
         NodeId _dummyRemoteFileId;
 
-        static int _nbParalleleThreads;
+        static uint64_t _nbParalleleThreads;
 };
 } // namespace KDC

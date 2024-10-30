@@ -58,18 +58,18 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
 
         const auto pathRef = reinterpret_cast<CFStringRef>(CFArrayGetValueAtIndex(eventPaths, i));
         const char *pathPtr = CFStringGetCStringPtr(pathRef, kCFStringEncodingUTF8);
-        if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_DEBUG(fw->logger(),
-                       L"Operation " << opType << L" detected on item " << Utility::s2ws(pathPtr ? pathPtr : "").c_str());
-        }
-
         char *pathBuf = nullptr;
         if (!pathPtr) {
             // Manage the case when CFStringGetCStringPtr returns NULL (for instance if the string contains accented characters)
             CFIndex pathLength = CFStringGetLength(pathRef);
             CFIndex pathMaxSize = CFStringGetMaximumSizeForEncoding(pathLength, kCFStringEncodingUTF8) + 1;
-            pathBuf = (char *) malloc(pathMaxSize);
+            pathBuf = (char *) malloc(static_cast<size_t>(pathMaxSize));
             CFStringGetCString(pathRef, pathBuf, pathMaxSize, kCFStringEncodingUTF8);
+        }
+
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOGW_DEBUG(fw->logger(),
+                       L"Operation " << opType << L" detected on item " << Utility::s2ws(pathPtr ? pathPtr : "").c_str());
         }
 
         // TODO : to be tested to get inode (https://github.com/fsevents/fsevents/pull/360/files)

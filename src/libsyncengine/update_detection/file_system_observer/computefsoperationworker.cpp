@@ -152,7 +152,13 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     if (!snapshot->exists(nodeId) || movedIntoUnsyncedFolder) {
-        if (!pathInDeletedFolder(dbPath)) {
+        bool isInDeletedFolder = false;
+        if (!checkIfPathIsInDeletedFolder(dbPath, isInDeletedFolder)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::checkIfPathIsInDeletedFolder: " << Utility::formatSyncPath(dbPath));
+            return ExitCode::SystemError;
+        }
+
+        if (!isInDeletedFolder) {
             // Check that the file/directory really does not exist on replica
             bool isExcluded = false;
             if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
@@ -186,7 +192,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             const size_t pathSize = localPath.native().size();
             if (PlatformInconsistencyCheckerUtility::instance()->isPathTooLong(pathSize)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Path length too long (" << pathSize << L" characters) for item with "
-                                                                     << Utility::formatSyncPath(localPath).c_str()
+                                                                     << Utility::formatSyncPath(localPath)
                                                                      << L". Item is ignored.");
                 return ExitCode::Ok;
             }
@@ -195,8 +201,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                 bool exists = false;
 
                 if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
-                    LOGW_WARN(_logger,
-                              L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError).c_str());
+                    LOGW_SYNCPAL_WARN(_logger,
+                                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError));
                     return ExitCode::SystemError;
                 }
                 checkTemplate = exists;
@@ -210,10 +216,11 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), dbPath, warn,
                                                                                        isExcluded, ioError);
             if (!success) {
-                LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                                           << Utility::formatIoError(dbPath, ioError).c_str());
+                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                                                   << Utility::formatIoError(dbPath, ioError));
                 return ExitCode::SystemError;
             }
+
             if (isExcluded) {
                 // The item is excluded
                 return ExitCode::Ok;
@@ -228,7 +235,11 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         logOperationGeneration(snapshot->side(), fsOp);
 
         if (dbNode.type() == NodeType::Directory) {
-            addFolderToDelete(dbPath);
+            if (!addFolderToDelete(dbPath)) {
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
+                return ExitCode::SystemError;
+            }
         }
         return ExitCode::Ok;
     }
@@ -240,8 +251,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     SyncPath snapshotPath;
     if (!snapshot->path(nodeId, snapshotPath)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << SyncName2WStr(dbName).c_str() << L" ("
-                                                                                      << Utility::s2ws(nodeId).c_str() << L")");
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << SyncName2WStr(dbName) << L" ("
+                                                                                      << Utility::s2ws(nodeId) << L")");
         setExitCause(ExitCause::InvalidSnapshot);
         return ExitCode::DataError;
     }
@@ -251,13 +262,13 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
         bool exists = false;
         if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError).c_str());
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError));
             return ExitCode::SystemError;
         }
         if (!exists) {
-            LOGW_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - "
-                                        << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - "
+                                                << Utility::formatSyncPath(absolutePath));
             setExitCause(ExitCause::InvalidSnapshot);
             return ExitCode::DataError;
         }
@@ -459,15 +470,15 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
             if (snapshot->isOrphan(snapshot->parentId(nodeId))) {
                 // Ignore orphans
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring orphan node " << SyncName2WStr(snapshot->name(nodeId)).c_str() << L" ("
-                                                                         << Utility::s2ws(nodeId).c_str() << L")");
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring orphan node " << SyncName2WStr(snapshot->name(nodeId)) << L" ("
+                                                                         << Utility::s2ws(nodeId) << L")");
                 }
                 continue;
             }
 
             SyncPath snapshotPath;
             if (!snapshot->path(nodeId, snapshotPath)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << Utility::s2ws(nodeId).c_str());
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << Utility::s2ws(nodeId));
                 setExitCause(ExitCause::InvalidSnapshot);
                 return ExitCode::DataError;
             }
@@ -533,16 +544,16 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
     if (fsOp->operationType() == OperationType::Move) {
         LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << side << L" " << fsOp->operationType() << L" FS operation from "
                                                  << (fsOp->objectType() == NodeType::Directory ? L"dir with " : L"file with ")
-                                                 << Utility::formatSyncPath(fsOp->path()).c_str() << L" to "
-                                                 << Utility::formatSyncPath(fsOp->destinationPath()).c_str() << L" ("
-                                                 << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
+                                                 << Utility::formatSyncPath(fsOp->path()) << L" to "
+                                                 << Utility::formatSyncPath(fsOp->destinationPath()) << L" ("
+                                                 << Utility::s2ws(fsOp->nodeId()) << L")");
         return;
     }
 
     LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << side << L" " << fsOp->operationType() << L" FS operation on "
                                              << (fsOp->objectType() == NodeType::Directory ? L"dir with " : L"file with ")
-                                             << Utility::formatSyncPath(fsOp->path()).c_str() << L" ("
-                                             << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
+                                             << Utility::formatSyncPath(fsOp->path()) << L" (" << Utility::s2ws(fsOp->nodeId())
+                                             << L")");
 }
 
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
@@ -587,8 +598,8 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         SyncPath localSnapshotPath;
         if (!_syncPal->snapshot(ReplicaSide::Local, true)->path(dbNode.nodeIdLocal().value(), localSnapshotPath)) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
-                                               << SyncName2WStr(dbNode.nameLocal()).c_str() << L" ("
-                                               << Utility::s2ws(dbNode.nodeIdLocal().value()).c_str() << L")");
+                                               << SyncName2WStr(dbNode.nameLocal()) << L" ("
+                                               << Utility::s2ws(dbNode.nodeIdLocal().value()) << L")");
             setExitCause(ExitCause::InvalidSnapshot);
             return ExitCode::DataError;
         }
@@ -598,7 +609,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
 
         // No operations detected on this file but its size is not the same between remote and local replica
         // Remove it from local replica and download the remote version
-        LOGW_SYNCPAL_DEBUG(_logger, L"File size mismatch for \"" << Path2WStr(absoluteLocalPath).c_str()
+        LOGW_SYNCPAL_DEBUG(_logger, L"File size mismatch for \"" << Path2WStr(absoluteLocalPath)
                                                                  << L"\". Remote version will be downloaded again.");
         _fileSizeMismatchMap.insert({dbNode.nodeIdLocal().value(), absoluteLocalPath});
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ComputeFSOperationWorker::exploreDbTree",
@@ -612,7 +623,7 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
                                                   const NodeId &nodeId, const SyncPath &path, NodeType type, int64_t size) {
     if (isInUnsyncedList(snapshot, nodeId, side)) {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring item " << Path2WStr(path).c_str() << L" (" << Utility::s2ws(nodeId).c_str()
+            LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring item " << Path2WStr(path) << L" (" << Utility::s2ws(nodeId)
                                                           << L") because it is not synced");
         }
         return true;
@@ -626,9 +637,8 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
 
         if (type == NodeType::Directory && isTooBig(snapshot, nodeId, size)) {
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Blacklisting item with " << Utility::formatSyncPath(path).c_str() << L" ("
-                                                                       << Utility::s2ws(nodeId).c_str()
-                                                                       << L") because it is too big");
+                LOGW_SYNCPAL_DEBUG(_logger, L"Blacklisting item with " << Utility::formatSyncPath(path) << L" ("
+                                                                       << Utility::s2ws(nodeId) << L") because it is too big");
             }
             return true;
         }
@@ -640,13 +650,13 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
             bool exists = false;
             IoError ioError = IoError::Success;
             if (!IoHelper::checkIfPathExists(absoluteFilePath, exists, ioError)) {
-                LOGW_WARN(_logger,
-                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteFilePath, ioError).c_str());
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteFilePath, ioError));
                 return true;
             }
 
             if (!exists) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Ignore item " << Path2WStr(path).c_str() << L" (" << Utility::s2ws(nodeId).c_str()
+                LOGW_SYNCPAL_DEBUG(_logger, L"Ignore item " << Path2WStr(path) << L" (" << Utility::s2ws(nodeId)
                                                             << L") because it doesn't exist");
                 return true;
             }
@@ -782,8 +792,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     const size_t pathSize = absolutePath.native().size();
     if (PlatformInconsistencyCheckerUtility::instance()->isPathTooLong(pathSize)) {
         LOGW_SYNCPAL_WARN(_logger, L"Path length too long (" << pathSize << L" characters) for item with "
-                                                             << Utility::formatSyncPath(absolutePath).c_str()
-                                                             << L". Item is ignored.");
+                                                             << Utility::formatSyncPath(absolutePath) << L". Item is ignored.");
 
         Error err(_syncPal->syncDbId(), "", nodeId, type, path, ConflictType::None, InconsistencyType::PathLength);
         _syncPal->addError(err);
@@ -808,8 +817,8 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     NodeId otherNodeId;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, existsWithSameId, otherNodeId, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExistsWithSameNodeId: "
-                                   << Utility::formatIoError(absolutePath, ioError).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathExistsWithSameNodeId: "
+                                           << Utility::formatIoError(absolutePath, ioError));
 
         if (ioError == IoError::InvalidFileName) {
             // Observed on MacOSX under special circumstances; see getItemType unit test edge cases.
@@ -832,14 +841,14 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath, isWarning,
                                                                                isExcluded, ioError);
     if (!success) {
-        LOGW_WARN(_logger,
-                  L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError).c_str());
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError));
         setExitCause(ExitCause::Unknown);
         return ExitCode::SystemError;
     }
 
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Item with " << Utility::formatSyncPath(absolutePath).c_str() << L" misses search permissions!");
+        LOGW_SYNCPAL_WARN(_logger, L"Item with " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
         setExitCause(ExitCause::FileAccessError);
         return ExitCode::SystemError;
     }
@@ -852,7 +861,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
         return ExitCode::Ok;
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str()
+    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath)
                                          << L" still exists on local replica. Snapshot not up to date, restarting sync.");
 
     SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ComputeFSOperationWorker::checkIfOkToDelete",
@@ -888,8 +897,13 @@ void ComputeFSOperationWorker::updateUnsyncedList() {
                                          _localTmpUnsyncedList); // Only tmp list on local side
 }
 
-void ComputeFSOperationWorker::addFolderToDelete(const SyncPath &path) {
-    SyncPath normalizedPath = Utility::normalizedSyncPath(path);
+bool ComputeFSOperationWorker::addFolderToDelete(const SyncPath &path) {
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+
     // Remove sub dirs
     auto dirPathToDeleteSetIt = _dirPathToDeleteSet.begin();
     while (dirPathToDeleteSetIt != _dirPathToDeleteSet.end()) {
@@ -902,18 +916,28 @@ void ComputeFSOperationWorker::addFolderToDelete(const SyncPath &path) {
 
     // Insert dir
     _dirPathToDeleteSet.insert(normalizedPath);
+
+    return true;
 }
 
-bool ComputeFSOperationWorker::pathInDeletedFolder(const SyncPath &path) {
-    SyncPath normalizedPath = Utility::normalizedSyncPath(path);
+bool ComputeFSOperationWorker::checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder) {
+    isInDeletedFolder = false;
+
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+
     for (auto dirPathToDeleteSetIt = _dirPathToDeleteSet.begin(); dirPathToDeleteSetIt != _dirPathToDeleteSet.end();
          ++dirPathToDeleteSetIt) {
         if (CommonUtility::isSubDir(*dirPathToDeleteSetIt, normalizedPath)) {
-            return true;
+            isInDeletedFolder = true;
+            break;
         }
     }
 
-    return false;
+    return true;
 }
 
 } // namespace KDC

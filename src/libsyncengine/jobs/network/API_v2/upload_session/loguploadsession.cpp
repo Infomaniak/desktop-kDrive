@@ -53,16 +53,25 @@ std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Log, getSessionToken());
 }
 
-bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
+bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob, std::string uploadToken) {
+    (void) startJob;
+
     AppStateValue appStateValue = "";
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::selectAppState");
     }
 
     if (const std::string logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
-        UploadSessionCancelJob cancelJob(UploadSessionType::Log, logUploadToken);
-        if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCode::Ok) {
-            LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
+        std::unique_ptr<UploadSessionCancelJob> cancelJob;
+        try {
+            cancelJob = std::make_unique<UploadSessionCancelJob>(UploadSessionType::Log, logUploadToken);
+        } catch (const std::runtime_error &e) {
+            LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::UploadSessionCancelJob: error=" << e.what());
+            return false;
+        }
+
+        if (const ExitCode exitCode = cancelJob->runSynchronously(); exitCode != ExitCode::Ok) {
+            LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::runSynchronously: code=" << exitCode);
         } else {
             LOG_INFO(getLogger(), "Previous Log upload api call cancelled");
             if (bool found = true;
@@ -79,6 +88,8 @@ bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionS
 }
 
 bool LogUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+    (void) finishJob;
+
     if (bool found = true; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
     }

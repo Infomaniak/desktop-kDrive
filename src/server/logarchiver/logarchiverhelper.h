@@ -18,31 +18,20 @@
 
 #pragma once
 
-#include "testincludes.h"
-#include "syncpal/syncpal.h"
-
-using namespace CppUnit;
+#include "logarchiver.h"
 
 namespace KDC {
 
-class TestLocalJobs : public CppUnit::TestFixture {
-    public:
-        CPPUNIT_TEST_SUITE(TestLocalJobs);
-        CPPUNIT_TEST(testLocalJobs);
-        CPPUNIT_TEST(testLocalDeleteJob);
-        CPPUNIT_TEST(testDeleteFilesWithDuplicateNames);
-        CPPUNIT_TEST_SUITE_END();
-
-    public:
-        void setUp() override;
-
-    protected:
-        void testLocalJobs();
-        void testLocalDeleteJob();
-        void testDeleteFilesWithDuplicateNames();
-
-    private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+struct LogArchiverHelper {
+        /* Send log to support
+         * \param includeArchivedLog If true, all logs will be sent, else only the last session logs will be sent.
+         * \param progressCallback The callback to be called with the progress percentage, the function returns false if the user
+         * cancels the operation (else true). \param exitCause The exit cause to be filled in case of error. If no error occurred,
+         * it will be set to ExitCause::Unknown;
+         */
+        static ExitCode sendLogToSupport(bool includeArchivedLog,
+                                         const std::function<bool(LogUploadState, int)> &progressCallback, ExitCause &exitCause);
+        static ExitCode cancelLogToSupport(ExitCause &exitCause);
 };
 
 } // namespace KDC

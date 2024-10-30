@@ -5,20 +5,23 @@ find_package(log4cplus 2.1.0 REQUIRED)
 find_package(Poco 1.13.3 REQUIRED XML Net)
 
 set(CMAKE_AUTOMOC ON)
-set(testserver_NAME ${APPLICATION_NAME}_test_server)
 set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
+set(testserver_NAME ${APPLICATION_NAME}_test_server)
+
+set(server_SRCS
+    ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.cpp
+    ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.cpp
+    ${server_srcs_path}/logarchiver/logarchiver.h ${server_srcs_path}/logarchiver/logarchiver.cpp
+    ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
+    ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
+)
 
 set(testserver_SRCS
     ../test.cpp
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
-    ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.cpp
-    ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.cpp
-    ${server_srcs_path}/logarchiver.h ${server_srcs_path}/logarchiver.cpp
-    ${server_srcs_path}/updater/updatemanager.h ${server_srcs_path}/updater/updatemanager.cpp
-    ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
-    ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
     test.cpp
+
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
@@ -26,17 +29,19 @@ set(testserver_SRCS
 )
 
 if(APPLE)
-    list(APPEND testserver_SRCS  vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
-    list(APPEND server_SRCS socketapisocket_mac.mm)
-    set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND testserver_SRCS vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
 
-    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
-    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS ${server_srcs_path}/socketapisocket_mac.mm)
+    set_property(SOURCE ${server_srcs_path}/socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+    message(STATUS "server_srcs_path=${server_srcs_path}")
+    list(APPEND server_SRCS ${server_srcs_path}/../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
+    set_property(SOURCE ${server_srcs_path}/../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
-        list(APPEND testserver_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater.mm)
+        list(APPEND server_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater.mm)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
@@ -45,9 +50,9 @@ if(APPLE)
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
 elseif (WIN32)
-    list(APPEND testserver_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp)
 else ()
-    list(APPEND testserver_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp)
 endif()
 
 if (WIN32)
@@ -60,7 +65,9 @@ else ()
     include_directories("/usr/local/include")
 endif()
 
-add_executable(${testserver_NAME} ${testserver_SRCS})
+add_executable(${testserver_NAME}
+    ${server_SRCS}
+    ${testserver_SRCS})
 
 set_target_properties(${testserver_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
@@ -69,6 +76,11 @@ target_link_libraries(${testserver_NAME}
         Qt6::Core Qt6::Gui
         Poco::XML Poco::Net
 )
+
+if (APPLE)
+    find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
+    target_link_libraries(${testserver_NAME} ${SERVICE_MANAGEMENT_LIBRARY})
+endif()
 
 if (WIN32)
     target_link_libraries(${testserver_NAME}

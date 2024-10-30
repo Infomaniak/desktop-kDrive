@@ -160,11 +160,11 @@ bool PerformanceWatcher::updateRAMUsedByProc() {
 }
 
 uint64_t PerformanceWatcher::bytesToMb(uint64_t bytes) {
-    return (uint64_t) (bytes / (1 * pow(10, 6)));
+    return static_cast<uint64_t>(static_cast<double>(bytes) / (1 * pow(10, 6)));
 }
 
 uint64_t PerformanceWatcher::bytesToGb(uint64_t bytes) {
-    return (uint64_t) (bytes / (1 * pow(10, 9)));
+    return static_cast<uint64_t>(static_cast<double>(bytes) / (1 * pow(10, 9)));
 }
 
 uint64_t PerformanceWatcher::bytesToBetterUnit(uint64_t bytes, std::string &unit) {

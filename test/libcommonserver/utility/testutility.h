@@ -109,6 +109,8 @@ class TestUtility : public CppUnit::TestFixture {
 
     private:
         std::unique_ptr<Utility> _testObj;
+
+        bool checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal);
 };
 
 } // namespace KDC

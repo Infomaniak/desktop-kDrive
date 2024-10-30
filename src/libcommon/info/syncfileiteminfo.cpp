@@ -43,9 +43,9 @@ QDataStream &operator<<(QDataStream &out, const SyncFileItemInfo &info) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<SyncFileItemInfo> &list) {
-    int count = list.size();
+    auto count = list.size();
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (auto i = 0; i < list.size(); i++) {
         SyncFileItemInfo info = list[i];
         out << info;
     }

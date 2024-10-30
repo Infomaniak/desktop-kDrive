@@ -31,11 +31,12 @@ class SyncPalTest final : public SyncPal {
 
     private:
         // No implementation of the following methods in tests because `_tmpBlacklistManager` is not defined.
-        void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side) override {}
-        int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept override { return 0; }
-        void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) override {}
+        void increaseErrorCount(const NodeId & /*nodeId*/, NodeType /*type*/, const SyncPath & /*relativePath*/,
+                                ReplicaSide /*side*/) override {}
+        int getErrorCount(const NodeId & /*nodeId*/, ReplicaSide /*side*/) const noexcept override { return 0; }
+        void blacklistTemporarily(const NodeId & /*nodeId*/, const SyncPath & /*relativePath*/, ReplicaSide /*side*/) override {}
         void refreshTmpBlacklist() override {}
-        void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) override {}
+        void removeItemFromTmpBlacklist(const NodeId & /*nodeId*/, ReplicaSide /*side*/) override {}
 };
 
 } // namespace KDC

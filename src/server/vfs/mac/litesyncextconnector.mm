@@ -508,8 +508,10 @@ bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, co
     switch (mode) {
         case LogMode::Debug:
             LOGW_DEBUG(logger, message.c_str() << Utility::formatPath(path).c_str());
+            break;
         case LogMode::Warn:
             LOGW_WARN(logger, message.c_str() << Utility::formatPath(path).c_str());
+            break;
     }
 
     return true;
@@ -632,7 +634,7 @@ bool LiteSyncExtConnectorPrivate::setThumbnail(const QString &filePath, const QP
 
     if (!error) {
         // Destination image
-        int size = qMax(srcImage.size.width, srcImage.size.height);
+        int size = static_cast<int>(qMax(srcImage.size.width, srcImage.size.height));
         NSImage *dstImage = [[NSImage alloc] initWithSize:CGSizeMake(size, size)];
 
         // Copy source image into destination image
@@ -704,7 +706,12 @@ LiteSyncExtConnector::LiteSyncExtConnector(log4cplus::Logger logger, ExecuteComm
 
 LiteSyncExtConnector *LiteSyncExtConnector::instance(log4cplus::Logger logger, ExecuteCommand executeCommand) {
     if (_liteSyncExtConnector == nullptr) {
-        _liteSyncExtConnector = new LiteSyncExtConnector(logger, executeCommand);
+        try {
+            _liteSyncExtConnector = new LiteSyncExtConnector(logger, executeCommand);
+        } catch (std::exception const &) {
+            assert(false);
+            return nullptr;
+        }
     }
 
     return _liteSyncExtConnector;
@@ -1202,7 +1209,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
         } else {
             // Set status
-            int progress = ceil(float(completed) / fileSize * 100);
+            int progress = static_cast<int>(ceil(float(completed) / fileSize * 100));
             if (!vfsSetStatus(filePath, localSyncPath, true, progress)) {
                 return false;
             }
@@ -1370,7 +1377,7 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
     int roundedProgress = progress;
     if (isSyncing) {
         int stepWidth = 100 / SYNC_STEPS;
-        roundedProgress = ceil(float(progress) / stepWidth) * stepWidth;
+        roundedProgress = static_cast<int>(ceil(float(progress) / stepWidth) * stepWidth);
     }
 
     if (isSyncing != isSyncingCurrent || roundedProgress != progressCurrent || isHydrated != isHydratedCurrent) {
