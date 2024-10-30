@@ -344,8 +344,8 @@ std::wstring Utilities::getLastErrorMessage() {
 
     LPWSTR messageBuffer = nullptr;
     const size_t size =
-        FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
-            errorMessageID, NULL, (LPWSTR)&messageBuffer, 0, NULL);
+        FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
+            errorMessageID, NULL, (LPWSTR)&messageBuffer, 0, nullptr);
 
     // Escape quotes
     const auto msg = std::wstring(messageBuffer, size);
@@ -377,8 +377,7 @@ bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunc
         DWORD dwError = GetLastError();
         CloseHandle(hFile);
 
-        const bool notReparsePoint = (dwError == ERROR_NOT_A_REPARSE_POINT);
-        if (notReparsePoint) {
+        if (const bool notReparsePoint = (dwError == ERROR_NOT_A_REPARSE_POINT); notReparsePoint) {
             return true;
         }
 
