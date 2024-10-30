@@ -172,8 +172,8 @@ enum class OperationType { None = 0x00, Create = 0x01, Move = 0x02, Edit = 0x04,
 std::string toString(OperationType e);
 
 enum class ExitCode {
-    Unknown,
     Ok,
+    Unknown,
     NeedRestart, // A propagation job cannot be executed because the situation that led to its creation is no longer
                  // verified
     NetworkError,
