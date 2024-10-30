@@ -1406,6 +1406,10 @@ void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativ
     _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
 }
 
+bool SyncPal::isTmpBlacklisted(const NodeId &nodeId, ReplicaSide side) const {
+    return _tmpBlacklistManager->isTmpBlacklisted(nodeId, side);
+}
+
 bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const {
     return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
 }

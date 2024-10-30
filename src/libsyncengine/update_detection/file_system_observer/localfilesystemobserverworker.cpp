@@ -36,7 +36,8 @@ static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
-    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local),
+    _rootFolder(syncPal->localPath()) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -100,6 +101,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             NodeId otherNodeId;
             IoError ioError = IoError::Success;
             if (!prevNodeId.empty()) {
+                if (_syncPal->isTmpBlacklisted(prevNodeId, ReplicaSide::Local))
+                    _syncPal->removeItemFromTmpBlacklist(relativePath);
                 if (IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId, ioError) &&
                     !existsWithSameId) {
                     if (_snapshot->removeItem(prevNodeId)) {
@@ -133,6 +136,14 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
         NodeId nodeId = std::to_string(fileStat.inode);
         NodeType nodeType = NodeType::Unknown;
+
+        if (_syncPal->isTmpBlacklisted(nodeId, ReplicaSide::Local)) {
+            _syncPal->removeItemFromTmpBlacklist(relativePath);
+            if (opTypeFromOS == OperationType::Edit) {
+                NodeId itemId = _snapshot->itemId(relativePath);
+                if (!itemId.empty()) _snapshot->setLastModified(itemId, 0);
+            }
+        }
 
         bool isLink = false;
         if (exists) {
