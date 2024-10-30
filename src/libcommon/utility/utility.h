@@ -125,6 +125,7 @@ struct COMMON_EXPORT CommonUtility {
         static bool fileExists(const std::error_code &ec) noexcept;
 
 #ifdef _WIN32
+        static std::wstring getErrorMessage(DWORD dwordError);
         static std::wstring getLastErrorMessage();
         static bool fileExists(DWORD dwError) noexcept;
 #endif

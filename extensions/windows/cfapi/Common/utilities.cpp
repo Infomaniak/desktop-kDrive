@@ -338,6 +338,25 @@ bool fileExists(const std::error_code &code) noexcept {
 }
 } // namespace
 
+std::wstring Utilities::getLastErrorMessage() {
+    const DWORD errorMessageID = ::GetLastError();
+    if (errorMessageID == 0) return {};
+
+    LPWSTR messageBuffer = nullptr;
+    const size_t size =
+        FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+            errorMessageID, NULL, (LPWSTR)&messageBuffer, 0, NULL);
+
+    // Escape quotes
+    const auto msg = std::wstring(messageBuffer, size);
+    std::wostringstream message;
+    message << errorMessageID << L" - " << msg;
+
+    LocalFree(messageBuffer);
+
+    return message.str();
+}
+
 bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunction, bool &exists) {
     isSymlink = false;
     isJunction = false;

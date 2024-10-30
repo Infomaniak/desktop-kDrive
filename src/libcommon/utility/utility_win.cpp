@@ -64,16 +64,15 @@ static inline bool hasDarkSystray_private() {
 }
 
 bool CommonUtility::fileExists(DWORD dwError) noexcept {
-    return (code != ERROR_FILE_NOT_FOUND) && (code != ERROR_PATH_NOT_FOUND) && (code != ERROR_INVALID_DRIVE) &&
-           (code != ERROR_BAD_NETPATH);
+    return (dwError != ERROR_FILE_NOT_FOUND) && (dwError != ERROR_PATH_NOT_FOUND) && (dwError != ERROR_INVALID_DRIVE) &&
+           (dwError != ERROR_BAD_NETPATH);
 }
 
 bool CommonUtility::fileExists(const std::error_code &code) noexcept {
     return fileExists(static_cast<DWORD>(code.value()));
 }
 
-std::wstring CommonUtility::getLastErrorMessage() {
-    const DWORD errorMessageID = ::GetLastError();
+std::wstring CommonUtility::getErrorMessage(DWORD errorMessageID) {
     if (errorMessageID == 0) return {};
 
     LPWSTR messageBuffer = nullptr;
@@ -89,6 +88,10 @@ std::wstring CommonUtility::getLastErrorMessage() {
     LocalFree(messageBuffer);
 
     return message.str();
+}
+
+std::wstring CommonUtility::getLastErrorMessage() {
+    return getErrorMessage(GetLastError());
 }
 
 } // namespace KDC

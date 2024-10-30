@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "common/filesystembase.h"
 
 #include "libcommonserver/io/filestat.h"
@@ -75,7 +74,7 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
             return IoError::CrossDeviceLink;
         default:
             if (Log::isSet()) {
-                LOG_WARN(logger, "Unhandled DWORD error: " << CommonUtility::getLastErrorMessage(error));
+                LOG_WARN(logger, "Unhandled DWORD error: " << CommonUtility::getErrorMessage(error));
             }
             return IoError::Unknown;
     }
