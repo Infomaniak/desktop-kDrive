@@ -899,13 +899,37 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
 
 void TestNetworkJobs::testGetAppVersionInfo() {
     const auto appUid = "1234567890";
-    GetAppVersionJob job(CommonUtility::platform(), appUid);
-    job.runSynchronously();
-    CPPUNIT_ASSERT(!job.hasHttpError());
-    CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Internal).isValid());
-    CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
-    CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
-    CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+
+    // Without user IDs
+    {
+        GetAppVersionJob job(CommonUtility::platform(), appUid, {});
+        job.runSynchronously();
+        CPPUNIT_ASSERT(!job.hasHttpError());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Internal).isValid());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+    }
+    // With 1 user ID
+    {
+        GetAppVersionJob job(CommonUtility::platform(), appUid, {123});
+        job.runSynchronously();
+        CPPUNIT_ASSERT(!job.hasHttpError());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Internal).isValid());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+    }
+    // With several user IDs
+    {
+        GetAppVersionJob job(CommonUtility::platform(), appUid, {123, 456, 789});
+        job.runSynchronously();
+        CPPUNIT_ASSERT(!job.hasHttpError());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Internal).isValid());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
+        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+    }
 }
 
 void TestNetworkJobs::testDirectDownload() {

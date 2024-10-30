@@ -241,6 +241,9 @@ AppServer::AppServer(int &argc, char **argv) :
         addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     }
 
+    // Log usefull infomation
+    logUsefulInformation();
+
     // Init ExclusionTemplateCache instance
     if (!ExclusionTemplateCache::instance()) {
         LOG_WARN(_logger, "Error in ExclusionTemplateCache::instance");
@@ -3021,6 +3024,25 @@ bool AppServer::initLogging() noexcept {
                                              .toStdString())
                                .c_str());
     return true;
+}
+void AppServer::logUsefulInformation() const {
+    // Log app ID
+    AppStateValue appStateValue = "";
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+    }
+    const auto &appUid = std::get<std::string>(appStateValue);
+    LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUid.c_str());
+
+    // Log user IDs
+    std::vector<User> userList;
+    if (!ParmsDb::instance()->selectAllUsers(userList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+    }
+    std::list<int> userIdList;
+    for (const auto &user: userList) {
+        LOG_INFO(Log::instance()->getLogger(), "User ID: " << user.userId());
+    }
 }
 
 bool AppServer::setupProxy() noexcept {

@@ -121,6 +121,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void parseOptions(const QStringList &);
         bool initLogging() noexcept;
+        void logUsefulInformation() const;
         bool setupProxy() noexcept;
         void handleCrashRecovery(bool &shouldQuit); // Sets `shouldQuit` with true if the crash recovery is successful, false if
                                                     // the application should exit.

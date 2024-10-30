@@ -40,7 +40,8 @@ static const std::string buildVersionKey = "build_version";
 static const std::string buildMinOsVersionKey = "build_min_os_version";
 static const std::string downloadUrlKey = "download_link";
 
-GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID) : _platform(platform), _appId(appID) {
+GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID, const std::list<int> &userIdList) :
+    _platform(platform), _appId(appID), _userIdList(userIdList) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -67,6 +68,12 @@ std::string GetAppVersionJob::getSpecificUrl() {
 std::string GetAppVersionJob::getContentType(bool &canceled) {
     canceled = false;
     return {};
+}
+
+void GetAppVersionJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+    for (const auto id: _userIdList) {
+        uri.addQueryParameter("user_ids[]", std::to_string(id));
+    }
 }
 
 bool GetAppVersionJob::handleError(std::istream &, const Poco::URI &uri) {

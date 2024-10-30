@@ -34,7 +34,7 @@ static const std::string smallVersionJsonUpdateStr =
 class GetAppVersionJobTest final : public GetAppVersionJob {
     public:
         GetAppVersionJobTest(const Platform platform, const std::string &appID, const bool updateShouldBeAvailable) :
-            GetAppVersionJob(platform, appID), _updateShouldBeAvailable(updateShouldBeAvailable) {}
+            GetAppVersionJob(platform, appID, {}), _updateShouldBeAvailable(updateShouldBeAvailable) {}
 
         void runJob() noexcept override {
             const std::istringstream iss(_updateShouldBeAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
