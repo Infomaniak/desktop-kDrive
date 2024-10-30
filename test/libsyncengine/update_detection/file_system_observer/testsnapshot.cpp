@@ -147,6 +147,7 @@ void TestSnapshot::testSnapshotInsertionWithDifferentEncodings() {
 }
 
 void TestSnapshot::testPath() {
+    // Normal case
     {
         const auto id = CommonUtility::generateRandomStringAlphaNum();
         const auto name = Str("test");
@@ -159,7 +160,7 @@ void TestSnapshot::testPath() {
         CPPUNIT_ASSERT_EQUAL(SyncPath("A") / name, path);
         CPPUNIT_ASSERT(!ignore);
     }
-
+    // Item name starting by pattern "X:", should be ignored (as well as its descendants) on Windows only
     {
         const auto id = CommonUtility::generateRandomStringAlphaNum();
         const auto name = Str("E:S");
@@ -193,7 +194,7 @@ void TestSnapshot::testPath() {
         CPPUNIT_ASSERT(!ignore);
 #endif
     }
-
+    // Item name starting by pattern "X:", should be ignored on Windows only
     {
         const auto id = CommonUtility::generateRandomStringAlphaNum();
         const auto name = Str("a:b");
@@ -213,7 +214,7 @@ void TestSnapshot::testPath() {
         CPPUNIT_ASSERT(!ignore);
 #endif
     }
-
+    // Item name starting by pattern "X:", should be ignored on Windows only
     {
         const auto id = CommonUtility::generateRandomStringAlphaNum();
         const auto name = Str("C:");
@@ -234,7 +235,7 @@ void TestSnapshot::testPath() {
         CPPUNIT_ASSERT(!ignore);
 #endif
     }
-
+    // Item name starting with more than 1 character before `:`, should be accepted
     {
         const auto id = CommonUtility::generateRandomStringAlphaNum();
         const auto name = Str("aa:b");

@@ -30,19 +30,15 @@ class ComputeFSOperationWorker : public ISyncWorker {
         /**
          * Constructor used for testing only
          * @param testSyncDb
-         * @param testLocalSnapshot
-         * @param testRemoteSnapshot
          * @param name
          * @param shortName
          */
-        ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::shared_ptr<Snapshot> testLocalSnapshot,
-                                 const std::shared_ptr<Snapshot> testRemoteSnapshot, const std::string &name,
-                                 const std::string &shortName);
+        ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::string &name, const std::string &shortName);
 
         const std::unordered_map<NodeId, SyncPath> getFileSizeMismatchMap() const { return _fileSizeMismatchMap; }
 
     protected:
-        virtual void execute() override;
+        void execute() override;
 
     private:
         using NodeIdSet = std::unordered_set<NodeId>;
@@ -80,8 +76,6 @@ class ComputeFSOperationWorker : public ISyncWorker {
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &path, NodeType nodeType);
 
         const std::shared_ptr<SyncDb> _syncDb;
-        const std::shared_ptr<Snapshot> _localSnapshot;
-        const std::shared_ptr<Snapshot> _remoteSnapshot;
         Sync _sync;
 
         NodeIdSet _remoteUnsyncedList;

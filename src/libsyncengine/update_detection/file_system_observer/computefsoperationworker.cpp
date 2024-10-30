@@ -29,15 +29,11 @@ namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _localSnapshot(syncPal->_localSnapshot),
-    _remoteSnapshot(syncPal->_remoteSnapshot) {}
+    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->syncDb()) {}
 
-ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb,
-                                                   const std::shared_ptr<Snapshot> testLocalSnapshot,
-                                                   const std::shared_ptr<Snapshot> testRemoteSnapshot, const std::string &name,
+ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(nullptr, name, shortName, true), _syncDb(testSyncDb), _localSnapshot(testLocalSnapshot),
-    _remoteSnapshot(testRemoteSnapshot) {}
+    ISyncWorker(nullptr, name, shortName, true), _syncDb(testSyncDb) {}
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -573,30 +569,30 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         return ExitCode::Ok;
     }
 
-    if (!_syncPal->snapshot(ReplicaSide::Local, true)->exists(dbNode.nodeIdLocal().value()) ||
-        !_syncPal->snapshot(ReplicaSide::Remote, true)->exists(dbNode.nodeIdRemote().value())) {
+    if (!_syncPal->snapshotCopy(ReplicaSide::Local)->exists(dbNode.nodeIdLocal().value()) ||
+        !_syncPal->snapshotCopy(ReplicaSide::Remote)->exists(dbNode.nodeIdRemote().value())) {
         // Ignore if item does not exist
         return ExitCode::Ok;
     }
 
-    if (const bool localSnapshotIsLink = _syncPal->snapshot(ReplicaSide::Local, true)->isLink(dbNode.nodeIdLocal().value());
+    if (const bool localSnapshotIsLink = _syncPal->snapshotCopy(ReplicaSide::Local)->isLink(dbNode.nodeIdLocal().value());
         localSnapshotIsLink) {
         // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
         return ExitCode::Ok;
     }
 
-    int64_t localSnapshotSize = _syncPal->snapshot(ReplicaSide::Local, true)->size(dbNode.nodeIdLocal().value());
-    int64_t remoteSnapshotSize = _syncPal->snapshot(ReplicaSide::Remote, true)->size(dbNode.nodeIdRemote().value());
-    SyncTime localSnapshotLastModified = _syncPal->snapshot(ReplicaSide::Local, true)->lastModified(dbNode.nodeIdLocal().value());
+    int64_t localSnapshotSize = _syncPal->snapshotCopy(ReplicaSide::Local)->size(dbNode.nodeIdLocal().value());
+    int64_t remoteSnapshotSize = _syncPal->snapshotCopy(ReplicaSide::Remote)->size(dbNode.nodeIdRemote().value());
+    SyncTime localSnapshotLastModified = _syncPal->snapshotCopy(ReplicaSide::Local)->lastModified(dbNode.nodeIdLocal().value());
     SyncTime remoteSnapshotLastModified =
-            _syncPal->snapshot(ReplicaSide::Remote, true)->lastModified(dbNode.nodeIdRemote().value());
+            _syncPal->snapshotCopy(ReplicaSide::Remote)->lastModified(dbNode.nodeIdRemote().value());
 
     // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
     if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
         localSnapshotLastModified == remoteSnapshotLastModified) {
         SyncPath localSnapshotPath;
         if (bool ignore = false;
-            !_syncPal->snapshot(ReplicaSide::Local, true)->path(dbNode.nodeIdLocal().value(), localSnapshotPath, ignore)) {
+            !_syncPal->snapshotCopy(ReplicaSide::Local)->path(dbNode.nodeIdLocal().value(), localSnapshotPath, ignore)) {
             if (ignore) {
                 notifyIgnoredItem(dbNode.nodeIdLocal().value(), localSnapshotPath, dbNode.type());
                 return ExitCode::Ok;
@@ -949,9 +945,9 @@ bool ComputeFSOperationWorker::pathInDeletedFolder(const SyncPath &path) {
     return false;
 }
 
-void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const SyncPath &path, NodeType nodeType) {
-    LOGW_SYNCPAL_INFO(_logger, L"Item (or one of its descendant) has been ignored: " << Utility::formatSyncPath(path));
-    Error err(_syncPal->syncDbId(), "", nodeId, nodeType, path, ConflictType::None, InconsistencyType::ReservedName);
+void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const SyncPath &path, const NodeType nodeType) {
+    LOGW_SYNCPAL_INFO(_logger, L"Item (or one of its descendants) has been ignored: " << Utility::formatSyncPath(path));
+    const Error err(_syncPal->syncDbId(), "", nodeId, nodeType, path, ConflictType::None, InconsistencyType::ReservedName);
     _syncPal->addError(err);
 }
 
