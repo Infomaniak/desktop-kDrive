@@ -232,6 +232,8 @@ void TestExecutorWorker::testHasRight() {
     // Target side = Remote
     auto targetSide = ReplicaSide::Remote;
     DbNodeId dbNodeId = 1;
+    IoError ioError = IoError::Success;
+
     /// Normal case with Create operation
     {
         const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
@@ -259,6 +261,7 @@ void TestExecutorWorker::testHasRight() {
         const auto filename = CommonUtility::generateRandomStringAlphaNum();
         const auto path = SyncPath(_syncPal->localPath() / filename);
         testhelpers::generateOrEditTestFile(path);
+        IoHelper::setRights(path, false, false, false, ioError);
         permissions(path, std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
         const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
         syncOp->setType(OperationType::Create);
@@ -375,7 +378,7 @@ void TestExecutorWorker::testHasRight() {
     {
         const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
         testhelpers::generateOrEditTestFile(path);
-        permissions(path, std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
+        IoHelper::setRights(path, false, false, false, ioError);
         const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
         syncOp->setType(OperationType::Create);
         bool exists = false;
@@ -386,13 +389,13 @@ void TestExecutorWorker::testHasRight() {
     /// Create operation but no write permission on parent folder
     {
         const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
-        permissions(_syncPal->localPath(), std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
+        IoHelper::setRights(path.parent_path(), false, false, false, ioError);
         const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
         syncOp->setType(OperationType::Create);
         bool exists = false;
         CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
         CPPUNIT_ASSERT(!exists);
-        permissions(_syncPal->localPath(), std::filesystem::perms::all, std::filesystem::perm_options::add);
+        IoHelper::setRights(path.parent_path(), true, true, true, ioError);
     }
 
     /// Same behavior for Edit, Move and Delete operations
@@ -423,7 +426,7 @@ void TestExecutorWorker::testHasRight() {
         {
             const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
             testhelpers::generateOrEditTestFile(path);
-            permissions(path, std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
+            IoHelper::setRights(path, false, false, false, ioError);
             const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
             syncOp->setType(opType);
             bool exists = false;
