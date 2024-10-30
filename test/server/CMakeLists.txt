@@ -19,6 +19,25 @@ set(server_SRCS
     ../../src/server/updater_v2/abstractupdater.h ../../src/server/updater_v2/abstractupdater.cpp
 )
 
+if(APPLE)
+    list(APPEND server_SRCS ../../src/server/socketapisocket_mac.mm)
+    set_property(SOURCE ../../src/server/socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
+    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+    if(SPARKLE_FOUND)
+        # Define this, we need to check in updater.cpp
+        add_definitions(-DHAVE_SPARKLE)
+        list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
+
+        # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
+        # as its logic is tightly tailored around Qt6 frameworks
+        install(DIRECTORY "${SPARKLE_LIBRARY}"
+                DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
+   endif()
+endif()
+
 set(testserver_SRCS
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
@@ -32,18 +51,7 @@ set(testserver_SRCS
 )
 
 if(APPLE)
-    list(APPEND testserver_SRCS  vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
-
-    if(SPARKLE_FOUND)
-        # Define this, we need to check in updater.cpp
-        add_definitions(-DHAVE_SPARKLE)
-        list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
-
-        # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
-        # as its logic is tightly tailored around Qt6 frameworks
-        install(DIRECTORY "${SPARKLE_LIBRARY}"
-                DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
-   endif()
+    list(APPEND testserver_SRCS vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
 endif()
 
 if (WIN32)
@@ -61,13 +69,11 @@ add_executable(${testserver_NAME}
     ${testserver_SRCS})
 
 set_target_properties(${testserver_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
+    RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
 target_link_libraries(${testserver_NAME}
-        Qt6::Svg
-        ${libcommon_NAME}
-        ${libsyncengine_NAME}
-        updater
+    Qt6::Svg
+    updater
 )
 
 if (APPLE)
@@ -97,6 +103,11 @@ elseif (APPLE)
 else ()
     target_link_libraries(${testserver_NAME}
         "/usr/local/lib/libcppunit.so")
+endif()
+
+if (APPLE)
+    find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
+    target_link_libraries(${testserver_NAME} ${SERVICE_MANAGEMENT_LIBRARY})
 endif()
 
 # Install

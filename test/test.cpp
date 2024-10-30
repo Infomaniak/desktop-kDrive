@@ -18,8 +18,9 @@
 
 #include "testincludes.h"
 
-#include "libcommonserver/log/log.h"
 #include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/initializer.h>
 
