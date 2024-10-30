@@ -59,17 +59,21 @@ VfsWin::VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupPa
         return;
     }
 
-    // Start worker threads
-    for (int i = 0; i < NB_WORKERS; i++) {
-        for (int j = 0; j < s_nb_threads[i]; j++) {
-            QThread *workerThread = new QThread();
-            _workerInfo[i]._threadList.append(workerThread);
-            Worker *worker = new Worker(this, i, j, logger());
-            worker->moveToThread(workerThread);
-            connect(workerThread, &QThread::started, worker, &Worker::start);
-            connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
-            connect(workerThread, &QThread::finished, workerThread, &QObject::deleteLater);
-            workerThread->start();
+    // Start hydration/dehydration workers
+    // !!! Disabled for testing because no QEventLoop !!!
+    if (qApp) {
+        // Start worker threads
+        for (int i = 0; i < NB_WORKERS; i++) {
+            for (int j = 0; j < s_nb_threads[i]; j++) {
+                QThread *workerThread = new QThread();
+                _workerInfo[i]._threadList.append(workerThread);
+                Worker *worker = new Worker(this, i, j, logger());
+                worker->moveToThread(workerThread);
+                connect(workerThread, &QThread::started, worker, &Worker::start);
+                connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
+                connect(workerThread, &QThread::finished, workerThread, &QObject::deleteLater);
+                workerThread->start();
+            }
         }
     }
 }

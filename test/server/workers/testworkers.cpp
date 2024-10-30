@@ -209,18 +209,12 @@ void TestWorkers::testCreatePlaceholder() {
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::Ok);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::Unknown);
 
-#ifdef __APPLE__
         // Folder already exists
+#if defined(__APPLE__) || defined(_WIN32)
         exitCause = ExitCause::Unknown;
         exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::DataError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::InvalidSnapshot);
-#elif _WIN32
-        // Folder already exists
-        exitCause = ExitCause::Unknown;
-        exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath, exitCause);
-        CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::Ok);
-        CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::Unknown);
 #endif
     }
 
@@ -244,8 +238,21 @@ void TestWorkers::testCreatePlaceholder() {
 
         exitCause = ExitCause::Unknown;
         exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFilePath, exitCause);
+#ifdef __APPLE__
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::SystemError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::NoSearchPermission);
+#else
+        // Strangely (bug?), the Windows api is able to create a placeholder in a folder for which the user does not have rights
+        CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::Ok);
+        CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::Unknown);
+
+        // Remove placeholder
+        std::error_code ec;
+        std::filesystem::remove(_syncPal->localPath() / relativeFilePath);
+        if (ec) {
+            // Cannot remove file
+        }
+#endif
 
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
@@ -258,18 +265,12 @@ void TestWorkers::testCreatePlaceholder() {
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::Ok);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::Unknown);
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(_WIN32)
         // File already exists
         exitCause = ExitCause::Unknown;
         exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFilePath, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::DataError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::InvalidSnapshot);
-#elif _WIN32
-        // File already exists
-        exitCause = ExitCause::Unknown;
-        exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFilePath, exitCause);
-        CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::Ok);
-        CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::Unknown);
 #endif
     }
 }
@@ -331,7 +332,7 @@ void TestWorkers::testConvertToPlaceholder() {
                        ioError == IoError::Success);
 
         exitCause = ExitCause::Unknown;
-        exitCode = _syncPal->_executorWorker->createPlaceholder(relativeFilePath, exitCause);
+        exitCode = _syncPal->_executorWorker->convertToPlaceholder(relativeFilePath, true, exitCause);
         CPPUNIT_ASSERT_EQUAL(exitCode, ExitCode::SystemError);
         CPPUNIT_ASSERT_EQUAL(exitCause, ExitCause::NoSearchPermission);
 

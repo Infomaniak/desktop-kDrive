@@ -87,7 +87,16 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             winrt::StorageProviderSyncRootInfo info;
             info.Id(syncRootID);
 
+#ifndef NDEBUG
+            // Silent WINRT_ASSERT(!is_sta())
+            int reportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+#endif
             auto folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
+#ifndef NDEBUG
+            // Restore old report mode
+            _CrtSetReportMode(_CRT_ASSERT, reportMode);
+#endif
+
             info.Path(folder);
 
             info.DisplayNameResource(providerInfo->folderName());

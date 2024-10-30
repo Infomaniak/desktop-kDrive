@@ -51,7 +51,11 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
 }
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {
-    std::filesystem::remove_all(_path);
+    std::error_code ec;
+    std::filesystem::remove_all(_path, ec);
+    if (ec) {
+        // Cannot remove directory
+    }
 }
 
 
