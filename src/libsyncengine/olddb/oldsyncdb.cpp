@@ -31,7 +31,7 @@ namespace KDC {
 
 OldSyncDb::OldSyncDb(const SyncPath &dbPath) : Db(dbPath) {
     if (!checkConnect(std::string())) {
-        throw std::runtime_error("Cannot open DB!");
+        throw std::runtime_error("Cannot open old SyncDb.");
     }
 
     LOG_INFO(_logger, "Old SyncDb initialization done");

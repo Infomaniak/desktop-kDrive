@@ -22,8 +22,6 @@
 
 namespace KDC {
 
-PluginFactory::~PluginFactory() = default;
-
 QString pluginFileName(const QString &type, const QString &name) {
     return QString(QLatin1String("%1syncengine_%2_%3")).arg(APPLICATION_NAME, type, name);
 }

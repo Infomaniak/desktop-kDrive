@@ -243,7 +243,7 @@ QIcon SynchronizedItemWidget::getIconWithStatus(const QString &filePath, NodeTyp
 
     Q_CHECK_PTR(qApp->primaryScreen());
     qreal ratio = qApp->primaryScreen()->devicePixelRatio();
-    QPixmap pixmap(QSize(scene.width() * ratio, scene.height() * ratio));
+    QPixmap pixmap(QSize(static_cast<int>(round(scene.width() * ratio)), static_cast<int>(round(scene.height() * ratio))));
     pixmap.fill(Qt::transparent);
 
     QPainter painter(&pixmap);

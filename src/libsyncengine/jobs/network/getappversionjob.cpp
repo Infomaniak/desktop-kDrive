@@ -36,7 +36,6 @@ static const std::string platformWindowsKey = "windows";
 static const std::string platformLinuxAmdKey = "linux-amd";
 static const std::string platformLinuxArmKey = "linux-arm";
 static const std::string tagKey = "tag";
-static const std::string changeLogKey = "version_changelog";
 static const std::string buildVersionKey = "build_version";
 static const std::string buildMinOsVersionKey = "build_min_os_version";
 static const std::string downloadUrlKey = "download_link";

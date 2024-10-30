@@ -178,8 +178,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
 
         // TODO : not ideal, to be refactored
-        bool existOnServer(const SyncPath &path) const;
-        bool canShareItem(const SyncPath &path) const;
+        bool checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
+        bool checkIfCanShareItem(const SyncPath &path, bool &canShare) const;
 
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
         ExitCode syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet);
@@ -233,7 +233,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &_completedSize, int64_t &_totalSize,
                           int64_t &estimatedRemainingTime) const;
-        bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
+        [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
         bool isSnapshotValid(ReplicaSide side);
 
@@ -358,9 +358,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void startEstimateUpdates();
         void stopEstimateUpdates();
         void updateEstimates();
-        void initProgress(const SyncFileItem &item);
-        void setProgress(const SyncPath &relativePath, int64_t current);
-        void setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status);
+        [[nodiscard]] bool initProgress(const SyncFileItem &item);
+        [[nodiscard]] bool setProgress(const SyncPath &relativePath, int64_t current);
+        [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status);
 
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);

@@ -138,7 +138,7 @@ namespace KDC {
 
 const log4cplus::tstring empty_str;
 
-static void rolloverFiles(const log4cplus::tstring &filename, unsigned int maxBackupIndex) {
+static void rolloverFiles(const log4cplus::tstring &filename, int maxBackupIndex) {
     log4cplus::helpers::LogLog *loglog = log4cplus::helpers::LogLog::getLogLog();
 
     // Delete the oldest file

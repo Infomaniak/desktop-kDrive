@@ -234,7 +234,7 @@ const void *SqliteQuery::blobValue(int index) const {
     return sqlite3_column_blob(_stmt.get(), index);
 }
 
-size_t SqliteQuery::blobSize(int index) const {
+int SqliteQuery::blobSize(int index) const {
     return sqlite3_column_bytes(_stmt.get(), index);
 }
 

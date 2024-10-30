@@ -33,7 +33,7 @@ namespace KDC {
 
 class LocalDeleteJobMockingTrash : public LocalDeleteJob {
     public:
-        LocalDeleteJobMockingTrash(const SyncPath &absolutePath) : LocalDeleteJob(absolutePath){};
+        LocalDeleteJobMockingTrash(const SyncPath &absolutePath) : LocalDeleteJob(absolutePath) {};
         void setMoveToTrashFailed(bool failed) { _moveToTrashFailed = failed; };
 
     protected:
@@ -45,7 +45,7 @@ class LocalDeleteJobMockingTrash : public LocalDeleteJob {
 };
 
 void KDC::TestLocalJobs::setUp() {
-    // Setup parameter in test mode
+    // Setup parameters cache in test mode
     ParametersCache::instance(true);
 }
 
@@ -159,7 +159,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash = false) :
-                LocalDeleteJob(syncInfo, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash){};
+                LocalDeleteJob(syncInfo, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash) {};
             void setReturnedItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }
 
         protected:

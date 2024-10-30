@@ -43,6 +43,7 @@ AbstractJob::~AbstractJob() {
     if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(_logger, "Job " << _jobId << " deleted");
     }
+    log4cplus::threadCleanup();
 }
 
 ExitCode AbstractJob::runSynchronously() {

@@ -49,9 +49,8 @@ struct Result {
         bool success{true};
         std::string message;
 };
-
 static std::string makeMessage(const CppUnit::Exception &e);
 static Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept;
-}; // namespace snapshotitem_checker
+} // namespace snapshotitem_checker
 
 } // namespace KDC

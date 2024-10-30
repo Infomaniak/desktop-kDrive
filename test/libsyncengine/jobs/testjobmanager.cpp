@@ -186,7 +186,7 @@ void TestJobManager::testCancelJobs() {
         JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
         jobCounter++;
         const std::scoped_lock lock(_mutex);
-        _ongoingJobs.try_emplace(job->jobId(), job);
+        _ongoingJobs.try_emplace(static_cast<uint64_t>(job->jobId()), job);
     }
 
     Utility::msleep(1000); // Wait 1sec
@@ -417,7 +417,8 @@ void TestJobManager::generateBigFiles(const SyncPath &dirPath, int size, int cou
         bigFilePath = SyncPath(dirPath) / fileName.str();
         {
             std::ofstream ofs(bigFilePath, std::ios_base::in | std::ios_base::trunc);
-            for (int i = 0; i < size * 1000000 / str.length(); i++) {
+            for (int i = 0; i < static_cast<int>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length())));
+                 i++) {
                 ofs << str;
             }
         }

@@ -32,6 +32,7 @@ DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> sy
                                        bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/) :
     AbstractUploadSession(filepath, filename, nbParalleleThread), _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime),
     _remoteParentDirId(remoteParentDirId) {
+    (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
 }
 
@@ -70,7 +71,8 @@ std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken());
 }
 
-bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
+bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob, std::string uploadToken) {
+    (void) startJob;
     if (_syncDb && !_syncDb->insertUploadSessionToken(UploadSessionToken(uploadToken), _uploadSessionTokenDbId)) {
         LOG_WARN(getLogger(), "Error in SyncDb::insertUploadSessionToken");
         _exitCode = ExitCode::DbError;

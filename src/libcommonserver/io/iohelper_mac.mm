@@ -94,7 +94,9 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
     CFRelease(aliasPathStr);
 
-    CFDataRef bookmarkRef = CFDataCreate(nullptr, (const UInt8 *)data.data(), data.size());
+    CFDataRef bookmarkRef = CFDataCreate(nullptr,
+                                         (const UInt8 *) data.data(),
+                                         static_cast<CFIndex>(data.size()));
 
     CFErrorRef error = nil;
     bool ret = CFURLWriteBookmarkDataToFile(bookmarkRef, aliasUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, &error);

@@ -447,14 +447,14 @@ void LocalFileSystemObserverWorker::execute() {
             invalidateSnapshot();
             exitCode = generateInitialSnapshot();
             if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << exitCode);
+                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
                 break;
             }
         } else {
             if (!_snapshot->isValid()) {
                 exitCode = generateInitialSnapshot();
                 if (exitCode != ExitCode::Ok) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << exitCode);
+                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
                     break;
                 }
             }
@@ -865,7 +865,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Error caught in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " - " << e.what());
+                         "Error caught in LocalFileSystemObserverWorker::exploreDir: code=" << e.code() << " error=" << e.what());
         setExitCause(ExitCause::FileAccessError);
         return ExitCode::SystemError;
     } catch (...) {

@@ -105,7 +105,7 @@ void ClientGui::init() {
             qCWarning(lcClientGui()) << "loadInfoMaps failed for trial=" << trial;
             error = true;
             if (trial < INIT_TRIALS) {
-                KDC::CommonGuiUtility::sleep(2 ^ trial);
+                KDC::CommonGuiUtility::sleep(static_cast<unsigned long>(2 ^ trial));
             }
         }
     }
@@ -511,6 +511,7 @@ void ClientGui::updateSystrayNeeded() {
 }
 
 void ClientGui::resetSystray(bool currentVersionLocked) {
+    (void) currentVersionLocked;
     _tray.reset(new Systray());
     _tray->setParent(this);
 
@@ -592,8 +593,6 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
         unsigned int idleSeen = 0;
         unsigned int abortOrPausedSeen = 0;
         unsigned int runSeen = 0;
-        unsigned int various = 0; // TODO: not used ?
-
 
         for (const auto &syncInfoMapIt: _syncInfoMap) {
             if (syncInfoMapIt.second.paused()) {
@@ -602,7 +601,6 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
                 switch (syncInfoMapIt.second.status()) {
                     case SyncStatus::Undefined:
                     case SyncStatus::Starting:
-                        various++;
                         break;
                     case SyncStatus::Running:
                         runSeen++;
@@ -696,7 +694,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
             }
             exitCode = GuiRequests::syncStop(syncDbId);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : " << exitCode;
+                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " code=" << exitCode;
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
@@ -708,7 +706,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
             }
             exitCode = GuiRequests::syncStart(syncDbId);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : " << exitCode;
+                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " code=" << exitCode;
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatus::Starting);
@@ -984,6 +982,8 @@ void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
 void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
 #ifdef Q_OS_LINUX
     resetSystray(currentVersionLocked);
+#else
+    (void) currentVersionLocked;
 #endif
 }
 

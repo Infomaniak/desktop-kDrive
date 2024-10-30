@@ -44,8 +44,9 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     for (int i = 0; i < 2; i++) { // Retry once in case a log file is archived/created during the first iteration
         result = IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoError::Success) {
-            size *= 0.8; // The compressed logs will be smaller than the original ones. We estimate at worst 80% of the
-                         // original size.
+            size = static_cast<uint64_t>(static_cast<double>(size) *
+                                         0.8); // The compressed logs will be smaller than the original ones. We estimate at worst
+                                               // 80% of the original size.
             return true;
         }
     }
@@ -92,7 +93,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
                 return ExitCode::InvalidToken; // Currently, we can't send logs if no drive is found
             }
         } catch (const std::runtime_error &e) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in generateLogsSupportArchive: " << e.what());
+            LOG_WARN(Log::instance()->getLogger(), "Error in generateLogsSupportArchive: error=" << e.what());
             exitCause = ExitCause::DbAccessError;
             return ExitCode::DbError;
         }
@@ -395,8 +396,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
             continue; // Don't process the file
         }
 
-        std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
-                                                             &destPath, &totalSize, &fileSize](int progressPercent) {
+        std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &destPath,
+                                                             &totalSize, &fileSize](unsigned int progressPercent) {
             auto parametersCacheInstance = ParametersCache::instance();
             if (parametersCacheInstance && parametersCacheInstance->parameters().extendedLog()) {
                 LOG_DEBUG(Log::instance()->getLogger(),
@@ -404,7 +405,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
                                                       << " - total compression step percent: "
                                                       << (compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
             }
-            canceled = !safeProgressCallback((compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
+            canceled =
+                    !safeProgressCallback(static_cast<int>((compressedFilesSize * 100 + progressPercent * fileSize) / totalSize));
             return !canceled;
         };
 
@@ -478,9 +480,9 @@ ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath &outputPath, Ex
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
         }
     } catch (const std::runtime_error &e) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in generateUserDescriptionFile: " << e.what());
-        file << "Unable to retrieve user ID(s) - " << e.what() << std::endl;
-        file << "Drive ID(s): Unable to retrieve drive ID(s) - " << e.what() << std::endl;
+        LOG_WARN(Log::instance()->getLogger(), "Error in generateUserDescriptionFile: error=" << e.what());
+        file << "Unable to retrieve user ID(s): error=" << e.what() << std::endl;
+        file << "Drive ID(s): Unable to retrieve drive ID(s): error=" << e.what() << std::endl;
     }
 
     file.close();

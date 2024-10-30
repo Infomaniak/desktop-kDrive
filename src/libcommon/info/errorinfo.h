@@ -28,18 +28,19 @@ namespace KDC {
 
 class ErrorInfo {
     public:
-        ErrorInfo(int dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
-                  ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
-                  NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
-                  CancelType cancelType = CancelType::None, const QString &destinationPath = "");
+        ErrorInfo(int64_t dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId,
+                  const QString &workerName, ExitCode exitCode, ExitCause exitCause, const QString &localNodeId,
+                  const QString &remoteNodeId, NodeType nodeType, const QString &path, ConflictType conflictType,
+                  InconsistencyType inconsistencyType, CancelType cancelType = CancelType::None,
+                  const QString &destinationPath = "");
         ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
                   ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
                   NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
                   CancelType cancelType = CancelType::None, const QString &destinationPath = "");
         ErrorInfo();
 
-        inline int dbId() const { return _dbId; }
-        inline void setDbId(int dbId) { _dbId = dbId; }
+        inline int64_t dbId() const { return _dbId; }
+        inline void setDbId(int64_t dbId) { _dbId = dbId; }
         inline qint64 getTime() const { return _time; }
         inline void setTime(qint64 time) { _time = time; }
         inline ErrorLevel level() const { return _level; }
@@ -80,7 +81,7 @@ class ErrorInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<ErrorInfo> &list);
 
     private:
-        int _dbId{0};
+        int64_t _dbId{0};
         qint64 _time{0};
         ErrorLevel _level{ErrorLevel::Unknown};
         QString _functionName;

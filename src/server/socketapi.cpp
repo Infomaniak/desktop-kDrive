@@ -426,7 +426,14 @@ bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &st
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) return false;
 
-    if (syncPalMapIt->second->existOnServer(QStr2Path(fileData.relativePath))) {
+    bool exists = false;
+    if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), exists)) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
+        return false;
+    }
+
+    if (exists) {
         status = KDC::SyncFileStatus::Success;
     }
 
@@ -901,7 +908,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
         return;
     }
 
-    QByteArray thumbnailArr(thumbnail.c_str(), thumbnail.length());
+    QByteArray thumbnailArr(thumbnail.c_str(), static_cast<qsizetype>(thumbnail.length()));
     QPixmap pixmap;
     if (!pixmap.loadFromData(thumbnailArr)) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
@@ -930,10 +937,19 @@ void SocketApi::sendSharingContextMenuOptions(const FileData &fileData, const So
         syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     }
 
-    if (syncPalMapIt == _syncPalMap.end()) return;
+    bool isOnTheServer = false;
+    if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), isOnTheServer)) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
+        return;
+    }
 
-    const bool isOnTheServer = syncPalMapIt->second->existOnServer(QStr2Path(fileData.relativePath));
-    const bool canShare = syncPalMapIt->second->canShareItem(QStr2Path(fileData.relativePath));
+    bool canShare = false;
+    if (!syncPalMapIt->second->checkIfCanShareItem(QStr2Path(fileData.relativePath), canShare)) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatPath(fileData.relativePath));
+        return;
+    }
 
     const auto flagString = QString("%1%2%1").arg(MSG_CDE_SEPARATOR).arg(isOnTheServer ? QString() : QString("d"));
 
@@ -976,10 +992,19 @@ void SocketApi::addSharingContextMenuOptions(const FileData &fileData, QTextStre
         syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     }
 
-    if (syncPalMapIt == _syncPalMap.end()) return;
+    bool isOnTheServer = false;
+    if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), isOnTheServer)) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
+        // Continue
+    }
 
-    const bool isOnTheServer = syncPalMapIt->second->existOnServer(QStr2Path(fileData.relativePath));
-    const bool canShare = syncPalMapIt->second->canShareItem(QStr2Path(fileData.relativePath));
+    bool canShare = false;
+    if (!syncPalMapIt->second->checkIfCanShareItem(QStr2Path(fileData.relativePath), canShare)) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatPath(fileData.relativePath));
+        // Continue
+    }
 
     const auto flagString = QString("%1%2%1").arg(MSG_CDE_SEPARATOR).arg(isOnTheServer ? QString() : QString("d"));
 

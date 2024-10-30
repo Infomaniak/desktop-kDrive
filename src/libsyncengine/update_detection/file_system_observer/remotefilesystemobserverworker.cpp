@@ -68,14 +68,14 @@ void RemoteFileSystemObserverWorker::execute() {
         if (!_snapshot->isValid()) {
             exitCode = generateInitialSnapshot();
             if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << exitCode);
+                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
                 break;
             }
         }
 
         exitCode = processEvents();
         if (exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents : " << exitCode);
+            LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: code=" << exitCode);
             break;
         }
 
@@ -173,16 +173,16 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
 
         try {
             job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, _cursor);
-        } catch (std::exception const &e) {
+        } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
-                                              << _driveDbId << " : " << e.what());
+                                              << _driveDbId << " error=" << e.what());
             exitCode = ExitCode::DataError;
             break;
         }
 
         exitCode = job->runSynchronously();
         if (exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob::runSynchronously : " << exitCode);
+            LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob::runSynchronously: code=" << exitCode);
             break;
         }
 
@@ -269,10 +269,10 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         std::unordered_set<NodeId> blackList;
         SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
         job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, dirId, blackList, true);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         std::string what = e.what();
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
-                                          << _driveDbId << " what =" << what.c_str());
+                                          << _driveDbId << " error=" << what.c_str());
         if (what == invalidToken) {
             return ExitCode::InvalidToken;
         }
@@ -409,8 +409,8 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
         std::shared_ptr<LongPollJob> notifyJob = nullptr;
         try {
             notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor);
-        } catch (std::exception const &e) {
-            LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " : " << e.what());
+        } catch (const std::exception &e) {
+            LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
             return ExitCode::DataError;
         }
 
@@ -713,11 +713,20 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
 
 ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights,
                                                                   SnapshotItem &snapshotItem) {
-    GetFileInfoJob job(_syncPal->driveDbId(), nodeId);
-    job.runSynchronously();
-    if (job.hasHttpError() || job.exitCode() != ExitCode::Ok) {
-        if (job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-            job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+    std::unique_ptr<GetFileInfoJob> job;
+    try {
+        job = std::make_unique<GetFileInfoJob>(_syncPal->driveDbId(), nodeId);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetFileInfoJob::GetFileInfoJob for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str()
+                                                                          << " error=" << e.what());
+        return ExitCode::DataError;
+    }
+
+    job->runSynchronously();
+    if (job->hasHttpError() || job->exitCode() != ExitCode::Ok) {
+        if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+            job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
             hasRights = false;
             return ExitCode::Ok;
         }
@@ -729,10 +738,11 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
         return ExitCode::BackError;
     }
 
-    snapshotItem.setCreatedAt(job.creationTime());
-    snapshotItem.setLastModified(job.modtime());
-    snapshotItem.setSize(job.size());
-    snapshotItem.setIsLink(job.isLink());
+    snapshotItem.setCreatedAt(job->creationTime());
+    snapshotItem.setLastModified(job->modtime());
+    snapshotItem.setSize(job->size());
+    snapshotItem.setIsLink(job->isLink());
+
     hasRights = true;
     return ExitCode::Ok;
 }
