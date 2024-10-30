@@ -43,6 +43,7 @@
 #include <log4cplus/loggingmacros.h>
 
 #include <sentry.h>
+#include <WinSock2.h>
 
 namespace KDC {
 
@@ -219,7 +220,7 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
         GetSystemTimeAsFileTime(&modificationTime);
     }
 
-    HANDLE hFile;
+    HANDLE hFile = INVALID_HANDLE_VALUE;
     for (bool isDirectory: {false, true}) {
         hFile = CreateFileW(filePath.native().c_str(), FILE_WRITE_ATTRIBUTES,
                             FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,

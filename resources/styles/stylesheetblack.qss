@@ -675,10 +675,10 @@ KDC--CustomDialog QWidget#debugDialogScrollable
 }
 
 /**************************/
-/* KDC--UpdateErrorDialog */
+/* KDC--UpdateDialog */
 /**************************/
 
-KDC--UpdateErrorDialog QPushButton#defaultsmallbutton
+KDC--UpdateDialog QPushButton#defaultsmallbutton
 {
     min-width: 100px;
 }

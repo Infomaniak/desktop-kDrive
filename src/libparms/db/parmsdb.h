@@ -37,6 +37,11 @@ namespace KDC {
 
 class PARMS_EXPORT ParmsDb : public Db {
     public:
+        class ParmsDbIsNotInitializedException final : public std::runtime_error {
+            public:
+                ParmsDbIsNotInitializedException() : std::runtime_error("ParmsDb must be initialized!") {}
+        };
+
         static std::shared_ptr<ParmsDb> instance(const std::filesystem::path &dbPath = std::filesystem::path(),
                                                  const std::string &version = std::string(), bool autoDelete = false,
                                                  bool test = false);
@@ -140,7 +145,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertDefaultParameters();
         bool insertDefaultAppState();
-        bool insertAppState(AppStateKey key, const std::string &value);
+        bool insertAppState(AppStateKey key, const std::string &value, bool noEmptyValue = false);
         bool updateExclusionTemplates();
 
         bool createAppState();

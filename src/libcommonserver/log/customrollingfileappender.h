@@ -48,7 +48,6 @@ class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
         int _expire = 0;
         long _maxFileSize = 0;
         std::chrono::time_point<std::chrono::system_clock> _lastExpireCheck;
-
 };
 
 } // namespace KDC

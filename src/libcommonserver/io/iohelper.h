@@ -87,7 +87,7 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
+        static bool logDirectoryPath(SyncPath &directoryPath, IoError &ioError, std::string *errorMsg = nullptr) noexcept;
 
         //! Returns the log archiver directory path of the application.
         /*!

@@ -31,9 +31,8 @@ Drive::Drive() :
 
 Drive::Drive(int dbId, int driveId, int accountDbId, const std::string &name, int64_t size, const std::string &color,
              bool notifications, bool admin) :
-    _logger(Log::instance()->getLogger()),
-    _dbId(dbId), _driveId(driveId), _accountDbId(accountDbId), _name(name), _size(size), _color(color),
-    _notifications(notifications), _admin(admin), _maintenance(false), _maintenanceFrom(0), _locked(false), _usedSize(0),
-    _accessDenied(false) {}
+    _logger(Log::instance()->getLogger()), _dbId(dbId), _driveId(driveId), _accountDbId(accountDbId), _name(name), _size(size),
+    _color(color), _notifications(notifications), _admin(admin), _maintenance(false), _maintenanceFrom(0), _locked(false),
+    _usedSize(0), _accessDenied(false) {}
 
 } // namespace KDC
