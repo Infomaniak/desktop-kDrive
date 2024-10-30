@@ -329,8 +329,8 @@ bool Utilities::readNextValue(std::wstring &message, std::wstring &value) {
 namespace {
 
 bool fileExists(DWORD dwError) noexcept {
-    return (code != ERROR_FILE_NOT_FOUND) && (code != ERROR_PATH_NOT_FOUND) && (code != ERROR_INVALID_DRIVE) &&
-           (code != ERROR_BAD_NETPATH);
+    return (dwError != ERROR_FILE_NOT_FOUND) && (dwError != ERROR_PATH_NOT_FOUND) && (dwError != ERROR_INVALID_DRIVE) &&
+           (dwError != ERROR_BAD_NETPATH);
 }
 
 bool fileExists(const std::error_code &code) noexcept {
