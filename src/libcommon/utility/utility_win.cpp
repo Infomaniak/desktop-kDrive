@@ -17,7 +17,6 @@
  */
 
 #include "libcommon/utility/utility.h"
-#include "libcommon/asserts.h"
 #include "libcommon/utility/types.h"
 
 #include <shlobj.h>
@@ -73,8 +72,6 @@ bool CommonUtility::fileExists(const std::error_code &code) noexcept {
 }
 
 std::wstring CommonUtility::getErrorMessage(DWORD errorMessageID) {
-    if (errorMessageID == 0) return {};
-
     LPWSTR messageBuffer = nullptr;
     const size_t size =
             FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
@@ -83,7 +80,7 @@ std::wstring CommonUtility::getErrorMessage(DWORD errorMessageID) {
     // Escape quotes
     const auto msg = std::wstring(messageBuffer, size);
     std::wostringstream message;
-    message << errorMessageID << L" - " << msg;
+    message << msg << L"(" << errorMessageID << L")";
 
     LocalFree(messageBuffer);
 
