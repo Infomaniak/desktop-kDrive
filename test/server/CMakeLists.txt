@@ -4,38 +4,44 @@ find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML Net)
 
 set(CMAKE_AUTOMOC ON)
+
 set(testserver_NAME ${APPLICATION_NAME}_test_server)
 
+set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
+
 set(server_SRCS
-    ../../src/libcommon/updater.h ../../src/libcommon/updater.cpp
-    ../../src/libcommonserver/vfs.h ../../src/libcommonserver/vfs.cpp
-    ../../src/libcommonserver/plugin.h ../../src/libcommonserver/plugin.cpp
-    ../../src/server/logarchiver.h ../../src/server/logarchiver.cpp
-    ../../src/server/socketapi.h ../../src/server/socketapi.cpp
-    ../../src/server/socketlistener.h ../../src/server/socketlistener.cpp
-    ../../src/server/updater/kdcupdater.h ../../src/server/updater/kdcupdater.cpp
-    ../../src/server/updater/updateinfo.h ../../src/server/updater/updateinfo.cpp
-    ../../src/server/updater/updaterserver.h ../../src/server/updater/updaterserver.cpp
-    ../../src/server/updater_v2/abstractupdater.h ../../src/server/updater_v2/abstractupdater.cpp
+    ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.cpp
+    ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.cpp
+    ${server_srcs_path}/logarchiver/logarchiver.h ${server_srcs_path}/logarchiver/logarchiver.cpp
+    ${server_srcs_path}/socketapi.h ${server_srcs_path}/socketapi.cpp
+    ${server_srcs_path}/socketlistener.h ${server_srcs_path}/socketlistener.cpp
+    ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
+    ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
 )
 
 if(APPLE)
-    list(APPEND server_SRCS ../../src/server/socketapisocket_mac.mm)
-    set_property(SOURCE ../../src/server/socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS ${server_srcs_path}/socketapisocket_mac.mm)
+    set_property(SOURCE ${server_srcs_path}/socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
-    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
-    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    message(STATUS "server_srcs_path=${server_srcs_path}")
+    list(APPEND server_SRCS ${server_srcs_path}/../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
+    set_property(SOURCE ${server_srcs_path}/../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
+        list(APPEND server_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater.mm)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
         # as its logic is tightly tailored around Qt6 frameworks
         install(DIRECTORY "${SPARKLE_LIBRARY}"
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
-   endif()
+    endif()
+elseif (WIN32)
+    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp)
+else ()
+    list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp)
 endif()
 
 set(testserver_SRCS
@@ -45,7 +51,7 @@ set(testserver_SRCS
 
     test.cpp
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
-    updater/testupdater.h updater/testupdater.cpp
+    updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
     workers/testworkers.h workers/testworkers.cpp
 )
@@ -77,6 +83,25 @@ target_link_libraries(${testserver_NAME}
 )
 
 if (APPLE)
+    find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
+    target_link_libraries(${testserver_NAME} ${SERVICE_MANAGEMENT_LIBRARY})
+endif()
+
+if (WIN32)
+    target_link_libraries(${testserver_NAME}
+            debug
+            "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
+            optimized
+            "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
+elseif (APPLE)
+    target_link_libraries(${testserver_NAME}
+            "/usr/local/lib/libcppunit.dylib")
+else ()
+    target_link_libraries(${testserver_NAME}
+            "/usr/local/lib/libcppunit.so")
+endif()
+
+if (APPLE)
     target_link_libraries(${testserver_NAME}
         "${libsyncengine_NAME}_vfs_mac"
         "${updater_DEPS}")
@@ -89,25 +114,6 @@ elseif (WIN32)
         NO_CACHE)
     target_link_libraries(${testserver_NAME}
         "${LIBSYNCENGINE_VFS_STATIC_LIBRARY}")
-endif()
-
-if (WIN32)
-    target_link_libraries(${testserver_NAME}
-        debug
-        "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
-        optimized
-        "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
-elseif (APPLE)
-    target_link_libraries(${testserver_NAME}
-        "/usr/local/lib/libcppunit.dylib")
-else ()
-    target_link_libraries(${testserver_NAME}
-        "/usr/local/lib/libcppunit.so")
-endif()
-
-if (APPLE)
-    find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
-    target_link_libraries(${testserver_NAME} ${SERVICE_MANAGEMENT_LIBRARY})
 endif()
 
 # Install

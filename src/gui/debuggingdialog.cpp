@@ -43,8 +43,6 @@ static const int boxHMargin = 40;
 static const int boxHSpacing = 10;
 static const int titleBoxVMargin = 25;
 static const int recordDebuggingBoxVMargin = 20;
-static const int debugLevelLabelBoxVMargin = 10;
-static const int debugLevelSelectBoxVMargin = 20;
 static const QString debuggingFolderLink = "debuggingFolderLink";
 Q_LOGGING_CATEGORY(lcDebuggingDialog, "gui.debuggingdialog", QtInfoMsg)
 

@@ -280,7 +280,6 @@ $flags = @(
 "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
 "'-DCMAKE_C_COMPILER:STRING=$compiler_path'",
 "'-DCMAKE_CXX_COMPILER:STRING=$compiler_path'",
-"'-DAPPLICATION_UPDATE_URL:STRING=https://www.infomaniak.com/drive/update/desktopclient'",
 "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
 "'-DBIN_INSTALL_DIR:PATH=$path'",
 "'-DVFS_DIRECTORY:PATH=$vfsDir'",

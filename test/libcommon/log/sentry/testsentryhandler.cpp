@@ -31,6 +31,9 @@ MockTestSentryHandler::MockTestSentryHandler() : SentryHandler() {
 }
 void MockTestSentryHandler::sendEventToSentry(const SentryLevel level, const std::string& title,
                                               const std::string& message) const {
+    (void) level;
+    (void) title;
+    (void) message;
     _sentryUploadedEventCount++;
 }
 

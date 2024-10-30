@@ -630,7 +630,7 @@ void TestIo::testGetItemTypeEdgeCases() {
     // It is unclear which of `fileURLWithPath` or `getResourceValue` is the culprit.
 
     const LocalTemporaryDirectory temporaryDirectory;
-    const int bound = (1020 - temporaryDirectory.path().string().size()) / 4;
+    const size_t bound = (1020 - temporaryDirectory.path().string().size()) / 4;
     std::string segment(bound, 'a');
 
     SyncPath path = temporaryDirectory.path() / segment / segment / segment / u8"놔";

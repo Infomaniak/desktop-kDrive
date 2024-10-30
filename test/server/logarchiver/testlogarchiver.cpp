@@ -17,11 +17,15 @@
  */
 
 #include "testlogarchiver.h"
-#include "server/logarchiver.h"
+
+#include "server/logarchiver/logarchiver.h"
+#include "requests/parameterscache.h"
+#include "version.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/db/db.h"
+#include "libparms/db/parmsdb.h"
 #include "test_utility/localtemporarydirectory.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -34,8 +38,15 @@ namespace KDC {
 
 void TestLogArchiver::setUp() {
     _logger = Log::instance()->getLogger();
-    bool alreadyExist = false;
-    Db::makeDbName(alreadyExist);
+
+    // Create parmsDb
+    bool alreadyExists = false;
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::remove(parmsDbPath);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+
+    // Setup parameters cache in test mode
+    ParametersCache::instance(true);
 }
 
 void TestLogArchiver::testGetLogEstimatedSize() {
@@ -74,7 +85,6 @@ void TestLogArchiver::testCopyLogsTo() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         uint64_t tempDirSize = 0;
-        bool tooDeep = false;
         IoHelper::getDirectorySize(tempDir.path(), tempDirSize, err, 0);
         CPPUNIT_ASSERT(err == IoError::Success || err == IoError::MaxDepthExceeded);
         CPPUNIT_ASSERT_GREATER(logDirsize, tempDirSize);

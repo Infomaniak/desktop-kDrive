@@ -31,15 +31,17 @@ void TestLiteSyncExtConnector::setUp() {}
 void TestLiteSyncExtConnector::tearDown() {}
 
 void TestLiteSyncExtConnector::testGetVfsStatus() {
+    /*
     bool isPlaceholder = false;
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
 
-    //    // vfsGetStatus returns `true` if the file path indicates a non-existing item.
-    //    log4cplus::Logger logger;
-    //    CPPUNIT_ASSERT(LiteSyncExtConnector::vfsGetStatus("this_file_does_not_exist.txt", isPlaceholder, isHydrated, isSyncing,
-    //                                                      progress, logger));
+    // vfsGetStatus returns `true` if the file path indicates a non-existing item.
+    log4cplus::Logger logger;
+    CPPUNIT_ASSERT(LiteSyncExtConnector::vfsGetStatus("this_file_does_not_exist.txt", isPlaceholder, isHydrated, isSyncing,
+                                                      progress, logger));
+    */
 }
 
 } // namespace KDC

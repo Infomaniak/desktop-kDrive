@@ -128,7 +128,7 @@ void WebView::loadFinished(bool ok) {
 }
 
 void WebView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode) {
-    qCInfo(lcWizardWebiew()) << terminationStatus << ", " << exitCode;
+    qCInfo(lcWizardWebiew()) << terminationStatus << " code=" << exitCode;
 }
 
 WebView::~WebView() {

@@ -48,10 +48,9 @@ ConfirmSynchronizationDialog::ConfirmSynchronizationDialog(std::shared_ptr<Clien
                                                            const QString &serverFolderNodeId, const QString &localFolderName,
                                                            qint64 localFolderSize, const QString &serverFolderName,
                                                            qint64 serverFolderSize, QWidget *parent) :
-    CustomDialog(true, parent),
-    _gui(gui), _localFolderName(localFolderName), _localFolderSize(localFolderSize), _serverFolderName(serverFolderName),
-    _serverFolderSize(serverFolderSize), _leftArrowIconLabel(nullptr), _rightArrowIconLabel(nullptr), _serverSizeLabel(nullptr),
-    _backButton(nullptr), _continueButton(nullptr) {
+    CustomDialog(true, parent), _gui(gui), _localFolderName(localFolderName), _localFolderSize(localFolderSize),
+    _serverFolderName(serverFolderName), _serverFolderSize(serverFolderSize), _leftArrowIconLabel(nullptr),
+    _rightArrowIconLabel(nullptr), _serverSizeLabel(nullptr), _backButton(nullptr), _continueButton(nullptr) {
     initUI();
 
     connect(_gui.get(), &ClientGui::folderSizeCompleted, this, &ConfirmSynchronizationDialog::onFolderSizeCompleted);

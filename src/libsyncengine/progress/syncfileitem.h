@@ -74,7 +74,16 @@ class SyncFileItem {
 
         inline bool isDirectory() const { return _type == NodeType::Directory; }
 
-        bool operator==(const SyncFileItem &) const = default;
+        // TODO : "default" does not work with gcc version used to build the Linux package. Use it once support to Ubuntu 20.04
+        // has been dropped: bool operator==(const SyncFileItem &) const = default;
+        bool operator==(const SyncFileItem &other) const {
+            return _type == other._type && _path == other._path && _newPath == other._newPath &&
+                   _localNodeId == other._localNodeId && _remoteNodeId == other._remoteNodeId && _direction == other._direction &&
+                   _instruction == other._instruction && _status == other._status && _conflict == other._conflict &&
+                   _inconsistency == other._inconsistency && _cancelType == other._cancelType && _error == other._error &&
+                   _size == other._size && _modTime == other._modTime && _creationTime == other._creationTime &&
+                   _dehydrated == other._dehydrated && _confirmed == other._confirmed && _timestamp == other._timestamp;
+        }
 
     private:
         NodeType _type{NodeType::Unknown};

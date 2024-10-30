@@ -201,6 +201,8 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
 }
 
 bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
+    (void) absolutePath;
+    (void) ioError;
     return true;
 }
 
@@ -598,37 +600,34 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
 }
 
 bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    // Warning: never log anything in this method. If the logger is not set, the app will crash.
     std::error_code ec;
     directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
     ioError = stdError2ioError(ec);
-
     return ioError == IoError::Success;
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    //!\ Don't use IoHelper::logger() here, as Log::_instance may not be initialized yet. /!\_
-    try {
-        if (directoryPath = Log::instance()->getLogFilePath().parent_path(); !directoryPath.empty()) {
-            return true;
+    if (Log::instance()) {
+        SyncPath filePath = Log::instance()->getLogFilePath();
+        if (!filePath.empty()) {
+            directoryPath = filePath.parent_path();
         } else {
-            throw std::runtime_error("Log directory path is empty.");
+            LOG_WARN(logger(), "Empty log file path");
+            return false;
         }
-    } catch (const std::exception &e) {
-        if (Log::isSet()) {
-            LOG_WARN(logger(), "Error in IoHelper::logDirectoryPath: " << e.what());
+    } else {
+        // Generate directory path
+        if (!tempDirectoryPath(directoryPath, ioError)) {
+            return false;
         }
-        // We can't log the error, so we just generate the path for the logger to initialize.
+
+        static const std::string LOGDIR_SUFFIX = "-logdir/";
+        const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
+        directoryPath /= logDirName;
     }
 
-    if (!tempDirectoryPath(directoryPath, ioError)) {
-        return false;
-    }
-
-    static const std::string LOGDIR_SUFFIX = "-logdir/";
-    const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
-    directoryPath /= logDirName;
-
-    return ioError == IoError::Success;
+    return true;
 }
 
 bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {

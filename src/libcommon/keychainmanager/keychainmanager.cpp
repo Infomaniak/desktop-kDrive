@@ -34,7 +34,11 @@ std::shared_ptr<KeyChainManager> KeyChainManager::_instance = nullptr;
 
 std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(testing));
+        try {
+            _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(testing));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     return _instance;
@@ -77,21 +81,6 @@ bool KeyChainManager::writeToken(const std::string &keychainKey, const std::stri
 
     return true;
 }
-
-#if defined(__unix__) && !defined(__APPLE__)
-std::string exec(const char *cmd) {
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
-    }
-    return result;
-}
-#endif
 
 bool KeyChainManager::readDataFromKeystore(const std::string &keychainKey, std::string &data, bool &found) {
     keychain::Error error{};

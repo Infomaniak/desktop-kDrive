@@ -43,12 +43,9 @@
 #include "jobs/network/API_v2/getdriveslistjob.h"
 #include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/getsizejob.h"
-#include "jobs/network/API_v2/upload_session/loguploadsession.h"
 #include "jobs/jobmanager.h"
 #include "libsyncengine/olddb/oldsyncdb.h"
 #include "utility/jsonparserutility.h"
-#include "server/logarchiver.h"
-
 
 #include <QDir>
 #include <QUuid>
@@ -316,7 +313,9 @@ ExitCode ServerRequests::getParameters(ParametersInfo &parametersInfo) {
 
 ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) {
     parametersInfoToParameters(parametersInfo, ParametersCache::instance()->parameters());
-    return ParametersCache::instance()->save();
+    auto exitCode = ExitCode::Ok;
+    ParametersCache::instance()->save(&exitCode);
+    return exitCode;
 }
 
 ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error) {
@@ -333,7 +332,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
     int syncDbId = 0;
     ExitCode exitCode = syncForPath(syncList, parentFolder, syncDbId);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath: code=" << exitCode);
         return exitCode;
     }
 
@@ -348,7 +347,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
     forever {
         exitCode = checkPathValidityForNewFolder(syncList, driveDbId, folder, error);
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder : " << exitCode);
+            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: code=" << exitCode);
             return exitCode;
         }
 
@@ -383,7 +382,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     Login login(keychainKey);
     exitCode = login.requestToken(code.toStdString(), codeVerifier.toStdString());
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken: code=" << exitCode);
         error = login.error();
         errorDescr = login.errorDescr();
         return exitCode;
@@ -392,7 +391,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     // Create or update user
     exitCode = processRequestTokenFinished(login, userInfo, userCreated);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished: code=" << exitCode);
         return exitCode;
     }
 
@@ -404,10 +403,10 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     std::shared_ptr<GetFileInfoJob> job;
     try {
         job = std::make_shared<GetFileInfoJob>(userDbId, driveId, nodeId.toStdString());
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::GetFileInfoJob for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << e.what());
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -416,7 +415,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " code=" << exitCode);
         return exitCode;
     }
 
@@ -469,16 +468,16 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     std::shared_ptr<GetDrivesListJob> job = nullptr;
     try {
         job = std::make_shared<GetDrivesListJob>(userDbId);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " : " << e.what());
+                 "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
         return ExitCode::DataError;
     }
 
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " : " << exitCode);
+                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " code=" << exitCode);
         return exitCode;
     }
 
@@ -554,19 +553,19 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
     if (nodeId.isEmpty()) {
         try {
             job = std::make_shared<GetRootFileListJob>(userDbId, driveId, 1, true);
-        } catch (std::exception const &e) {
+        } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
-                                                           << userDbId << " driveId=" << driveId << " : " << e.what());
+                                                           << userDbId << " driveId=" << driveId << " error=" << e.what());
             return ExitCode::DataError;
         }
     } else {
         try {
             job = (std::shared_ptr<GetFileListJob>) std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), 1,
                                                                                      true);
-        } catch (std::exception const &e) {
+        } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
-                                                           << userDbId << " driveId=" << driveId
-                                                           << " nodeId=" << nodeId.toStdString().c_str() << " : " << e.what());
+                                                           << userDbId << " driveId=" << driveId << " nodeId="
+                                                           << nodeId.toStdString().c_str() << " error=" << e.what());
             return ExitCode::DataError;
         }
     }
@@ -576,7 +575,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " code=" << exitCode);
         return exitCode;
     }
 
@@ -613,7 +612,13 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
         if (!JsonParserUtility::extractValue(dirObj, nameKey, tmp)) {
             return ExitCode::BackError;
         }
-        SyncName name = Utility::normalizedSyncName(tmp);
+
+        SyncName name;
+        if (!Utility::normalizedSyncName(tmp, name)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
+            // Ignore the folder
+            continue;
+        }
 
         std::string parentId;
         if (!JsonParserUtility::extractValue(dirObj, parentIdKey, parentId)) {
@@ -625,7 +630,12 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
             if (!JsonParserUtility::extractValue(dirObj, pathKey, tmp)) {
                 return ExitCode::BackError;
             }
-            path = Utility::normalizedSyncName(tmp);
+            if (!Utility::normalizedSyncName(tmp, path)) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
+                // Ignore the folder
+                continue;
+            }
         }
 
         NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name),
@@ -667,7 +677,7 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     QList<NodeInfo> list;
     ExitCode exitCode = getSubFolders(userDbId, driveId, QString(), list);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders: code=" << exitCode);
         return exitCode;
     }
 
@@ -695,7 +705,7 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
             names.pop_back();
             exitCode = getSubFolders(userDbId, driveId, current.nodeId(), list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders : " << exitCode);
+                LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders: code=" << exitCode);
                 return exitCode;
             }
         }
@@ -708,7 +718,7 @@ ExitCode ServerRequests::getPathByNodeId(int userDbId, int driveId, const QStrin
     NodeInfo nodeInfo;
     ExitCode exitCode = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: code=" << exitCode);
         return exitCode;
     }
 
@@ -752,19 +762,22 @@ ExitCode ServerRequests::migrateSelectiveSync(int syncDbId, std::pair<SyncPath, 
     }
 
 
-    ExitCode code;
     QList<QPair<QString, SyncNodeType>> list;
-    code = loadOldSelectiveSyncTable(dbPath, list);
+    ExitCode exitCode = loadOldSelectiveSyncTable(dbPath, list);
+    if (exitCode != ExitCode::Ok) {
+        return exitCode;
+    }
 
     for (auto &pair: list) {
         std::filesystem::path path(QStr2Path(pair.first));
         SyncNodeType type = pair.second;
         if (!ParmsDb::instance()->insertMigrationSelectiveSync(MigrationSelectiveSync(syncDbId, path, type))) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertMigrationSelectiveSync");
             return ExitCode::DbError;
         }
     }
 
-    return code;
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
@@ -878,6 +891,14 @@ ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
 
     syncToSyncInfo(sync, syncInfo);
 
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::fixProxyConfig() {
+    ProxyConfig proxyConfig = ParametersCache::instance()->parameters().proxyConfig();
+    proxyConfig.setType(ProxyType::None);
+    ParametersCache::instance()->parameters().setProxyConfig(proxyConfig);
+    ParametersCache::instance()->save();
     return ExitCode::Ok;
 }
 
@@ -996,175 +1017,15 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
-                                          const std::function<bool(LogUploadState, int)> &progressCallback,
-                                          ExitCause &exitCause) {
-    exitCause = ExitCause::Unknown;
-    ExitCode exitCode = ExitCode::Ok;
-    std::function<bool(LogUploadState, int)> safeProgressCallback =
-            progressCallback ? progressCallback
-                             : std::function<bool(LogUploadState, int)>([](LogUploadState, int) { return true; });
-
-    safeProgressCallback(LogUploadState::Archiving, 0);
-
-    if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string(""), found) || !found) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-        // Do not return here because it is not a critical error, especially in this context where we are trying to send logs
-    }
-
-    SyncPath logUploadTempFolder;
-    IoError ioError = IoError::Success;
-
-    IoHelper::logArchiverDirectoryPath(logUploadTempFolder, ioError);
-    if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::logArchiverDirectoryPath: "
-                                                        << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
-        return ExitCode::SystemError;
-    }
-
-    IoHelper::createDirectory(logUploadTempFolder, ioError);
-    if (ioError == IoError::DirectoryExists) { // If the directory already exists, we delete it and recreate it
-        IoHelper::deleteItem(logUploadTempFolder, ioError);
-        IoHelper::createDirectory(logUploadTempFolder, ioError);
-    }
-
-    if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::createDirectory: " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
-        exitCause = ioError == IoError::DiskFull ? ExitCause::NotEnoughDiskSpace : ExitCause::Unknown;
-        return ExitCode::SystemError;
-    }
-
-    std::function<bool(int)> progressCallbackArchivingWrapper = [&safeProgressCallback](int percent) {
-        return safeProgressCallback(LogUploadState::Archiving, percent);
-    };
-
-    SyncPath archivePath;
-    exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, logUploadTempFolder, progressCallbackArchivingWrapper,
-                                                       archivePath, exitCause);
-    if (exitCause == ExitCause::OperationCanceled) {
-        IoHelper::deleteItem(logUploadTempFolder, ioError);
-        LOG_INFO(Log::instance()->getLogger(),
-                 "LogArchiver::generateLogsSupportArchive canceled: " << exitCode << " : " << exitCause);
-        return ExitCode::Ok;
-    } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in LogArchiver::generateLogsSupportArchive: " << exitCode << " : " << exitCause);
-        IoHelper::deleteItem(logUploadTempFolder, ioError);
-        return exitCode;
-    }
-
-    if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, archivePath.string(), found) || !found) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-    }
-
-    // Upload archive
-    std::shared_ptr<LogUploadSession> uploadSessionLog = nullptr;
-    try {
-        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
-    } catch (std::exception const &e) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in LogUploadSession::LogUploadSession: " << Utility::s2ws(e.what()).c_str());
-        return ExitCode::SystemError;
-    };
-
-    bool canceledByUser = false;
-    std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
-            [&safeProgressCallback, &uploadSessionLog, &canceledByUser](UniqueId, int percent) { // Progress callback
-                if (!safeProgressCallback(LogUploadState::Uploading, percent)) {
-                    uploadSessionLog->abort();
-                    canceledByUser = true;
-                };
-            };
-    uploadSessionLog->setProgressPercentCallback(progressCallbackUploadingWrapper);
-
-    bool jobFinished = false;
-    std::function<void(uint64_t)> uploadSessionLogFinisCallback = [&safeProgressCallback, &jobFinished](uint64_t) {
-        safeProgressCallback(LogUploadState::Uploading, 100);
-        jobFinished = true;
-    };
-    uploadSessionLog->setAdditionalCallback(uploadSessionLogFinisCallback);
-
-    JobManager::instance()->queueAsyncJob(uploadSessionLog, Poco::Thread::PRIO_NORMAL);
-
-    while (!jobFinished) {
-        Utility::msleep(100);
-    }
-
-    exitCode = uploadSessionLog->exitCode();
-    if (canceledByUser) {
-        exitCause = ExitCause::OperationCanceled;
-    } else {
-        exitCause = uploadSessionLog->exitCause();
-    }
-
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
-        // We do not delete the archive here. The path is stored in the app state so that the user can still try to upload it
-        // manually.
-        return exitCode;
-    }
-
-    IoHelper::deleteItem(logUploadTempFolder, ioError); // Delete temp folder if the upload was successful
-
-    if (exitCause != ExitCause::OperationCanceled) {
-        std::string uploadDate = "";
-        const std::time_t now = std::time(nullptr);
-        const std::tm tm = *std::localtime(&now);
-        std::ostringstream woss;
-        woss << std::put_time(&tm, "%m,%d,%y,%H,%M,%S");
-        uploadDate = woss.str();
-
-        if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) || !found ||
-            !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string{}, found) || !found) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-        }
-    }
-    return ExitCode::Ok;
-}
-
-ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
-    exitCause = ExitCause::Unknown;
-    AppStateValue appStateValue = LogUploadState::None;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
-        return ExitCode::DbError;
-    }
-    LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
-
-    if (logUploadState == LogUploadState::CancelRequested) {
-        return ExitCode::Ok;
-    }
-
-    if (logUploadState == LogUploadState::Canceled) {
-        exitCause = ExitCause::OperationCanceled;
-        return ExitCode::Ok; // The user has already canceled the operation
-    }
-
-    if (logUploadState != LogUploadState::Uploading && logUploadState != LogUploadState::Archiving) {
-        return ExitCode::InvalidOperation; // The operation is not in progress
-    }
-
-    if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::CancelRequested, found) || !found) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-        return ExitCode::DbError;
-    }
-
-    return ExitCode::Ok;
-}
-
 ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;
     try {
         job = std::make_shared<CreateDirJob>(driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
                                              QStr2SyncName(dirName));
-    } catch (std::exception const &) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1200,9 +1061,9 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
     std::shared_ptr<PostFileLinkJob> job;
     try {
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
-                                                       << driveDbId << " nodeId=" << nodeId.c_str() << " : " << e.what());
+                                                       << driveDbId << " nodeId=" << nodeId.c_str() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1214,16 +1075,18 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
             std::shared_ptr<GetFileLinkJob> job2;
             try {
                 job2 = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
-            } catch (std::exception const &e) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetFileLinkJob::GetFileLinkJob for driveDbId="
-                                                               << driveDbId << " nodeId=" << nodeId.c_str() << " : " << e.what());
+            } catch (const std::exception &e) {
+                LOG_WARN(Log::instance()->getLogger(),
+                         "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
+                                                                                  << " error=" << e.what());
                 return ExitCode::DataError;
             }
 
             exitCode = job2->runSynchronously();
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetFileLinkJob::GetFileLinkJob for driveDbId="
-                                                               << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
+                LOG_WARN(Log::instance()->getLogger(),
+                         "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
+                                                                                  << " code=" << exitCode);
                 return exitCode;
             }
 
@@ -1250,7 +1113,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
             return ExitCode::Ok;
         } else {
             LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
-                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
+                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " code=" << exitCode);
             return exitCode;
         }
     }
@@ -1289,10 +1152,10 @@ ExitCode ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     std::shared_ptr<GetSizeJob> job = nullptr;
     try {
         job = std::make_shared<GetSizeJob>(userDbId, driveId, nodeId);
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::GetSizeJob for userDbId=" << userDbId << " driveId=" << driveId
-                                                                 << " nodeId=" << nodeId.c_str() << " : " << e.what());
+                                                                 << " nodeId=" << nodeId.c_str() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1300,7 +1163,7 @@ ExitCode ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
-                                                                       << " nodeId=" << nodeId.c_str() << " : " << exitCode);
+                                                                       << " nodeId=" << nodeId.c_str() << " code=" << exitCode);
         return exitCode;
     }
 
@@ -1702,8 +1565,9 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     std::shared_ptr<GetInfoDriveJob> job = nullptr;
     try {
         job = std::make_shared<GetInfoDriveJob>(drive.dbId());
-    } catch (std::exception const &) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId());
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1807,9 +1671,9 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     std::shared_ptr<GetThumbnailJob> job = nullptr;
     try {
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);
-    } catch (std::exception const &) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetThumbnailJob::GetThumbnailJob for driveDbId=" << driveDbId << " and nodeId=" << nodeId.c_str());
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetThumbnailJob::GetThumbnailJob for driveDbId="
+                                                       << driveDbId << " and nodeId=" << nodeId.c_str() << " error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1841,10 +1705,10 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     std::shared_ptr<GetInfoUserJob> job = nullptr;
     try {
         job = std::make_shared<GetInfoUserJob>(user.dbId());
-    } catch (std::exception const &e) {
+    } catch (const std::exception &e) {
         std::string what = e.what();
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " what = " << what.c_str());
+                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " error=" << what.c_str());
         if (what == invalidToken) {
             return ExitCode::InvalidToken;
         }
@@ -1913,13 +1777,19 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
 }
 
 ExitCode ServerRequests::loadUserAvatar(User &user) {
-    GetAvatarJob getAvatarJob = GetAvatarJob(user.avatarUrl());
-    ExitCode exitCode = getAvatarJob.runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        return exitCode;
+    try {
+        GetAvatarJob getAvatarJob = GetAvatarJob(user.avatarUrl());
+        const ExitCode exitCode = getAvatarJob.runSynchronously();
+        if (exitCode != ExitCode::Ok) {
+            return exitCode;
+        }
+
+        user.setAvatar(getAvatarJob.avatar());
+    } catch (const std::runtime_error &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetAvatarJob::GetAvatarJob: error=" << e.what());
+        return ExitCode::SystemError;
     }
 
-    user.setAvatar(getAvatarJob.avatar());
     return ExitCode::Ok;
 }
 
@@ -2018,7 +1888,7 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
                                                        QString &error) {
     ExitCode exitCode = checkPathValidityRecursive(path, error);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive : " << exitCode);
+        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive: code=" << exitCode);
         return exitCode;
     }
 
@@ -2342,8 +2212,8 @@ ExitCode ServerRequests::loadOldSelectiveSyncTable(const SyncPath &syncDbPath, Q
 
         oldSyncDb.close();
     } catch (std::runtime_error &err) {
-        LOG_ERROR(Log::instance()->getLogger(),
-                  "Error loadOldSelectiveSyncTable has failed, oldSyncDb may not exists or is corrupted " << err.what());
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error getting old selective sync list, oldSyncDb may not exist anymore or is corrupted. error=" << err.what());
         return ExitCode::DbError;
     }
 

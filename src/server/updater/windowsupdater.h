@@ -16,38 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
+#pragma once
 
-#include "server/updater/kdcupdater.h"
-#ifdef __APPLE__
-#include "server/updater/sparkleupdater.h"
-#endif
-
-#include <log4cplus/logger.h>
-
-using namespace CppUnit;
+#include "abstractupdater.h"
 
 namespace KDC {
-class TestUpdater : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestUpdater);
-        CPPUNIT_TEST(testUpdateInfoVersionParseString);
-        CPPUNIT_TEST(testIsKDCorSparkleUpdater);
-        CPPUNIT_TEST(testUpdateSucceeded);
-        CPPUNIT_TEST_SUITE_END();
 
+class WindowsUpdater final : public AbstractUpdater {
     public:
-        void setUp(void) final;
-        void testUpdateInfoVersionParseString(void);
-        void testIsKDCorSparkleUpdater(void);
-        void testUpdateSucceeded(void);
+        void onUpdateFound() override;
+        void startInstaller() override;
 
-    protected:
-        log4cplus::Logger _logger;
-#ifdef __APPLE__
-        SparkleUpdater* _updater;
-#else
-        KDCUpdater* _updater;
-#endif
+    private:
+        /**
+         * @brief Start the synchronous download of the new version installer.
+         */
+        virtual void downloadUpdate() noexcept;
+
+        /**
+         * @brief Callback to notify that the download is finished.
+         */
+        void downloadFinished(UniqueId jobId);
+
+        /**
+         * Build the destination path where the installer should be downloaded.
+         * @return the absolute path to the installer file.
+         */
+        [[nodiscard]] bool getInstallerPath(SyncPath &path) const;
 };
 
 } // namespace KDC

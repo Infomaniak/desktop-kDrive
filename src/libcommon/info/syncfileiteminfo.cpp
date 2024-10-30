@@ -24,8 +24,7 @@ SyncFileItemInfo::SyncFileItemInfo(NodeType type, const QString &path, const QSt
                                    const QString &remoteNodeId, SyncDirection direction, SyncFileInstruction instruction,
                                    SyncFileStatus status, ConflictType conflict, InconsistencyType inconsistency,
                                    CancelType cancelType) :
-    _type(type),
-    _path(path), _newPath(newPath), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _direction(direction),
+    _type(type), _path(path), _newPath(newPath), _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _direction(direction),
     _instruction(instruction), _status(status), _conflict(conflict), _inconsistency(inconsistency), _cancelType(cancelType) {}
 
 SyncFileItemInfo::SyncFileItemInfo() {}
@@ -44,9 +43,9 @@ QDataStream &operator<<(QDataStream &out, const SyncFileItemInfo &info) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<SyncFileItemInfo> &list) {
-    int count = list.size();
+    auto count = list.size();
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (auto i = 0; i < list.size(); i++) {
         SyncFileItemInfo info = list[i];
         out << info;
     }

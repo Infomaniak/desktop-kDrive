@@ -43,7 +43,6 @@ class TestLocalJobs : public CppUnit::TestFixture {
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
-        int _driveDbId;
 };
 
 } // namespace KDC

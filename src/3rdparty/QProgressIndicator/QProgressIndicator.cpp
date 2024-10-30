@@ -117,12 +117,13 @@ void QProgressIndicator::paintEvent(QPaintEvent * /*event*/)
     
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    
-    int outerRadius = (width-1)*0.5;
-    int innerRadius = (width-1)*0.5*0.38;
+
+    int outerRadius = static_cast<int>(std::round((width - 1) * 0.5));
+    int innerRadius = static_cast<int>(std::round((width - 1) * 0.5 * 0.38));
 
     int capsuleHeight = outerRadius - innerRadius;
-    int capsuleWidth  = (width > 32 ) ? capsuleHeight *.23 : capsuleHeight *.35;
+    int capsuleWidth = (width > 32) ? static_cast<int>(std::round(capsuleHeight * .23))
+                                    : static_cast<int>(std::round(capsuleHeight * .35));
     int capsuleRadius = capsuleWidth/2;
 
     for (int i=0; i<12; i++)
@@ -134,7 +135,12 @@ void QProgressIndicator::paintEvent(QPaintEvent * /*event*/)
         p.save();
         p.translate(rect().center());
         p.rotate(m_angle - i*30.0f);
-        p.drawRoundedRect(-capsuleWidth*0.5, -(innerRadius+capsuleHeight), capsuleWidth, capsuleHeight, capsuleRadius, capsuleRadius);
+        p.drawRoundedRect(static_cast<int>(std::round(-capsuleWidth * 0.5)),
+                          -(innerRadius + capsuleHeight),
+                          capsuleWidth,
+                          capsuleHeight,
+                          capsuleRadius,
+                          capsuleRadius);
         p.restore();
     }
 }

@@ -40,8 +40,8 @@ QSize CustomWordWrapLabel::sizeHint() const {
         QStringList lines = text().split("<br>");
         QFontMetrics metrics(font());
         int height = 0;
-        for (QString line: lines) {
-            QRect textRect = metrics.boundingRect(screen()->geometry(), alignment() | Qt::TextWordWrap, line);
+        for (QString &line: lines) {
+            QRect textRect = metrics.boundingRect(screen()->geometry(), static_cast<int>(alignment() | Qt::TextWordWrap), line);
             int nbLines = textRect.width() / _maxWidth + 1;
             height += textRect.height() * nbLines;
         }

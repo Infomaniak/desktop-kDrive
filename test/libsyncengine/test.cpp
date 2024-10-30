@@ -40,6 +40,7 @@
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
 #include "requests/testexclusiontemplatecache.h"
+#include "requests/testserverrequests.h"
 
 #ifdef __APPLE__
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
@@ -65,15 +66,16 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
-//  CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
-//  CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
-//  CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 } // namespace KDC
 
 int main(int, char **) {

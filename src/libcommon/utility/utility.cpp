@@ -83,26 +83,30 @@ static const QString italianCode = "it";
 static std::random_device rd;
 static std::default_random_engine gen(rd());
 
-std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*/) {
-    static const char alphanum[] =
-            "0123456789"
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            "abcdefghijklmnopqrstuvwxyz";
-
-    static std::uniform_int_distribution<int> distrib(
-            0, sizeof(alphanum) - 2); // -2 in order to avoid the null terminating character
-
+std::string generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib, const int length /*= 10*/) {
     std::string tmp;
-    tmp.reserve(length);
+    tmp.reserve(static_cast<size_t>(length));
     for (int i = 0; i < length; ++i) {
-        tmp += alphanum[distrib(gen)];
+        tmp += charArray[distrib(gen)];
     }
 
     return tmp;
 }
 
+std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*/) {
+    static constexpr char charArray[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+
+    static std::uniform_int_distribution<int> distrib(
+            0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
+
+    return generateRandomString(charArray, distrib, length);
+}
+
 std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
-    static const char charArray[] =
+    static constexpr char charArray[] =
             "0123456789"
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             "abcdefghijklmnopqrstuvwxyz"
@@ -111,13 +115,20 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
     static std::uniform_int_distribution<int> distrib(
             0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
 
-    std::string tmp;
-    tmp.reserve(length);
-    for (int i = 0; i < length; ++i) {
-        tmp += charArray[distrib(gen)];
-    }
+    return generateRandomString(charArray, distrib, length);
+}
 
-    return tmp;
+std::string CommonUtility::generateAppId(const int length /*= 10*/) {
+    // The back only accept characters from `A` to `F`
+    static constexpr char charArray[] =
+            "0123456789"
+            "ABCDEF"
+            "abcdef";
+
+    static std::uniform_int_distribution<int> distrib(
+            0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
+
+    return generateRandomString(charArray, distrib, length);
 }
 
 void CommonUtility::crash() {
@@ -178,7 +189,7 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
     return QString();
 }
 
-QString CommonUtility::getIconPath(IconType iconType) {
+QString CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
             return "../Resources/kdrive-mac.icns"; // TODO : To be changed to a specific incs file
@@ -218,12 +229,12 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
 #if defined(Q_OS_MAC) || defined(Q_OS_FREEBSD) || defined(Q_OS_FREEBSD_KERNEL) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
     struct statvfs stat;
     if (statvfs(path.toLocal8Bit().data(), &stat) == 0) {
-        return (qint64) stat.f_bavail * stat.f_frsize;
+        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
     }
 #elif defined(Q_OS_UNIX)
     struct statvfs64 stat;
     if (statvfs64(path.toLocal8Bit().data(), &stat) == 0) {
-        return (qint64) stat.f_bavail * stat.f_frsize;
+        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
     }
 #elif defined(Q_OS_WIN)
     ULARGE_INTEGER freeBytes;
@@ -356,7 +367,7 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
     qint64 compressedSize = 0;
     while (!original.atEnd()) {
         auto data = original.read(1024 * 1024);
-        if (auto written = gzwrite(compressed, data.data(), data.size()); written != data.size()) {
+        if (auto written = gzwrite(compressed, data.data(), static_cast<unsigned int>(data.size())); written != data.size()) {
             gzclose(compressed);
             return false;
         }
@@ -413,7 +424,7 @@ QString substLang(const QString &lang) {
     return lang;
 }
 
-void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enforcedLocale) {
+void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language enforcedLocale) {
     QStringList uiLanguages = languageCodeList(enforcedLocale);
 
     static QTranslator *translator = nullptr;
@@ -465,7 +476,7 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
     }
 }
 
-bool CommonUtility::colorThresholdCheck(int red, int green, int blue) {
+bool CommonUtility::colorThresholdCheck(const int red, const int green, const int blue) {
     return 1.0 - (0.299 * red + 0.587 * green + 0.114 * blue) / 255.0 > 0.5;
 }
 
@@ -497,7 +508,7 @@ SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &p
     return relativePath;
 }
 
-QStringList CommonUtility::languageCodeList(KDC::Language enforcedLocale) {
+QStringList CommonUtility::languageCodeList(const KDC::Language enforcedLocale) {
     QStringList uiLanguages = QLocale::system().uiLanguages();
     uiLanguages.prepend(languageCode(enforcedLocale));
 
@@ -508,7 +519,7 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
     return languageCode.compare(englishCode) == 0;
 }
 
-QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
+QString CommonUtility::languageCode(const KDC::Language enforcedLocale) {
     switch (enforcedLocale) {
         case KDC::Language::Default: {
             return QLocale::system().uiLanguages().isEmpty() ? QString() : QLocale::system().uiLanguages().first().left(2);
@@ -531,7 +542,7 @@ QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
             break;
     }
 
-    return QString();
+    return {};
 }
 
 SyncPath CommonUtility::getAppDir() {
@@ -576,7 +587,7 @@ SyncPath CommonUtility::getAppWorkingDir() {
     return _workingDirPath;
 }
 
-QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, NodeType type) {
+QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, const NodeType type) {
     if (type == NodeType::Directory) {
         return QString(":/client/resources/icons/document types/folder.svg");
     } else if (type == NodeType::File) {
@@ -697,6 +708,8 @@ const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 }
 
 void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion) {
+    if (version.empty()) return;
+
     std::string::size_type prevPos = 0;
     std::string::size_type pos = 0;
     do {
@@ -826,7 +839,7 @@ void CommonUtility::handleSignals(void (*sigHandler)(int)) {
 #endif
 }
 
-void CommonUtility::writeSignalFile(AppType appType, SignalType signalType) noexcept {
+void CommonUtility::writeSignalFile(const AppType appType, const SignalType signalType) noexcept {
     SignalCategory signalCategory;
     if (signalType == SignalType::Segv || signalType == SignalType::Fpe || signalType == SignalType::Ill
 #ifndef Q_OS_WIN
@@ -848,7 +861,7 @@ void CommonUtility::writeSignalFile(AppType appType, SignalType signalType) noex
     }
 }
 
-void CommonUtility::clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept {
+void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory signalCategory, SignalType &signalType) noexcept {
     signalType = SignalType::None;
 
     SyncPath sigFilePath(signalFilePath(appType, signalCategory));

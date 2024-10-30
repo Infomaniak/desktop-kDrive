@@ -16,31 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "../customdialog.h"
-
-// #include "../updater/updateinfo.h"
-
-class QTextEdit;
+#include "testincludes.h"
 
 namespace KDC {
 
-class UpdateErrorDialog : public CustomDialog {
-        Q_OBJECT
+class TestServerRequests : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestServerRequests);
+        CPPUNIT_TEST(testFixProxyConfig);
+        CPPUNIT_TEST_SUITE_END();
 
     public:
-        explicit UpdateErrorDialog(const QString &targetVersion, const QString &targetVersionString, const QString &clientVersion,
-                                   QWidget *parent = nullptr);
-        virtual ~UpdateErrorDialog();
-
-    signals:
-        void skip();
-        void askagain();
-        void retry();
-
-    private:
-        void initUi(const QString &targetVersion, const QString &targetVersionString, const QString &clientVersion);
+        void setUp(void) final;
+        void tearDown() override;
+        void testFixProxyConfig();
 };
 
 } // namespace KDC

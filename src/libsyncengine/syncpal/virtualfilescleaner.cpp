@@ -33,8 +33,7 @@ namespace KDC {
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
                                          bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
                                          bool (*vfsClearFileAttributes)(int, const SyncPath &)) :
-    _logger(Log::instance()->getLogger()),
-    _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
+    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
     _vfsClearFileAttributes(vfsClearFileAttributes) {}
 
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId) :
@@ -169,8 +168,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             _vfsClearFileAttributes(_syncDbId, dirIt->path());
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger,
-                 "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively: " << e.code() << " - " << e.what());
+        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively: code=" << e.code()
+                                                                                                      << " error=" << e.what());
         return false;
     } catch (...) {
         LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively");
@@ -201,6 +200,7 @@ bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_direct
 }
 
 bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, std::filesystem::recursive_directory_iterator &dirIt) {
+    (void) path;
     std::error_code ec;
     dirIt = std::filesystem::recursive_directory_iterator(_rootPath, std::filesystem::directory_options::skip_permission_denied,
                                                           ec);
@@ -264,7 +264,8 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removeDehydratedPlaceholders: " << e.code() << " - " << e.what());
+        LOG_WARN(_logger,
+                 "Error caught in VirtualFilesCleaner::removeDehydratedPlaceholders: code=" << e.code() << " error=" << e.what());
         ret = false;
     } catch (...) {
         LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removeDehydratedPlaceholders");

@@ -18,11 +18,13 @@
 
 #include "getappversionjob.h"
 #include "utility/jsonparserutility.h"
+#include "utility/utility.h"
 
 #include <config.h>
 
 namespace KDC {
 
+static const std::string hasProdNextKey = "has_prod_next";
 static const std::string applicationKey = "application";
 static const std::string publishedVersionsKey = "published_versions";
 static const std::string versionTypeProdKey = "production";
@@ -34,7 +36,6 @@ static const std::string platformWindowsKey = "windows";
 static const std::string platformLinuxAmdKey = "linux-amd";
 static const std::string platformLinuxArmKey = "linux-arm";
 static const std::string tagKey = "tag";
-static const std::string changeLogKey = "version_changelog";
 static const std::string buildVersionKey = "build_version";
 static const std::string buildMinOsVersionKey = "build_min_os_version";
 static const std::string downloadUrlKey = "download_link";
@@ -68,24 +69,16 @@ std::string GetAppVersionJob::getContentType(bool &canceled) {
     return {};
 }
 
-bool GetAppVersionJob::handleError(std::istream &is, const Poco::URI &uri) {
-    // TODO
+bool GetAppVersionJob::handleError(std::istream &, const Poco::URI &uri) {
+    LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str());
     return false;
 }
 
 DistributionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) const {
-    if (val == versionTypeProdKey) {
-        return DistributionChannel::Prod;
-    }
-    if (val == versionTypeNextKey) {
-        return DistributionChannel::Next;
-    }
-    if (val == versionTypeBetaKey) {
-        return DistributionChannel::Beta;
-    }
-    if (val == versionTypeInternalKey) {
-        return DistributionChannel::Internal;
-    }
+    if (val == versionTypeProdKey) return DistributionChannel::Prod;
+    if (val == versionTypeNextKey) return DistributionChannel::Next;
+    if (val == versionTypeBetaKey) return DistributionChannel::Beta;
+    if (val == versionTypeInternalKey) return DistributionChannel::Internal;
     return DistributionChannel::Unknown;
 }
 
@@ -96,6 +89,10 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
 
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
     if (!dataObj) return false;
+
+    if (!JsonParserUtility::extractValue(dataObj, hasProdNextKey, _hasProdNext)) {
+        return false;
+    }
 
     const Poco::JSON::Object::Ptr applicationObj = JsonParserUtility::extractJsonObject(dataObj, applicationKey);
     if (!applicationObj) return false;
@@ -111,10 +108,8 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
         }
 
         const DistributionChannel channel = toDistributionChannel(versionType);
+        _versionInfo[channel].channel = channel;
         if (!JsonParserUtility::extractValue(obj, tagKey, _versionInfo[channel].tag)) {
-            return false;
-        }
-        if (!JsonParserUtility::extractValue(obj, changeLogKey, _versionInfo[channel].changeLog)) {
             return false;
         }
         if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionInfo[channel].buildVersion)) {

@@ -42,7 +42,7 @@ void TestIo::testGetRights() {
         bool writePermission = false;
         bool execPermission = false;
         IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));        
+        CPPUNIT_ASSERT(IoHelper::getRights(path, readPermission, writePermission, execPermission, ioError));
         CPPUNIT_ASSERT(readPermission == true);
         CPPUNIT_ASSERT(writePermission == true);
         CPPUNIT_ASSERT(execPermission == true);

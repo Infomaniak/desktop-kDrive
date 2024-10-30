@@ -29,14 +29,13 @@ namespace KDC {
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(syncPal, name, shortName),
-    _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)), _updateTree(syncPal->updateTree(side)), _side(side) {}
+    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)),
+    _updateTree(syncPal->updateTree(side)), _side(side) {}
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,
                                    std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(nullptr, name, shortName),
-    _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
+    ISyncWorker(nullptr, name, shortName), _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
 
 UpdateTreeWorker::~UpdateTreeWorker() {
     _operationSet.reset();
@@ -736,7 +735,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
     try {
         exitCode = updateNodeWithDb(_updateTree->rootNode());
     } catch (std::exception &e) {
-        LOG_WARN(_logger, "updateNodeWithDb failed - err= " << e.what());
+        LOG_WARN(_logger, "updateNodeWithDb failed: error=" << e.what());
         return ExitCode::DataError;
     }
 
@@ -1146,7 +1145,7 @@ void UpdateTreeWorker::drawUpdateTree() {
 }
 
 void UpdateTreeWorker::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth /*= 0*/) {
-    for (int i = 0; i < depth; i++) {
+    for (uint64_t i = 0; i < depth; i++) {
         treeStr += Str(" ");
     }
     treeStr += Str("'") + node->name() + Str("'");

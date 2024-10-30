@@ -37,12 +37,12 @@ else()
 endif()
 
 set(server_SRCS
-    ../libcommon/updater.h ../libcommon/updater.cpp
     ../libcommonserver/commserver.h ../libcommonserver/commserver.cpp
     ../libcommonserver/vfs.h ../libcommonserver/vfs.cpp
     ../libcommonserver/plugin.h ../libcommonserver/plugin.cpp
     navigationpanehelper.h navigationpanehelper.cpp
-    logarchiver.h logarchiver.cpp
+    logarchiver/logarchiver.h logarchiver/logarchiver.cpp
+    logarchiver/logarchiverhelper.h logarchiver/logarchiverhelper.cpp
     socketapi.h socketapi.cpp
     socketlistener.h socketlistener.cpp
     appserver.h appserver.cpp
@@ -51,13 +51,12 @@ set(server_SRCS
 )
 
 set(updater_SRCS
-    updater/kdcupdater.h updater/kdcupdater.cpp
-    updater/updateinfo.h updater/updateinfo.cpp
-    updater/updaterserver.h updater/updaterserver.cpp
-    updater_v2/abstractupdater.h updater_v2/abstractupdater.cpp
+        updater/abstractupdater.h updater/abstractupdater.cpp
+        updater/updatemanager.h updater/updatemanager.cpp
+        updater/updatechecker.h updater/updatechecker.cpp
 )
 
-IF( APPLE )
+if(APPLE)
     list(APPEND server_SRCS socketapisocket_mac.mm)
     set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
@@ -67,15 +66,19 @@ IF( APPLE )
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
-        list(APPEND updater_SRCS updater/sparkleupdater_mac.mm updater/sparkleupdater.h)
+        list(APPEND updater_SRCS updater/sparkleupdater.h updater/sparkleupdater.mm)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
         # as its logic is tightly tailored around Qt6 frameworks
         install(DIRECTORY "${SPARKLE_LIBRARY}"
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
-   endif()
-ENDIF()
+    endif()
+elseif (WIN32)
+    list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
+else ()
+    list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
+endif()
 
 set(3rdparty_SRC
     ../3rdparty/QProgressIndicator/QProgressIndicator.cpp
@@ -91,13 +94,13 @@ else()
     list(APPEND 3rdparty_SRC ../3rdparty/qtlockedfile/qtlockedfile_unix.cpp)
 endif()
 
-IF( WIN32 )
+if(WIN32)
     configure_file(
       ${CMAKE_CURRENT_SOURCE_DIR}/version.rc.in
       ${CMAKE_CURRENT_BINARY_DIR}/version.rc
       @ONLY)
     set(server_version ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
-ENDIF()
+endif()
 
 set( final_src
     ${KDRIVE_RC_SRC}

@@ -455,6 +455,8 @@ bool Db::sqlFail(const std::string &log, const std::string &error) {
 }
 
 bool Db::checkConnect(const std::string &version) {
+    (void) version;
+
     if (_sqliteDb && _sqliteDb->isOpened()) {
         // Unfortunately the sqlite isOpen check can return true even when the underlying storage
         // has become unavailable - and then some operations may cause crashes.

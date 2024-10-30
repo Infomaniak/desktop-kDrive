@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -21,80 +20,81 @@
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
-#include "libsyncengine/jobs/network/getappversionjob.h"
-
-#include <regex>
-
-#include "server/updater_v2/abstractupdater.h"
-#include "test_utility/testhelpers.h"
-
-#include <Poco/JSON/Parser.h>
+#include "version.h"
 
 namespace KDC {
 
-static const std::string bigVersionJsonUpdateStr =
-        R"({"result":"success","data":{"application_id":27,"has_prod_next":false,"version":{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"99.99.99","next_version_rate":0,"published_versions":[{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]}]}}})";
-static const std::string smallVersionJsonUpdateStr =
-        R"({"result":"success","data":{"application_id":27,"has_prod_next":false,"version":{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"1.1.1","next_version_rate":0,"published_versions":[{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]}]}}})";
-
 void TestAbstractUpdater::setUp() {
-    LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ Set Up");
-
-    // Create parmsDb
+    // Init parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
-    ParametersCache::instance()->parameters().setExtendedLog(true);
+
+    // Setup parameters cache in test mode
+    ParametersCache::instance(true);
 }
 
-void TestAbstractUpdater::tearDown() {}
+void TestAbstractUpdater::testSkipUnskipVersion() {
+    const std::string testStr("1.1.1.20210101");
+    AbstractUpdater::skipVersion(testStr);
 
-class TestGetAppVersionJob final : public GetAppVersionJob {
-    public:
-        TestGetAppVersionJob(const Platform platform, const std::string &appID, const bool updateAvailable) :
-            GetAppVersionJob(platform, appID), _updateAvailable(updateAvailable) {}
+    CPPUNIT_ASSERT_EQUAL(testStr, ParametersCache::instance()->parameters().seenVersion());
 
-        void runJob() noexcept override {
-            std::istringstream iss(_updateAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
-            std::istream is(iss.rdbuf());
-            GetAppVersionJob::handleResponse(is);
-        }
+    bool found = false;
+    Parameters parameters;
+    ParmsDb::instance()->selectParameters(parameters, found);
+    CPPUNIT_ASSERT(parameters.seenVersion() == testStr);
 
-    private:
-        bool _updateAvailable{false};
-};
+    AbstractUpdater::unskipVersion();
 
-void TestAbstractUpdater::testCheckUpdateAvailable() {
-    const auto appUid = "1234567890";
+    CPPUNIT_ASSERT(ParametersCache::instance()->parameters().seenVersion().empty());
 
-    // Version is higher than current version
-    {
-        auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, true);
-        AbstractUpdater::instance()->setGetAppVersionJob(testJob);
-        bool updateAvailable = false;
-        AbstractUpdater::instance()->checkUpdateAvailable(updateAvailable);
-        CPPUNIT_ASSERT(updateAvailable);
-        delete testJob;
-    }
-
-    // Version is lower than current version
-    {
-        auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, false);
-        AbstractUpdater::instance()->setGetAppVersionJob(testJob);
-        bool updateAvailable = false;
-        AbstractUpdater::instance()->checkUpdateAvailable(updateAvailable);
-        CPPUNIT_ASSERT(!updateAvailable);
-        delete testJob;
-    }
+    ParmsDb::instance()->selectParameters(parameters, found);
+    CPPUNIT_ASSERT(parameters.seenVersion().empty());
 }
 
-void TestAbstractUpdater::testCurrentVersion() {
-    const std::string test = CommonUtility::currentVersion();
-#ifdef NDEBUG
-    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]\d{8}$)")));
-#else
-    CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]0$)")));
-#endif
+void TestAbstractUpdater::testIsVersionSkipped() {
+    const auto skippedVersion("3.3.3.20210101");
+
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));
+
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("4.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.5.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.6.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20210109"));
+
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("2.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.1.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
+
+    AbstractUpdater::skipVersion(skippedVersion);
+
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped(skippedVersion));
+
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("4.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.5.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.6.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20210109"));
+
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("2.3.3.20210101"));
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.1.3.20210101"));
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
+    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
+
+    AbstractUpdater::unskipVersion();
+
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));
+
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("4.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.5.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.6.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20210109"));
+
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("2.3.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.1.3.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
+    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 }
 
 } // namespace KDC
