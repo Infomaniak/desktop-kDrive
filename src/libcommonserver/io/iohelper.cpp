@@ -240,6 +240,7 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
     return true;
 }
 
+#if defined(__APPLE__) || defined(__unix__)
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     struct stat sb;
 
@@ -375,6 +376,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
     return true;
 }
+#endif // #if defined(__APPLE__) || defined(__unix__)
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is a symbolic link.
