@@ -72,7 +72,7 @@ static const std::string bigFileName = "big_text_file.txt";
 static const std::string dummyDirName = "dummy_dir";
 static const std::string dummyFileName = "picture.jpg";
 
-int TestNetworkJobs::_nbParalleleThreads = 10;
+uint64_t TestNetworkJobs::_nbParalleleThreads = 10;
 
 void TestNetworkJobs::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
@@ -263,7 +263,7 @@ void TestNetworkJobs::testDownload() {
     const LocalTemporaryDirectory temporaryDirectory("testDownload");
     SyncPath localDestFilePath = temporaryDirectory.path() / "test_file.txt";
     DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
@@ -310,7 +310,7 @@ void TestNetworkJobs::testGetAvatar() {
 void TestNetworkJobs::testGetDriveList() {
     GetDrivesListJob job(_userDbId);
     job.runSynchronously();
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     bool found = false;
@@ -356,7 +356,7 @@ void TestNetworkJobs::testGetFileInfo() {
 
 void TestNetworkJobs::testGetFileList() {
     GetFileListJob job(_driveDbId, pictureDirRemoteId);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     int counter = 0;
@@ -369,7 +369,7 @@ void TestNetworkJobs::testGetFileList() {
 
 void TestNetworkJobs::testGetFileListWithCursor() {
     InitFileListWithCursorJob job(_driveDbId, pictureDirRemoteId);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     int counter = 0;
@@ -392,7 +392,7 @@ void TestNetworkJobs::testGetFileListWithCursor() {
 
 void TestNetworkJobs::testFullFileListWithCursorJson() {
     JsonFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     int counter = 0;
@@ -418,7 +418,7 @@ void TestNetworkJobs::testFullFileListWithCursorJson() {
 
 void TestNetworkJobs::testFullFileListWithCursorJsonZip() {
     JsonFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     int counter = 0;
@@ -444,7 +444,7 @@ void TestNetworkJobs::testFullFileListWithCursorJsonZip() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     int counter = 0;
@@ -470,7 +470,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     int counter = 0;
@@ -496,7 +496,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
 
 void TestNetworkJobs::testFullFileListWithCursorJsonBlacklist() {
     JsonFullFileListWithCursorJob job(_driveDbId, "1", {pictureDirRemoteId}, true);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     int counter = 0;
@@ -522,7 +522,7 @@ void TestNetworkJobs::testFullFileListWithCursorJsonBlacklist() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {pictureDirRemoteId}, true);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     int counter = 0;
@@ -548,7 +548,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
 
 void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1");
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     int counter = 0;
@@ -570,7 +570,7 @@ void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
 
 void TestNetworkJobs::testGetInfoUser() {
     GetInfoUserJob job(_userDbId);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
@@ -579,7 +579,7 @@ void TestNetworkJobs::testGetInfoUser() {
 
 void TestNetworkJobs::testGetInfoDrive() {
     GetInfoDriveJob job(_driveDbId);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
@@ -588,7 +588,7 @@ void TestNetworkJobs::testGetInfoDrive() {
 
 void TestNetworkJobs::testThumbnail() {
     GetThumbnailJob job(_driveDbId, picture1RemoteId.c_str(), 50);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     CPPUNIT_ASSERT(!job.octetStreamRes().empty());
@@ -767,7 +767,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
 
     ExitCode exitCode = ExitCode::Unknown;
     NodeId newNodeId;
-    int initialNbParalleleThreads = _nbParalleleThreads;
+    uint64_t initialNbParalleleThreads = _nbParalleleThreads;
     while (_nbParalleleThreads > 0) {
         LOG_DEBUG(Log::instance()->getLogger(),
                   "$$$$$ testDriveUploadSessionAsynchronous - " << _nbParalleleThreads << " threads");
@@ -781,7 +781,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
-                _nbParalleleThreads = static_cast<int>(std::floor(_nbParalleleThreads / 2.0));
+                _nbParalleleThreads = static_cast<uint64_t>(std::floor(static_cast<double>(_nbParalleleThreads) / 2.0));
             } else {
                 break;
             }
@@ -823,7 +823,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
-                _nbParalleleThreads = static_cast<int>(std::floor(_nbParalleleThreads / 2.0));
+                _nbParalleleThreads = static_cast<uint64_t>(std::floor(static_cast<double>(_nbParalleleThreads) / 2.0));
             } else {
                 break;
             }
@@ -937,7 +937,7 @@ bool TestNetworkJobs::createTestFiles() {
 
     // Create remote test file
     CopyToDirectoryJob job(_driveDbId, testDummyFileRemoteId, testDummyDirRemoteId, _dummyFileName);
-    ExitCode exitCode = job.runSynchronously();
+    const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     // Extract remote file ID

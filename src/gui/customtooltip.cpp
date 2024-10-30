@@ -82,12 +82,13 @@ void CustomToolTip::paintEvent(QPaintEvent *event) {
     }
 
     // Calculate position
-    QPoint tooltipPosition = QPoint(_cursorPosition.x() - rect().width() / 2.0 + offsetX, _cursorPosition.y() + offsetY);
+    QPoint tooltipPosition =
+            QPoint(_cursorPosition.x() - static_cast<int>(round(rect().width() / 2.0)) + offsetX, _cursorPosition.y() + offsetY);
 
     // Triangle points
-    QPointF trianglePoint1 = QPoint((rect().width() - triangleWidth) / 2.0, triangleHeight);
-    QPointF trianglePoint2 = QPoint(rect().width() / 2.0, 1);
-    QPointF trianglePoint3 = QPoint((rect().width() + triangleWidth) / 2.0, triangleHeight);
+    QPointF trianglePoint1 = QPoint(static_cast<int>(round((rect().width() - triangleWidth) / 2.0)), triangleHeight);
+    QPointF trianglePoint2 = QPoint(static_cast<int>(round(rect().width() / 2.0)), 1);
+    QPointF trianglePoint3 = QPoint(static_cast<int>(round((rect().width() + triangleWidth) / 2.0)), triangleHeight);
 
     // Border
     int cornerDiameter = 2 * cornerRadius;

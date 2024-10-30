@@ -39,7 +39,7 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
     private:
         bool keepLocalVersion(const Error &error);
         bool keepRemoteVersion(const Error &error);
-        void deleteError(int errorDbId);
+        void deleteError(int64_t errorDbId);
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         bool _keepLocalVersion = false;

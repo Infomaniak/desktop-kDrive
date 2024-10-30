@@ -28,13 +28,14 @@ namespace KDC {
 
 class PluginFactory {
     public:
-        ~PluginFactory();
+        virtual ~PluginFactory() = default;
         virtual QObject *create(KDC::VfsSetupParams &vfsSetupParams, QObject *parent = nullptr) = 0;
 };
 
 template<class PluginClass>
 class DefaultPluginFactory : public PluginFactory {
     public:
+        virtual ~DefaultPluginFactory() = default;
         QObject *create(KDC::VfsSetupParams &vfsSetupParams, QObject *parent = nullptr) override {
             return new PluginClass(vfsSetupParams, parent);
         }

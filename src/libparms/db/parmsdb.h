@@ -37,16 +37,11 @@ namespace KDC {
 
 class PARMS_EXPORT ParmsDb : public Db {
     public:
-        class ParmsDbIsNotInitializedException final : public std::runtime_error {
-            public:
-                ParmsDbIsNotInitializedException() : std::runtime_error("ParmsDb must be initialized!") {}
-        };
-
         static std::shared_ptr<ParmsDb> instance(const std::filesystem::path &dbPath = std::filesystem::path(),
                                                  const std::string &version = std::string(), bool autoDelete = false,
                                                  bool test = false);
 
-        std::string dbType() const override { return "Parms"; };
+        std::string dbType() const override { return "Parms"; }
 
         static void reset();
 
@@ -127,7 +122,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs);
         bool selectConflicts(int syncDbId, ConflictType filter, std::vector<Error> &errs);
         bool deleteErrors(ErrorLevel level);
-        bool deleteError(int dbId, bool &found);
+        bool deleteError(int64_t dbId, bool &found);
 
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);

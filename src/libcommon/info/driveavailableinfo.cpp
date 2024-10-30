@@ -37,9 +37,9 @@ QDataStream &operator<<(QDataStream &out, const DriveAvailableInfo &info) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<DriveAvailableInfo> &list) {
-    int count = list.size();
+    auto count = list.size();
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (auto i = 0; i < list.size(); i++) {
         DriveAvailableInfo info = list[i];
         out << info;
     }

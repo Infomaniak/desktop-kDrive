@@ -41,9 +41,16 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
     }
 
     // Move-Move (Source) pseudo-conflict
+    bool isEqual = false;
+    if (!Utility::checkIfSameNormalization(node->name(), correspondingNode->name(), isEqual)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfSameNormalization: "
+                                                        << Utility::formatSyncName(node->name()) << L" / "
+                                                        << Utility::formatSyncName(correspondingNode->name()));
+        return false;
+    }
+
     if (node->hasChangeEvent(OperationType::Move) && correspondingNode->hasChangeEvent(OperationType::Move) &&
-        node->parentNode()->idb() == correspondingNode->parentNode()->idb() &&
-        Utility::isEqualNormalized(node->name(), correspondingNode->name())) {
+        node->parentNode()->idb() == correspondingNode->parentNode()->idb() && isEqual) {
         return true;
     }
 
@@ -63,7 +70,7 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     bool hasCreateOrEditChangeEvent =
             (node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Edit)) &&
-            (correspondingNode->hasChangeEvent(OperationType::Create) | correspondingNode->hasChangeEvent(OperationType::Edit));
+            (correspondingNode->hasChangeEvent(OperationType::Create) || correspondingNode->hasChangeEvent(OperationType::Edit));
 
     if (node->type() == NodeType::File && correspondingNode->type() == node->type() && hasCreateOrEditChangeEvent &&
         hasSameContent) {

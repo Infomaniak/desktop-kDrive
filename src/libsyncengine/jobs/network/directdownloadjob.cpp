@@ -110,6 +110,8 @@ bool DirectDownloadJob::handleResponse(std::istream& is) {
 }
 
 bool DirectDownloadJob::handleError(std::istream& inputStream, const Poco::URI& uri) {
+    (void) inputStream;
+    (void) uri;
     const auto errorCode = std::to_string(_resHttp.getStatus());
     LOG_WARN(_logger, "Download failed with error: " << errorCode.c_str() << " - " << _resHttp.getReason().c_str());
     return false;

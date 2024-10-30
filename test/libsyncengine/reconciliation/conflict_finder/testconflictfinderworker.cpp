@@ -272,7 +272,7 @@ void TestConflictFinderWorker::testCreateCreate() {
     _syncPal->_localSnapshot->updateItem(
             SnapshotItem("411", "41", Str("Dir 4.1.1"), 222, 222, NodeType::Directory, 123, false, true, true));
     _syncPal->_localSnapshot->updateItem(
-            SnapshotItem("4111", "411", Str("File 4.1.1.1"), 222, 222, NodeType::File, 123, true, "1", "1"));
+            SnapshotItem("4111", "411", Str("File 4.1.1.1"), 222, 222, NodeType::File, 123, true, true, true));
 
     _syncPal->_remoteSnapshot->updateItem(
             SnapshotItem("r4", rRootId, Str("Dir 4"), 222, 222, NodeType::Directory, 123, false, true, true));

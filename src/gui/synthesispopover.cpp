@@ -252,12 +252,14 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
         QPointF trianglePoint3;
         if (position == KDC::GuiUtility::systrayPosition::Top) {
             // Triangle points
-            trianglePoint1 = QPoint(trianglePositionLeft ? trianglePosition - triangleWidth / 2.0
-                                                         : rect().width() - trianglePosition - triangleWidth / 2.0,
+            trianglePoint1 = QPoint(trianglePositionLeft
+                                            ? trianglePosition - static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().width() - trianglePosition - static_cast<int>(round(triangleWidth / 2.0)),
                                     triangleHeight);
             trianglePoint2 = QPoint(trianglePositionLeft ? trianglePosition : rect().width() - trianglePosition, 0);
-            trianglePoint3 = QPoint(trianglePositionLeft ? trianglePosition + triangleWidth / 2.0
-                                                         : rect().width() - trianglePosition + triangleWidth / 2.0,
+            trianglePoint3 = QPoint(trianglePositionLeft
+                                            ? trianglePosition + static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().width() - trianglePosition + static_cast<int>(round(triangleWidth / 2.0)),
                                     triangleHeight);
 
             // Border
@@ -275,12 +277,14 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
             painterPath.closeSubpath();
         } else if (position == KDC::GuiUtility::systrayPosition::Bottom) {
             // Triangle points
-            trianglePoint1 = QPoint(trianglePositionLeft ? trianglePosition - triangleWidth / 2.0
-                                                         : rect().width() - trianglePosition - triangleWidth / 2.0,
+            trianglePoint1 = QPoint(trianglePositionLeft
+                                            ? trianglePosition - static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().width() - trianglePosition - static_cast<int>(round(triangleWidth / 2.0)),
                                     rect().height() - triangleHeight);
             trianglePoint2 = QPoint(trianglePositionLeft ? trianglePosition : rect().width() - trianglePosition, rect().height());
-            trianglePoint3 = QPoint(trianglePositionLeft ? trianglePosition + triangleWidth / 2.0
-                                                         : rect().width() - trianglePosition + triangleWidth / 2.0,
+            trianglePoint3 = QPoint(trianglePositionLeft
+                                            ? trianglePosition + static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().width() - trianglePosition + static_cast<int>(round(triangleWidth / 2.0)),
                                     rect().height() - triangleHeight);
 
             // Border
@@ -298,13 +302,15 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
             painterPath.closeSubpath();
         } else if (position == KDC::GuiUtility::systrayPosition::Left) {
             // Triangle points
-            trianglePoint1 =
-                    QPoint(triangleHeight, trianglePositionTop ? trianglePosition - triangleWidth / 2.0
-                                                               : rect().height() - trianglePosition - triangleWidth / 2.0);
+            trianglePoint1 = QPoint(triangleHeight,
+                                    trianglePositionTop
+                                            ? trianglePosition - static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().height() - trianglePosition - static_cast<int>(round(triangleWidth / 2.0)));
             trianglePoint2 = QPoint(0, trianglePositionTop ? trianglePosition : rect().height() - trianglePosition);
-            trianglePoint3 =
-                    QPoint(triangleHeight, trianglePositionTop ? trianglePosition + triangleWidth / 2.0
-                                                               : rect().height() - trianglePosition + triangleWidth / 2.0);
+            trianglePoint3 = QPoint(triangleHeight,
+                                    trianglePositionTop
+                                            ? trianglePosition + static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().height() - trianglePosition + static_cast<int>(round(triangleWidth / 2.0)));
 
             // Border
             painterPath.moveTo(trianglePoint1);
@@ -322,12 +328,14 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
         } else if (position == KDC::GuiUtility::systrayPosition::Right) {
             // Triangle
             trianglePoint1 = QPoint(rect().width() - triangleHeight,
-                                    trianglePositionTop ? trianglePosition - triangleWidth / 2.0
-                                                        : rect().height() - trianglePosition - triangleWidth / 2.0);
+                                    trianglePositionTop
+                                            ? trianglePosition - static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().height() - trianglePosition - static_cast<int>(round(triangleWidth / 2.0)));
             trianglePoint2 = QPoint(rect().width(), trianglePositionTop ? trianglePosition : rect().height() - trianglePosition);
             trianglePoint3 = QPoint(rect().width() - triangleHeight,
-                                    trianglePositionTop ? trianglePosition + triangleWidth / 2.0
-                                                        : rect().height() - trianglePosition + triangleWidth / 2.0);
+                                    trianglePositionTop
+                                            ? trianglePosition + static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().height() - trianglePosition + static_cast<int>(round(triangleWidth / 2.0)));
 
             // Border
             painterPath.moveTo(trianglePoint3);
@@ -936,7 +944,7 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
         // Update at most each 500 ms
         if (QDateTime::currentMSecsSinceEpoch() - _lastRefresh > UPDATE_PROGRESS_DELAY) {
             _lastRefresh = QDateTime::currentMSecsSinceEpoch();
-            for (int row = driveInfoIt->second.synchronizedItemList().count() - 1; row >= 0; row--) {
+            for (int row = static_cast<int>(driveInfoIt->second.synchronizedItemList().count() - 1); row >= 0; row--) {
                 if (!driveInfoIt->second.synchronizedItemList()[row].displayed()) {
                     addSynchronizedListWidgetItem(driveInfoIt->second, row);
                     driveInfoIt->second.synchronizedItemList()[row].setDisplayed(true);

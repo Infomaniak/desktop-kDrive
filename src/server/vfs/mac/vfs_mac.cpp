@@ -41,16 +41,10 @@ VfsMac::VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent) :
     Utility::setLogger(logger());
     IoHelper::setLogger(logger());
 
-    try {
-        _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams._executeCommand);
-    } catch (const std::runtime_error &) {
-        LOG_WARN(logger(), "Error getting LiteSyncExtConnector instance");
-        throw std::runtime_error("Error getting LiteSyncExtConnector instance!");
-    }
-
-    if (_connector == nullptr) {
-        LOG_WARN(logger(), "Error getting LiteSyncExtConnector instance");
-        throw std::runtime_error("Error getting LiteSyncExtConnector instance!");
+    _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams._executeCommand);
+    if (!_connector) {
+        LOG_WARN(logger(), "Error in LiteSyncExtConnector::instance");
+        throw std::runtime_error("Unable to initialize LiteSyncExtConnector.");
     }
 
     // Start hydration/dehydration workers
@@ -197,7 +191,8 @@ void VfsMac::dehydrate(const QString &absoluteFilepath) {
         LOG_WARN(logger(), "Error in vfsDehydratePlaceHolder!");
     }
 
-    QString relativePath = QStringView(absoluteFilepath).mid(_vfsSetupParams._localPath.string().size()).toUtf8();
+    QString relativePath =
+            QStringView(absoluteFilepath).mid(static_cast<qsizetype>(_vfsSetupParams._localPath.string().size())).toUtf8();
     _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
@@ -208,7 +203,7 @@ void VfsMac::hydrate(const QString &path) {
         LOG_WARN(logger(), "Error in vfsHydratePlaceHolder!");
     }
 
-    QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.string().size()).toUtf8();
+    QString relativePath = QStringView(path).mid(static_cast<qsizetype>(_vfsSetupParams._localPath.string().size())).toUtf8();
     _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
@@ -484,7 +479,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder: " << e.code() << " - " << e.what());
+        LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder: code=" << e.code() << " error=" << e.what());
     } catch (...) {
         LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder");
     }
@@ -533,8 +528,8 @@ bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     auto updateFct = [=, this](bool &canceled, bool &finished, bool &error) {
         // Update download progress
         finished = false;
-        if (!_connector->vfsUpdateFetchStatus(Path2QStr(tmpFullPath), Path2QStr(fullPath), _localSyncPath, received, canceled,
-                                              finished)) {
+        if (!_connector->vfsUpdateFetchStatus(Path2QStr(tmpFullPath), Path2QStr(fullPath), _localSyncPath,
+                                              static_cast<uint64_t>(received), canceled, finished)) {
             LOG_WARN(logger(), "Error in vfsUpdateFetchStatus!");
             error = true;
             return;
@@ -756,7 +751,8 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
         }
 
         if (!isLink && !isDirectory) {
-            QString fileRelativePath = QStringView(path).mid(_vfsSetupParams._localPath.string().size()).toUtf8();
+            QString fileRelativePath =
+                    QStringView(path).mid(static_cast<qsizetype>(_vfsSetupParams._localPath.string().size())).toUtf8();
             auto localPinState = pinState(fileRelativePath);
             bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {

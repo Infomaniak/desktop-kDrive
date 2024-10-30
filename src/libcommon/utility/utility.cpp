@@ -87,7 +87,7 @@ static std::default_random_engine gen(rd());
 
 std::string generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib, const int length /*= 10*/) {
     std::string tmp;
-    tmp.reserve(length);
+    tmp.reserve(static_cast<size_t>(length));
     for (int i = 0; i < length; ++i) {
         tmp += charArray[distrib(gen)];
     }
@@ -231,12 +231,12 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
 #if defined(Q_OS_MAC) || defined(Q_OS_FREEBSD) || defined(Q_OS_FREEBSD_KERNEL) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
     struct statvfs stat;
     if (statvfs(path.toLocal8Bit().data(), &stat) == 0) {
-        return (qint64) stat.f_bavail * stat.f_frsize;
+        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
     }
 #elif defined(Q_OS_UNIX)
     struct statvfs64 stat;
     if (statvfs64(path.toLocal8Bit().data(), &stat) == 0) {
-        return (qint64) stat.f_bavail * stat.f_frsize;
+        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
     }
 #elif defined(Q_OS_WIN)
     ULARGE_INTEGER freeBytes;
@@ -369,7 +369,7 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
     qint64 compressedSize = 0;
     while (!original.atEnd()) {
         auto data = original.read(1024 * 1024);
-        if (auto written = gzwrite(compressed, data.data(), data.size()); written != data.size()) {
+        if (auto written = gzwrite(compressed, data.data(), static_cast<unsigned int>(data.size())); written != data.size()) {
             gzclose(compressed);
             return false;
         }

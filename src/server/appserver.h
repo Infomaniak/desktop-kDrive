@@ -120,12 +120,13 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unique_ptr<UpdateManager> _updateManager;
 
         void parseOptions(const QStringList &);
-        void initLogging() noexcept(false);
-        void setupProxy();
+        bool initLogging() noexcept;
+        bool setupProxy() noexcept;
         void handleCrashRecovery(bool &shouldQuit); // Sets `shouldQuit` with true if the crash recovery is successful, false if
                                                     // the application should exit.
         bool serverCrashedRecently(int seconds = 60 /*Allow one server self restart per minute (default)*/);
         bool clientCrashedRecently(int second = 60 /*Allow one client self restart per minute (default)*/);
+        void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);

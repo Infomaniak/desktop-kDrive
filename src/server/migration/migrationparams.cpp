@@ -346,7 +346,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     if (user.keychainKey().empty()) {
         std::string oldAccountStr = settings.group().toStdString();
         std::string oldAccountId = oldAccountStr.substr(oldAccountStr.size() - 1); // get last char
-        std::string urlKey = strDriveUrl.toStdString()[strDriveUrl.size() - 1] == '/'
+        std::string urlKey = strDriveUrl.toStdString()[static_cast<unsigned long>(strDriveUrl.size() - 1)] == '/'
                                      ? strDriveUrl.toStdString()
                                      : strDriveUrl.toStdString() + "/"; // add "/" to url if necessary
 
@@ -754,25 +754,31 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
 }
 
 ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, const std::string &appPassword, ApiToken &apiToken) {
-    std::string errorDescr, errorCode;
-    GetTokenFromAppPasswordJob job(email, appPassword);
-    ExitCode exitCode = job.runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << exitCode);
-        errorCode = std::string();
-        errorDescr = std::string();
-        return exitCode;
-    }
+    try {
+        std::string errorDescr, errorCode;
+        GetTokenFromAppPasswordJob job(email, appPassword);
+        const ExitCode exitCode = job.runSynchronously();
+        if (exitCode != ExitCode::Ok) {
+            LOG_WARN(_logger, "Error in GetTokenFromAppPasswordJob::runSynchronously: code=" << exitCode);
+            errorCode = std::string();
+            errorDescr = std::string();
+            return exitCode;
+        }
 
-    LOG_DEBUG(_logger, "job.runSynchronously() done");
-    if (job.hasErrorApi(&errorCode, &errorDescr)) {
-        LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : "
-                                   << KDC::Utility::s2ws(errorCode).c_str() << L" - " << KDC::Utility::s2ws(errorDescr).c_str());
-        return ExitCode::BackError;
-    }
+        LOG_DEBUG(_logger, "job.runSynchronously() done");
+        if (job.hasErrorApi(&errorCode, &errorDescr)) {
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::Utility::s2ws(errorCode).c_str()
+                                                                                   << L" descr="
+                                                                                   << KDC::Utility::s2ws(errorDescr).c_str());
+            return ExitCode::BackError;
+        }
 
-    LOG_DEBUG(_logger, "job.hasErrorApi done");
-    apiToken = job.apiToken();
+        LOG_DEBUG(_logger, "job.hasErrorApi done");
+        apiToken = job.apiToken();
+    } catch (const std::runtime_error &e) {
+        LOG_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
+        return ExitCode::SystemError;
+    }
 
     return ExitCode::Ok;
 }

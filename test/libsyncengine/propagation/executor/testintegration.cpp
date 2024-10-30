@@ -58,7 +58,6 @@ const SyncPath testExecutorFolderRelativePath = Str("Common documents/test/test_
 
 const std::string testInconsistencyFileRemoteId = "60765";
 const std::string testLongFileRemoteId = "19146";
-const std::string testInconsistencyFileRemoteName = "test_inconsistency";
 
 const std::string test_beaucoupRemoteId = "24642";
 

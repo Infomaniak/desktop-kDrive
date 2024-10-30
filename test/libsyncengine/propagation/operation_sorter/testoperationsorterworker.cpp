@@ -1041,7 +1041,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         }
         Console << std::endl;
 
-        int index = 0;
+        size_t index = 0;
         std::list<UniqueId>::iterator it = _syncPal->_syncOps->_opSortedList.begin();
         for (; it != _syncPal->_syncOps->_opSortedList.end(); it++) {
             CPPUNIT_ASSERT(*it == expectedRes[index++]->id());
@@ -1076,7 +1076,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         }
         Console << std::endl;
 
-        int index = 0;
+        size_t index = 0;
         std::list<UniqueId>::iterator it = _syncPal->_syncOps->_opSortedList.begin();
         for (; it != _syncPal->_syncOps->_opSortedList.end(); it++) {
             CPPUNIT_ASSERT(*it == expectedRes[index++]->id());
@@ -1111,7 +1111,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         }
         Console << std::endl;
 
-        int index = 0;
+        size_t index = 0;
         std::list<UniqueId>::iterator it = _syncPal->_syncOps->_opSortedList.begin();
         for (; it != _syncPal->_syncOps->_opSortedList.end(); it++) {
             CPPUNIT_ASSERT(*it == expectedRes[index++]->id());
