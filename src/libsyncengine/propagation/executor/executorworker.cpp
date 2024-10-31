@@ -1231,7 +1231,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
                                                   absoluteDestLocalFilePath);
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in RenameJob::RenameJob for driveDbId=" << _syncPal->driveDbId() << L" : "
-                                                                                           << Utility::s2ws(e.what()).c_str());
+                                                                                           << Utility::s2ws(e.what()));
                 return ExitCode::DataError;
             }
         } else {
@@ -1253,7 +1253,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
                                                 remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string(),
                                                 syncOp->newName());
             } catch (std::exception &e) {
-                LOGW_SYNCPAL_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
+                LOG_SYNCPAL_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
                 return ExitCode::DataError;
             }
         }
