@@ -66,15 +66,14 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
                      isSymlink ? XATTR_NOFOLLOW : 0) != bufferLength) {
             ioError = posixError2ioError(errno);
             if (ioError == IoError::ResultOutOfRange) {
-                // XAttr length has changed, retry
-                continue;
+                continue; // The extended attribute length has changed, let us retry.
             }
             return _isXAttrValueExpectedError(ioError);
         }
 
-        // XAttr has been read
         ioError = IoError::Success;
-        return true;
+
+        return true; // The extended attribute `attrName` has been read.
     }
 }
 

@@ -245,5 +245,4 @@ bool isLocked(const SyncPath &path) {
     return isLocked;
 }
 
-
 }  // namespace KDC
