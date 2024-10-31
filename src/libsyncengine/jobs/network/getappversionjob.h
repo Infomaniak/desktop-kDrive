@@ -23,8 +23,10 @@
 #include <config.h>
 
 namespace KDC {
+
 class GetAppVersionJob : public AbstractNetworkJob {
     public:
+        GetAppVersionJob(Platform platform, const std::string &appID);
         GetAppVersionJob(Platform platform, const std::string &appID, const std::vector<int> &userIdList);
         ~GetAppVersionJob() override = default;
 

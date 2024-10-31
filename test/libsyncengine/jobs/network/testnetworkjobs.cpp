@@ -902,7 +902,7 @@ void TestNetworkJobs::testGetAppVersionInfo() {
 
     // Without user IDs
     {
-        GetAppVersionJob job(CommonUtility::platform(), appUid, {});
+        GetAppVersionJob job(CommonUtility::platform(), appUid);
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Internal).isValid());
