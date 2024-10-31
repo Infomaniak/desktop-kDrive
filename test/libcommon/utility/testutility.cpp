@@ -303,12 +303,12 @@ void TestUtility::testCurrentVersion() {
 void TestUtility::testGetLastErrorMessage() {
     {
         const std::wstring msg = CommonUtility::getLastErrorMessage();
-        CPPUNIT_ASSERT(msg.ends_with(L"(0)"));
+        CPPUNIT_ASSERT(msg.starts_with(L"(0) - "));
     }
     {
         GetFileAttributesW(L"this_file_does_not_exist.txt");
         const std::wstring msg = CommonUtility::getLastErrorMessage();
-        CPPUNIT_ASSERT(msg.ends_with(L"(2)"));
+        CPPUNIT_ASSERT(msg.starts_with(L"(2) - "));
     }
 }
 #endif

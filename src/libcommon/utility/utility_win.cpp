@@ -80,7 +80,7 @@ std::wstring CommonUtility::getErrorMessage(DWORD errorMessageID) {
     // Escape quotes
     const auto msg = std::wstring(messageBuffer, size);
     std::wostringstream message;
-    message << msg << L"(" << errorMessageID << L")";
+    message << L"(" << errorMessageID << L") - " << msg;
 
     LocalFree(messageBuffer);
 
