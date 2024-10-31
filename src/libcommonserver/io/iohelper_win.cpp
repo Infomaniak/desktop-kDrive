@@ -74,7 +74,7 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
             return IoError::CrossDeviceLink;
         default:
             if (Log::isSet()) {
-                LOG_WARN(logger, "Unhandled DWORD error: " << CommonUtility::getErrorMessage(error));
+                LOGW_WARN(logger, L"Unhandled DWORD error: " << CommonUtility::getErrorMessage(error));
             }
             return IoError::Unknown;
     }
