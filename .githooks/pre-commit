@@ -15,7 +15,7 @@ for file in ${staged_files}
 do
 	# Source file filtering is based on file extensions.
 	if [ -f "${file}" ] && [[ "${file}" =~ ^.*\.(ino|cpp|cc|c|h|hpp|hh|mm)$ ]]; then
-		clang-format -i ${file} --style="file:${GIT_DIR}/../.clang-format"
+		clang-format -i ${file} --style="file"
 		git add ${file}
 		formatting_exit_code=$?
 		if [ ${formatting_exit_code} -ne 0 ]; then
