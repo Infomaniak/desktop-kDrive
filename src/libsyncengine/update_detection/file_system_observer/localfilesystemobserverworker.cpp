@@ -87,13 +87,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         const SyncPath absolutePath = changedItem.first.native();
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
 
-        if (_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local)) {
-            _syncPal->removeItemFromTmpBlacklist(relativePath);
-            if (opTypeFromOS == OperationType::Edit) {
-                NodeId itemId = _snapshot->itemId(relativePath);
-                if (!itemId.empty()) _snapshot->setLastModified(itemId, 0);
-            }
-        }
         // Check if exists with same nodeId
         if (opTypeFromOS == OperationType::Delete) {
             NodeId prevNodeId = _snapshot->itemId(relativePath);
