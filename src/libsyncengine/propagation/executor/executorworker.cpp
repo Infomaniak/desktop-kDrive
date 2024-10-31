@@ -1887,12 +1887,8 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
                 if (ExitInfo exitInfo = deleteFromDb(syncOp->conflict().localNode()); !exitInfo) {
                     if (localNodeFoundInDb) {
                         // Remove local node from DB
-                        if (!deleteFromDb(syncOp->conflict().localNode())) {
-                            // _executorExitCode and _executorExitCause are set by
-                            // the above function
-                            propagateChange = false;
-                            return exitInfo;
-                        }
+                        propagateChange = false;
+                        return exitInfo;
                     }
                 }
 
