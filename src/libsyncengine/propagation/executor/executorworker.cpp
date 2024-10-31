@@ -416,7 +416,12 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                         return exitInfoCheckAlreadyExcluded;
                     }
                 }
-                return exitInfo;
+                if (const ExitInfo exitInfo2 = handleForbiddenAction(syncOp, relativeLocalFilePath, ignored); !exitInfo2) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in handleForbiddenAction for item: "
+                                                       << Utility::formatSyncPath(relativeLocalFilePath));
+                    return exitInfo2;
+                }
+                return {ExitCode::BackError, ExitCause::FileAccessError};
             }
 
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
@@ -1710,9 +1715,12 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         case OperationType::Create: {
             cancelType = CancelType::Create;
             ignored = true;
-            // If the rename failed (the file doesn't exist), it is a forbiden download, we should keep it in DB.
-            removeFromDb = PlatformInconsistencyCheckerUtility::renameLocalFile(
-                    absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+            if (!PlatformInconsistencyCheckerUtility::renameLocalFile(
+                        absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted)) {
+                LOGW_SYNCPAL_WARN(_logger, L"PlatformInconsistencyCheckerUtility::renameLocalFile: "
+                                                   << Utility::formatSyncPath(absoluteLocalFilePath));
+            }
+            removeFromDb = false;
             break;
         }
         case OperationType::Move: {
