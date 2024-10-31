@@ -1555,6 +1555,9 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
         LOGW_WARN(_logger, L"Error in Utility::getRights: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
+    // If no access rights on parent folder:
+    //  - On Windows, ioError == NoSuchFileOrDirectory
+    //  - On macOS and Linux, ioError == AccessDenied`
     exists = ioError != IoError::NoSuchFileOrDirectory;
 
     if (syncOp->targetSide() == ReplicaSide::Local) {
