@@ -122,12 +122,12 @@ struct COMMON_EXPORT CommonUtility {
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
         static void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
-        static bool fileExists(const std::error_code &ec) noexcept;
+        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept;
 
 #ifdef _WIN32
         static std::wstring getErrorMessage(DWORD dwordError);
         static std::wstring getLastErrorMessage();
-        static bool fileExists(DWORD dwError) noexcept;
+        static bool isLikeFileNotFoundError(DWORD dwError) noexcept;
 #endif
 
     private:

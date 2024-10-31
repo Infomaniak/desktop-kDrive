@@ -195,7 +195,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
         if (hParent == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
-            if (!CommonUtility::fileExists(dwError)) {
+            if (!CommonUtility::isLikeFileNotFoundError(dwError)) {
                 ioError = IoError::NoSuchFileOrDirectory;
                 return true;
             }

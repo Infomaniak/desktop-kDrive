@@ -233,7 +233,7 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
                 continue;
             }
 
-            exists = CommonUtility::fileExists(dwError);
+            exists = CommonUtility::isLikeFileNotFoundError(dwError);
             if (!exists) {
                 // Path doesn't exist
                 return true;
@@ -250,7 +250,7 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
     }
 
     if (!SetFileTime(hFile, &creationTime, NULL, &modificationTime)) {
-        exists = CommonUtility::fileExists(GetLastError());
+        exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             // Path doesn't exist
             CloseHandle(hFile);
