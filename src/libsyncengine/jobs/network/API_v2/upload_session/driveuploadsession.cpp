@@ -126,7 +126,7 @@ void DriveUploadSession::abort() {
     for (const auto attribute: extendedAttributes) {
         if (auto ioError = IoError::Success;
             !IoHelper::removeXAttr(localPath, attribute, ioError) || ioError != IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(getLogger(), "Error in IoHelper::removeXAttr with extended attribute "
+            LOGW_WARN(getLogger(), L"Error in IoHelper::removeXAttr with extended attribute "
                                            << L"'" << Utility::s2ws(attribute) << L"': "
                                            << Utility::formatIoError(localPath, ioError));
         }
