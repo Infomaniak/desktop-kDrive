@@ -47,10 +47,9 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         void testTargetUpdateTree();
         void testLogCorrespondingNodeErrorMsg();
         void testRemoveDependentOps();
+        void testHasRight();
 
         bool opsExist(SyncOpPtr op);
-        SyncOpPtr generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename);
-        void testHasRight();
 
         void generateNodes(std::shared_ptr<Node> &node, std::shared_ptr<Node> &correspondingNode, DbNodeId dbNodeId,
                            const SyncName &filename, const std::shared_ptr<Node> &parentNode,

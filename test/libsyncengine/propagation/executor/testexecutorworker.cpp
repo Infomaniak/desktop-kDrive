@@ -338,244 +338,246 @@ bool TestExecutorWorker::opsExist(SyncOpPtr op) {
     }
 
     return false;
-    void TestExecutorWorker::testHasRight() {
-        // Target side = Remote
-        auto targetSide = ReplicaSide::Remote;
-        DbNodeId dbNodeId = 1;
-        IoError ioError = IoError::Success;
+}
 
-        /// Normal case with Create operation
+void TestExecutorWorker::testHasRight() {
+    // Target side = Remote
+    auto targetSide = ReplicaSide::Remote;
+    DbNodeId dbNodeId = 1;
+    IoError ioError = IoError::Success;
+
+    /// Normal case with Create operation
+    {
+        const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
+        testhelpers::generateOrEditTestFile(path);
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
+        syncOp->setType(OperationType::Create);
+        bool exists = false;
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(exists);
+    }
+
+    /// Create operation but local file does not exist anymore
+    {
+        const auto filename = CommonUtility::generateRandomStringAlphaNum();
+        const auto path = SyncPath(_syncPal->localPath() / filename);
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
+        syncOp->setType(OperationType::Create);
+        bool exists = false;
+        CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(!exists);
+    }
+
+    /// Create operation but local file does not have write permissions anymore
+    {
+        const auto filename = CommonUtility::generateRandomStringAlphaNum();
+        const auto path = SyncPath(_syncPal->localPath() / filename);
+        testhelpers::generateOrEditTestFile(path);
+        IoHelper::setRights(path, false, false, false, ioError);
+        permissions(path, std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
+        syncOp->setType(OperationType::Create);
+        bool exists = false;
+        CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(exists);
+    }
+
+    /// Create operation inside the "Common documents" folder
+    {
+        // Add parent nodes
+        const SyncPath parentPath = _syncPal->localPath() / Utility::commonDocumentsFolderName();
+        create_directory(parentPath);
+
+        std::shared_ptr<Node> parentNode;
+        std::shared_ptr<Node> correspondingParentNode;
+        generateNodes(parentNode, correspondingParentNode, ++dbNodeId, Utility::commonDocumentsFolderName(),
+                      _syncPal->updateTree(targetSide)->rootNode(), _syncPal->updateTree(otherSide(targetSide))->rootNode(),
+                      targetSide, NodeType::Directory);
+        _syncPal->updateTree(targetSide)->insertNode(parentNode);
+        _syncPal->updateTree(otherSide(targetSide))->insertNode(correspondingParentNode);
+
+
+        const auto filename = CommonUtility::generateRandomStringAlphaNum();
+        const auto path = SyncPath(parentPath / filename);
+        testhelpers::generateOrEditTestFile(path);
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), ReplicaSide::Remote, NodeType::Directory,
+                                                  parentNode, correspondingParentNode);
+        syncOp->setType(OperationType::Create);
+        bool exists = false;
+        CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(exists);
+    }
+
+    /// Create operation inside the "Shared" folder
+    {
+        // Add parent nodes
+        const SyncPath parentPath = _syncPal->localPath() / Utility::sharedFolderName();
+        create_directory(parentPath);
+
+        std::shared_ptr<Node> parentNode;
+        std::shared_ptr<Node> correspondingParentNode;
+        generateNodes(parentNode, correspondingParentNode, ++dbNodeId, Utility::sharedFolderName(),
+                      _syncPal->updateTree(targetSide)->rootNode(), _syncPal->updateTree(otherSide(targetSide))->rootNode(),
+                      targetSide, NodeType::Directory);
+        _syncPal->updateTree(targetSide)->insertNode(parentNode);
+        _syncPal->updateTree(otherSide(targetSide))->insertNode(correspondingParentNode);
+
+        const auto filename = CommonUtility::generateRandomStringAlphaNum();
+        const auto path = SyncPath(parentPath / filename);
+        testhelpers::generateOrEditTestFile(path);
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), ReplicaSide::Remote, NodeType::Directory,
+                                                  parentNode, correspondingParentNode);
+        syncOp->setType(OperationType::Create);
+        bool exists = false;
+        CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(exists);
+    }
+
+    /// Normal case with Edit operation
+    {
+        const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
+        testhelpers::generateOrEditTestFile(path);
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
+        syncOp->setType(OperationType::Edit);
+        bool exists = false;
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(exists);
+    }
+
+    /// Normal case with Move operation
+    {
+        const auto filename = Str2SyncName(CommonUtility::generateRandomStringAlphaNum());
+        const auto syncOp = generateSyncOperation(++dbNodeId, filename, targetSide, NodeType::File);
+        syncOp->setType(OperationType::Move);
+        bool exists = false;
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
+    }
+
+    /// Normal case with Delete operation
+    {
+        const auto filename = Str2SyncName(CommonUtility::generateRandomStringAlphaNum());
+        const auto syncOp = generateSyncOperation(++dbNodeId, filename, targetSide, NodeType::File);
+        syncOp->setType(OperationType::Delete);
+        bool exists = false;
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
+    }
+
+    // Target side = Local
+    targetSide = ReplicaSide::Local;
+
+    /// Normal case with Create operation
+    {
+        const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
+        syncOp->setType(OperationType::Create);
+        bool exists = false;
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(!exists);
+    }
+
+    /// Create operation but local file already exists
+    {
+        const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
+        testhelpers::generateOrEditTestFile(path);
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
+        syncOp->setType(OperationType::Create);
+        bool exists = false;
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(exists);
+    }
+
+    /// Create operation but local file already exists and does not have write permission
+    {
+        const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
+        testhelpers::generateOrEditTestFile(path);
+        IoHelper::setRights(path, false, false, false, ioError);
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
+        syncOp->setType(OperationType::Create);
+        bool exists = false;
+        CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(exists);
+    }
+
+    /// Create operation but no write permission on parent folder
+    {
+        const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
+        IoHelper::setRights(path.parent_path(), false, false, false, ioError);
+        const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
+        syncOp->setType(OperationType::Create);
+        bool exists = false;
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
+        CPPUNIT_ASSERT(!exists);
+        IoHelper::setRights(path.parent_path(), true, true, true, ioError);
+    }
+
+    /// Same behavior for Edit, Move and Delete operations
+    const auto opTypes = {OperationType::Edit, OperationType::Move, OperationType::Delete};
+    for (const auto opType: opTypes) {
+        /// Normal case
         {
             const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
             testhelpers::generateOrEditTestFile(path);
             const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-            syncOp->setType(OperationType::Create);
+            syncOp->setType(opType);
             bool exists = false;
             CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
             CPPUNIT_ASSERT(exists);
         }
 
-        /// Create operation but local file does not exist anymore
+        /// File does not exist anymore
         {
-            const auto filename = CommonUtility::generateRandomStringAlphaNum();
-            const auto path = SyncPath(_syncPal->localPath() / filename);
+            const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
             const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-            syncOp->setType(OperationType::Create);
+            syncOp->setType(opType);
             bool exists = false;
             CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
             CPPUNIT_ASSERT(!exists);
         }
 
-        /// Create operation but local file does not have write permissions anymore
+        /// File does not have write permission anymore
         {
-            const auto filename = CommonUtility::generateRandomStringAlphaNum();
-            const auto path = SyncPath(_syncPal->localPath() / filename);
+            const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
             testhelpers::generateOrEditTestFile(path);
             IoHelper::setRights(path, false, false, false, ioError);
-            permissions(path, std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
             const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-            syncOp->setType(OperationType::Create);
+            syncOp->setType(opType);
             bool exists = false;
             CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
             CPPUNIT_ASSERT(exists);
-        }
-
-        /// Create operation inside the "Common documents" folder
-        {
-            // Add parent nodes
-            const SyncPath parentPath = _syncPal->localPath() / Utility::commonDocumentsFolderName();
-            create_directory(parentPath);
-
-            std::shared_ptr<Node> parentNode;
-            std::shared_ptr<Node> correspondingParentNode;
-            generateNodes(parentNode, correspondingParentNode, ++dbNodeId, Utility::commonDocumentsFolderName(),
-                          _syncPal->updateTree(targetSide)->rootNode(), _syncPal->updateTree(otherSide(targetSide))->rootNode(),
-                          targetSide, NodeType::Directory);
-            _syncPal->updateTree(targetSide)->insertNode(parentNode);
-            _syncPal->updateTree(otherSide(targetSide))->insertNode(correspondingParentNode);
-
-
-            const auto filename = CommonUtility::generateRandomStringAlphaNum();
-            const auto path = SyncPath(parentPath / filename);
-            testhelpers::generateOrEditTestFile(path);
-            const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), ReplicaSide::Remote, NodeType::Directory,
-                                                      parentNode, correspondingParentNode);
-            syncOp->setType(OperationType::Create);
-            bool exists = false;
-            CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
-            CPPUNIT_ASSERT(exists);
-        }
-
-        /// Create operation inside the "Shared" folder
-        {
-            // Add parent nodes
-            const SyncPath parentPath = _syncPal->localPath() / Utility::sharedFolderName();
-            create_directory(parentPath);
-
-            std::shared_ptr<Node> parentNode;
-            std::shared_ptr<Node> correspondingParentNode;
-            generateNodes(parentNode, correspondingParentNode, ++dbNodeId, Utility::sharedFolderName(),
-                          _syncPal->updateTree(targetSide)->rootNode(), _syncPal->updateTree(otherSide(targetSide))->rootNode(),
-                          targetSide, NodeType::Directory);
-            _syncPal->updateTree(targetSide)->insertNode(parentNode);
-            _syncPal->updateTree(otherSide(targetSide))->insertNode(correspondingParentNode);
-
-            const auto filename = CommonUtility::generateRandomStringAlphaNum();
-            const auto path = SyncPath(parentPath / filename);
-            testhelpers::generateOrEditTestFile(path);
-            const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), ReplicaSide::Remote, NodeType::Directory,
-                                                      parentNode, correspondingParentNode);
-            syncOp->setType(OperationType::Create);
-            bool exists = false;
-            CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
-            CPPUNIT_ASSERT(exists);
-        }
-
-        /// Normal case with Edit operation
-        {
-            const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
-            testhelpers::generateOrEditTestFile(path);
-            const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-            syncOp->setType(OperationType::Edit);
-            bool exists = false;
-            CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
-            CPPUNIT_ASSERT(exists);
-        }
-
-        /// Normal case with Move operation
-        {
-            const auto filename = Str2SyncName(CommonUtility::generateRandomStringAlphaNum());
-            const auto syncOp = generateSyncOperation(++dbNodeId, filename, targetSide, NodeType::File);
-            syncOp->setType(OperationType::Move);
-            bool exists = false;
-            CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
-        }
-
-        /// Normal case with Delete operation
-        {
-            const auto filename = Str2SyncName(CommonUtility::generateRandomStringAlphaNum());
-            const auto syncOp = generateSyncOperation(++dbNodeId, filename, targetSide, NodeType::File);
-            syncOp->setType(OperationType::Delete);
-            bool exists = false;
-            CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
-        }
-
-        // Target side = Local
-        targetSide = ReplicaSide::Local;
-
-        /// Normal case with Create operation
-        {
-            const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
-            const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-            syncOp->setType(OperationType::Create);
-            bool exists = false;
-            CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
-            CPPUNIT_ASSERT(!exists);
-        }
-
-        /// Create operation but local file already exists
-        {
-            const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
-            testhelpers::generateOrEditTestFile(path);
-            const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-            syncOp->setType(OperationType::Create);
-            bool exists = false;
-            CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
-            CPPUNIT_ASSERT(exists);
-        }
-
-        /// Create operation but local file already exists and does not have write permission
-        {
-            const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
-            testhelpers::generateOrEditTestFile(path);
-            IoHelper::setRights(path, false, false, false, ioError);
-            const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-            syncOp->setType(OperationType::Create);
-            bool exists = false;
-            CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
-            CPPUNIT_ASSERT(exists);
-        }
-
-        /// Create operation but no write permission on parent folder
-        {
-            const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
-            IoHelper::setRights(path.parent_path(), false, false, false, ioError);
-            const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-            syncOp->setType(OperationType::Create);
-            bool exists = false;
-            CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
-            CPPUNIT_ASSERT(!exists);
-            IoHelper::setRights(path.parent_path(), true, true, true, ioError);
-        }
-
-        /// Same behavior for Edit, Move and Delete operations
-        const auto opTypes = {OperationType::Edit, OperationType::Move, OperationType::Delete};
-        for (const auto opType: opTypes) {
-            /// Normal case
-            {
-                const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
-                testhelpers::generateOrEditTestFile(path);
-                const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-                syncOp->setType(opType);
-                bool exists = false;
-                CPPUNIT_ASSERT(_syncPal->_executorWorker->hasRight(syncOp, exists));
-                CPPUNIT_ASSERT(exists);
-            }
-
-            /// File does not exist anymore
-            {
-                const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
-                const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-                syncOp->setType(opType);
-                bool exists = false;
-                CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
-                CPPUNIT_ASSERT(!exists);
-            }
-
-            /// File does not have write permission anymore
-            {
-                const auto path = SyncPath(_syncPal->localPath() / CommonUtility::generateRandomStringAlphaNum());
-                testhelpers::generateOrEditTestFile(path);
-                IoHelper::setRights(path, false, false, false, ioError);
-                const auto syncOp = generateSyncOperation(++dbNodeId, path.filename(), targetSide, NodeType::File);
-                syncOp->setType(opType);
-                bool exists = false;
-                CPPUNIT_ASSERT(!_syncPal->_executorWorker->hasRight(syncOp, exists));
-                CPPUNIT_ASSERT(exists);
-            }
         }
     }
+}
 
-    void TestExecutorWorker::generateNodes(std::shared_ptr<Node> & node, std::shared_ptr<Node> & correspondingNode,
-                                           DbNodeId dbNodeId, const SyncName &filename, const std::shared_ptr<Node> &parentNode,
-                                           const std::shared_ptr<Node> &correspondingParentNode, ReplicaSide targetSide,
-                                           NodeType nodeType) const {
-        const NodeId fileId = CommonUtility::generateRandomStringAlphaNum();
-        node = std::make_shared<Node>(dbNodeId, targetSide, filename, nodeType, OperationType::None, "l" + fileId,
-                                      testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                      parentNode);
-        const auto correspondingSide = otherSide(targetSide);
-        correspondingNode = std::make_shared<Node>(dbNodeId, correspondingSide, filename, nodeType, OperationType::None,
-                                                   "r" + fileId, testhelpers::defaultTime, testhelpers::defaultTime,
-                                                   testhelpers::defaultFileSize, correspondingParentNode);
-    }
+void TestExecutorWorker::generateNodes(std::shared_ptr<Node> &node, std::shared_ptr<Node> &correspondingNode, DbNodeId dbNodeId,
+                                       const SyncName &filename, const std::shared_ptr<Node> &parentNode,
+                                       const std::shared_ptr<Node> &correspondingParentNode, ReplicaSide targetSide,
+                                       NodeType nodeType) const {
+    const NodeId fileId = CommonUtility::generateRandomStringAlphaNum();
+    node = std::make_shared<Node>(dbNodeId, targetSide, filename, nodeType, OperationType::None, "l" + fileId,
+                                  testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, parentNode);
+    const auto correspondingSide = otherSide(targetSide);
+    correspondingNode = std::make_shared<Node>(dbNodeId, correspondingSide, filename, nodeType, OperationType::None, "r" + fileId,
+                                               testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                               correspondingParentNode);
+}
 
-    SyncOpPtr TestExecutorWorker::generateSyncOperation(
-            const DbNodeId dbNodeId, const SyncName &filename, const ReplicaSide targetSide /*= ReplicaSide::Local*/,
-            const NodeType nodeType /*= NodeType::File*/, std::shared_ptr<Node> parentNode /*= nullptr*/,
-            std::shared_ptr<Node> correspondingParentNode /*= nullptr*/) const {
-        std::shared_ptr<Node> node;
-        std::shared_ptr<Node> correspondingNode;
-        if (!parentNode) parentNode = _syncPal->updateTree(targetSide)->rootNode();
-        if (!correspondingParentNode) parentNode = _syncPal->updateTree(otherSide(targetSide))->rootNode();
-        generateNodes(node, correspondingNode, dbNodeId, filename, parentNode, correspondingParentNode, targetSide, nodeType);
+SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
+                                                    const ReplicaSide targetSide /*= ReplicaSide::Local*/,
+                                                    const NodeType nodeType /*= NodeType::File*/,
+                                                    std::shared_ptr<Node> parentNode /*= nullptr*/,
+                                                    std::shared_ptr<Node> correspondingParentNode /*= nullptr*/) const {
+    std::shared_ptr<Node> node;
+    std::shared_ptr<Node> correspondingNode;
+    if (!parentNode) parentNode = _syncPal->updateTree(targetSide)->rootNode();
+    if (!correspondingParentNode) parentNode = _syncPal->updateTree(otherSide(targetSide))->rootNode();
+    generateNodes(node, correspondingNode, dbNodeId, filename, parentNode, correspondingParentNode, targetSide, nodeType);
 
-        auto op = std::make_shared<SyncOperation>();
-        op->setAffectedNode(node);
-        op->setCorrespondingNode(correspondingNode);
-        op->setTargetSide(targetSide);
+    auto op = std::make_shared<SyncOperation>();
+    op->setAffectedNode(node);
+    op->setCorrespondingNode(correspondingNode);
+    op->setTargetSide(targetSide);
 
-        return op;
-    }
+    return op;
+}
 
 } // namespace KDC
