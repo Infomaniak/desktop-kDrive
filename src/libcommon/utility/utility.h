@@ -20,7 +20,6 @@
 
 #include "libcommon/libcommon.h"
 #include "types.h"
-#include "libcommon/info/nodeinfo.h"
 
 #include <string>
 #include <thread>

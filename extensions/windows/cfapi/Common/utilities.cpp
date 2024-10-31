@@ -18,11 +18,12 @@
 
 #include "utilities.h"
 
+#include "../../../../src/libcommon/utility/utility.h"
+
 #include <winrt\base.h>
 
 #include <vector>
 #include <array>
-#include <regex>
 #include <filesystem>
 
 #define PIPE_TIMEOUT 5 * 1000 // ms
@@ -326,18 +327,6 @@ bool Utilities::readNextValue(std::wstring &message, std::wstring &value) {
     return true;
 }
 
-namespace {
-
-bool isLikeFileNotFoundError(DWORD dwError) noexcept {
-    return (dwError != ERROR_FILE_NOT_FOUND) && (dwError != ERROR_PATH_NOT_FOUND) && (dwError != ERROR_INVALID_DRIVE) &&
-           (dwError != ERROR_BAD_NETPATH);
-}
-
-bool isLikeFileNotFoundError(const std::error_code &code) noexcept {
-    return isLikeFileNotFoundError(static_cast<DWORD>(code.value()));
-}
-} // namespace
-
 std::wstring Utilities::getLastErrorMessage() {
     const DWORD errorMessageID = ::GetLastError();
     if (errorMessageID == 0) return {};
@@ -365,7 +354,7 @@ bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunc
     HANDLE hFile = CreateFileW(path, FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
-        exists = isLikeFileNotFoundError(GetLastError());
+        exists = KDC::CommonUtility::isLikeFileNotFoundError(GetLastError());
         return !exists;
     }
 
@@ -381,7 +370,7 @@ bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunc
             return true;
         }
 
-        exists = isLikeFileNotFoundError(GetLastError());
+        exists = KDC::CommonUtility::isLikeFileNotFoundError(GetLastError());
         return !exists;
     }
 
@@ -399,7 +388,7 @@ bool Utilities::checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool 
     std::error_code ec;
     isDirectory = std::filesystem::is_directory(std::filesystem::path(path), ec);
     if (!isDirectory && ec.value() != 0) {
-        exists = isLikeFileNotFoundError(ec);
+        exists = KDC::CommonUtility::isLikeFileNotFoundError(ec);
         if (!exists) {
             return true;
         }
