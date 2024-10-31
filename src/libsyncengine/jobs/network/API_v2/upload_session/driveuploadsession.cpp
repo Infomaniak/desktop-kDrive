@@ -40,7 +40,7 @@ DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> sy
 
 DriveUploadSession::~DriveUploadSession() {
     if (_vfsForceStatus && !_vfsForceStatus(getFilePath(), false, 100, true)) {
-        LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
+        LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()));
     }
 }
 
@@ -117,10 +117,18 @@ void DriveUploadSession::abort() {
     setVfsForceStatusCallback(nullptr);
 
 #ifdef __APPLE__
+    // Removing all extended attributes so that the file that failed to be uploaded is not identified as a dehydrated placeholder
+    // by the application when restarting the synchronization.
+
     const SyncPath &localPath = getFilePath();
-    if (auto ioError = IoError::Success;
-        !IoHelper::removeXAttr(localPath, EXT_ATTR_STATUS, ioError) || ioError != IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(getLogger(), "Error in IoHelper::removeXAttr: " << Utility::formatIoError(localPath, ioError));
+    static const std::vector<const char *> attributes = {EXT_ATTR_STATUS, EXT_ATTR_PIN_STATE};
+
+    for (const auto attribute: attributes) {
+        if (auto ioError = IoError::Success;
+            !IoHelper::removeXAttr(localPath, EXT_ATTR_STATUS, ioError) || ioError != IoError::NoSuchFileOrDirectory) {
+            LOGW_WARN(getLogger(), "Error in IoHelper::removeXAttr with extended attribute "
+                                           << attribute << L": " << Utility::formatIoError(localPath, ioError));
+        }
     }
 #endif
 }

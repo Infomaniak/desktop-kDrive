@@ -1069,9 +1069,8 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     // Set status
     IoError ioError = IoError::Success;
     if (!setXAttrValue(path, [@EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
-        const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
         LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed - " << Utility::formatPath(path).c_str() << L" Error: " << ioErrorMsg.c_str());
+                  L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
         return false;
     }
 
@@ -1084,9 +1083,8 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
                        [@EXT_ATTR_PIN_STATE UTF8String],
                        EXT_ATTR_PIN_STATE_UNPINNED,
                        ioError)) {
-        const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
         LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed - " << Utility::formatPath(path).c_str() << L" Error: " << ioErrorMsg.c_str());
+                  L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
         return false;
     }
 
@@ -1098,12 +1096,12 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     bool exists = false;
     if (!Utility::setFileDates(QStr2Path(path), std::make_optional<KDC::SyncTime>(fileStat->st_birthtimespec.tv_sec),
                                std::make_optional<KDC::SyncTime>(fileStat->st_mtimespec.tv_sec), false, exists)) {
-        LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - " << Utility::formatPath(path).c_str());
+        LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - " << Utility::formatPath(path));
         return false;
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item doesn't exist - " << Utility::formatPath(path).c_str());
+        LOGW_DEBUG(_logger, L"Item doesn't exist - " << Utility::formatPath(path));
         return false;
     }
 
@@ -1143,8 +1141,8 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
         NSInteger errorCode = error ? error.code : 0;
         if (error) {
             LOGW_WARN(_logger,
-                      L"Failed to get attributes - " << Utility::formatPath(filePath).c_str()
-                                                     << L" errno=" << errorCode);
+                      L"Failed to get attributes - " << Utility::formatPath(filePath) << L" errno="
+                                                     << errorCode);
             return false;
         }
 
@@ -1155,8 +1153,9 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
 
             // Copy tmp file content to file
             @try {
-                LOGW_INFO(_logger, L"Copying temp file - from " << Utility::formatPath(tmpFilePath).c_str() << L" to "
-                                                                << Utility::formatPath(filePath).c_str());
+                LOGW_INFO(_logger,
+                          L"Copying temp file - from " << Utility::formatPath(tmpFilePath)
+                                                       << L" to " << Utility::formatPath(filePath));
 
                 NSFileHandle *tmpFileHandle = [NSFileHandle fileHandleForReadingAtPath:tmpFilePath.toNSString()];
                 NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingAtPath:filePath.toNSString()];
@@ -1167,12 +1166,11 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
                         if ((buffer = [tmpFileHandle readDataUpToLength:COPY_CHUNK_SIZE error:&error]) == nil) {
                             errorCode = error ? error.code : 0;
                             LOGW_ERROR(_logger,
-                                       L"Error while reading tmp file - "
-                                           << Utility::formatPath(tmpFilePath).c_str() << L" error="
-                                           << errorCode);
+                                       L"Error while reading tmp file - " << Utility::formatPath(
+                                           tmpFilePath) << L" error=" << errorCode);
                             break;
                         }
-                        errorCode = error ? error.code : 0;
+
                         if (buffer.length == 0) {
                             // Nothing else to read
                             break;
@@ -1180,8 +1178,9 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
 
                         if (![fileHandle writeData:buffer error:&error]) {
                             errorCode = error ? error.code : 0;
-                            LOGW_ERROR(_logger, L"Error while writing to file - " << Utility::formatPath(filePath).c_str()
-                                                                                  << L" error=" << errorCode);
+                            LOGW_ERROR(_logger,
+                                       L"Error while writing to file - " << Utility::formatPath(
+                                           filePath) << L" error=" << errorCode);
                             break;
                         }
                     }
@@ -1190,9 +1189,10 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
                 [tmpFileHandle closeFile];
                 [fileHandle closeFile];
             } @catch (NSException *e) {
-                LOGW_WARN(_logger, L"Could not copy tmp file - from path="
-                                       << QStr2WStr(tmpFilePath).c_str() << L" to " << Utility::formatPath(filePath).c_str()
-                                       << Utility::s2ws(std::string([e.name UTF8String])).c_str());
+                LOGW_WARN(_logger,
+                          L"Could not copy tmp file - from path="
+                              << QStr2WStr(tmpFilePath) << L" to " << Utility::formatPath(filePath)
+                              << Utility::s2ws(std::string([e.name UTF8String])));
                 return false;
             }
 
@@ -1200,7 +1200,8 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             if (![[NSFileManager defaultManager] setAttributes:attributes ofItemAtPath:filePath.toNSString() error:&error]) {
                 errorCode = error ? error.code : 0;
                 LOGW_WARN(_logger,
-                          L"Could not set attributes to file - " << Utility::formatPath(filePath).c_str() << L" errno=" << errorCode);
+                          L"Could not set attributes to file - " << Utility::formatPath(filePath)
+                                                                 << L" errno=" << errorCode);
                 return false;
             }
 
@@ -1210,7 +1211,8 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
 
             if (!_private->updateFetchStatus(filePath, QString("OK"))) {
-                LOGW_WARN(_logger, L"Call to updateFetchStatus failed - " << Utility::formatPath(filePath).c_str());
+                LOGW_WARN(_logger,
+                          L"Call to updateFetchStatus failed - " << Utility::formatPath(filePath));
                 return false;
             }
 
@@ -1218,17 +1220,20 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             bool exists = false;
             if (!Utility::setFileDates(QStr2Path(filePath), std::make_optional<KDC::SyncTime>(creationDate), std::nullopt, false,
                                        exists)) {
-                LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - " << Utility::formatPath(filePath).c_str());
+                LOGW_WARN(_logger,
+                          L"Call to Utility::setFileDates failed - "
+                              << Utility::formatPath(filePath));
                 return false;
             }
 
             if (!exists) {
-                LOGW_DEBUG(_logger, L"Item doesn't exist - " << Utility::formatPath(filePath).c_str());
+                LOGW_DEBUG(_logger, L"Item does not exist: " << Utility::formatPath(filePath));
                 return false;
             }
         } else {
             // Set status
-            int progress = static_cast<int>(ceil(float(completed) / fileSize * 100));
+            const int progress = static_cast<int>(
+                ceil(float(completed) / static_cast<float>(fileSize) * 100));
             if (!vfsSetStatus(filePath, localSyncPath, true, progress)) {
                 return false;
             }
@@ -1240,7 +1245,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
 
 bool LiteSyncExtConnector::vfsCancelHydrate(const QString &filePath) {
     if (!_private->updateFetchStatus(filePath, QString("CANCEL"))) {
-        LOGW_WARN(_logger, L"Call to updateFetchStatus failed - " << Utility::formatPath(filePath).c_str());
+        LOGW_WARN(_logger, L"Call to updateFetchStatus failed - " << Utility::formatPath(filePath));
         return false;
     }
     return true;
@@ -1249,7 +1254,8 @@ bool LiteSyncExtConnector::vfsCancelHydrate(const QString &filePath) {
 bool LiteSyncExtConnector::vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) {
     // Set thumbnail
     if (!_private->setThumbnail(absoluteFilePath, pixmap)) {
-        LOGW_WARN(_logger, L"Call to setThumbnail failed - " << Utility::formatPath(absoluteFilePath).c_str());
+        LOGW_WARN(_logger,
+                  L"Call to setThumbnail failed - " << Utility::formatPath(absoluteFilePath));
     }
 
     return true;
@@ -1335,7 +1341,9 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
 
         fd = open(stdPath.c_str(), FWRITE);
         if (fd == -1) {
-            LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
+            LOGW_WARN(_logger,
+                      L"Call to open failed - " << Utility::formatPath(absoluteFilePath)
+                                                << L" errno=" << errno);
             *error = QObject::tr("Call to open failed - path=%1").arg(absoluteFilePath);
             return false;
         }
@@ -1343,13 +1351,16 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
 
     if (ftruncate(fd, fileStat->st_size) == -1) {
         LOGW_WARN(_logger,
-                  L"Call to ftruncate failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
+                  L"Call to ftruncate failed - " << Utility::formatPath(absoluteFilePath)
+                                                 << L" errno=" << errno);
         *error = QObject::tr("Call to ftruncate failed - path=%1").arg(absoluteFilePath);
         return false;
     }
 
     if (close(fd) == -1) {
-        LOGW_WARN(_logger, L"Call to close failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
+        LOGW_WARN(_logger,
+                  L"Call to close failed - " << Utility::formatPath(absoluteFilePath) << L" errno="
+                                             << errno);
         *error = QObject::tr("Call to close failed - path=%1").arg(absoluteFilePath);
         return false;
     }
@@ -1358,12 +1369,14 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     bool exists;
     if (!Utility::setFileDates(QStr2Path(absoluteFilePath), fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec,
                                false, exists)) {
-        LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - " << Utility::formatPath(absoluteFilePath).c_str());
+        LOGW_WARN(_logger,
+                  L"Call to Utility::setFileDates failed - "
+                      << Utility::formatPath(absoluteFilePath));
         return false;
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item doesn't exist - " << Utility::formatPath(absoluteFilePath).c_str());
+        LOGW_DEBUG(_logger, L"Item doesn't exist - " << Utility::formatPath(absoluteFilePath));
         return false;
     }
 
@@ -1396,8 +1409,8 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
 
     int roundedProgress = progress;
     if (isSyncing) {
-        int stepWidth = 100 / SYNC_STEPS;
-        roundedProgress = static_cast<int>(ceil(float(progress) / stepWidth) * stepWidth);
+        const int stepWidth = 100 / SYNC_STEPS;
+        roundedProgress = static_cast<int>(ceil(float(progress) / float(stepWidth)) * stepWidth);
     }
 
     if (isSyncing != isSyncingCurrent || roundedProgress != progressCurrent || isHydrated != isHydratedCurrent) {
@@ -1415,7 +1428,7 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
         }
 
         if (!sendStatusToFinder(path, isSyncing, roundedProgress, isHydrated)) {
-            LOGW_WARN(_logger, L"Call to sendStatusToFinder failed - " << Utility::formatPath(path).c_str());
+            LOGW_WARN(_logger, L"Call to sendStatusToFinder failed - " << Utility::formatPath(path));
             return false;
         }
 
@@ -1533,7 +1546,7 @@ bool LiteSyncExtConnector::sendStatusToFinder(const QString &path, bool isSyncin
 
     QString status;
     if (isSyncing) {
-        int stepWidth = 100 / SYNC_STEPS;
+        const int stepWidth = 100 / SYNC_STEPS;
         status = QString("SYNC_%1").arg(ceil(float(progress) / stepWidth) * stepWidth);
     } else if (isHydrated) {
         status = "OK";
