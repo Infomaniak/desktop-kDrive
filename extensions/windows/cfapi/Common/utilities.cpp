@@ -328,13 +328,13 @@ bool Utilities::readNextValue(std::wstring &message, std::wstring &value) {
 
 namespace {
 
-bool fileExists(DWORD dwError) noexcept {
+bool isLikeFileNotFoundError(DWORD dwError) noexcept {
     return (dwError != ERROR_FILE_NOT_FOUND) && (dwError != ERROR_PATH_NOT_FOUND) && (dwError != ERROR_INVALID_DRIVE) &&
            (dwError != ERROR_BAD_NETPATH);
 }
 
-bool fileExists(const std::error_code &code) noexcept {
-    return fileExists(static_cast<DWORD>(code.value()));
+bool isLikeFileNotFoundError(const std::error_code &code) noexcept {
+    return isLikeFileNotFoundError(static_cast<DWORD>(code.value()));
 }
 } // namespace
 
@@ -344,8 +344,8 @@ std::wstring Utilities::getLastErrorMessage() {
 
     LPWSTR messageBuffer = nullptr;
     const size_t size =
-        FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
-            errorMessageID, NULL, (LPWSTR)&messageBuffer, 0, nullptr);
+            FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
+                           errorMessageID, NULL, (LPWSTR) &messageBuffer, 0, nullptr);
 
     // Escape quotes
     const auto msg = std::wstring(messageBuffer, size);
@@ -365,7 +365,7 @@ bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunc
     HANDLE hFile = CreateFileW(path, FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
-        exists = fileExists(GetLastError());
+        exists = isLikeFileNotFoundError(GetLastError());
         return !exists;
     }
 
@@ -381,7 +381,7 @@ bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunc
             return true;
         }
 
-        exists = fileExists(GetLastError());
+        exists = isLikeFileNotFoundError(GetLastError());
         return !exists;
     }
 
@@ -399,7 +399,7 @@ bool Utilities::checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool 
     std::error_code ec;
     isDirectory = std::filesystem::is_directory(std::filesystem::path(path), ec);
     if (!isDirectory && ec.value() != 0) {
-        exists = fileExists(ec);
+        exists = isLikeFileNotFoundError(ec);
         if (!exists) {
             return true;
         }
