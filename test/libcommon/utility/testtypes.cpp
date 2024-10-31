@@ -78,7 +78,7 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Unknown, ec);
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, eca);
-    CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(ei));
+    CPPUNIT_ASSERT_EQUAL(100, static_cast<int>(ei));
 
     ei = {ExitCode::Ok};
     ec = ei;
@@ -87,7 +87,7 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ec);
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, eca);
-    CPPUNIT_ASSERT_EQUAL(100, static_cast<int>(ei));
+    CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(ei));
 
     ei = {ExitCode::NetworkError, ExitCause::DbAccessError};
     ec = ei;
