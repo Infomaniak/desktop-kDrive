@@ -40,7 +40,7 @@ class UploadSessionChunkJob : public AbstractUploadSessionJob {
         virtual std::string getSpecificUrl() override;
         virtual std::string getContentType(bool &canceled) override;
         virtual void setQueryParameters(Poco::URI &, bool &canceled) override;
-        virtual void setData(bool &) override {}
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         std::string _chunkHash;
         uint64_t _chunkNb = 0;

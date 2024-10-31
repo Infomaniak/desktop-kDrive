@@ -466,4 +466,20 @@ bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
     return true;
 }
 
+void TestUtility::testIsSameOrParentPath() {
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("", "a"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c", "a/b/c1"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c1", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("/a/b/c", "a/b/c"));
+
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("", ""));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b/c"));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a", ""));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b"));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a"));
+}
+
 } // namespace KDC

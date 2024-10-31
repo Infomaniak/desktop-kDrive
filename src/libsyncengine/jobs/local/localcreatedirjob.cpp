@@ -38,6 +38,12 @@ bool LocalCreateDirJob::canRun() {
     if (!IoHelper::checkIfPathExists(_destFilePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilePath).c_str());
+        _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
     }
@@ -58,7 +64,7 @@ void LocalCreateDirJob::runJob() {
     }
 
     IoError ioError = IoError::Success;
-    if (IoHelper::createDirectory(_destFilePath, ioError)) {
+    if (IoHelper::createDirectory(_destFilePath, ioError) && ioError == IoError::Success) {
         if (isExtendedLog()) {
             LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" created");
         }
@@ -68,14 +74,14 @@ void LocalCreateDirJob::runJob() {
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath).c_str());
         _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::NoSearchPermission;
+        _exitCause = ExitCause::FileAccessError;
         return;
     }
 
     if (ioError != IoError::Success) { // Unexpected error
         LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitCause = ExitCause::Unknown;
         return;
     }
 
@@ -84,7 +90,7 @@ void LocalCreateDirJob::runJob() {
         if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError).c_str());
             _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
+            _exitCause = ExitCause::Unknown;
             return;
         }
 
@@ -96,7 +102,7 @@ void LocalCreateDirJob::runJob() {
         } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath).c_str());
             _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::NoSearchPermission;
+            _exitCause = ExitCause::FileAccessError;
             return;
         }
 

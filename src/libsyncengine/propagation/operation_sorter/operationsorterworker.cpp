@@ -286,8 +286,8 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
             }
 
             SyncPath sourcePath = moveOp->affectedNode()->moveOrigin().value();
-            if (Utility::startsWith(sourcePath.lexically_normal(),
-                                    SyncPath(deleteDirPath.native() + Str("/")).lexically_normal())) {
+            if (Utility::isDescendantOrEqual(sourcePath.lexically_normal(),
+                                             SyncPath(deleteDirPath.native() + Str("/")).lexically_normal())) {
                 // move only if op is before moveOp
                 moveFirstAfterSecond(deleteOp, moveOp);
             }
@@ -594,11 +594,11 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
             }
             SyncPath ySourcePath = *yNode->moveOrigin();
 
-            bool isXBelowY =
-                    Utility::startsWith(xDestPath.lexically_normal(), SyncPath(yDestPath.native() + Str("/")).lexically_normal());
+            bool isXBelowY = Utility::isDescendantOrEqual(xDestPath.lexically_normal(),
+                                                          SyncPath(yDestPath.native() + Str("/")).lexically_normal());
             if (isXBelowY) {
-                bool isYBelowXInDb = Utility::startsWith(ySourcePath.lexically_normal(),
-                                                         SyncPath(xSourcePath.native() + Str("/")).lexically_normal());
+                bool isYBelowXInDb = Utility::isDescendantOrEqual(ySourcePath.lexically_normal(),
+                                                                  SyncPath(xSourcePath.native() + Str("/")).lexically_normal());
                 if (isYBelowXInDb) {
                     moveFirstAfterSecond(xOp, yOp);
                 }
@@ -624,7 +624,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     // impossible move if dest = source + "/"
     SyncPath source = (o1->affectedNode()->moveOrigin().has_value() ? o1->affectedNode()->moveOrigin().value() : "");
     SyncPath dest = o1->affectedNode()->getPath();
-    if (!Utility::startsWith(dest.lexically_normal(), SyncPath(source.native() + Str("/")).lexically_normal())) {
+    if (!Utility::isDescendantOrEqual(dest.lexically_normal(), SyncPath(source.native() + Str("/")).lexically_normal())) {
         return std::nullopt;
     }
 

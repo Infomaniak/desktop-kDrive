@@ -203,7 +203,8 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
                 ioError = IoError::NoSuchFileOrDirectory;
                 return true;
             }
-            if (counter) {
+            ioError = dWordError2ioError(dwError, logger());
+            if (counter && ioError != IoError::AccessDenied) {
                 retry = true;
                 Utility::msleep(10);
                 LOGW_DEBUG(logger(), L"Retrying to get handle: " << Utility::formatSyncPath(path.parent_path()).c_str());
@@ -211,7 +212,6 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
                 continue;
             }
 
-            ioError = dWordError2ioError(dwError, logger());
             LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatIoError(path.parent_path(), ioError).c_str());
 
             return isExpectedError(ioError);
@@ -251,7 +251,6 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     if ((isNtfs && !NT_SUCCESS(status)) ||
         (!isNtfs && dwError != 0)) { // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we
                                      // also check GetLastError
-        LOGW_DEBUG(logger(), L"Error in zwQueryDirectoryFile: " << Utility::formatSyncPath(path.parent_path()).c_str());
         CloseHandle(hParent);
 
         if (!NT_SUCCESS(status)) {
@@ -259,6 +258,8 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
         } else if (dwError != 0) {
             ioError = dWordError2ioError(dwError, logger());
         }
+        LOGW_DEBUG(logger(), L"Error in zwQueryDirectoryFile: " << Utility::formatIoError(path, ioError));
+
         return isExpectedError(ioError);
     }
 
@@ -721,9 +722,8 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
     isJunction = false;
     ioError = IoError::Success;
 
-    HANDLE hFile =
-            CreateFileW(Path2WStr(path).c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+    HANDLE hFile = CreateFileW(Path2WStr(path).c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return isExpectedError(ioError);

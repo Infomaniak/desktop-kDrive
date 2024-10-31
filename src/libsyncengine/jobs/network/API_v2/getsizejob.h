@@ -37,7 +37,7 @@ class GetSizeJob : public AbstractTokenNetworkJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
-        virtual void setData(bool &canceled) override { canceled = false; }
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;
         int64_t _size{0};

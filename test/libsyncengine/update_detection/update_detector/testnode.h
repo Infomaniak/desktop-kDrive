@@ -23,30 +23,15 @@
 using namespace CppUnit;
 
 namespace KDC {
-class UpdateTree;
-class FSOperationSet;
-
-class TestUpdateTree : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestUpdateTree);
-        CPPUNIT_TEST(testConstructors);
-        CPPUNIT_TEST(testAll);
-        CPPUNIT_TEST(testChangeEvents);
-        CPPUNIT_TEST(testInsertionOfFileNamesWithDifferentEncodings);
+class TestNode : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestNode);
+        CPPUNIT_TEST(testIsParentValid);
+        CPPUNIT_TEST(testIsParentOf);
         CPPUNIT_TEST_SUITE_END();
 
-    public:
-        void setUp() override;
-        void tearDown() override;
-
     protected:
-        void testConstructors();
-        void testAll();
-        void testChangeEvents();
-        void testInsertionOfFileNamesWithDifferentEncodings();
-
-    private:
-        UpdateTree *_myTree;
-        std::shared_ptr<FSOperationSet> _operationSet;
+        void testIsParentValid();
+        void testIsParentOf();
 };
 
 } // namespace KDC

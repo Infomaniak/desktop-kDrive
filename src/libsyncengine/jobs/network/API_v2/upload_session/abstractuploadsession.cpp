@@ -167,6 +167,12 @@ bool AbstractUploadSession::canRun() {
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
+        _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
     }

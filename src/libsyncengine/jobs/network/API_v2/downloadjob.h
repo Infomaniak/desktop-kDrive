@@ -39,7 +39,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual void setData(bool &canceled) override { canceled = false; }
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         virtual bool canRun() override;
         virtual void runJob() noexcept override;

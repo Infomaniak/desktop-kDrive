@@ -37,10 +37,10 @@ class Node {
              std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
              std::optional<SyncPath> moveOrigin = std::nullopt, std::optional<DbNodeId> moveOriginParentDbId = std::nullopt);
 
-        Node(const ReplicaSide &side, const SyncName &name, NodeType type,
-             OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-             std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
-             std::optional<SyncPath> moveOrigin = std::nullopt, std::optional<DbNodeId> moveOriginParentDbId = std::nullopt);
+        Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
+             const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
+             int64_t size, std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin = std::nullopt,
+             std::optional<DbNodeId> moveOriginParentDbId = std::nullopt);
 
         /**
          * @brief Node
@@ -116,6 +116,7 @@ class Node {
         [[nodiscard]] bool isRoot() const;
         [[nodiscard]] bool isCommonDocumentsFolder() const;
         [[nodiscard]] bool isSharedFolder() const;
+        [[nodiscard]] bool isParentOf(std::shared_ptr<const Node> potentialChild) const;
 
         [[nodiscard]] SyncPath getPath() const;
 
@@ -146,7 +147,7 @@ class Node {
         bool _isTmp = false;
 
         [[nodiscard]] bool isParentValid(std::shared_ptr<const Node> parentNode) const;
-        friend class TestUpdateTree;
+        friend class TestNode;
 };
 
 } // namespace KDC

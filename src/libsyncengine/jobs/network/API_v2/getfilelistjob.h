@@ -30,7 +30,7 @@ class GetFileListJob : public GetRootFileListJob {
 
     private:
         virtual std::string getSpecificUrl() override;
-        virtual void setData(bool &canceled) override { canceled = false; }
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         std::string _fileId;
 };

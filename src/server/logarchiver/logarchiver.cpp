@@ -44,7 +44,9 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     for (int i = 0; i < 2; i++) { // Retry once in case a log file is archived/created during the first iteration
         result = IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoError::Success) {
-            size = static_cast<uint64_t>(static_cast<double>(size) * 0.8); // The compressed logs will be smaller than the original ones. We estimate at worst 80% of the original size.
+            size = static_cast<uint64_t>(static_cast<double>(size) *
+                                         0.8); // The compressed logs will be smaller than the original ones. We estimate at worst
+                                               // 80% of the original size.
             return true;
         }
     }
@@ -298,7 +300,7 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            exitCause = ExitCause::FileAccessError;
+            exitCause = ExitCause::NotFound;
         }
         return ExitCode::SystemError;
     }
