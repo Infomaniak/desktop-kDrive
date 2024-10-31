@@ -154,6 +154,9 @@ void TestWorkers::setUp() {
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 #endif
 
+#if !defined(__APPLE__)
+    // TODO: on macOS, SIP should be deactivated and LiteSync extension signed to be able to start Vfs
+
     // Start Vfs
     bool installationDone;
     bool activationDone;
@@ -162,6 +165,7 @@ void TestWorkers::setUp() {
     CPPUNIT_ASSERT(installationDone);
     CPPUNIT_ASSERT(activationDone);
     CPPUNIT_ASSERT(connectionDone);
+#endif
 }
 
 void TestWorkers::tearDown() {
