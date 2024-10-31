@@ -94,7 +94,7 @@ ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetwork
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
         return ExitCode::DbError;
     }
-    std::list<int> userIdList;
+    std::vector<int> userIdList;
     for (const auto &user: userList) {
         userIdList.push_back(user.userId());
     }

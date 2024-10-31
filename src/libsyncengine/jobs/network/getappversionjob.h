@@ -25,7 +25,7 @@
 namespace KDC {
 class GetAppVersionJob : public AbstractNetworkJob {
     public:
-        GetAppVersionJob(Platform platform, const std::string &appID, const std::list<int> &userIdList);
+        GetAppVersionJob(Platform platform, const std::string &appID, const std::vector<int> &userIdList);
         ~GetAppVersionJob() override = default;
 
         const VersionInfo &getVersionInfo(const DistributionChannel channel) { return _versionInfo[channel]; }
@@ -48,7 +48,7 @@ class GetAppVersionJob : public AbstractNetworkJob {
 
         const Platform _platform{Platform::Unknown};
         const std::string _appId;
-        const std::list<int> _userIdList;
+        const std::vector<int> _userIdList;
 
         bool _hasProdNext{false};
         std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;
