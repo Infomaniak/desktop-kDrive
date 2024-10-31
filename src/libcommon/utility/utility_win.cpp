@@ -64,13 +64,13 @@ static inline bool hasDarkSystray_private() {
     return !settings.value(QLatin1String(lightThemeKeyC), true).toBool();
 }
 
-bool CommonUtility::fileExists(DWORD dwError) noexcept {
+bool CommonUtility::isLikeFileNotFoundError(DWORD dwError) noexcept {
     return (dwError != ERROR_FILE_NOT_FOUND) && (dwError != ERROR_PATH_NOT_FOUND) && (dwError != ERROR_INVALID_DRIVE) &&
            (dwError != ERROR_BAD_NETPATH);
 }
 
-bool CommonUtility::fileExists(const std::error_code &code) noexcept {
-    return fileExists(static_cast<DWORD>(code.value()));
+bool CommonUtility::isLikeFileNotFoundError(const std::error_code &code) noexcept {
+    return isLikeFileNotFoundError(static_cast<DWORD>(code.value()));
 }
 
 std::wstring CommonUtility::getErrorMessage(DWORD errorMessageID) {

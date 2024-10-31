@@ -781,7 +781,7 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
 bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
     int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
     if (!length) {
-        const bool exists = CommonUtility::fileExists(GetLastError());
+        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
@@ -795,7 +795,7 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
     if (!length) {
-        const bool exists = CommonUtility::fileExists(GetLastError());
+        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }

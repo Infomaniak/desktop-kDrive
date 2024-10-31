@@ -553,7 +553,7 @@ SyncPath CommonUtility::getAppSupportDir() {
     if (!std::filesystem::is_directory(dirPath, ec)) {
         bool exists = false;
 #ifdef _WIN32
-        exists = CommonUtility::fileExists(ec);
+        exists = CommonUtility::isLikeFileNotFoundError(ec);
 #else
         exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
 #endif
@@ -940,7 +940,7 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
 
 
 #if defined(__APPLE__) || defined(__unix__)
-bool CommonUtility::fileExists(const std::error_code &ec) noexcept {
+bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept {
     return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
 }
 #endif
