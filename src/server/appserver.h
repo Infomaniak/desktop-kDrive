@@ -176,7 +176,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendSyncDeletionFailed(int syncDbId);
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
-        void sendErrorsCleared(int syncDbId);
+        static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
         // See types.h -> AppStateKey for the possible values of status

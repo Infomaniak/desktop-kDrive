@@ -58,6 +58,12 @@ bool MoveJob::canRun() {
     if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilepath));
+        _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
     }
@@ -83,7 +89,7 @@ std::string MoveJob::getSpecificUrl() {
     return str;
 }
 
-void MoveJob::setData(bool &canceled) {
+ExitInfo MoveJob::setData() {
     Poco::JSON::Object json;
     if (!_name.empty()) {
         json.set("name", _name);
@@ -92,7 +98,7 @@ void MoveJob::setData(bool &canceled) {
         json.stringify(ss);
         _data = ss.str();
     }
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

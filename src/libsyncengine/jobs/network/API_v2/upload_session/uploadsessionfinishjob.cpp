@@ -74,7 +74,7 @@ std::string UploadSessionFinishJob::getSpecificUrl() {
     return str;
 }
 
-void UploadSessionFinishJob::setData(bool &canceled) {
+ExitInfo UploadSessionFinishJob::setData() {
     Poco::JSON::Object json;
     json.set("total_chunk_hash", "xxh3:" + _totalChunkHash);
     json.set("total_chunks", _totalChunks);
@@ -83,7 +83,7 @@ void UploadSessionFinishJob::setData(bool &canceled) {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

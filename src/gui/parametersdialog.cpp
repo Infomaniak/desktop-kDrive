@@ -402,7 +402,6 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
         case ExitCode::Ok:
         case ExitCode::NeedRestart:
         case ExitCode::LogicError:
-        case ExitCode::NoWritePermission:
         case ExitCode::TokenRefreshed:
         case ExitCode::RateLimited:
         case ExitCode::InvalidSync:
@@ -419,23 +418,14 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
 
 QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const {
     switch (exitCause) {
-        case ExitCause::NoSearchPermission:
-            return tr("The item misses search permission (error %1).<br>"
-                      "Please check that you have search/exec access to the parent folder.")
-                    .arg(err);
         case ExitCause::SyncDirDoesntExist:
             return tr("The synchronization folder is no longer accessible (error %1).<br>"
                       "Synchronization will resume as soon as the folder is accessible.")
                     .arg(err);
 
-        case ExitCause::SyncDirReadError:
+        case ExitCause::SyncDirAccesError:
             return tr("The synchronization folder is inaccessible (error %1).<br>"
-                      "Please check that you have read access to this folder.")
-                    .arg(err);
-
-        case ExitCause::SyncDirWriteError:
-            return tr("The synchronization folder is inaccessible (error %1).<br>"
-                      "Please check that you have write access to this folder.")
+                      "Please check that you have read and write access to this folder.")
                     .arg(err);
 
         case ExitCause::NotEnoughDiskSpace:
@@ -576,11 +566,6 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             return tr("Nested synchronizations are prohibited (error %1).<br>"
                       "You should only keep synchronizations whose folders are not nested.")
                     .arg(err);
-        case ExitCode::NoWritePermission:
-            return tr(
-                    "The app does not have write rights to the synchronization folder.<br>"
-                    "The synchronization has been stopped.");
-            break;
         case ExitCode::LogicError:
             if (exitCause == ExitCause::FullListParsingError) {
                 return tr("File name parsing error (error %1).<br>"
@@ -839,7 +824,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
             if (errorInfo.exitCause() == ExitCause::FileAccessError) {
                 return tr(
                         "Can't access item.<br>"
-                        "Please fix the write permissions and restart the synchronization.");
+                        "Please fix the read and write permissions.");
             }
 
             if (errorInfo.exitCause() == ExitCause::MoveToTrashFailed) {
