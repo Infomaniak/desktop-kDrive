@@ -633,16 +633,14 @@ bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &vers
     // Create/open sync DB
     try {
         _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), version, targetNodeId));
-        if (!_syncDb->init(version)) {
-            _syncDb.reset();
-            LOG_SYNCPAL_ERROR(_logger, "Database initialisation error");
-
-            return false;
-        }
-
     } catch (std::exception const &) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::SyncDb");
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath));
+        return false;
+    }
 
+    if (!_syncDb->init(version)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::init: " << Utility::formatSyncPath(syncDbPath));
+        _syncDb.reset();
         return false;
     }
 
@@ -665,45 +663,53 @@ void SyncPal::updateEstimates() {
     _progressInfo->updateEstimates();
 }
 
-void SyncPal::initProgress(const SyncFileItem &item) {
-    _progressInfo->initProgress(item);
+bool SyncPal::initProgress(const SyncFileItem &item) {
+    return _progressInfo->initProgress(item);
 }
 
-void SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
-    _progressInfo->setProgress(relativePath, current);
+bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
+    if (!_progressInfo->setProgress(relativePath, current)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgress");
+        return false;
+    }
 
-    bool found;
+    bool found = false;
     if (!_syncDb->setStatus(ReplicaSide::Remote, relativePath, SyncFileStatus::Syncing, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setStatus");
-        return;
+        return false;
     }
     if (!found) {
         SyncFileItem item;
         if (!getSyncFileItem(relativePath, item)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::getSyncFileItem");
-            return;
+            return false;
         }
         if (item.instruction() != SyncFileInstruction::Get && item.instruction() != SyncFileInstruction::Put) {
             LOGW_SYNCPAL_WARN(_logger, L"Node not found : " << Utility::formatSyncPath(relativePath).c_str());
-            return;
+            return false;
         }
     }
+    return true;
 }
 
-void SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status) {
-    _progressInfo->setProgressComplete(relativeLocalPath, status);
+bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status) {
+    if (!_progressInfo->setProgressComplete(relativeLocalPath, status)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ProgressInfo::setProgressComplete");
+        return false;
+    }
+
     vfsFileStatusChanged(localPath() / relativeLocalPath, status);
 
-    bool found;
+    bool found = false;
     if (!_syncDb->setStatus(ReplicaSide::Local, relativeLocalPath, status, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setStatus");
-        return;
+        return false;
     }
     if (!found) {
         // Can happen for a dehydrated placeholder
         LOGW_SYNCPAL_DEBUG(_logger, L"Node not found : " << Utility::formatSyncPath(relativeLocalPath).c_str());
-        return;
     }
+    return true;
 }
 
 void SyncPal::directDownloadCallback(UniqueId jobId) {
@@ -780,8 +786,8 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
             return ExitCode::SystemError;
         }
         job->setAffectedFilePath(localPath);
-    } catch (std::exception const &) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob");
+    } catch (const std::exception const &e) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
         return ExitCode::Unknown;
     }
@@ -1026,20 +1032,36 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
     return ExitCode::Ok;
 }
 
-bool SyncPal::existOnServer(const SyncPath &path) const {
+bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
+    exists = false;
+
     // Path is normalized on server side
-    const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
     const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
-    return !nodeId.empty();
+    exists = !nodeId.empty();
+    return true;
 }
 
-bool SyncPal::canShareItem(const SyncPath &path) const {
+bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
+    canShare = false;
+
     // Path is normalized on server side
-    const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
-    if (const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath); !nodeId.empty()) {
-        return _remoteSnapshot->canShare(nodeId);
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
     }
-    return false;
+
+    const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
+    if (const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath); !nodeId.empty()) {
+        canShare = _remoteSnapshot->canShare(nodeId);
+    }
+
+    return true;
 }
 
 ExitCode SyncPal::syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet) {
@@ -1299,7 +1321,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
                                                                 uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
+                LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously: code=" << exitCode);
                 if (exitCode == ExitCode::NetworkError) {
                     return exitCode;
                 }
@@ -1309,8 +1331,8 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
                 LOG_SYNCPAL_WARN(_logger, "Upload Session Token: " << uploadSessionToken.token().c_str()
                                                                    << " has already been canceled or has expired.");
             }
-        } catch (std::exception const &e) {
-            LOG_WARN(_logger, "Error in UploadSessionCancelJob: " << e.what());
+        } catch (const std::exception &e) {
+            LOG_WARN(_logger, "Error in UploadSessionCancelJob: error=" << e.what());
             return ExitCode::BackError;
         }
     }
@@ -1406,12 +1428,69 @@ void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativ
     _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
 }
 
+bool SyncPal::isTmpBlacklisted(const NodeId &nodeId, ReplicaSide side) const {
+    return _tmpBlacklistManager->isTmpBlacklisted(nodeId, side);
+}
+
+bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const {
+    return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
+}
+
 void SyncPal::refreshTmpBlacklist() {
     _tmpBlacklistManager->refreshBlacklist();
 }
 
 void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
+}
+
+void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
+    _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
+}
+
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause) {
+    if (relativePath.empty()) {
+        LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
+        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
+    }
+    Error error(syncDbId(), "", "", relativePath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativePath,
+                ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
+    addError(error);
+
+    NodeId localNodeId;
+    if (localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath); localNodeId.empty()) {
+        // The file does not exit yet on local file system, or we do not have sufficient right on a parent folder.
+        LOGW_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath)
+                                     << L"is not present local file system, blacklisting the parent item.");
+        return handleAccessDeniedItem(relativePath.parent_path(), cause);
+    }
+
+
+    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(localNodeId)
+                                         << L" is blacklisted temporarily because of a denied access.");
+
+    NodeId correspondingNodeId;
+    correspondingNodeId = snapshot(ReplicaSide::Remote)->itemId(relativePath);
+    if (bool found; correspondingNodeId.empty() &&
+                    !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, correspondingNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
+        return {ExitCode::DbError, ExitCause::Unknown};
+    }
+
+    // Blacklist the item
+    _tmpBlacklistManager->blacklistItem(localNodeId, relativePath, ReplicaSide::Local);
+    if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
+    }
+
+    if (!correspondingNodeId.empty()) {
+        _tmpBlacklistManager->blacklistItem(correspondingNodeId, relativePath, ReplicaSide::Remote);
+        if (!updateTree(ReplicaSide::Remote)->deleteNode(correspondingNodeId)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
+        }
+    }
+
+    return ExitCode::Ok;
 }
 
 void SyncPal::copySnapshots() {

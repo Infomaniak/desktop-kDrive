@@ -31,7 +31,7 @@ class LocalDeleteJob : public AbstractJob {
         LocalDeleteJob(const SyncPath &absolutePath); // Delete without checks
         ~LocalDeleteJob();
 
-        const SyncPalInfo &syncInfo() const { return _syncInfo; };
+        const SyncPalInfo &syncInfo() const { return _syncInfo; }
 
         //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.
         /*!

@@ -27,6 +27,7 @@
 #include "update_detection/file_system_observer/testsnapshot.h"
 #include "update_detection/file_system_observer/testcomputefsoperationworker.h"
 #include "update_detection/update_detector/testupdatetree.h"
+#include "update_detection/update_detector/testnode.h"
 #include "update_detection/update_detector/testupdatetreeworker.h"
 #include "reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.h"
 #include "reconciliation/conflict_finder/testconflictfinderworker.h"
@@ -40,6 +41,7 @@
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
 #include "requests/testexclusiontemplatecache.h"
+#include "requests/testserverrequests.h"
 
 #ifdef __APPLE__
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
@@ -62,6 +64,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestNode);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
@@ -74,6 +77,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 } // namespace KDC
 
 int main(int, char **) {

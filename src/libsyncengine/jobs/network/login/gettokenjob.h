@@ -28,7 +28,7 @@ class GetTokenJob : public AbstractLoginJob {
         ~GetTokenJob();
 
     private:
-        virtual void setData(bool &canceled) override;
+        virtual ExitInfo setData() override;
 
         std::string _authorizationCode;
         std::string _codeVerifier;

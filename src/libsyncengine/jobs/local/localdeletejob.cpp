@@ -32,7 +32,7 @@
 
 namespace KDC {
 
-LocalDeleteJob::Path::Path(const SyncPath &path) : _path(path){};
+LocalDeleteJob::Path::Path(const SyncPath &path) : _path(path) {};
 
 bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     if (!_path.empty() && ending.empty()) return false;
@@ -58,8 +58,7 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
 
 LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash /* = false */) :
-    _syncInfo(syncPalInfo),
-    _relativePath(relativePath), _absolutePath(syncPalInfo.localPath / relativePath),
+    _absolutePath(syncPalInfo.localPath / relativePath), _syncInfo(syncPalInfo), _relativePath(relativePath),
     _isDehydratedPlaceholder(isDehydratedPlaceholder), _remoteNodeId(remoteId), _forceToTrash(forceToTrash) {}
 
 LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) : _absolutePath(absolutePath) {
@@ -102,6 +101,12 @@ bool LocalDeleteJob::canRun() {
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absolutePath).c_str());
+        _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
     }
@@ -133,7 +138,15 @@ bool LocalDeleteJob::canRun() {
     // the local item should be deleted.
     // Note: the other remote move operations are not relevant: they generate Move jobs.
 
-    if (matchRelativePaths(syncInfo().targetPath, Utility::normalizedSyncPath(_relativePath), remoteRelativePath)) {
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(_relativePath, normalizedPath)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativePath));
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
+        return false;
+    }
+
+    if (matchRelativePaths(syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
@@ -178,8 +191,13 @@ void LocalDeleteJob::runJob() {
     std::filesystem::remove_all(_absolutePath, ec);
     if (ec) {
         LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(_absolutePath, ec).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        if (IoHelper::stdError2ioError(ec) == IoError::AccessDenied) {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
+        } else {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
+        }
         return;
     }
 

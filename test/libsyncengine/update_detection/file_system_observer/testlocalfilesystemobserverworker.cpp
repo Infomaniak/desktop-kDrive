@@ -25,7 +25,7 @@
 #else
 #include "update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
 #endif
-
+#include "syncpal/tmpblacklistmanager.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -54,7 +54,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _rootFolderPath = _tempDir.path() / "sync_folder";
     _subDirPath = _rootFolderPath / "sub_dir";
     Poco::File(Path2Str(_subDirPath)).createDirectories();
-    for (int i = 0; i < nbFileInTestDir; i++) {
+    for (uint64_t i = 0; i < nbFileInTestDir; i++) {
         std::string filename = "test" + std::to_string(i) + ".txt";
         SyncPath filepath = _subDirPath / filename;
         testhelpers::generateOrEditTestFile(filepath);
@@ -82,7 +82,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _syncPal = std::make_shared<SyncPalTest>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->setLocalPath(_rootFolderPath);
-
+    _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 #if defined(_WIN32)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_win(_syncPal, "Local File System Observer", "LFSO"));

@@ -25,7 +25,7 @@ namespace KDC {
 GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob(const std::string &username, const std::string &password) :
     AbstractLoginJob(), _username(username), _password(password) {}
 
-void GetTokenFromAppPasswordJob::setData(bool &canceled) {
+ExitInfo GetTokenFromAppPasswordJob::setData() {
     Poco::URI uri;
     uri.addQueryParameter(usernameKey, _username);
     uri.addQueryParameter(passwordKey, _password);
@@ -33,7 +33,7 @@ void GetTokenFromAppPasswordJob::setData(bool &canceled) {
     uri.addQueryParameter(clientIdKey, CLIENT_ID);
 
     _data = uri.getRawQuery();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

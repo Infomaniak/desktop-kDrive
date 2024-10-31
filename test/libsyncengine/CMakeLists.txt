@@ -34,6 +34,7 @@ set(testsyncengine_SRCS
         ## Update Detector
         update_detection/update_detector/testupdatetree.h update_detection/update_detector/testupdatetree.cpp
         update_detection/update_detector/testupdatetreeworker.h update_detection/update_detector/testupdatetreeworker.cpp
+        update_detection/update_detector/testnode.h update_detection/update_detector/testnode.cpp
         # Reconciliation
         reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.h reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.cpp
         reconciliation/conflict_finder/testconflictfinderworker.h reconciliation/conflict_finder/testconflictfinderworker.cpp
@@ -49,8 +50,7 @@ set(testsyncengine_SRCS
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
-        ../test_classes/syncpaltest.cpp
-        ../test_classes/syncpaltest.h
+        requests/testserverrequests.h  requests/testserverrequests.cpp
 )
 
 if (APPLE)

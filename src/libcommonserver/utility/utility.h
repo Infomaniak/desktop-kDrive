@@ -62,7 +62,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
         static bool setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
-        static bool isCreationDateValid(uint64_t creationDate);
+        static bool isCreationDateValid(int64_t creationDate);
 
         static std::wstring s2ws(const std::string &str);
         static std::string ws2s(const std::wstring &wstr);
@@ -102,20 +102,23 @@ struct COMMONSERVER_EXPORT Utility {
         static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
         static bool isEqualInsensitive(const SyncName &a, const SyncName &b);
 #endif
+        static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.
          * @param a SyncName value to be compared.
          * @param b Other SyncName value to be compared.
-         * @return true if the normalized strings are equal.
+         * @param isEqual true if the normalized strings are equal.
+         * @return true if no normalization issue.
          */
-        static bool isEqualNormalized(const SyncName &a, const SyncName &b);
+        static bool checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame);
         /**
          * Normalize the SyncPath parameters before comparing them.
          * @param a SyncPath value to be compared.
          * @param b Other SyncPath value to be compared.
-         * @return true if the normalized paths are equal.
+         * @param isEqual true if the normalized strings are equal.
+         * @return true if no normalization issue.
          */
-        static bool isEqualNormalized(const SyncPath &a, const SyncPath &b);
+        static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
@@ -155,16 +158,18 @@ struct COMMONSERVER_EXPORT Utility {
 
 
         enum class UnicodeNormalization { NFC, NFD };
-        static SyncName normalizedSyncName(const SyncName &name, UnicodeNormalization normalization = UnicodeNormalization::NFC);
-        static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;
+        static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                       UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
+        static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept;
 
 #ifdef _WIN32
         static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
-        static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
-                                             IoError &ioError);
+        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError);
+        static bool checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
+                                             bool &isLink, IoError &ioError);
 
         /* Resources analyser */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);

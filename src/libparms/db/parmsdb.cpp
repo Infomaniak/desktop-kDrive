@@ -434,9 +434,9 @@
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16);"
 
 #define UPDATE_ERROR_REQUEST_ID "update_error"
-#define UPDATE_ERROR_REQUEST    \
-    "UPDATE error SET time=?1 " \
-    "WHERE dbId=?2;"
+#define UPDATE_ERROR_REQUEST             \
+    "UPDATE error SET time=?1, path=?2 " \
+    "WHERE dbId=?3;"
 
 #define DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID "delete_error_by_exitcode"
 #define DELETE_ALL_ERROR_BY_EXITCODE_REQUEST \
@@ -514,13 +514,19 @@ std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, 
                                            bool autoDelete /*= false*/, bool test /*= false*/) {
     if (_instance == nullptr) {
         if (dbPath.empty()) {
-            throw ParmsDbIsNotInitializedException();
-        } else {
+            assert(false);
+            return nullptr;
+        }
+
+        try {
             _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, version, autoDelete, test));
-            if (!_instance->init(version)) {
-                _instance.reset();
-                throw std::runtime_error("ParmsDb initialisation error!");
-            }
+        } catch (...) {
+            return nullptr;
+        }
+
+        if (!_instance->init(version)) {
+            _instance.reset();
+            return nullptr;
         }
     }
 
@@ -539,7 +545,6 @@ ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version
 
     if (!checkConnect(version)) {
         throw std::runtime_error("Cannot open DB!");
-        return;
     }
 
     LOG_INFO(_logger, "ParmsDb initialization done");
@@ -912,9 +917,6 @@ bool ParmsDb::create(bool &retry) {
 }
 
 bool ParmsDb::prepare() {
-    int errId;
-    std::string error;
-
     // Parameters
     if (!prepareQuery(INSERT_PARAMETERS_REQUEST_ID, INSERT_PARAMETERS_REQUEST)) return false;
     if (!prepareQuery(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST)) return false;
@@ -999,7 +1001,7 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVersion*/) {
+bool ParmsDb::upgrade(const std::string & /*fromVersion*/, const std::string & /*toVersion*/) {
     const std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
@@ -2748,7 +2750,8 @@ bool ParmsDb::updateError(const Error &err, bool &found) {
 
     ASSERT(queryResetAndClearBindings(UPDATE_ERROR_REQUEST_ID));
     ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 1, err.time()));
-    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 2, err.dbId()));
+    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 2, err.path()));
+    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 3, err.dbId()));
     if (!queryExec(UPDATE_ERROR_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_ERROR_REQUEST_ID);
         return false;
@@ -2932,7 +2935,7 @@ bool ParmsDb::deleteErrors(ErrorLevel level) {
     return true;
 }
 
-bool ParmsDb::deleteError(int dbId, bool &found) {
+bool ParmsDb::deleteError(int64_t dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     int errId;

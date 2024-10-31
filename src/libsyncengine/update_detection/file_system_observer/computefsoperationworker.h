@@ -68,7 +68,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
 
-        ExitCode checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
+        ExitInfo checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
                                       std::unordered_set<NodeId> &tmpTooBigList);
@@ -91,8 +91,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
 
-        void addFolderToDelete(const SyncPath &path);
-        bool pathInDeletedFolder(const SyncPath &path);
+        bool addFolderToDelete(const SyncPath &path);
+        bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
 
         friend class TestComputeFSOperationWorker;
 };

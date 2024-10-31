@@ -175,10 +175,12 @@ void SyncPalWorker::execute() {
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
                 if ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError)) ||
+                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccesError)) ||
                     (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError))) {
+                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccesError))) {
                     // Exit without error
                     exitCode = ExitCode::Ok;
                 } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
@@ -641,7 +643,8 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus: " << e.code() << " - " << e.what());
+        LOG_SYNCPAL_WARN(_logger,
+                         "Error caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
         ok = false;
     } catch (...) {
         LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus");

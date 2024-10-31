@@ -38,9 +38,9 @@ QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusion
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<ExclusionTemplateInfo> &list) {
-    int count = list.size();
+    int count = static_cast<int>(list.size());
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < count; i++) {
         ExclusionTemplateInfo exclusionTemplateInfo = list[i];
         out << exclusionTemplateInfo;
     }
@@ -48,7 +48,7 @@ QDataStream &operator<<(QDataStream &out, const QList<ExclusionTemplateInfo> &li
 }
 
 QDataStream &operator>>(QDataStream &in, QList<ExclusionTemplateInfo> &list) {
-    int count = 0;
+    auto count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
         ExclusionTemplateInfo *exclusionTemplateInfo = new ExclusionTemplateInfo();

@@ -77,8 +77,8 @@ int main(int argc, char **argv) {
     std::unique_ptr<KDC::AppServer> appPtr = nullptr;
     try {
         appPtr = std::unique_ptr<KDC::AppServer>(new KDC::AppServer(argc, argv));
-    } catch (std::exception const &e) {
-        std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
+    } catch (const std::exception &e) {
+        std::cerr << "kDrive server initialization error: error=" << e.what() << std::endl;
         return -1;
     }
 

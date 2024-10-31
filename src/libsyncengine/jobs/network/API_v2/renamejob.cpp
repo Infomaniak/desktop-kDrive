@@ -51,7 +51,7 @@ std::string RenameJob::getSpecificUrl() {
     return str;
 }
 
-void RenameJob::setData(bool &canceled) {
+ExitInfo RenameJob::setData() {
     Poco::JSON::Object json;
     SyncName name = _absoluteFinalPath.filename().native();
     json.set("name", name);
@@ -59,7 +59,7 @@ void RenameJob::setData(bool &canceled) {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

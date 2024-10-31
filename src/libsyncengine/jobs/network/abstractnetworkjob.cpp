@@ -70,7 +70,6 @@ AbstractNetworkJob::AbstractNetworkJob() {
                 } else {
                     LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e).c_str());
                     throw std::runtime_error(ABSTRACTNETWORKJOB_NEW_ERROR_MSG);
-                    break;
                 }
             } catch (std::exception &e) {
                 if (trials < _trials) {
@@ -136,10 +135,10 @@ void AbstractNetworkJob::runJob() noexcept {
         }
 
         bool canceled = false;
-        setData(canceled); // Must be called before setQueryParameters
-        if (canceled) {
+        if (ExitInfo exitInfo = setData(); !exitInfo) { // Must be called before setQueryParameters
             LOG_WARN(_logger, "Job " << jobId() << " is cancelled");
-            _exitCode = ExitCode::DataError;
+            _exitCode = exitInfo.code();
+            _exitCause = exitInfo.cause();
             break;
         }
 
@@ -290,7 +289,8 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
 
     // Set proxy params
     if (Proxy::instance()->proxyConfig().type() == ProxyType::HTTP) {
-        _session->setProxy(Proxy::instance()->proxyConfig().hostName(), Proxy::instance()->proxyConfig().port());
+        _session->setProxy(Proxy::instance()->proxyConfig().hostName(),
+                           static_cast<Poco::UInt16>(Proxy::instance()->proxyConfig().port()));
         if (Proxy::instance()->proxyConfig().needsAuth()) {
             _session->setProxyCredentials(Proxy::instance()->proxyConfig().user(), Proxy::instance()->proxyConfig().token());
         }
@@ -353,7 +353,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     }
 
     if (!_data.empty()) {
-        req.setContentLength(_data.size());
+        req.setContentLength(static_cast<std::streamsize>(_data.size()));
     }
 
     // Send request, retrieve an open stream
@@ -467,6 +467,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             // Rate limitation
             _exitCode = ExitCode::RateLimited;
             LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
+            break;
         }
         default: {
             if (!isAborted()) {
@@ -653,7 +654,7 @@ bool AbstractNetworkJob::extractJsonError(std::istream &is, Poco::JSON::Object::
 }
 
 void AbstractNetworkJob::TimeoutHelper::add(std::chrono::duration<double> duration) {
-    unsigned int roundDuration = lround(duration.count() / PRECISION) * PRECISION;
+    unsigned int roundDuration = static_cast<unsigned int>(round(duration.count() / PRECISION) * PRECISION);
     if (roundDuration >= _maxDuration) {
         LOG_DEBUG(Log::instance()->getLogger(), "TimeoutHelper - Timeout detected value=" << roundDuration);
         if (roundDuration > _maxDuration) {
@@ -686,7 +687,7 @@ void AbstractNetworkJob::TimeoutHelper::deleteOldestEvents() {
 
 unsigned int AbstractNetworkJob::TimeoutHelper::count() {
     deleteOldestEvents();
-    return static_cast<int>(_eventsQueue.size());
+    return static_cast<unsigned int>(_eventsQueue.size());
 }
 
 } // namespace KDC

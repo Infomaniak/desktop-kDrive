@@ -55,7 +55,7 @@ void TestLog::testLargeLogRolling(void) {
     auto *customRollingFileAppender = static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get());
 
     const int maxSize = 1024; // 1KB
-    const int previousMaxSize = customRollingFileAppender->getMaxFileSize();
+    const long previousMaxSize = customRollingFileAppender->getMaxFileSize();
     customRollingFileAppender->setMaxFileSize(maxSize);
 
     LOG_DEBUG(_logger, "Ensure the log file is created");

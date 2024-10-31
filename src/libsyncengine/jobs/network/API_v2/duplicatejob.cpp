@@ -73,7 +73,7 @@ std::string DuplicateJob::getSpecificUrl() {
     return str;
 }
 
-void DuplicateJob::setData(bool &canceled) {
+ExitInfo DuplicateJob::setData() {
     Poco::JSON::Object json;
     SyncName name = _absoluteFinalPath.filename().native();
     json.set("name", name);
@@ -81,7 +81,7 @@ void DuplicateJob::setData(bool &canceled) {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

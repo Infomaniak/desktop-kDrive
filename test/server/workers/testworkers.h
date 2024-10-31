@@ -20,7 +20,7 @@
 
 #if defined(__APPLE__)
 #include "server/vfs/mac/vfs_mac.h"
-#elif defined(__WIN32)
+#elif defined(_WIN32)
 #include "server/vfs/win/vfs_win.h"
 #else
 #include "libcommonserver/vfs.h"
@@ -55,7 +55,7 @@ class TestWorkers : public CppUnit::TestFixture {
 
 #if defined(__APPLE__)
         static std::unique_ptr<VfsMac> _vfsPtr;
-#elif defined(__WIN32)
+#elif defined(_WIN32)
         static std::unique_ptr<VfsWin> _vfsPtr;
 #else
         static std::unique_ptr<VfsOff> _vfsPtr;

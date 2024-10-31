@@ -697,7 +697,7 @@ bool AppClient::parseOptions(const QStringList &options) {
     it.next();
 
     // Read comm port
-    _commPort = it.next().toUInt();
+    _commPort = static_cast<unsigned short>(it.next().toUInt());
 
     return true;
 }

@@ -29,9 +29,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-// const std::string testExecutorFolderRemoteId = "75";        // In common documents
-const std::string testExecutorFolderRemoteId = "5007"; // In root
-
 void TestSyncPal::setUp() {
     const testhelpers::TestVariables testVariables;
 
@@ -170,7 +167,7 @@ void TestSyncPal::testSyncFileItem() {
     initItem.setInstruction(SyncFileInstruction::Put);
     initItem.setSize(testhelpers::defaultFileSize);
     initItem.setModTime(testhelpers::defaultTime);
-    _syncPal->initProgress(initItem);
+    CPPUNIT_ASSERT(_syncPal->initProgress(initItem));
 
     SyncFileItem testItem;
     CPPUNIT_ASSERT(_syncPal->getSyncFileItem(nfcPath, testItem));
@@ -184,7 +181,7 @@ void TestSyncPal::testSyncFileItem() {
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->totalFiles());
 
     constexpr int64_t progress = 15;
-    _syncPal->setProgress(nfdPath, progress);
+    CPPUNIT_ASSERT(_syncPal->setProgress(nfdPath, progress));
     CPPUNIT_ASSERT(_syncPal->getSyncFileItem(nfdPath, testItem));
 
     CPPUNIT_ASSERT_EQUAL(progress, _syncPal->_progressInfo->completedSize());
@@ -192,7 +189,7 @@ void TestSyncPal::testSyncFileItem() {
     CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, _syncPal->_progressInfo->totalSize());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->totalFiles());
 
-    _syncPal->setProgressComplete(nfdPath, SyncFileStatus::Success);
+    CPPUNIT_ASSERT(_syncPal->setProgressComplete(nfdPath, SyncFileStatus::Success));
 
     CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, _syncPal->_progressInfo->completedSize());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->completedFiles());

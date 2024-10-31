@@ -62,7 +62,7 @@ class SqliteQuery {
         int64_t int64Value(int index) const;
         double doubleValue(int index) const;
         const void *blobValue(int index) const;
-        size_t blobSize(int index) const;
+        int blobSize(int index) const;
 
         inline int errorId() const { return _errId; }
         inline const std::string &error() const { return _error; }

@@ -104,7 +104,7 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     return true;
 }
 
-void ConflictingFilesCorrector::deleteError(int errorDbId) {
+void ConflictingFilesCorrector::deleteError(int64_t errorDbId) {
     bool found = false;
     ParmsDb::instance()->deleteError(errorDbId, found);
 }

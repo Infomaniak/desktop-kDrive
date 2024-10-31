@@ -60,7 +60,8 @@ class AbstractUpdater {
          * On Linux : notify the user
          */
         virtual void onUpdateFound() = 0;
-        virtual void setQuitCallback(const std::function<void()> &quitCallback) { /* Redefined in child class if necessary */ }
+        virtual void setQuitCallback(const std::function<void()> & /*quitCallback*/) { /* Redefined in child class if necessary */
+        }
         void setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback);
 
         static void skipVersion(const std::string &skippedVersion);

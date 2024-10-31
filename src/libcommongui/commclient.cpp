@@ -36,7 +36,11 @@ Q_LOGGING_CATEGORY(lcCommClient, "gui.commclient", QtInfoMsg)
 
 std::shared_ptr<CommClient> CommClient::instance(QObject *parent) {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<CommClient>(new CommClient(parent));
+        try {
+            _instance = std::shared_ptr<CommClient>(new CommClient(parent));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     return _instance;
@@ -118,7 +122,7 @@ bool CommClient::sendRequest(int id, RequestNum num, const QByteArray &params) {
     try {
         qCDebug(lcCommClient()) << "Snd rqst" << id << num;
 
-        _tcpConnection->write(KDC::CommonUtility::toQByteArray(request.size()));
+        _tcpConnection->write(KDC::CommonUtility::toQByteArray(static_cast<int>(request.size())));
         _tcpConnection->write(request);
 #ifdef Q_OS_WIN
         _tcpConnection->flush();

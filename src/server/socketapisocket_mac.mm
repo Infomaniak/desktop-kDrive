@@ -337,7 +337,7 @@ SocketApiSocket::~SocketApiSocket() {}
 qint64 SocketApiSocket::readData(char *data, qint64 maxlen) {
     Q_D(SocketApiSocket);
     qint64 len = std::min(maxlen, static_cast<qint64>(d->_inBuffer.size()));
-    memcpy(data, d->_inBuffer.constData(), len);
+    memcpy(data, d->_inBuffer.constData(), static_cast<size_t>(len));
     d->_inBuffer.remove(0, len);
     return len;
 }
@@ -347,7 +347,9 @@ qint64 SocketApiSocket::writeData(const char *data, qint64 len) {
     if (d->_isRemoteDisconnected) return -1;
 
     @try {
-        [d->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<char *>(data) length:len freeWhenDone:NO]];
+        [d->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<char *>(data)
+                                                        length:static_cast<NSUInteger>(len)
+                                                  freeWhenDone:NO]];
         return len;
     } @catch (NSException *e) {
         d->disconnectRemote();

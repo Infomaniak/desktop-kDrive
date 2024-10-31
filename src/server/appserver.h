@@ -120,12 +120,13 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unique_ptr<UpdateManager> _updateManager;
 
         void parseOptions(const QStringList &);
-        void initLogging() noexcept(false);
-        void setupProxy();
+        bool initLogging() noexcept;
+        bool setupProxy() noexcept;
         void handleCrashRecovery(bool &shouldQuit); // Sets `shouldQuit` with true if the crash recovery is successful, false if
                                                     // the application should exit.
         bool serverCrashedRecently(int seconds = 60 /*Allow one server self restart per minute (default)*/);
         bool clientCrashedRecently(int second = 60 /*Allow one client self restart per minute (default)*/);
+        void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);
@@ -175,7 +176,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendSyncDeletionFailed(int syncDbId);
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
-        void sendErrorsCleared(int syncDbId);
+        static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
         // See types.h -> AppStateKey for the possible values of status

@@ -32,6 +32,7 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testAffectedUpdateTree);
         CPPUNIT_TEST(testTargetUpdateTree);
         CPPUNIT_TEST(testLogCorrespondingNodeErrorMsg);
+        CPPUNIT_TEST(testRemoveDependentOps);
         CPPUNIT_TEST(testHasRight);
         CPPUNIT_TEST_SUITE_END();
 
@@ -45,6 +46,10 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         void testAffectedUpdateTree();
         void testTargetUpdateTree();
         void testLogCorrespondingNodeErrorMsg();
+        void testRemoveDependentOps();
+
+        bool opsExist(SyncOpPtr op);
+        SyncOpPtr generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename);
         void testHasRight();
 
         void generateNodes(std::shared_ptr<Node> &node, std::shared_ptr<Node> &correspondingNode, DbNodeId dbNodeId,

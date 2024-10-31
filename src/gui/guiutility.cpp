@@ -125,7 +125,7 @@ QIcon GuiUtility::getIconWithColor(const QString &path, const QColor &color) {
     scene.addItem(item);
 
     int ratio = 3;
-    QPixmap pixmap(QSize(scene.width() * ratio, scene.height() * ratio));
+    QPixmap pixmap(QSize(static_cast<int>(round(scene.width() * ratio)), static_cast<int>(round(scene.height() * ratio))));
     pixmap.fill(Qt::transparent);
 
     QPainter painter(&pixmap);
@@ -196,7 +196,7 @@ QIcon GuiUtility::getIconMenuWithColor(const QString &path, const QColor &color)
     QGraphicsScene scene;
     scene.addItem(item);
     item->setPos(QPointF(0, 0));
-    int iconWidth = scene.width();
+    int iconWidth = static_cast<int>(round(scene.width()));
     scene.setSceneRect(QRectF(0, 0, iconWidth * 2, iconWidth));
 
     scene.addItem(itemMenu);
@@ -204,7 +204,7 @@ QIcon GuiUtility::getIconMenuWithColor(const QString &path, const QColor &color)
     itemMenu->setScale(0.5);
 
     qreal ratio = qApp->primaryScreen()->devicePixelRatio();
-    QPixmap pixmap(QSize(scene.width() * ratio, scene.height() * ratio));
+    QPixmap pixmap(QSize(static_cast<int>(round(scene.width() * ratio)), static_cast<int>(round(scene.height() * ratio))));
     pixmap.fill(Qt::transparent);
 
     QPainter painter(&pixmap);
@@ -332,7 +332,7 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                                        .arg(statusInfo._syncedFiles)
                                        .arg(statusInfo._totalFiles)
                                        .arg(KDC::CommonGuiUtility::durationToDescriptiveString1(
-                                               statusInfo._estimatedRemainingTime));
+                                               static_cast<quint64>(statusInfo._estimatedRemainingTime)));
                     }
                 } else if (statusInfo._oneSyncInPropagationStep) {
                     text = QCoreApplication::translate("utility", "Sync in progress (Step %1/%2).")
@@ -406,8 +406,8 @@ QPixmap GuiUtility::getAvatarFromImage(const QImage &image) {
     painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
     mask.fill(Qt::white);
     painter.setBrush(Qt::black);
-    int rx = mask.width() / 2.0;
-    int ry = mask.height() / 2.0;
+    int rx = static_cast<int>(round(mask.width() / 2.0));
+    int ry = static_cast<int>(round(mask.height() / 2.0));
     painter.drawEllipse(QPoint(rx, ry), rx, ry);
 
     // Draw the final image.
@@ -542,7 +542,7 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
 
 void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*/) {
     if (path.size() > (qsizetype) maxSize) {
-        path = path.left(maxSize) + "...";
+        path = path.left(static_cast<int64_t>(maxSize)) + "...";
     }
 }
 

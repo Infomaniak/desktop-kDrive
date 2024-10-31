@@ -55,7 +55,12 @@ size_t PlatformInconsistencyCheckerUtility::_maxPathLength = 0;
 
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::instance() {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<PlatformInconsistencyCheckerUtility>(new PlatformInconsistencyCheckerUtility());
+        try {
+            _instance = std::shared_ptr<PlatformInconsistencyCheckerUtility>(new PlatformInconsistencyCheckerUtility());
+        } catch (...) {
+            assert(false);
+            return nullptr;
+        }
     }
     return _instance;
 }
@@ -75,7 +80,7 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
     return sub + suffix + name.extension().native();
 }
 
-ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType,
+ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType,
                                                               SyncPath *newPathPtr /*= nullptr*/) {
     const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(absoluteLocalPath, suffixType);
     auto newFullPath = absoluteLocalPath.parent_path() / newName;
@@ -87,7 +92,7 @@ ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
         *newPathPtr = std::move(newFullPath);
     }
 
-    return moveJob.exitCode();
+    return {moveJob.exitCode(), moveJob.exitCause()};
 }
 
 bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {

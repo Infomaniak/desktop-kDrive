@@ -130,6 +130,11 @@ void FolderWatcher_linux::startWatching() {
 bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList) {
     bool ok = true;
     bool isReadable = access(dir.c_str(), R_OK) == 0;
+    if (!isReadable) {
+        LOG4CPLUS_WARN(_logger, L"SyncDir is not readable: " << Utility::formatSyncPath(dir).c_str());
+        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
+        return false;
+    }
     std::error_code ec;
     if (!(std::filesystem::exists(dir, ec) && isReadable)) {
         if (ec) {
@@ -247,11 +252,11 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
     // Remove the entry and all subentries
     while (it != _pathToWatch.end()) {
         auto itPath = it->first;
-        if (Utility::startsWith(itPath, dirPath)) {
+        if (Utility::isDescendantOrEqual(itPath, dirPath)) {
             break;
         }
 
-        if (itPath != dirPath && Utility::startsWith(itPath, pathSlash)) {
+        if (itPath != dirPath && Utility::isDescendantOrEqual(itPath, pathSlash)) {
             // order is 'foo', 'foo bar', 'foo/bar'
             ++it;
             continue;
