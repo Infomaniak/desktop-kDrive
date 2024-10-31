@@ -76,8 +76,8 @@ bool CommonUtility::fileExists(const std::error_code &code) noexcept {
 std::wstring CommonUtility::getErrorMessage(DWORD errorMessageID) {
     LPWSTR messageBuffer = nullptr;
     const size_t size =
-            FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
-                           errorMessageID, NULL, (LPWSTR) &messageBuffer, 0, NULL);
+            FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
+                           errorMessageID, NULL, (LPWSTR) &messageBuffer, 0, nullptr);
 
     // Escape quotes
     const auto msg = std::wstring(messageBuffer, size);

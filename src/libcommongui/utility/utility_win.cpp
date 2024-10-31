@@ -16,15 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommon/utility/types.h"
-#include "libcommongui/utility/utility.h"
-
 #include <shlobj.h>
 #include <winbase.h>
 #include <windows.h>
 #include <winerror.h>
 #include <shlguid.h>
-#include <string>
 
 #include <QFile>
 #include <QDir>

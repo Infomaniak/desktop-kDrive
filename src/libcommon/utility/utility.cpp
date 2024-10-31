@@ -306,6 +306,7 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     } else {
         return false;
     }
+
     return true;
 }
 
@@ -559,7 +560,6 @@ SyncPath CommonUtility::getAppSupportDir() {
 
         if (exists) return SyncPath();
         if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
-
     }
 
     return dirPath;
