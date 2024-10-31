@@ -364,26 +364,29 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
             return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
         }
 
-        bool exists = false;
-        if (!hasRight(syncOp, exists)) {
+        if (!isValidDestination(syncOp)) {
             if (syncOp->targetSide() == ReplicaSide::Remote) {
-                if (!exists) {
-                    return {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+                bool exists = false;
+                if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
+                    LOGW_WARN(_logger,
+                              L"Error in Utility::checkIfPathExists: " << Utility::formatSyncPath(absoluteLocalFilePath));
+                    return ExitCode::SystemError;
                 }
+                if (!exists) return {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
 
                 // Ignore operation
-                SyncFileItem syncItem;
-                if (_syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
-                    Error err(_syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
-                              syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
-                              syncOp->affectedNode()->moveOrigin().has_value() ? syncOp->affectedNode()->moveOrigin().value()
-                                                                               : syncItem.path(),
-                              syncItem.conflict(), syncItem.inconsistency(), CancelType::Create);
+                if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
+                    const Error err(
+                            _syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
+                            syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
+                            syncOp->affectedNode()->moveOrigin().has_value() ? syncOp->affectedNode()->moveOrigin().value()
+                                                                             : syncItem.path(),
+                            syncItem.conflict(), syncItem.inconsistency(), CancelType::Create);
                     _syncPal->addError(err);
                 }
 
-                std::shared_ptr<UpdateTree> sourceUpdateTree = affectedUpdateTree(syncOp);
-                if (!sourceUpdateTree->deleteNode(syncOp->affectedNode())) {
+                if (const std::shared_ptr<UpdateTree> sourceUpdateTree = affectedUpdateTree(syncOp);
+                    !sourceUpdateTree->deleteNode(syncOp->affectedNode())) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
                                                        << SyncName2WStr(syncOp->affectedNode()->name()));
                     return ExitCode::DataError;
@@ -391,6 +394,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
             }
 
             ignored = true;
+            LOGW_SYNCPAL_INFO(_logger,
+                              L"Forbidden destination, operation ignored: " << Utility::formatSyncPath(absoluteLocalFilePath));
             return ExitCode::Ok;
         }
 
@@ -903,12 +908,6 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
             return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
         }
 
-        bool exists = false;
-        if (!hasRight(syncOp, exists)) {
-            ignored = true;
-            return ExitCode::Ok;
-        }
-
         if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
             return exitInfo;
         }
@@ -1152,12 +1151,6 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
             return exitInfo;
         }
     } else {
-        bool exists = false;
-        if (!hasRight(syncOp, exists)) {
-            ignored = true;
-            return ExitCode::Ok;
-        }
-
         if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             return exitInfo;
         }
@@ -1357,12 +1350,6 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
             return exitInfo;
         }
     } else {
-        bool exists = false;
-        if (!hasRight(syncOp, exists)) {
-            ignored = true;
-            return ExitCode::Ok;
-        }
-
         if (ExitInfo exitInfo = generateDeleteJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             return exitInfo;
         }
@@ -1420,90 +1407,25 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
     return handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
 }
 
-bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
-    std::shared_ptr<Node> correspondingNode =
-            syncOp->correspondingNode() ? syncOp->correspondingNode() : syncOp->affectedNode(); // No corresponding node => rename
-
-    // Check if file exists
-    SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
-    SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
-
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in Utility::checkIfPathExists: " << Utility::formatSyncPath(absoluteLocalFilePath));
-        return false;
-    }
-    exists = ioError != IoError::NoSuchFileOrDirectory;
-
-    if (syncOp->targetSide() == ReplicaSide::Local) {
-        switch (syncOp->type()) {
-            case OperationType::Edit:
-            case OperationType::Move:
-            case OperationType::Delete: {
-                if (!exists) {
-                    LOGW_SYNCPAL_WARN(_logger,
-                                      L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath) << L" doesn't exist anymore!");
-                    return false;
-                }
-                break;
-            }
-            case OperationType::Create:
-            case OperationType::None:
-            default: {
-                break;
-            }
+bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
+    if (syncOp->targetSide() == ReplicaSide::Remote && syncOp->type() == OperationType::Create) {
+        std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
+        if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
+            newCorrespondingParentNode = targetUpdateTree(syncOp)->rootNode();
+        } else {
+            newCorrespondingParentNode = correspondingNodeInOtherTree(syncOp->affectedNode()->parentNode());
         }
-    } else if (syncOp->targetSide() == ReplicaSide::Remote) {
-        switch (syncOp->type()) {
-            case OperationType::Create: {
-                if (!exists) {
-                    LOGW_SYNCPAL_WARN(_logger,
-                                      L"File/directory " << Path2WStr(absoluteLocalFilePath) << L" doesn't exist anymore!");
-                    return false;
-                }
-                std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
-                if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
-                    newCorrespondingParentNode = targetUpdateTree(syncOp)->rootNode();
-                } else {
-                    newCorrespondingParentNode = correspondingNodeInOtherTree(syncOp->affectedNode()->parentNode());
-                }
 
-                if (!newCorrespondingParentNode || !newCorrespondingParentNode->id().has_value()) {
-                    return false;
-                }
+        if (!newCorrespondingParentNode || !newCorrespondingParentNode->id().has_value()) {
+            return false;
+        }
 
-                if (newCorrespondingParentNode->isCommonDocumentsFolder() &&
-                    syncOp->affectedNode()->type() == NodeType::Directory) {
-                    return true;
-                }
+        if (newCorrespondingParentNode->isCommonDocumentsFolder()) {
+            return false;
+        }
 
-                if (newCorrespondingParentNode->isSharedFolder()) {
-                    return false;
-                }
-
-                return _syncPal->_remoteSnapshot->canWrite(*newCorrespondingParentNode->id());
-            }
-            case OperationType::Edit: {
-                if (!exists) {
-                    LOGW_SYNCPAL_WARN(_logger,
-                                      L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath) << L" doesn't exist anymore!");
-                    return false;
-                }
-
-                if (!correspondingNode->id().has_value()) {
-                    return false;
-                }
-
-                return _syncPal->_remoteSnapshot->canWrite(*correspondingNode->id());
-            }
-            case OperationType::Move:
-            case OperationType::Delete: {
-                break;
-            }
-            case OperationType::None:
-            default: {
-                break;
-            }
+        if (newCorrespondingParentNode->isSharedFolder()) {
+            return false;
         }
     }
     return true;
@@ -2601,8 +2523,8 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
 }
 
 ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
-    // If the file/directory already exist either on local or remote side, we blacklist it localy and the remote verson will be
-    // downloaded again.
+    // If the file/directory already exist either on local or remote side, we blacklist it localy and the remote
+    // verson will be downloaded again.
 
     if (syncOp->type() != OperationType::Create &&
         syncOp->type() != OperationType::Move) { // The above handling is only for create and move/rename operations.
