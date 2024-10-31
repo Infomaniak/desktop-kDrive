@@ -36,9 +36,9 @@ QDataStream &operator<<(QDataStream &out, const NodeInfo &info) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<NodeInfo> &list) {
-    auto count = list.size();
+    int count = static_cast<int>(list.size());
     out << count;
-    for (auto i = 0; i < list.size(); i++) {
+    for (int i = 0; i < count; i++) {
         NodeInfo info = list[i];
         out << info;
     }
@@ -48,7 +48,7 @@ QDataStream &operator<<(QDataStream &out, const QList<NodeInfo> &list) {
 QDataStream &operator>>(QDataStream &in, QList<NodeInfo> &list) {
     auto count = 0;
     in >> count;
-    for (auto i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         NodeInfo *info = new NodeInfo();
         in >> *info;
         list.push_back(*info);

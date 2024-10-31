@@ -36,9 +36,9 @@ QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<UserInfo> &list) {
-    qsizetype count = list.size();
+    int count = static_cast<int>(list.size());
     out << count;
-    for (qsizetype i = 0; i < list.size(); i++) {
+    for (int i = 0; i < count; i++) {
         UserInfo userInfo = list[i];
         out << userInfo;
     }
