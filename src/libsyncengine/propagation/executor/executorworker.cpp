@@ -1877,7 +1877,6 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
         case ConflictType::MoveMoveSource: // Name clash conflict pattern
         {
             if (syncOp->conflict().type() != ConflictType::MoveMoveSource) {
-                DbNodeId dbId = -1;
                 bool localNodeFoundInDb = false;
                 // when it's an Edit-Edit we want to delete the node
                 NodeId effectiveNodeId =
