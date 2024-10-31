@@ -149,7 +149,7 @@ void ExecutorWorker::execute() {
 
             // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
             if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
-                setProgressComplete(syncOp, SyncFileStatus::Error);
+                if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
                 continue;
             }
 
@@ -160,12 +160,10 @@ void ExecutorWorker::execute() {
                     cancelAllOngoingJobs();
                     break;
                 } else { // If the error is handled, continue the execution
-                    setProgressComplete(syncOp, SyncFileStatus::Error);
+                    if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
                     continue;
                 }
-                if (!bypassProgressComplete) {
-                    setProgressComplete(syncOp, SyncFileStatus::Error);
-                }
+                if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
             }
 
             if (job) {
