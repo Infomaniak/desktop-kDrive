@@ -18,12 +18,14 @@
 
 #include "common/utility.h"
 #include "libcommon/asserts.h"
+#include "libcommon/utility/types.h"
 
 #include <shlobj.h>
 #include <winbase.h>
 #include <windows.h>
 #include <winerror.h>
 #include <shlguid.h>
+#include <string>
 
 #include <QLibrary>
 #include <QFile>
@@ -34,8 +36,42 @@
 
 static const char systemRunPathC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 static const char runPathC[] = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+static const char themePathC[] = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
+static const char lightThemeKeyC[] = "SystemUsesLightTheme";
 
 namespace KDC {
+
+static void setupFavLink_private(const QString &folder) {
+    // First create a Desktop.ini so that the folder and favorite link show our application's icon.
+    QFile desktopIni(folder + QLatin1String("/Desktop.ini"));
+    if (!desktopIni.exists()) {
+        desktopIni.open(QFile::WriteOnly);
+        desktopIni.write("[.ShellClassInfo]\r\nIconResource=");
+        desktopIni.write(QDir::toNativeSeparators(qApp->applicationFilePath()).toUtf8());
+        desktopIni.write(",0\r\n");
+        desktopIni.close();
+
+        // Set the folder as system and Desktop.ini as hidden+system for explorer to pick it.
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/cc144102
+        DWORD folderAttrs = GetFileAttributesW((wchar_t *) folder.utf16());
+        SetFileAttributesW((wchar_t *) folder.utf16(), folderAttrs | FILE_ATTRIBUTE_SYSTEM);
+        SetFileAttributesW((wchar_t *) desktopIni.fileName().utf16(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
+    }
+
+    // Windows Explorer: Place under "Favorites" (Links)
+    QString linkName;
+    QDir folderDir(QDir::fromNativeSeparators(folder));
+
+    /* Use new WINAPI functions */
+    PWSTR path;
+
+    if (SHGetKnownFolderPath(FOLDERID_Links, 0, NULL, &path) == S_OK) {
+        QString links = QDir::fromNativeSeparators(QString::fromWCharArray(path));
+        linkName = QDir(links).filePath(folderDir.dirName() + QLatin1String(".lnk"));
+        CoTaskMemFree(path);
+    }
+    QFile::link(folder, linkName);
+}
 
 bool hasSystemLaunchOnStartup_private(const QString &appName, log4cplus::Logger logger) {
     QString runPath = QLatin1String(systemRunPathC);
@@ -61,6 +97,7 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
     }
 }
 
+#include <errno.h>
 #include <wtypes.h>
 
 bool OldUtility::registryExistKeyTree(HKEY hRootKey, const QString &subKey) {
