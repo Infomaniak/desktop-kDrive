@@ -18,8 +18,8 @@
 
 #include "libcommon/utility/types.h"
 
-#include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/fileAttributes.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -80,6 +80,8 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
 
 bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, const std::string &value,
                              IoError &ioError) noexcept {
+    ioError = IoError::Success;
+
     ItemType itemType;
     if (!getItemType(path, itemType)) {
         LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError).c_str());
@@ -100,16 +102,23 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
         return _isXAttrValueExpectedError(ioError);
     }
 
-    // XAttr has been set
+    return true; // The extended attribute `attrName` has been set.
+}
+
+bool IoHelper::removeXAttr(const SyncPath &path, const std::string &attrName, IoError &ioError) noexcept {
     ioError = IoError::Success;
-    return true;
+
+    if (removexattr(path.native().c_str(), attrName.c_str(), XATTR_NOFOLLOW) == -1) {
+        ioError = posixError2ioError(errno);
+        return _isXAttrValueExpectedError(ioError);
+    }
+
+    return true; // The extended attribute `attrName` has been removed.
 }
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
     isDehydrated = false;
     ioError = IoError::Success;
-
-    static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
 
     std::string value;
     const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);

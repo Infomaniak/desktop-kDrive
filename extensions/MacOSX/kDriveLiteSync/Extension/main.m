@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#import "../../../../src/libcommonserver/io/fileAttributes.h"
 #include "xpcService.h"
-#include "fileAttributes.h"
 
 #import <Foundation/Foundation.h>
 #import <EndpointSecurity/EndpointSecurity.h>
@@ -109,10 +109,11 @@ static BOOL processAuthOpen(const es_message_t *msg, BOOL *thumbnail)
           msg->process->signing_id.data);*/
     
     // Check file status
-    long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
+    long bufferLength = getxattr([filePath UTF8String], [@EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
     if (bufferLength >= 0) {
         char status[bufferLength];
-        if (getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0) != bufferLength) {
+        if (getxattr([filePath UTF8String], [@EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0)
+            != bufferLength) {
             NSLog(@"[KD] ERROR: fgetxattr() failed for file %@: %d", filePath, errno);
             return FALSE;
         }
@@ -194,14 +195,15 @@ static BOOL processAuthRename(const es_message_t *msg)
     }
     
     // Check file status
-    long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
+    long bufferLength = getxattr([filePath UTF8String], [@EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
     char status[bufferLength];
     if (bufferLength >= 0) {
-        if (getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0) != bufferLength) {
+        if (getxattr([filePath UTF8String], [@EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0)
+            != bufferLength) {
             NSLog(@"[KD] ERROR: fgetxattr() failed for file %@: %d", filePath, errno);
             return FALSE;
         }
-        
+
         if (status[0] != EXT_ATTR_STATUS_ONLINE[0]) {
             return FALSE;
         }

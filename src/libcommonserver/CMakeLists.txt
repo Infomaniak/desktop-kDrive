@@ -38,7 +38,7 @@ set(libcommonserver_SRCS
 )
 
 if(APPLE)
-    list(APPEND libcommonserver_SRCS io/iohelper_mac.mm io/iohelper_mac.cpp)
+    list(APPEND libcommonserver_SRCS io/iohelper_mac.mm io/iohelper_mac.cpp io/fileAttributes.h)
     list(APPEND libcommonserver_SRCS utility/utility_mac.mm)
 elseif(WIN32)
     list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp)

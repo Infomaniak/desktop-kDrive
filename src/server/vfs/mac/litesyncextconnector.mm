@@ -19,11 +19,11 @@
 #import "litesyncextconnector.h"
 #import "../extensions/MacOSX/kDriveLiteSync/Extension/xpcLiteSyncExtensionProtocol.h"
 #import "../extensions/MacOSX/kDriveLiteSync/kDrive/xpcLiteSyncExtensionRemoteProtocol.h"
-#import "../extensions/MacOSX/kDriveLiteSync/Extension/fileAttributes.h"
 #include "common/filepermissionholder.h"
-#include "common/utility.h"
 #include "common/filesystembase.h"
+#include "common/utility.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/io/fileAttributes.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
@@ -539,7 +539,7 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
     // Read folder status
     QString value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], value, ioError);
+    const bool result = getXAttrValue(folderPath, [@EXT_ATTR_STATUS UTF8String], value, ioError);
     if (!result) {
         LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(QStr2Path(folderPath), ioError).c_str());
         return false;
@@ -551,7 +551,10 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
 
     if (value.isEmpty()) {
         // Set default folder status
-        if (!setXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
+        if (!setXAttrValue(folderPath,
+                           [@EXT_ATTR_STATUS UTF8String],
+                           EXT_ATTR_STATUS_ONLINE,
+                           ioError)) {
             LOGW_WARN(_logger,
                       L"Error in setXAttrValue - "
                           << Utility::formatIoError(folderPath, ioError).c_str());
@@ -563,7 +566,10 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
         }
 
         // Set default folder pin state
-        if (!setXAttrValue(folderPath, [EXT_ATTR_PIN_STATE UTF8String], EXT_ATTR_PIN_STATE_UNPINNED, ioError)) {
+        if (!setXAttrValue(folderPath,
+                           [@EXT_ATTR_PIN_STATE UTF8String],
+                           EXT_ATTR_PIN_STATE_UNPINNED,
+                           ioError)) {
             LOGW_WARN(_logger,
                       L"Error in setXAttrValue - "
                           << Utility::formatIoError(folderPath, ioError).c_str());
@@ -795,7 +801,7 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
     // Read status
     QString value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], value, ioError);
+    const bool result = getXAttrValue(filePath, [@EXT_ATTR_STATUS UTF8String], value, ioError);
     if (!result) {
         LOGW_WARN(_logger,
                   L"Error in getXAttrValue: " << Utility::formatIoError(filePath, ioError).c_str());
@@ -827,7 +833,10 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
     // Read status
     QString value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(absoluteFilepath, [EXT_ATTR_STATUS UTF8String], value, ioError);
+    const bool result = getXAttrValue(absoluteFilepath,
+                                      [@EXT_ATTR_STATUS UTF8String],
+                                      value,
+                                      ioError);
     if (!result) {
         LOGW_WARN(_logger, L"Error in getXAttrValue - " << Utility::formatPath(absoluteFilepath).c_str());
         return false;
@@ -909,7 +918,7 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &lo
     FileSystem::setUserWritePermission(path);
 
     IoError ioError = IoError::Success;
-    if (!setXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], pinState, ioError)) {
+    if (!setXAttrValue(path, [@EXT_ATTR_PIN_STATE UTF8String], pinState, ioError)) {
         LOGW_WARN(_logger, L"Call to setXAttrValue failed - " << Utility::formatPath(path).c_str() << L" errno=" << errno);
         return false;
     }
@@ -955,7 +964,7 @@ bool LiteSyncExtConnector::vfsGetPinState(const QString &path, QString &pinState
     // Read pin state
     QString value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], value, ioError);
+    const bool result = getXAttrValue(path, [@EXT_ATTR_PIN_STATE UTF8String], value, ioError);
     if (!result) {
         LOGW_WARN(_logger,
                   L"Error in getXAttrValue: " << Utility::formatIoError(path, ioError).c_str());
@@ -980,7 +989,7 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
     // Set status
     QString status = (isHydrated ? EXT_ATTR_STATUS_OFFLINE : EXT_ATTR_STATUS_ONLINE);
     IoError ioError = IoError::Success;
-    if (!setXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], status, ioError)) {
+    if (!setXAttrValue(filePath, [@EXT_ATTR_STATUS UTF8String], status, ioError)) {
         LOGW_WARN(_logger,
                   L"Call to setXAttrValue failed - "
                       << Utility::formatIoError(filePath, ioError).c_str());
@@ -993,7 +1002,7 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
 
     // Set pin state
     const QString pinState = (isHydrated ? EXT_ATTR_PIN_STATE_PINNED : EXT_ATTR_PIN_STATE_UNPINNED);
-    if (!setXAttrValue(filePath, [EXT_ATTR_PIN_STATE UTF8String], pinState, ioError)) {
+    if (!setXAttrValue(filePath, [@EXT_ATTR_PIN_STATE UTF8String], pinState, ioError)) {
         LOGW_WARN(_logger,
                   L"Call to setXAttrValue failed - "
                       << Utility::formatIoError(filePath, ioError).c_str());
@@ -1059,7 +1068,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
 
     // Set status
     IoError ioError = IoError::Success;
-    if (!setXAttrValue(path, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
+    if (!setXAttrValue(path, [@EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
         const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
         LOGW_WARN(_logger,
                   L"Call to setXAttrValue failed - " << Utility::formatPath(path).c_str() << L" Error: " << ioErrorMsg.c_str());
@@ -1071,7 +1080,10 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     }
 
     // Set pin state
-    if (!setXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], EXT_ATTR_PIN_STATE_UNPINNED, ioError)) {
+    if (!setXAttrValue(path,
+                       [@EXT_ATTR_PIN_STATE UTF8String],
+                       EXT_ATTR_PIN_STATE_UNPINNED,
+                       ioError)) {
         const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
         LOGW_WARN(_logger,
                   L"Call to setXAttrValue failed - " << Utility::formatPath(path).c_str() << L" Error: " << ioErrorMsg.c_str());
@@ -1257,7 +1269,8 @@ bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, bool &i
     // Read status
     QString value;
     IoError ioError = IoError::Success;
-    if (!getXAttrValue(absoluteFilePath, [EXT_ATTR_STATUS UTF8String], value, ioError) && !isExpectedError(ioError)) {
+    if (!getXAttrValue(absoluteFilePath, [@EXT_ATTR_STATUS UTF8String], value, ioError)
+        && !isExpectedError(ioError)) {
         LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatIoError(QStr2Str(absoluteFilePath), ioError).c_str());
         return false;
     }
@@ -1392,7 +1405,7 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
         QString status = (isSyncing ? QString("%1%2").arg(EXT_ATTR_STATUS_HYDRATING).arg(roundedProgress)
                                     : (isHydrated ? QString(EXT_ATTR_STATUS_OFFLINE) : QString(EXT_ATTR_STATUS_ONLINE)));
         IoError ioError = IoError::Success;
-        if (!setXAttrValue(path, [EXT_ATTR_STATUS UTF8String], status, ioError)) {
+        if (!setXAttrValue(path, [@EXT_ATTR_STATUS UTF8String], status, ioError)) {
             LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(QStr2Path(path), ioError));
             return false;
         }
@@ -1509,8 +1522,8 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QStrin
 }
 
 void LiteSyncExtConnector::vfsClearFileAttributes(const QString &path) {
-    removexattr(path.toStdString().c_str(), [EXT_ATTR_STATUS UTF8String], 0);
-    removexattr(path.toStdString().c_str(), [EXT_ATTR_PIN_STATE UTF8String], 0);
+    removexattr(path.toStdString().c_str(), [@EXT_ATTR_STATUS UTF8String], 0);
+    removexattr(path.toStdString().c_str(), [@EXT_ATTR_PIN_STATE UTF8String], 0);
 }
 
 bool LiteSyncExtConnector::sendStatusToFinder(const QString &path, bool isSyncing, int progress, bool isHydrated) {

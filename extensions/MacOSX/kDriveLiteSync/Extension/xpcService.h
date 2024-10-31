@@ -32,21 +32,21 @@
 }
 
 @property(retain) XPCServiceProxy *_Nullable xpcServiceProxy;
-@property(retain) NSMutableDictionary<NSString *, NSMutableSet<NSString *> *> *registeredFoldersMap;
+@property(retain) NSMutableDictionary<NSString *, NSMutableSet<NSString *> *> *_Nullable registeredFoldersMap;
 
-- (BOOL)isFileMonitored:(NSString *)filePath;
+- (BOOL)isFileMonitored:(NSString *_Nonnull)filePath;
 - (void)initOpenWhiteListThumbnailSet;
 - (void)initOpenWhiteListSet;
 - (void)initOpenBlackListSet;
-- (BOOL)isAppInOpenWhiteListThumbnail:(NSString *)appSigningId;
-- (BOOL)isAppInOpenWhiteList:(NSString *)appSigningId;
-- (BOOL)matchGlob:(NSString *)string globToMatch:(NSString *)glob;
-- (BOOL)isAppInOpenBlackList:(NSString *)appSigningId filePath:(NSString *)filePath;
-- (BOOL)isAppInDefaultBlackList:(NSString *)appSigningId;
-- (void)addAppToFetchList:(NSString *)appSigningId;
-- (void)sendMessage:(NSString *)filePath query:(NSString *)verb oneApp:(BOOL)one;
-- (BOOL)fetchFile:(NSString *)filePath pid:(pid_t)pid;
-- (BOOL)fetchThumbnail:(NSString *)filePath pid:(pid_t)pid;
-- (BOOL)isDirectory:(NSString *)path error:(NSError *_Nullable *_Nullable)error;
+- (BOOL)isAppInOpenWhiteListThumbnail:(NSString *_Nonnull)appSigningId;
+- (BOOL)isAppInOpenWhiteList:(NSString *_Nonnull)appSigningId;
+- (BOOL)matchGlob:(NSString *_Nonnull)string globToMatch:(NSString *_Nonnull)glob;
+- (BOOL)isAppInOpenBlackList:(NSString *_Nonnull)appSigningId filePath:(NSString *_Nonnull)filePath;
+- (BOOL)isAppInDefaultBlackList:(NSString *_Nonnull)appSigningId;
+- (void)addAppToFetchList:(NSString *_Nonnull)appSigningId;
+- (void)sendMessage:(NSString *_Nullable)filePath query:(NSString *_Nonnull)verb oneApp:(BOOL)one;
+- (BOOL)fetchFile:(NSString *_Nonnull)filePath pid:(pid_t)pid;
+- (BOOL)fetchThumbnail:(NSString *_Nonnull)filePath pid:(pid_t)pid;
+- (BOOL)isDirectory:(NSString *_Nonnull)path error:(NSError *_Nullable *_Nullable)error;
 
 @end

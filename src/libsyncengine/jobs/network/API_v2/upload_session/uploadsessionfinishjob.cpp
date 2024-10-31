@@ -17,16 +17,16 @@
  */
 
 #include "uploadsessionfinishjob.h"
-#include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"
+#include "libcommonserver/utility/utility.h"
 
 namespace KDC {
 
 UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                uint64_t totalChunks, SyncTime modtime) :
-    AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken), _totalChunkHash(totalChunkHash),
-    _totalChunks(totalChunks), _modtimeIn(modtime) {
+    AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken),
+    _totalChunkHash(totalChunkHash), _totalChunks(totalChunks), _modtimeIn(modtime) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
@@ -38,7 +38,7 @@ UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, con
 UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (_vfsForceStatus) {
         if (!_vfsForceStatus(_filePath, false, 0, true)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
+            LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_filePath));
         }
     }
 }

@@ -333,6 +333,15 @@ struct IoHelper {
          */
         static bool setXAttrValue(const SyncPath &path, const std::string &attrName, const std::string &value,
                                   IoError &ioError) noexcept;
+
+        //! Removes the value of the extended attribute with specified name for the item indicated by path.
+        /*!
+         \param path is the file system path of the item.
+         \param attrName is the name of the extended attribute to be removed.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool removeXAttr(const SyncPath &path, const std::string &attrName, IoError &ioError) noexcept;
 #endif
 
 #ifdef _WIN32
