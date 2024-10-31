@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
+
 #include <sstream>
-#include "libcommon/utility/types.h"
+
+#include <QIODevice>
 
 class CustomLogWStream : private std::wstringstream {
     public:
