@@ -43,7 +43,6 @@ class TestWorkers : public CppUnit::TestFixture {
         void tearDown() override;
         void testCreatePlaceholder();
         void testConvertToPlaceholder();
-
     protected:
         static bool createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);

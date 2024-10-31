@@ -67,16 +67,6 @@ void TestUpdateTree::testConstructors() {
     }
 }
 
-void TestUpdateTree::testIsParentValid() {
-    const auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory,
-                                              OperationType::None, "l1", 0, 0, 12345, _myTree->rootNode());
-    const auto node11 = std::make_shared<Node>(_myTree->side(), Str("Dir 1.1"), NodeType::Directory,
-                                               OperationType::None, "l11", 0, 0, 12345, node1);
-
-    CPPUNIT_ASSERT(node11->isParentValid(node1));
-    CPPUNIT_ASSERT(!node1->isParentValid(node11));
-}
-
 void TestUpdateTree::testInsertionOfFileNamesWithDifferentEncodings() {
     CPPUNIT_ASSERT(_myTree->_nodes.empty());
     auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None,

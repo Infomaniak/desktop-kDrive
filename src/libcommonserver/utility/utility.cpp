@@ -427,6 +427,19 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
+bool Utility::isDescendantOrEqual(const SyncPath &potentialChild, const SyncPath &path) {
+    if (path == potentialChild) return true;
+    for (auto it = potentialChild.begin(), it2 = path.begin(); it != potentialChild.end(); ++it, ++it2) {
+        if (it2 == path.end()) {
+            return true;
+        }
+        if (*it != *it2) {
+            return false;
+        }
+    }
+    return false;
+}
+
 bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     return moveItemToTrash_private(itemPath);
 }
@@ -706,36 +719,40 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath)
     return true;
 }
 
-bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
+bool Utility::checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
                                        IoError &ioError) {
+    return checkIfDirEntryIsManaged(*dirIt, isManaged, isLink, ioError);
+}
+
+bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError) {
     isManaged = true;
     isLink = false;
     ioError = IoError::Success;
 
     ItemType itemType;
-    bool result = IoHelper::getItemType(dirIt->path(), itemType);
+    bool result = IoHelper::getItemType(dirEntry.path(), itemType);
     ioError = itemType.ioError;
     if (!result) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirIt->path(), ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError).c_str());
         return false;
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirIt->path(), ioError).c_str());
+        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError).c_str());
         return true;
     }
 
     isLink = itemType.linkType != LinkType::None;
-    if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
-        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
+    if (!dirEntry.is_directory() && !dirEntry.is_regular_file() && !isLink) {
+        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path()).c_str()
                                        << L" because it's not a directory, a regular file or a symlink");
         isManaged = false;
         return true;
     }
 
-    if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
+    if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(),
-                  L"Ignore " << formatSyncPath(dirIt->path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
+                  L"Ignore " << formatSyncPath(dirEntry.path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
         isManaged = false;
         return true;
     }

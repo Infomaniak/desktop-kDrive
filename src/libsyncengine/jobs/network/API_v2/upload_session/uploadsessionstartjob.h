@@ -38,7 +38,7 @@ class UploadSessionStartJob : public AbstractUploadSessionJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual void setData(bool &) override;
+        inline virtual ExitInfo setData() override;
 
         SyncName _filename;
         NodeId _fileId;

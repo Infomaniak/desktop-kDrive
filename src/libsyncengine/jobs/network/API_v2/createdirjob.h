@@ -39,8 +39,8 @@ class CreateDirJob : public AbstractTokenNetworkJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &) override { /* Query parameters are not mandatory */ }
-        void setData(bool &canceled) override;
+        void setQueryParameters(Poco::URI &, bool &) override { /* Query parameters are not mandatory */}
+        ExitInfo setData() override;
 
         SyncPath _filePath;
         NodeId _parentDirId;

@@ -435,8 +435,8 @@
 
 #define UPDATE_ERROR_REQUEST_ID "update_error"
 #define UPDATE_ERROR_REQUEST    \
-    "UPDATE error SET time=?1 " \
-    "WHERE dbId=?2;"
+    "UPDATE error SET time=?1, path=?2 " \
+    "WHERE dbId=?3;"
 
 #define DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID "delete_error_by_exitcode"
 #define DELETE_ALL_ERROR_BY_EXITCODE_REQUEST \
@@ -2750,7 +2750,8 @@ bool ParmsDb::updateError(const Error &err, bool &found) {
 
     ASSERT(queryResetAndClearBindings(UPDATE_ERROR_REQUEST_ID));
     ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 1, err.time()));
-    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 2, err.dbId()));
+    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 2, err.path()));
+    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 3, err.dbId()));
     if (!queryExec(UPDATE_ERROR_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_ERROR_REQUEST_ID);
         return false;
