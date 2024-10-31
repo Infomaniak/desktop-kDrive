@@ -20,7 +20,6 @@
 
 #include "jobs/abstractjob.h"
 #include "utility/types.h"
-#include "db/syncdb.h"
 #include "uploadsessionchunkjob.h"
 #include "uploadsessionfinishjob.h"
 #include "uploadsessionstartjob.h"

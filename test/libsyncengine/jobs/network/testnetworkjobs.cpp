@@ -17,8 +17,8 @@
  */
 
 #include "testnetworkjobs.h"
+
 #include "jobs/network/API_v2/copytodirectoryjob.h"
-#include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/deletejob.h"
 #include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/duplicatejob.h"
@@ -35,25 +35,28 @@
 #include "jobs/network/API_v2/movejob.h"
 #include "jobs/network/API_v2/renamejob.h"
 #include "jobs/network/API_v2/upload_session/driveuploadsession.h"
-#include "jobs/network/API_v2/upload_session/loguploadsession.h"
 #include "jobs/network/API_v2/uploadjob.h"
 #include "jobs/network/API_v2/getsizejob.h"
 #include "jobs/jobmanager.h"
 #include "network/proxy.h"
+
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/fileAttributes.h"
 #include "libcommonserver/io/iohelper.h"
+
 #include "libparms/db/parmsdb.h"
 #include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
-#include <iostream>
 
 #include "jobs/network/getappversionjob.h"
 #include "test_utility/testhelpers.h"
 #include "jobs/network/directdownloadjob.h"
+
+#include <iostream>
 
 using namespace CppUnit;
 
@@ -859,11 +862,22 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
     Utility::msleep(1000); // Wait 1sec
 
     DriveUploadSessionJob->abort();
+    CPPUNIT_ASSERT(!DriveUploadSessionJob->hasVfsForceStatusCallback());
 
     Utility::msleep(1000); // Wait 1sec
 
     NodeId newNodeId = DriveUploadSessionJob->nodeId();
     CPPUNIT_ASSERT(newNodeId.empty());
+
+#ifdef __APPLE__
+    IoError ioError = IoError::Success;
+    std::string value;
+    CPPUNIT_ASSERT(IoHelper::getXAttrValue(localFilePath, EXT_ATTR_STATUS, value, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::AttrNotFound, ioError);
+
+    CPPUNIT_ASSERT(IoHelper::getXAttrValue(localFilePath, EXT_ATTR_PIN_STATE, value, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::AttrNotFound, ioError);
+#endif
 }
 
 void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {

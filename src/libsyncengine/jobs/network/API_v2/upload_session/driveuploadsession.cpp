@@ -121,13 +121,13 @@ void DriveUploadSession::abort() {
     // by the application when restarting the synchronization.
 
     const SyncPath &localPath = getFilePath();
-    static const std::vector<const char *> attributes = {EXT_ATTR_STATUS, EXT_ATTR_PIN_STATE};
+    static const std::vector<const char *> extendedAttributes = {EXT_ATTR_STATUS, EXT_ATTR_PIN_STATE};
 
-    for (const auto attribute: attributes) {
+    for (const auto attribute: extendedAttributes) {
         if (auto ioError = IoError::Success;
-            !IoHelper::removeXAttr(localPath, EXT_ATTR_STATUS, ioError) || ioError != IoError::NoSuchFileOrDirectory) {
+            !IoHelper::removeXAttr(localPath, attribute, ioError) || ioError != IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(getLogger(), "Error in IoHelper::removeXAttr with extended attribute "
-                                           << attribute << L": " << Utility::formatIoError(localPath, ioError));
+                                           << L"'" << attribute << L"': " << Utility::formatIoError(localPath, ioError));
         }
     }
 #endif
