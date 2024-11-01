@@ -1705,6 +1705,7 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
 }
 
 ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored) {
+    ExitInfo exitInfo = ExitCode::Ok;
     ignored = false;
 
     const SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
@@ -1717,15 +1718,17 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             ignored = true;
             if (!PlatformInconsistencyCheckerUtility::renameLocalFile(
                         absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted)) {
-                LOGW_SYNCPAL_WARN(_logger, L"PlatformInconsistencyCheckerUtility::renameLocalFile: "
+                LOGW_SYNCPAL_WARN(_logger, L"PlatformInconsistencyCheckerUtility::renameLocalFile failed for: "
                                                    << Utility::formatSyncPath(absoluteLocalFilePath));
+                exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             }
             removeFromDb = false;
             break;
         }
         case OperationType::Move: {
             // Delete the item from local replica
-            NodeId remoteNodeId = syncOp->correspondingNode()->id().has_value() ? syncOp->correspondingNode()->id().value() : "";
+            const NodeId remoteNodeId =
+                    syncOp->correspondingNode()->id().has_value() ? syncOp->correspondingNode()->id().value() : "";
             if (!remoteNodeId.empty()) {
                 LocalDeleteJob deleteJob(_syncPal->syncInfo(), relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
                 deleteJob.setBypassCheck(true);
@@ -1758,9 +1761,8 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         }
     }
 
-    SyncFileItem syncItem;
-    if (_syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
-        Error err(
+    if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
+        const Error err(
                 _syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
                 syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
                 syncOp->affectedNode()->moveOrigin().has_value() ? syncOp->affectedNode()->moveOrigin().value() : syncItem.path(),
@@ -1769,17 +1771,18 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         _syncPal->addError(err);
     }
 
+    if (!exitInfo) return exitInfo;
+
     if (removeFromDb) {
         //  Remove the node from DB and tree so it will be re-created at its
         //  original location on next sync
         _syncPal->setRestart(true);
-        if (ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
+        if (exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << SyncName2WStr(syncOp->affectedNode()->name()));
-            return exitInfo;
         }
     }
-    return ExitCode::Ok;
+    return exitInfo;
 }
 
 void ExecutorWorker::sendProgress() {
