@@ -1877,36 +1877,32 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
         case ConflictType::MoveMoveSource: // Name clash conflict pattern
         {
             if (syncOp->conflict().type() != ConflictType::MoveMoveSource) {
-                DbNodeId dbId = -1;
-                bool localNodeFoundInDb = false;
-                // when it's an Edit-Edit we want to delete the node
-                NodeId effectiveNodeId =
-                        syncOp->conflict().localNode()->previousId().has_value() ? *syncOp->conflict().localNode()->previousId()
-                        : syncOp->conflict().localNode()->id().has_value()       ? *syncOp->conflict().localNode()->id()
-                                                                                 : std::string();
-                _syncPal->_syncDb->dbId(ReplicaSide::Local, effectiveNodeId, dbId, localNodeFoundInDb);
-                if (localNodeFoundInDb) {
-                    if (ExitInfo exitInfo = deleteFromDb(syncOp->conflict().localNode()); !exitInfo) {
+                if (const ExitInfo exitInfo = deleteFromDb(syncOp->conflict().localNode()); !exitInfo) {
+                    if (exitInfo.code() == ExitCode::DataError) {
+                        // The node was not found in DB, this ok since we wanted to remove it anyway
+                        LOGW_SYNCPAL_INFO(_logger,
+                                          L"Node `" << SyncName2WStr(syncOp->conflict().localNode()->name())
+                                                    << L" not found in DB. This is ok since we wanted to remove to anyway.");
+                    } else {
                         // Remove local node from DB
                         propagateChange = false;
                         return exitInfo;
                     }
                 }
-
-                // Remove node from update tree
-                if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->conflict().localNode())) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                                       << SyncName2WStr(syncOp->conflict().localNode()->name()));
-                }
-
-                if (!_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(syncOp->conflict().remoteNode())) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                                       << SyncName2WStr(syncOp->conflict().remoteNode()->name()));
-                }
-
-                propagateChange = false;
-                break;
             }
+            // Remove node from update tree
+            if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->conflict().localNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                                   << SyncName2WStr(syncOp->conflict().localNode()->name()));
+            }
+
+            if (!_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(syncOp->conflict().remoteNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                                   << SyncName2WStr(syncOp->conflict().remoteNode()->name()));
+            }
+
+            propagateChange = false;
+            break;
         }
         case ConflictType::EditDelete: // Delete conflict pattern
         {
