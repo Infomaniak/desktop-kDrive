@@ -1720,7 +1720,8 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
                         absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted)) {
                 LOGW_SYNCPAL_WARN(_logger, L"PlatformInconsistencyCheckerUtility::renameLocalFile failed for: "
                                                    << Utility::formatSyncPath(absoluteLocalFilePath));
-                exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
+                _syncPal->handleAccessDeniedItem(relativeLocalPath, ExitCause::FileAccessError);
+                return ExitCode::Ok;
             }
             removeFromDb = false;
             break;
