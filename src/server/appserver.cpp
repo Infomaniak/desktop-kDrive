@@ -3039,7 +3039,6 @@ void AppServer::logUsefulInformation() const {
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
     }
-    std::list<int> userIdList;
     for (const auto &user: userList) {
         LOG_INFO(Log::instance()->getLogger(), "User ID: " << user.userId());
     }
