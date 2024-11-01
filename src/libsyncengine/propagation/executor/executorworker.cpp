@@ -405,26 +405,28 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
 
         if (job && syncOp->affectedNode()->type() == NodeType::Directory) {
             // Propagate the directory creation immediately in order to avoid blocking other dependant job creation
-            if (ExitInfo exitInfo = runCreateDirJob(syncOp, job); !exitInfo) {
+            if (!runCreateDirJob(syncOp, job)) {
                 std::shared_ptr<CreateDirJob> createDirJob = std::dynamic_pointer_cast<CreateDirJob>(job);
                 if (createDirJob && (createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST ||
                                      createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN)) {
-                    if (ExitInfo exitInfoCheckAlreadyExcluded =
+                    if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
                         LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded");
                         return exitInfoCheckAlreadyExcluded;
                     }
+
+                    if (const ExitInfo exitInfo = handleForbiddenAction(syncOp, relativeLocalFilePath, ignored); !exitInfo) {
+                        LOGW_SYNCPAL_WARN(_logger, L"Error in handleForbiddenAction for item: "
+                                                           << Utility::formatSyncPath(relativeLocalFilePath));
+                        return exitInfo;
+                    }
+                    return {ExitCode::BackError, ExitCause::FileAccessError};
                 }
-                if (const ExitInfo exitInfo2 = handleForbiddenAction(syncOp, relativeLocalFilePath, ignored); !exitInfo2) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in handleForbiddenAction for item: "
-                                                       << Utility::formatSyncPath(relativeLocalFilePath));
-                    return exitInfo2;
-                }
-                return {ExitCode::BackError, ExitCause::FileAccessError};
             }
 
-            if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
+            if (const ExitInfo exitInfo =
+                        convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
                 !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Failed to convert to placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()));
