@@ -1814,15 +1814,12 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
                         syncOp->conflict().localNode()->previousId().has_value() ? *syncOp->conflict().localNode()->previousId()
                         : syncOp->conflict().localNode()->id().has_value()       ? *syncOp->conflict().localNode()->id()
                                                                                  : std::string();
-                if (ExitInfo exitInfo = deleteFromDb(syncOp->conflict().localNode()); !exitInfo) {
-                    if (localNodeFoundInDb) {
+                _syncPal->_syncDb->dbId(ReplicaSide::Local, effectiveNodeId, dbId, localNodeFoundInDb);
+                if (localNodeFoundInDb) {
+                    if (ExitInfo exitInfo = deleteFromDb(syncOp->conflict().localNode()); !exitInfo) {
                         // Remove local node from DB
-                        if (!deleteFromDb(syncOp->conflict().localNode())) {
-                            // _executorExitCode and _executorExitCause are set by
-                            // the above function
-                            propagateChange = false;
-                            return exitInfo;
-                        }
+                        propagateChange = false;
+                        return exitInfo;
                     }
                 }
 
