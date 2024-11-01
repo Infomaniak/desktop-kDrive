@@ -198,7 +198,7 @@ void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) 
 void SparkleUpdater::startInstaller() {
     reset(versionInfo().downloadUrl);
 
-    [d->updater checkForUpdates];
+    [d->updater checkForUpdatesInBackground];
     [d->spuStandardUserDriver showUpdateInFocus];
 }
 
