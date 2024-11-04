@@ -40,8 +40,7 @@ class GetAppVersionJob : public AbstractNetworkJob {
     private:
         std::string getSpecificUrl() override;
         std::string getContentType(bool &canceled) override;
-        void setQueryParameters(Poco::URI &, bool &) override { /* no query parameters */
-        }
+        void setQueryParameters(Poco::URI &, bool &) override { /* no query parameters */ }
         ExitInfo setData() override { return ExitCode::Ok; }
         bool handleError(std::istream &is, const Poco::URI &uri) override;
 
