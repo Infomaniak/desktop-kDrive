@@ -333,7 +333,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         return Utility::ws2s(szFileSystemName);
     }
 #else
-    (void)targetPath;
+    (void) targetPath;
 #endif
 
     return std::string();

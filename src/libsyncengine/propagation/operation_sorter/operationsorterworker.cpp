@@ -287,7 +287,7 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
 
             SyncPath sourcePath = moveOp->affectedNode()->moveOrigin().value();
             if (Utility::isDescendantOrEqual(sourcePath.lexically_normal(),
-                                    SyncPath(deleteDirPath.native() + Str("/")).lexically_normal())) {
+                                             SyncPath(deleteDirPath.native() + Str("/")).lexically_normal())) {
                 // move only if op is before moveOp
                 moveFirstAfterSecond(deleteOp, moveOp);
             }
@@ -595,10 +595,10 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
             SyncPath ySourcePath = *yNode->moveOrigin();
 
             bool isXBelowY = Utility::isDescendantOrEqual(xDestPath.lexically_normal(),
-                                                        SyncPath(yDestPath.native() + Str("/")).lexically_normal());
+                                                          SyncPath(yDestPath.native() + Str("/")).lexically_normal());
             if (isXBelowY) {
                 bool isYBelowXInDb = Utility::isDescendantOrEqual(ySourcePath.lexically_normal(),
-                                                         SyncPath(xSourcePath.native() + Str("/")).lexically_normal());
+                                                                  SyncPath(xSourcePath.native() + Str("/")).lexically_normal());
                 if (isYBelowXInDb) {
                     moveFirstAfterSecond(xOp, yOp);
                 }
