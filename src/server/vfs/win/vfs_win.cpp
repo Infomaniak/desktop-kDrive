@@ -122,7 +122,11 @@ VirtualFileMode VfsWin::mode() const {
     return VirtualFileMode::Win;
 }
 
-bool VfsWin::startImpl(bool &, bool &, bool &) {
+bool VfsWin::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
+    installationDone = false;
+    activationDone = false;
+    connectionDone = false;
+
     LOG_DEBUG(logger(), "startImpl: syncDbId=" << _vfsSetupParams._syncDbId);
 
     wchar_t clsid[39] = L"";
@@ -135,6 +139,10 @@ bool VfsWin::startImpl(bool &, bool &, bool &) {
     }
 
     _vfsSetupParams._namespaceCLSID = Utility::ws2s(std::wstring(clsid));
+
+    installationDone = true;
+    activationDone = true;
+    connectionDone = true;
 
     return true;
 }
