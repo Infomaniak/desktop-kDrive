@@ -41,6 +41,7 @@ class FolderWatcher {
         // The FolderWatcher can only become unreliable on Linux
         inline bool isReliable() const { return _isReliable; }
         ExitInfo exitInfo() const { return _exitInfo; }
+
     protected:
         // Implement this method in your subclass with the code you want your thread to run
         virtual void startWatching() = 0;

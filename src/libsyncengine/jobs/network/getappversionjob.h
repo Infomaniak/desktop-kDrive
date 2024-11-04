@@ -23,9 +23,11 @@
 #include <config.h>
 
 namespace KDC {
+
 class GetAppVersionJob : public AbstractNetworkJob {
     public:
         GetAppVersionJob(Platform platform, const std::string &appID);
+        GetAppVersionJob(Platform platform, const std::string &appID, const std::vector<int> &userIdList);
         ~GetAppVersionJob() override = default;
 
         const VersionInfo &getVersionInfo(const DistributionChannel channel) { return _versionInfo[channel]; }
@@ -40,7 +42,7 @@ class GetAppVersionJob : public AbstractNetworkJob {
     private:
         std::string getSpecificUrl() override;
         std::string getContentType(bool &canceled) override;
-        void setQueryParameters(Poco::URI &, bool &) override { /* no query parameters */ }
+        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
         ExitInfo setData() override { return ExitCode::Ok; }
         bool handleError(std::istream &is, const Poco::URI &uri) override;
 
@@ -48,6 +50,7 @@ class GetAppVersionJob : public AbstractNetworkJob {
 
         const Platform _platform{Platform::Unknown};
         const std::string _appId;
+        const std::vector<int> _userIdList;
 
         bool _hasProdNext{false};
         std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;

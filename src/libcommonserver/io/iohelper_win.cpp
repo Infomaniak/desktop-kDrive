@@ -722,9 +722,8 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
     isJunction = false;
     ioError = IoError::Success;
 
-    HANDLE hFile =
-            CreateFileW(Path2WStr(path).c_str(), 0,  FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+    HANDLE hFile = CreateFileW(Path2WStr(path).c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return isExpectedError(ioError);

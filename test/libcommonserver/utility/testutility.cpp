@@ -474,7 +474,7 @@ void TestUtility::testIsSameOrParentPath() {
     CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c", "a/b/c1"));
     CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c1", "a/b/c"));
     CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("/a/b/c", "a/b/c"));
-    
+
     CPPUNIT_ASSERT(Utility::isDescendantOrEqual("", ""));
     CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b/c"));
     CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a", ""));

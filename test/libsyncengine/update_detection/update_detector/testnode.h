@@ -32,7 +32,6 @@ class TestNode : public CppUnit::TestFixture {
     protected:
         void testIsParentValid();
         void testIsParentOf();
-
 };
 
 } // namespace KDC

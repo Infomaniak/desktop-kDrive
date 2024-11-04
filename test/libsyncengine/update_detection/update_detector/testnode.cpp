@@ -35,13 +35,12 @@ void TestNode::testIsParentValid() {
 }
 
 void TestNode::testIsParentOf() {
-
     const auto node1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("Dir 1"), NodeType::Directory,
                                               OperationType::None, "l1", 0, 0, 12345, nullptr);
     const auto node11 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("Dir 1.1"), NodeType::Directory,
                                                OperationType::None, "l11", 0, 0, 12345, node1);
     const auto node111 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("Dir 1.1.1"), NodeType::Directory,
-                                               OperationType::None, "l111", 0, 0, 12345, node11);
+                                                OperationType::None, "l111", 0, 0, 12345, node11);
 
 
     CPPUNIT_ASSERT(node1->isParentOf(node11));

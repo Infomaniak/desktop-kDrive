@@ -29,7 +29,7 @@ class GetThumbnailJob : public AbstractTokenNetworkJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok;  }
+        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;
         unsigned _width;
