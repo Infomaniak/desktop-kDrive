@@ -745,6 +745,11 @@ ExitInfo ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
         return ExitCode::SystemError;
     }
 
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(absoluteLocalPath).c_str());
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
     if (exists) {
         LOGW_WARN(_logger, L"Item already exists: " << Utility::formatSyncPath(absoluteLocalPath));
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
@@ -825,7 +830,7 @@ ExitInfo ExecutorWorker::processCreateOrConvertToPlaceholderError(const SyncPath
     if (create && exists) {
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     } else if (!create && !exists) {
-        return {ExitCode::DataError, ExitCause::FileAlreadyExist};
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     }
 
     if (create) {
