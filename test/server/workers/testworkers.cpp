@@ -242,7 +242,7 @@ void TestWorkers::testCreatePlaceholder() {
         CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
 #else
         // Strangely (bug?), the Windows api is able to create a placeholder in a folder for which the user does not have rights
-        CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, exitInfo.cause());
 
         // Remove placeholder
