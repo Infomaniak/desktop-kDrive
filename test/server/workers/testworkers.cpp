@@ -158,9 +158,9 @@ void TestWorkers::setUp() {
     // TODO: on macOS, SIP should be deactivated and LiteSync extension signed to be able to start Vfs
 
     // Start Vfs
-    bool installationDone;
-    bool activationDone;
-    bool connectionDone;
+    bool installationDone = false;
+    bool activationDone = false;
+    bool connectionDone = false;
     CPPUNIT_ASSERT(_vfsPtr->startImpl(installationDone, activationDone, connectionDone));
     CPPUNIT_ASSERT(installationDone);
     CPPUNIT_ASSERT(activationDone);
@@ -250,6 +250,7 @@ void TestWorkers::testCreatePlaceholder() {
         std::filesystem::remove(_syncPal->localPath() / relativeFilePath);
         if (ec) {
             // Cannot remove file
+            CPPUNIT_ASSERT(false);
         }
 #endif
 
