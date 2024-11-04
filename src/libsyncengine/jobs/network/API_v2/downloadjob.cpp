@@ -493,21 +493,15 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 }
 
 bool DownloadJob::removeTmpFile(const SyncPath &path) {
-    std::error_code ec;
-    if (!std::filesystem::remove_all(path, ec)) {
-        if (ec) {
-            LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatStdError(path, ec).c_str());
-            return false;
-        }
-
-        LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatSyncPath(path).c_str());
+    if (std::error_code ec; !std::filesystem::remove_all(path, ec)) {
+        LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatStdError(path, ec));
         return false;
     }
 
     return true;
 }
 
-bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
+bool DownloadJob::moveTmpFile(const SyncPath &tmpPath, bool &restartSync) {
     restartSync = false;
 
     // Move downloaded file from tmp directory to sync directory
@@ -518,7 +512,7 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
     while (retry) {
         retry = false;
 #endif
-        std::filesystem::rename(path, _localpath, ec);
+        std::filesystem::rename(tmpPath, _localpath, ec);
 #ifdef _WIN32
         const bool crossDeviceLink = ec.value() == ERROR_NOT_SAME_DEVICE;
 #else
@@ -528,10 +522,15 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
             // The sync might be on a different file system than tmp folder.
             // In that case, try to copy the file instead.
             ec.clear();
-            std::filesystem::copy(path, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
+            std::filesystem::copy(tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
+            bool removed = removeTmpFile(tmpPath);
             if (ec) {
-                LOGW_WARN(_logger, L"Failed to copy: " << Utility::formatSyncPath(_localpath).c_str() << L", "
-                                                       << Utility::formatStdError(ec).c_str());
+                LOGW_WARN(_logger,
+                          L"Failed to copy: " << Utility::formatSyncPath(_localpath) << L", " << Utility::formatStdError(ec));
+                return false;
+            }
+            if (!removed) {
+                LOGW_WARN(_logger, L"Failed to remove: " << Utility::formatSyncPath(tmpPath));
                 return false;
             }
         }
