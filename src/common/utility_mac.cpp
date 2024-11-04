@@ -34,6 +34,14 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcUtility, "common.utility", QtInfoMsg)
 
+namespace {
+std::string formatFilePath(CFStringRef stringRef) {
+    const std::string filePath = "path='" + std::string(CFStringGetCStringPtr(stringRef, kCFStringEncodingUTF8)) + "'";
+
+    return filePath;
+}
+} // namespace
+
 bool hasLaunchOnStartup_private(const QString &, log4cplus::Logger logger) {
     // this is quite some duplicate code with setLaunchOnStartup, at some point we should fix this FIXME.
     bool returnValue = false;
@@ -46,14 +54,14 @@ bool hasLaunchOnStartup_private(const QString &, log4cplus::Logger logger) {
         UInt32 seedValue;
         CFArrayRef itemsArray = LSSharedFileListCopySnapshot(loginItems, &seedValue);
         CFStringRef appUrlRefString = CFURLGetString(urlRef); // no need for release
-        LOG4CPLUS_DEBUG(logger, "App filePath=" << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8));
+        LOG4CPLUS_DEBUG(logger, "App file " << formatFilePath(appUrlRefString).c_str());
         for (int i = 0; i < CFArrayGetCount(itemsArray); i++) {
             LSSharedFileListItemRef item = (LSSharedFileListItemRef) CFArrayGetValueAtIndex(itemsArray, i);
             CFURLRef itemUrlRef = NULL;
 
             if (LSSharedFileListItemResolve(item, 0, &itemUrlRef, NULL) == noErr && itemUrlRef) {
                 CFStringRef itemUrlString = CFURLGetString(itemUrlRef);
-                LOG4CPLUS_DEBUG(logger, "Login item filePath=" << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8));
+                LOG4CPLUS_DEBUG(logger, "Login item with " << formatFilePath(itemUrlString).c_str());
                 if (CFStringCompare(itemUrlString, appUrlRefString, 0) == kCFCompareEqualTo) {
                     returnValue = true;
                 }
@@ -81,12 +89,11 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
         CFStringRef appUrlRefString = CFURLGetString(urlRef);
         LSSharedFileListItemRef item = LSSharedFileListInsertItemURL(loginItems, kLSSharedFileListItemLast, 0, 0, urlRef, 0, 0);
         if (item) {
-            LOG4CPLUS_DEBUG(logger, "filePath=" << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8)
-                                                << " inserted to open at login list");
+            LOG4CPLUS_DEBUG(logger, "file with " << formatFilePath(appUrlRefString).c_str() << " inserted to open at login list");
             CFRelease(item);
         } else {
-            LOG4CPLUS_WARN(logger, "Failed to insert item " << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8)
-                                                            << " to open at login list!");
+            LOG4CPLUS_WARN(logger,
+                           "Failed to insert item with " << formatFilePath(appUrlRefString).c_str() << " to open at login list!");
         }
         CFRelease(loginItems);
     } else if (loginItems && !enable) {
@@ -94,25 +101,24 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
         UInt32 seedValue;
         CFArrayRef itemsArray = LSSharedFileListCopySnapshot(loginItems, &seedValue);
         CFStringRef appUrlRefString = CFURLGetString(urlRef);
-        qCDebug(lcUtility()) << "App to remove filePath=" << QString::fromCFString(appUrlRefString);
+        qCDebug(lcUtility()) << "App to remove file path='" << QString::fromCFString(appUrlRefString) << QString("'");
         for (int i = 0; i < CFArrayGetCount(itemsArray); i++) {
             LSSharedFileListItemRef item = (LSSharedFileListItemRef) CFArrayGetValueAtIndex(itemsArray, i);
             CFURLRef itemUrlRef = NULL;
 
             if (LSSharedFileListItemResolve(item, 0, &itemUrlRef, NULL) == noErr && itemUrlRef) {
                 CFStringRef itemUrlString = CFURLGetString(itemUrlRef);
-                LOG4CPLUS_DEBUG(logger, "Login item filePath=" << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8));
+                LOG4CPLUS_DEBUG(logger, "Login item with " << formatFilePath(itemUrlString).c_str());
                 if (CFStringCompare(itemUrlString, appUrlRefString, 0) == kCFCompareEqualTo) {
-                    LOG4CPLUS_DEBUG(logger, "Removing item " << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8)
-                                                             << " from open at login list");
+                    LOG4CPLUS_DEBUG(logger,
+                                    "Removing item with " << formatFilePath(itemUrlString).c_str() << " from open at login list");
                     if (LSSharedFileListItemRemove(loginItems, item) != noErr) {
-                        LOG4CPLUS_WARN(logger,
-                                       "Failed to remove item " << CFStringGetCStringPtr(itemUrlString, kCFStringEncodingUTF8));
+                        LOG4CPLUS_WARN(logger, "Failed to remove item with " << formatFilePath(itemUrlString).c_str());
                     }
                 }
                 CFRelease(itemUrlRef);
             } else {
-                LOG4CPLUS_WARN(logger, "Failed to extract item's URL");
+                LOG4CPLUS_WARN(logger, "Failed to extract the item URL");
                 // LSSharedFileListItemRemove(loginItems, item); // URL invalid, remove it anyway
             }
         }

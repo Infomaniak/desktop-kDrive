@@ -135,7 +135,7 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     if (!extraPluginPath.isEmpty()) {
         if (QDir::isRelativePath(extraPluginPath))
             extraPluginPath = QDir(QApplication::applicationDirPath()).filePath(extraPluginPath);
-        qCInfo(lcAppClient) << "Adding extra plugin search path:" << extraPluginPath;
+        qCInfo(lcAppClient) << "Adding extra plugin search path: '" << QDir::cleanPath(extraPluginPath) << QString("'");
         addLibraryPath(extraPluginPath);
     }
 #endif
