@@ -3982,7 +3982,7 @@ void AppServer::addError(const Error &error) {
                 }
             }
         }
-        for (int errorId: toBeRemovedErrorIds) {
+        for (auto errorId: toBeRemovedErrorIds) {
             bool found = false;
             if (!ParmsDb::instance()->deleteError(errorId, found)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
