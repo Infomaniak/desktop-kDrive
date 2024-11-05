@@ -101,14 +101,8 @@ if (APPLE)
         "${libsyncengine_NAME}_vfs_mac"
         "${updater_DEPS}")
 elseif (WIN32)
-    set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
-    find_library(LIBSYNCENGINE_VFS_STATIC_LIBRARY
-        NAMES "${libsyncengine_NAME}_vfs_win"
-        PATHS "${CMAKE_BINARY_DIR}/src/server/vfs/win"
-        NO_DEFAULT_PATH
-        NO_CACHE)
     target_link_libraries(${testserver_NAME}
-        "${LIBSYNCENGINE_VFS_STATIC_LIBRARY}")
+        "${CMAKE_INSTALL_PREFIX}/src/server/vfs/win/${libsyncengine_NAME}_vfs_win.lib")
 endif()
 
 # Install
