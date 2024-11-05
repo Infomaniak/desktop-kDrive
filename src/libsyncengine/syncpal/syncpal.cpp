@@ -1449,6 +1449,12 @@ void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
 }
 
 ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause) {
+    std::shared_ptr<Node> dummyNodePtr;
+    return handleAccessDeniedItem(relativePath, dummyNodePtr, dummyNodePtr, cause);
+}
+
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shared_ptr<Node> &remoteBlacklistedNode,
+                                         std::shared_ptr<Node> &localBlacklistedNode, ExitCause cause) {
     if (relativePath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
         return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
@@ -1457,12 +1463,12 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
                 ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
     addError(error);
 
-    NodeId localNodeId;
-    if (localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath); localNodeId.empty()) {
+    NodeId localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath);
+    if (localNodeId.empty()) {
         // The file does not exit yet on local file system, or we do not have sufficient right on a parent folder.
         LOGW_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath)
                                      << L"is not present local file system, blacklisting the parent item.");
-        return handleAccessDeniedItem(relativePath.parent_path(), cause);
+        return handleAccessDeniedItem(relativePath.parent_path(), remoteBlacklistedNode, localBlacklistedNode, cause);
     }
 
 
@@ -1477,6 +1483,9 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 
+    localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
+    remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(correspondingNodeId);
+    
     // Blacklist the item
     _tmpBlacklistManager->blacklistItem(localNodeId, relativePath, ReplicaSide::Local);
     if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
