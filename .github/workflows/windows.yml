@@ -55,7 +55,7 @@ jobs:
           set COVFILE=%cd%\src\test.cov  
           call "cov01.exe" -1
 
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
+          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -ext
         shell: cmd
 
       - name: Execute tests
