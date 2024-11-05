@@ -102,7 +102,7 @@ if (APPLE)
         "${updater_DEPS}")
 elseif (WIN32)
     target_link_libraries(${testserver_NAME}
-        "${CMAKE_INSTALL_PREFIX}/src/server/vfs/win/${libsyncengine_NAME}_vfs_win.lib")
+        "${libsyncengine_NAME}_vfs_win")
 endif()
 
 # Install
