@@ -116,18 +116,4 @@ if (APPLE)
         execute_process(COMMAND \"install_name_tool\" -add_rpath ${INSTALL_OUTPUT_DIRECTORY}/${KDRIVE_OSX_BUNDLE}/Contents/Frameworks ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         execute_process(COMMAND \"install_name_tool\" -add_rpath ${INSTALL_OUTPUT_DIRECTORY}/${KDRIVE_OSX_BUNDLE}/Contents/Plugins ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
         " COMPONENT RUNTIME)
-elseif (WIN32)
-    #Vfs
-    set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
-    find_library(VFS_SHARED_LIBRARY
-        NAMES vfs
-        PATHS ${VFS_DIRECTORY}
-        NO_DEFAULT_PATH
-        NO_CACHE)
-    install(FILES ${VFS_SHARED_LIBRARY}
-        DESTINATION ${BIN_OUTPUT_DIRECTORY})
-
-    install(TARGETS "${libsyncengine_NAME}_vfs_win"
-        LIBRARY DESTINATION "${BIN_OUTPUT_DIRECTORY}"
-        RUNTIME DESTINATION "${BIN_OUTPUT_DIRECTORY}")
 endif()
