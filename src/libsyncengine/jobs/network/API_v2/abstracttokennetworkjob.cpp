@@ -165,7 +165,9 @@ bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCod
             {NetworkErrorCode::conflictError, ExitHandler{ExitCause::FileAlreadyExist, "Operation refused"}},
             {NetworkErrorCode::accessDenied, ExitHandler{ExitCause::HttpErrForbidden, "Access denied"}},
             {NetworkErrorCode::fileTooBigError, ExitHandler{ExitCause::FileTooBig, "File too big"}},
-            {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}}};
+            {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}},
+            {NetworkErrorCode::fileShareLinkAlreadyExists,
+             ExitHandler{ExitCause::ShareLinkAlreadyExist, "Share link already exist"}}};
 
     const auto &errorHandling = errorCodeHandlingMap.find(errorCode);
     if (errorHandling == errorCodeHandlingMap.cend()) {

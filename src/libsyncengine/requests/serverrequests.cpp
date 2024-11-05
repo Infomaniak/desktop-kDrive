@@ -1067,10 +1067,8 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         return ExitCode::DataError;
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        std::string errorCode;
-        if (job->hasErrorApi(&errorCode) && getNetworkErrorCode(errorCode) == NetworkErrorCode::fileShareLinkAlreadyExists) {
+    if (auto exitCode = job->runSynchronously(); exitCode != ExitCode::Ok) {
+        if (job->exitCode() == ExitCode::BackError && job->exitCause() == ExitCause::ShareLinkAlreadyExist) {
             // Get link
             std::shared_ptr<GetFileLinkJob> job2;
             try {

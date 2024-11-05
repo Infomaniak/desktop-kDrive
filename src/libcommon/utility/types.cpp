@@ -194,6 +194,8 @@ std::string toString(const ExitCause e) {
             return "FullListParsingError";
         case ExitCause::OperationCanceled:
             return "OperationCanceled";
+        case ExitCause::ShareLinkAlreadyExist:
+            return "ShareLinkAlreadyExist";
         default:
             return noConversionStr;
     }
