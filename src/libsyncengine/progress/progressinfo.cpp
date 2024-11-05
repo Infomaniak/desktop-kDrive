@@ -119,7 +119,7 @@ bool ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
 
     const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
-        LOG_INFO(Log::instance()->getLogger(),
+        LOGW_INFO(Log::instance()->getLogger(),
                  L"Item not found in ProgressInfo list (normal for ommited operation): " << Utility::formatSyncPath(path));
         return true;
     }
@@ -142,7 +142,7 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
 
     const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
-        LOG_INFO(Log::instance()->getLogger(),
+        LOGW_INFO(Log::instance()->getLogger(),
                  L"Item not found in ProgressInfo list (normal for ommited operation): " << Utility::formatSyncPath(path));
         return true;
     }
