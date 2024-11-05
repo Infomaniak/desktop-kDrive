@@ -405,7 +405,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
 
         if (job && syncOp->affectedNode()->type() == NodeType::Directory) {
             // Propagate the directory creation immediately in order to avoid blocking other dependant job creation
-            if (const ExitInfo exitInfoRunCreateDirJob = runCreateDirJob(syncOp, job); !exitInfoRunCreateDirJob ) {
+            if (const ExitInfo exitInfoRunCreateDirJob = runCreateDirJob(syncOp, job); !exitInfoRunCreateDirJob) {
                 std::shared_ptr<CreateDirJob> createDirJob = std::dynamic_pointer_cast<CreateDirJob>(job);
                 if (createDirJob && (createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST ||
                                      createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN)) {
@@ -423,7 +423,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     }
                     return {ExitCode::BackError, ExitCause::FileAccessError};
                 }
-            return exitInfoRunCreateDirJob;
+                return exitInfoRunCreateDirJob;
             }
 
             if (const ExitInfo exitInfo =
@@ -2511,9 +2511,13 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
 }
 
 ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
+    std::shared_ptr<Node> localBlacklistedNode = nullptr;
+    std::shared_ptr<Node> remoteBlacklistedNode = nullptr;
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
         // The item does not exist yet locally, we will only tmpBlacklist the remote item
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->affectedNode()->getPath()); !exitInfo) {
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->affectedNode()->getPath(), remoteBlacklistedNode,
+                                                                 localBlacklistedNode, opsExitInfo.cause());
+            !exitInfo) {
             return exitInfo;
         }
     } else {
@@ -2522,12 +2526,14 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
         if (!localNode) return ExitCode::LogicError;
         SyncPath relativeLocalFilePath = localNode->getPath();
         NodeId localNodeId = localNode->id().has_value() ? *localNode->id() : NodeId();
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, opsExitInfo.cause()); !exitInfo) {
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, remoteBlacklistedNode,
+                                                                 localBlacklistedNode, opsExitInfo.cause());
+            !exitInfo) {
             return exitInfo;
         }
     }
     _syncPal->setRestart(true);
-    return removeDependentOps(syncOp);
+    return removeDependentOps(localBlacklistedNode, remoteBlacklistedNode, syncOp->type());
 }
 
 ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
@@ -2601,6 +2607,11 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
     auto remoteNode =
             syncOp->affectedNode()->side() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
 
+    return removeDependentOps(localNode, remoteNode, syncOp->type());
+}
+
+ExitInfo ExecutorWorker::removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode,
+                                            OperationType opType) {
     std::list<UniqueId> dependentOps;
     for (const auto &opId: _opList) {
         SyncOpPtr syncOp2 = _syncPal->_syncOps->getOp(opId);
@@ -2617,7 +2628,7 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
 
         if (localNode && localNode2 && (localNode->isParentOf(localNode2))) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << SyncName2WStr(nodeName)
-                                                     << L" because it depends on " << syncOp->type() << L" operation on "
+                                                     << L" because it depends on " << opType << L" operation on "
                                                      << SyncName2WStr(localNode->name()) << L" wich failed.");
             dependentOps.push_back(opId);
             continue;
@@ -2625,7 +2636,7 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
 
         if (remoteNode && remoteNode2 && (remoteNode->isParentOf(remoteNode2))) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << SyncName2WStr(nodeName)
-                                                     << L" because it depends on " << syncOp->type() << L" operation on "
+                                                     << L" because it depends on " << opType  << L" operation on "
                                                      << SyncName2WStr(remoteNode->name()) << L"wich failed.");
             dependentOps.push_back(opId);
         }
