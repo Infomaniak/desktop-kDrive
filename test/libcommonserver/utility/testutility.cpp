@@ -491,11 +491,11 @@ void TestUtility::testUserName() {
         // When the tests are run by the CI ("Github Actions Runner" process), the user is "SYSTEM" and has no home directory
         CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), Utility::userName());
     } else {
-        CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename()), Utility::userName());
+        CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename().native()), Utility::userName());
     }
 #else
     std::filesystem::path homeDir(std::string(std::getenv("HOME")));
-    CPPUNIT_ASSERT_EQUAL(homeDir.filename(), Utility::userName());
+    CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), Utility::userName());
 #endif
 }
 
