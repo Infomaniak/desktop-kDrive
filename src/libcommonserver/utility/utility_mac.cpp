@@ -174,4 +174,9 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
                                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
     return KDC::setFileDates(filePath, creationDate, modificationDate, symlink, exists);
 }
+
+static std::string userName_private() {
+    return std::string(std::getenv("USER");
+}
+
 } // namespace KDC

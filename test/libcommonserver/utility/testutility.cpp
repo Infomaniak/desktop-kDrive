@@ -482,4 +482,21 @@ void TestUtility::testIsSameOrParentPath() {
     CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a"));
 }
 
+void TestUtility::testUserName() {
+    CPPUNIT_ASSERT(!Utility::userName().empty());
+
+#ifdef _WIN32
+    std::filesystem::path homeDir(std::string(std::getenv("USERPROFILE")));
+    if (homeDir.empty()) {
+        // When the tests are run by the CI ("Github Actions Runner" process), the user is "SYSTEM" and has no home directory
+        CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), Utility::userName());
+    } else {
+        CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename()), Utility::userName());
+    }
+#else
+    std::filesystem::path homeDir(std::string(std::getenv("HOME")));
+    CPPUNIT_ASSERT_EQUAL(homeDir.filename(), Utility::userName());
+#endif
+}
+
 } // namespace KDC

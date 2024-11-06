@@ -49,7 +49,7 @@
 #include <QDesktopServices>
 #include <QStandardPaths>
 
-#ifdef Q_OS_MAC
+#ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
@@ -96,8 +96,7 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
     QString socketPath;
 
     if (OldUtility::isWindows()) {
-        socketPath = QString("\\\\.\\pipe\\") + QString(APPLICATION_SHORTNAME) + QString("-") +
-                     QString::fromLocal8Bit(qgetenv("USERNAME"));
+        socketPath = QString("\\\\.\\pipe\\%1-%2").arg(APPLICATION_SHORTNAME, Utility::userName().c_str());
     } else if (OldUtility::isMac()) {
         socketPath = SOCKETAPI_TEAM_IDENTIFIER_PREFIX APPLICATION_REV_DOMAIN ".socketApi";
 #ifdef Q_OS_MAC

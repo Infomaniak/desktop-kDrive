@@ -909,4 +909,8 @@ SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
 
+std::string Utility::userName() {
+    return userName_private();
+}
+
 } // namespace KDC
