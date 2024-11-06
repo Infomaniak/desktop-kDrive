@@ -1057,59 +1057,57 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
 ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl) {
     NodeId nodeId = fileId.toStdString();
 
+    auto logWarning = [&](const std::string &context_, const int driveDbId_, const std::string &nodeId_,
+                          const std::string &error_) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in " << context_.c_str() << " for driveDbId=" << driveDbId_
+                                                           << " nodeId=" << nodeId_.c_str() << " error=" << error_.c_str());
+    };
+
     // Create link
     std::shared_ptr<AbstractTokenNetworkJob> job;
     try {
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
     } catch (const std::exception &e) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
-                                                       << driveDbId << " nodeId=" << nodeId.c_str() << " error=" << e.what());
+        logWarning("PostFileLinkJob", driveDbId, nodeId, e.what());
         return ExitCode::DataError;
     }
 
     if (job->runSynchronously() != ExitCode::Ok) {
-        if (job->exitCode() == ExitCode::BackError && job->exitCause() == ExitCause::ShareLinkAlreadyExist) {
-            // The link already exist, get it
+        if (job->exitCode() == ExitCode::BackError && job->exitCause() == ExitCause::ShareLinkAlreadyExists) {
+            // The link already exists, get it
             job.reset();
             try {
                 job = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
             } catch (const std::exception &e) {
-                LOG_WARN(Log::instance()->getLogger(),
-                         "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
-                                                                                  << " error=" << e.what());
+                logWarning("GetFileLinkJob", driveDbId, nodeId, e.what());
                 return ExitCode::DataError;
             }
 
             if (job->runSynchronously() != ExitCode::Ok) {
-                LOG_WARN(Log::instance()->getLogger(),
-                         "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
-                                                                                  << " code=" << job->exitCode());
+                logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitCode()));
                 return job->exitCode();
             }
         } else {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in PostFileLinkJob::PostFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
-                                                                                << " code=" << job->exitCode());
+            logWarning("PostFileLinkJob", driveDbId, nodeId, toString(job->exitCode()));
             return job->exitCode();
         }
     }
 
     const Poco::JSON::Object::Ptr resObj = job->jsonRes();
     if (!resObj) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "PostFileLinkJob failed for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str());
+        logWarning("ServerRequests::getPublicLinkUrl", driveDbId, nodeId, "Fail to parse JSON object");
         return ExitCode::BackError;
     }
 
     const Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
     if (!dataObj) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "PostFileLinkJob failed for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str());
+        logWarning("ServerRequests::getPublicLinkUrl", driveDbId, nodeId, "Fail to extract data object");
         return ExitCode::BackError;
     }
 
     std::string tmp;
     if (!JsonParserUtility::extractValue(dataObj, urlKey, tmp)) {
+        logWarning("ServerRequests::getPublicLinkUrl", driveDbId, nodeId, "Fail to extract URL");
         return ExitCode::BackError;
     }
     linkUrl = QString::fromStdString(tmp);

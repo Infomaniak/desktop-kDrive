@@ -167,7 +167,7 @@ bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCod
             {NetworkErrorCode::fileTooBigError, ExitHandler{ExitCause::FileTooBig, "File too big"}},
             {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}},
             {NetworkErrorCode::fileShareLinkAlreadyExists,
-             ExitHandler{ExitCause::ShareLinkAlreadyExist, "Share link already exist"}}};
+             ExitHandler{ExitCause::ShareLinkAlreadyExists, "Share link already exists"}}};
 
     const auto &errorHandling = errorCodeHandlingMap.find(errorCode);
     if (errorHandling == errorCodeHandlingMap.cend()) {
