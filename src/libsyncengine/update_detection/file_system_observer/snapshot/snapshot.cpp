@@ -167,9 +167,7 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
 
         bool idFound = false;
         for (const NodeId &childId: itemIt->second.childrenIds()) {
-            SyncName normalizedName;
-            Utility::normalizedSyncName(name(childId), normalizedName);
-            if (normalizedName == *pathIt) {
+            if (name(childId) == *pathIt) {
                 itemIt = _items.find(childId);
                 ret = childId;
                 idFound = true;

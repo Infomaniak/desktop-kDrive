@@ -804,10 +804,9 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
 
             SyncTime lastModified =
                     _side == ReplicaSide::Local ? dbNode.lastModifiedLocal().value() : dbNode.lastModifiedRemote().value();
-            SyncName name = dbNode.nameRemote();
-            std::shared_ptr<Node> newNode =
-                    std::shared_ptr<Node>(new Node(dbNode.nodeId(), _side, name, dbNode.type(), {}, newNodeId, dbNode.created(),
-                                                   lastModified, dbNode.size(), parentNode));
+            SyncName name = _side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote();
+            const auto newNode = std::shared_ptr<Node>(new Node(dbNode.nodeId(), _side, name, dbNode.type(), {}, newNodeId,
+                                                                dbNode.created(), lastModified, dbNode.size(), parentNode));
             if (newNode == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
                 LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
