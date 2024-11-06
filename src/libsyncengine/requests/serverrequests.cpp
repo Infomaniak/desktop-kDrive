@@ -1058,7 +1058,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
     NodeId nodeId = fileId.toStdString();
 
     // Create link
-    std::shared_ptr<PostFileLinkJob> job;
+    std::shared_ptr<AbstractTokenNetworkJob> job;
     try {
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
     } catch (const std::exception &e) {
@@ -1067,12 +1067,12 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         return ExitCode::DataError;
     }
 
-    if (auto exitCode = job->runSynchronously(); exitCode != ExitCode::Ok) {
+    if (job->runSynchronously() != ExitCode::Ok) {
         if (job->exitCode() == ExitCode::BackError && job->exitCause() == ExitCause::ShareLinkAlreadyExist) {
-            // Get link
-            std::shared_ptr<GetFileLinkJob> job2;
+            // The link already exist, get it
+            job.reset();
             try {
-                job2 = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
+                job = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(),
                          "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
@@ -1080,50 +1080,28 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
                 return ExitCode::DataError;
             }
 
-            exitCode = job2->runSynchronously();
-            if (exitCode != ExitCode::Ok) {
+            if (job->runSynchronously() != ExitCode::Ok) {
                 LOG_WARN(Log::instance()->getLogger(),
                          "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
-                                                                                  << " code=" << exitCode);
-                return exitCode;
+                                                                                  << " code=" << job->exitCode());
+                return job->exitCode();
             }
-
-            Poco::JSON::Object::Ptr resObj = job2->jsonRes();
-            if (!resObj) {
-                LOG_WARN(Log::instance()->getLogger(),
-                         "GetFileLinkJob failed for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str());
-                return ExitCode::BackError;
-            }
-
-            Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
-            if (!dataObj) {
-                LOG_WARN(Log::instance()->getLogger(),
-                         "GetFileLinkJob failed for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str());
-                return ExitCode::BackError;
-            }
-
-            std::string tmp;
-            if (!JsonParserUtility::extractValue(dataObj, urlKey, tmp)) {
-                return ExitCode::BackError;
-            }
-            linkUrl = QString::fromStdString(tmp);
-
-            return ExitCode::Ok;
         } else {
-            LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
-                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " code=" << exitCode);
-            return exitCode;
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in PostFileLinkJob::PostFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
+                                                                                << " code=" << job->exitCode());
+            return job->exitCode();
         }
     }
 
-    Poco::JSON::Object::Ptr resObj = job->jsonRes();
+    const Poco::JSON::Object::Ptr resObj = job->jsonRes();
     if (!resObj) {
         LOG_WARN(Log::instance()->getLogger(),
                  "PostFileLinkJob failed for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str());
         return ExitCode::BackError;
     }
 
-    Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
+    const Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
     if (!dataObj) {
         LOG_WARN(Log::instance()->getLogger(),
                  "PostFileLinkJob failed for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str());
