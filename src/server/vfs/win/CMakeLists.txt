@@ -27,3 +27,10 @@ target_link_libraries("${libsyncengine_NAME}_vfs_win"
     ${VFS_STATIC_LIBRARY}
     Qt6::Core
 )
+
+generate_export_header("${libsyncengine_NAME}_vfs_win"
+    BASE_NAME "${libsyncengine_NAME}_vfs_win"
+    EXPORT_MACRO_NAME SYNCENGINEVFS_EXPORT
+    EXPORT_FILE_NAME syncenginevfslib.h
+)
+
