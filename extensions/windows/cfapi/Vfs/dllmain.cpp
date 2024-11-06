@@ -81,6 +81,7 @@ DLL_EXP int __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, cons
         if (s_cloudProviders.size() == 0) {
             if (!Utilities::connectToPipeServer()) {
                 TRACE_ERROR(L"Error in connectToPipeServer!");
+                delete cloudProvider;
                 return E_ABORT;
             }
         }
