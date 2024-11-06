@@ -760,7 +760,7 @@ ExitInfo ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
 
     if (exists) {
         LOGW_WARN(_logger, L"Item already exists: " << Utility::formatSyncPath(absoluteLocalPath));
-        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+        return {ExitCode::DataError, ExitCause::FileAlreadyExist};
     }
 
     if (!_syncPal->vfsCreatePlaceholder(relativeLocalPath, syncItem)) {
@@ -2552,7 +2552,7 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo o
         // In case of a create the corresponding node is not set, remote and local relative path are the same
         relativeLocalPath = syncOp->correspondingNode() ? syncOp->correspondingNode()->parentNode()->getPath() / syncOp->newName()
                                                         : relativeRemotePath;
-
+        // Check if the local item is already blacklisted
         if (_syncPal->isTmpBlacklisted(relativeLocalPath, ReplicaSide::Local)) {
             LOGW_SYNCPAL_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath)
                                                 << L" is already blacklisted locally, blacklisting remote corresponding node.");
@@ -2573,6 +2573,16 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo o
             _syncPal->setRestart(true);
             return removeDependentOps(syncOp);
         }
+
+        // Check if we got the read right on the local item
+        IoError ioError = IoError::Unknown;
+        bool exist = false;
+        IoHelper::checkIfPathExists(_syncPal->localPath() / relativeLocalPath, exist, ioError);
+        if (ioError == IoError::AccessDenied) {
+            LOGW_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath) << L"has no read access, converting already exist error in file access error.");
+            return handleExecutorError(
+                    syncOp, {ExitCode::SystemError, ExitCause::FileAccessError}); // We got the write right but not the read right
+        }      
     } else if (syncOp->targetSide() == ReplicaSide::Remote) {
         relativeLocalPath = syncOp->affectedNode()->parentNode()->getPath() / syncOp->newName();
     } else {
