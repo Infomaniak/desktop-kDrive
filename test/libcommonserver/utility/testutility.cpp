@@ -493,7 +493,7 @@ void TestUtility::testUserName() {
     const SyncPath homeDir(value);
     LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
 
-    if (homeDir.filename().native() == std::wstring("systemprofile")) {
+    if (homeDir.filename().native() == std::wstring(L"systemprofile")) {
         // CI execution
         CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), userName);
     } else {
