@@ -17,6 +17,7 @@
  */
 
 #include "log/log.h"
+#include "libcommon/utility/utility.h"
 
 #include <filesystem>
 #include <string>
@@ -262,8 +263,8 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
 }
 
 static std::string userName_private() {
-    const char *userName = std::getenv("USER");
-    return userName ? std::string(userName) : std::string();
+    bool isSet = false;
+    return CommonUtility::envVarValue("USER", isSet);
 }
 
 } // namespace KDC

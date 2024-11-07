@@ -45,7 +45,7 @@
 #include <sentry.h>
 #include <WinSock2.h>
 
-#define USERNAME_BUFLEN 4096
+constexpr int userNameBufLen = 4096;
 
 namespace KDC {
 
@@ -286,8 +286,8 @@ static bool cpuUsageByProcess_private(double &percent) {
 }
 
 static std::string userName_private() {
-    DWORD len = USERNAME_BUFLEN;
-    wchar_t userName[USERNAME_BUFLEN];
+    DWORD len = userNameBufLen;
+    wchar_t userName[userNameBufLen];
     GetUserName(userName, &len);
     return Utility::ws2s(std::wstring(userName));
 }
