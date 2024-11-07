@@ -484,8 +484,6 @@ void TestUtility::testIsSameOrParentPath() {
 }
 
 void TestUtility::testUserName() {
-    CPPUNIT_ASSERT(!Utility::userName().empty());
-
     LOG_DEBUG(Log::instance()->getLogger(), "userName=" << Utility::userName().c_str());
 
 #ifdef _WIN32

@@ -262,7 +262,7 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
 }
 
 static std::string userName_private() {
-    char *userName = std::getenv("USERNAME");
+    const char *userName = std::getenv("USERNAME");
     return userName ? std::string(userName) : std::string();
 }
 
