@@ -1475,17 +1475,6 @@ ExitCode UpdateTreeWorker::updateNameFromDbForMoveOp(const std::shared_ptr<Node>
         return ExitCode::DataError;
     }
 
-    if (dbNode.nameLocal() != dbNode.nameRemote()) { // Useless?? Now the local and remote name are always the same
-        // Check if the file has been renamed locally
-        if (moveOp->destinationPath().filename() != dbNode.nameLocal()) {
-            // The file has been renamed locally, propagate the change on remote
-            node->setName(moveOp->destinationPath().filename().native());
-        } else {
-            // The file has been moved but not renamed, keep the names from DB
-            node->setName(dbNode.nameRemote());
-        }
-    }
-
     return ExitCode::Ok;
 }
 
