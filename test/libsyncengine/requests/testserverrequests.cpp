@@ -18,19 +18,46 @@
 
 #include "testserverrequests.h"
 
+#include "libcommon/keychainmanager/keychainmanager.h"
 #include "libparms/db/parmsdb.h"
 #include "libsyncengine/requests/serverrequests.h"
 #include "requests/parameterscache.h"
+#include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "utility/types.h"
 
 namespace KDC {
 
 void TestServerRequests::setUp() {
+    const testhelpers::TestVariables testVariables;
+
+    // Insert api token into keystore
+    ApiToken apiToken;
+    apiToken.setAccessToken(testVariables.apiToken);
+
+    const std::string keychainKey("123");
+    KeyChainManager::instance(true);
+    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    ParametersCache::instance()->parameters().setExtendedLog(true);
+
+    // Insert user, account & drive
+    const int userId(atoi(testVariables.userId.c_str()));
+    const User user(1, userId, keychainKey);
+    ParmsDb::instance()->insertUser(user);
+
+    const int accountId(atoi(testVariables.accountId.c_str()));
+    const Account account(1, accountId, user.dbId());
+    ParmsDb::instance()->insertAccount(account);
+
+    _driveDbId = 1;
+    const int driveId = atoi(testVariables.driveId.c_str());
+    const Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
+    ParmsDb::instance()->insertDrive(drive);
 }
 
 void TestServerRequests::tearDown() {
@@ -47,6 +74,21 @@ void TestServerRequests::testFixProxyConfig() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::fixProxyConfig());
 
     CPPUNIT_ASSERT_EQUAL(ProxyType::None, ParametersCache::instance()->parameters().proxyConfig().type());
+}
+
+void TestServerRequests::testGetPublicLink() {
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, "1", "testGetPublicLink");
+
+    // 1st call : sent POST request to generate the public share link
+    QString url;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                         ServerRequests::getPublicLinkUrl(_driveDbId, QString::fromStdString(remoteTmpDir.id()), url));
+    CPPUNIT_ASSERT(!url.isEmpty());
+    // 2nd call : POST request will fail and a GET request should be sent to retreive exisiting share link
+    url.clear();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                         ServerRequests::getPublicLinkUrl(_driveDbId, QString::fromStdString(remoteTmpDir.id()), url));
+    CPPUNIT_ASSERT(!url.isEmpty());
 }
 
 } // namespace KDC
