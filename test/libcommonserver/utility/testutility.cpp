@@ -494,7 +494,7 @@ void TestUtility::testUserName() {
         LOG_DEBUG(Log::instance()->getLogger(), "USERPROFILE environment variable is not set (CI)");
         CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), Utility::userName());
     } else {
-        const SyncPath homeDir(std::string(value));
+        const SyncPath homeDir(value);
         LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
         CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename().native()), Utility::userName());
     }
