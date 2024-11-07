@@ -19,9 +19,10 @@
 #include "testutility.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "config.h"
-
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
-#include "Poco/URI.h"
+#include "libcommonserver/log/log.h"
+
+#include <Poco/URI.h>
 
 #include <climits>
 #include <iostream>
@@ -486,15 +487,20 @@ void TestUtility::testUserName() {
     CPPUNIT_ASSERT(!Utility::userName().empty());
 
 #ifdef _WIN32
-    std::filesystem::path homeDir(std::string(std::getenv("USERPROFILE")));
+    SyncPath homeDir(std::string(std::getenv("USERPROFILE")));
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << Utility::userName().c_str());
     if (homeDir.empty()) {
         // When the tests are run by the CI ("Github Actions Runner" process), the user is "SYSTEM" and has no home directory
+        LOG_DEBUG(Log::instance()->getLogger(), "Empty homeDir");
         CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), Utility::userName());
     } else {
         CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename().native()), Utility::userName());
     }
 #else
-    std::filesystem::path homeDir(std::string(std::getenv("HOME")));
+    SyncPath homeDir(std::string(std::getenv("HOME")));
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << Utility::userName().c_str());
     CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), Utility::userName());
 #endif
 }

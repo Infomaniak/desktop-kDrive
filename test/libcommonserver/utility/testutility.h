@@ -17,6 +17,7 @@
  */
 
 #include "testincludes.h"
+#include "test_utility/testhelpers.h"
 #include "libcommonserver/utility/utility.h"
 
 using namespace CppUnit;
