@@ -484,27 +484,27 @@ void TestUtility::testIsSameOrParentPath() {
 }
 
 void TestUtility::testUserName() {
-    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << Utility::userName().c_str());
+    std::string userName(Utility::userName());
+    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName.c_str());
 
 #ifdef _WIN32
     const char *value = std::getenv("USERPROFILE");
-    if (!value) {
-        LOG_DEBUG(Log::instance()->getLogger(), "USERPROFILE environment variable is not set (CI)");
-        CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), Utility::userName());
+    CPPUNIT_ASSERT(value);
+    const SyncPath homeDir(value);
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+
+    if (homeDir.filename().native() == std::string("systemprofile")) {
+        // CI execution
+        CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), userName);
     } else {
-        const SyncPath homeDir(value);
-        LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
-        CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename().native()), Utility::userName());
+        CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename().native()), userName);
     }
 #else
     const char *value = std::getenv("HOME");
-    if (!value) {
-        LOG_DEBUG(Log::instance()->getLogger(), "HOME environment variable is not set (CI)");
-    } else {
-        const SyncPath homeDir(value);
-        LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
-        CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), Utility::userName());
-    }
+    CPPUNIT_ASSERT(value);
+    const SyncPath homeDir(value);
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+    CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), userName);
 #endif
 }
 
