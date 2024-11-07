@@ -486,22 +486,27 @@ void TestUtility::testIsSameOrParentPath() {
 void TestUtility::testUserName() {
     CPPUNIT_ASSERT(!Utility::userName().empty());
 
-#ifdef _WIN32
-    SyncPath homeDir(std::string(std::getenv("USERPROFILE")));
-    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
     LOG_DEBUG(Log::instance()->getLogger(), "userName=" << Utility::userName().c_str());
-    if (homeDir.empty()) {
-        // When the tests are run by the CI ("Github Actions Runner" process), the user is "SYSTEM" and has no home directory
-        LOG_DEBUG(Log::instance()->getLogger(), "Empty homeDir");
+
+#ifdef _WIN32
+    const char *value = std::getenv("USERPROFILE");
+    if (!value) {
+        LOG_DEBUG(Log::instance()->getLogger(), "USERPROFILE environment variable is not set (CI)");
         CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), Utility::userName());
     } else {
+        const SyncPath homeDir(std::string(value));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
         CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename().native()), Utility::userName());
     }
 #else
-    SyncPath homeDir(std::string(std::getenv("HOME")));
-    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
-    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << Utility::userName().c_str());
-    CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), Utility::userName());
+    const char *value = std::getenv("HOME");
+    if (!value) {
+        LOG_DEBUG(Log::instance()->getLogger(), "HOME environment variable is not set (CI)");
+    } else {
+        const SyncPath homeDir(value);
+        LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+        CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), Utility::userName());
+    }
 #endif
 }
 
