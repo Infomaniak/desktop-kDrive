@@ -1106,8 +1106,8 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                             syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
                             syncOp->affectedNode()->size(),
                             syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
-                    syncOp->setOmit(true); // Do not propagate change in file system, only in DB
                     // TODO: Vfs functions should return an ExitInfo struct
+                    syncOp->setOmit(true); // Do not propagate change in file system, only in DB
                     if (!error.empty()) {
                         return {ExitCode::SystemError, ExitCause::FileAccessError};
                     }
