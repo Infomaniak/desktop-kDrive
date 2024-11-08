@@ -323,4 +323,16 @@ void TestIo::testCheckDirectoryPermissionLost() {
     }
 }
 
+void TestIo::testAccesDeniedOnLockedFiles() {
+    LocalTemporaryDirectory tmpDir("TestIo-testAccesDeniedOnLockedFiles");
+    const SyncPath lockedFile = tmpDir.path() / "lockedFile.txt";
+    std::ofstream file(lockedFile);
+    CPPUNIT_ASSERT(file.is_open());
+
+    std::error_code ec;
+    std::filesystem::remove_all(lockedFile, ec);
+    IoError ioError = IoHelper::stdError2ioError(ec);
+    CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
+}
+
 } // namespace KDC

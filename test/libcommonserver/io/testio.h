@@ -43,7 +43,7 @@ struct IoHelperTests : public IoHelper {
 
 class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestIo);
-        CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get rights functions
+       CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get rights functions
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testTempDirectoryPath);
@@ -71,6 +71,7 @@ class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateJunction);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
+        CPPUNIT_TEST(testAccesDeniedOnLockedFiles);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -126,7 +127,7 @@ class TestIo : public CppUnit::TestFixture {
         void testCheckDirectoryRecursive();
         void testCheckDirectoryIteratorUnexpectedDelete();
         void testCheckDirectoryPermissionLost();
-
+        void testAccesDeniedOnLockedFiles();
     private:
         IoHelperTests *_testObj;
         const SyncPath _localTestDirPath;
