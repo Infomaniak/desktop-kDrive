@@ -19,8 +19,8 @@
 #pragma once
 
 #include "libcommon/utility/utility.h"
-#include "utility/types.h"
-#include "utility/utility.h"
+#include "libcommon/utility/types.h"
+#include "libcommonserver/utility/utility.h"
 #include "version.h"
 
 #include <config.h>

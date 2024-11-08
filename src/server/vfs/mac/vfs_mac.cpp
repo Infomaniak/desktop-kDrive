@@ -95,6 +95,10 @@ VirtualFileMode VfsMac::mode() const {
 }
 
 bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
+    installationDone = false;
+    activationDone = false;
+    connectionDone = false;
+
     LOG_DEBUG(logger(), "startImpl - syncDbId=" << _vfsSetupParams._syncDbId);
 
     if (!_connector) {

@@ -37,8 +37,6 @@
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
-#include <sentry.h>
-
 #ifdef ZLIB_FOUND
 #include <zlib.h>
 #endif

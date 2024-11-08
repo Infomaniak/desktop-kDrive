@@ -182,6 +182,7 @@ struct COMMONSERVER_EXPORT Utility {
 
         static SyncPath commonDocumentsFolderName();
         static SyncPath sharedFolderName();
+        static std::string userName();
 
     private:
         static log4cplus::Logger _logger;

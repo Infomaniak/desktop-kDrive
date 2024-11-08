@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "server/vfs/win/syncenginevfslib.h"
 #include "libcommonserver/vfs.h"
 #include "libcommonserver/plugin.h"
 
@@ -52,14 +53,14 @@ struct WorkerInfo {
         QList<QThread *> _threadList;
 };
 
-class VfsWin : public Vfs {
+class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         Q_OBJECT
         Q_INTERFACES(KDC::Vfs)
 
     public:
         WorkerInfo _workerInfo[NB_WORKERS];
 
-        explicit VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent);
+        explicit VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
         ~VfsWin();
 
         void debugCbk(TraceLevel level, const wchar_t *msg);
@@ -106,6 +107,8 @@ class VfsWin : public Vfs {
     protected:
         bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool unregister) override;
+
+        friend class TestWorkers;
 
     private:
         log4cplus::Logger _logger;

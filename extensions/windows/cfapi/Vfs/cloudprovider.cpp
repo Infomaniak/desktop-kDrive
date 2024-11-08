@@ -90,6 +90,7 @@ bool CloudProvider::start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
         TRACE_ERROR(L"Error in CloudProviderRegistrar::registerWithShell!");
         return false;
     }
+    TRACE_DEBUG(L"CloudProviderRegistrar::registerWithShell done: syncRootID = %ls", _synRootID.c_str());
 
     // Hook up callback methods for transferring files between client and server
     TRACE_DEBUG(L"Calling connectSyncRootTransferCallbacks");

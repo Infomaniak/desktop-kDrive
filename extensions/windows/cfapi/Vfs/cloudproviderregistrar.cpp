@@ -87,7 +87,16 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             winrt::StorageProviderSyncRootInfo info;
             info.Id(syncRootID);
 
+#ifndef NDEBUG
+            // Silent WINRT_ASSERT(!is_sta())
+            int reportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+#endif
             auto folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
+#ifndef NDEBUG
+            // Restore old report mode
+            _CrtSetReportMode(_CRT_ASSERT, reportMode);
+#endif
+
             info.Path(folder);
 
             info.DisplayNameResource(providerInfo->folderName());
@@ -178,6 +187,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
 
 bool CloudProviderRegistrar::unregister(std::wstring syncRootID) {
     try {
+        TRACE_DEBUG(L"StorageProviderSyncRootManager::Unregister: syncRootID = %ls", syncRootID.c_str());
         winrt::StorageProviderSyncRootManager::Unregister(syncRootID);
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
