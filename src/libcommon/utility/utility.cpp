@@ -118,19 +118,6 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
     return generateRandomString(charArray, distrib, length);
 }
 
-std::string CommonUtility::generateAppId(const int length /*= 10*/) {
-    // The back only accept characters from `A` to `F`
-    static constexpr char charArray[] =
-            "0123456789"
-            "ABCDEF"
-            "abcdef";
-
-    static std::uniform_int_distribution<int> distrib(
-            0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
-
-    return generateRandomString(charArray, distrib, length);
-}
-
 void CommonUtility::crash() {
     volatile int *a = (int *) (NULL);
     *a = 1;
