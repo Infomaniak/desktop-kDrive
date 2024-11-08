@@ -54,6 +54,8 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
         case ERROR_SUCCESS:
             return IoError::Success;
         case ERROR_ACCESS_DENIED:
+        case ERROR_SHARING_VIOLATION:
+        case ERROR_LOCK_VIOLATION:
             return IoError::AccessDenied;
         case ERROR_DISK_FULL:
             return IoError::DiskFull;
@@ -81,8 +83,6 @@ IoError ntStatus2ioError(NTSTATUS status) noexcept {
         case STATUS_SUCCESS:
             return IoError::Success;
         case STATUS_ACCESS_DENIED:
-        case ERROR_SHARING_VIOLATION:
-        case ERROR_LOCK_VIOLATION:
             return IoError::AccessDenied;
         case STATUS_DISK_FULL:
             return IoError::DiskFull;
@@ -585,7 +585,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
 
     // Get rights for trustee
     ACCESS_MASK rights = 0;
-    result = GetEffectiveRightsFromAcl(pfileACL, &IoHelper::getTrustee(), &rights);
+    //result = GetEffectiveRightsFromAcl(pfileACL, &IoHelper::getTrustee(), &rights);
     ioError = dWordError2ioError(result, logger);
 
     /* The GetEffectiveRightsFromAcl function fails and returns ERROR_INVALID_ACL if the specified ACL contains an inherited
