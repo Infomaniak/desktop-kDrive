@@ -1107,6 +1107,10 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                             syncOp->affectedNode()->size(),
                             syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
                     syncOp->setOmit(true); // Do not propagate change in file system, only in DB
+                    // TODO: Vfs functions should return an ExitInfo struct
+                    if (!error.empty()) {
+                        return {ExitCode::SystemError, ExitCause::FileAccessError};
+                    }
                     break;
                 }
                 case PinState::Unspecified:
