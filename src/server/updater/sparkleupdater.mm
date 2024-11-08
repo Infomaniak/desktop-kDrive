@@ -187,7 +187,14 @@ SparkleUpdater::~SparkleUpdater() {
 }
 
 void SparkleUpdater::onUpdateFound() {
-    if (isVersionSkipped(versionInfo().fullVersion())) return;
+    if (isVersionSkipped(versionInfo().fullVersion())) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo().fullVersion().c_str() << " is skipped.");
+        return;
+    }
+    if ([d->updater sessionInProgress]) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "A session is already in progress...");
+        return;
+    }
     startInstaller();
 }
 
