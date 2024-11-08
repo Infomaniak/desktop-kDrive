@@ -81,6 +81,8 @@ IoError ntStatus2ioError(NTSTATUS status) noexcept {
         case STATUS_SUCCESS:
             return IoError::Success;
         case STATUS_ACCESS_DENIED:
+        case ERROR_SHARING_VIOLATION:
+        case ERROR_LOCK_VIOLATION:
             return IoError::AccessDenied;
         case STATUS_DISK_FULL:
             return IoError::DiskFull;
