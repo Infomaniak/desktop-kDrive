@@ -192,8 +192,7 @@ void SparkleUpdater::onUpdateFound() {
         return;
     }
     if ([d->updater sessionInProgress]) {
-        // An update window is already opened or installation is in progress, no need to start a new one
-        LOG_INFO(KDC::Log::instance()->getLogger(), "A session is already in progress...");
+        LOG_INFO(KDC::Log::instance()->getLogger(), "An update window is already opened or installation is in progress. No need to start a new one.");
         return;
     }
     startInstaller();
