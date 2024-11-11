@@ -187,7 +187,14 @@ SparkleUpdater::~SparkleUpdater() {
 }
 
 void SparkleUpdater::onUpdateFound() {
-    if (isVersionSkipped(versionInfo().fullVersion())) return;
+    if (isVersionSkipped(versionInfo().fullVersion())) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo().fullVersion().c_str() << " is skipped.");
+        return;
+    }
+    if ([d->updater sessionInProgress]) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "An update window is already opened or installation is in progress. No need to start a new one.");
+        return;
+    }
     startInstaller();
 }
 
