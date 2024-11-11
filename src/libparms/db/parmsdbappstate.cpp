@@ -111,7 +111,7 @@ bool ParmsDb::insertDefaultAppState() {
     return true;
 }
 
-bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, bool noEmptyValue /*= false*/) {
+bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bool updateOnlyIfEmpty /*= false*/) {
     const std::scoped_lock lock(_mutex);
     std::string valueStr = value;
     if (valueStr.empty()) {
@@ -135,8 +135,8 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, bool noE
     }
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
 
-    const auto requestId = found ? UPDATE_APP_STATE_REQUEST_ID : INSERT_APP_STATE_REQUEST_ID;
-    if (!found || (noEmptyValue && existingValue.empty())) {
+    if (!found || (updateOnlyIfEmpty && existingValue.empty())) {
+        const auto requestId = found ? UPDATE_APP_STATE_REQUEST_ID : INSERT_APP_STATE_REQUEST_ID;
         ASSERT(queryBindValue(requestId, 1, static_cast<int>(key)))
         ASSERT(queryBindValue(requestId, 2, valueStr))
         int errId = 0;
