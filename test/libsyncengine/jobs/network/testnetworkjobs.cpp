@@ -909,6 +909,7 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+        CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
     }
     // With 1 user ID
     {
@@ -919,6 +920,7 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+        CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
     }
     // With several user IDs
     {
@@ -929,6 +931,7 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
         CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+        CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
     }
 }
 
