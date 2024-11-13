@@ -405,7 +405,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
 
         if (job && syncOp->affectedNode()->type() == NodeType::Directory) {
             // Propagate the directory creation immediately in order to avoid blocking other dependant job creation
-            if (const ExitInfo exitInfoRunCreateDirJob = runCreateDirJob(syncOp, job); !exitInfoRunCreateDirJob ) {
+            if (const ExitInfo exitInfoRunCreateDirJob = runCreateDirJob(syncOp, job); !exitInfoRunCreateDirJob) {
                 std::shared_ptr<CreateDirJob> createDirJob = std::dynamic_pointer_cast<CreateDirJob>(job);
                 if (createDirJob && (createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST ||
                                      createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN)) {
@@ -423,7 +423,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     }
                     return {ExitCode::BackError, ExitCause::FileAccessError};
                 }
-            return exitInfoRunCreateDirJob;
+                return exitInfoRunCreateDirJob;
             }
 
             if (const ExitInfo exitInfo =
@@ -758,6 +758,11 @@ ExitInfo ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
         return ExitCode::SystemError;
     }
 
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(absoluteLocalPath).c_str());
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
     if (exists) {
         LOGW_WARN(_logger, L"Item already exists: " << Utility::formatSyncPath(absoluteLocalPath));
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
@@ -838,7 +843,7 @@ ExitInfo ExecutorWorker::processCreateOrConvertToPlaceholderError(const SyncPath
     if (create && exists) {
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     } else if (!create && !exists) {
-        return {ExitCode::DataError, ExitCause::FileAlreadyExist};
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     }
 
     if (create) {
@@ -1101,7 +1106,11 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                             syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
                             syncOp->affectedNode()->size(),
                             syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
+                    // TODO: Vfs functions should return an ExitInfo struct
                     syncOp->setOmit(true); // Do not propagate change in file system, only in DB
+                    if (!error.empty()) {
+                        return {ExitCode::SystemError, ExitCause::FileAccessError};
+                    }
                     break;
                 }
                 case PinState::Unspecified:
@@ -1428,7 +1437,7 @@ bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
             return false;
         }
 
-        if (newCorrespondingParentNode->isCommonDocumentsFolder()) {
+        if (newCorrespondingParentNode->isCommonDocumentsFolder() && syncOp->nodeType() != NodeType::Directory) {
             return false;
         }
 
@@ -1436,6 +1445,7 @@ bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
             return false;
         }
     }
+
     return true;
 }
 

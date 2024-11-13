@@ -97,6 +97,8 @@ class VfsMac : public Vfs {
         bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool unregister) override;
 
+        friend class TestWorkers;
+
     private:
         LiteSyncExtConnector *_connector{nullptr};
 

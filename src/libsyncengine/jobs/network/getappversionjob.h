@@ -30,11 +30,14 @@ class GetAppVersionJob : public AbstractNetworkJob {
         GetAppVersionJob(Platform platform, const std::string &appID, const std::vector<int> &userIdList);
         ~GetAppVersionJob() override = default;
 
-        const VersionInfo &getVersionInfo(const DistributionChannel channel) { return _versionInfo[channel]; }
+        const VersionInfo &getVersionInfo(const DistributionChannel channel) {
+            return _versionInfo.contains(channel) ? _versionInfo[channel] : _defaultVersionInfo;
+        }
+        const VersionInfo &getProdVersionInfo() {
+            return _versionInfo.contains(_prodVersionChannel) ? _versionInfo[_prodVersionChannel] : _defaultVersionInfo;
+        }
 
         std::string getUrl() override { return INFOMANIAK_API_URL + getSpecificUrl(); }
-
-        [[nodiscard]] bool hasProdNext() const { return _hasProdNext; }
 
     protected:
         bool handleResponse(std::istream &is) override;
@@ -52,7 +55,8 @@ class GetAppVersionJob : public AbstractNetworkJob {
         const std::string _appId;
         const std::vector<int> _userIdList;
 
-        bool _hasProdNext{false};
+        const VersionInfo _defaultVersionInfo;
+        DistributionChannel _prodVersionChannel{DistributionChannel::Unknown};
         std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;
 };
 

@@ -48,8 +48,6 @@
 #include <sstream>
 #include <ctime>
 
-#include <sentry.h>
-
 #ifndef _WIN32
 #include <utf8proc.h>
 #endif
@@ -909,6 +907,10 @@ SyncPath Utility::commonDocumentsFolderName() {
 
 SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
+}
+
+std::string Utility::userName() {
+    return userName_private();
 }
 
 } // namespace KDC

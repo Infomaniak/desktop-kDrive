@@ -49,10 +49,8 @@
 #include <QDesktopServices>
 #include <QStandardPaths>
 
-#ifdef Q_OS_MAC
-
+#ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
-
 #endif
 
 #include <log4cplus/loggingmacros.h>
@@ -98,23 +96,23 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
     QString socketPath;
 
     if (OldUtility::isWindows()) {
-        socketPath = QString("\\\\.\\pipe\\") + QString(APPLICATION_SHORTNAME) + QString("-") +
-                     QString::fromLocal8Bit(qgetenv("USERNAME"));
+        socketPath = QString(R"(\\.\pipe\%1-%2)").arg(APPLICATION_SHORTNAME, Utility::userName().c_str());
     } else if (OldUtility::isMac()) {
         socketPath = SOCKETAPI_TEAM_IDENTIFIER_PREFIX APPLICATION_REV_DOMAIN ".socketApi";
 #ifdef Q_OS_MAC
-        CFURLRef url = (CFURLRef) CFAutorelease((CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle()));
-        QString bundlePath = QUrl::fromCFURL(url).path();
-        QString cmd;
-
         // Tell Finder to use the Extension (checking it from System Preferences -> Extensions)
-        cmd = QString("pluginkit -v -e use -i " APPLICATION_REV_DOMAIN ".Extension");
+        QString cmd = QString("pluginkit -v -e use -i " APPLICATION_REV_DOMAIN ".Extension");
         system(cmd.toLocal8Bit());
 
         // Add it again. This was needed for Mojave to trigger a load.
-        cmd = QString("pluginkit -v -a ") + bundlePath + "Contents/PlugIns/Extension.appex/";
-        system(cmd.toLocal8Bit());
-
+        // TODO: Still needed?
+        CFURLRef url = (CFURLRef) CFAutorelease((CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle()));
+        QString appexPath = QUrl::fromCFURL(url).path() + "Contents/PlugIns/Extension.appex/";
+        if (std::filesystem::exists(QStr2Path(appexPath))) {
+            // Bundled app (i.e. not test executable)
+            cmd = QString("pluginkit -v -a ") + appexPath;
+            system(cmd.toLocal8Bit());
+        }
 #endif
     } else if (OldUtility::isLinux() || OldUtility::isBSD()) {
         const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);

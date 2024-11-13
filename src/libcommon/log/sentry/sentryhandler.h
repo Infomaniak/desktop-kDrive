@@ -22,7 +22,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "utility/types.h"
+#include "libcommon/utility/types.h"
 #include "sentryuser.h"
 
 namespace KDC {
