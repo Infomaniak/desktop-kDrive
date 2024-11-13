@@ -1437,7 +1437,6 @@ bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
             return false;
         }
 
-
         if (newCorrespondingParentNode->isCommonDocumentsFolder() && syncOp->nodeType() != NodeType::Directory) {
             return false;
         }
