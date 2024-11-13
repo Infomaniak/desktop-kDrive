@@ -33,14 +33,17 @@ namespace KDC {
 
 class LocalDeleteJobMockingTrash : public LocalDeleteJob {
     public:
-        LocalDeleteJobMockingTrash(const SyncPath &absolutePath) : LocalDeleteJob(absolutePath){};
+        explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath) : LocalDeleteJob(absolutePath){};
         void setMoveToTrashFailed(bool failed) { _moveToTrashFailed = failed; };
 
     protected:
-        virtual void moveToTrash() {
+        bool moveToTrash() final {
             std::filesystem::remove_all(_absolutePath);
             handleTrashMoveOutcome(_moveToTrashFailed);
+            return !_moveToTrashFailed;
         };
+
+    private:
         bool _moveToTrashFailed = false;
 };
 
@@ -100,10 +103,14 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     {
         LocalDeleteJobMockingTrash nfcDeleteJob(temporaryDirectory.path() / testhelpers::makeNfcSyncName());
         nfcDeleteJob.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfcDeleteJob.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfcDeleteJob.exitCause());
     }
     {
         LocalDeleteJobMockingTrash nfdDeleteJob(temporaryDirectory.path() / testhelpers::makeNfdSyncName());
         nfdDeleteJob.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfdDeleteJob.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfdDeleteJob.exitCause());
     }
 
     CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / testhelpers::makeNfcSyncName()));
