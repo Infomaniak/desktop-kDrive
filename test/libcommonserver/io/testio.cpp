@@ -154,6 +154,10 @@ void TestIo::testLogDirectoryPath() {
 }
 
 void TestIo::testAccesDeniedOnLockedFiles() {
+#if !_WIN32 && !__APPLE__ // This test is only relevant on Windows and macOS
+    return;
+#endif
+
     LocalTemporaryDirectory tmpDir("TestIo-testAccesDeniedOnLockedFiles");
     const SyncPath lockedFile = tmpDir.path() / "lockedFile.txt";
     std::ofstream file(lockedFile);
@@ -167,6 +171,7 @@ void TestIo::testAccesDeniedOnLockedFiles() {
 #else
     int fd = open(lockedFile.c_str(), O_RDWR);
     CPPUNIT_ASSERT(fd != -1);
+    fcntl(fd, F_SETLK, nullptr);
 #endif
 
     std::error_code ec;
