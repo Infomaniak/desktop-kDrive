@@ -150,10 +150,7 @@ void TestIo::testLogDirectoryPath() {
 }
 
 void TestIo::testAccesDeniedOnLockedFiles() {
-#ifndef _WIN32 // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
-    return;
-#endif
-
+#ifdef _WIN32 // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
     LocalTemporaryDirectory tmpDir("TestIo-testAccesDeniedOnLockedFiles");
     const SyncPath lockedFile = tmpDir.path() / "lockedFile.txt";
     std::ofstream file(lockedFile);
@@ -172,6 +169,7 @@ void TestIo::testAccesDeniedOnLockedFiles() {
     // Unlock the file
     CloseHandle(hFile);
     CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
+#endif
 }
 
 } // namespace KDC
