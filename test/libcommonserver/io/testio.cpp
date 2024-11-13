@@ -20,6 +20,10 @@
 #include "config.h"
 
 #include <filesystem>
+#ifndef _WIN32
+#include <fcntl.h>
+#include <sys/stat.h>
+#endif
 
 using namespace CppUnit;
 
@@ -161,7 +165,7 @@ void TestIo::testAccesDeniedOnLockedFiles() {
     auto hFile = CreateFile(lockedFile.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     CPPUNIT_ASSERT(hFile != INVALID_HANDLE_VALUE);
 #else
-    int fd = open(lockedFile.c_str(), O_RDONLY);
+    int fd = open(lockedFile.c_str(), O_RDWR);
     CPPUNIT_ASSERT(fd != -1);
 #endif
 
