@@ -51,6 +51,7 @@ class SyncOperation {
 
         [[nodiscard]] SyncName nodeName(ReplicaSide side) const;
         [[nodiscard]] SyncPath nodePath(ReplicaSide side) const;
+        [[nodiscard]] NodeType nodeType() const noexcept;
 
         bool operator==(const SyncOperation &other) const;
 
