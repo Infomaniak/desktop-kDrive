@@ -155,7 +155,7 @@ void TestIo::testLogDirectoryPath() {
 }
 
 void TestIo::testAccesDeniedOnLockedFiles() {
-#if !_WIN32 && !__APPLE__ // This test is only relevant on Windows and macOS
+#ifndef _WIN32 // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
     return;
 #endif
 
@@ -166,26 +166,16 @@ void TestIo::testAccesDeniedOnLockedFiles() {
     file.close();
 
     // Lock the file
-#ifdef _WIN32
     auto hFile = CreateFile(lockedFile.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     CPPUNIT_ASSERT(hFile != INVALID_HANDLE_VALUE);
-#else
-    int fd = open(lockedFile.c_str(), O_RDWR);
-    CPPUNIT_ASSERT(fd != -1);
-    fcntl(fd, F_SETLK, nullptr);
-#endif
 
+    // Try to delete the file
     std::error_code ec;
     std::filesystem::remove_all(lockedFile, ec);
     IoError ioError = IoHelper::stdError2ioError(ec);
 
     // Unlock the file
-#ifdef _WIN32
     CloseHandle(hFile);
-#else
-    close(fd);
-#endif
-
     CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
 }
 
