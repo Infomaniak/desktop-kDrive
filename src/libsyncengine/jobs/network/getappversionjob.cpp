@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-static const std::string hasProdNextKey = "has_prod_next";
+static const std::string prodVersionKey = "prod_version";
 static const std::string applicationKey = "application";
 static const std::string publishedVersionsKey = "published_versions";
 static const std::string versionTypeProdKey = "production";
@@ -41,12 +41,13 @@ static const std::string buildMinOsVersionKey = "build_min_os_version";
 static const std::string downloadUrlKey = "download_link";
 
 GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID) : GetAppVersionJob(platform, appID, {}) {}
+
 GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID, const std::vector<int> &userIdList) :
     _platform(platform), _appId(appID), _userIdList(userIdList) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-std::string platformToStr(Platform platform) {
+std::string toStr(const Platform platform) {
     switch (platform) {
         case Platform::MacOS:
             return platformMacOsKey;
@@ -61,11 +62,20 @@ std::string platformToStr(Platform platform) {
     }
 }
 
+DistributionChannel toDistributionChannel(const std::string &str) {
+    if (str == versionTypeProdKey) return DistributionChannel::Prod;
+    if (str == versionTypeNextKey) return DistributionChannel::Next;
+    if (str == versionTypeBetaKey) return DistributionChannel::Beta;
+    if (str == versionTypeInternalKey) return DistributionChannel::Internal;
+    return DistributionChannel::Unknown;
+}
+
 std::string GetAppVersionJob::getSpecificUrl() {
     std::stringstream ss;
-    ss << "/app-information/kstore-update/" << platformToStr(_platform) << "/com.infomaniak.drive/" << _appId;
+    ss << "/app-information/kstore-update/" << toStr(_platform) << "/com.infomaniak.drive/" << _appId;
     return ss.str();
 }
+
 std::string GetAppVersionJob::getContentType(bool &canceled) {
     canceled = false;
     return {};
@@ -92,16 +102,14 @@ DistributionChannel GetAppVersionJob::toDistributionChannel(const std::string &v
 }
 
 bool GetAppVersionJob::handleResponse(std::istream &is) {
-    if (!AbstractNetworkJob::handleJsonResponse(is)) {
-        return false;
-    }
+    if (!AbstractNetworkJob::handleJsonResponse(is)) return false;
 
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
     if (!dataObj) return false;
 
-    if (!JsonParserUtility::extractValue(dataObj, hasProdNextKey, _hasProdNext)) {
-        return false;
-    }
+    std::string tmpStr;
+    if (!JsonParserUtility::extractValue(dataObj, prodVersionKey, tmpStr)) return false;
+    _prodVersionChannel = toDistributionChannel(tmpStr);
 
     const Poco::JSON::Object::Ptr applicationObj = JsonParserUtility::extractJsonObject(dataObj, applicationKey);
     if (!applicationObj) return false;
@@ -112,24 +120,16 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
     for (const auto &versionInfo: *publishedVersions) {
         const auto &obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
         std::string versionType;
-        if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) {
-            return false;
-        }
+        if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) return false;
 
         const DistributionChannel channel = toDistributionChannel(versionType);
         _versionInfo[channel].channel = channel;
-        if (!JsonParserUtility::extractValue(obj, tagKey, _versionInfo[channel].tag)) {
+
+        if (!JsonParserUtility::extractValue(obj, tagKey, _versionInfo[channel].tag)) return false;
+        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionInfo[channel].buildVersion)) return false;
+        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionInfo[channel].buildMinOsVersion, false))
             return false;
-        }
-        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionInfo[channel].buildVersion)) {
-            return false;
-        }
-        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionInfo[channel].buildMinOsVersion, false)) {
-            return false;
-        }
-        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionInfo[channel].downloadUrl)) {
-            return false;
-        }
+        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionInfo[channel].downloadUrl)) return false;
 
         if (!_versionInfo[channel].isValid()) {
             LOG_WARN(_logger, "Missing mandatory value.");
@@ -139,4 +139,5 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
 
     return true;
 }
+
 } // namespace KDC
