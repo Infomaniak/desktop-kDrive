@@ -585,7 +585,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
 
     // Get rights for trustee
     ACCESS_MASK rights = 0;
-    //result = GetEffectiveRightsFromAcl(pfileACL, &IoHelper::getTrustee(), &rights);
+    result = GetEffectiveRightsFromAcl(pfileACL, &IoHelper::getTrustee(), &rights);
     ioError = dWordError2ioError(result, logger);
 
     /* The GetEffectiveRightsFromAcl function fails and returns ERROR_INVALID_ACL if the specified ACL contains an inherited
