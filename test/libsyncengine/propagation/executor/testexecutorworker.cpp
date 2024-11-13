@@ -161,7 +161,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #endif
 }
 
-SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename) {
+SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
+                                                    const OperationType opType) {
     auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
                                        testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
                                        _syncPal->updateTree(ReplicaSide::Local)->rootNode());
@@ -172,8 +173,29 @@ SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, con
     SyncOpPtr op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
     op->setCorrespondingNode(correspondingNode);
+    op->setType(opType);
 
     return op;
+}
+
+void TestExecutorWorker::testIsValidDestination() {
+    // Always true if the target side is local or unknown
+    {
+        SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->isValidDestination(op));
+    }
+    // Always true if the operation is not of type Create
+    {
+        SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->isValidDestination(op));
+    }
+    // Always true if the item is created on the local replica, at the root of the synchronisation folder
+    {
+        SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"), OperationType::Create);
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->isValidDestination(op));
+    }
 }
 
 void TestExecutorWorker::testLogCorrespondingNodeErrorMsg() {

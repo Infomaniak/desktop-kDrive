@@ -36,6 +36,10 @@ SyncPath SyncOperation::nodePath(const ReplicaSide side) const {
     return node->getPath();
 }
 
+NodeType SyncOperation::nodeType() const noexcept {
+    return _affectedNode ? _affectedNode->type() : NodeType::Unknown;
+}
+
 bool SyncOperation::operator==(const SyncOperation &other) const {
     return _id == other.id();
 }
