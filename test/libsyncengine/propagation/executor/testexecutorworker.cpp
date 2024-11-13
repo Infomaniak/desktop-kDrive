@@ -186,13 +186,13 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
                                    "local_parent_id", testhelpers::defaultTime, testhelpers::defaultTime,
                                    testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
 
-    auto node =
-            std::make_shared<Node>(dbNodeId, ReplicaSide::Local, "test_file.txt", nodeType, OperationType::None, "local_child_id",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, parentNode);
+    auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, Str("test_file.txt"), nodeType, OperationType::None,
+                                       "local_child_id", testhelpers::defaultTime, testhelpers::defaultTime,
+                                       testhelpers::defaultFileSize, parentNode);
 
 
     auto correspondingNode =
-            std::make_shared<Node>(dbNodeId, ReplicaSide::Remote, "test_file.txt", nodeType, OperationType::None,
+            std::make_shared<Node>(dbNodeId, ReplicaSide::Remote, Str("test_file.txt"), nodeType, OperationType::None,
                                    "remote_child_id", testhelpers::defaultTime, testhelpers::defaultTime,
                                    testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
