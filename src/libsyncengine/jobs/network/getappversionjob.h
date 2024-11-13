@@ -23,16 +23,21 @@
 #include <config.h>
 
 namespace KDC {
+
 class GetAppVersionJob : public AbstractNetworkJob {
     public:
         GetAppVersionJob(Platform platform, const std::string &appID);
+        GetAppVersionJob(Platform platform, const std::string &appID, const std::vector<int> &userIdList);
         ~GetAppVersionJob() override = default;
 
-        const VersionInfo &getVersionInfo(const DistributionChannel channel) { return _versionInfo[channel]; }
+        const VersionInfo &getVersionInfo(const DistributionChannel channel) {
+            return _versionInfo.contains(channel) ? _versionInfo[channel] : _defaultVersionInfo;
+        }
+        const VersionInfo &getProdVersionInfo() {
+            return _versionInfo.contains(_prodVersionChannel) ? _versionInfo[_prodVersionChannel] : _defaultVersionInfo;
+        }
 
         std::string getUrl() override { return INFOMANIAK_API_URL + getSpecificUrl(); }
-
-        [[nodiscard]] bool hasProdNext() const { return _hasProdNext; }
 
     protected:
         bool handleResponse(std::istream &is) override;
@@ -40,7 +45,7 @@ class GetAppVersionJob : public AbstractNetworkJob {
     private:
         std::string getSpecificUrl() override;
         std::string getContentType(bool &canceled) override;
-        void setQueryParameters(Poco::URI &, bool &) override { /* no query parameters */ }
+        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
         ExitInfo setData() override { return ExitCode::Ok; }
         bool handleError(std::istream &is, const Poco::URI &uri) override;
 
@@ -48,8 +53,10 @@ class GetAppVersionJob : public AbstractNetworkJob {
 
         const Platform _platform{Platform::Unknown};
         const std::string _appId;
+        const std::vector<int> _userIdList;
 
-        bool _hasProdNext{false};
+        const VersionInfo _defaultVersionInfo;
+        DistributionChannel _prodVersionChannel{DistributionChannel::Unknown};
         std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;
 };
 

@@ -786,7 +786,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
             return ExitCode::SystemError;
         }
         job->setAffectedFilePath(localPath);
-    } catch (const std::exception const &e) {
+    } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
         return ExitCode::Unknown;
@@ -1460,12 +1460,12 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
     NodeId localNodeId;
     if (localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath); localNodeId.empty()) {
         // The file does not exit yet on local file system, or we do not have sufficient right on a parent folder.
-        LOGW_DEBUG(_logger,
-                   L"Item " << Utility::formatSyncPath(relativePath) << L"is not present local file system, blacklisting the parent item.");
+        LOGW_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath)
+                                     << L"is not present local file system, blacklisting the parent item.");
         return handleAccessDeniedItem(relativePath.parent_path(), cause);
     }
 
-    
+
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 

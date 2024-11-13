@@ -17,15 +17,18 @@
  */
 
 #include "testlogarchiver.h"
+
 #include "server/logarchiver/logarchiver.h"
 #include "requests/parameterscache.h"
-#include "db/parmsdb.h"
 #include "version.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/io/iohelper.h"
-#include "libcommon/utility/utility.h"
 #include "libcommonserver/db/db.h"
+#include "libparms/db/parmsdb.h"
 #include "test_utility/localtemporarydirectory.h"
+
+#include <log4cplus/loggingmacros.h>
 
 #include <iostream>
 

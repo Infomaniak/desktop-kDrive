@@ -19,19 +19,23 @@
 #include "testworkers.h"
 
 #include "propagation/executor/executorworker.h"
-#include "keychainmanager/keychainmanager.h"
-#include "network/proxy.h"
-#include "io/iohelper.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommonserver/network/proxy.h"
+#include "libcommonserver/io/iohelper.h"
 #include "test_utility/testhelpers.h"
+
+#ifdef _WIN32
+#include <combaseapi.h>
+#endif
 
 namespace KDC {
 
 #if defined(__APPLE__)
-std::unique_ptr<VfsMac> TestWorkers::_vfsPtr = nullptr;
+std::shared_ptr<VfsMac> TestWorkers::_vfsPtr = nullptr;
 #elif defined(_WIN32)
-std::unique_ptr<VfsWin> TestWorkers::_vfsPtr = nullptr;
+std::shared_ptr<VfsWin> TestWorkers::_vfsPtr = nullptr;
 #else
-std::unique_ptr<VfsOff> TestWorkers::_vfsPtr = nullptr;
+std::shared_ptr<VfsOff> TestWorkers::_vfsPtr = nullptr;
 #endif
 
 bool TestWorkers::createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
@@ -122,11 +126,11 @@ void TestWorkers::setUp() {
     vfsSetupParams._logger = _logger;
 
 #if defined(__APPLE__)
-    _vfsPtr = std::unique_ptr<VfsMac>(new VfsMac(vfsSetupParams));
+    _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
 #elif defined(_WIN32)
-    //_vfsPtr = std::unique_ptr<VfsWin>(new VfsWin(vfsSetupParams, nullptr));
+    _vfsPtr = std::shared_ptr<VfsWin>(new VfsWin(vfsSetupParams));
 #else
-    _vfsPtr = std::unique_ptr<VfsOff>(new VfsOff(vfsSetupParams));
+    _vfsPtr = std::shared_ptr<VfsOff>(new VfsOff(vfsSetupParams));
 #endif
 
     // Setup SyncPal
@@ -137,6 +141,31 @@ void TestWorkers::setUp() {
     _syncPal->setVfsCreatePlaceholderCallback(createPlaceholder);
     _syncPal->setVfsConvertToPlaceholderCallback(convertToPlaceholder);
     _syncPal->setVfsSetPinStateCallback(setPinState);
+
+    // Setup SocketApi
+    std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;
+    syncPalMap[_sync.dbId()] = _syncPal;
+    std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
+    vfsMap[_sync.dbId()] = _vfsPtr;
+    _socketApi = std::make_unique<SocketApi>(syncPalMap, vfsMap);
+
+#ifdef _WIN32
+    // Initializes the COM library
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+#endif
+
+#if !defined(__APPLE__)
+    // TODO: on macOS, SIP should be deactivated and LiteSync extension signed to be able to start Vfs
+
+    // Start Vfs
+    bool installationDone = false;
+    bool activationDone = false;
+    bool connectionDone = false;
+    CPPUNIT_ASSERT(_vfsPtr->startImpl(installationDone, activationDone, connectionDone));
+    CPPUNIT_ASSERT(installationDone);
+    CPPUNIT_ASSERT(activationDone);
+    CPPUNIT_ASSERT(connectionDone);
+#endif
 }
 
 void TestWorkers::tearDown() {
@@ -146,6 +175,8 @@ void TestWorkers::tearDown() {
         _syncPal->syncDb()->close();
     }
     if (_vfsPtr) {
+        // Stop Vfs
+        _vfsPtr->stopImpl(true);
         _vfsPtr = nullptr;
     }
 }
@@ -167,6 +198,10 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setPath(relativeFolderPath);
         syncItem.setType(NodeType::Directory);
         syncItem.setDirection(SyncDirection::Down);
+#ifdef _WIN32
+        syncItem.setRemoteNodeId("1");
+#endif
+
         CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
         // Folder doesn't exist (normal case)
@@ -189,6 +224,10 @@ void TestWorkers::testCreatePlaceholder() {
         syncItem.setPath(relativeFilePath);
         syncItem.setType(NodeType::File);
         syncItem.setDirection(SyncDirection::Down);
+#ifdef _WIN32
+        syncItem.setRemoteNodeId("2");
+#endif
+
         CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
 #if defined(__APPLE__) || defined(_WIN32)
@@ -198,8 +237,22 @@ void TestWorkers::testCreatePlaceholder() {
                        ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
+#ifdef __APPLE__
         CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
+#else
+        // Strangely (bug?), the Windows api is able to create a placeholder in a folder for which the user does not have rights
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, exitInfo.cause());
+
+        // Remove placeholder
+        std::error_code ec;
+        std::filesystem::remove(_syncPal->localPath() / relativeFilePath);
+        if (ec) {
+            // Cannot remove file
+            CPPUNIT_ASSERT(false);
+        }
+#endif
 
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&

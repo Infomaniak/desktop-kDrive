@@ -241,6 +241,9 @@ AppServer::AppServer(int &argc, char **argv) :
         addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     }
 
+    // Log usefull infomation
+    logUsefulInformation();
+
     // Init ExclusionTemplateCache instance
     if (!ExclusionTemplateCache::instance()) {
         LOG_WARN(_logger, "Error in ExclusionTemplateCache::instance");
@@ -2388,12 +2391,12 @@ bool AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const Sync
         return false;
     }
 
-    QByteArray fileId(id.c_str());
-    QString *errorStr = nullptr;
-    if (!_vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, errorStr)) {
+    const QByteArray fileId(id.c_str());
+    QString errorStr;
+    if (!_vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, &errorStr)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Vfs::updateMetadata for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
-        error = errorStr ? errorStr->toStdString() : "";
+        error = errorStr.toStdString();
         return false;
     }
 
@@ -3015,12 +3018,48 @@ bool AppServer::initLogging() noexcept {
 
     _logger = Log::instance()->getLogger();
 
-    LOGW_INFO(_logger, Utility::s2ws(QString::fromLatin1("%1 locale:[%2] version:[%4] os:[%5]")
-                                             .arg(_theme->appName(), QLocale::system().name(), _theme->version(),
-                                                  KDC::CommonUtility::platformName())
-                                             .toStdString())
-                               .c_str());
     return true;
+}
+
+void AppServer::logUsefulInformation() const {
+    LOG_INFO(_logger, "***** APP INFO *****");
+
+    LOG_INFO(_logger, "version: " << _theme->version().toStdString().c_str());
+    LOG_INFO(_logger, "os: " << CommonUtility::platformName().toStdString().c_str());
+    LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString().c_str());
+
+    // Log app ID
+    AppStateValue appStateValue = "";
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+    }
+    const auto &appUid = std::get<std::string>(appStateValue);
+    LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUid.c_str());
+
+    // Log user IDs
+    std::vector<User> userList;
+    if (!ParmsDb::instance()->selectAllUsers(userList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+    }
+    for (const auto &user: userList) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"User ID: " << user.userId() << L", email: " << Utility::s2ws(user.email()).c_str());
+    }
+
+    // Log drive IDs
+    std::vector<Drive> driveList;
+    if (!ParmsDb::instance()->selectAllDrives(driveList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
+    }
+    for (const auto &drive: driveList) {
+        LOG_INFO(Log::instance()->getLogger(), "Drive ID: " << drive.driveId());
+    }
+
+    // Log level
+    LOG_INFO(Log::instance()->getLogger(), "Log level: " << ParametersCache::instance()->parameters().logLevel());
+    LOG_INFO(Log::instance()->getLogger(), "Extended log activated: " << ParametersCache::instance()->parameters().extendedLog());
+
+    LOG_INFO(_logger, "********************");
 }
 
 bool AppServer::setupProxy() noexcept {
@@ -3943,7 +3982,7 @@ void AppServer::addError(const Error &error) {
                 }
             }
         }
-        for (int errorId: toBeRemovedErrorIds) {
+        for (auto errorId: toBeRemovedErrorIds) {
             bool found = false;
             if (!ParmsDb::instance()->deleteError(errorId, found)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");

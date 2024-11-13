@@ -55,7 +55,7 @@ void FolderWatcher_win::startWatching() {
     _stopEventHandle = CreateEvent(nullptr, true, false, nullptr);
 
     while (!_stop) {
-        setExitInfo(ExitCode::Ok); 
+        setExitInfo(ExitCode::Ok);
         watchChanges();
 
         if (!_stop) {
@@ -87,7 +87,7 @@ void FolderWatcher_win::watchChanges() {
         DWORD errorCode = GetLastError();
         LOGW_WARN(_logger, L"Failed to create handle for " << _folder.wstring().c_str() << L" - error:" << errorCode);
         _directoryHandle = nullptr;
-        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError}); 
+        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
         return;
     }
 
@@ -177,8 +177,7 @@ void FolderWatcher_win::watchChanges() {
             if (!skip) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"Operation " << opType << (converted ? L"(converted) " : L"")
-                                                      << L" detected on item with "
-                                                      << Utility::formatSyncPath(longfilepath));
+                                                      << L" detected on item with " << Utility::formatSyncPath(longfilepath));
                 }
 
                 changeDetected(longfilepath, opType);

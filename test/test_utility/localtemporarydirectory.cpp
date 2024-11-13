@@ -17,8 +17,8 @@
  */
 #include "localtemporarydirectory.h"
 
-#include "io/filestat.h"
-#include "io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <sstream>
 
@@ -51,7 +51,12 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
 }
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {
-    std::filesystem::remove_all(_path);
+    std::error_code ec;
+    std::filesystem::remove_all(_path, ec);
+    if (ec) {
+        // Cannot remove directory
+        assert(false);
+    }
 }
 
 

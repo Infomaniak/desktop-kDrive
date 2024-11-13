@@ -109,7 +109,10 @@ bool VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, 
     return true;
 }
 
-bool VfsOff::startImpl(bool &, bool &, bool &) {
+bool VfsOff::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
+    installationDone = true;
+    activationDone = true;
+    connectionDone = true;
     return true;
 }
 

@@ -74,7 +74,8 @@ void TestUpdateTreeWorker::setUpDbTree() {
         ├── 5
         │   └── 5.1
         ├── 6
-        └── 6a
+        ├── 6a
+        └── 7
      */
 
     time_t tLoc = std::time(0);
@@ -147,6 +148,13 @@ void TestUpdateTreeWorker::setUpDbTree() {
     DbNode nodeFile6a(0, _syncDb->rootNode().nodeId(), Str("File 6a"), Str("File 6a"), "id6a", "id drive 6a", tLoc, tLoc, tDrive,
                       NodeType::File, 0, std::nullopt);
     _syncDb->insertNode(nodeFile6a, dbnodeIdfile6a, constraintError);
+
+    // Node with name encoded differently on remote (NFC) and on local (NFD) side
+    DbNodeId dbnodeIdfile7;
+    const DbNode nodeFile7(0, _syncDb->rootNode().nodeId(), testhelpers::makeNfdSyncName(), testhelpers::makeNfdSyncName(),
+                           "id7l", "id7r", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
+                           NodeType::File, testhelpers::defaultFileSize, std::nullopt);
+    _syncDb->insertNode(nodeFile7, dbnodeIdfile7, constraintError);
 }
 
 void TestUpdateTreeWorker::setUpUpdateTree() {
@@ -165,7 +173,8 @@ void TestUpdateTreeWorker::setUpUpdateTree() {
         │       └── 4.1.1
         │           └── 4.1.1.1
         ├── 6
-        └── 6a
+        ├── 6a
+        └── 7
      */
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
@@ -224,6 +233,12 @@ void TestUpdateTreeWorker::setUpUpdateTree() {
             std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("File 6a"), NodeType::File, OperationType::None,
                                            "id6a", createdAt, lastmodified, size, _updateTree->rootNode()));
 
+    // Name encoded NFD on local side
+    _syncDb->dbId(ReplicaSide::Local, NodeId("id7l"), dbNodeIdDir, found);
+    const auto node7 =
+            std::make_shared<Node>(dbNodeIdDir, _updateTree->side(), testhelpers::makeNfdSyncName(), NodeType::File,
+                                   OperationType::None, "id7l", createdAt, lastmodified, size, _updateTree->rootNode());
+
     _updateTree->init();
 
     CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node1));
@@ -232,6 +247,7 @@ void TestUpdateTreeWorker::setUpUpdateTree() {
     CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node4));
     CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node6));
     CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node6a));
+    CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node7));
 
     CPPUNIT_ASSERT(node1->insertChildren(node11));
     CPPUNIT_ASSERT(node11->insertChildren(node111));
@@ -254,6 +270,7 @@ void TestUpdateTreeWorker::setUpUpdateTree() {
     _updateTree->insertNode(node4111);
     _updateTree->insertNode(node6);
     _updateTree->insertNode(node6a);
+    _updateTree->insertNode(node7);
 }
 
 void TestUpdateTreeWorker::testUtilsFunctions() {
@@ -518,6 +535,9 @@ void TestUpdateTreeWorker::testStep8() {
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5/File 5.1")->id() == "id51");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.1/File 1.1.2")->id() == "id112");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.2")->id() == "id4112");
+
+    // Make sure we retrieve the NFD encoded version of the name
+    CPPUNIT_ASSERT_EQUAL(std::string("id7l"), *_updateTree->getNodeByPath(testhelpers::makeNfdSyncName())->id());
 }
 
 void TestUpdateTreeWorker::testClearTreeStep1() {
@@ -654,7 +674,7 @@ void TestUpdateTreeWorker::testClearTreeStep7() {
 
 void TestUpdateTreeWorker::testClearTreeStep8() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->step8CompleteUpdateTree());
-    CPPUNIT_ASSERT(_updateTreeWorker->_updateTree->nodes().size() == 18);
+    CPPUNIT_ASSERT(_updateTreeWorker->_updateTree->nodes().size() == 19);
 }
 
 void TestUpdateTreeWorker::testGetOriginPath() {

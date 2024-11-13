@@ -143,6 +143,7 @@ void Utilities::initPipeName(const wchar_t *appName) {
     wchar_t userName[DEFAULT_BUFLEN];
     GetUserName(userName, &len);
     s_pipeName = std::wstring(L"\\\\.\\pipe\\") + std::wstring(appName) + L"-" + std::wstring(userName, len);
+    TRACE_DEBUG(L"Init pipe: name = %ls", s_pipeName.c_str());
 }
 
 bool Utilities::connectToPipeServer() {
@@ -157,6 +158,7 @@ bool Utilities::connectToPipeServer() {
         return false;
     }
 
+    TRACE_DEBUG(L"Open pipe: name = %ls", s_pipeName.c_str());
     while (true) {
         s_pipe = CreateFile(s_pipeName.data(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
         if (s_pipe != INVALID_HANDLE_VALUE) {

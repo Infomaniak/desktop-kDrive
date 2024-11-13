@@ -105,7 +105,7 @@ void ClientGui::init() {
             qCWarning(lcClientGui()) << "loadInfoMaps failed for trial=" << trial;
             error = true;
             if (trial < INIT_TRIALS) {
-                KDC::CommonGuiUtility::sleep(static_cast<unsigned long>(2 ^ trial));
+                KDC::CommonGuiUtility::sleep(static_cast<unsigned long>(std::pow(2, trial)));
             }
         }
     }

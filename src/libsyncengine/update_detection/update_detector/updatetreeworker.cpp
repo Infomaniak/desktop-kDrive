@@ -804,10 +804,9 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
 
             SyncTime lastModified =
                     _side == ReplicaSide::Local ? dbNode.lastModifiedLocal().value() : dbNode.lastModifiedRemote().value();
-            SyncName name = dbNode.nameRemote();
-            std::shared_ptr<Node> newNode =
-                    std::shared_ptr<Node>(new Node(dbNode.nodeId(), _side, name, dbNode.type(), {}, newNodeId, dbNode.created(),
-                                                   lastModified, dbNode.size(), parentNode));
+            SyncName name = _side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote();
+            const auto newNode = std::shared_ptr<Node>(new Node(dbNode.nodeId(), _side, name, dbNode.type(), {}, newNodeId,
+                                                                dbNode.created(), lastModified, dbNode.size(), parentNode));
             if (newNode == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
                 LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -1474,17 +1473,6 @@ ExitCode UpdateTreeWorker::updateNameFromDbForMoveOp(const std::shared_ptr<Node>
         LOG_SYNCPAL_WARN(_logger,
                          "Failed to retrieve node for id=" << (node->id().has_value() ? *node->id() : std::string()).c_str());
         return ExitCode::DataError;
-    }
-
-    if (dbNode.nameLocal() != dbNode.nameRemote()) { // Useless?? Now the local and remote name are always the same
-        // Check if the file has been renamed locally
-        if (moveOp->destinationPath().filename() != dbNode.nameLocal()) {
-            // The file has been renamed locally, propagate the change on remote
-            node->setName(moveOp->destinationPath().filename().native());
-        } else {
-            // The file has been moved but not renamed, keep the names from DB
-            node->setName(dbNode.nameRemote());
-        }
     }
 
     return ExitCode::Ok;

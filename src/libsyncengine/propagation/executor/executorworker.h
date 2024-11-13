@@ -110,7 +110,7 @@ class ExecutorWorker : public OperationProcessor {
                                    bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
         void sendProgress();
-        bool hasRight(SyncOpPtr syncOp, bool &exists);
+        bool isValidDestination(SyncOpPtr syncOp);
         bool enoughLocalSpace(SyncOpPtr syncOp);
 
         ExitInfo propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);

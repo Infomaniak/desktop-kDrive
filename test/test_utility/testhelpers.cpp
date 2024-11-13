@@ -18,7 +18,7 @@
 #include <fstream>
 #include "testhelpers.h"
 
-#include "utility/utility.h"
+#include "libcommon/utility/utility.h"
 
 namespace KDC::testhelpers {
 

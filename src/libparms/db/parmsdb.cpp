@@ -434,7 +434,7 @@
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16);"
 
 #define UPDATE_ERROR_REQUEST_ID "update_error"
-#define UPDATE_ERROR_REQUEST    \
+#define UPDATE_ERROR_REQUEST             \
     "UPDATE error SET time=?1, path=?2 " \
     "WHERE dbId=?3;"
 
