@@ -103,7 +103,7 @@ bool ParmsDb::insertDefaultAppState() {
         return false;
     }
 
-    if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateAppId(25), true)) {
+    if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateRandomStringAlphaNum(25), true)) {
         LOG_WARN(_logger, "Error when inserting default value for LogUploadToken");
         return false;
     }
