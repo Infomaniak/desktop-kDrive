@@ -23,6 +23,7 @@
 #ifndef _WIN32
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 using namespace CppUnit;
