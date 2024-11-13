@@ -258,9 +258,9 @@ void TestExecutorWorker::testIsValidDestination() {
     // False if the item is created on the local replica is not at the root of the synchronisation folder and has a
     // corresponding parent node with no id.
     {
-        const auto correspondingParentNode = std::make_shared<Node>(666, ReplicaSide::Remote, "parent_dir", NodeType::Directory,
-                                                                    OperationType::None, std::nullopt, testhelpers::defaultTime,
-                                                                    testhelpers::defaultTime, testhelpers::defaultFileSize, root);
+        const auto correspondingParentNode = std::make_shared<Node>(
+                666, ReplicaSide::Remote, Str("parent_dir"), NodeType::Directory, OperationType::None, std::nullopt,
+                testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
 
 
         SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
