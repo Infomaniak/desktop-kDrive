@@ -23,6 +23,8 @@
 #include "customtoolbutton.h"
 #include "guirequests.h"
 #include "libcommon/theme/theme.h"
+#include "libcommon/utility/utility.h"
+#include "guiutility.h"
 
 #include <algorithm>
 
@@ -41,6 +43,7 @@ static const int boxHSpacing = 10;
 static const int titleBoxVMargin = 14;
 
 static const QString learnMoreLink = "learnMoreLink";
+static const QString learnMoreMoveToTrashLink = "learnMoreLinkMoveToTrash";
 
 FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *parent /*= nullptr*/) :
     CustomDialog(true, parent), _driveDbId(driveDbId) {
@@ -87,6 +90,10 @@ void FixConflictingFilesDialog::onValidate() {
     accept();
 }
 
+void FixConflictingFilesDialog::onKeepRemoteButtonToggled(bool checked) {
+    _keepRemoteDisclaimerWidget->setVisible(checked);
+}
+
 void FixConflictingFilesDialog::initUi() {
     setObjectName("ResolveConflictsDialog");
 
@@ -114,26 +121,52 @@ void FixConflictingFilesDialog::initUi() {
     // Selection buttons
     auto selectionLabel = new QLabel(this);
     selectionLabel->setObjectName("descriptionLabel");
-    selectionLabel->setText(tr("<b>What do you want to do with the %1 conflicted item(s) that is(are) not synced in kDrive?</b>")
-                                    .arg(_conflictList.length()));
+    selectionLabel->setText(tr("<b>What do you want to do with the %1 conflicted item(s)?</b>").arg(_conflictList.length()));
 
     _keepLocalButton = new CustomRadioButton(this);
-    _keepLocalButton->setText(tr("Synchronize the local version of my item(s) in kDrive."));
+    _keepLocalButton->setText(tr("Save my changes and replace other users' versions."));
     _keepLocalButton->setChecked(true);
 
     _keepRemoteButton = new CustomRadioButton(this);
-    if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
-        _keepRemoteButton->setText(tr("Move the local version of my item(s) to the computer's trash."));
-    } else {
-        _keepRemoteButton->setText(tr("Permanently delete the local version of my item(s)."));
-    }
+    _keepRemoteButton->setText(tr("Undo my changes and keep other users' versions."));
+    connect(_keepRemoteButton, &CustomRadioButton::toggled, this, &FixConflictingFilesDialog::onKeepRemoteButtonToggled);
 
+    _keepRemoteDisclaimerWidget = new QWidget();
+    _keepRemoteDisclaimerWidget->setStyleSheet("background-color: #F4F6FD; border-radius: 5px;");
+    QHBoxLayout *keepLocalDisclaimerLayout = new QHBoxLayout(_keepRemoteDisclaimerWidget);
+    QLabel *warningIconLabel = new QLabel();
+    warningIconLabel->setPixmap(
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", QColor(255, 140, 0))
+                    .pixmap(20, 20));
+    warningIconLabel->setContentsMargins(0, 0, boxHMargin / 4, 0);
+    keepLocalDisclaimerLayout->addWidget(warningIconLabel);
+
+    QLabel *keepRemoteDisclaimerLabel = new QLabel();
+    keepRemoteDisclaimerLabel->setWordWrap(true);
+    keepLocalDisclaimerLayout->addWidget(keepRemoteDisclaimerLabel);
+
+
+    if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
+        QLabel *keepRemoteDisclaimerLearnMoreLabel = new QLabel();
+        connect(keepRemoteDisclaimerLearnMoreLabel, &QLabel::linkActivated, this, &FixConflictingFilesDialog::onLinkActivated);
+        keepRemoteDisclaimerLabel->setText(
+                tr("Your changes may be permanently deleted. They cannot be restored from the kDrive web application."));
+        keepRemoteDisclaimerLearnMoreLabel->setText(
+                tr("<a style=%1 href=\"%2\">Learn more</a>").arg(CommonUtility::linkStyle, learnMoreMoveToTrashLink));
+        keepLocalDisclaimerLayout->addWidget(keepRemoteDisclaimerLearnMoreLabel);
+    } else {
+        keepRemoteDisclaimerLabel->setText(
+                tr("Your changes will be permanently deleted. They cannot be restored from the kDrive web application."));
+    }
+    keepLocalDisclaimerLayout->setStretchFactor(keepRemoteDisclaimerLabel, 1);
+    _keepRemoteDisclaimerWidget->hide();
     auto selectionLayout = new QVBoxLayout(this);
     selectionLayout->setContentsMargins(0, 4 * boxVMargin, 0, boxVMargin);
     selectionLayout->setSpacing(boxHSpacing);
     selectionLayout->addWidget(selectionLabel);
     selectionLayout->addWidget(_keepLocalButton);
     selectionLayout->addWidget(_keepRemoteButton);
+    selectionLayout->addWidget(_keepRemoteDisclaimerWidget);
     mainLayout->addLayout(selectionLayout);
 
     // Details
@@ -198,10 +231,9 @@ void FixConflictingFilesDialog::initUi() {
 
 QString FixConflictingFilesDialog::descriptionText() const {
     QString str;
-    str = tr(
-            "When an item has been modified on both the computer and the kDrive or when an item has been created on the computer "
-            "with a name that already exists on the kDrive, "
-            "kDrive renames your local item and downloads kDrive's version on your computer so as not to lose any data.<br>");
+    str =
+            tr("Modifications have been made to these files by several users in several places (online on kDrive, a computer or "
+               "a mobile). Folders containing these files may also have been deleted.<br>");
     str += tr("The local version of your item <b>is not synced</b> with kDrive. <a style=\"color: #489EF3\" href=\"%1\">Learn "
               "more</a>")
                    .arg(learnMoreLink);
@@ -210,7 +242,7 @@ QString FixConflictingFilesDialog::descriptionText() const {
 }
 
 void FixConflictingFilesDialog::insertFileItems(const int nbItems) {
-    int max = std::min(_fileListWidget->count() + nbItems, static_cast<int>(_conflictList.size()));
+    int max = (std::min)(_fileListWidget->count() + nbItems, static_cast<int>(_conflictList.size()));
     for (auto i = _fileListWidget->count(); i < max; i++) {
         auto w = new FileItemWidget(_conflictList[i].destinationPath(), _conflictList[i].nodeType(), this);
 
