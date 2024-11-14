@@ -19,18 +19,27 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Release notes - kDrive 3.6.6</h1>
+<h1>Release notes - kDrive 3.6.7</h1>
+<h2><b>New features</b></h2>
+  <ul>
+    <li>Change the update mechanism to allow progressive delivery of a new version</li>
+  </ul>
 <h2><b>Bug fixes</b></h2>
   <ul>
-    <li>Fixed a sync issue occurring on files whose name contains a special character</li>
-    <li>Corrected behaviour in the event of disconnection</li>
-    <li>Fixed issue where an empty file list is retrieved in case of poor network connection</li>
-    <li>Fixed an issue causing many conflicting files when using specific software</li>
-    <li>Fixed a sync issue generating infinite loop</li>
-    <li>Windows - Code optimization to reduce duration of steps 1 and 2</li>
-    <li>macOS - Fixed unwanted popup message on session logout</li>
-    <li>Fixed several crashes related to logging</li>
-    <li>Fixed several crashes related to sync pausing</li>
+    <li>Fixed new file wrongly downloaded in LiteSync mode</li>
+    <li>Fixed missing share links entries in contextual menu</li>
+    <li>Consolidation of error management during the propagation step</li>
+    <li>Do not block application startup if local sync folder is missing</li>
+    <li>Added "*.tmp" files to default exclusion templates</li>
+    <li>Fixed wrongly blacklisted files</li>
+    <li>Fixed broken sync on FAT systems</li>
+    <li>Fixed startup issue in case of unknown proxy type</li>
+    <li>Fixed migration issues</li>
+    <li>Fixed status in case of abort during upload</li>
+    <li>Exclude files and folders with name length above 255 characters</li>
+    <li>Win - Fixed issue on symkinks and junctions</li>
+    <li>Fixed CSV parsing error leading to incomplete remote snapshot</li>
+    <li>Improved handling of access denied errors</li>
   </ul>
 </body>
 </html>

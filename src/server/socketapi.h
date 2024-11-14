@@ -39,10 +39,6 @@
 typedef QLocalServer SocketApiServer;
 #endif
 
-
-#define WORKER_GETFILE 0
-#define NB_WORKERS 1
-
 class QUrl;
 
 namespace KDC {

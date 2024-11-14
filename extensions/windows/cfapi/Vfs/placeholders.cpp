@@ -45,6 +45,7 @@ bool Placeholders::create(const PCWSTR fileId, const PCWSTR relativePath, const 
     cloudEntry.FsMetadata.BasicInfo.ChangeTime = Utilities::fileTimeToLargeInteger(findData->ftLastWriteTime);
 
     if ((findData->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+        cloudEntry.Flags |= CF_PLACEHOLDER_CREATE_FLAG_DISABLE_ON_DEMAND_POPULATION;
         cloudEntry.FsMetadata.FileSize.QuadPart = 0;
     } else {
         cloudEntry.FsMetadata.FileSize.QuadPart = ((ULONGLONG) findData->nFileSizeHigh << 32) + findData->nFileSizeLow;

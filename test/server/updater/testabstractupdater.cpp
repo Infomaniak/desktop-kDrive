@@ -20,8 +20,7 @@
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
-
-#include <version.h>
+#include "version.h"
 
 namespace KDC {
 

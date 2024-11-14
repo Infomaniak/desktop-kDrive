@@ -2391,12 +2391,12 @@ bool AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const Sync
         return false;
     }
 
-    QByteArray fileId(id.c_str());
-    QString *errorStr = nullptr;
-    if (!_vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, errorStr)) {
+    const QByteArray fileId(id.c_str());
+    QString errorStr;
+    if (!_vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, &errorStr)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Vfs::updateMetadata for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
-        error = errorStr ? errorStr->toStdString() : "";
+        error = errorStr.toStdString();
         return false;
     }
 
