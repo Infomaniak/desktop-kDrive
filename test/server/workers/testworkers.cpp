@@ -45,7 +45,7 @@ bool TestWorkers::_vfsConnectionDone = false;
 #ifdef __APPLE__
 // TODO: On macOS, SIP should be deactivated and LiteSync extension signed to be able to install the Lite Sync extension.
 // Set to true if the Login Item Agent and the Lite Sync extensions are already installed on the test machine.
-constexpr bool connectorsAreAlreadyInstalled = true;
+constexpr bool connectorsAreAlreadyInstalled = false;
 #endif
 
 bool TestWorkers::createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
