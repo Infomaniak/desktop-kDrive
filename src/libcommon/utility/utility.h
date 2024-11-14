@@ -105,6 +105,8 @@ struct COMMON_EXPORT CommonUtility {
         static bool fileNameIsValid(const SyncName &name);
 
 #ifdef Q_OS_MAC
+        static const std::string loginItemAgentId();
+        static const std::string liteSyncExtBundleId();
         static bool isLiteSyncExtEnabled();
         static bool isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr);
 #endif

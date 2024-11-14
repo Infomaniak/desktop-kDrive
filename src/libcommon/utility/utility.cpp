@@ -66,7 +66,8 @@
 #define MAX_PATH_LENGTH_MAC 1023
 #define MAX_PATH_LENGTH_LINUX 4096
 
-#define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
+constexpr char liteSyncExtBundleIdStr[] = "com.infomaniak.drive.desktopclient.LiteSyncExt";
+constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent";
 
 namespace KDC {
 const int CommonUtility::logsPurgeRate = 7; // days
@@ -782,6 +783,14 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
     return true;
 }
 
+const std::string CommonUtility::loginItemAgentId() {
+    return loginItemAgentIdStr;
+}
+
+const std::string CommonUtility::liteSyncExtBundleId() {
+    return liteSyncExtBundleIdStr;
+}
+
 std::string CommonUtility::envVarValue(const std::string &name) {
     bool isSet = false;
     return envVarValue(name, isSet);
@@ -873,7 +882,7 @@ bool CommonUtility::isLiteSyncExtEnabled() {
     process->start(
             "bash",
             QStringList() << "-c"
-                          << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(LITE_SYNC_EXT_BUNDLE_ID));
+                          << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(liteSyncExtBundleIdStr));
     process->waitForStarted();
     process->waitForFinished();
     QByteArray result = process->readAll();
@@ -894,14 +903,14 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(LITE_SYNC_EXT_BUNDLE_ID));
+                                  .arg(liteSyncExtBundleIdStr));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(LITE_SYNC_EXT_BUNDLE_ID));
+                                  .arg(liteSyncExtBundleIdStr));
         }
 
         query.exec();
@@ -930,5 +939,6 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
 
     return false;
 }
+
 #endif
 } // namespace KDC
