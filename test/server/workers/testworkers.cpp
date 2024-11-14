@@ -195,22 +195,24 @@ void TestWorkers::tearDown() {
 }
 
 void TestWorkers::testStartVfs() {
-#ifdef __APPLE__
-    if (!connectorsAreAlreadyInstalled) {
-        return;
+#if defined(__APPLE__)
+    if (connectorsAreAlreadyInstalled) {
+        // Make sure that Vfs is installed/activated/connected
+        CPPUNIT_ASSERT(_vfsInstallationDone);
+        CPPUNIT_ASSERT(_vfsActivationDone);
+        CPPUNIT_ASSERT(_vfsConnectionDone);
+
+        // Try to start Vfs another time
+        CPPUNIT_ASSERT(startVfs());
+        CPPUNIT_ASSERT(_vfsInstallationDone);
+        CPPUNIT_ASSERT(_vfsActivationDone);
+        CPPUNIT_ASSERT(_vfsConnectionDone);
     }
-#endif
-
-    // Make sure that Vfs is installed/activated/connected
-    CPPUNIT_ASSERT(_vfsInstallationDone);
-    CPPUNIT_ASSERT(_vfsActivationDone);
-    CPPUNIT_ASSERT(_vfsConnectionDone);
-
+#elif defined(_WIN32)
     // Try to start Vfs another time
-    CPPUNIT_ASSERT(startVfs());
-    CPPUNIT_ASSERT(_vfsInstallationDone);
-    CPPUNIT_ASSERT(_vfsActivationDone);
-    CPPUNIT_ASSERT(_vfsConnectionDone);
+    // => WinRT error caught : hr 8007017a - The cloud sync root is already connected with another cloud sync provider.
+    CPPUNIT_ASSERT(!startVfs());
+#endif
 }
 
 void TestWorkers::testCreatePlaceholder() {
