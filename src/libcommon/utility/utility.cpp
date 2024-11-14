@@ -66,8 +66,10 @@
 #define MAX_PATH_LENGTH_MAC 1023
 #define MAX_PATH_LENGTH_LINUX 4096
 
+#ifdef __APPLE__
 constexpr char liteSyncExtBundleIdStr[] = "com.infomaniak.drive.desktopclient.LiteSyncExt";
 constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent";
+#endif
 
 namespace KDC {
 const int CommonUtility::logsPurgeRate = 7; // days
@@ -783,6 +785,7 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
     return true;
 }
 
+#ifdef __APPLE__
 const std::string CommonUtility::loginItemAgentId() {
     return loginItemAgentIdStr;
 }
@@ -790,6 +793,7 @@ const std::string CommonUtility::loginItemAgentId() {
 const std::string CommonUtility::liteSyncExtBundleId() {
     return liteSyncExtBundleIdStr;
 }
+#endif
 
 std::string CommonUtility::envVarValue(const std::string &name) {
     bool isSet = false;
