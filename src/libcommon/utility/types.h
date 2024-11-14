@@ -225,6 +225,7 @@ enum class ExitCause {
     UnableToCreateVfs,
     NotEnoughtMemory,
     FileTooBig,
+    MoveToTrashFailed,
     InvalidName,
     LiteSyncNotAllowed,
     NetworkTimeout,
