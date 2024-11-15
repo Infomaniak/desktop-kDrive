@@ -19,7 +19,6 @@
 #include "testlog.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
-#include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 
@@ -37,14 +36,22 @@ void TestLog::setUp() {
 }
 
 void TestLog::testLog() {
-    LOG4CPLUS_TRACE(_logger, "Test trace log");
-    LOG4CPLUS_DEBUG(_logger, "Test debug log");
-    LOG4CPLUS_INFO(_logger, "Test info log");
-    LOG4CPLUS_WARN(_logger, "Test warn log");
-    LOG4CPLUS_ERROR(_logger, "Test error log");
-    LOG4CPLUS_FATAL(_logger, "Test fatal log");
+    LOG_DEBUG(_logger, "Test debug log " << (int) 1 << " " << true << " " << (double) 1.0);
+    LOG_INFO(_logger, "Test info log " << (unsigned int) 2 << " " << false << " " << (float) 1.0);
+    LOG_WARN(_logger, "Test warn log " << (long unsigned int) 3 << " " << false << " " << std::error_code{});
+    LOG_ERROR(_logger, "Test error log " << (long long unsigned int) 4 << " " << true);
+    const QIODevice *device = nullptr;
+    LOG_FATAL(_logger, "Test fatal log" << std::error_code{} << device);
 
-    LOG4CPLUS_DEBUG(_logger, L"家屋香袈睷晦");
+    LOG_DEBUG(_logger, "家屋香袈睷晦");
+
+    LOGW_DEBUG(_logger, L"Test debug log " << (int) 1 << L" " << true << L" " << (double) 1.0);
+    LOGW_INFO(_logger, L"Test info log " << (unsigned int) 2 << L" " << false << L" " << (float) 1.0);
+    LOGW_WARN(_logger, L"Test warn log " << (long unsigned int) 3 << L" " << false << L" " << std::error_code{});
+    LOGW_ERROR(_logger, L"Test error log " << (long long unsigned int) 4 << L" " << true);
+    LOGW_FATAL(_logger, L"Test fatal log " << std::error_code{} << device << (long unsigned int) 5);
+
+    LOGW_DEBUG(_logger, L"家屋香袈睷晦");
 
     CPPUNIT_ASSERT(true);
 }
@@ -76,7 +83,7 @@ void TestLog::testLargeLogRolling(void) {
 }
 
 void TestLog::testExpiredLogFiles(void) {
-    // This test check that old archived log files are deleted after a certain time
+    // This test checks that old archived log files are deleted after a certain time
     clearLogDirectory();
 
     // Generate a fake log file

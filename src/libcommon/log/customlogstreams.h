@@ -17,7 +17,71 @@
  */
 #pragma once
 #include <sstream>
-#include "libcommon/utility/types.h"
+
+#include <QIODevice>
+
+class CustomLogStream : private std::stringstream {
+    public:
+        CustomLogStream() = default;
+        inline CustomLogStream(const CustomLogStream &str) = delete;
+        CustomLogStream &operator=(const CustomLogStream &) = delete;
+
+        std::string str() const { return std::basic_stringstream<char>::str(); }
+
+        // We need to cast to std::stringstream as operators<<(std::stringstream, const wchar_t *str /*and const std::wstring
+        // &str*/) are defined outside of the class std::stringstream and therefore it is not applicable to the current object
+        // because of the private inheritance
+        CustomLogStream &operator<<(const char *str) {
+            static_cast<std::stringstream &>(*this) << str;
+            return *this;
+        }
+        CustomLogStream &operator<<(const std::string &str) {
+            static_cast<std::stringstream &>(*this) << str;
+            return *this;
+        }
+
+        CustomLogStream &operator<<(bool b) {
+            std::stringstream::operator<<(std::boolalpha);
+            std::stringstream::operator<<(b);
+            return *this;
+        }
+        CustomLogStream &operator<<(int i) {
+            std::stringstream::operator<<(i);
+            return *this;
+        }
+        CustomLogStream &operator<<(long i64) {
+            std::stringstream::operator<<(i64);
+            return *this;
+        }
+        CustomLogStream &operator<<(unsigned int ui) {
+            std::stringstream::operator<<(ui);
+            return *this;
+        }
+        CustomLogStream &operator<<(long long i64) {
+            std::stringstream::operator<<(i64);
+            return *this;
+        }
+        CustomLogStream &operator<<(unsigned long ul) {
+            std::stringstream::operator<<(ul);
+            return *this;
+        }
+        CustomLogStream &operator<<(unsigned long long ui64) {
+            std::stringstream::operator<<(ui64);
+            return *this;
+        }
+        CustomLogStream &operator<<(double d) {
+            std::stringstream::operator<<(d);
+            return *this;
+        }
+        CustomLogStream &operator<<(const QIODevice *ptr) {
+            std::stringstream::operator<<(ptr);
+            return *this;
+        }
+        CustomLogStream &operator<<(const std::error_code &code) {
+            std::stringstream::operator<<(code.value());
+            return *this;
+        }
+};
 
 class CustomLogWStream : private std::wstringstream {
     public:
@@ -40,11 +104,16 @@ class CustomLogWStream : private std::wstringstream {
         }
 
         CustomLogWStream &operator<<(bool b) {
+            std::wstringstream::operator<<(std::boolalpha);
             std::wstringstream::operator<<(b);
             return *this;
         }
         CustomLogWStream &operator<<(int i) {
             std::wstringstream::operator<<(i);
+            return *this;
+        }
+        CustomLogWStream &operator<<(unsigned int ui) {
+            std::wstringstream::operator<<(ui);
             return *this;
         }
         CustomLogWStream &operator<<(long i64) {
@@ -69,6 +138,10 @@ class CustomLogWStream : private std::wstringstream {
         }
         CustomLogWStream &operator<<(const QIODevice *ptr) {
             std::wstringstream::operator<<(ptr);
+            return *this;
+        }
+        CustomLogWStream &operator<<(const std::error_code &code) {
+            std::wstringstream::operator<<(code.value());
             return *this;
         }
 };
