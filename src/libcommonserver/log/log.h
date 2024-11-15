@@ -31,15 +31,15 @@
 namespace KDC {
 
 #ifdef NDEBUG
-#define LOG_DEBUG(logger, logEvent)                                                                \
-    {                                                                                              \
-        CustomLogStream customLogStream_;                                                          \
-        customLogStream_ << logEvent;                                                              \
-        const auto &customLogStreamStr_ = customLogStream_.str();                                  \
-        sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, customLogStreamStr_.c_str())); \
-        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("debug"));                 \
-        sentry_add_breadcrumb(crumb);                                                              \
-        LOG4CPLUS_DEBUG(logger, customLogStreamStr_.c_str())                                       \
+#define LOG_DEBUG(logger, logEvent)                                                               \
+    {                                                                                             \
+        CustomLogStream customLogStream_;                                                         \
+        customLogStream_ << logEvent;                                                             \
+        const auto &customLogStreamStr_ = customLogStream_.str();                                 \
+        sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, customLogStreamStr_.c_str()); \
+        sentry_value_set_by_key(crumb, "level", sentry_value_new_string("debug"));                \
+        sentry_add_breadcrumb(crumb);                                                             \
+        LOG4CPLUS_DEBUG(logger, customLogStreamStr_.c_str())                                      \
     }
 
 #define LOGW_DEBUG(logger, logEvent)                                                                              \
