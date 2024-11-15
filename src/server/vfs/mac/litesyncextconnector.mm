@@ -217,7 +217,7 @@
     // Setup connection with LiteSync extension
     NSLog(@"[KD] Setup connection with LiteSync extension");
 
-    NSString *liteSyncExtMachName;
+    NSString *liteSyncExtMachName = nil;
     if (qApp) {
         // Read LiteSyncExtMachName from plist
         NSBundle *appBundle = [NSBundle mainBundle];

@@ -177,7 +177,7 @@ class SocketApiServerPrivate {
     // Setup our connection to the launch item's service
     // This will start the launch item if it isn't already running
     NSLog(@"[KD] Setup connection with login item agent");
-    NSString *loginItemAgentMachName;
+    NSString *loginItemAgentMachName = nil;
     if (qApp) {
         NSBundle *appBundle = [NSBundle bundleForClass:[self class]];
         loginItemAgentMachName = [appBundle objectForInfoDictionaryKey:@"LoginItemAgentMachName"];
