@@ -39,7 +39,10 @@ set(libcommonserver_SRCS
 
 if(APPLE)
     list(APPEND libcommonserver_SRCS io/iohelper_mac.mm io/iohelper_mac.cpp)
+    set_property(SOURCE io/iohelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
     list(APPEND libcommonserver_SRCS utility/utility_mac.mm)
+    set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
     list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp)
 else()
