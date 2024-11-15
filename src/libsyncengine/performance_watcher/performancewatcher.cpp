@@ -85,6 +85,8 @@ void PerformanceWatcher::run() {
 
         Utility::msleep(1000); // Sleep for 1s
     }
+
+    Utility::terminateThreadFunction();
 }
 
 bool PerformanceWatcher::updateCpuUsage() {

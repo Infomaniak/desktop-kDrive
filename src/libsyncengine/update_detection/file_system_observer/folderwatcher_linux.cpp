@@ -46,11 +46,11 @@ void FolderWatcher_linux::startWatching() {
     _fileDescriptor = inotify_init();
     if (_fileDescriptor == -1) {
         LOG4CPLUS_WARN(_logger, "inotify_init() failed: " << strerror(errno));
-        return;
+        return Utility::terminateThreadFunction();
     }
 
     if (!addFolderRecursive(_folder)) {
-        return;
+        return Utility::terminateThreadFunction();
     }
 
     while (!_stop) {
@@ -125,6 +125,9 @@ void FolderWatcher_linux::startWatching() {
             Utility::msleep(SLEEP_TIME);
         }
     }
+
+    LOGW_DEBUG(_logger, L"Folder watching stopped: " << _folder.wstring().c_str());
+    Utility::terminateThreadFunction();
 }
 
 bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList) {

@@ -220,8 +220,8 @@ void SyncPalWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    setDone(exitCode);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
+    setDone(exitCode);
 }
 
 std::string SyncPalWorker::stepName(SyncStep step) {

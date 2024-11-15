@@ -822,6 +822,7 @@ void Worker::start() {
     }
 
     LOG_DEBUG(logger(), "Worker " << _type << " - " << _num << " ended");
+    Utility::terminateThreadFunction();
 }
 
 } // namespace KDC

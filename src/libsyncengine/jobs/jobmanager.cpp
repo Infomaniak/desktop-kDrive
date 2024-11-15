@@ -25,7 +25,6 @@
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
 
-#include <thread>
 #include <algorithm> // std::max
 
 #include <log4cplus/loggingmacros.h>
@@ -197,6 +196,8 @@ void JobManager::run() noexcept {
 
         Utility::msleep(100); // Sleep for 0.1s
     }
+
+    Utility::terminateThreadFunction();
 }
 
 void JobManager::startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> nextJob) {

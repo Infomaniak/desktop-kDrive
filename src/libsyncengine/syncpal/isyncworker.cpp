@@ -37,6 +37,7 @@ ISyncWorker::~ISyncWorker() {
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " destroyed");
+    log4cplus::threadCleanup();
 }
 
 void ISyncWorker::start() {
@@ -150,6 +151,7 @@ void ISyncWorker::setDone(ExitCode exitCode) {
     _isRunning = false;
     _stopAsked = false;
     _exitCode = exitCode;
+    log4cplus::threadCleanup();
 }
 
 void *ISyncWorker::executeFunc(void *thisWorker) {
