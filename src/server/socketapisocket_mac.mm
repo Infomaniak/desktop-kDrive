@@ -22,6 +22,9 @@
 #include "../extensions/MacOSX/kDriveFinderSync/Extension/xpcExtensionProtocol.h"
 #include "../extensions/MacOSX/kDriveFinderSync/LoginItemAgent/xpcLoginItemProtocol.h"
 
+#include "libcommon/utility/utility.h"
+
+#include <QCoreApplication>
 
 @interface LocalEnd : NSObject <XPCExtensionRemoteProtocol>
 
@@ -174,28 +177,36 @@ class SocketApiServerPrivate {
     // Setup our connection to the launch item's service
     // This will start the launch item if it isn't already running
     NSLog(@"[KD] Setup connection with login item agent");
-    NSBundle *appBundle = [NSBundle bundleForClass:[self class]];
-    NSString *loginItemAgentMachName = [appBundle objectForInfoDictionaryKey:@"LoginItemAgentMachName"];
-    if (!loginItemAgentMachName) {
-        NSLog(@"[KD] LoginItemAgentMachName undefined");
-        return;
-    }
+    NSString *loginItemAgentMachName = nil;
+    if (qApp) {
+        NSBundle *appBundle = [NSBundle bundleForClass:[self class]];
+        loginItemAgentMachName = [appBundle objectForInfoDictionaryKey:@"LoginItemAgentMachName"];
+        if (!loginItemAgentMachName) {
+            NSLog(@"[KD] LoginItemAgentMachName undefined");
+            return;
+        }
 
-    NSError *error = nil;
-    _loginItemAgentConnection = [[NSXPCConnection alloc] initWithLoginItemName:loginItemAgentMachName error:&error];
-    if (_loginItemAgentConnection == nil) {
-        NSLog(@"[KD] Failed to connect to login item agent: %@", [error description]);
-        return;
-    }
+        NSError *error = nil;
+        _loginItemAgentConnection = [[NSXPCConnection alloc]
+            initWithLoginItemName:loginItemAgentMachName
+                            error:&error];
+        if (_loginItemAgentConnection == nil) {
+            NSLog(@"[KD] Failed to connect to login item agent: %@", [error description]);
+            return;
+        }
+    } else {
+        // For testing
+        loginItemAgentMachName = [NSString
+            stringWithUTF8String:KDC::CommonUtility::loginItemAgentId().c_str()];
 
-    /*
-    // To debug with an existing login item agent
-    _loginItemAgentConnection = [[NSXPCConnection alloc] initWithMachServiceName:loginItemAgentMachName options:0];
-    if (_loginItemAgentConnection == nil) {
-        NSLog(@"[KD] Failed to connect to login item agent");
-        return;
+        _loginItemAgentConnection = [[NSXPCConnection alloc]
+            initWithMachServiceName:loginItemAgentMachName
+                            options:0];
+        if (_loginItemAgentConnection == nil) {
+            NSLog(@"[KD] Failed to connect to login item agent");
+            return;
+        }
     }
-    */
 
     // Set exported interface
     NSLog(@"[KD] Set exported interface for connection with ext");
