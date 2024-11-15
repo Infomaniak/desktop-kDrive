@@ -18,28 +18,24 @@
 
 #pragma once
 
-#include "libcommon/info/parametersinfo.h"
+#include "customdialog.h"
 
-#include <memory>
+#include "utility/types.h"
+
+class QTextEdit;
 
 namespace KDC {
 
-class ParametersCache {
+class BetaProgramDialog final : public CustomDialog {
+        Q_OBJECT
+
     public:
-        static std::shared_ptr<ParametersCache> instance() noexcept;
-        static bool isExtendedLogEnabled() noexcept { return instance()->_parametersInfo.extendedLog(); };
+        explicit BetaProgramDialog(bool isQuit = false, QWidget *parent = nullptr);
 
-        ParametersCache(ParametersCache const &) = delete;
-        void operator=(ParametersCache const &) = delete;
-
-        ParametersInfo &parametersInfo() { return _parametersInfo; }
-        bool saveParametersInfo(bool displayMessageBoxOnError = true);
+        [[nodiscard]] DistributionChannel selectedDistributionChannel() const { return _channel; }
 
     private:
-        static std::shared_ptr<ParametersCache> _instance;
-        ParametersInfo _parametersInfo;
-
-        ParametersCache();
+        DistributionChannel _channel{DistributionChannel::Unknown};
 };
 
 } // namespace KDC

@@ -36,6 +36,8 @@ class QBoxLayout;
 
 namespace KDC {
 
+class PreferencesBlocWidget;
+
 class VersionWidget final : public QWidget {
         Q_OBJECT
 
@@ -57,19 +59,29 @@ class VersionWidget final : public QWidget {
         void onChannelButtonClicked() const;
         void onLinkActivated(const QString &link);
         void onUpdateButtonClicked();
+        void onJoinBetaButtonClicked();
 
     private:
+        void initVersionInfoBloc(PreferencesBlocWidget *prefBloc);
+        void initBetaBloc(PreferencesBlocWidget *prefBloc);
         void refreshChannelButtons(DistributionChannel channel) const;
+
+        void saveDistributionChannel(DistributionChannel channel) const;
 
         QRadioButton *_prodButton{nullptr};
         QRadioButton *_betaButton{nullptr};
         QRadioButton *_internalButton{nullptr};
 
         QLabel *_versionLabel{nullptr};
+
         QLabel *_updateStatusLabel{nullptr};
         QLabel *_showReleaseNotesLabel{nullptr};
         QLabel *_versionNumberLabel{nullptr};
         QPushButton *_updateButton{nullptr};
+
+        QLabel *_betaVersionLabel{nullptr};
+        QLabel *_betaVersionDescription{nullptr};
+        QPushButton *_joinBetaButton{nullptr};
 };
 
 } // namespace KDC

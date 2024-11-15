@@ -40,9 +40,7 @@ class UpdateManager final : public QObject {
     public:
         explicit UpdateManager(QObject *parent);
 
-        void setDistributionChannel(const DistributionChannel channel) const {
-            _updater->checkUpdateAvailable(channel);
-        } // TODO : write to DB
+        void setDistributionChannel(const DistributionChannel channel) const;
         [[nodiscard]] const VersionInfo &versionInfo() const { return _updater->versionInfo(); }
         [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
 

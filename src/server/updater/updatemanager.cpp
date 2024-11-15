@@ -26,7 +26,6 @@
 #include "linuxupdater.h"
 #endif
 
-
 #include "db/parmsdb.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
@@ -50,6 +49,12 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
 
     // At startup, do a check in any case and setup distribution channel.
     QTimer::singleShot(3000, this, [this]() { setDistributionChannel(readDistributionChannelFromDb()); });
+}
+
+void UpdateManager::setDistributionChannel(const DistributionChannel channel) const {
+    _updater->checkUpdateAvailable(channel);
+    ParametersCache::instance()->parameters().setDistributionChannel(channel);
+    ParametersCache::instance()->save();
 }
 
 void UpdateManager::startInstaller() const {

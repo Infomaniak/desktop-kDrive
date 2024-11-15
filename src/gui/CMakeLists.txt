@@ -116,6 +116,7 @@ set(client_SRCS
     preferencesmenubarwidget.h preferencesmenubarwidget.cpp
     preferenceswidget.h preferenceswidget.cpp
     versionwidget.h versionwidget.cpp
+    betaprogramdialog.h betaprogramdialog.cpp
     progressbarwidget.h progressbarwidget.cpp
     proxyserverdialog.h proxyserverdialog.cpp
     guirequests.h guirequests.cpp

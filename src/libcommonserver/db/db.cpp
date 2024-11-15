@@ -340,28 +340,25 @@ bool Db::init(const std::string &version) {
 
             queryFree(SELECT_VERSION_REQUEST_ID);
 
-            if (_fromVersion != version) {
-                // Upgrade DB
-                LOG_INFO(_logger,
-                         "Upgrade " << dbType().c_str() << " DB from " << _fromVersion.c_str() << " to " << version.c_str());
-                if (!upgrade(_fromVersion, version)) {
-                    LOG_WARN(_logger, "Error in Db::upgrade");
-                    return false;
-                }
-
-                // Update version
-                if (!prepareQuery(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST)) return false;
-                if (!updateVersion(version, found)) {
-                    LOG_WARN(_logger, "Error in Db::updateVersion");
-                    return false;
-                }
-                if (!found) {
-                    LOG_WARN(_logger, "Version not found");
-                    return false;
-                }
-
-                queryFree(UPDATE_VERSION_REQUEST_ID);
+            // Upgrade DB
+            LOG_INFO(_logger, "Upgrade " << dbType().c_str() << " DB from " << _fromVersion.c_str() << " to " << version.c_str());
+            if (!upgrade(_fromVersion, version)) {
+                LOG_WARN(_logger, "Error in Db::upgrade");
+                return false;
             }
+
+            // Update version
+            if (!prepareQuery(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST)) return false;
+            if (!updateVersion(version, found)) {
+                LOG_WARN(_logger, "Error in Db::updateVersion");
+                return false;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Version not found");
+                return false;
+            }
+
+            queryFree(UPDATE_VERSION_REQUEST_ID);
         } else {
             // Create version table
             LOG_DEBUG(_logger, "Create version table");

@@ -22,6 +22,7 @@
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "guiutility.h"
+#include "betaprogramdialog.h"
 #include "parameterscache.h"
 #include "preferencesblocwidget.h"
 #include "utility/utility.h"
@@ -49,67 +50,25 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
 
     _versionLabel = new QLabel(this);
     _versionLabel->setObjectName("blocLabel");
-    layout()->addWidget(_versionLabel);
+    mainLayout->addWidget(_versionLabel);
 
-    const auto versionBloc = new PreferencesBlocWidget();
-    layout()->addWidget(versionBloc);
-    QBoxLayout *versionBox = versionBloc->addLayout(QBoxLayout::Direction::LeftToRight);
-    const auto versionVBox = new QVBoxLayout();
-    versionVBox->setContentsMargins(0, 0, 0, 0);
-    versionVBox->setSpacing(1);
-    versionBox->addLayout(versionVBox);
-    versionBox->setStretchFactor(versionVBox, 1);
+    const auto prefBloc = new PreferencesBlocWidget();
+    mainLayout->addWidget(prefBloc);
 
-    _updateStatusLabel = new QLabel(this);
-    _updateStatusLabel->setObjectName("boldTextLabel");
-    _updateStatusLabel->setWordWrap(true);
-    versionVBox->addWidget(_updateStatusLabel);
-
-    // TODO : add it back later (version 3.6.8 or 4.0)
-    // const auto channelBox = new QHBoxLayout(this);
-    // _prodButton = new QRadioButton(tr("Prod"), this);
-    // channelBox->addWidget(_prodButton);
-    // channelBox->addStretch();
-    // _betaButton = new QRadioButton(tr("Beta"), this);
-    // channelBox->addWidget(_betaButton);
-    // channelBox->addStretch();
-    // _internalButton = new QRadioButton(tr("Internal"), this);
-    // channelBox->addWidget(_internalButton);
-    // channelBox->addStretch();
-    // versionVBox->addLayout(channelBox);
-
-    _showReleaseNotesLabel = new QLabel(this);
-    _showReleaseNotesLabel->setObjectName("boldTextLabel");
-    _showReleaseNotesLabel->setWordWrap(true);
-    _showReleaseNotesLabel->setVisible(false);
-    versionVBox->addWidget(_showReleaseNotesLabel);
-
-    static const QString versionNumberLinkText =
-            tr(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING);
-    _versionNumberLabel = new QLabel(this);
-    _versionNumberLabel->setContextMenuPolicy(Qt::PreventContextMenu);
-    _versionNumberLabel->setText(versionNumberLinkText);
-    versionVBox->addWidget(_versionNumberLabel);
-
-    const auto copyrightLabel = new QLabel(QString("Copyright %1").arg(APPLICATION_VENDOR));
-    copyrightLabel->setObjectName("description");
-    versionVBox->addWidget(copyrightLabel);
-
-    _updateButton = new QPushButton(this);
-    _updateButton->setObjectName("defaultbutton");
-    _updateButton->setFlat(true);
-    versionBox->addWidget(_updateButton);
+    initVersionInfoBloc(prefBloc);
+    prefBloc->addSeparator();
+    initBetaBloc(prefBloc);
 
     refresh();
 
-    // TODO : add it back later (version 3.6.8 or 4.0)
-    // connect(_prodButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
-    // connect(_betaButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
-    // connect(_internalButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
+    connect(_prodButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
+    connect(_betaButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
+    connect(_internalButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
     connect(_updateStatusLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_versionNumberLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_showReleaseNotesLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdateButtonClicked);
+    connect(_joinBetaButton, &QPushButton::clicked, this, &VersionWidget::onJoinBetaButtonClicked);
 }
 
 void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const {
@@ -178,6 +137,14 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
     _updateStatusLabel->setText(statusString);
     _showReleaseNotesLabel->setVisible(showReleaseNote);
     _updateButton->setVisible(showUpdateButton);
+
+    // Beta version bloc
+    _betaVersionLabel->setText(tr("Beta program"));
+    _betaVersionDescription->setText(tr("Get early access to new versions of the application"));
+    if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Prod)
+        _joinBetaButton->setText(tr("Join"));
+    else
+        _joinBetaButton->setText(tr("Quit"));
 }
 
 void VersionWidget::showAboutDialog() {
@@ -226,7 +193,7 @@ void VersionWidget::onChannelButtonClicked() const {
     else
         return;
 
-    GuiRequests::changeDistributionChannel(channel);
+    saveDistributionChannel(channel);
     refresh();
 }
 
@@ -249,6 +216,95 @@ void VersionWidget::onUpdateButtonClicked() {
 #endif
 }
 
+void VersionWidget::onJoinBetaButtonClicked() {
+    if (auto dialog = BetaProgramDialog(false, this); dialog.exec() == QDialog::Accepted) {
+        saveDistributionChannel(dialog.selectedDistributionChannel());
+        refresh();
+    }
+}
+
+void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
+    auto *versionLayout = prefBloc->addLayout(QBoxLayout::Direction::LeftToRight);
+
+    auto *verticalLayout = new QVBoxLayout(this);
+    verticalLayout->setSpacing(1);
+    verticalLayout->setContentsMargins(0, 0, 0, 0);
+    versionLayout->addLayout(verticalLayout);
+
+    _updateStatusLabel = new QLabel(this);
+    _updateStatusLabel->setObjectName("boldTextLabel");
+    _updateStatusLabel->setWordWrap(true);
+    verticalLayout->addWidget(_updateStatusLabel);
+
+    const auto distributionChannel = ParametersCache::instance()->parametersInfo().distributionChannel();
+    const auto channelBox = new QHBoxLayout(this);
+    channelBox->setSpacing(30);
+    _prodButton = new QRadioButton(tr("Prod"), this);
+    if (distributionChannel == DistributionChannel::Prod) _prodButton->setChecked(true);
+    channelBox->addWidget(_prodButton);
+    _betaButton = new QRadioButton(tr("Beta"), this);
+    if (distributionChannel == DistributionChannel::Beta) _betaButton->setChecked(true);
+    channelBox->addWidget(_betaButton);
+    _internalButton = new QRadioButton(tr("Internal"), this);
+    if (distributionChannel == DistributionChannel::Internal) _internalButton->setChecked(true);
+    channelBox->addWidget(_internalButton);
+    channelBox->addStretch();
+    verticalLayout->addLayout(channelBox);
+
+    _showReleaseNotesLabel = new QLabel(this);
+    _showReleaseNotesLabel->setObjectName("boldTextLabel");
+    _showReleaseNotesLabel->setWordWrap(true);
+    _showReleaseNotesLabel->setVisible(false);
+    verticalLayout->addWidget(_showReleaseNotesLabel);
+
+    static const QString versionNumberLinkText =
+            tr(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING);
+    _versionNumberLabel = new QLabel(this);
+    _versionNumberLabel->setContextMenuPolicy(Qt::PreventContextMenu);
+    _versionNumberLabel->setText(versionNumberLinkText);
+    verticalLayout->addWidget(_versionNumberLabel);
+
+    // TODO : add "BETA" banner
+
+    const auto copyrightLabel = new QLabel(QString("Copyright %1").arg(APPLICATION_VENDOR));
+    copyrightLabel->setObjectName("description");
+    verticalLayout->addWidget(copyrightLabel);
+
+    versionLayout->addStretch();
+
+    _updateButton = new QPushButton(this);
+    _updateButton->setObjectName("defaultbutton");
+    _updateButton->setFlat(true);
+    versionLayout->addWidget(_updateButton);
+}
+
+void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
+    auto *betaLayout = prefBloc->addLayout(QBoxLayout::Direction::LeftToRight);
+
+    auto *verticalLayout = new QVBoxLayout(this);
+    verticalLayout->setSpacing(1);
+    verticalLayout->setContentsMargins(0, 0, 0, 0);
+    betaLayout->addLayout(verticalLayout);
+
+    _betaVersionLabel = new QLabel(this);
+    _betaVersionLabel->setObjectName("boldTextLabel");
+    _betaVersionLabel->setWordWrap(true);
+    verticalLayout->addWidget(_betaVersionLabel);
+
+    _betaVersionDescription = new QLabel(this);
+    _betaVersionDescription->setObjectName("description");
+    _betaVersionDescription->setWordWrap(true);
+    _betaVersionDescription->setMinimumWidth(300);
+    verticalLayout->addWidget(_betaVersionDescription);
+
+    betaLayout->addStretch();
+
+    _joinBetaButton = new QPushButton(this);
+    _joinBetaButton->setObjectName("transparentbutton");
+    _joinBetaButton->setFlat(true);
+    betaLayout->addWidget(_joinBetaButton);
+}
+
 void VersionWidget::refreshChannelButtons(const DistributionChannel channel) const {
     switch (channel) {
         case DistributionChannel::Prod: {
@@ -269,6 +325,11 @@ void VersionWidget::refreshChannelButtons(const DistributionChannel channel) con
         default:
             break;
     }
+}
+
+void VersionWidget::saveDistributionChannel(const DistributionChannel channel) const {
+    GuiRequests::changeDistributionChannel(channel);
+    refresh();
 }
 
 } // namespace KDC

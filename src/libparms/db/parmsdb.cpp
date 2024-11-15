@@ -60,7 +60,9 @@
     "extendedLog INTEGER,"                   \
     "maxAllowedCpu INTEGER,"                 \
     "uploadSessionParallelJobs INTEGER,"     \
-    "jobPoolCapacityFactor INTEGER);"
+    "jobPoolCapacityFactor INTEGER,"         \
+    "distributionChannel INTEGER"            \
+    ");"
 
 #define INSERT_PARAMETERS_REQUEST_ID "insert_parameters"
 #define INSERT_PARAMETERS_REQUEST                                                                                             \
@@ -68,9 +70,9 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, "    \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "     \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "               \
-    "jobPoolCapacityFactor) "                                                                                                 \
+    "jobPoolCapacityFactor, distributionChannel) "                                                                            \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, " \
-    "?25, ?26, ?27, ?28, ?29);"
+    "?25, ?26, ?27, ?28, ?29, ?30);"
 
 #define UPDATE_PARAMETERS_REQUEST_ID "update_parameters"
 #define UPDATE_PARAMETERS_REQUEST                                                                                               \
@@ -81,7 +83,7 @@
     "bigFolderSizeLimit=?17, darkTheme=?18, showShortcuts=?19, updateFileAvailable=?20, updateTargetVersion=?21, "              \
     "updateTargetVersionString=?22, "                                                                                           \
     "autoUpdateAttempted=?23, seenVersion=?24, dialogGeometry=?25, extendedLog=?26, maxAllowedCpu=?27, "                        \
-    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29;"
+    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30;"
 
 #define SELECT_PARAMETERS_REQUEST_ID "select_parameters"
 #define SELECT_PARAMETERS_REQUEST                                                                                          \
@@ -89,15 +91,14 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, " \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "  \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "            \
-    "jobPoolCapacityFactor "                                                                                               \
+    "jobPoolCapacityFactor, distributionChannel "                                                                          \
     "FROM parameters;"
 
 #define UPDATE_PARAMETERS_JOB_REQUEST_ID "update_parameters_job"
 #define UPDATE_PARAMETERS_JOB_REQUEST "UPDATE parameters SET uploadSessionParallelJobs=?1, jobPoolCapacityFactor=?2;"
 
-// TODO : will be added later
-// #define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID "alter_parameters_add_distribution"
-// #define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST "ALTER TABLE parameters ADD COLUMN distributionChannel INTEGER;"
+#define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID "alter_parameters_add_distribution"
+#define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST "ALTER TABLE parameters ADD COLUMN distributionChannel INTEGER;"
 
 //
 // user
@@ -601,7 +602,7 @@ bool ParmsDb::insertDefaultParameters() {
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
-    //    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
+    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_PARAMETERS_REQUEST_ID);
@@ -1042,6 +1043,11 @@ bool ParmsDb::upgrade(const std::string & /*fromVersion*/, const std::string & /
         queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
 
+    columnName = "distributionChannel";
+    if (!addIntegerColumnIfMissing(tableName, columnName)) {
+        return false;
+    }
+
     bool exist = false;
     if (!tableExists("app_state", exist)) return false;
     if (!exist) {
@@ -1130,7 +1136,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
     ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
-    //    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
+    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_PARAMETERS_REQUEST_ID);
@@ -1249,9 +1255,8 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 28, intResult));
     parameters.setJobPoolCapacityFactor(intResult);
 
-    // TODO : not supported for now
-    // ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
-    // parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
+    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
+    parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
 
     ASSERT(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 
