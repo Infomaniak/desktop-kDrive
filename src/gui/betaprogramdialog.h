@@ -30,14 +30,16 @@ class BetaProgramDialog final : public CustomDialog {
         Q_OBJECT
 
     public:
-        explicit BetaProgramDialog(bool isQuit = false, QWidget *parent = nullptr);
+        explicit BetaProgramDialog(bool isQuit, QWidget *parent = nullptr);
 
         [[nodiscard]] DistributionChannel selectedDistributionChannel() const { return _channel; }
 
     private slots:
         void onAcknowledgement();
+        void onSave();
 
     private:
+        bool _isQuit{false};
         DistributionChannel _channel{DistributionChannel::Unknown};
         QCheckBox *_acknowledgmentCheckbox{nullptr};
         QPushButton *_saveButton{nullptr};

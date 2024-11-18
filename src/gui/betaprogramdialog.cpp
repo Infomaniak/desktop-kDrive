@@ -36,7 +36,8 @@ static const QString shareCommentsLink = "shareCommentsLink";
 
 namespace KDC {
 
-BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *parent /*= nullptr*/) : CustomDialog(true, parent) {
+BetaProgramDialog::BetaProgramDialog(const bool isQuit, QWidget *parent /*= nullptr*/) :
+    CustomDialog(true, parent), _isQuit(isQuit) {
     setObjectName("BetaProgramDialog");
     setMinimumHeight(380);
 
@@ -63,12 +64,12 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *par
     // Title
     auto *titleLabel = new QLabel(this);
     titleLabel->setObjectName("titleLabel");
-    titleLabel->setText(isQuit ? tr("Quit the beta program") : tr("Join the beta program"));
+    titleLabel->setText(_isQuit ? tr("Quit the beta program") : tr("Join the beta program"));
     layout->addWidget(titleLabel);
     layout->addSpacing(titleBoxVSpacing);
 
     // Main text box
-    if (!isQuit) {
+    if (!_isQuit) {
         auto *mainTextBox = new QLabel(this);
         mainTextBox->setObjectName("largeNormalTextLabel");
         mainTextBox->setText(tr(
@@ -101,7 +102,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *par
     _acknowledgmentCheckbox = new QCheckBox(tr("I understand"), this);
     acknowledmentLayout->addWidget(_acknowledgmentCheckbox, 1, 1);
 
-    if (isQuit) {
+    if (_isQuit) {
         auto *bottomTextBox = new QLabel(this);
         bottomTextBox->setObjectName("largeNormalTextLabel");
         bottomTextBox->setText(tr("Are you sure you want to leave the beta program?"));
@@ -128,7 +129,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *par
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addStretch();
 
-    connect(_saveButton, &QPushButton::clicked, this, &BetaProgramDialog::accept);
+    connect(_saveButton, &QPushButton::clicked, this, &BetaProgramDialog::onSave);
     connect(cancelButton, &QPushButton::clicked, this, &BetaProgramDialog::reject);
     connect(this, &BetaProgramDialog::exit, this, &BetaProgramDialog::reject);
     connect(_acknowledgmentCheckbox, &QCheckBox::clicked, this, &BetaProgramDialog::onAcknowledgement);
@@ -136,6 +137,17 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *par
 
 void BetaProgramDialog::onAcknowledgement() {
     _saveButton->setEnabled(_acknowledgmentCheckbox->isChecked());
+}
+
+void BetaProgramDialog::onSave() {
+    if (_isQuit) {
+        _channel = DistributionChannel::Prod;
+    } else {
+        // TODO : add Internal channel for collaborators
+        _channel = DistributionChannel::Beta;
+    }
+
+    accept();
 }
 
 } // namespace KDC
