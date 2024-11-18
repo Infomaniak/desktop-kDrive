@@ -22,6 +22,7 @@
 
 #include <fstream>
 
+
 #ifdef _WIN32
 #include "libcommonserver/io/iohelper.h"
 #include <sys/utime.h>
@@ -64,12 +65,12 @@ std::string loadEnvVariable(const std::string& key) {
 }
 #ifdef _WIN32
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
-    struct _utimebuf timeBuffer;
+    struct _utimbuf timeBuffer;
     const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
 
     IoError ioError = IoError::Success;
     FileStat fileStat;
-    IoHelper::getFileStat(path, &fileStat, ioError);
+    ::KDC::IoHelper::getFileStat(path, &fileStat, ioError);
 
     timeBuffer.tma = fileStat.creationTime;
     timeBuffer.tmm = timeInSeconds;
