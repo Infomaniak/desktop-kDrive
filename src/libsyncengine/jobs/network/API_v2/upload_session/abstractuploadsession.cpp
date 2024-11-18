@@ -36,7 +36,8 @@ namespace KDC {
 
 AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
                                              uint64_t nbParalleleThread /*= 1*/) :
-    _logger(Log::instance()->getLogger()), _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
+    _logger(Log::instance()->getLogger()),
+    _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
@@ -289,8 +290,8 @@ bool AbstractUploadSession::sendChunks() {
                 _exitCause = ExitCause::NotFound;
                 return false;
             }
+            Utility::msleep(1000);
         }
-        Utility::msleep(1000);
 
         // Some applications generate locked temporary files during save operations. To avoid spurious "access denied" errors,
         // we retry for 10 seconds, which is usually sufficient for the application to delete the tmp file. If the file is still

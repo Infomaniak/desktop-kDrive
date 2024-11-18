@@ -203,8 +203,8 @@ ExitInfo UploadJob::readFile() {
                 LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_filePath));
                 return {ExitCode::SystemError, ExitCause::NotFound};
             }
+            Utility::msleep(1000);
         }
-        Utility::msleep(1000);
 
         // Some applications generate locked temporary files during save operations. To avoid spurious "access denied" errors,
         // we retry for 10 seconds, which is usually sufficient for the application to delete the tmp file. If the file is still
