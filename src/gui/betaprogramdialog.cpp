@@ -71,14 +71,11 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *par
     if (!isQuit) {
         auto *mainTextBox = new QLabel(this);
         mainTextBox->setObjectName("largeNormalTextLabel");
-        mainTextBox->setText(
-                tr(R"(Get early access to new versions of the application before they are released to the general public, and take )"
-                   R"(part in improving the application by <a style="%1" href="%2">sending us your comments</a>.)")
-                        .arg(CommonUtility::linkStyle, shareCommentsLink));
+        mainTextBox->setText(tr(
+                R"(Get early access to new versions of the application before they are released to the general public, and take )"
+                R"(part in improving the application by sending us your comments.)"));
         mainTextBox->setWordWrap(true);
         layout->addWidget(mainTextBox);
-
-        connect(mainTextBox, &QLabel::linkActivated, this, &BetaProgramDialog::onLinkActivated);
     }
 
     // Acknowlegment
@@ -135,11 +132,6 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *par
     connect(cancelButton, &QPushButton::clicked, this, &BetaProgramDialog::reject);
     connect(this, &BetaProgramDialog::exit, this, &BetaProgramDialog::reject);
     connect(_acknowledgmentCheckbox, &QCheckBox::clicked, this, &BetaProgramDialog::onAcknowledgement);
-}
-
-void BetaProgramDialog::onLinkActivated(const QString &link) {
-    if (link == shareCommentsLink)
-        QDesktopServices::openUrl(QUrl("https://feedback.userreport.com/c61ed75d-26e9-4905-b453-3b549b69e3d7/#ideas/popular"));
 }
 
 void BetaProgramDialog::onAcknowledgement() {

@@ -35,7 +35,6 @@ class BetaProgramDialog final : public CustomDialog {
         [[nodiscard]] DistributionChannel selectedDistributionChannel() const { return _channel; }
 
     private slots:
-        void onLinkActivated(const QString &link);
         void onAcknowledgement();
 
     private:
