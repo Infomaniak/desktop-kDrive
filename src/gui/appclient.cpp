@@ -48,8 +48,6 @@
 #include <sentry.h>
 #include <log/sentry/sentryhandler.h>
 
-#define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
-
 #define CONNECTION_TRIALS 3
 #define CHECKCOMMSTATUS_TRIALS 5
 
