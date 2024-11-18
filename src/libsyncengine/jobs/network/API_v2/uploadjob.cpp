@@ -30,8 +30,8 @@ namespace KDC {
 
 UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
                      SyncTime modtime) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _filePath(filepath), _filename(filename),
-    _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _filePath(filepath), _filename(filename), _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -184,24 +184,36 @@ std::string UploadJob::getContentType(bool &canceled) {
 }
 
 ExitInfo UploadJob::readFile() {
-    std::ifstream file(_filePath, std::ios_base::in | std::ios_base::binary);
-    if (!file.is_open()) {
-        LOGW_WARN(_logger, L"Failed to open file - path=" << Path2WStr(_filePath));
-        bool exists = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
-            return {ExitCode::SystemError, ExitCause::Unknown};
+    std::ifstream file;
+    int count = 0;
+    do {
+        file.open(_filePath, std::ios_base::in | std::ios_base::binary);
+        if (!file.is_open()) {
+            bool exists = false;
+            IoError ioError = IoError::Success;
+            if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
+                return {ExitCode::SystemError, ExitCause::Unknown};
+            }
+            if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            }
+            if (!exists) {
+                LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_filePath));
+                return {ExitCode::SystemError, ExitCause::NotFound};
+            }
         }
-        if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-        if (!exists) {
-            LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_filePath));
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        }
+        Utility::msleep(1000);
 
+        // Some applications generate locked temporary files during save operations. To avoid spurious "access denied" errors,
+        // we retry for 10 seconds, which is usually sufficient for the application to delete the tmp file. If the file is still
+        // locked after 10 seconds, a file access error is displayed to the user. Proper handling is also implemented for
+        // "file not found" errors.
+    } while (count++ < 10 && !file.is_open());
+
+    if (count >= 10) {
+        LOGW_WARN(_logger, L"Failed to open file - path=" << Path2WStr(_filePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 

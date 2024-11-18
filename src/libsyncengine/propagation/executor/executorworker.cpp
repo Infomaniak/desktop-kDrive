@@ -2544,13 +2544,9 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
 }
 
 ExitInfo ExecutorWorker::handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
-    auto job = std::dynamic_pointer_cast<UploadJob>(_ongoingJobs[syncOp->id()]);
-    if (!job) {
-        auto job = std::dynamic_pointer_cast<AbstractUploadSession>(_ongoingJobs[syncOp->id()]);
-        if (!job) {
-            LOGW_SYNCPAL_WARN(_logger, L"Job not found for operation: " << syncOp->id());
-            return opsExitInfo; // Unable to handle this error
-        }
+    if (syncOp->targetSide() != ReplicaSide::Remote) {
+        LOGW_SYNCPAL_WARN(_logger, L"Invalid target side for SystemError | FileNotFound error: " << syncOp->targetSide());
+        return opsExitInfo; // Unable to handle this error
     }
 
     _syncPal->setRestart(true);
