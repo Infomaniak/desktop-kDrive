@@ -119,7 +119,7 @@ bool DownloadJob::canRun() {
 
     if (_isCreate && exists) {
         LOGW_DEBUG(_logger,
-                   L"Item: " << Utility::formatSyncPath(_localpath) << L" already exist. Aborting current sync and restart.");
+                   L"Item with " << Utility::formatSyncPath(_localpath) << L" already exists. Aborting current sync and restarting.");
         _exitCode = ExitCode::NeedRestart;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
@@ -436,7 +436,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
 
         LOGW_DEBUG(_logger,
-                   L"Create symlink: " << Utility::formatSyncPath(targetPath) << L", " << Utility::formatSyncPath(_localpath));
+                   L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", " << Utility::formatSyncPath(_localpath));
 
         bool isFolder = mimeType == mimeTypeSymlinkFolder;
         IoError ioError = IoError::Success;
@@ -527,11 +527,11 @@ bool DownloadJob::moveTmpFile(const SyncPath &tmpPath, bool &restartSync) {
             bool removed = removeTmpFile(tmpPath);
             if (ec) {
                 LOGW_WARN(_logger,
-                          L"Failed to copy: " << Utility::formatSyncPath(_localpath) << L", " << Utility::formatStdError(ec));
+                          L"Failed to copy to " << Utility::formatSyncPath(_localpath) << L", " << Utility::formatStdError(ec));
                 return false;
             }
             if (!removed) {
-                LOGW_WARN(_logger, L"Failed to remove: " << Utility::formatSyncPath(tmpPath));
+                LOGW_WARN(_logger, L"Failed to remove " << Utility::formatSyncPath(tmpPath));
                 return false;
             }
         }
