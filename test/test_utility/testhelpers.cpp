@@ -24,6 +24,8 @@
 
 #ifdef _WIN32
 #include "libcommonserver/io/iohelper.h"
+#include <sys/utime.h>
+#include <sys/types.h>
 #else
 #include <sys/stat.h>
 #include <utime.h>
