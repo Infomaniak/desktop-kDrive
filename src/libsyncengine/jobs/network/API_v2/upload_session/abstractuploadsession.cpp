@@ -180,8 +180,8 @@ bool AbstractUploadSession::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore " << Utility::formatSyncPath(_filePath.filename()));
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::NotFound;
+        _exitCode = ExitCode::NeedRestart;
+        _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
 
