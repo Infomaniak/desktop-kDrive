@@ -46,11 +46,11 @@ void FolderWatcher_linux::startWatching() {
     _fileDescriptor = inotify_init();
     if (_fileDescriptor == -1) {
         LOG4CPLUS_WARN(_logger, "inotify_init() failed: " << strerror(errno));
-        return Utility::terminateThreadFunction();
+        Utility::terminateThreadFunction();
     }
 
     if (!addFolderRecursive(_folder)) {
-        return Utility::terminateThreadFunction();
+        Utility::terminateThreadFunction();
     }
 
     while (!_stop) {
