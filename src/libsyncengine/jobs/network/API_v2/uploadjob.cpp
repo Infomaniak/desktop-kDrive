@@ -187,6 +187,21 @@ ExitInfo UploadJob::readFile() {
     std::ifstream file(_filePath, std::ios_base::in | std::ios_base::binary);
     if (!file.is_open()) {
         LOGW_WARN(_logger, L"Failed to open file - path=" << Path2WStr(_filePath));
+        bool exists = false;
+        IoError ioError = IoError::Success;
+        if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
+            return {ExitCode::SystemError, ExitCause::Unknown};
+        }
+        if (ioError == IoError::AccessDenied) {
+            LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+        if (!exists) {
+            LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_filePath));
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        }
+
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
