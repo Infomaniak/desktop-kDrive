@@ -164,7 +164,7 @@ void TestIo::testAccesDeniedOnLockedFiles() {
     // Try to delete the file
     std::error_code ec;
     std::filesystem::remove_all(lockedFile, ec);
-    IoError ioError = IoHelper::stdError2ioError(ec);
+    const IoError ioError = IoHelper::stdError2ioError(ec);
 
     // Unlock the file
     CloseHandle(hFile);
