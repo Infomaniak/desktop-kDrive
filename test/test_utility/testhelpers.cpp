@@ -15,10 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <fstream>
+
 #include "testhelpers.h"
 
 #include "libcommon/utility/utility.h"
+
+#include <time.h>
+#include <utime.h>
+#include <fstream>
+
+
+#if defined(__APPLE__) || defined(__unix__)
+#include <sys/stat.h>
+#endif
 
 namespace KDC::testhelpers {
 
@@ -50,6 +59,20 @@ std::string loadEnvVariable(const std::string& key) {
         throw std::runtime_error("Environment variables " + key + " is missing!");
     }
     return val;
+}
+
+void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
+    struct stat fileStat;
+    struct utimbuf new_times;
+
+    const auto fileNameStr = path.string();
+    const auto fileName = fileNameStr.c_str();
+
+    stat(fileName, &fileStat);
+
+    const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
+    new_times.modtime = timeInSeconds;
+    utime(fileName, &new_times);
 }
 
 } // namespace KDC::testhelpers
