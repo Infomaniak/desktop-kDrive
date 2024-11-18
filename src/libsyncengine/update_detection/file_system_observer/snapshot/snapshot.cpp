@@ -77,6 +77,27 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         return false;
     }
 
+    // Check if the item already exists in the new parent
+    if (auto itNewParent = _items.find(newItem.parentId()); itNewParent != _items.end()) {
+        auto childrenIds = itNewParent->second.childrenIds(); // Copy to avoid iterator invalidation
+        for (const NodeId &childId: childrenIds) {
+            auto child = _items.find(childId);
+            if (child == _items.end()) {
+                assert(false && "Child not found in snapshot");
+                LOG_WARN(Log::instance()->getLogger(), "Child " << childId.c_str() << " not found in snapshot");
+                continue;
+            }
+
+            if (child->second.name() == newItem.name() && child->second.id() != newItem.id()) {
+                LOGW_DEBUG(Log::instance()->getLogger(),
+                           L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
+                                     << L") already exists in parent: " << Utility::s2ws(newItem.parentId())
+                                     << L" with a different id. Removing it and adding the new one.");
+                removeItem(childId);
+            }
+        }
+    }
+
     const SnapshotItem &prevItem = _items[newItem.id()];
 
     // Update parent's children lists
