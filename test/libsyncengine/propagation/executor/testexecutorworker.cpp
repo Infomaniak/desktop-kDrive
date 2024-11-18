@@ -244,7 +244,7 @@ void TestExecutorWorker::testIsValidDestination() {
 
 
     const auto executorWorkerMock = std::shared_ptr<ExecutorWorkerMock>(new ExecutorWorkerMock(_syncPal, "Executor", "EXEC"));
-    // False if the item is created on the local replica is not at the root of the synchronisation folder and has no
+    // False if the item created on the local replica is not at the root of the synchronisation folder and has no
     // corresponding parent node.
     {
         SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
@@ -255,7 +255,7 @@ void TestExecutorWorker::testIsValidDestination() {
 
     const auto root = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
 
-    // False if the item is created on the local replica is not at the root of the synchronisation folder and has a
+    // False if the item created on the local replica is not at the root of the synchronisation folder and has a
     // corresponding parent node with no id.
     {
         const auto correspondingParentNode = std::make_shared<Node>(
@@ -273,7 +273,7 @@ void TestExecutorWorker::testIsValidDestination() {
             666, ReplicaSide::Remote, Utility::commonDocumentsFolderName(), NodeType::Directory, OperationType::None,
             "common_docs_id", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
 
-    // False if the item is created on the local replica is a file and has Common Documents as corresponding parent node.
+    // False if the item created on the local replica is a file and has Common Documents as corresponding parent node.
     {
         SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
         op->setTargetSide(ReplicaSide::Remote);
@@ -282,13 +282,33 @@ void TestExecutorWorker::testIsValidDestination() {
         CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
     }
 
-    // True if the item is created on the local replica is a directory and has Common Documents as corresponding parent node.
+    // True if the item created on the local replica is a directory and has Common Documents as corresponding parent node.
     {
         SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_dir"), OperationType::Create, NodeType::Directory);
         op->setTargetSide(ReplicaSide::Remote);
         executorWorkerMock->setCorrespondingNodeInOtherTree(
                 {{op->affectedNode()->parentNode(), correspondingParentCommonDocsNode}});
         CPPUNIT_ASSERT(executorWorkerMock->isValidDestination(op));
+    }
+
+    const auto correspondingParentSharedNode = std::make_shared<Node>(
+            777, ReplicaSide::Remote, Utility::sharedFolderName(), NodeType::Directory, OperationType::None, "shared_id",
+            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
+
+    // False if the item is created on the local replica is a file and has Shared as corresponding parent node.
+    {
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
+        op->setTargetSide(ReplicaSide::Remote);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), correspondingParentSharedNode}});
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+
+    // False if the item created on the local replica is a directory and has Shared as corresponding parent node.
+    {
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_dir"), OperationType::Create, NodeType::Directory);
+        op->setTargetSide(ReplicaSide::Remote);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), correspondingParentSharedNode}});
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
     }
 }
 
