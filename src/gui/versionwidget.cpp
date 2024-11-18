@@ -61,9 +61,6 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
 
     refresh();
 
-    connect(_prodButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
-    connect(_betaButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
-    connect(_internalButton, &QRadioButton::clicked, this, &VersionWidget::onChannelButtonClicked);
     connect(_updateStatusLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_versionNumberLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_showReleaseNotesLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
@@ -182,21 +179,6 @@ void VersionWidget::onUpdateStateChanged(const UpdateState state) const {
     refresh(state);
 }
 
-void VersionWidget::onChannelButtonClicked() const {
-    auto channel = DistributionChannel::Unknown;
-    if (sender() == _prodButton)
-        channel = DistributionChannel::Prod;
-    else if (sender() == _betaButton)
-        channel = DistributionChannel::Beta;
-    else if (sender() == _internalButton)
-        channel = DistributionChannel::Internal;
-    else
-        return;
-
-    saveDistributionChannel(channel);
-    refresh();
-}
-
 void VersionWidget::onLinkActivated(const QString &link) {
     if (link == versionLink)
         showAboutDialog();
@@ -217,7 +199,9 @@ void VersionWidget::onUpdateButtonClicked() {
 }
 
 void VersionWidget::onJoinBetaButtonClicked() {
-    if (auto dialog = BetaProgramDialog(false, this); dialog.exec() == QDialog::Accepted) {
+    if (auto dialog = BetaProgramDialog(
+                ParametersCache::instance()->parametersInfo().distributionChannel() != DistributionChannel::Prod, this);
+        dialog.exec() == QDialog::Accepted) {
         saveDistributionChannel(dialog.selectedDistributionChannel());
         refresh();
     }
@@ -229,27 +213,12 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
     auto *verticalLayout = new QVBoxLayout(this);
     verticalLayout->setSpacing(1);
     verticalLayout->setContentsMargins(0, 0, 0, 0);
-    versionLayout->addLayout(verticalLayout);
+    versionLayout->addLayout(verticalLayout, 9);
 
     _updateStatusLabel = new QLabel(this);
     _updateStatusLabel->setObjectName("boldTextLabel");
     _updateStatusLabel->setWordWrap(true);
     verticalLayout->addWidget(_updateStatusLabel);
-
-    const auto distributionChannel = ParametersCache::instance()->parametersInfo().distributionChannel();
-    const auto channelBox = new QHBoxLayout(this);
-    channelBox->setSpacing(30);
-    _prodButton = new QRadioButton(tr("Prod"), this);
-    if (distributionChannel == DistributionChannel::Prod) _prodButton->setChecked(true);
-    channelBox->addWidget(_prodButton);
-    _betaButton = new QRadioButton(tr("Beta"), this);
-    if (distributionChannel == DistributionChannel::Beta) _betaButton->setChecked(true);
-    channelBox->addWidget(_betaButton);
-    _internalButton = new QRadioButton(tr("Internal"), this);
-    if (distributionChannel == DistributionChannel::Internal) _internalButton->setChecked(true);
-    channelBox->addWidget(_internalButton);
-    channelBox->addStretch();
-    verticalLayout->addLayout(channelBox);
 
     _showReleaseNotesLabel = new QLabel(this);
     _showReleaseNotesLabel->setObjectName("boldTextLabel");
@@ -270,12 +239,10 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
     copyrightLabel->setObjectName("description");
     verticalLayout->addWidget(copyrightLabel);
 
-    versionLayout->addStretch();
-
     _updateButton = new QPushButton(this);
     _updateButton->setObjectName("defaultbutton");
     _updateButton->setFlat(true);
-    versionLayout->addWidget(_updateButton);
+    versionLayout->addWidget(_updateButton, 1);
 }
 
 void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
@@ -305,31 +272,10 @@ void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
     betaLayout->addWidget(_joinBetaButton);
 }
 
-void VersionWidget::refreshChannelButtons(const DistributionChannel channel) const {
-    switch (channel) {
-        case DistributionChannel::Prod: {
-            WidgetSignalBlocker _(_prodButton);
-            _prodButton->setChecked(true);
-            break;
-        }
-        case DistributionChannel::Beta: {
-            WidgetSignalBlocker _(_betaButton);
-            _betaButton->setChecked(true);
-            break;
-        }
-        case DistributionChannel::Internal: {
-            WidgetSignalBlocker _(_internalButton);
-            _internalButton->setChecked(true);
-            break;
-        }
-        default:
-            break;
-    }
-}
-
 void VersionWidget::saveDistributionChannel(const DistributionChannel channel) const {
     GuiRequests::changeDistributionChannel(channel);
-    refresh();
+    ParametersCache::instance()->parametersInfo().setDistributionChannel(channel);
+    ParametersCache::instance()->saveParametersInfo();
 }
 
 } // namespace KDC

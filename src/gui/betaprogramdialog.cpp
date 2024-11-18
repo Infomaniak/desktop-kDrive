@@ -94,11 +94,20 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, QWidget *parent /*= null
                                    .pixmap(QSize(iconSize, iconSize)));
     warningIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
     acknowledmentLayout->addWidget(warningIcon, 0, 0);
+
     auto *acknowledmentLabel = new QLabel(this);
     acknowledmentLabel->setObjectName("largeNormalTextLabel");
-    acknowledmentLabel->setText(tr("Beta versions may leave unexpectedly or cause instabilities."));
+    if (_isQuit) {
+        acknowledmentLabel->setText(
+                tr("Your current version of the application might be too recent, so you won't be able to downgrade to a lower "
+                   "version until an update is available."));
+    } else {
+        acknowledmentLabel->setText(tr("Beta versions may leave unexpectedly or cause instabilities."));
+    }
+    acknowledmentLabel->setWordWrap(true);
     acknowledmentLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     acknowledmentLayout->addWidget(acknowledmentLabel, 0, 1);
+
     _acknowledgmentCheckbox = new QCheckBox(tr("I understand"), this);
     acknowledmentLayout->addWidget(_acknowledgmentCheckbox, 1, 1);
 

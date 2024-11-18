@@ -56,7 +56,6 @@ class VersionWidget final : public QWidget {
         void onUpdateStateChanged(UpdateState state) const;
 
     private slots:
-        void onChannelButtonClicked() const;
         void onLinkActivated(const QString &link);
         void onUpdateButtonClicked();
         void onJoinBetaButtonClicked();
@@ -64,13 +63,7 @@ class VersionWidget final : public QWidget {
     private:
         void initVersionInfoBloc(PreferencesBlocWidget *prefBloc);
         void initBetaBloc(PreferencesBlocWidget *prefBloc);
-        void refreshChannelButtons(DistributionChannel channel) const;
-
         void saveDistributionChannel(DistributionChannel channel) const;
-
-        QRadioButton *_prodButton{nullptr};
-        QRadioButton *_betaButton{nullptr};
-        QRadioButton *_internalButton{nullptr};
 
         QLabel *_versionLabel{nullptr};
 

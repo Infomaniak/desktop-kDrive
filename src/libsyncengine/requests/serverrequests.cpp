@@ -2051,6 +2051,7 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
         }
     }
     parametersInfo.setMaxAllowedCpu(parameters.maxAllowedCpu());
+    parametersInfo.setDistributionChannel(parameters.distributionChannel());
 }
 
 void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
@@ -2086,6 +2087,7 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
                 std::shared_ptr<std::vector<char>>(new std::vector<char>(dialogGeometryArr.begin(), dialogGeometryArr.end())));
     }
     parameters.setMaxAllowedCpu(parametersInfo.maxAllowedCpu());
+    parameters.setDistributionChannel(parametersInfo.distributionChannel());
 }
 
 void ServerRequests::proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig, ProxyConfigInfo &proxyConfigInfo) {
