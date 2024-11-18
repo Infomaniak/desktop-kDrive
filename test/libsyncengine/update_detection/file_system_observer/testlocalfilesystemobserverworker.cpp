@@ -408,19 +408,45 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(initItemId) == testFilename);
 }
 
-void TestLocalFileSystemObserverWorker::testLFSOFastMoveDelete() {
+void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Office test
     LOGW_DEBUG(_logger, L"***** Test fast move/delete *****");
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker.reset();
+
+    // Create a slow observer
+#if defined(_WIN32)
+    _syncPal->_localFSObserverWorker =
+            std::make_shared<MockLocalFileSystemObserverWorker_win>(_syncPal, "Local File System Observer", "LFSO");
+#else
+    _syncPal->_localFSObserverWorker =
+            std::make_shared<MockLocalFileSystemObserverWorker_unix>(_syncPal, "Local File System Observer", "LFSO");
+#endif
+    _syncPal->_localFSObserverWorker->start();
+
+    int count = 0;
+    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
+        Utility::msleep(100);
+        CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
+    }
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
 
     IoError ioError = IoError::Unknown;
     SyncPath destinationPath = _testFiles[0].second.parent_path() / (_testFiles[0].second.filename().string() + "2");
-    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError));
+    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError)); // test0.txt -> test0.txt2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT(IoHelper::deleteItem(destinationPath, ioError));
+    CPPUNIT_ASSERT(IoHelper::deleteItem(destinationPath, ioError)); // Delete test0.txt2 (before the previous rename is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[1].second, _testFiles[0].second,
+                                        ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    Utility::msleep(1000); // Wait 1sec for the slow observer to process the events (+-200ms per event).
 
-    Utility::msleep(1000); // Wait 1sec
+    FileStat fileStat;
+    CPPUNIT_ASSERT(IoHelper::getFileStat(_testFiles[0].second, &fileStat, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(std::to_string(fileStat.inode)));
 }
 
 } // namespace KDC

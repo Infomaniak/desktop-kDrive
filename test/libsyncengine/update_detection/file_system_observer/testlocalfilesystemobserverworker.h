@@ -20,9 +20,12 @@
 
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
-
 #include "syncpal/syncpal.h"
-
+#if defined(_WIN32)
+#include "libsyncengine/update_detection/file_system_observer/localfilesystemobserverworker_win.h"
+#else
+#include "libsyncengine/update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
+#endif
 #include <log4cplus/logger.h>
 
 using namespace CppUnit;
@@ -30,6 +33,31 @@ using namespace CppUnit;
 namespace KDC {
 
 class LocalFileSystemObserverWorker;
+#if defined(_WIN32)
+class MockLocalFileSystemObserverWorker_win : public LocalFileSystemObserverWorker_win {
+    public:
+        MockLocalFileSystemObserverWorker_win(std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                              const std::string &shortName) :
+            LocalFileSystemObserverWorker_win(syncPal, name, shortName) {}
+
+        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
+            Utility::msleep(200);
+            LocalFileSystemObserverWorker_win::changesDetected(changes);
+        }
+};
+#else
+class MockLocalFileSystemObserverWorker_unix : public LocalFileSystemObserverWorker_unix {
+    public:
+        MockLocalFileSystemObserverWorker_unix(std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                               const std::string &shortName) :
+            LocalFileSystemObserverWorker_unix(syncPal, name, shortName) {}
+
+        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
+            Utility::msleep(200);
+            LocalFileSystemObserverWorker_unix::changesDetected(changes);
+        }
+};
+#endif
 
 class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
@@ -38,7 +66,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testLFSOWithDuplicateFileNames);
         CPPUNIT_TEST(testLFSODeleteDir);
         CPPUNIT_TEST(testLFSOWithDirs);
-        CPPUNIT_TEST(testLFSOFastMoveDelete);
+        CPPUNIT_TEST(testLFSOFastMoveDeleteMove);
         CPPUNIT_TEST(testLFSOWithSpecialCases1);
         CPPUNIT_TEST(testLFSOWithSpecialCases2);
         CPPUNIT_TEST_SUITE_END();
@@ -61,7 +89,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         void testLFSOWithDuplicateFileNames();
         void testLFSOWithDirs();
         void testLFSODeleteDir();
-        void testLFSOFastMoveDelete();
+        void testLFSOFastMoveDeleteMove();
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
 };
