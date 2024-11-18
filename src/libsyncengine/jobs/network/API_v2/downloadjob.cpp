@@ -210,7 +210,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         SyncPath tmpPath;
         IoError ioError = IoError::Success;
         if (!IoHelper::tempDirectoryPath(tmpPath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to get temporary directory tmpPath: " << Utility::formatIoError(tmpPath, ioError));
+            LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpPath, ioError));
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::Unknown;
             return false;
