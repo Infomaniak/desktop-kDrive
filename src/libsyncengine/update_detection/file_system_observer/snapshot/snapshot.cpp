@@ -140,7 +140,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     return true;
 }
 
-bool Snapshot::removeItem(const NodeId &id) {
+bool Snapshot::removeItem(const NodeId id) {
     const std::scoped_lock lock(_mutex);
 
     if (id.empty()) {

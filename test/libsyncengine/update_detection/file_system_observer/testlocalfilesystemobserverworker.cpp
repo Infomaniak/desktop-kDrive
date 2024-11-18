@@ -414,13 +414,8 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     _syncPal->_localFSObserverWorker.reset();
 
     // Create a slow observer
-#if defined(_WIN32)
-    _syncPal->_localFSObserverWorker =
-            std::make_shared<MockLocalFileSystemObserverWorker_win>(_syncPal, "Local File System Observer", "LFSO");
-#else
-    _syncPal->_localFSObserverWorker =
-            std::make_shared<MockLocalFileSystemObserverWorker_unix>(_syncPal, "Local File System Observer", "LFSO");
-#endif
+    auto slowObserver = std::make_shared<MockLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
+    _syncPal->_localFSObserverWorker = slowObserver;
     _syncPal->_localFSObserverWorker->start();
 
     int count = 0;
@@ -439,7 +434,8 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[1].second, _testFiles[0].second,
                                         ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    Utility::msleep(1000); // Wait 1sec for the slow observer to process the events (+-200ms per event).
+
+    CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
 
     FileStat fileStat;
     CPPUNIT_ASSERT(IoHelper::getFileStat(_testFiles[0].second, &fileStat, ioError));
@@ -447,6 +443,18 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
 
     CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(std::to_string(fileStat.inode)));
+}
+
+bool MockLocalFileSystemObserverWorker::waitForUpdate(uint64_t timeoutMs) const {
+    using namespace std::chrono;
+    auto start = system_clock::now();
+    while (!_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
+        Utility::msleep(10);
+    }
+    while (_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
+        Utility::msleep(10);
+    }
+    return duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs;
 }
 
 } // namespace KDC

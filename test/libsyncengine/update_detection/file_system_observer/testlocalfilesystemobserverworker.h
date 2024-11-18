@@ -34,28 +34,31 @@ namespace KDC {
 
 class LocalFileSystemObserverWorker;
 #if defined(_WIN32)
-class MockLocalFileSystemObserverWorker_win : public LocalFileSystemObserverWorker_win {
+class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_win {
     public:
-        MockLocalFileSystemObserverWorker_win(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                              const std::string &shortName) :
+        MockLocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                          const std::string &shortName) :
             LocalFileSystemObserverWorker_win(syncPal, name, shortName) {}
 
         void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
             Utility::msleep(200);
             LocalFileSystemObserverWorker_win::changesDetected(changes);
         }
+
+        bool waitForUpdate(uint64_t timeoutMs = 100000) const;
 };
 #else
-class MockLocalFileSystemObserverWorker_unix : public LocalFileSystemObserverWorker_unix {
+class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_unix {
     public:
-        MockLocalFileSystemObserverWorker_unix(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                               const std::string &shortName) :
+        MockLocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                          const std::string &shortName) :
             LocalFileSystemObserverWorker_unix(syncPal, name, shortName) {}
 
         void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
             Utility::msleep(200);
             LocalFileSystemObserverWorker_unix::changesDetected(changes);
         }
+        bool waitForUpdate(uint64_t timeoutMs = 100000) const;
 };
 #endif
 
