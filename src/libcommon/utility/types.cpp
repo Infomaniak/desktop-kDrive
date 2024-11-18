@@ -70,6 +70,8 @@ std::string toString(const OperationType e) {
             return "Delete";
         case OperationType::Rights:
             return "Rights";
+        case OperationType::MoveOut:
+            return "MoveOut";
         default:
             return noConversionStr;
     }
