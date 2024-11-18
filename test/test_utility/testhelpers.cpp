@@ -20,12 +20,12 @@
 
 #include "libcommon/utility/utility.h"
 
-#include <time.h>
 #include <utime.h>
 #include <fstream>
 
-
-#if defined(__APPLE__) || defined(__unix__)
+#ifdef _WIN32
+#include "libcommonserver/io/iohelper.h"
+#else
 #include <sys/stat.h>
 #endif
 
@@ -60,10 +60,23 @@ std::string loadEnvVariable(const std::string& key) {
     }
     return val;
 }
+#ifdef _WIN32
+void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
+    struct _utimebuf timeBuffer;
+    const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
 
+    IoError ioError = IoError::Success;
+    FileStat fileStat;
+    IoHelper::getFileStat(path, &fileStat, ioError);
+
+    timeBuffer.tma = fileStat.creationTime;
+    timeBuffer.tmm = timeInSeconds;
+    _utime(path.c_str(), &timeBuffer);
+}
+#else
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
     struct stat fileStat;
-    struct utimbuf new_times;
+    struct utimbuf newTime;
 
     const auto fileNameStr = path.string();
     const auto fileName = fileNameStr.c_str();
@@ -71,8 +84,8 @@ void setModificationDate(const SyncPath& path, const std::chrono::time_point<std
     stat(fileName, &fileStat);
 
     const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
-    new_times.modtime = timeInSeconds;
-    utime(fileName, &new_times);
+    newTime.modtime = timeInSeconds;
+    utime(fileName, &newTime);
 }
-
+#endif
 } // namespace KDC::testhelpers
