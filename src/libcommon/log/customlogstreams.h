@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
+#include <iostream>
 #include <sstream>
 
 #include <QIODevice>
@@ -28,8 +29,8 @@ class CustomLogStream : private std::stringstream {
 
         std::string str() const { return std::basic_stringstream<char>::str(); }
 
-        // We need to cast to std::stringstream as operators<<(std::stringstream, const wchar_t *str /*and const std::wstring
-        // &str*/) are defined outside of the class std::stringstream and therefore it is not applicable to the current object
+        // We need to cast to std::stringstream as operators<<(std::stringstream, const wchar_t *str) and const std::string
+        // &str) are defined outside of the class std::stringstream and therefore it is not applicable to the current object
         // because of the private inheritance
         CustomLogStream &operator<<(const char *str) {
             static_cast<std::stringstream &>(*this) << str;
@@ -91,8 +92,8 @@ class CustomLogWStream : private std::wstringstream {
 
         std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
 
-        // We need to cast to std::wstringstream as operators<<(std::wstringstream, const wchar_t *str /*and const std::wstring
-        // &str*/) are defined outside of the class std::wstringstream and therefore it is not applicable to the current object
+        // We need to cast to std::wstringstream as operators<<(std::wstringstream, const wchar_t *str and const std::wstring
+        // &str) are defined outside of the class std::wstringstream and therefore it is not applicable to the current object
         // because of the private inheritance
         CustomLogWStream &operator<<(const wchar_t *str) {
             static_cast<std::wstringstream &>(*this) << str;
