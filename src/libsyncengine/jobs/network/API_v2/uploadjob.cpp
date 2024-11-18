@@ -79,9 +79,9 @@ bool UploadJob::canRun() {
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart - path=" << Path2WStr(_filePath));
-        _exitCode = ExitCode::NeedRestart;
-        _exitCause = ExitCause::UnexpectedFileSystemEvent;
+        LOGW_DEBUG(_logger, L"Item does not exist anymore " << Utility::formatSyncPath(_filePath));
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::NotFound;
         return false;
     }
 
