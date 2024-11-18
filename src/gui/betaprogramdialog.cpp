@@ -19,22 +19,45 @@
 #include "betaprogramdialog.h"
 
 #include "adddriveconfirmationwidget.h"
+#include "utility/utility.h"
 
 #include <QCheckBox>
+#include <QDesktopServices>
 #include <QPushButton>
 
-static const int boxMargin = 40;
-static const int boxHSpacing = 10;
-static const int titleBoxVMargin = 14;
+static constexpr int mainLayoutHMargin = 40;
+static constexpr int mainLayoutSpacing = 24;
+static constexpr int titleBoxVSpacing = 14;
+static constexpr int subLayoutSpacing = 8;
+static constexpr int iconSize = 16;
+static constexpr auto iconColor = QColor(239, 139, 52);
+
+static const QString shareCommentsLink = "shareCommentsLink";
 
 namespace KDC {
 
 BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *parent /*= nullptr*/) : CustomDialog(true, parent) {
     setObjectName("BetaProgramDialog");
+    setMinimumHeight(380);
+
+    /*
+     * |--------------------------------------------------------|
+     * |                        layout                          |
+     * |                                                        |
+     * |     |---------------------------------------------|    |
+     * |     |              acknowledmentLayout            |    |
+     * |     |                                             |    |
+     * |     |---------------------------------------------|    |
+     * |                                                        |
+     * |     |---------------------------------------------|    |
+     * |     |                buttonLayout                 |    |
+     * |     |---------------------------------------------|    |
+     * |--------------------------------------------------------|
+     */
 
     auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(boxMargin, boxMargin, boxMargin, boxMargin);
-    layout->setSpacing(boxHSpacing);
+    layout->setContentsMargins(mainLayoutHMargin, 0, mainLayoutHMargin, 0);
+    layout->setSpacing(mainLayoutSpacing);
     mainLayout()->addLayout(layout);
 
     // Title
@@ -42,59 +65,65 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *par
     titleLabel->setObjectName("titleLabel");
     titleLabel->setText(isQuit ? tr("Quit the beta program") : tr("Join the beta program"));
     layout->addWidget(titleLabel);
-    layout->addSpacing(titleBoxVMargin);
+    layout->addSpacing(titleBoxVSpacing);
 
     // Main text box
     if (!isQuit) {
         auto *mainTextBox = new QLabel(this);
+        mainTextBox->setObjectName("largeNormalTextLabel");
         mainTextBox->setText(
-                tr("Get early access to new versions of the application before they are released to the general public, and take "
-                   "part in improving the application by sending us your comments."));
-        mainTextBox->setObjectName("textLabel");
+                tr(R"(Get early access to new versions of the application before they are released to the general public, and take )"
+                   R"(part in improving the application by <a style="%1" href="%2">sending us your comments</a>.)")
+                        .arg(CommonUtility::linkStyle, shareCommentsLink));
         mainTextBox->setWordWrap(true);
         layout->addWidget(mainTextBox);
+
+        connect(mainTextBox, &QLabel::linkActivated, this, &BetaProgramDialog::onLinkActivated);
     }
 
-    // TODO : change background
-    auto *acknowlegmentWidget = new QWidget(this);
-    auto *acknowledmentLayout = new QGridLayout(acknowlegmentWidget);
-    acknowlegmentWidget->setLayout(acknowledmentLayout);
-    acknowlegmentWidget->setObjectName("acknowledgmentWidget");
-    acknowlegmentWidget->setStyleSheet(
-            R"({border-radius: 8px; background-color: #F4F6FC; font-family: "Suisse Int'l"; font-weight: $$normal_font$$; font-size: 14px;})");
+    // Acknowlegment
+    auto *acknowlegmentFrame = new QFrame(this);
+    acknowlegmentFrame->setObjectName("acknowlegmentFrame");
+    acknowlegmentFrame->setStyleSheet("QFrame#acknowlegmentFrame {border-radius: 8px; background-color: #F4F6FC;}");
+    layout->addWidget(acknowlegmentFrame);
 
-    acknowledmentLayout->setSpacing(8);
-    layout->addWidget(acknowlegmentWidget);
+    auto *acknowledmentLayout = new QGridLayout(this);
+    acknowlegmentFrame->setLayout(acknowledmentLayout);
+    acknowledmentLayout->setSpacing(subLayoutSpacing);
+
     auto *warningIcon = new QLabel(this);
-    warningIcon->setPixmap(GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", QColor(239, 139, 52))
-                                   .pixmap(QSize(16, 16)));
+    warningIcon->setPixmap(GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", iconColor)
+                                   .pixmap(QSize(iconSize, iconSize)));
     warningIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
     acknowledmentLayout->addWidget(warningIcon, 0, 0);
-    auto *label = new QLabel(this);
-    label->setText(tr("Beta versions may leave unexpectedly or cause instabilities."));
-    label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    acknowledmentLayout->addWidget(label, 0, 1);
-    auto *checkbox = new QCheckBox(tr("I understand"), this);
-    acknowledmentLayout->addWidget(checkbox, 1, 1);
+    auto *acknowledmentLabel = new QLabel(this);
+    acknowledmentLabel->setObjectName("largeNormalTextLabel");
+    acknowledmentLabel->setText(tr("Beta versions may leave unexpectedly or cause instabilities."));
+    acknowledmentLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    acknowledmentLayout->addWidget(acknowledmentLabel, 0, 1);
+    _acknowledgmentCheckbox = new QCheckBox(tr("I understand"), this);
+    acknowledmentLayout->addWidget(_acknowledgmentCheckbox, 1, 1);
 
-
-    auto *bottomTextBox = new QLabel(this);
-    bottomTextBox->setText(tr("Are you sure you want to leave the beta program?"));
-    bottomTextBox->setObjectName("textLabel");
-    bottomTextBox->setWordWrap(true);
-    layout->addWidget(bottomTextBox);
+    if (isQuit) {
+        auto *bottomTextBox = new QLabel(this);
+        bottomTextBox->setObjectName("largeNormalTextLabel");
+        bottomTextBox->setText(tr("Are you sure you want to leave the beta program?"));
+        bottomTextBox->setWordWrap(true);
+        layout->addWidget(bottomTextBox);
+    }
 
     layout->addStretch();
 
+    // Buttons
     auto *buttonLayout = new QHBoxLayout(this);
     layout->addItem(buttonLayout);
-    buttonLayout->setSpacing(boxHSpacing);
-    auto *saveButton = new QPushButton(this);
-    saveButton->setObjectName("defaultbutton");
-    saveButton->setFlat(true);
-    saveButton->setText(tr("Save"));
-    saveButton->setEnabled(false);
-    buttonLayout->addWidget(saveButton);
+    buttonLayout->setSpacing(subLayoutSpacing);
+    _saveButton = new QPushButton(this);
+    _saveButton->setObjectName("defaultbutton");
+    _saveButton->setFlat(true);
+    _saveButton->setText(tr("Save"));
+    _saveButton->setEnabled(false);
+    buttonLayout->addWidget(_saveButton);
     auto *cancelButton = new QPushButton(this);
     cancelButton->setObjectName("nondefaultbutton");
     cancelButton->setFlat(true);
@@ -102,8 +131,19 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit /*= false*/, QWidget *par
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addStretch();
 
-    connect(saveButton, &QPushButton::clicked, this, &BetaProgramDialog::accept);
+    connect(_saveButton, &QPushButton::clicked, this, &BetaProgramDialog::accept);
     connect(cancelButton, &QPushButton::clicked, this, &BetaProgramDialog::reject);
+    connect(this, &BetaProgramDialog::exit, this, &BetaProgramDialog::reject);
+    connect(_acknowledgmentCheckbox, &QCheckBox::clicked, this, &BetaProgramDialog::onAcknowledgement);
+}
+
+void BetaProgramDialog::onLinkActivated(const QString &link) {
+    if (link == shareCommentsLink)
+        QDesktopServices::openUrl(QUrl("https://feedback.userreport.com/c61ed75d-26e9-4905-b453-3b549b69e3d7/#ideas/popular"));
+}
+
+void BetaProgramDialog::onAcknowledgement() {
+    _saveButton->setEnabled(_acknowledgmentCheckbox->isChecked());
 }
 
 } // namespace KDC

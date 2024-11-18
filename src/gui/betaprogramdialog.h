@@ -22,7 +22,7 @@
 
 #include "utility/types.h"
 
-class QTextEdit;
+class QCheckBox;
 
 namespace KDC {
 
@@ -34,8 +34,14 @@ class BetaProgramDialog final : public CustomDialog {
 
         [[nodiscard]] DistributionChannel selectedDistributionChannel() const { return _channel; }
 
+    private slots:
+        void onLinkActivated(const QString &link);
+        void onAcknowledgement();
+
     private:
         DistributionChannel _channel{DistributionChannel::Unknown};
+        QCheckBox *_acknowledgmentCheckbox{nullptr};
+        QPushButton *_saveButton{nullptr};
 };
 
 } // namespace KDC
