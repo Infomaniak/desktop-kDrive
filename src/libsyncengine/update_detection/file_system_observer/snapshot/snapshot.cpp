@@ -77,7 +77,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         return false;
     }
 
-    // Check if the item already exists in the new parent
+    // Check if `newItem` already exists with the same path but a different Id
     if (auto itNewParent = _items.find(newItem.parentId()); itNewParent != _items.end()) {
         for (const NodeId &childId: itNewParent->second.childrenIds()) {
             auto child = _items.find(childId);
