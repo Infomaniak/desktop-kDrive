@@ -254,8 +254,10 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
         // TODO: When the intern/beta update channel will be available, we will have to create a new environment for each.
 #ifdef NDEBUG
         sentry_options_set_environment(options, "production");
+        sentry_options_set_traces_sample_rate(options, 1);
 #else
         sentry_options_set_environment(options, "dev_unknown");
+        sentry_options_set_traces_sample_rate(options, 0.1); // 10% of traces
 #endif
     } else if (environment.empty()) { // Disable sentry
         _instance->_isSentryActivated = false;
@@ -436,5 +438,75 @@ SentryHandler::~SentryHandler() {
 
 SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
                                         SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
-    title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
+    title(title),
+    message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
+
+
+SentryHandler::SentryTransaction::SentryTransaction(uint64_t parentId, uint64_t operationId) {
+    assert(operationId != 0 && "operationId must be different from 0");
+    _parentId = parentId;
+    _operationId = operationId;
+}
+
+uint64_t SentryHandler::startPerformanceMonitoring(const std::string &OperationName, const std::string &OperationDescription) {
+    std::scoped_lock lock(_mutex);
+    if (!_isSentryActivated) return 0;
+
+    sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(OperationName.c_str(), OperationDescription.c_str());
+    sentry_transaction_t *tx = sentry_transaction_start(tx_ctx, sentry_value_new_null());
+    
+    _operationIdCounter++;
+    uint64_t operationId = _operationIdCounter;
+    SentryTransaction &transaction = _transactions.try_emplace(operationId, 0, operationId).first->second;
+    transaction.setTransaction(tx);
+
+    return _operationIdCounter;
+}
+
+uint64_t SentryHandler::startPerformanceMonitoring(const uint64_t &parentId, const std::string &OperationName,
+                                                   const std::string &OperationDescription) {
+    std::scoped_lock lock(_mutex);
+    if (!_isSentryActivated) return 0;
+
+    if (!_transactions.contains(parentId)) {
+        assert(false && "Parent transaction/span does not exist");
+        return 0;
+    }
+
+    const SentryTransaction &parent = _transactions.at(parentId);
+    sentry_span_t *span = nullptr;
+    if (parent.isSpan()) {
+        span = sentry_span_start_child(parent.span(), OperationName.c_str(), OperationDescription.c_str());
+    } else {
+        span = sentry_transaction_start_child(parent.transaction(), OperationName.c_str(), OperationDescription.c_str());
+    }
+
+    _operationIdCounter++;
+    uint64_t operationId = _operationIdCounter;
+    SentryTransaction &transaction = _transactions.try_emplace(operationId, parentId, operationId).first->second;
+    transaction.setTransaction(span);
+
+    return operationId;
+}
+
+void SentryHandler::stopPerformanceMonitoring(const uint64_t &operationId) {
+    std::scoped_lock lock(_mutex);
+    if (!_transactions.contains(operationId)) return;
+
+    const SentryTransaction &transaction = _transactions.at(operationId);
+    if (transaction.isSpan()) {
+        sentry_span_finish(transaction.span());
+    } else {
+        for (auto transaction2: _transactions) {
+            if (transaction2.second.parentId() == operationId) {
+                assert(false && "All child transaction/span must be stopped before the parent");
+                stopPerformanceMonitoring(transaction2.first);
+            }
+        }
+        sentry_transaction_finish(transaction.transaction());
+    }
+
+    _transactions.erase(operationId);
+}
+
 } // namespace KDC

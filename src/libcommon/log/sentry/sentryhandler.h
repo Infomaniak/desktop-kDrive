@@ -59,6 +59,8 @@ class SentryHandler {
         static void init(KDC::AppType appType, int breadCrumbsSize = 100);
         void setAuthenticatedUser(const SentryUser &user);
         void setGlobalConfidentialityLevel(SentryConfidentialityLevel level);
+
+        // Capture an event
         /*   If the same event has been captured more than 10 times in the last 10 minutes, it will be flagged as a rate limited
          *     event.
          *   If a rate limited event is not seen for 10 minutes, it will be unflagged.
@@ -72,6 +74,16 @@ class SentryHandler {
          */
         void captureMessage(SentryLevel level, const std::string &title, std::string message,
                             const SentryUser &user = SentryUser());
+
+        // Performances monitoring
+        // Start a performance monitoring operation. Return the operation id.
+        uint64_t startPerformanceMonitoring(const std::string &OperationName, const std::string &OperationDescription);
+        uint64_t startPerformanceMonitoring(const uint64_t &parentId, const std::string &OperationName,
+                                            const std::string &OperationDescription);
+        // Stop a performance monitoring operation.
+        void stopPerformanceMonitoring(const uint64_t &operationId);
+
+        // Debugging
         inline static AppType appType() { return _appType; }
         inline static bool debugCrashCallback() { return _debugCrashCallback; }
         inline static bool debugBeforeSendCallback() { return _debugBeforeSendCallback; }
@@ -109,6 +121,38 @@ class SentryHandler {
                 time_point lastUpload;
                 unsigned int captureCount = 1;
         };
+
+        struct SentryTransaction {
+                SentryTransaction(uint64_t parentId, uint64_t operationId);
+                void setTransaction(sentry_transaction_t *tx) {
+                    assert(!_span);
+                    _tx = tx;
+                }
+                void setTransaction(sentry_span_t *span) {
+                    assert(!_span);
+                    _span = span;
+                }
+                bool isSpan() const { return _span; }
+                sentry_span_t *span() const {
+                    assert(_span);
+                    return _span;
+                }
+                sentry_transaction_t *transaction() const {
+                    assert(_tx);
+                    return _tx;
+                }
+
+                const uint64_t &parentId() const { return _parentId; }
+                const uint64_t &operationId() const { return _operationId; }
+
+            private:
+                uint64_t _parentId;
+                uint64_t _operationId;
+                sentry_transaction_t *_tx{nullptr};
+                sentry_span_t *_span{nullptr};
+        };
+        uint64_t _operationIdCounter = 0;
+        std::map<uint64_t, SentryTransaction> _transactions;
 
         /* This method is called before uploading an event to Sentry.
          *  It will check if the event should be uploaded or not. (see: void SentryHandler::captureMessage(...))
@@ -150,6 +194,7 @@ class SentryHandler {
         unsigned int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
         int _sentryMinUploadIntervaOnRateLimit = 60; // Min. interval between two uploads of a rate limited event (seconds)
         bool _isSentryActivated = false;
+
 
         static KDC::AppType _appType;
         static bool _debugCrashCallback;

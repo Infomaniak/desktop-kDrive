@@ -29,17 +29,20 @@ namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _localSnapshot(syncPal->_localSnapshot),
-    _remoteSnapshot(syncPal->_remoteSnapshot) {}
+    ISyncWorker(syncPal, name, shortName),
+    _syncDb(syncPal->_syncDb), _localSnapshot(syncPal->_localSnapshot), _remoteSnapshot(syncPal->_remoteSnapshot) {}
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb,
                                                    const std::shared_ptr<Snapshot> testLocalSnapshot,
                                                    const std::shared_ptr<Snapshot> testRemoteSnapshot, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(nullptr, name, shortName, true), _syncDb(testSyncDb), _localSnapshot(testLocalSnapshot),
-    _remoteSnapshot(testRemoteSnapshot) {}
+    ISyncWorker(nullptr, name, shortName, true),
+    _syncDb(testSyncDb), _localSnapshot(testLocalSnapshot), _remoteSnapshot(testRemoteSnapshot) {}
 
 void ComputeFSOperationWorker::execute() {
+    auto pmId_execute = SentryHandler::instance()->startPerformanceMonitoring("ComputeFSOperationWorker",
+                                                                              "ComputeFSOperationWorker execute function");
+
     ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
@@ -62,6 +65,7 @@ void ComputeFSOperationWorker::execute() {
     if (!ok) {
         setDone(exitCode);
         LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+        SentryHandler::instance()->stopPerformanceMonitoring(pmId_execute);
         return;
     }
 
@@ -69,25 +73,41 @@ void ComputeFSOperationWorker::execute() {
     _syncPal->operationSet(ReplicaSide::Remote)->clear();
 
     // Update SyncNode cache
+    auto pmId_updateSyncNodeCache = SentryHandler::instance()->startPerformanceMonitoring(pmId_execute, "UpdateSyncNodeCache",
+                                                                                          "Updating Sync Node Cache");
     _syncPal->updateSyncNode();
+    SentryHandler::instance()->stopPerformanceMonitoring(pmId_updateSyncNodeCache);
 
     // Update unsynced list cache
+    auto pmId_updateUnsyncedList =
+            SentryHandler::instance()->startPerformanceMonitoring(pmId_execute, "UpdateUnsyncedList", "Updating Unsynced List");
     updateUnsyncedList();
+    SentryHandler::instance()->stopPerformanceMonitoring(pmId_updateUnsyncedList);
 
     _fileSizeMismatchMap.clear();
 
     NodeIdSet localIdsSet;
     NodeIdSet remoteIdsSet;
+
+    auto pmId_inferChangesFromDb =
+            SentryHandler::instance()->startPerformanceMonitoring(pmId_execute, "InferChangesFromDb", "Infer Changes From Db");
     if (ok && !stopAsked()) {
         exitCode = inferChangesFromDb(localIdsSet, remoteIdsSet);
         ok = exitCode == ExitCode::Ok;
     }
+    SentryHandler::instance()->stopPerformanceMonitoring(pmId_inferChangesFromDb);
 
     if (ok && !stopAsked()) {
+        auto pmId_exploreSnapshotTreeLocal = SentryHandler::instance()->startPerformanceMonitoring(
+                pmId_execute, "ExploreSnapshotTreeLocal", "Explore Local Snapshot Tree");
         exitCode = exploreSnapshotTree(ReplicaSide::Local, localIdsSet);
+        SentryHandler::instance()->stopPerformanceMonitoring(pmId_exploreSnapshotTreeLocal);
         ok = exitCode == ExitCode::Ok;
         if (ok) {
+            auto pmId_exploreSnapshotTreeRemote = SentryHandler::instance()->startPerformanceMonitoring(
+                    pmId_execute, "ExploreSnapshotTreeRemote", "Explore Remote Snapshot Tree");
             exitCode = exploreSnapshotTree(ReplicaSide::Remote, remoteIdsSet);
+            SentryHandler::instance()->stopPerformanceMonitoring(pmId_exploreSnapshotTreeRemote);
         }
     }
 
@@ -98,6 +118,8 @@ void ComputeFSOperationWorker::execute() {
     } else {
         exitCode = ExitCode::Ok;
     }
+
+    SentryHandler::instance()->stopPerformanceMonitoring(pmId_execute);
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsed_seconds.count() << "s");
