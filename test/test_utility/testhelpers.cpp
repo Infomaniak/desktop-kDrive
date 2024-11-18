@@ -20,13 +20,13 @@
 
 #include "libcommon/utility/utility.h"
 
-#include <utime.h>
 #include <fstream>
 
 #ifdef _WIN32
 #include "libcommonserver/io/iohelper.h"
 #else
 #include <sys/stat.h>
+#include <utime.h>
 #endif
 
 namespace KDC::testhelpers {
