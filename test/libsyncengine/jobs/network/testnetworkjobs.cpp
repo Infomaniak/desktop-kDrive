@@ -649,26 +649,57 @@ void TestNetworkJobs::testRename() {
 }
 
 void TestNetworkJobs::testUpload() {
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
 
-    SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
+    {
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
+        SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
 
-    UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
-    ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
+        ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    NodeId newNodeId = job.nodeId();
+        NodeId newNodeId = job.nodeId();
 
-    GetFileInfoJob fileInfoJob(_driveDbId, newNodeId);
-    exitCode = fileInfoJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        GetFileInfoJob fileInfoJob(_driveDbId, newNodeId);
+        exitCode = fileInfoJob.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
-    std::string name;
-    if (dataObj) {
-        name = dataObj->get(nameKey).toString();
+        Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
+        std::string name;
+        if (dataObj) {
+            name = dataObj->get(nameKey).toString();
+        }
+        CPPUNIT_ASSERT(name == bigFileName);
     }
-    CPPUNIT_ASSERT(name == bigFileName);
+    {
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
+        const LocalTemporaryDirectory localTmpDir("testUpload");
+        const SyncPath localDestFilePath = localTmpDir.path() / bigFileName;
+        testhelpers::generateOrEditTestFile(localDestFilePath);
+        IoError ioError = IoError::Unknown;
+        IoHelper::setRights(localDestFilePath, false, false, false, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        UploadJob job(_driveDbId, localDestFilePath, localDestFilePath.filename().native(), remoteTmpDir.id(), 0);
+        ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, job.exitCause());
+    }
+    {
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
+        const LocalTemporaryDirectory localTmpDir("testUpload");
+        const SyncPath localDestFilePath = localTmpDir.path() / bigFileName;
+        testhelpers::generateOrEditTestFile(localDestFilePath);
+
+        UploadJob job(_driveDbId, localDestFilePath, localDestFilePath.filename().native(), remoteTmpDir.id(), 0);
+        IoError ioErrror = IoError::Unknown;
+        IoHelper::deleteItem(localDestFilePath, ioErrror);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioErrror);
+                
+        ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::NotFound, job.exitCause());
+    }
 }
 
 void TestNetworkJobs::testUploadAborted() {
@@ -750,6 +781,38 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     int64_t fileSizeRemote = fileSizeJob.size();
 
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(fileSizeLocal), fileSizeRemote);
+
+    // A file with no rights
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous No rights");
+    const SyncPath localFilePathNoRights = localTmpDir.path() / "no_rights.txt";
+    testhelpers::generateOrEditTestFile(localFilePathNoRights);
+    IoHelper::setRights(localFilePathNoRights, false, false, false, ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    DriveUploadSession driveUploadSessionJobNoRights(_driveDbId, nullptr, localFilePathNoRights,
+                                                     localFilePathNoRights.filename().native(), remoteTmpDir.id(), 12345, false,
+                                                     1);
+    exitCode = driveUploadSessionJobNoRights.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitCode);
+    CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, driveUploadSessionJobNoRights.exitCause());
+
+    // A file removed
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous Removed");
+    const SyncPath localFilePathRemoved = localTmpDir.path() / "removed.txt";
+    testhelpers::generateOrEditTestFile(localFilePathRemoved);
+    DriveUploadSession driveUploadSessionJobRemoved(_driveDbId, nullptr, localFilePathRemoved,
+                                                     localFilePathRemoved.filename().native(), remoteTmpDir.id(), 12345, false,
+                                                     1);
+
+    IoError ioErrror = IoError::Unknown;
+    IoHelper::deleteItem(localFilePathRemoved, ioErrror);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioErrror);
+
+    exitCode = driveUploadSessionJobRemoved.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitCode);
+    CPPUNIT_ASSERT_EQUAL(ExitCause::NotFound, driveUploadSessionJobRemoved.exitCause());
+
+
 }
 
 void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
