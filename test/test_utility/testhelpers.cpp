@@ -24,6 +24,7 @@
 
 
 #ifdef _WIN32
+#include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include <sys/utime.h>
 #include <sys/types.h>
@@ -72,9 +73,9 @@ void setModificationDate(const SyncPath& path, const std::chrono::time_point<std
     FileStat fileStat;
     ::KDC::IoHelper::getFileStat(path, &fileStat, ioError);
 
-    timeBuffer.tma = fileStat.creationTime;
-    timeBuffer.tmm = timeInSeconds;
-    _utime(path.c_str(), &timeBuffer);
+    timeBuffer.actime = fileStat.creationTime;
+    timeBuffer.modtime = timeInSeconds;
+    _wutime(path.wstring().c_str(), &timeBuffer);
 }
 #else
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
