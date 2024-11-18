@@ -79,8 +79,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
 
     // Check if the item already exists in the new parent
     if (auto itNewParent = _items.find(newItem.parentId()); itNewParent != _items.end()) {
-        auto childrenIds = itNewParent->second.childrenIds(); // Copy to avoid iterator invalidation
-        for (const NodeId &childId: childrenIds) {
+        for (const NodeId &childId: itNewParent->second.childrenIds()) {
             auto child = _items.find(childId);
             if (child == _items.end()) {
                 assert(false && "Child not found in snapshot");
@@ -94,8 +93,10 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
                                      << L") already exists in parent: " << Utility::s2ws(newItem.parentId())
                                      << L" with a different id. Removing it and adding the new one.");
                 removeItem(childId);
+                break; // There should be (at most) only one item with the same name in a folder 
             }
         }
+        
     }
 
     const SnapshotItem &prevItem = _items[newItem.id()];
