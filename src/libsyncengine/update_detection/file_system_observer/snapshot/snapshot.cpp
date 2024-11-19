@@ -482,25 +482,25 @@ void Snapshot::setValid(bool newIsValid) {
     _isValid = newIsValid;
 }
 
-bool Snapshot::checkIntegrityRecursively() {
+bool Snapshot::checkIntegrityRecursively() const {
     return checkIntegrityRecursively(rootFolderId());
 }
 
-bool Snapshot::checkIntegrityRecursively(const NodeId &parentId) {
+bool Snapshot::checkIntegrityRecursively(const NodeId &parentId) const {
     // Check that we do not have the same file twice in the same folder
-    const auto &parentItem = _items[parentId];
+    const auto &parentItem = _items.at(parentId);
     std::set<SyncName> names;
     for (auto childId = parentItem.childrenIds().begin(), end = parentItem.childrenIds().end(); childId != end; childId++) {
         if (!checkIntegrityRecursively(*childId)) {
             return false;
         }
 
-        auto result = names.insert(_items[*childId].name());
+        auto result = names.insert(_items.at(*childId).name());
         if (!result.second) {
             LOGW_WARN(Log::instance()->getLogger(), L"Snapshot integrity check failed, the folder named: \""
                                                             << SyncName2WStr(parentItem.name()).c_str() << L"\"("
                                                             << Utility::s2ws(parentItem.id()).c_str() << L") contains: \""
-                                                            << SyncName2WStr(_items[*childId].name()).c_str()
+                                                            << SyncName2WStr(_items.at(*childId).name()).c_str()
                                                             << L"\" twice with two differents NodeId");
             return false;
         }
