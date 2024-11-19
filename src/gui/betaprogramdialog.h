@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "customcombobox.h"
 #include "customdialog.h"
 
 #include "utility/types.h"
@@ -26,11 +27,13 @@ class QCheckBox;
 
 namespace KDC {
 
+class CustomComboBox;
+
 class BetaProgramDialog final : public CustomDialog {
         Q_OBJECT
 
     public:
-        explicit BetaProgramDialog(bool isQuit, QWidget *parent = nullptr);
+        explicit BetaProgramDialog(bool isQuit, bool isStaff, QWidget *parent = nullptr);
 
         [[nodiscard]] DistributionChannel selectedDistributionChannel() const { return _channel; }
 
@@ -40,8 +43,10 @@ class BetaProgramDialog final : public CustomDialog {
 
     private:
         bool _isQuit{false};
+        bool _isStaff{false};
         DistributionChannel _channel{DistributionChannel::Unknown};
         QCheckBox *_acknowledgmentCheckbox{nullptr};
+        CustomComboBox *_staffSelectionBox{nullptr};
         QPushButton *_saveButton{nullptr};
 };
 

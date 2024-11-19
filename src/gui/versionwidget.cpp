@@ -142,12 +142,14 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
     // Beta version info
     _betaVersionLabel->setText(tr("Beta program"));
     _betaVersionDescription->setText(tr("Get early access to new versions of the application"));
-    const auto channel = ParametersCache::instance()->parametersInfo().distributionChannel();
-    if (channel == DistributionChannel::Prod) {
+
+    if (const auto channel = ParametersCache::instance()->parametersInfo().distributionChannel();
+        channel == DistributionChannel::Prod) {
         _joinBetaButton->setText(tr("Join"));
         _betaTag->setVisible(false);
     } else {
-        _joinBetaButton->setText(tr("Quit"));
+        bool isStaff = true; // TODO : get this valule from somewhere
+        _joinBetaButton->setText(isStaff ? tr("Modify") : tr("Quit"));
         _betaTag->setVisible(true);
         _betaTag->setBackgroundColor(channel == DistributionChannel::Beta ? betaTagColor : internalTagColor);
         _betaTag->setText(channel == DistributionChannel::Beta ? "BETA" : "INTERNAL");
@@ -209,8 +211,9 @@ void VersionWidget::onUpdateButtonClicked() {
 }
 
 void VersionWidget::onJoinBetaButtonClicked() {
+    bool isStaff = true; // TODO : get this value from somewhere
     if (auto dialog = BetaProgramDialog(
-                ParametersCache::instance()->parametersInfo().distributionChannel() != DistributionChannel::Prod, this);
+                ParametersCache::instance()->parametersInfo().distributionChannel() != DistributionChannel::Prod, isStaff, this);
         dialog.exec() == QDialog::Accepted) {
         saveDistributionChannel(dialog.selectedDistributionChannel());
         refresh();
@@ -229,8 +232,8 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
     statusLayout->setSpacing(statusLayoutSpacing);
     _updateStatusLabel = new QLabel(this);
     _updateStatusLabel->setObjectName("boldTextLabel");
-    // _updateStatusLabel->setWordWrap(true);   // TODO : for long string we should activate word wrap but it is not aligned
-    // anymore with the tag
+    // _updateStatusLabel->setWordWrap(true);
+    // TODO : for long string we should activate word wrap but it is not aligned anymore with the tag
     statusLayout->addWidget(_updateStatusLabel);
 
     _betaTag = new TagLabel(betaTagColor, this);

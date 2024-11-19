@@ -19,10 +19,11 @@
 #include "betaprogramdialog.h"
 
 #include "adddriveconfirmationwidget.h"
+#include "customcombobox.h"
+#include "parameterscache.h"
 #include "utility/utility.h"
 
 #include <QCheckBox>
-#include <QDesktopServices>
 #include <QPushButton>
 
 static constexpr int mainLayoutHMargin = 40;
@@ -31,29 +32,30 @@ static constexpr int titleBoxVSpacing = 14;
 static constexpr int subLayoutSpacing = 8;
 static constexpr int iconSize = 16;
 static constexpr auto iconColor = QColor(239, 139, 52);
-
-static const QString shareCommentsLink = "shareCommentsLink";
+static constexpr int indexNo = 0;
+static constexpr int indexBeta = 1;
+static constexpr int indexInternal = 2;
 
 namespace KDC {
 
-BetaProgramDialog::BetaProgramDialog(const bool isQuit, QWidget *parent /*= nullptr*/) :
-    CustomDialog(true, parent), _isQuit(isQuit) {
+BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWidget *parent /*= nullptr*/) :
+    CustomDialog(true, parent), _isQuit(isQuit && !isStaff), _isStaff(isStaff) {
     setObjectName("BetaProgramDialog");
     setMinimumHeight(380);
 
     /*
-     * |--------------------------------------------------------|
-     * |                        layout                          |
-     * |                                                        |
-     * |     |---------------------------------------------|    |
-     * |     |              acknowledmentLayout            |    |
-     * |     |                                             |    |
-     * |     |---------------------------------------------|    |
-     * |                                                        |
-     * |     |---------------------------------------------|    |
-     * |     |                buttonLayout                 |    |
-     * |     |---------------------------------------------|    |
-     * |--------------------------------------------------------|
+     * |-------------------------------------------------------|
+     * |                       layout                          |
+     * |                                                       |
+     * |    |---------------------------------------------|    |
+     * |    |              acknowledmentLayout            |    |
+     * |    |                                             |    |
+     * |    |---------------------------------------------|    |
+     * |                                                       |
+     * |    |---------------------------------------------|    |
+     * |    |                buttonLayout                 |    |
+     * |    |---------------------------------------------|    |
+     * |-------------------------------------------------------|
      */
 
     auto *layout = new QVBoxLayout(this);
@@ -79,10 +81,28 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, QWidget *parent /*= null
         layout->addWidget(mainTextBox);
     }
 
+    if (_isStaff) {
+        auto *staffLabel = new QLabel(this);
+        staffLabel->setText(tr("Benefit from application beta updates"));
+        layout->addWidget(staffLabel);
+
+        _staffSelectionBox = new CustomComboBox(this);
+        _staffSelectionBox->insertItem(indexNo, tr("No"));
+        _staffSelectionBox->insertItem(indexBeta, tr("Public beta version"));
+        _staffSelectionBox->insertItem(indexInternal, tr("Internal beta version"));
+
+        if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Prod)
+            _staffSelectionBox->setCurrentIndex(indexNo);
+        else if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Beta)
+            _staffSelectionBox->setCurrentIndex(indexBeta);
+        else if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Internal)
+            _staffSelectionBox->setCurrentIndex(indexInternal);
+        layout->addWidget(_staffSelectionBox);
+    }
+
     // Acknowlegment
     auto *acknowlegmentFrame = new QFrame(this);
-    acknowlegmentFrame->setObjectName("acknowlegmentFrame");
-    acknowlegmentFrame->setStyleSheet("QFrame#acknowlegmentFrame {border-radius: 8px; background-color: #F4F6FC;}");
+    acknowlegmentFrame->setStyleSheet("QFrame {border-radius: 8px; background-color: #F4F6FC;}");
     layout->addWidget(acknowlegmentFrame);
 
     auto *acknowledmentLayout = new QGridLayout(this);
@@ -149,11 +169,19 @@ void BetaProgramDialog::onAcknowledgement() {
 }
 
 void BetaProgramDialog::onSave() {
-    if (_isQuit) {
-        _channel = DistributionChannel::Prod;
+    if (_isStaff) {
+        if (_staffSelectionBox->currentIndex() == indexNo)
+            _channel = DistributionChannel::Prod;
+        else if (_staffSelectionBox->currentIndex() == indexBeta)
+            _channel = DistributionChannel::Beta;
+        else if (_staffSelectionBox->currentIndex() == indexInternal)
+            _channel = DistributionChannel::Internal;
     } else {
-        // TODO : add Internal channel for collaborators
-        _channel = DistributionChannel::Beta;
+        if (_isQuit) {
+            _channel = DistributionChannel::Prod;
+        } else {
+            _channel = DistributionChannel::Beta;
+        }
     }
 
     accept();
