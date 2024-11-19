@@ -33,19 +33,19 @@ class TimeOutChecker {
             auto end = std::chrono::steady_clock::now();
             _diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - _time).count();
         }
-        bool lessThan(long long value) {
-            if (_diff >= value) std::cout << "TimeOutChecker::lessThan: " << _diff << " >= " << value << std::endl;
-            return _diff < value;
+        bool lessOrEqualThan(long long value) {
+            if (_diff > value) std::cout << "TimeOutChecker::lessThan: " << _diff << " >= " << value << std::endl;
+            return _diff <= value;
         }
-        bool greaterThan(long long value) {
-            if (_diff <= value) std::cout << "TimeOutChecker::greaterThan: " << _diff << " <= " << value << std::endl;
-            return _diff > value;
+        bool greaterOrEqualThan(long long value) {
+            if (_diff < value) std::cout << "TimeOutChecker::greaterThan: " << _diff << " <= " << value << std::endl;
+            return _diff >= value;
         }
         bool between(long long min, long long max) {
-            if (_diff <= min || _diff >= max)
+            if (_diff < min || _diff > max)
                 std::cout << "TimeOutChecker::between: " << _diff << " <= " << min << " || " << _diff << " >= " << max
                           << std::endl;
-            return _diff > min && _diff < max;
+            return _diff >= min && _diff <= max;
         }
 
     private:
@@ -83,7 +83,7 @@ void TestIo::testOpenFileAccessDenied() {
     TimeOutChecker timeOutChecker(true);
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), IoHelper::openFile(filePath, file, 0));
     timeOutChecker.stop();
-    CPPUNIT_ASSERT(timeOutChecker.lessThan(200));
+    CPPUNIT_ASSERT(timeOutChecker.lessOrEqualThan(200));
     CPPUNIT_ASSERT(!file.is_open());
 
     // Check timeout
@@ -101,7 +101,7 @@ void TestIo::testOpenFileNonExisting() {
     TimeOutChecker timeOutChecker(true);
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), IoHelper::openFile(filePath, file, 5));
     timeOutChecker.stop();
-    CPPUNIT_ASSERT(timeOutChecker.lessThan(200));
+    CPPUNIT_ASSERT(timeOutChecker.lessOrEqualThan(200));
     CPPUNIT_ASSERT(!file.is_open());
 }
 
