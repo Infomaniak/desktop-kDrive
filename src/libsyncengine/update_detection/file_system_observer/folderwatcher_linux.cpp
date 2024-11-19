@@ -126,7 +126,7 @@ void FolderWatcher_linux::startWatching() {
         }
     }
 
-    LOGW_DEBUG(_logger, L"Folder watching stopped: " << _folder.wstring().c_str());
+    LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));
     Utility::terminateThreadFunction();
 }
 
