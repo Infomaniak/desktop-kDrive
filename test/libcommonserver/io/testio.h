@@ -135,7 +135,6 @@ class TestIo : public CppUnit::TestFixture {
         void testOpenFileNonExisting();
         void testOpenFileAccessDeniedRemovedBeforeTimedOut();
 
-
     private:
         IoHelperTests *_testObj;
         const SyncPath _localTestDirPath;

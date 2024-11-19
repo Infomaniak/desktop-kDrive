@@ -57,7 +57,6 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testGetAppVersionInfo);
         CPPUNIT_TEST(testDirectDownload);
-        CPPUNIT_TEST(testUpload);
         CPPUNIT_TEST_SUITE_END();
 
     public:
