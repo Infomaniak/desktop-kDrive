@@ -119,8 +119,7 @@ void FolderWatcher_win::watchChanges() {
         _ready = true;
 
         HANDLE handles[] = {_resultEventHandle, _stopEventHandle};
-        DWORD result = WaitForMultipleObjects(2, handles, false // awake once one of them arrives
-                                              ,
+        DWORD result = WaitForMultipleObjects(2, handles, false, // awake once one of them arrives
                                               INFINITE);
 
         if (result == 1) {
@@ -181,6 +180,8 @@ void FolderWatcher_win::watchChanges() {
                                                       << L" detected on item with " << Utility::formatSyncPath(longfilepath));
                 }
 
+                if (opType == OperationType::MoveOut) opType = OperationType::Move; // "MoveOut" is considered as Move from now on
+
                 changeDetected(longfilepath, opType);
             }
 
@@ -214,20 +215,15 @@ void FolderWatcher_win::closeHandle() {
 OperationType FolderWatcher_win::operationFromAction(DWORD action) {
     switch (action) {
         case FILE_ACTION_RENAMED_OLD_NAME:
-            return OperationType::Move;
-            break;
+            return OperationType::MoveOut;
         case FILE_ACTION_RENAMED_NEW_NAME:
             return OperationType::Move;
-            break;
         case FILE_ACTION_ADDED:
             return OperationType::Create;
-            break;
         case FILE_ACTION_REMOVED:
             return OperationType::Delete;
-            break;
         case FILE_ACTION_MODIFIED:
             return OperationType::Edit;
-            break;
     }
 
     return OperationType::None;
