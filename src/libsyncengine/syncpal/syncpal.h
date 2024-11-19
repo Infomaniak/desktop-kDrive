@@ -320,6 +320,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<UpdateTree> _remoteUpdateTree{nullptr};
         std::shared_ptr<ConflictQueue> _conflictQueue{nullptr};
         std::shared_ptr<SyncOperationList> _syncOps{nullptr};
+        std::shared_ptr<ProgressInfo> _progressInfo{nullptr};
 
         // Workers
         std::shared_ptr<SyncPalWorker> _syncPalWorker{nullptr};
@@ -335,14 +336,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<OperationSorterWorker> _operationsSorterWorker{nullptr};
         std::shared_ptr<ExecutorWorker> _executorWorker{nullptr};
 
-        std::shared_ptr<ProgressInfo> _progressInfo{nullptr};
-
         std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager{nullptr};
 
         void createSharedObjects();
+        void freeSharedObjects();
+        void initSharedObjects();
         void resetSharedObjects();
         void createWorkers();
-        void free();
+        void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
                             const std::string &targetNodeId = std::string());
