@@ -214,7 +214,7 @@ ExitInfo UploadJob::readFile() {
     } while (count++ < 10 && !file.is_open());
 
     if (count >= 10) {
-        LOGW_WARN(_logger, L"Failed to open file - path=" << Path2WStr(_filePath));
+        LOGW_WARN(_logger, L"Failed to open file - path=" << Utility::formatSyncPath(_filePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 

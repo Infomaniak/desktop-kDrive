@@ -670,7 +670,7 @@ void TestNetworkJobs::testUpload() {
         }
         CPPUNIT_ASSERT(name == bigFileName);
     }
-    { // Test upload with a file that has no read rights
+    { // Uploading a file that has no read rights should fail with `ExitCause::FileAccessError`.
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
         const LocalTemporaryDirectory localTmpDir("testUpload");
         const SyncPath localDestFilePath = localTmpDir.path() / "no_rights.txt";
@@ -766,7 +766,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
 
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(fileSizeLocal), fileSizeRemote);
 
-    // A file with no rights
+    // Uploading a file that has no rights should fail with `ExitCause::FileAccessError`. with no rights
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous No rights");
     const SyncPath localFilePathNoRights = localTmpDir.path() / "no_rights.txt";
     testhelpers::generateOrEditTestFile(localFilePathNoRights);
