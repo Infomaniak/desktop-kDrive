@@ -247,7 +247,7 @@ void TestWorkers::testCreatePlaceholder() {
         // Folder already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
         CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::InvalidSnapshot, exitInfo.cause());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::FileAlreadyExist, exitInfo.cause());
 #endif
     }
 
