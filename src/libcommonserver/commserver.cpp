@@ -19,8 +19,9 @@
 #include "commserver.h"
 #include "common/utility.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <QDataStream>
 #include <QDir>
@@ -397,6 +398,7 @@ void Worker::onStart() {
     }
 
     LOG_DEBUG(Log::instance()->getLogger(), "Worker ended");
+    Utility::terminateThreadFunction();
 }
 
 } // namespace KDC
