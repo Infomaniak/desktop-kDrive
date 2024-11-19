@@ -249,7 +249,7 @@ struct ExitInfo {
         const ExitCause &cause() const { return _cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
-        operator std::string() const { return "ExitInfo{" + toString(code()) + ", " + toString(cause()) + "}"; }
+        explicit operator std::string() const { return "ExitInfo{" + toString(code()) + ", " + toString(cause()) + "}"; }
         constexpr operator bool() const { return _code == ExitCode::Ok; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }

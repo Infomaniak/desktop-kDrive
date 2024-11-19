@@ -158,26 +158,26 @@ bool IoHelper::openFile(const SyncPath &path, std::ifstream &file, IoError &ioEr
         if (!file.is_open()) {
             bool exists = false;
             if (!IoHelper::checkIfPathExists(path, exists, ioError)) {
-                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
+                LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
                 return isExpectedError(ioError);
             }
             if (ioError == IoError::AccessDenied) {
-                LOGW_DEBUG(_logger, L"Access denied to " << Utility::formatSyncPath(path));
+                LOGW_DEBUG(logger(), L"Access denied to " << Utility::formatSyncPath(path));
                 return isExpectedError(ioError);
             }
             if (!exists) {
-                LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(path));
+                LOGW_DEBUG(logger(), L"Item does not exist anymore - " << Utility::formatSyncPath(path));
                 ioError = IoError::NoSuchFileOrDirectory;
                 return isExpectedError(ioError);
             }
-            LOGW_DEBUG(_logger, L"File is locked, retrying in one second " << Utility::formatSyncPath(path));
+            LOGW_DEBUG(logger(), L"File is locked, retrying in one second " << Utility::formatSyncPath(path));
 
-            Utility::msleep(1000);
+            if(count < timeOut) Utility::msleep(1000);
         }
     } while (++count < timeOut && !file.is_open());
 
     if (!file.is_open()) {
-        LOGW_DEBUG(_logger, L"Failed to open file - " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Failed to open file - " << Utility::formatSyncPath(path));
         ioError = IoError::AccessDenied;
         return isExpectedError(ioError);
     }

@@ -74,7 +74,7 @@ class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST(testOpenFileSuccess);
         CPPUNIT_TEST(testOpenFileAccessDenied);
         CPPUNIT_TEST(testOpenFileNonExisting);
-        CPPUNIT_TEST(testOpenFileAccessDeniedRemovedBeforeTimedOut);
+        CPPUNIT_TEST(testOpenLockedFileRemovedBeforeTimedOut);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -133,7 +133,7 @@ class TestIo : public CppUnit::TestFixture {
         void testOpenFileSuccess();
         void testOpenFileAccessDenied();
         void testOpenFileNonExisting();
-        void testOpenFileAccessDeniedRemovedBeforeTimedOut();
+        void testOpenLockedFileRemovedBeforeTimedOut();
 
     private:
         IoHelperTests *_testObj;
