@@ -2647,7 +2647,7 @@ ExitInfo ExecutorWorker::removeDependentOps(std::shared_ptr<Node> localNode, std
         if (nodeName.empty()) nodeName = remoteNode2 ? remoteNode2->name() : SyncName();
 
         if (localNode && localNode2 && (localNode->isParentOf(localNode2))) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << SyncName2WStr(nodeName)
+            LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << Utility::formatSyncName(nodeName)
                                                      << L" because it depends on " << opType << L" operation on "
                                                      << SyncName2WStr(localNode->name()) << L" wich failed.");
             dependentOps.push_back(opId);
@@ -2655,7 +2655,7 @@ ExitInfo ExecutorWorker::removeDependentOps(std::shared_ptr<Node> localNode, std
         }
 
         if (remoteNode && remoteNode2 && (remoteNode->isParentOf(remoteNode2))) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << SyncName2WStr(nodeName)
+            LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << Utility::formatSyncName(nodeName)
                                                      << L" because it depends on " << opType  << L" operation on "
                                                      << SyncName2WStr(remoteNode->name()) << L"wich failed.");
             dependentOps.push_back(opId);
