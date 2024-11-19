@@ -44,8 +44,8 @@ void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
-
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
+        auto tr1 = SentryHandler::ScopedTransaction("FileStatus Reset", "SyncPalWorker::execute");
         // Reset vfs files status
         if (!resetVfsFilesStatus()) {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
@@ -219,7 +219,6 @@ void SyncPalWorker::execute() {
 
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-
     setDone(exitCode);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
 }
@@ -272,6 +271,11 @@ std::string SyncPalWorker::stepName(SyncStep step) {
 
 void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                              std::shared_ptr<SharedObject> (&inputSharedObject)[2]) {
+    if (step == SyncStep::UpdateDetection1) {
+        SentryHandler::instance()->startTransaction(syncDbId(), SentryTransactionIdentifier::Sync);
+    }
+    SentryHandler::instance()->stopTransaction(syncDbId(), setpToSentryTransactionIdentifier(_step));
+    SentryHandler::instance()->startTransaction(syncDbId(), setpToSentryTransactionIdentifier(step));
     _step = step;
 
     switch (step) {
@@ -347,6 +351,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             if (!_syncPal->restart()) {
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
+            SentryHandler::instance()->stopTransaction(syncDbId(), SentryTransactionIdentifier::Sync);
             break;
         default:
             LOG_SYNCPAL_WARN(_logger, "Invalid status");
@@ -358,16 +363,45 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
     }
 }
 
+SentryTransactionIdentifier SyncPalWorker::setpToSentryTransactionIdentifier(SyncStep step) const {
+    switch (step) {
+        case KDC::SyncStep::UpdateDetection1:
+            return SentryTransactionIdentifier::UpdateDetection1;
+        case KDC::SyncStep::UpdateDetection2:
+            return SentryTransactionIdentifier::UpdateDetection2;
+        case KDC::SyncStep::Reconciliation1:
+            return SentryTransactionIdentifier::Reconciliation1;
+        case KDC::SyncStep::Reconciliation2:
+            return SentryTransactionIdentifier::Reconciliation2;
+        case KDC::SyncStep::Reconciliation3:
+            return SentryTransactionIdentifier::Reconciliation3;
+        case KDC::SyncStep::Reconciliation4:
+            return SentryTransactionIdentifier::Reconciliation4;
+        case KDC::SyncStep::Propagation1:
+            return SentryTransactionIdentifier::Propagation1;
+        case KDC::SyncStep::Propagation2:
+            return SentryTransactionIdentifier::Propagation2;
+        case KDC::SyncStep::Done:
+        case KDC::SyncStep::None:
+        case KDC::SyncStep::Idle:
+            return SentryTransactionIdentifier::None;
+            break;
+        default:
+            break;
+    }
+    return SentryTransactionIdentifier();
+}
+
 void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
                                   std::shared_ptr<SharedObject> (&inputSharedObject)[2], bool reset) {
     LOG_SYNCPAL_DEBUG(_logger, "Restart sync");
+    SentryHandler::instance()->stopTransaction(syncDbId(), SentryTransactionIdentifier::Sync); // Stop the transaction of the previous sync.
 
     if (reset) {
         _syncPal->resetSharedObjects();
     }
 
     *_syncPal->_interruptSync = false;
-
     initStep(SyncStep::Idle, workers, inputSharedObject);
 }
 

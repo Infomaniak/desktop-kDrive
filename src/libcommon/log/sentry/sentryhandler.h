@@ -34,7 +34,6 @@ enum class SentryLevel { // Not defined in types.h as we don't want to include s
     Error = SENTRY_LEVEL_ERROR,
     Fatal = SENTRY_LEVEL_FATAL
 };
-
 inline std::string toString(SentryLevel level) {
     switch (level) {
         case SentryLevel::Debug:
@@ -50,6 +49,27 @@ inline std::string toString(SentryLevel level) {
         default:
             return "No conversion to string available";
     }
+};
+
+enum class SentryTransactionIdentifier {
+    None,
+    Sync,
+    UpdateDetection1,
+    UpdateDetection2,
+    Reconciliation1,
+    Reconciliation2,
+    Reconciliation3,
+    Reconciliation4,
+    Propagation1,
+    Propagation2
+};
+
+struct SentryTransactionInfo {
+        explicit SentryTransactionInfo(SentryTransactionIdentifier transactionIdentifier);
+        SentryTransactionIdentifier _transactionIdentifier = SentryTransactionIdentifier::None;
+        SentryTransactionIdentifier _parentTransactionIdentifier = SentryTransactionIdentifier::None;
+        std::string _operationName;
+        std::string _operationDescription;
 };
 
 class SentryHandler {
@@ -77,11 +97,31 @@ class SentryHandler {
 
         // Performances monitoring
         // Start a performance monitoring operation. Return the operation id.
-        uint64_t startPerformanceMonitoring(const std::string &OperationName, const std::string &OperationDescription);
-        uint64_t startPerformanceMonitoring(const uint64_t &parentId, const std::string &OperationName,
-                                            const std::string &OperationDescription);
+        uint64_t startTransaction(const std::string &OperationName, const std::string &OperationDescription,
+                                  const uint64_t &parentId);
+
+
         // Stop a performance monitoring operation.
-        void stopPerformanceMonitoring(const uint64_t &operationId);
+        void stopTransaction(const uint64_t &operationId);
+
+        // Automatically manage the transaction and span for operations in a sync
+        void startTransaction(int syncDbId, const SentryTransactionIdentifier &transactionIdentifier);
+        void stopTransaction(int syncDbId, const SentryTransactionIdentifier &transactionIdentifier);
+
+        struct ScopedTransaction {
+                ScopedTransaction(int syncDbId, const SentryTransactionIdentifier &transactionIdentifier) {
+                    SentryHandler::instance()->startTransaction(syncDbId, transactionIdentifier);
+                }
+                ScopedTransaction(const std::string &operationName, const std::string &operationDescription,
+                                  const uint64_t &parentId = 0) :
+                    _transactionId(SentryHandler::instance()->startTransaction(operationName, operationDescription, parentId)) {}
+                ScopedTransaction(const uint64_t &transactionId) : _transactionId(transactionId) {}
+                ~ScopedTransaction() { SentryHandler::instance()->stopTransaction(_transactionId); }
+                uint64_t id() const { return _transactionId; }
+
+            private:
+                uint64_t _transactionId{0};
+        };
 
         // Debugging
         inline static AppType appType() { return _appType; }
@@ -154,6 +194,11 @@ class SentryHandler {
         uint64_t _operationIdCounter = 0;
         std::map<uint64_t, SentryTransaction> _transactions;
 
+        std::map<int /*syncDbId*/, std::map<SentryTransactionIdentifier, uint64_t /* operationId */>> _syncDbTransactions;
+
+        uint64_t startTransaction(const std::string &OperationName, const std::string &OperationDescription);
+        uint64_t startTransaction(const uint64_t &parentId, const std::string &OperationName,
+                                  const std::string &OperationDescription);
         /* This method is called before uploading an event to Sentry.
          *  It will check if the event should be uploaded or not. (see: void SentryHandler::captureMessage(...))
          *  The event passed as parameter will be updated if it is rate limited (level and message).
@@ -200,4 +245,6 @@ class SentryHandler {
         static bool _debugCrashCallback;
         static bool _debugBeforeSendCallback;
 };
+
+
 } // namespace KDC

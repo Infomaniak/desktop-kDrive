@@ -257,7 +257,7 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
         sentry_options_set_traces_sample_rate(options, 1);
 #else
         sentry_options_set_environment(options, "dev_unknown");
-        sentry_options_set_traces_sample_rate(options, 0.1); // 10% of traces
+        sentry_options_set_traces_sample_rate(options, 1); // 10% of traces
 #endif
     } else if (environment.empty()) { // Disable sentry
         _instance->_isSentryActivated = false;
@@ -448,13 +448,21 @@ SentryHandler::SentryTransaction::SentryTransaction(uint64_t parentId, uint64_t 
     _operationId = operationId;
 }
 
-uint64_t SentryHandler::startPerformanceMonitoring(const std::string &OperationName, const std::string &OperationDescription) {
+uint64_t SentryHandler::startTransaction(const std::string &OperationName, const std::string &OperationDescription,
+                                         const uint64_t &parentId) {
+    if (parentId == 0) {
+        return startTransaction(OperationName, OperationDescription);
+    } else {
+        return startTransaction(parentId, OperationName, OperationDescription);
+    }
+}
+
+uint64_t SentryHandler::startTransaction(const std::string &OperationName, const std::string &OperationDescription) {
     std::scoped_lock lock(_mutex);
     if (!_isSentryActivated) return 0;
 
     sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(OperationName.c_str(), OperationDescription.c_str());
     sentry_transaction_t *tx = sentry_transaction_start(tx_ctx, sentry_value_new_null());
-    
     _operationIdCounter++;
     uint64_t operationId = _operationIdCounter;
     SentryTransaction &transaction = _transactions.try_emplace(operationId, 0, operationId).first->second;
@@ -463,8 +471,8 @@ uint64_t SentryHandler::startPerformanceMonitoring(const std::string &OperationN
     return _operationIdCounter;
 }
 
-uint64_t SentryHandler::startPerformanceMonitoring(const uint64_t &parentId, const std::string &OperationName,
-                                                   const std::string &OperationDescription) {
+uint64_t SentryHandler::startTransaction(const uint64_t &parentId, const std::string &OperationName,
+                                         const std::string &OperationDescription) {
     std::scoped_lock lock(_mutex);
     if (!_isSentryActivated) return 0;
 
@@ -489,24 +497,114 @@ uint64_t SentryHandler::startPerformanceMonitoring(const uint64_t &parentId, con
     return operationId;
 }
 
-void SentryHandler::stopPerformanceMonitoring(const uint64_t &operationId) {
+void SentryHandler::stopTransaction(const uint64_t &operationId) {
     std::scoped_lock lock(_mutex);
     if (!_transactions.contains(operationId)) return;
 
-    const SentryTransaction &transaction = _transactions.at(operationId);
-    if (transaction.isSpan()) {
+    if (const SentryTransaction &transaction = _transactions.at(operationId); transaction.isSpan()) {
         sentry_span_finish(transaction.span());
     } else {
-        for (auto transaction2: _transactions) {
-            if (transaction2.second.parentId() == operationId) {
+        std::vector<uint64_t> toDelete;
+        for (const auto &[nextTransactionId, nextTransaction]: _transactions) {
+            if (nextTransaction.parentId() == operationId) {
                 assert(false && "All child transaction/span must be stopped before the parent");
-                stopPerformanceMonitoring(transaction2.first);
+                toDelete.push_back(nextTransactionId);
             }
+        }
+        for (auto operationId2: toDelete) {
+            _transactions.erase(operationId2);
         }
         sentry_transaction_finish(transaction.transaction());
     }
 
     _transactions.erase(operationId);
+}
+
+void SentryHandler::startTransaction(int syncDbId, const SentryTransactionIdentifier &transactionIdentifier) {
+    std::scoped_lock lock(_mutex);
+    if (!_isSentryActivated || transactionIdentifier == SentryTransactionIdentifier::None) return;
+    auto transactionInfo =
+            SentryTransactionInfo(transactionIdentifier);
+    if (transactionInfo._parentTransactionIdentifier != SentryTransactionIdentifier::None) {
+        if (!_syncDbTransactions.contains(syncDbId) ||
+            !_syncDbTransactions[syncDbId].contains(transactionInfo._parentTransactionIdentifier) ||
+            _syncDbTransactions[syncDbId][transactionInfo._parentTransactionIdentifier] == 0) {
+            assert(false && "Parent transaction is not running");
+            return;
+        }
+
+        const uint64_t &parentId = _syncDbTransactions.at(syncDbId).at(transactionInfo._parentTransactionIdentifier);
+        _syncDbTransactions[syncDbId][transactionInfo._transactionIdentifier] =
+                startTransaction(parentId, transactionInfo._operationName, transactionInfo._operationDescription);
+    } else {
+        _syncDbTransactions[syncDbId][transactionInfo._transactionIdentifier] =
+                startTransaction(transactionInfo._operationName, transactionInfo._operationDescription);
+    }
+}
+
+void SentryHandler::stopTransaction(int syncDbId, const SentryTransactionIdentifier &transactionIdentifier) {
+    std::scoped_lock lock(_mutex);
+    if (!_isSentryActivated || transactionIdentifier == SentryTransactionIdentifier::None) return;
+    if (!_syncDbTransactions.contains(syncDbId) || !_syncDbTransactions[syncDbId].contains(transactionIdentifier) ||
+        _syncDbTransactions[syncDbId][transactionIdentifier] == 0) {
+        assert(false && "Transaction is not running");
+        return;
+    }
+
+    stopTransaction(_syncDbTransactions[syncDbId][transactionIdentifier]);
+    _syncDbTransactions[syncDbId][transactionIdentifier] = 0;
+}
+
+SentryTransactionInfo::SentryTransactionInfo(SentryTransactionIdentifier transactiontransactionIdentifier) {
+    _transactionIdentifier = transactiontransactionIdentifier;
+    switch (_transactionIdentifier) {
+        case KDC::SentryTransactionIdentifier::None:
+            assert(false && "Transaction must be different from None");
+            break;
+        case KDC::SentryTransactionIdentifier::UpdateDetection1:
+            _operationName = "UpdateDetection1";
+            _operationDescription = "UpdateDetection1.";
+            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+            break;
+        case KDC::SentryTransactionIdentifier::UpdateDetection2:
+            _operationName = "UpdateDetection2";
+            _operationDescription = "UpdateDetection2.";
+            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+            break;
+        case KDC::SentryTransactionIdentifier::Reconciliation1:
+            _operationName = "Reconciliation1";
+            _operationDescription = "Reconciliation1.";
+            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+            break;
+        case KDC::SentryTransactionIdentifier::Reconciliation2:
+            _operationName = "Reconciliation2";
+            _operationDescription = "Reconciliation2.";
+            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+            break;
+        case KDC::SentryTransactionIdentifier::Reconciliation3:
+            _operationName = "Reconciliation3";
+            _operationDescription = "Reconciliation3.";
+            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+            break;
+        case KDC::SentryTransactionIdentifier::Reconciliation4:
+
+        case KDC::SentryTransactionIdentifier::Propagation1:
+            _operationName = "Propagation1";
+            _operationDescription = "Propagation1.";
+            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+            break;
+        case KDC::SentryTransactionIdentifier::Propagation2:
+            _operationName = "Propagation2";
+            _operationDescription = "Propagation2.";
+            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+            break;
+        case KDC::SentryTransactionIdentifier::Sync:
+            _operationName = "Synchronisation";
+            _operationDescription = "Synchronisation.";
+            break;
+        default:
+            break;
+    }
 }
 
 } // namespace KDC
