@@ -2525,8 +2525,8 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
     std::shared_ptr<Node> remoteBlacklistedNode = nullptr;
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
         // The item does not exist yet locally, we will only tmpBlacklist the remote item
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->affectedNode()->getPath(), remoteBlacklistedNode,
-                                                                 localBlacklistedNode, opsExitInfo.cause());
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->affectedNode()->getPath(), localBlacklistedNode,
+                                                                 remoteBlacklistedNode, opsExitInfo.cause());
             !exitInfo) {
             return exitInfo;
         }
@@ -2536,8 +2536,8 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
         if (!localNode) return ExitCode::LogicError;
         SyncPath relativeLocalFilePath = localNode->getPath();
         NodeId localNodeId = localNode->id().has_value() ? *localNode->id() : NodeId();
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, remoteBlacklistedNode,
-                                                                 localBlacklistedNode, opsExitInfo.cause());
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, localBlacklistedNode,
+                                                                 remoteBlacklistedNode, opsExitInfo.cause());
             !exitInfo) {
             return exitInfo;
         }
@@ -2589,10 +2589,11 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo o
         bool exist = false;
         IoHelper::checkIfPathExists(_syncPal->localPath() / relativeLocalPath, exist, ioError);
         if (ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath) << L"has no read access, converting already exist error in file access error.");
+            LOGW_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath)
+                                        << L"has no read access, converting already exist error in file access error.");
             return handleExecutorError(
                     syncOp, {ExitCode::SystemError, ExitCause::FileAccessError}); // We got the write right but not the read right
-        }      
+        }
     } else if (syncOp->targetSide() == ReplicaSide::Remote) {
         relativeLocalPath = syncOp->affectedNode()->parentNode()->getPath() / syncOp->newName();
     } else {
@@ -2656,7 +2657,7 @@ ExitInfo ExecutorWorker::removeDependentOps(std::shared_ptr<Node> localNode, std
 
         if (remoteNode && remoteNode2 && (remoteNode->isParentOf(remoteNode2))) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << Utility::formatSyncName(nodeName)
-                                                     << L" because it depends on " << opType  << L" operation on "
+                                                     << L" because it depends on " << opType << L" operation on "
                                                      << SyncName2WStr(remoteNode->name()) << L"wich failed.");
             dependentOps.push_back(opId);
         }
