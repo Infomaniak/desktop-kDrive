@@ -649,7 +649,7 @@ void TestNetworkJobs::testRename() {
 }
 
 void TestNetworkJobs::testUpload() {
-    { // Test upload
+    { // Successful upload
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
         SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
 
