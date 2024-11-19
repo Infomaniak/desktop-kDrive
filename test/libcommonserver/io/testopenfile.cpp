@@ -33,9 +33,20 @@ class TimeOutChecker {
             auto end = std::chrono::steady_clock::now();
             _diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - _time).count();
         }
-        bool lessThan(long long value) { return _diff < value; }
-        bool greaterThan(long long value) { return _diff > value; }
-        bool between(long long min, long long max) { return _diff > min && _diff < max; }
+        bool lessThan(long long value) {
+            if (_diff >= value) std::cout << "TimeOutChecker::lessThan: " << _diff << " >= " << value << std::endl;
+            return _diff < value;
+        }
+        bool greaterThan(long long value) {
+            if (_diff <= value) std::cout << "TimeOutChecker::greaterThan: " << _diff << " <= " << value << std::endl;
+            return _diff > value;
+        }
+        bool between(long long min, long long max) {
+            if (_diff <= min || _diff >= max)
+                std::cout << "TimeOutChecker::between: " << _diff << " <= " << min << " || " << _diff << " >= " << max
+                          << std::endl;
+            return _diff > min && _diff < max;
+        }
 
     private:
         std::chrono::steady_clock::time_point _time;
