@@ -25,8 +25,8 @@
 #include "betaprogramdialog.h"
 #include "parameterscache.h"
 #include "preferencesblocwidget.h"
+#include "taglabel.h"
 #include "utility/utility.h"
-#include "utility/widgetsignalblocker.h"
 
 #include <QDesktopServices>
 #include <config.h>
@@ -42,6 +42,10 @@ namespace KDC {
 static const QString versionLink = "versionLink";
 static const QString releaseNoteLink = "releaseNoteLink";
 static const QString downloadPageLink = "downloadPageLink";
+
+static constexpr int statusLayoutSpacing = 8;
+static constexpr auto betaTagColor = QColor(214, 56, 100);
+static constexpr auto internalTagColor = QColor(120, 116, 176);
 
 VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     const auto mainLayout = new QVBoxLayout(this);
@@ -135,13 +139,19 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
     _showReleaseNotesLabel->setVisible(showReleaseNote);
     _updateButton->setVisible(showUpdateButton);
 
-    // Beta version bloc
+    // Beta version info
     _betaVersionLabel->setText(tr("Beta program"));
     _betaVersionDescription->setText(tr("Get early access to new versions of the application"));
-    if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Prod)
+    const auto channel = ParametersCache::instance()->parametersInfo().distributionChannel();
+    if (channel == DistributionChannel::Prod) {
         _joinBetaButton->setText(tr("Join"));
-    else
+        _betaTag->setVisible(false);
+    } else {
         _joinBetaButton->setText(tr("Quit"));
+        _betaTag->setVisible(true);
+        _betaTag->setBackgroundColor(channel == DistributionChannel::Beta ? betaTagColor : internalTagColor);
+        _betaTag->setText(channel == DistributionChannel::Beta ? "BETA" : "INTERNAL");
+    }
 }
 
 void VersionWidget::showAboutDialog() {
@@ -213,12 +223,21 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
     auto *verticalLayout = new QVBoxLayout(this);
     verticalLayout->setSpacing(1);
     verticalLayout->setContentsMargins(0, 0, 0, 0);
-    versionLayout->addLayout(verticalLayout, 9);
+    versionLayout->addLayout(verticalLayout);
 
+    auto *statusLayout = new QHBoxLayout(this);
+    statusLayout->setSpacing(statusLayoutSpacing);
     _updateStatusLabel = new QLabel(this);
     _updateStatusLabel->setObjectName("boldTextLabel");
-    _updateStatusLabel->setWordWrap(true);
-    verticalLayout->addWidget(_updateStatusLabel);
+    // _updateStatusLabel->setWordWrap(true);   // TODO : for long string we should activate word wrap but it is not aligned
+    // anymore with the tag
+    statusLayout->addWidget(_updateStatusLabel);
+
+    _betaTag = new TagLabel(betaTagColor, this);
+    _betaTag->setText("BETA");
+    statusLayout->addWidget(_betaTag);
+    statusLayout->addStretch();
+    verticalLayout->addLayout(statusLayout);
 
     _showReleaseNotesLabel = new QLabel(this);
     _showReleaseNotesLabel->setObjectName("boldTextLabel");
@@ -233,8 +252,6 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
     _versionNumberLabel->setText(versionNumberLinkText);
     verticalLayout->addWidget(_versionNumberLabel);
 
-    // TODO : add "BETA" banner
-
     const auto copyrightLabel = new QLabel(QString("Copyright %1").arg(APPLICATION_VENDOR));
     copyrightLabel->setObjectName("description");
     verticalLayout->addWidget(copyrightLabel);
@@ -242,7 +259,7 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
     _updateButton = new QPushButton(this);
     _updateButton->setObjectName("defaultbutton");
     _updateButton->setFlat(true);
-    versionLayout->addWidget(_updateButton, 1);
+    versionLayout->addWidget(_updateButton);
 }
 
 void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {

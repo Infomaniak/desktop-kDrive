@@ -35,6 +35,7 @@ class QLabel;
 class QBoxLayout;
 
 namespace KDC {
+class TagLabel;
 
 class PreferencesBlocWidget;
 
@@ -68,6 +69,7 @@ class VersionWidget final : public QWidget {
         QLabel *_versionLabel{nullptr};
 
         QLabel *_updateStatusLabel{nullptr};
+        TagLabel *_betaTag{nullptr};
         QLabel *_showReleaseNotesLabel{nullptr};
         QLabel *_versionNumberLabel{nullptr};
         QPushButton *_updateButton{nullptr};
