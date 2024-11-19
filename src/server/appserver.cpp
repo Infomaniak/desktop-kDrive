@@ -4354,8 +4354,24 @@ void AppServer::onRestartSyncs() {
                         continue;
                     }
 
-                    // Start sync
-                    syncPalMapElt.second->start();
+                    // Start SyncPal if not paused
+                    Sync sync;
+                    bool found = false;
+                    if (!ParmsDb::instance()->selectSync(syncPalMapElt.first, sync, found)) {
+                        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
+                        continue;
+                    }
+
+                    if (!found) {
+                        LOG_WARN(Log::instance()->getLogger(),
+                                 "Sync not found in sync table for syncDbId=" << syncPalMapElt.first);
+                        continue;
+                    }
+
+                    if (!sync.paused()) {
+                        // Start sync
+                        syncPalMapElt.second->start();
+                    }
                 }
             }
         }
