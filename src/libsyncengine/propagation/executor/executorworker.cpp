@@ -2545,7 +2545,7 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
 
 ExitInfo ExecutorWorker::handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
     if (syncOp->targetSide() != ReplicaSide::Remote) {
-        LOGW_SYNCPAL_WARN(_logger, L"Invalid target side for SystemError | FileNotFound error: " << syncOp->targetSide());
+        LOGW_SYNCPAL_WARN(_logger, L"Unhandled target side for " << opsExitInfo << L": " << syncOp->targetSide());
         return opsExitInfo; // Unable to handle this error
     }
 
