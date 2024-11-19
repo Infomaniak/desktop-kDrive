@@ -152,7 +152,7 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
 
 bool IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, std::ifstream &file, IoError &ioError) {
     int count = 0;
-    file.close();
+    if (file.is_open()) file.close();
     do {
         file.open(path.native(), std::ifstream::binary);
         if (!file.is_open()) {
@@ -172,14 +172,9 @@ bool IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, std::i
             }
             Utility::msleep(1000);
         }
-
-        // Some applications generate locked temporary files during save operations. To avoid spurious "access denied" errors,
-        // we retry for 10 seconds, which is usually sufficient for the application to delete the tmp file. If the file is still
-        // locked after 10 seconds, a file access error is displayed to the user. Proper handling is also implemented for
-        // "file not found" errors.
     } while (++count < timeOut && !file.is_open());
 
-    if (count >= timeOut && !file.is_open()) {
+    if (!file.is_open()) {
         LOGW_WARN(_logger, L"Failed to open file - " << Utility::formatSyncPath(path));
         ioError = IoError::AccessDenied;
         return isExpectedError(ioError);
@@ -200,7 +195,7 @@ ExitInfo IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, st
         case IoError::NoSuchFileOrDirectory:
             return ExitInfo{ExitCode::SystemError, ExitCause::NotFound};
         default:
-            LOG_WARN(logger(), "Unexpected read error for " << Utility::formatIoError(path, ioError));
+            LOG_WARN(logger(), L"Unexpected read error for " << Utility::formatIoError(path, ioError));
             return ExitCode::SystemError;
     }
 }
