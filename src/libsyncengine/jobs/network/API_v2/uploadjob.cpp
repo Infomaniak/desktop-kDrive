@@ -190,7 +190,7 @@ ExitInfo UploadJob::readFile() {
     // locked after 10 seconds, a file access error is displayed to the user. Proper handling is also implemented for
     // "file not found" errors.
     std::ifstream file;
-    if (ExitInfo exitInfo = IoHelper::openFile(_filePath, 10, file); !exitInfo) {
+    if (ExitInfo exitInfo = IoHelper::openFile(_filePath, file, 10); !exitInfo) {
         LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath));
         return exitInfo;
     }

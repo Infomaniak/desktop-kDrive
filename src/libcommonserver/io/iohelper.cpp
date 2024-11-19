@@ -150,7 +150,7 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
     }
 }
 
-bool IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, std::ifstream &file, IoError &ioError) {
+bool IoHelper::openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut /*in seconds*/) {
     int count = 0;
     if (file.is_open()) file.close();
     do {
@@ -162,7 +162,7 @@ bool IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, std::i
                 return isExpectedError(ioError);
             }
             if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(path));
+                LOGW_DEBUG(_logger, L"Access denied to " << Utility::formatSyncPath(path));
                 return isExpectedError(ioError);
             }
             if (!exists) {
@@ -170,12 +170,14 @@ bool IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, std::i
                 ioError = IoError::NoSuchFileOrDirectory;
                 return isExpectedError(ioError);
             }
+            LOGW_DEBUG(_logger, L"File is locked, retrying in one second " << Utility::formatSyncPath(path));
+
             Utility::msleep(1000);
         }
     } while (++count < timeOut && !file.is_open());
 
     if (!file.is_open()) {
-        LOGW_WARN(_logger, L"Failed to open file - " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(_logger, L"Failed to open file - " << Utility::formatSyncPath(path));
         ioError = IoError::AccessDenied;
         return isExpectedError(ioError);
     }
@@ -184,9 +186,9 @@ bool IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, std::i
     return true;
 }
 
-ExitInfo IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, std::ifstream &file) {
+ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeOut /*in seconds*/) {
     IoError ioError = IoError::Success;
-    openFile(path, timeOut, file, ioError);
+    openFile(path, file, ioError, timeOut);
     switch (ioError) {
         case IoError::Success:
             return ExitCode::Ok;
