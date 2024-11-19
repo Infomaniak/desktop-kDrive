@@ -307,7 +307,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<SyncDb> _syncDb{nullptr};
 
         // Shared objects
-        std::shared_ptr<bool> _interruptSync{new bool(false)};
+        std::shared_ptr<bool> _interruptSync{nullptr};
         std::shared_ptr<Snapshot> _localSnapshot{nullptr}; // Real time local snapshot
         std::shared_ptr<Snapshot> _remoteSnapshot{nullptr}; // Real time remote snapshot
         std::shared_ptr<Snapshot> _localSnapshotCopy{

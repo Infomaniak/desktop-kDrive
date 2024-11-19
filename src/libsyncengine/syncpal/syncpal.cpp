@@ -508,7 +508,8 @@ void SyncPal::loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &c
 }
 
 void SyncPal::createSharedObjects() {
-    // Create shared objects
+    LOG_SYNCPAL_DEBUG(_logger, "Create shared objects");
+    _interruptSync = std::make_shared<bool>(false);
     _localSnapshot = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
     _remoteSnapshot = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
     _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
@@ -525,6 +526,7 @@ void SyncPal::createSharedObjects() {
 }
 
 void SyncPal::freeSharedObjects() {
+    LOG_SYNCPAL_DEBUG(_logger, "Free shared objects");
     _interruptSync.reset();
     _localSnapshot.reset();
     _remoteSnapshot.reset();
@@ -554,6 +556,7 @@ void SyncPal::freeSharedObjects() {
 }
 
 void SyncPal::initSharedObjects() {
+    LOG_SYNCPAL_DEBUG(_logger, "Init shared objects");
     if (_localUpdateTree) _localUpdateTree->init();
     if (_remoteUpdateTree) _remoteUpdateTree->init();
 
@@ -576,6 +579,7 @@ void SyncPal::resetSharedObjects() {
 }
 
 void SyncPal::createWorkers() {
+    LOG_SYNCPAL_DEBUG(_logger, "Create workers");
 #if defined(_WIN32)
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_win(shared_from_this(), "Local File System Observer", "LFSO"));
@@ -608,6 +612,7 @@ void SyncPal::createWorkers() {
 }
 
 void SyncPal::freeWorkers() {
+    LOG_SYNCPAL_DEBUG(_logger, "Free workers");
     _localFSObserverWorker.reset();
     _remoteFSObserverWorker.reset();
     _computeFSOperationsWorker.reset();

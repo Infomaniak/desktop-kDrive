@@ -104,6 +104,7 @@ void ISyncWorker::stop() {
 }
 
 void ISyncWorker::waitForExit() {
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " wait for exit");
     if (_thread && _thread->joinable()) {
         _thread->join();
         _thread.release();
