@@ -31,11 +31,6 @@ ISyncWorker::~ISyncWorker() {
         stop();
     }
 
-    if (_thread && _thread->joinable()) {
-        _thread->join();
-        _thread = nullptr;
-    }
-
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " destroyed");
     log4cplus::threadCleanup();
 }
@@ -47,12 +42,6 @@ void ISyncWorker::start() {
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " start");
-
-    if (_thread && _thread->joinable()) {
-        _thread->join();
-        _thread.release();
-        _thread = nullptr;
-    }
 
     _stopAsked = false;
     _isRunning = true;
@@ -115,14 +104,11 @@ void ISyncWorker::stop() {
 }
 
 void ISyncWorker::waitForExit() {
-    if (!_isRunning) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is not running");
-        return;
+    if (_thread && _thread->joinable()) {
+        _thread->join();
+        _thread.release();
+        _thread = nullptr;
     }
-
-    _thread->join();
-
-    _isRunning = false;
 }
 
 void ISyncWorker::setPauseDone() {

@@ -531,12 +531,12 @@ void SyncPal::createSharedObjects() {
 void SyncPal::resetSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects");
 
-    _localOperationSet->clear();
-    _remoteOperationSet->clear();
-    _localUpdateTree->init();
-    _remoteUpdateTree->init();
-    _conflictQueue->clear();
-    _syncOps->clear();
+    if (_localOperationSet) _localOperationSet->clear();
+    if (_remoteOperationSet) _remoteOperationSet->clear();
+    if (_localUpdateTree) _localUpdateTree->init();
+    if (_remoteUpdateTree) _remoteUpdateTree->init();
+    if (_conflictQueue) _conflictQueue->clear();
+    if (_syncOps) _syncOps->clear();
     setSyncHasFullyCompleted(false);
 
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects done");
