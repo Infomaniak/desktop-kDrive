@@ -168,7 +168,7 @@ enum class NodeType {
 };
 std::string toString(NodeType e);
 
-enum class OperationType { None = 0x00, Create = 0x01, Move = 0x02, Edit = 0x04, Delete = 0x08, Rights = 0x10 };
+enum class OperationType { None = 0x00, Create = 0x01, Move = 0x02, Edit = 0x04, Delete = 0x08, Rights = 0x10, MoveOut = 0x20 };
 std::string toString(OperationType e);
 
 enum class ExitCode {

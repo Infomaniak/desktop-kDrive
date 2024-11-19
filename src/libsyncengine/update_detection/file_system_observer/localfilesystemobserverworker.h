@@ -32,7 +32,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         void start() override;
         void stop() override;
 
-        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
+        virtual void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
         virtual void forceUpdate() override;
 
     protected:
