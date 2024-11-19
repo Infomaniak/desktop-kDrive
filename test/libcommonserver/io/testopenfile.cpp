@@ -18,7 +18,7 @@
 
 #include "testio.h"
 #include "test_utility/testhelpers.h"
-
+#include <thread>
 using namespace CppUnit;
 
 namespace KDC {
@@ -53,7 +53,7 @@ void TestIo::testOpenFileSuccess() {
     SyncPath filePath = tempDir.path() / "testOpenFileSuccess.txt";
     testhelpers::generateOrEditTestFile(filePath);
     std::ifstream file;
-    CPPUNIT_ASSERT(IoHelper::openFile(filePath, 0, file));
+    CPPUNIT_ASSERT(IoHelper::openFile(filePath, file));
     CPPUNIT_ASSERT(file.is_open());
     CPPUNIT_ASSERT(checkContent(file));
     file.close();
@@ -69,14 +69,13 @@ void TestIo::testOpenFileAccessDenied() {
 
     // Without timeout
     std::ifstream file;
-    ExitInfo exitInfo = IoHelper::openFile(filePath, 0, file);
+    ExitInfo exitInfo = IoHelper::openFile(filePath, file, 0);
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), exitInfo);
     CPPUNIT_ASSERT(!file.is_open());
 
     // Check timeout
-    auto start = std::chrono::steady_clock::now();
     TimeOutChecker timeOutChecker(true);
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), IoHelper::openFile(filePath, 2, file));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), IoHelper::openFile(filePath, file, 2));
     timeOutChecker.stop();
     CPPUNIT_ASSERT(timeOutChecker.between(2000, 2100));
     CPPUNIT_ASSERT(!file.is_open());
@@ -87,7 +86,7 @@ void TestIo::testOpenFileNonExisting() {
     SyncPath filePath = tempDir.path() / "testOpenFileNonExisting.txt";
     std::ifstream file;
     TimeOutChecker timeOutChecker(true);
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), IoHelper::openFile(filePath, 5, file));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), IoHelper::openFile(filePath, file, 5));
     timeOutChecker.stop();
     CPPUNIT_ASSERT(timeOutChecker.lessThan(200));
     CPPUNIT_ASSERT(!file.is_open());
@@ -102,7 +101,7 @@ void TestIo::testOpenFileAccessDeniedRemovedBeforeTimedOut() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     std::ifstream file;
-    ExitInfo exitInfo = IoHelper::openFile(filePath, 5, file);
+    ExitInfo exitInfo = IoHelper::openFile(filePath, file, 5);
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), exitInfo);
     CPPUNIT_ASSERT(!file.is_open());
 
@@ -116,7 +115,7 @@ void TestIo::testOpenFileAccessDeniedRemovedBeforeTimedOut() {
     };
     std::thread restoreRightsThread(restoreRights);
     TimeOutChecker timeOutChecker(true);
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::openFile(filePath, 4, file));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::openFile(filePath, file, 4));
     timeOutChecker.stop();
     restoreRightsThread.join();
     CPPUNIT_ASSERT(timeOutChecker.between(2000, 2200));
