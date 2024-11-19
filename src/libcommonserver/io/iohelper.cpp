@@ -195,7 +195,7 @@ ExitInfo IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, st
         case IoError::NoSuchFileOrDirectory:
             return ExitInfo{ExitCode::SystemError, ExitCause::NotFound};
         default:
-            LOG_WARN(logger(), L"Unexpected read error for " << Utility::formatIoError(path, ioError));
+            LOGW_WARN(logger(), L"Unexpected read error for " << Utility::formatIoError(path, ioError));
             return ExitCode::SystemError;
     }
 }
