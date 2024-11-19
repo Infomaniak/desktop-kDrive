@@ -29,7 +29,7 @@
 #if defined(__APPLE__) || defined(__unix__)
 #include <sys/stat.h>
 #endif
-
+#include <fstream>
 #include <log4cplus/loggingmacros.h> // LOGW_WARN
 
 namespace KDC {
@@ -147,6 +147,61 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "Invalid directory iterator";
         default:
             return "Unknown error";
+    }
+}
+
+bool IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, std::ifstream &file, IoError &ioError) {
+    int count = 0;
+    file.close();
+    do {
+        file.open(path.native(), std::ifstream::binary);
+        if (!file.is_open()) {
+            bool exists = false;
+            if (!IoHelper::checkIfPathExists(path, exists, ioError)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
+                return isExpectedError(ioError);
+            }
+            if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(path));
+                return isExpectedError(ioError);
+            }
+            if (!exists) {
+                LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(path));
+                ioError = IoError::NoSuchFileOrDirectory;
+                return isExpectedError(ioError);
+            }
+            Utility::msleep(1000);
+        }
+
+        // Some applications generate locked temporary files during save operations. To avoid spurious "access denied" errors,
+        // we retry for 10 seconds, which is usually sufficient for the application to delete the tmp file. If the file is still
+        // locked after 10 seconds, a file access error is displayed to the user. Proper handling is also implemented for
+        // "file not found" errors.
+    } while (++count < timeOut && !file.is_open());
+
+    if (count >= timeOut && !file.is_open()) {
+        LOGW_WARN(_logger, L"Failed to open file - " << Utility::formatSyncPath(path));
+        ioError = IoError::AccessDenied;
+        return isExpectedError(ioError);
+    }
+
+    ioError = IoError::Success;
+    return true;
+}
+
+ExitInfo IoHelper::openFile(const SyncPath &path, int timeOut /*in seconds*/, std::ifstream &file) {
+    IoError ioError = IoError::Success;
+    openFile(path, timeOut, file, ioError);
+    switch (ioError) {
+        case IoError::Success:
+            return ExitCode::Ok;
+        case IoError::AccessDenied:
+            return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
+        case IoError::NoSuchFileOrDirectory:
+            return ExitInfo{ExitCode::SystemError, ExitCause::NotFound};
+        default:
+            LOG_WARN(logger(), "Unexpected read error for " << Utility::formatIoError(path, ioError));
+            return ExitCode::SystemError;
     }
 }
 

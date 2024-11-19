@@ -180,7 +180,7 @@ bool AbstractUploadSession::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart "
-                                    << Utility::formatSyncPath(_filePath.filename()));
+                                    << Utility::formatSyncPath(_filePath));
         _exitCode = ExitCode::NeedRestart;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
@@ -266,46 +266,16 @@ bool AbstractUploadSession::sendChunks() {
     bool checksumError = false;
     bool jobCreationError = false;
     bool sendChunksCanceled = false;
+
+    // Some applications generate locked temporary files during save operations. To avoid spurious "access denied" errors,
+    // we retry for 10 seconds, which is usually sufficient for the application to delete the tmp file. If the file is still
+    // locked after 10 seconds, a file access error is displayed to the user. Proper handling is also implemented for
+    // "file not found" errors.
     std::ifstream file;
-    int count = 0;
-    do {
-        file.open(_filePath.native().c_str(), std::ifstream::binary);
-        if (!file.is_open()) {
-            bool exists = false;
-            IoError ioError = IoError::Success;
-            if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
-                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
-                _exitCode = ExitCode::SystemError;
-                return false;
-            }
-            if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
-                _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::FileAccessError;
-                return false;
-            }
-            if (!exists) {
-                LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_filePath));
-                _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::NotFound;
-                return false;
-            }
-            Utility::msleep(1000);
-        }
-
-        // Some applications generate locked temporary files during save operations. To avoid spurious "access denied" errors,
-        // we retry for 10 seconds, which is usually sufficient for the application to delete the tmp file. If the file is still
-        // locked after 10 seconds, a file access error is displayed to the user. Proper handling is also implemented for
-        // "file not found" errors.
-    } while (count++ < 10 && !file.is_open());
-
-    if (count >= 10) {
-        LOGW_WARN(_logger, L"Failed to open file - " << Utility::formatSyncPath(_filePath));
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
-        return false;
+    if (ExitInfo exitInfo = IoHelper::openFile(_filePath, 10, file); !exitInfo) {
+        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath));
+        return exitInfo;
     }
-
 
     // Create a hash state
     XXH3_state_t *const state = XXH3_createState();

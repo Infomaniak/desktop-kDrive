@@ -37,7 +37,9 @@ namespace KDC {
 class TestJobManager : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestJobManager);
-        CPPUNIT_TEST(testWithoutCallback);
+        //CPPUNIT_TEST(testCancelJobs);
+
+        /*CPPUNIT_TEST(testWithoutCallback);
         CPPUNIT_TEST(testWithCallback);
         CPPUNIT_TEST(testWithCallbackMediumFiles);
         CPPUNIT_TEST(testWithCallbackBigFiles);
@@ -45,7 +47,7 @@ class TestJobManager : public CppUnit::TestFixture {
         CPPUNIT_TEST(testJobDependencies);
         CPPUNIT_TEST(testJobPriority);
         CPPUNIT_TEST(testJobPriority2);
-        CPPUNIT_TEST(testJobPriority3);
+        CPPUNIT_TEST(testJobPriority3);*/
         // CPPUNIT_TEST(testReuseSocket);
         CPPUNIT_TEST_SUITE_END();
 

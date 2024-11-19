@@ -71,6 +71,10 @@ class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateJunction);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
+        CPPUNIT_TEST(testOpenFileSuccess);
+        CPPUNIT_TEST(testOpenFileAccessDenied);
+        CPPUNIT_TEST(testOpenFileNonExisting);
+        CPPUNIT_TEST(testOpenFileAccessDeniedRemovedBeforeTimedOut);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -126,6 +130,11 @@ class TestIo : public CppUnit::TestFixture {
         void testCheckDirectoryRecursive();
         void testCheckDirectoryIteratorUnexpectedDelete();
         void testCheckDirectoryPermissionLost();
+        void testOpenFileSuccess();
+        void testOpenFileAccessDenied();
+        void testOpenFileNonExisting();
+        void testOpenFileAccessDeniedRemovedBeforeTimedOut();
+
 
     private:
         IoHelperTests *_testObj;
