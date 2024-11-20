@@ -34,6 +34,7 @@ namespace KDC {
 
 class TestWorkers : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestWorkers);
+        CPPUNIT_TEST(testStartVfs);
         CPPUNIT_TEST(testCreatePlaceholder);
         CPPUNIT_TEST(testConvertToPlaceholder);
         CPPUNIT_TEST_SUITE_END();
@@ -41,10 +42,12 @@ class TestWorkers : public CppUnit::TestFixture {
     public:
         void setUp(void) final;
         void tearDown() override;
+        void testStartVfs();
         void testCreatePlaceholder();
         void testConvertToPlaceholder();
 
     protected:
+        static bool startVfs();
         static bool createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState);
@@ -63,6 +66,10 @@ class TestWorkers : public CppUnit::TestFixture {
 #else
         static std::shared_ptr<VfsOff> _vfsPtr;
 #endif
+
+        static bool _vfsInstallationDone;
+        static bool _vfsActivationDone;
+        static bool _vfsConnectionDone;
 };
 
 } // namespace KDC
