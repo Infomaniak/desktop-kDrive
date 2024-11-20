@@ -26,12 +26,6 @@ namespace KDC {
 FolderWatcher::FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
     _logger(Log::instance()->getLogger()), _parent(parent), _folder(path) {}
 
-FolderWatcher::~FolderWatcher() {
-    if (_thread) {
-        stop();
-    }
-}
-
 void FolderWatcher::start() {
     LOG_DEBUG(_logger, "Start Folder Watcher");
     _stop = false;
@@ -52,16 +46,15 @@ void FolderWatcher::stop() {
 #if !defined(__APPLE__)
     if (_thread && _thread->joinable()) {
         _thread->join();
-        _thread.release();
     }
 #endif
 
     _thread = nullptr;
 }
 
-void *FolderWatcher::executeFunc(void *thisWorker) {
+void FolderWatcher::executeFunc(void *thisWorker) {
     ((FolderWatcher *) thisWorker)->startWatching();
-    return nullptr;
+    Utility::terminateThreadFunction();
 }
 
 } // namespace KDC

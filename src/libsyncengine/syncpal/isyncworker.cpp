@@ -28,7 +28,7 @@ ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &na
 
 ISyncWorker::~ISyncWorker() {
     if (_isRunning) {
-        stop();
+        ISyncWorker::stop();
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " destroyed");
@@ -107,8 +107,6 @@ void ISyncWorker::waitForExit() {
 
     if (_thread && _thread->joinable()) {
         _thread->join();
-        _thread.release();
-        _thread = nullptr;
     }
 }
 
@@ -140,7 +138,7 @@ void ISyncWorker::setDone(ExitCode exitCode) {
     _exitCode = exitCode;
 }
 
-void *ISyncWorker::executeFunc(void *thisWorker) {
+void ISyncWorker::executeFunc(void *thisWorker) {
     ((ISyncWorker *) thisWorker)->execute();
     Utility::terminateThreadFunction();
 }

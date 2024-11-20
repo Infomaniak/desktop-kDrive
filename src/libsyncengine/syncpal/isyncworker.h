@@ -73,7 +73,7 @@ class ISyncWorker {
         inline int syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
 
     private:
-        static void *executeFunc(void *thisWorker);
+        static void executeFunc(void *thisWorker);
 
         const std::string _name;
         const std::string _shortName;

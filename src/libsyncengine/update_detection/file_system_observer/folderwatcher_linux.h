@@ -29,7 +29,6 @@ class LocalFileSystemObserverWorker;
 class FolderWatcher_linux : public FolderWatcher {
     public:
         FolderWatcher_linux(LocalFileSystemObserverWorker *parent, const SyncPath &path);
-        ~FolderWatcher_linux();
 
         void startWatching() override;
         void stopWatching() override;
