@@ -63,34 +63,4 @@ static inline bool hasDarkSystray_private() {
 
     return !settings.value(QLatin1String(lightThemeKeyC), true).toBool();
 }
-
-bool CommonUtility::isLikeFileNotFoundError(DWORD dwError) noexcept {
-    return (dwError != ERROR_FILE_NOT_FOUND) && (dwError != ERROR_PATH_NOT_FOUND) && (dwError != ERROR_INVALID_DRIVE) &&
-           (dwError != ERROR_BAD_NETPATH);
-}
-
-bool CommonUtility::isLikeFileNotFoundError(const std::error_code &code) noexcept {
-    return isLikeFileNotFoundError(static_cast<DWORD>(code.value()));
-}
-
-std::wstring CommonUtility::getErrorMessage(DWORD errorMessageID) {
-    LPWSTR messageBuffer = nullptr;
-    const size_t size =
-            FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
-                           errorMessageID, NULL, (LPWSTR) &messageBuffer, 0, nullptr);
-
-    // Escape quotes
-    const auto msg = std::wstring(messageBuffer, size);
-    std::wostringstream message;
-    message << L"(" << errorMessageID << L") - " << msg;
-
-    LocalFree(messageBuffer);
-
-    return message.str();
-}
-
-std::wstring CommonUtility::getLastErrorMessage() {
-    return getErrorMessage(GetLastError());
-}
-
 } // namespace KDC

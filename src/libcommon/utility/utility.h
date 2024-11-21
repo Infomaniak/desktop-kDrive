@@ -20,6 +20,7 @@
 
 #include "libcommon/libcommon.h"
 #include "types.h"
+#include "utility_base.h"
 
 #include <string>
 #include <thread>
@@ -121,12 +122,14 @@ struct COMMON_EXPORT CommonUtility {
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
         static void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
-        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept;
+        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
+            return utility_base::isLikeFileNotFoundError(ec);
+        };
 
 #ifdef _WIN32
-        static std::wstring getErrorMessage(DWORD dwordError);
-        static std::wstring getLastErrorMessage();
-        static bool isLikeFileNotFoundError(DWORD dwError) noexcept;
+        static std::wstring getErrorMessage(DWORD errorMessageId) { return utility_base::getErrorMessage(errorMessageId); }
+        static std::wstring getLastErrorMessage() { return utility_base::getLastErrorMessage(); };
+        static bool isLikeFileNotFoundError(DWORD dwError) noexcept { return utility_base::isLikeFileNotFoundError(dwError); };
 #endif
 
     private:
