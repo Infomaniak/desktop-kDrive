@@ -54,6 +54,15 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
 
 void UpdateManager::startInstaller() const {
     LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
+
+    // Cleanup skipped version
+    ParametersCache::instance()->parameters().setSeenVersion("");
+    ParametersCache::instance()->save();
+#if defined(__APPLE__)
+    // Discard skipped version in Sparkle
+    std::system("defaults delete com.infomaniak.drive.desktopclient SUSkippedVersion");
+#endif
+
     _updater->startInstaller();
 }
 
