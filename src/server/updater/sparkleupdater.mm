@@ -126,9 +126,9 @@
 }
 
 // Sent when a valid update is not found.
-- (void)updaterDidNotFindUpdate:(SPUUpdater *)update {
+- (void)updaterDidNotFindUpdate:(SPUUpdater *)update error:(nonnull NSError *)error {
     (void)update;
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "No valid update found");
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "No valid update found - Error code: " << [error code] << ", reason: " << [error.userInfo[SPUNoUpdateFoundReasonKey] integerValue]);
 }
 
 // Sent immediately before installing the specified update.
