@@ -44,7 +44,6 @@
 #include "libsyncengine/jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
 
 #include <iostream>
-#include <fstream>
 #include <filesystem>
 #ifdef Q_OS_UNIX
 #include <sys/resource.h>
@@ -3982,7 +3981,7 @@ void AppServer::addError(const Error &error) {
                 }
             }
         }
-        for (auto errorId: toBeRemovedErrorIds) {
+        for (const auto errorId: toBeRemovedErrorIds) {
             bool found = false;
             if (!ParmsDb::instance()->deleteError(errorId, found)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
