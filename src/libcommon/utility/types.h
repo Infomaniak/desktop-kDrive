@@ -615,11 +615,11 @@ inline CustomLogWStream &operator<<(CustomLogWStream &os, C e) {
 }
 
 template<LogableType C>
-    inline CustomLogStream &operator<<(CustomLogStream &os, C e) {
-        return os << toStringWithCode(e);
+inline CustomLogStream &operator<<(CustomLogStream &os, C e) {
+    return os << toStringWithCode(e);
 }
 
-template<PrintableEnum C>
+template<LogableType C>
 inline QDebug &operator<<(QDebug &os, C e) {
     return os << toStringWithCode(e).c_str();
 }
