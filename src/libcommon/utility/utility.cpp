@@ -937,11 +937,4 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
 }
 
 #endif
-
-
-#if defined(__APPLE__) || defined(__unix__)
-bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept {
-    return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
-}
-#endif
 } // namespace KDC
