@@ -72,7 +72,8 @@ void TestSyncPal::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), KDRIVE_VERSION_STRING));
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal->createSharedObjects();
 }
 
 void TestSyncPal::tearDown() {
