@@ -184,7 +184,13 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath sharedFolderName();
         static std::string userName();
 
-        static ExitInfo terminateThreadFunction(ExitInfo exitInfo = ExitInfo());
+        //! Releases the memory used by log4cplus and returns the exitInfo parameter passed as parameter.
+        //! Functions executed in a thread must use this function to exit.
+        /*!
+         \param exitInfo to return
+         \return exitInfo passed as parameter
+         */
+        static ExitInfo terminateThreadFunction(const ExitInfo exitInfo = ExitInfo());
 
     private:
         static log4cplus::Logger _logger;

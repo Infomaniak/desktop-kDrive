@@ -913,7 +913,7 @@ std::string Utility::userName() {
     return userName_private();
 }
 
-ExitInfo Utility::terminateThreadFunction(ExitInfo exitInfo) {
+ExitInfo Utility::terminateThreadFunction(const ExitInfo exitInfo) {
     log4cplus::threadCleanup();
     return exitInfo;
 }
