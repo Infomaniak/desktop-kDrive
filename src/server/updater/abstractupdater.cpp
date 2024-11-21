@@ -18,6 +18,7 @@
 
 #include "abstractupdater.h"
 
+#include "sparkleupdater.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
@@ -65,6 +66,9 @@ void AbstractUpdater::unskipVersion() {
         ParametersCache::instance()->parameters().setSeenVersion("");
         ParametersCache::instance()->save();
     }
+#if defined(__APPLE__)
+    SparkleUpdater::unskipVersion();
+#endif
 }
 
 bool AbstractUpdater::isVersionSkipped(const std::string& version) {

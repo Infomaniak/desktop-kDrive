@@ -209,6 +209,12 @@ void SparkleUpdater::startInstaller() {
     [d->spuStandardUserDriver showUpdateInFocus];
 }
 
+void SparkleUpdater::unskipVersion() {
+    // Discard skipped version in Sparkle
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@ "SUSkippedVersion"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
 void SparkleUpdater::reset(const std::string &url) {
     [d->spuStandardUserDriver dismissUpdateInstallation];
     deleteUpdater();
