@@ -66,7 +66,7 @@ inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
 #endif
 
 #if defined(__APPLE__) || defined(__unix__)
-bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
+inline bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
     return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
 }
 #endif
