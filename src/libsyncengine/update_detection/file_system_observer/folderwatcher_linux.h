@@ -22,6 +22,8 @@
 
 #include <map>
 
+struct inotify_event;
+
 namespace KDC {
 
 class LocalFileSystemObserverWorker;
@@ -45,6 +47,7 @@ class FolderWatcher_linux : public FolderWatcher {
         bool addFolderRecursive(const SyncPath &path);
         void removeFoldersBelow(const SyncPath &dirPath);
 
+        SyncPath getSyncPath(const inotify_event *event) const;
         void changeDetected(const SyncPath &path, OperationType opType);
 
         std::unordered_map<int, SyncPath> _watchToPath;
