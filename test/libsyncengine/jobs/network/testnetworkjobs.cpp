@@ -649,8 +649,8 @@ void TestNetworkJobs::testRename() {
 }
 
 void TestNetworkJobs::testUpload() {
+    // Successful upload
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
-
     SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
 
     UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);

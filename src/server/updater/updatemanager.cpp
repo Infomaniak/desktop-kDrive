@@ -62,6 +62,10 @@ void UpdateManager::setDistributionChannel(const DistributionChannel channel) {
 
 void UpdateManager::startInstaller() const {
     LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
+
+    // Cleanup skipped version
+    AbstractUpdater::unskipVersion();
+
     _updater->startInstaller();
 }
 

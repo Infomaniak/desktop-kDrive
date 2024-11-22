@@ -21,6 +21,9 @@
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
+#if defined(__APPLE__)
+#include "sparkleupdater.h"
+#endif
 
 namespace KDC {
 
@@ -71,6 +74,9 @@ void AbstractUpdater::unskipVersion() {
         ParametersCache::instance()->parameters().setSeenVersion("");
         ParametersCache::instance()->save();
     }
+#if defined(__APPLE__)
+    SparkleUpdater::unskipVersion();
+#endif
 }
 
 bool AbstractUpdater::isVersionSkipped(const std::string& version) {
