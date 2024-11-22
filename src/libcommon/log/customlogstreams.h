@@ -21,6 +21,8 @@
 
 #include <QIODevice>
 
+#include "libcommon/utility/types.h"
+
 class CustomLogStream : private std::stringstream {
     public:
         CustomLogStream() = default;
@@ -28,6 +30,12 @@ class CustomLogStream : private std::stringstream {
         CustomLogStream &operator=(const CustomLogStream &) = delete;
 
         std::string str() const { return std::basic_stringstream<char>::str(); }
+
+        template<KDC::LogableType C>
+        friend inline CustomLogStream &operator<<(CustomLogStream &os, C e) {
+            return os << KDC::toStringWithCode(e);
+        }
+
 
         // We need to cast to std::stringstream as operators<<(std::stringstream, const wchar_t *str) and const std::string
         // &str) are defined outside of the class std::stringstream and therefore it is not applicable to the current object
@@ -91,6 +99,11 @@ class CustomLogWStream : private std::wstringstream {
         CustomLogWStream &operator=(const CustomLogWStream &) = delete;
 
         std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
+
+        template<KDC::LogableType C>
+        friend inline CustomLogWStream &operator<<(CustomLogWStream &os, C e) {
+            return os << KDC::typesUtility::stringToWideString(toStringWithCode(e));
+        }
 
         // We need to cast to std::wstringstream as operators<<(std::wstringstream, const wchar_t *str and const std::wstring
         // &str) are defined outside of the class std::wstringstream and therefore it is not applicable to the current object
