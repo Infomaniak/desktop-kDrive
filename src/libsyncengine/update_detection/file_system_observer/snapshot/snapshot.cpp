@@ -132,8 +132,8 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(newItem.name()).c_str() << L" ("
-                                                           << Utility::s2ws(newItem.id()).c_str() << L") updated at:"
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(newItem.name()) << L" ("
+                                                           << Utility::s2ws(newItem.id()) << L") updated at:"
                                                            << newItem.lastModified());
     }
 
@@ -519,11 +519,10 @@ bool Snapshot::checkIntegrityRecursively(const NodeId &parentId) const {
 
         auto result = names.insert(_items.at(*childId).name());
         if (!result.second) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Snapshot integrity check failed, the folder named: \""
-                                                            << SyncName2WStr(parentItem.name()).c_str() << L"\"("
-                                                            << Utility::s2ws(parentItem.id()).c_str() << L") contains: \""
-                                                            << SyncName2WStr(_items.at(*childId).name()).c_str()
-                                                            << L"\" twice with two differents NodeId");
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Snapshot integrity check failed, the folder named: \""
+                              << SyncName2WStr(parentItem.name()) << L"\"(" << Utility::s2ws(parentItem.id()) << L") contains: \""
+                              << SyncName2WStr(_items.at(*childId).name()) << L"\" twice with two different NodeIds");
             return false;
         }
     }
