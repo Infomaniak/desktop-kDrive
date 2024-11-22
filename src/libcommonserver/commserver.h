@@ -44,6 +44,7 @@ class CommServer : public QObject {
         void operator=(CommServer const &) = delete;
 
         void sendReply(int id, const QByteArray &result);
+        bool sendSignal(SignalNum num, const QByteArray &params);
         bool sendSignal(SignalNum num, const QByteArray &params, int &id);
         inline quint16 commPort() const { return _tcpServer.serverPort(); }
 

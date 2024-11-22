@@ -35,11 +35,13 @@
 namespace KDC {
 
 UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
+    _currentChannel = ParametersCache::instance()->parameters().distributionChannel();
+
     createUpdater();
 
     connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdateManager::slotTimerFired);
 
-    static constexpr auto checkInterval = std::chrono::hours(1);
+    static constexpr auto checkInterval = std::chrono::minutes(1);
     _updateCheckTimer.start(std::chrono::milliseconds(checkInterval).count());
 
     // Setup callback for update state change notification
@@ -48,10 +50,11 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
     // At startup, do a check in any case and setup distribution channel.
-    QTimer::singleShot(3000, this, [this]() { setDistributionChannel(readDistributionChannelFromDb()); });
+    QTimer::singleShot(3000, this, [this]() { setDistributionChannel(_currentChannel); });
 }
 
-void UpdateManager::setDistributionChannel(const DistributionChannel channel) const {
+void UpdateManager::setDistributionChannel(const DistributionChannel channel) {
+    _currentChannel = channel;
     _updater->checkUpdateAvailable(channel);
     ParametersCache::instance()->parameters().setDistributionChannel(channel);
     ParametersCache::instance()->save();
@@ -63,7 +66,7 @@ void UpdateManager::startInstaller() const {
 }
 
 void UpdateManager::slotTimerFired() const {
-    _updater->checkUpdateAvailable();
+    _updater->checkUpdateAvailable(_currentChannel);
 }
 
 void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
@@ -76,8 +79,9 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::ManualUpdateAvailable: {
-            emit updateAnnouncement(tr("New update available."),
-                                    tr("Version %1 is available for download.").arg(_updater->versionInfo().tag.c_str()));
+            emit updateAnnouncement(
+                    tr("New update available."),
+                    tr("Version %1 is available for download.").arg(_updater->versionInfo(_currentChannel).tag.c_str()));
             break;
         }
         case UpdateState::Available: {
@@ -86,7 +90,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::Ready: {
-            if (AbstractUpdater::isVersionSkipped(_updater->versionInfo().fullVersion())) break;
+            if (AbstractUpdater::isVersionSkipped(_updater->versionInfo(_currentChannel).fullVersion())) break;
                 // The new version is ready to be installed
 #if defined(_WIN32)
             emit showUpdateDialog();
@@ -117,10 +121,6 @@ void UpdateManager::createUpdater() {
 void UpdateManager::onUpdateStateChanged(const UpdateState newState) {
     // Emit signal in order to run `slotUpdateStateChanged` in main thread
     emit updateStateChanged(newState);
-}
-
-DistributionChannel UpdateManager::readDistributionChannelFromDb() const {
-    return ParametersCache::instance()->parameters().distributionChannel();
 }
 
 } // namespace KDC

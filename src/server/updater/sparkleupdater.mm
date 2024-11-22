@@ -187,8 +187,8 @@ SparkleUpdater::~SparkleUpdater() {
 }
 
 void SparkleUpdater::onUpdateFound() {
-    if (isVersionSkipped(versionInfo().fullVersion())) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo().fullVersion().c_str() << " is skipped.");
+    if (isVersionSkipped(versionInfo(_currentChannel).fullVersion())) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo(_currentChannel).fullVersion().c_str() << " is skipped.");
         return;
     }
     if ([d->updater sessionInProgress]) {
@@ -203,7 +203,7 @@ void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) 
 }
 
 void SparkleUpdater::startInstaller() {
-    reset(versionInfo().downloadUrl);
+    reset(versionInfo(_currentChannel).downloadUrl);
 
     [d->updater checkForUpdatesInBackground];
     [d->spuStandardUserDriver showUpdateInFocus];
@@ -272,7 +272,7 @@ bool SparkleUpdater::startSparkleUpdater() {
 }
 
 void SparkleUpdater::skipVersionCallback() {
-    skipVersion(versionInfo().fullVersion());
+    skipVersion(versionInfo(_currentChannel).fullVersion());
 }
 
 }  // namespace KDC

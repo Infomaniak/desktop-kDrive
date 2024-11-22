@@ -758,7 +758,7 @@ void ClientGui::onNewDriveWizard() {
 
 void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const {
     static std::mutex mutex;
-    std::unique_lock lock(mutex, std::try_to_lock);
+    const std::unique_lock lock(mutex, std::try_to_lock);
     if (!lock.owns_lock()) return;
     if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
         GuiRequests::startInstaller();

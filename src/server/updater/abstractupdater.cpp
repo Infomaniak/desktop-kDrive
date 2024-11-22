@@ -29,9 +29,10 @@ AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_unique<UpdateCheck
     _updateChecker->setCallback(callback);
 }
 
-ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel channel, UniqueId* id /*= nullptr*/) {
+ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel currentChannel, UniqueId* id /*= nullptr*/) {
+    _currentChannel = currentChannel;
     setState(UpdateState::Checking);
-    return _updateChecker->checkUpdateAvailability(channel, id);
+    return _updateChecker->checkUpdateAvailability(id);
 }
 
 void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateState)>& stateChangeCallback) {
@@ -40,15 +41,20 @@ void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateStat
 }
 
 void AbstractUpdater::onAppVersionReceived() {
-    if (!_updateChecker->versionInfo().isValid()) {
+    if (!_updateChecker->isVersionReceived()) {
         setState(UpdateState::CheckError);
         LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
     }
 
-    const bool available =
-            CommonUtility::isVersionLower(CommonUtility::currentVersion(), _updateChecker->versionInfo().fullVersion());
-    setState(available ? UpdateState::Available : UpdateState::UpToDate);
-    if (available) {
+    const VersionInfo& versionInfo = _updateChecker->versionInfo(_currentChannel);
+    if (!versionInfo.isValid()) {
+        LOG_INFO(Log::instance()->getLogger(), "No valid update info retrieved for distribution channel: " << _currentChannel);
+        setState(UpdateState::UpToDate);
+    }
+
+    const bool newVersionAvailable = CommonUtility::isVersionLower(CommonUtility::currentVersion(), versionInfo.fullVersion());
+    setState(newVersionAvailable ? UpdateState::Available : UpdateState::UpToDate);
+    if (newVersionAvailable) {
         LOG_INFO(Log::instance()->getLogger(), "New app version available");
     } else {
         LOG_INFO(Log::instance()->getLogger(), "App version is up to date");

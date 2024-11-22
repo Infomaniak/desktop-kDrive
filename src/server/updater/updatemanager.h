@@ -40,8 +40,10 @@ class UpdateManager final : public QObject {
     public:
         explicit UpdateManager(QObject *parent);
 
-        void setDistributionChannel(const DistributionChannel channel) const;
-        [[nodiscard]] const VersionInfo &versionInfo() const { return _updater->versionInfo(); }
+        void setDistributionChannel(DistributionChannel channel);
+        [[nodiscard]] const VersionInfo &versionInfo(const DistributionChannel channel = DistributionChannel::Unknown) const {
+            return _updater->versionInfo(channel == DistributionChannel::Unknown ? _currentChannel : channel);
+        }
         [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
 
         void startInstaller() const;
@@ -65,10 +67,8 @@ class UpdateManager final : public QObject {
 
         void onUpdateStateChanged(UpdateState newState);
 
-        [[nodiscard]] DistributionChannel readDistributionChannelFromDb() const;
-
         std::unique_ptr<AbstractUpdater> _updater;
-
+        DistributionChannel _currentChannel{DistributionChannel::Unknown};
         QTimer _updateCheckTimer; /** Timer for the regular update check. */
 };
 

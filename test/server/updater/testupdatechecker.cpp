@@ -66,9 +66,9 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         UpdateCheckerTest testObj;
         UniqueId jobId = 0;
         testObj.setUpdateShoudBeAvailable(true);
-        testObj.checkUpdateAvailability(DistributionChannel::Internal, &jobId);
+        testObj.checkUpdateAvailability(&jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT(testObj.versionInfo().isValid());
+        CPPUNIT_ASSERT(testObj.versionInfo(DistributionChannel::Beta).isValid());
     }
 
     // Version is lower than current version
@@ -76,9 +76,9 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         UpdateCheckerTest testObj;
         UniqueId jobId = 0;
         testObj.setUpdateShoudBeAvailable(false);
-        testObj.checkUpdateAvailability(DistributionChannel::Internal, &jobId);
+        testObj.checkUpdateAvailability(&jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT(testObj.versionInfo().isValid());
+        CPPUNIT_ASSERT(testObj.versionInfo(DistributionChannel::Beta).isValid());
     }
 }
 

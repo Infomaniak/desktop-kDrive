@@ -129,7 +129,7 @@ struct GuiRequests {
         static ExitCode crash();
 
         static ExitCode changeDistributionChannel(DistributionChannel channel);
-        static ExitCode versionInfo(VersionInfo &versionInfo);
+        static ExitCode versionInfo(VersionInfo &versionInfo, DistributionChannel channel = DistributionChannel::Unknown);
         static ExitCode updateState(UpdateState &state);
         static ExitCode startInstaller();
         static ExitCode skipUpdate(const std::string &version);

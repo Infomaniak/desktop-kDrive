@@ -31,20 +31,26 @@ class UpdateChecker {
 
         /**
          * @brief Asynchronously check for new version informations.
-         * @param channel Distribution channel (i.e. Production, Beta or Internal).
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if the job has been succesfully created.
          */
-        ExitCode checkUpdateAvailability(DistributionChannel channel, UniqueId *id = nullptr);
+        ExitCode checkUpdateAvailability(UniqueId *id = nullptr);
 
         void setCallback(const std::function<void()> &callback);
 
-        [[nodiscard]] const VersionInfo &versionInfo() const { return _versionInfo; }
+
+        const VersionInfo &versionInfo(const DistributionChannel channel) {
+            if (channel == DistributionChannel::Prod) return prodVersionInfo();
+            return _versionsInfo.contains(channel) ? _versionsInfo[channel] : _defaultVersionInfo;
+        }
+
+        [[nodiscard]] const std::unordered_map<DistributionChannel, VersionInfo> &versionsInfo() const { return _versionsInfo; }
+        [[nodiscard]] bool isVersionReceived() const { return _isVersionReceived; }
 
     private:
         /**
          * @brief Callback used to extract the version info.
-         * @param jobId ID of
+         * @param jobId ID of the terminated job.
          */
         void versionInfoReceived(UniqueId jobId);
 
@@ -56,9 +62,20 @@ class UpdateChecker {
          */
         virtual ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job);
 
+        /**
+         * @brief Return the adequat version info, according to wether the current app has been selected in the progressive update
+         * distribution process.
+         * @return const reference on a VersionInfo
+         */
+        const VersionInfo &prodVersionInfo() {
+            return _versionsInfo.contains(_prodVersionChannel) ? _versionsInfo[_prodVersionChannel] : _defaultVersionInfo;
+        }
+
         std::function<void()> _callback = nullptr;
-        DistributionChannel _channel = DistributionChannel::Unknown;
-        VersionInfo _versionInfo; // A struct keeping all the informations about the currently available version.
+        DistributionChannel _prodVersionChannel{DistributionChannel::Unknown};
+        const VersionInfo _defaultVersionInfo;
+        AllVersionsInfo _versionsInfo;
+        bool _isVersionReceived{false};
 };
 
 } // namespace KDC

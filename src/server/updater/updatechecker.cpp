@@ -27,9 +27,7 @@
 
 namespace KDC {
 
-ExitCode UpdateChecker::checkUpdateAvailability(const DistributionChannel channel, UniqueId *id /*= nullptr*/) {
-    _channel = channel;
-
+ExitCode UpdateChecker::checkUpdateAvailability(UniqueId *id /*= nullptr*/) {
     std::shared_ptr<AbstractNetworkJob> job;
     if (const auto exitCode = generateGetAppVersionJob(job); exitCode != ExitCode::Ok) return exitCode;
     if (id) *id = job->jobId();
@@ -47,7 +45,8 @@ void UpdateChecker::setCallback(const std::function<void()> &callback) {
 }
 
 void UpdateChecker::versionInfoReceived(UniqueId jobId) {
-    _versionInfo.clear();
+    _isVersionReceived = false;
+    _versionsInfo.clear();
     LOG_INFO(Log::instance()->getLogger(), "App version info received");
 
     auto job = JobManager::instance()->getJob(jobId);
@@ -65,17 +64,14 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         ss << errorCode.c_str() << " - " << errorDescr;
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
+    } else if (getAppVersionJobPtr->exitCode() != ExitCode::Ok) {
+        LOG_ERROR(Log::instance()->getLogger(), "Error in UpdateChecker::versionInfoReceived : exit code: "
+                                                        << getAppVersionJobPtr->exitCode()
+                                                        << ", exit cause: " << getAppVersionJobPtr->exitCause());
     } else {
-        if (_channel == DistributionChannel::Prod) {
-            _versionInfo = getAppVersionJobPtr->getProdVersionInfo(); // Channel could be `Prod` or `Next`
-        } else {
-            _versionInfo = getAppVersionJobPtr->getVersionInfo(_channel);
-        }
-        if (!_versionInfo.isValid()) {
-            std::string error = "Invalid version info!";
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
-            LOG_ERROR(Log::instance()->getLogger(), error.c_str());
-        }
+        _versionsInfo = getAppVersionJobPtr->versionsInfo();
+        _prodVersionChannel = getAppVersionJobPtr->prodVersionChannel();
+        _isVersionReceived = true;
     }
 
     _callback();
