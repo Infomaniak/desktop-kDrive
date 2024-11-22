@@ -77,7 +77,7 @@ class LiteSyncExtConnector {
         };
         bool vfsSetAppExcludeList(const QString &appList);
         bool vfsGetFetchingAppList(QHash<QString, QString> &appTable);
-        bool vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error);
+        ExitInfo vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error);
         bool vfsIsExcluded(const QString &path);
         bool vfsProcessDirStatus(const QString &path, const QString &localSyncPath);
         void vfsClearFileAttributes(const QString &path);

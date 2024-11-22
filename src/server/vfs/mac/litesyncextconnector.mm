@@ -1292,13 +1292,13 @@ bool LiteSyncExtConnector::vfsGetFetchingAppList(QHash<QString, QString> &appTab
     return _private->getFetchingAppList(appTable);
 }
 
-bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error) {
+ExitInfo LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error) {
     FilePermissionHolder permHolder(absoluteFilePath);
 
     if (!fileStat) {
-        LOG_WARN(_logger, "Bad parameters");
+        LOG_WARN(_logger, "Invalid argument");
         *error = QObject::tr("Bad parameters");
-        return false;
+        return {ExitCode::FatalError, ExitCause::InvalidArgument};
     }
 
     std::string stdPath = absoluteFilePath.toStdString();
@@ -1311,7 +1311,7 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress);
 
     if (!isPlaceholder || isHydrated || isSyncing) {
-        return true;
+        return ExitCode::Ok;
     }
 
     // Create sparse file with rights rw-r--r--
@@ -1324,7 +1324,7 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
         if (fd == -1) {
             LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
             *error = QObject::tr("Call to open failed - path=%1").arg(absoluteFilePath);
-            return false;
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
     }
 
@@ -1332,13 +1332,13 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
         LOGW_WARN(_logger,
                   L"Call to ftruncate failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
         *error = QObject::tr("Call to ftruncate failed - path=%1").arg(absoluteFilePath);
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (close(fd) == -1) {
         LOGW_WARN(_logger, L"Call to close failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
         *error = QObject::tr("Call to close failed - path=%1").arg(absoluteFilePath);
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     // Set file dates
@@ -1346,15 +1346,15 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     if (!Utility::setFileDates(QStr2Path(absoluteFilePath), fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec,
                                false, exists)) {
         LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - " << Utility::formatPath(absoluteFilePath).c_str());
-        return false;
+        return {ExitCode::SystemError};
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item doesn't exist - " << Utility::formatPath(absoluteFilePath).c_str());
-        return false;
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool LiteSyncExtConnector::vfsIsExcluded(const QString &path) {

@@ -60,7 +60,7 @@ class VfsMac : public Vfs {
         VirtualFileMode mode() const override;
 
         bool socketApiPinStateActionsShown() const override { return true; }
-        bool updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
+        ExitInfo updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
                             const QByteArray &fileId, QString *error) override;
 
         bool createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;

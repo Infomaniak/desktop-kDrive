@@ -212,8 +212,8 @@ void VfsWin::setPlaceholderStatus(const QString &path, bool syncOngoing) {
     }
 }
 
-bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size, const QByteArray &,
-                            QString *) {
+ExitInfo VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size, const QByteArray &,
+                                QString *) {
     LOGW_DEBUG(logger(), L"updateMetadata: " << Utility::formatSyncPath(QStr2Path(filePath)).c_str() << L" creationTime="
                                              << creationTime << L" modtime=" << modtime);
 
@@ -222,12 +222,16 @@ bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return false;
+        return ExitCode::SystemError;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"UpdateMetadata failed because access is denied: " << Utility::formatSyncPath(fullPath).c_str());
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
         LOGW_WARN(logger(), L"File/directory doesn't exists: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     // Update placeholder
@@ -243,7 +247,7 @@ bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t
         LOGW_WARN(logger(), L"Error in vfsUpdatePlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {

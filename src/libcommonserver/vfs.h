@@ -103,7 +103,7 @@ class Vfs : public QObject {
          *
          * Returning false and setting error indicates an error.
          */
-        virtual bool updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size,
+        virtual ExitInfo updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size,
                                     const QByteArray &fileId, QString *error) = 0;
 
         /// Create a new dehydrated placeholder
@@ -262,7 +262,7 @@ class VfsOff : public Vfs {
 
         bool socketApiPinStateActionsShown() const override { return false; }
 
-        bool updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &, QString *) override { return true; }
+        ExitInfo updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &, QString *) override { return ExitCode::Ok; }
         bool createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return true; }
         bool dehydratePlaceholder(const QString &) override { return true; }
         bool convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return true; }

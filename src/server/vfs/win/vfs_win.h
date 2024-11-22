@@ -69,7 +69,8 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         bool socketApiPinStateActionsShown() const override { return false; }
 
-        bool updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size, const QByteArray &fileId,
+        ExitInfo updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size,
+                                const QByteArray &fileId,
                             QString *error) override;
 
         bool createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;

@@ -237,7 +237,8 @@ enum class ExitCause {
     QuotaExceeded,
     FullListParsingError,
     OperationCanceled,
-    ShareLinkAlreadyExists
+    ShareLinkAlreadyExists,
+    InvalidArgument
 };
 std::string toString(ExitCause e);
 

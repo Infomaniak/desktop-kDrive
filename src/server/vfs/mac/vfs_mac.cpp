@@ -236,7 +236,7 @@ void VfsMac::clearFileAttributes(const QString &path) {
     _connector->vfsClearFileAttributes(path);
 }
 
-bool VfsMac::updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
+ExitInfo VfsMac::updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
                             const QByteArray &fileId, QString *error) {
     Q_UNUSED(fileId);
 
@@ -246,7 +246,7 @@ bool VfsMac::updateMetadata(const QString &absoluteFilePath, time_t creationTime
 
     if (!_connector) {
         LOG_WARN(logger(), "LiteSyncExtConnector not initialized!");
-        return false;
+        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
     }
 
     struct stat fileStat;
@@ -256,12 +256,12 @@ bool VfsMac::updateMetadata(const QString &absoluteFilePath, time_t creationTime
     fileStat.st_birthtimespec = {creationTime, 0};
     fileStat.st_mode = S_IFREG;
 
-    if (!_connector->vfsUpdateMetadata(absoluteFilePath, &fileStat, error)) {
-        LOG_WARN(logger(), "Error in vfsUpdateMetadata!");
-        return false;
+    if (ExitInfo exitInfo = _connector->vfsUpdateMetadata(absoluteFilePath, &fileStat, error); !exitInfo) {
+        LOG_WARN(logger(), "Error in vfsUpdateMetadata: " << exitInfo);
+        return exitInfo;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
