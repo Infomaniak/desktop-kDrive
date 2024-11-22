@@ -18,10 +18,12 @@
 
 #include "abstractupdater.h"
 
-#include "sparkleupdater.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
+#if defined(__APPLE__)
+#include "sparkleupdater.h"
+#endif
 
 namespace KDC {
 
