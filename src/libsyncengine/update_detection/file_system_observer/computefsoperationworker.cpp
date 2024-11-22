@@ -71,11 +71,11 @@ void ComputeFSOperationWorker::execute() {
     // Update SyncNode cache
     _syncPal->updateSyncNode();
 
-    _fileSizeMismatchMap.clear();
-
     // Update unsynced list cache
     auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::UpdateUnsyncedList, syncDbId());
     updateUnsyncedList();
+
+    _fileSizeMismatchMap.clear();
 
     NodeIdSet localIdsSet;
     NodeIdSet remoteIdsSet;

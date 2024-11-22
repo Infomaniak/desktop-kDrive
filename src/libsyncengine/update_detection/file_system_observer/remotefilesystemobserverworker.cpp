@@ -323,7 +323,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     bool eof = false;
     std::unordered_set<SyncName> existingFiles;
     uint64_t itemCount = 0;
-    sentryTransaction.stopAndStart(SentryHandler::PTraceName::RFSO_ExploreItem, syncDbId());
+    sentryTransaction.stopAndStart(SentryHandler::PTraceName::RFSO_ExploreItem, syncDbId(), true);
     while (job->getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
@@ -333,7 +333,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
         itemCount++;
         if (itemCount % 1000 == 0) {
-            sentryTransaction.stopAndStart(SentryHandler::PTraceName::RFSO_ExploreItem, syncDbId());
+            sentryTransaction.stopAndStart(SentryHandler::PTraceName::RFSO_ExploreItem, syncDbId(), true);
         }
 
         if (error) {

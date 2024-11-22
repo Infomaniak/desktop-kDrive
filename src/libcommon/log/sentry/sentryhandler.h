@@ -114,12 +114,9 @@ class SentryHandler {
                 // Return the current performance trace id.
                 pTraceId id() const { return _pTraceId; }
 
-                // Stop the current performance trace  (if set) and start a new one with the provided parameteres.
-                void stopAndStart(const SentryHandler::PTraceName &pTraceName, int syncDbId = -1) {
-                    stopAndStart(pTraceName, syncDbId, _manualStopExpected);
-                }
-
-                void stopAndStart(const SentryHandler::PTraceName &pTraceName, int syncDbId, bool manualStopExpected) {
+                // Stop the current performance trace  (if set) and start a new one with the provided parameters.
+                void stopAndStart(const SentryHandler::PTraceName &pTraceName, int syncDbId = -1,
+                                  bool manualStopExpected = false) {
                     stop(false);
                     _pTraceId = SentryHandler::instance()->startPTrace(pTraceName, syncDbId);
                     _manualStopExpected = manualStopExpected;
@@ -137,7 +134,6 @@ class SentryHandler {
                 pTraceId _pTraceId{0};
                 bool _manualStopExpected{false};
                 ScopedPTrace &operator=(ScopedPTrace &&) = delete;
-
         };
 
     public:
@@ -321,6 +317,4 @@ class SentryHandler {
         static bool _debugCrashCallback;
         static bool _debugBeforeSendCallback;
 };
-
-
 } // namespace KDC

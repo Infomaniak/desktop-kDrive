@@ -1988,7 +1988,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::CLIENT_STARTED: {
-            SentryHandler::instance()->stopPTrace(SentryHandler::PTraceName::AppStart, -1);
+            SentryHandler::instance()->stopPTrace(SentryHandler::PTraceName::AppStart);
         }
         default: {
             LOG_DEBUG(_logger, "Request not implemented!");

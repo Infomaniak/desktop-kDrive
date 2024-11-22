@@ -655,7 +655,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
             perfMonitorCounter++;
             if (perfMonitorCounter % 1000 == 0) {
-                perfMonitor.stopAndStart(SentryHandler::PTraceName::LFSO_ExploreItem, syncDbId());
+                perfMonitor.stopAndStart(SentryHandler::PTraceName::LFSO_ExploreItem, syncDbId(), true);
             }
 
             if (ParametersCache::isExtendedLogEnabled()) {
