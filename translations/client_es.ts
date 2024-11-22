@@ -270,17 +270,17 @@
 <context>
     <name>KDC::AppClient</name>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="100"/>
+        <location filename="../src/gui/appclient.cpp" line="98"/>
         <source>kDrive client is run with bad parameters!</source>
         <translation>El cliente kDrive se ejecuta con parámetros erróneos.</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="109"/>
+        <location filename="../src/gui/appclient.cpp" line="107"/>
         <source>kDrive client is already running!</source>
         <translation>¡El cliente de kDrive ya se está ejecutando!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="720"/>
+        <location filename="../src/gui/appclient.cpp" line="718"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>El usuario %1 no está conectado. Inicia sesión de nuevo.</translation>
     </message>
@@ -366,6 +366,74 @@
         <location filename="../src/gui/basefoldertreeitemwidget.cpp" line="99"/>
         <source>No subfolders currently on the server.</source>
         <translation>No hay subcarpetas actualmente en el servidor.</translation>
+    </message>
+</context>
+<context>
+    <name>KDC::BetaProgramDialog</name>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="69"/>
+        <source>Quit the beta program</source>
+        <translation>Abandonar el programa beta</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="69"/>
+        <source>Join the beta program</source>
+        <translation>Únase al programa beta</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="77"/>
+        <source>Get early access to new versions of the application before they are released to the general public, and take part in improving the application by sending us your comments.</source>
+        <translation>Obtenga acceso anticipado a las nuevas versiones de la aplicación antes de que se publiquen para el público en general, y participe en la mejora de la aplicación enviándonos sus comentarios.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="87"/>
+        <source>Benefit from application beta updates</source>
+        <translation>Benefíciese de las actualizaciones beta de las aplicaciones</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="91"/>
+        <source>No</source>
+        <translation>No</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="92"/>
+        <source>Public beta version</source>
+        <translation>Versión beta pública</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="93"/>
+        <source>Internal beta version</source>
+        <translation>Versión beta interna</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="134"/>
+        <source>I understand</source>
+        <translation>Comprendo</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="140"/>
+        <source>Are you sure you want to leave the beta program?</source>
+        <translation>¿Estás seguro de que quieres abandonar el programa beta?</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="154"/>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="160"/>
+        <source>Cancel</source>
+        <translation>Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="237"/>
+        <source>Your current version of the application might be too recent, so you won&apos;t be able to downgrade to a lower version until an update is available.</source>
+        <translation>Es posible que tu versión actual de la aplicación sea demasiado reciente, por lo que no podrás bajar a una versión inferior hasta que haya una actualización disponible.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="242"/>
+        <source>Beta versions may leave unexpectedly or cause instabilities.</source>
+        <translation>Las versiones beta pueden salir inesperadamente o causar inestabilidades.</translation>
     </message>
 </context>
 <context>
@@ -2541,12 +2609,12 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
 <context>
     <name>KDC::UpdateManager</name>
     <message>
-        <location filename="../src/server/updater/updatemanager.cpp" line="74"/>
+        <location filename="../src/server/updater/updatemanager.cpp" line="87"/>
         <source>New update available.</source>
         <translation>Nueva actualización disponible.</translation>
     </message>
     <message>
-        <location filename="../src/server/updater/updatemanager.cpp" line="75"/>
+        <location filename="../src/server/updater/updatemanager.cpp" line="88"/>
         <source>Version %1 is available for download.</source>
         <translation>La versión %1 está disponible para su descarga.</translation>
     </message>
@@ -2562,64 +2630,89 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
 <context>
     <name>KDC::VersionWidget</name>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="88"/>
+        <location filename="../src/gui/versionwidget.cpp" line="252"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="118"/>
+        <location filename="../src/gui/versionwidget.cpp" line="78"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Show release note&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Mostrar nota de lanzamiento&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="121"/>
+        <location filename="../src/gui/versionwidget.cpp" line="81"/>
         <source>Version</source>
         <translation>Versión</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="122"/>
+        <location filename="../src/gui/versionwidget.cpp" line="82"/>
         <source>UPDATE</source>
         <translation>ACTUALIZAR</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="137"/>
+        <location filename="../src/gui/versionwidget.cpp" line="97"/>
         <source>%1 is up to date!</source>
         <translation>¡%1 está actualizado!</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="141"/>
+        <location filename="../src/gui/versionwidget.cpp" line="101"/>
         <source>Checking update on server...</source>
         <translation>Comprobando actualización en servidor...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="145"/>
+        <location filename="../src/gui/versionwidget.cpp" line="105"/>
         <source>An update is available: %1.&lt;br&gt;Please download it from &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;here&lt;/a&gt;.</source>
         <translation>Hay una actualización disponible: %1. Descárgala &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;aquí&lt;/a&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="152"/>
+        <location filename="../src/gui/versionwidget.cpp" line="112"/>
         <source>An update is available: %1</source>
         <translation>Hay disponible una actualización: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="158"/>
+        <location filename="../src/gui/versionwidget.cpp" line="118"/>
         <source>Downloading %1. Please wait...</source>
         <translation>Descargando %1. Espera...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="163"/>
+        <location filename="../src/gui/versionwidget.cpp" line="123"/>
         <source>Could not check for new updates.</source>
         <translation>No se puede comprobar si hay actualizaciones.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="167"/>
+        <location filename="../src/gui/versionwidget.cpp" line="127"/>
         <source>An error occurred during update.</source>
         <translation>Se ha producido un error durante la actualización.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="171"/>
+        <location filename="../src/gui/versionwidget.cpp" line="131"/>
         <source>Could not download update.</source>
         <translation>No se ha podido descargar la actualización.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/versionwidget.cpp" line="143"/>
+        <source>Beta program</source>
+        <translation>Programa Beta</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/versionwidget.cpp" line="144"/>
+        <source>Get early access to new versions of the application</source>
+        <translation>Obtenga acceso anticipado a las nuevas versiones de la aplicación</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/versionwidget.cpp" line="148"/>
+        <source>Join</source>
+        <translation>Contacto</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/versionwidget.cpp" line="152"/>
+        <source>Modify</source>
+        <translation>Modifique</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/versionwidget.cpp" line="152"/>
+        <source>Quit</source>
+        <translation>Salir</translation>
     </message>
 </context>
 <context>
@@ -2816,101 +2909,101 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>Siempre disponible en local</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="82"/>
+        <location filename="../src/gui/guiutility.cpp" line="80"/>
         <source>Could not open browser</source>
         <translation>No se puede abrir el navegador</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="83"/>
+        <location filename="../src/gui/guiutility.cpp" line="81"/>
         <source>There was an error when launching the browser to go to URL %1. Maybe no default browser is configured?</source>
         <translation>Ocurrió un error al lanzar el navegador para ir a la URL %1. ¿Podría ser que no haya ningún navegador configurado como predeterminado?</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="102"/>
+        <location filename="../src/gui/guiutility.cpp" line="100"/>
         <source>Could not open email client</source>
         <translation>No se pudo abrir el cliente de correo</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="103"/>
+        <location filename="../src/gui/guiutility.cpp" line="101"/>
         <source>There was an error when launching the email client to create a new message. Maybe no default email client is configured?</source>
         <translation>Ocurrió un error al lanzar el cliente de correo electrónico para crear un nuevo mensaje. ¿Podría ser que no haya ningún cliente de correo electrónico configurado como predeterminado?¿Tal vez no hay ningún cliente de correo predeterminado configurado?</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="314"/>
+        <location filename="../src/gui/guiutility.cpp" line="312"/>
         <source>You are not connected anymore. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Log in&lt;/a&gt;</source>
         <translation>Ya no estás conectado. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Iniciar sesión&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="320"/>
+        <location filename="../src/gui/guiutility.cpp" line="318"/>
         <source>No folder to synchronize
 You can add one from the kDrive settings.</source>
         <translation>No hay carpeta para sincronizar
 Puedes agregar uno desde la configuración de kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="331"/>
+        <location filename="../src/gui/guiutility.cpp" line="329"/>
         <source>Sync in progress (%1 of %2)
 %3 left...</source>
         <translation>Sincronización en curso (%1 de %2)
 quedan %3...</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="338"/>
+        <location filename="../src/gui/guiutility.cpp" line="336"/>
         <source>Sync in progress (Step %1/%2).</source>
         <translation>Sincronización en curso (Paso %1/%2).</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="344"/>
+        <location filename="../src/gui/guiutility.cpp" line="342"/>
         <source>Sync in progress.</source>
         <translation>Sincronización en curso.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="355"/>
+        <location filename="../src/gui/guiutility.cpp" line="353"/>
         <source>Some files couldn&apos;t be synchronized. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
         <translation>Algunos archivos no se han podido sincronizar. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Más información&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="362"/>
+        <location filename="../src/gui/guiutility.cpp" line="360"/>
         <source>Synchronization pausing ...</source>
         <translation>Pausando sincronización...</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="562"/>
+        <location filename="../src/gui/guiutility.cpp" line="560"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because another sync is using the same folder.</source>
         <translation>No se puede seleccionar la carpeta &lt;b&gt;%1&lt;/b&gt; porque otra sincronización está usando la misma carpeta.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="567"/>
+        <location filename="../src/gui/guiutility.cpp" line="565"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it contains the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
         <translation>La carpeta &lt;b&gt;%1&lt;/b&gt; no se puede seleccionar porque contiene la carpeta sincronizada &lt;b&gt;%2&lt;/b&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="574"/>
+        <location filename="../src/gui/guiutility.cpp" line="572"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it is contained in the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
         <translation>er &lt;b&gt;%1&lt;/b&gt; no se puede seleccionar porque está contenido en la carpeta sincronizada &lt;b&gt;%2&lt;/b&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="342"/>
+        <location filename="../src/gui/guiutility.cpp" line="340"/>
         <source>Synchronization starting</source>
         <translation>Iniciando sincronización</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="366"/>
+        <location filename="../src/gui/guiutility.cpp" line="364"/>
         <source>Synchronization paused.</source>
         <translation>Sincronización en pausa.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="327"/>
+        <location filename="../src/gui/guiutility.cpp" line="325"/>
         <source>Sync in progress (%1 of %2)</source>
         <translation>Sincronización en curso (%1 de %2)</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="349"/>
+        <location filename="../src/gui/guiutility.cpp" line="347"/>
         <source>You are up to date, unresolved conflicts.</source>
         <translation>Estás actualizado, conflictos sin resolver.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="351"/>
+        <location filename="../src/gui/guiutility.cpp" line="349"/>
         <source>You are up to date!</source>
         <translation>¡Estás actualizado!</translation>
     </message>
