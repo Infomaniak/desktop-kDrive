@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
     KDC::SentryHandler::init(KDC::AppType::Server);
     KDC::SentryHandler::instance()->setGlobalConfidentialityLevel(KDC::SentryConfidentialityLevel::Authenticated);
-
+    KDC::SentryHandler::instance()->startPTrace(KDC::SentryHandler::PTraceName::AppStart, -1);
     Q_INIT_RESOURCE(client);
 
     std::unique_ptr<KDC::AppServer> appPtr = nullptr;

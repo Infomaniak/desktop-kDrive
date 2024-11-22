@@ -166,6 +166,7 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     // Setup Gui
     _gui = std::shared_ptr<ClientGui>(new ClientGui(this));
     _gui->init();
+    GuiRequests::clientStarted();
 
     _theme->setSystrayUseMonoIcons(ParametersCache::instance()->parametersInfo().monoIcons());
     connect(_theme, &Theme::systrayUseMonoIconsChanged, this, &AppClient::onUseMonoIconsChanged);

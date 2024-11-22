@@ -71,23 +71,25 @@ void ComputeFSOperationWorker::execute() {
     // Update SyncNode cache
     _syncPal->updateSyncNode();
 
-    // Update unsynced list cache
-    updateUnsyncedList();
-
     _fileSizeMismatchMap.clear();
+
+    // Update unsynced list cache
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::UpdateUnsyncedList, syncDbId());
+    updateUnsyncedList();
 
     NodeIdSet localIdsSet;
     NodeIdSet remoteIdsSet;
-
+    perfMonitor.stopAndStart(SentryHandler::PTraceName::InferChangesFromDb, syncDbId(), true);
     if (ok && !stopAsked()) {
         exitCode = inferChangesFromDb(localIdsSet, remoteIdsSet);
         ok = exitCode == ExitCode::Ok;
     }
-
     if (ok && !stopAsked()) {
+        perfMonitor.stopAndStart(SentryHandler::PTraceName::ExploreLocalSnapshot, syncDbId(), true);
         exitCode = exploreSnapshotTree(ReplicaSide::Local, localIdsSet);
         ok = exitCode == ExitCode::Ok;
         if (ok) {
+            perfMonitor.stopAndStart(SentryHandler::PTraceName::ExploreRemoteSnapshot, syncDbId(), true);
             exitCode = exploreSnapshotTree(ReplicaSide::Remote, remoteIdsSet);
         }
     }
@@ -97,6 +99,7 @@ void ComputeFSOperationWorker::execute() {
         _syncPal->operationSet(ReplicaSide::Local)->clear();
         _syncPal->operationSet(ReplicaSide::Remote)->clear();
     } else {
+        perfMonitor.stop();
         exitCode = ExitCode::Ok;
     }
 

@@ -68,12 +68,12 @@ void ExecutorWorker::execute() {
 
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
-
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::InitProgress, syncDbId());
     initProgressManager();
-
     uint64_t changesCounter = 0;
     while (!_opList.empty()) { // Same loop twice because we might reschedule the jobs after a pause TODO : refactor double loop
         // Create all the jobs
+        perfMonitor.stopAndStart(SentryHandler::PTraceName::JobGeneration, syncDbId());
         while (!_opList.empty()) {
             if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
                 executorExitInfo = exitInfo;
@@ -195,11 +195,12 @@ void ExecutorWorker::execute() {
                 }
             }
         }
-
+        perfMonitor.stopAndStart(SentryHandler::PTraceName::waitForAllJobsToFinish, syncDbId());
         if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
             executorExitInfo = exitInfo;
             break;
         }
+        perfMonitor.stop();
     }
 
     _syncPal->_syncOps->clear();

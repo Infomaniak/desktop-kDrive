@@ -133,5 +133,6 @@ struct GuiRequests {
         static ExitCode updateState(UpdateState &state);
         static ExitCode startInstaller();
         static ExitCode skipUpdate(const std::string &version);
+        static ExitCode clientStarted();
 };
 } // namespace KDC

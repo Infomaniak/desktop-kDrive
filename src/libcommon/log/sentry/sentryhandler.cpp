@@ -254,10 +254,8 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
         // TODO: When the intern/beta update channel will be available, we will have to create a new environment for each.
 #ifdef NDEBUG
         sentry_options_set_environment(options, "production");
-        sentry_options_set_traces_sample_rate(options, 1);
 #else
         sentry_options_set_environment(options, "dev_unknown");
-        sentry_options_set_traces_sample_rate(options, 1); // 10% of traces
 #endif
     } else if (environment.empty()) { // Disable sentry
         _instance->_isSentryActivated = false;
@@ -267,6 +265,13 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
         sentry_options_set_environment(options, environment.c_str());
     }
 
+#ifdef NDEBUG
+    sentry_options_set_traces_sample_rate(options, 0.1); // 10% of traces
+#else
+    sentry_options_set_traces_sample_rate(options, 1);
+#endif
+    sentry_options_set_max_spans(options, 1000);
+
     // Init sentry
     ASSERT(sentry_init(options) == 0);
     _instance->_isSentryActivated = true;
@@ -275,6 +280,7 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
 void SentryHandler::setAuthenticatedUser(const SentryUser &user) {
     std::scoped_lock lock(_mutex);
     _authenticatedUser = user;
+    updateEffectiveSentryUser();
 }
 
 void SentryHandler::setGlobalConfidentialityLevel(SentryConfidentialityLevel level) {
@@ -350,8 +356,8 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
         return;
     }
 
-    if (storedEvent.captureCount == _sentryMaxCaptureCountBeforeRateLimit) { // Rate limit reached, we send this event and we will
-                                                                             // wait 10 minutes before sending it again
+    if (storedEvent.captureCount == _sentryMaxCaptureCountBeforeRateLimit) { // Rate limit reached, we send this event and we
+                                                                             // will wait 10 minutes before sending it again
         storedEvent.lastUpload = system_clock::now();
         escalateSentryEvent(event);
         return;
@@ -375,7 +381,7 @@ bool SentryHandler::lastEventUploadIsOutdated(const SentryEvent &event) const {
     return (event.lastUpload + seconds(_sentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
 }
 
-void SentryHandler::escalateSentryEvent(SentryEvent &event) {
+void SentryHandler::escalateSentryEvent(SentryEvent &event) const {
     event.message += " (Rate limit reached: " + std::to_string(event.captureCount) + " captures.";
     if (event.level == SentryLevel::Fatal || event.level == SentryLevel::Error) {
         event.message += ")";
@@ -391,7 +397,11 @@ void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
     _lastConfidentialityLevel = user.isDefault() ? _globalConfidentialityLevel : SentryConfidentialityLevel::Specific;
 
     sentry_value_t userValue;
-    if (!user.isDefault()) {
+    if (_globalConfidentialityLevel == SentryConfidentialityLevel::Anonymous) {
+        userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
+        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("0.0.0.0"));
+        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
+    } else if (!user.isDefault()) {
         userValue = toSentryValue(user);
         sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
         sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
@@ -399,10 +409,10 @@ void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
         userValue = toSentryValue(_authenticatedUser);
         sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
         sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
-    } else { // Anonymous
-        userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
-        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("-1.-1.-1.-1"));
-        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
+    } else {
+        assert(false && "Invalid _globalConfidentialityLevel");
+        sentry_remove_user();
+        return;
     }
 
     sentry_remove_user();
@@ -441,170 +451,338 @@ SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::str
     title(title),
     message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 
-
-SentryHandler::SentryTransaction::SentryTransaction(uint64_t parentId, uint64_t operationId) {
-    assert(operationId != 0 && "operationId must be different from 0");
-    _parentId = parentId;
-    _operationId = operationId;
+SentryHandler::PerformanceTrace::PerformanceTrace(pTraceId id) {
+    assert(id != 0 && "operationId must be different from 0");
+    _pTraceId = id;
 }
 
-uint64_t SentryHandler::startTransaction(const std::string &OperationName, const std::string &OperationDescription,
-                                         const uint64_t &parentId) {
-    if (parentId == 0) {
-        return startTransaction(OperationName, OperationDescription);
-    } else {
-        return startTransaction(parentId, OperationName, OperationDescription);
+void SentryHandler::stopPTrace(const pTraceId &id, bool aborted) {
+    std::scoped_lock lock(_mutex);
+    if (id == 0 || !_performanceTraces.contains(id)) return;
+    const PerformanceTrace &performanceTrace = _performanceTraces.at(id);
+
+    // Stop any child PerformanceTrace
+    std::vector<pTraceId> toDelete;
+    for (const auto &childPerformanceTraceId: performanceTrace.children()) {
+        toDelete.push_back(childPerformanceTraceId);
     }
+    for (auto childPerformanceTraceId2: toDelete) {
+        stopPTrace(childPerformanceTraceId2);
+    }
+
+    // Stop the PerformanceTrace
+    if (performanceTrace.isSpan()) {
+        if (!performanceTrace.span()) {
+            assert(false && "Span is not valid");
+            return;
+        }
+        if (aborted) sentry_span_set_status(performanceTrace.span(), SENTRY_SPAN_STATUS_ABORTED);
+        sentry_span_finish(performanceTrace.span()); // Automatically stop any child transaction
+    } else {
+        if (!performanceTrace.transaction()) {
+            assert(false && "Transaction is not valid");
+            return;
+        }
+        if (aborted)
+            sentry_transaction_set_status(performanceTrace.transaction(),
+                                          SENTRY_SPAN_STATUS_ABORTED /*This enum is also valid for a transactrion.*/);
+        sentry_transaction_finish(performanceTrace.transaction()); // Automatically stop any child transaction
+    }
+    _performanceTraces.erase(id);
 }
 
-uint64_t SentryHandler::startTransaction(const std::string &OperationName, const std::string &OperationDescription) {
-    std::scoped_lock lock(_mutex);
-    if (!_isSentryActivated) return 0;
-
-    sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(OperationName.c_str(), OperationDescription.c_str());
+pTraceId SentryHandler::startTransaction(const std::string &name, const std::string &description) {
+    sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(name.c_str(), description.c_str());
     sentry_transaction_t *tx = sentry_transaction_start(tx_ctx, sentry_value_new_null());
-    _operationIdCounter++;
-    uint64_t operationId = _operationIdCounter;
-    SentryTransaction &transaction = _transactions.try_emplace(operationId, 0, operationId).first->second;
-    transaction.setTransaction(tx);
+    _pTraceIdCounter++;
+    uint64_t operationId = _pTraceIdCounter;
+    auto [it, res] = _performanceTraces.try_emplace(operationId, operationId);
+    if (!res) {
+        assert(false && "Transaction already exists");
+        return 0;
+    }
 
-    return _operationIdCounter;
+    PerformanceTrace &pTrace = it->second;
+    pTrace.setTransaction(tx);
+
+    return _pTraceIdCounter;
 }
 
-uint64_t SentryHandler::startTransaction(const uint64_t &parentId, const std::string &OperationName,
-                                         const std::string &OperationDescription) {
-    std::scoped_lock lock(_mutex);
-    if (!_isSentryActivated) return 0;
-
-    if (!_transactions.contains(parentId)) {
+pTraceId SentryHandler::startSpan(const std::string &OperationName, const std::string &OperationDescription,
+                                  const pTraceId &parentId) {
+    if (!_performanceTraces.contains(parentId)) {
         assert(false && "Parent transaction/span does not exist");
         return 0;
     }
 
-    const SentryTransaction &parent = _transactions.at(parentId);
+    PerformanceTrace &parent = _performanceTraces.at(parentId);
     sentry_span_t *span = nullptr;
     if (parent.isSpan()) {
+        if (!parent.span()) {
+            assert(false && "Parent span is not valid");
+            return 0;
+        }
         span = sentry_span_start_child(parent.span(), OperationName.c_str(), OperationDescription.c_str());
+        assert(span);
     } else {
+        if (!parent.transaction()) {
+            assert(false && "Parent transaction is not valid");
+            return 0;
+        }
         span = sentry_transaction_start_child(parent.transaction(), OperationName.c_str(), OperationDescription.c_str());
+        assert(span);
     }
 
-    _operationIdCounter++;
-    uint64_t operationId = _operationIdCounter;
-    SentryTransaction &transaction = _transactions.try_emplace(operationId, parentId, operationId).first->second;
-    transaction.setTransaction(span);
+    _pTraceIdCounter++;
+    pTraceId operationId = _pTraceIdCounter;
+    auto [it, res] = _performanceTraces.try_emplace(operationId, operationId);
+    if (!res) {
+        assert(false && "Transaction already exists");
+        return 0;
+    }
 
+    PerformanceTrace &pTrace = it->second;
+    pTrace.setSpan(span);
+    parent.addChild(pTrace.id());
     return operationId;
 }
 
-void SentryHandler::stopTransaction(const uint64_t &operationId) {
+pTraceId SentryHandler::startPTrace(SentryHandler::PTraceName performanceTraceName, int syncDbId) {
     std::scoped_lock lock(_mutex);
-    if (!_transactions.contains(operationId)) return;
+    if (!_isSentryActivated || performanceTraceName == SentryHandler::PTraceName::None) return 0;
 
-    if (const SentryTransaction &transaction = _transactions.at(operationId); transaction.isSpan()) {
-        sentry_span_finish(transaction.span());
+    if (PTraceInfo pTraceInfo(performanceTraceName); pTraceInfo._parentPTraceName != SentryHandler::PTraceName::None) {
+        // Find the parent
+        auto pTraceMap = _pTraceNameToPTraceIdMap.find(syncDbId);
+        if (pTraceMap == _pTraceNameToPTraceIdMap.end()) {
+            assert(false && "Parent transaction/span is not running.");
+            return 0;
+        }
+
+        auto parentPTraceIt = pTraceMap->second.find(pTraceInfo._parentPTraceName);
+        if (parentPTraceIt == pTraceMap->second.end() || parentPTraceIt->second == 0) {
+            assert(false && "Parent transaction/span is not running.");
+            return 0;
+        }
+
+        const pTraceId &parentId = parentPTraceIt->second;
+
+        // Start the span
+        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] =
+                startSpan(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription, parentId);
     } else {
-        std::vector<uint64_t> toDelete;
-        for (const auto &[nextTransactionId, nextTransaction]: _transactions) {
-            if (nextTransaction.parentId() == operationId) {
-                assert(false && "All child transaction/span must be stopped before the parent");
-                toDelete.push_back(nextTransactionId);
-            }
-        }
-        for (auto operationId2: toDelete) {
-            _transactions.erase(operationId2);
-        }
-        sentry_transaction_finish(transaction.transaction());
+        // Start the transaction
+        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] =
+                startTransaction(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription);
     }
-
-    _transactions.erase(operationId);
+    return _pTraceNameToPTraceIdMap[syncDbId][performanceTraceName];
 }
 
-void SentryHandler::startTransaction(int syncDbId, const SentryTransactionIdentifier &transactionIdentifier) {
+void SentryHandler::stopPTrace(SentryHandler::PTraceName transactionIdentifier, int syncDbId, bool aborted) {
     std::scoped_lock lock(_mutex);
-    if (!_isSentryActivated || transactionIdentifier == SentryTransactionIdentifier::None) return;
-    auto transactionInfo =
-            SentryTransactionInfo(transactionIdentifier);
-    if (transactionInfo._parentTransactionIdentifier != SentryTransactionIdentifier::None) {
-        if (!_syncDbTransactions.contains(syncDbId) ||
-            !_syncDbTransactions[syncDbId].contains(transactionInfo._parentTransactionIdentifier) ||
-            _syncDbTransactions[syncDbId][transactionInfo._parentTransactionIdentifier] == 0) {
-            assert(false && "Parent transaction is not running");
-            return;
-        }
-
-        const uint64_t &parentId = _syncDbTransactions.at(syncDbId).at(transactionInfo._parentTransactionIdentifier);
-        _syncDbTransactions[syncDbId][transactionInfo._transactionIdentifier] =
-                startTransaction(parentId, transactionInfo._operationName, transactionInfo._operationDescription);
-    } else {
-        _syncDbTransactions[syncDbId][transactionInfo._transactionIdentifier] =
-                startTransaction(transactionInfo._operationName, transactionInfo._operationDescription);
-    }
-}
-
-void SentryHandler::stopTransaction(int syncDbId, const SentryTransactionIdentifier &transactionIdentifier) {
-    std::scoped_lock lock(_mutex);
-    if (!_isSentryActivated || transactionIdentifier == SentryTransactionIdentifier::None) return;
-    if (!_syncDbTransactions.contains(syncDbId) || !_syncDbTransactions[syncDbId].contains(transactionIdentifier) ||
-        _syncDbTransactions[syncDbId][transactionIdentifier] == 0) {
+    if (!_isSentryActivated || transactionIdentifier == SentryHandler::PTraceName::None) return;
+    if (!_pTraceNameToPTraceIdMap.contains(syncDbId) || !_pTraceNameToPTraceIdMap[syncDbId].contains(transactionIdentifier) ||
+        _pTraceNameToPTraceIdMap[syncDbId][transactionIdentifier] == 0) {
         assert(false && "Transaction is not running");
         return;
     }
 
-    stopTransaction(_syncDbTransactions[syncDbId][transactionIdentifier]);
-    _syncDbTransactions[syncDbId][transactionIdentifier] = 0;
+    stopPTrace(_pTraceNameToPTraceIdMap[syncDbId][transactionIdentifier], aborted);
+    _pTraceNameToPTraceIdMap[syncDbId][transactionIdentifier] = 0;
 }
 
-SentryTransactionInfo::SentryTransactionInfo(SentryTransactionIdentifier transactiontransactionIdentifier) {
-    _transactionIdentifier = transactiontransactionIdentifier;
-    switch (_transactionIdentifier) {
-        case KDC::SentryTransactionIdentifier::None:
+SentryHandler::PTraceInfo::PTraceInfo(SentryHandler::PTraceName transactiontransactionIdentifier) {
+    _pTraceName = transactiontransactionIdentifier;
+    switch (_pTraceName) {
+        case KDC::SentryHandler::PTraceName::None:
             assert(false && "Transaction must be different from None");
             break;
-        case KDC::SentryTransactionIdentifier::UpdateDetection1:
-            _operationName = "UpdateDetection1";
-            _operationDescription = "UpdateDetection1.";
-            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+        case SentryHandler::PTraceName::AppStart:
+            _pTraceTitle = "AppStart";
+            _pTraceDescription = "Strat the application";
             break;
-        case KDC::SentryTransactionIdentifier::UpdateDetection2:
-            _operationName = "UpdateDetection2";
-            _operationDescription = "UpdateDetection2.";
-            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+        case KDC::SentryHandler::PTraceName::SyncInit:
+            _pTraceTitle = "Synchronisation Init";
+            _pTraceDescription = "Synchronisation initialization";
             break;
-        case KDC::SentryTransactionIdentifier::Reconciliation1:
-            _operationName = "Reconciliation1";
-            _operationDescription = "Reconciliation1.";
-            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+        case KDC::SentryHandler::PTraceName::ResetStatus:
+            _pTraceTitle = "ResetStatus";
+            _pTraceDescription = "Reseting status";
+            _parentPTraceName = SentryHandler::PTraceName::SyncInit;
             break;
-        case KDC::SentryTransactionIdentifier::Reconciliation2:
-            _operationName = "Reconciliation2";
-            _operationDescription = "Reconciliation2.";
-            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+        case KDC::SentryHandler::PTraceName::Sync:
+            _pTraceTitle = "Synchronisation";
+            _pTraceDescription = "Synchronisation.";
             break;
-        case KDC::SentryTransactionIdentifier::Reconciliation3:
-            _operationName = "Reconciliation3";
-            _operationDescription = "Reconciliation3.";
-            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+        case KDC::SentryHandler::PTraceName::UpdateDetection1:
+            _pTraceTitle = "UpdateDetection1";
+            _pTraceDescription = "Compute FS operations";
+            _parentPTraceName = SentryHandler::PTraceName::Sync;
             break;
-        case KDC::SentryTransactionIdentifier::Reconciliation4:
-
-        case KDC::SentryTransactionIdentifier::Propagation1:
-            _operationName = "Propagation1";
-            _operationDescription = "Propagation1.";
-            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+        case KDC::SentryHandler::PTraceName::UpdateUnsyncedList:
+            _pTraceTitle = "UpdateUnsyncedList";
+            _pTraceDescription = "Update unsynced list";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
             break;
-        case KDC::SentryTransactionIdentifier::Propagation2:
-            _operationName = "Propagation2";
-            _operationDescription = "Propagation2.";
-            _parentTransactionIdentifier = SentryTransactionIdentifier::Sync;
+        case KDC::SentryHandler::PTraceName::InferChangesFromDb:
+            _pTraceTitle = "InferChangesFromDb";
+            _pTraceDescription = "Infer changes from DB";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
             break;
-        case KDC::SentryTransactionIdentifier::Sync:
-            _operationName = "Synchronisation";
-            _operationDescription = "Synchronisation.";
+        case KDC::SentryHandler::PTraceName::ExploreLocalSnapshot:
+            _pTraceTitle = "ExploreLocalSnapshot";
+            _pTraceDescription = "Explore local snapshot";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
+            break;
+        case KDC::SentryHandler::PTraceName::ExploreRemoteSnapshot:
+            _pTraceTitle = "ExploreRemoteSnapshot";
+            _pTraceDescription = "Explore remote snapshot";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
+            break;
+        case KDC::SentryHandler::PTraceName::UpdateDetection2:
+            _pTraceTitle = "UpdateDetection2";
+            _pTraceDescription = "UpdateTree generation";
+            _parentPTraceName = SentryHandler::PTraceName::Sync;
+            break;
+        case KDC::SentryHandler::PTraceName::ResetNodes:
+            _pTraceTitle = "ResetNodes";
+            _pTraceDescription = "Reset nodes";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
+            break;
+        case KDC::SentryHandler::PTraceName::Step1MoveDirectory:
+            _pTraceTitle = "Step1MoveDirectory";
+            _pTraceDescription = "Move directory";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
+            break;
+        case KDC::SentryHandler::PTraceName::Step2MoveFile:
+            _pTraceTitle = "Step2MoveFile";
+            _pTraceDescription = "Move file";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
+            break;
+        case KDC::SentryHandler::PTraceName::Step3DeleteDirectory:
+            _pTraceTitle = "Step3DeleteDirectory";
+            _pTraceDescription = "Delete directory";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
+            break;
+        case KDC::SentryHandler::PTraceName::Step4DeleteFile:
+            _pTraceTitle = "Step4DeleteFile";
+            _pTraceDescription = "Delete file";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
+            break;
+        case KDC::SentryHandler::PTraceName::Step5CreateDirectory:
+            _pTraceTitle = "Step5CreateDirectory";
+            _pTraceDescription = "Create directory";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
+            break;
+        case KDC::SentryHandler::PTraceName::Step6CreateFile:
+            _pTraceTitle = "Step6CreateFile";
+            _pTraceDescription = "Create file";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
+            break;
+        case KDC::SentryHandler::PTraceName::Step7EditFile:
+            _pTraceTitle = "Step7EditFile";
+            _pTraceDescription = "Edit file";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
+            break;
+        case KDC::SentryHandler::PTraceName::Step8CompleteUpdateTree:
+            _pTraceTitle = "Step8CompleteUpdateTree";
+            _pTraceDescription = "Complete update tree";
+            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
+            break;
+        case KDC::SentryHandler::PTraceName::Reconciliation1:
+            _pTraceTitle = "Reconciliation1";
+            _pTraceDescription = "Platform inconsistency check";
+            _parentPTraceName = SentryHandler::PTraceName::Sync;
+            break;
+        case KDC::SentryHandler::PTraceName::CheckLocalTree:
+            _pTraceTitle = "CheckLocalTree";
+            _pTraceDescription = "Check local update tree integrity";
+            _parentPTraceName = SentryHandler::PTraceName::Reconciliation1;
+            break;
+        case KDC::SentryHandler::PTraceName::CheckRemoteTree:
+            _pTraceTitle = "CheckRemoteTree";
+            _pTraceDescription = "Check remote update tree integrity";
+            _parentPTraceName = SentryHandler::PTraceName::Reconciliation1;
+            break;
+        case KDC::SentryHandler::PTraceName::Reconciliation2:
+            _pTraceTitle = "Reconciliation2";
+            _pTraceDescription = "Find conflicts";
+            _parentPTraceName = SentryHandler::PTraceName::Sync;
+            break;
+        case KDC::SentryHandler::PTraceName::Reconciliation3:
+            _pTraceTitle = "Reconciliation3";
+            _pTraceDescription = "Resolve conflicts";
+            _parentPTraceName = SentryHandler::PTraceName::Sync;
+            break;
+        case KDC::SentryHandler::PTraceName::Reconciliation4:
+            _pTraceTitle = "Reconciliation4";
+            _pTraceDescription = "Operation Generator";
+            _parentPTraceName = SentryHandler::PTraceName::Sync;
+            break;
+        case KDC::SentryHandler::PTraceName::GenerateItemOperations:
+            _pTraceTitle = "GenerateItemOperations";
+            _pTraceDescription = "Generate the list of operations for 1000 items";
+            _parentPTraceName = SentryHandler::PTraceName::Reconciliation4;
+            break;
+        case KDC::SentryHandler::PTraceName::Propagation1:
+            _pTraceTitle = "Propagation1";
+            _pTraceDescription = "Operation Sorter";
+            _parentPTraceName = SentryHandler::PTraceName::Sync;
+            break;
+        case KDC::SentryHandler::PTraceName::Propagation2:
+            _pTraceTitle = "Propagation2";
+            _pTraceDescription = "Executor";
+            _parentPTraceName = SentryHandler::PTraceName::Sync;
+            break;
+        case KDC::SentryHandler::PTraceName::InitProgress:
+            _pTraceTitle = "InitProgress";
+            _pTraceDescription = "Init the progress manager";
+            _parentPTraceName = SentryHandler::PTraceName::Propagation2;
+            break;
+        case KDC::SentryHandler::PTraceName::JobGeneration:
+            _pTraceTitle = "JobGeneration";
+            _pTraceDescription = "Generate the list of jobs";
+            _parentPTraceName = SentryHandler::PTraceName::Propagation2;
+            break;
+        case KDC::SentryHandler::PTraceName::waitForAllJobsToFinish:
+            _pTraceTitle = "waitForAllJobsToFinish";
+            _pTraceDescription = "Wait for all jobs to finish";
+            _parentPTraceName = SentryHandler::PTraceName::Propagation2;
+            break;
+        case KDC::SentryHandler::PTraceName::LFSO_GenerateInitialSnapshot:
+            _pTraceTitle = "LFSO_GenerateInitialSnapshot";
+            _pTraceDescription = "Explore sync directory";
+            break;
+        case KDC::SentryHandler::PTraceName::LFSO_ExploreItem:
+            _pTraceTitle = "LFSO_ExploreItem(x1000)";
+            _pTraceDescription = "Discover 1000 local files";
+            _parentPTraceName = SentryHandler::PTraceName::LFSO_GenerateInitialSnapshot;
+            break;
+        case KDC::SentryHandler::PTraceName::LFSO_ChangeDetected:
+            _pTraceTitle = "LFSO_ChangeDetected";
+            _pTraceDescription = "Handle one detected changes";
+            break;
+        case KDC::SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot:
+            _pTraceTitle = "RFSO_GenerateInitialSnapshot";
+            _pTraceDescription = "Generate snapshot";
+            break;
+        case KDC::SentryHandler::PTraceName::RFSO_BackRequest:
+            _pTraceTitle = "RFSO_BackRequest";
+            _pTraceDescription = "Request the list of all items to the backend";
+            _parentPTraceName = SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot;
+            break;
+        case KDC::SentryHandler::PTraceName::RFSO_ExploreItem:
+            _pTraceTitle = "RFSO_ExploreItem(x1000)";
+            _pTraceDescription = "Discover 1000 remote files";
+            _parentPTraceName = SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot;
+            break;
+        case KDC::SentryHandler::PTraceName::RFSO_ChangeDetected:
+            _pTraceTitle = "RFSO_ChangeDetected";
+            _pTraceDescription = "Handle one detected changes";
             break;
         default:
+            assert(false && "Invalid transaction name");
             break;
     }
 }
-
 } // namespace KDC

@@ -119,6 +119,7 @@ enum class RequestNum {
     UPDATER_SKIP_VERSION,
     UTILITY_CRASH,
     UTILITY_QUIT,
+    CLIENT_STARTED
 };
 
 inline std::string toString(RequestNum e) {
@@ -273,6 +274,8 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
             return "UTILITY_QUIT";
+        case RequestNum::CLIENT_STARTED:
+            return "CLIENT_STARTED";
         default:
             return "No conversion to string available";
     }

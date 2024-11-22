@@ -36,8 +36,11 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::CheckRemoteTree, syncDbId());
     checkTree(ReplicaSide::Remote);
+    perfMonitor.stopAndStart(SentryHandler::PTraceName::CheckLocalTree, syncDbId());
     checkTree(ReplicaSide::Local);
+    perfMonitor.stop();
 
     for (const auto &idItem: _idsToBeRemoved) {
         if (!idItem.remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {

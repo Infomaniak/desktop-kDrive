@@ -36,7 +36,8 @@ static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
-    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local),
+    _rootFolder(syncPal->localPath()) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -77,7 +78,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             _pendingFileEvents.clear();
             break;
         }
-
+        SentryHandler::ScopedPTrace sentryTransaction(SentryHandler::PTraceName::LFSO_ChangeDetected);
         // Raise flag _updating in order to wait 1sec without local changes before starting the sync
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
@@ -482,6 +483,7 @@ void LocalFileSystemObserverWorker::execute() {
 ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     LOG_SYNCPAL_INFO(_logger, "Starting local snapshot generation");
     auto start = std::chrono::steady_clock::now();
+    SentryHandler::ScopedPTrace perfMonitor(SentryHandler::PTraceName::LFSO_GenerateInitialSnapshot, syncDbId(), true);
 
     _snapshot->init();
     _updating = true;
@@ -493,6 +495,7 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
         _snapshot->setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << elapsed_seconds.count() << "s for " << _snapshot->nbItems()
                                                                   << " items");
+        perfMonitor.stop();
     } else if (stopAsked()) {
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << elapsed_seconds.count() << "s");
     } else {
@@ -645,10 +648,16 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             setExitCause(ExitCause::SyncDirAccesError);
             return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
         }
-
         DirectoryEntry entry;
         bool endOfDirectory = false;
+        int perfMonitorCounter = 0; // We monitor the performance for the treatement of 1000 items
+        SentryHandler::ScopedPTrace perfMonitor(SentryHandler::PTraceName::LFSO_ExploreItem, syncDbId(), true);
         while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+            perfMonitorCounter++;
+            if (perfMonitorCounter % 1000 == 0) {
+                perfMonitor.stopAndStart(SentryHandler::PTraceName::LFSO_ExploreItem, syncDbId());
+            }
+
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(entry.path()) << L" found");
             }

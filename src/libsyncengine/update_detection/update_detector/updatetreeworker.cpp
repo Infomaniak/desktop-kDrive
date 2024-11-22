@@ -29,13 +29,14 @@ namespace KDC {
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)),
-    _updateTree(syncPal->updateTree(side)), _side(side) {}
+    ISyncWorker(syncPal, name, shortName),
+    _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)), _updateTree(syncPal->updateTree(side)), _side(side) {}
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,
                                    std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(nullptr, name, shortName), _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
+    ISyncWorker(nullptr, name, shortName),
+    _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
 
 UpdateTreeWorker::~UpdateTreeWorker() {
     _operationSet.reset();
@@ -97,10 +98,12 @@ void UpdateTreeWorker::execute() {
 }
 
 ExitCode UpdateTreeWorker::step1MoveDirectory() {
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::Step1MoveDirectory, syncDbId());
     return createMoveNodes(NodeType::Directory);
 }
 
 ExitCode UpdateTreeWorker::step2MoveFile() {
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::Step2MoveFile, syncDbId());
     return createMoveNodes(NodeType::File);
 }
 
@@ -124,6 +127,7 @@ ExitCode UpdateTreeWorker::searchForParentNode(const SyncPath &nodePath, std::sh
 }
 
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::Step3DeleteDirectory, syncDbId());
     std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
     for (const auto &deleteOpId: deleteOpsIds) {
         // worker stop or pause
@@ -351,6 +355,7 @@ bool UpdateTreeWorker::updateTmpFileNode(std::shared_ptr<Node> newNode, const FS
 }
 
 ExitCode UpdateTreeWorker::step4DeleteFile() {
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::Step4DeleteFile, syncDbId());
     const ExitCode exitCode = handleCreateOperationsWithSamePath();
     if (exitCode != ExitCode::Ok) return exitCode; // Rebuild the snapshot.
 
@@ -550,6 +555,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
 }
 
 ExitCode UpdateTreeWorker::step6CreateFile() {
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::Step6CreateFile, syncDbId());
     for (const auto &op: _createFileOperationSet) {
         // worker stop or pause
         if (stopAsked()) {
@@ -626,6 +632,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 }
 
 ExitCode UpdateTreeWorker::step7EditFile() {
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::Step7EditFile, syncDbId());
     std::unordered_set<UniqueId> editOpsIds = _operationSet->getOpsByType(OperationType::Edit);
     for (const auto &editOpId: editOpsIds) {
         // worker stop or pause
@@ -715,6 +722,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
 }
 
 ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
+    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::Step8CompleteUpdateTree, syncDbId());
     if (stopAsked()) {
         return ExitCode::Ok;
     }

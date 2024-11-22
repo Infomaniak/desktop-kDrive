@@ -483,7 +483,7 @@ void AppServer::updateSentryUser() const {
     std::string userName = "No user in db";
     std::string userEmail = "No user in db";
     if (found) {
-        userId = std::to_string(user.dbId());
+        userId = std::to_string(user.userId());
         userName = user.name();
         userEmail = user.email();
     }
@@ -1986,6 +1986,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             CommServer::instance()->setHasQuittedProperly(true);
             QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             break;
+        }
+        case RequestNum::CLIENT_STARTED: {
+            SentryHandler::instance()->stopPTrace(SentryHandler::PTraceName::AppStart, -1);
         }
         default: {
             LOG_DEBUG(_logger, "Request not implemented!");

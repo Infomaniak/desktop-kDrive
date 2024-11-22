@@ -41,7 +41,7 @@ class SyncPalWorker : public ISyncWorker {
 
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
-        SentryTransactionIdentifier setpToSentryTransactionIdentifier(SyncStep step) const;
+        SentryHandler::PTraceName setpToSentryHandlerTransactionIdentifier(SyncStep step) const;
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
                            bool reset);
         bool interruptCondition() const;

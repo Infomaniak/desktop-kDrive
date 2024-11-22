@@ -1252,4 +1252,9 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
     return ExitCode::Ok;
 }
 
+ExitCode GuiRequests::clientStarted() {
+    CommClient::instance()->execute(RequestNum::CLIENT_STARTED);
+    return ExitCode::Ok;
+}
+
 } // namespace KDC
