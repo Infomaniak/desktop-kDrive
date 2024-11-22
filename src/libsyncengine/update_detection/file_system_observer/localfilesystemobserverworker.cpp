@@ -86,6 +86,12 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         const SyncPath absolutePath = changedItem.first.native();
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
 
+#ifdef __APPLE__
+        // Reset extended attributes of new items
+        if (opTypeFromOS == OperationType::Create) {
+        }
+#endif
+
         // Check if exists with same nodeId
         if (opTypeFromOS == OperationType::Delete) {
             NodeId prevNodeId = _snapshot->itemId(relativePath);
