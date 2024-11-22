@@ -123,7 +123,7 @@ class SentryHandler {
                 }
 
                 // Stop the current performance trace  (if set).
-                void stop(bool aborted = false) {
+                void stop(bool aborted = false) noexcept {
                     if (_pTraceId) {
                         SentryHandler::instance()->stopPTrace(_pTraceId, aborted);
                         _pTraceId = 0;

@@ -466,7 +466,7 @@ void SentryHandler::stopPTrace(const pTraceId &id, bool aborted) {
         toDelete.push_back(childPerformanceTraceId);
     }
     for (auto childPerformanceTraceId2: toDelete) {
-        stopPTrace(childPerformanceTraceId2);
+        stopPTrace(childPerformanceTraceId2, aborted);
     }
 
     // Stop the PerformanceTrace
