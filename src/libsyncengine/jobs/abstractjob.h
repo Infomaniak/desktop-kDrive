@@ -85,7 +85,7 @@ class AbstractJob : public Poco::Runnable {
         inline void setVfsStatusCallback(std::function<bool(const SyncPath &, bool &, bool &, bool &, int &)> callback) noexcept {
             _vfsStatus = callback;
         }
-        inline void setVfsUpdateMetadataCallback(std::function<bool(const SyncPath &, const SyncTime &, const SyncTime &,
+        inline void setVfsUpdateMetadataCallback(std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &,
                                                                     const int64_t, const NodeId &, std::string &)>
                                                          callback) noexcept {
             _vfsUpdateMetadata = callback;
@@ -113,7 +113,7 @@ class AbstractJob : public Poco::Runnable {
         std::function<bool(const SyncPath &path, bool isSyncing, int progress, bool isHydrated)> _vfsForceStatus = nullptr;
         std::function<bool(const SyncPath &path, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress)>
                 _vfsStatus = nullptr;
-        std::function<bool(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
+        std::function<ExitInfo(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
                            const NodeId &id, std::string &error)>
                 _vfsUpdateMetadata = nullptr;
         std::function<bool(const SyncPath &path)> _vfsCancelHydrate = nullptr;

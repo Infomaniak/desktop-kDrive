@@ -131,7 +131,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                                                                        const SyncFileItem &)) {
             _vfsConvertToPlaceholder = vfsConvertToPlaceholder;
         }
-        inline void setVfsUpdateMetadataCallback(bool (*vfsUpdateMetadata)(int, const SyncPath &, const SyncTime &,
+        inline void setVfsUpdateMetadataCallback(ExitInfo (*vfsUpdateMetadata)(int, const SyncPath &, const SyncTime &,
                                                                            const SyncTime &, const int64_t, const NodeId &,
                                                                            std::string &)) {
             _vfsUpdateMetadata = vfsUpdateMetadata;
@@ -218,7 +218,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress);
         bool vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item);
         bool vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item);
-        bool vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
+        ExitInfo vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
+                                   const int64_t size,
                                const NodeId &id, std::string &error);
         bool vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                   bool &finished);
@@ -293,7 +294,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                            int &progress){nullptr};
         bool (*_vfsCreatePlaceholder)(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item){nullptr};
         bool (*_vfsConvertToPlaceholder)(int syncDbId, const SyncPath &path, const SyncFileItem &item){nullptr};
-        bool (*_vfsUpdateMetadata)(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
+        ExitInfo (*_vfsUpdateMetadata)(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                    const int64_t size, const NodeId &id, std::string &error){nullptr};
         bool (*_vfsUpdateFetchStatus)(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
                                       bool &canceled, bool &finished){nullptr};

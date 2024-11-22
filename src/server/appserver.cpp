@@ -965,7 +965,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             exitCode = tryCreateAndStartVfs(sync);
-            const bool resumedByUser = exitCode == ExitCode::Ok; 
+            const bool resumedByUser = exitCode == ExitCode::Ok;
 
             exitCode = initSyncPal(sync, std::unordered_set<NodeId>(), std::unordered_set<NodeId>(), std::unordered_set<NodeId>(),
                                    true, resumedByUser, false);
@@ -2384,23 +2384,25 @@ bool AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, cons
     return true;
 }
 
-bool AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
+ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                   const int64_t size, const NodeId &id, std::string &error) {
     if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
     const QByteArray fileId(id.c_str());
     QString errorStr;
-    if (!_vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, &errorStr)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in Vfs::updateMetadata for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
+    if (ExitInfo exitInfo =
+                _vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, &errorStr);
+        !exitInfo) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::updateMetadata for syncDbId=" << syncDbId << L" and path="
+                                                                                              << Path2WStr(path).c_str() << ": "
+                                                                                              << exitInfo);
         error = errorStr.toStdString();
-        return false;
+        return exitInfo;
     }
-
-    return true;
+    return ExitCode::Ok;
 }
 
 bool AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,

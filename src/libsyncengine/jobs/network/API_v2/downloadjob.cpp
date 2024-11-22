@@ -43,8 +43,9 @@ namespace KDC {
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
                          SyncTime creationTime, SyncTime modtime, bool isCreate) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
-    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
+    _remoteFileId(remoteFileId), _localpath(localpath), _expectedSize(expectedSize), _creationTime(creationTime),
+    _modtimeIn(modtime), _isCreate(isCreate) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -147,9 +148,12 @@ void DownloadJob::runJob() noexcept {
             }
 
             std::string error;
-            if (!_vfsUpdateMetadata(_localpath, filestat.creationTime, filestat.modtime, _expectedSize,
-                                    std::to_string(filestat.inode), error)) {
-                LOGW_WARN(_logger, L"Update metadata failed: " << Utility::formatSyncPath(_localpath).c_str());
+            if (ExitInfo exitInfo = _vfsUpdateMetadata(_localpath, filestat.creationTime, filestat.modtime, _expectedSize,
+                                                       std::to_string(filestat.inode), error);
+                !exitInfo) {
+                LOGW_WARN(_logger, L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_localpath));
+                _exitCode = exitInfo.code();
+                _exitCause = exitInfo.cause();
                 return;
             }
         }

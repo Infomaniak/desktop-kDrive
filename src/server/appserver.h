@@ -204,7 +204,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                               int &progress);
         static bool vfsCreatePlaceholder(int syncDbIdconst, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item);
-        static bool vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
+        static ExitInfo vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                       const int64_t size, const NodeId &id, std::string &error);
         static bool vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
                                          bool &canceled, bool &finished);

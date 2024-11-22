@@ -694,7 +694,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                     std::bind(&SyncPal::vfsSetPinState, _syncPal, std::placeholders::_1, std::placeholders::_2);
             job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
 
-            std::function<bool(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &,
+            std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &,
                                std::string &)>
                     vfsUpdateMetadataCallback =
                             std::bind(&SyncPal::vfsUpdateMetadata, _syncPal, std::placeholders::_1, std::placeholders::_2,
@@ -961,7 +961,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
                               std::placeholders::_3, std::placeholders::_4);
             downloadJob->setVfsForceStatusCallback(vfsForceStatusCallback);
 
-            std::function<bool(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &,
+            std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &,
                                std::string &)>
                     vfsUpdateMetadataCallback =
                             std::bind(&SyncPal::vfsUpdateMetadata, _syncPal, std::placeholders::_1, std::placeholders::_2,
