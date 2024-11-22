@@ -20,6 +20,7 @@
 
 #include "adddriveconfirmationwidget.h"
 #include "customcombobox.h"
+#include "guirequests.h"
 #include "parameterscache.h"
 #include "utility/utility.h"
 
@@ -41,7 +42,6 @@ namespace KDC {
 BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWidget *parent /*= nullptr*/) :
     CustomDialog(true, parent), _isQuit(isQuit && !isStaff), _isStaff(isStaff) {
     setObjectName("BetaProgramDialog");
-    setMinimumHeight(380);
 
     /*
      * |-------------------------------------------------------|
@@ -73,7 +73,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
     // Main text box
     if (!_isQuit) {
         auto *mainTextBox = new QLabel(this);
-        mainTextBox->setObjectName("largeNormalTextLabel");
+        mainTextBox->setObjectName("largeNormalBoldTextLabel");
         mainTextBox->setText(tr(
                 R"(Get early access to new versions of the application before they are released to the general public, and take )"
                 R"(part in improving the application by sending us your comments.)"));
@@ -83,6 +83,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
 
     if (_isStaff) {
         auto *staffLabel = new QLabel(this);
+        staffLabel->setObjectName("largeMediumBoldTextLabel");
         staffLabel->setText(tr("Benefit from application beta updates"));
         layout->addWidget(staffLabel);
 
@@ -92,21 +93,25 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
         _staffSelectionBox->insertItem(indexInternal, tr("Internal beta version"));
 
         if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Prod)
-            _staffSelectionBox->setCurrentIndex(indexNo);
+            _initialIndex = indexNo;
         else if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Beta)
-            _staffSelectionBox->setCurrentIndex(indexBeta);
+            _initialIndex = indexBeta;
         else if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Internal)
-            _staffSelectionBox->setCurrentIndex(indexInternal);
+            _initialIndex = indexInternal;
+        _staffSelectionBox->setCurrentIndex(_initialIndex);
         layout->addWidget(_staffSelectionBox);
+
+        connect(_staffSelectionBox, &CustomComboBox::currentIndexChanged, this, &BetaProgramDialog::onChannelChange);
     }
 
     // Acknowlegment
-    auto *acknowlegmentFrame = new QFrame(this);
-    acknowlegmentFrame->setStyleSheet("QFrame {border-radius: 8px; background-color: #F4F6FC;}");
-    layout->addWidget(acknowlegmentFrame);
+    _acknowlegmentFrame = new QFrame(this);
+    _acknowlegmentFrame->setStyleSheet("QFrame {border-radius: 8px; background-color: #F4F6FC;}");
+    _acknowlegmentFrame->setVisible(false);
+    layout->addWidget(_acknowlegmentFrame);
 
     auto *acknowledmentLayout = new QGridLayout(this);
-    acknowlegmentFrame->setLayout(acknowledmentLayout);
+    _acknowlegmentFrame->setLayout(acknowledmentLayout);
     acknowledmentLayout->setSpacing(subLayoutSpacing);
 
     auto *warningIcon = new QLabel(this);
@@ -115,18 +120,16 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
     warningIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
     acknowledmentLayout->addWidget(warningIcon, 0, 0);
 
-    auto *acknowledmentLabel = new QLabel(this);
-    acknowledmentLabel->setObjectName("largeNormalTextLabel");
+    _acknowledmentLabel = new QLabel(this);
+    _acknowledmentLabel->setObjectName("largeNormalTextLabel");
     if (_isQuit) {
-        acknowledmentLabel->setText(
-                tr("Your current version of the application might be too recent, so you won't be able to downgrade to a lower "
-                   "version until an update is available."));
+        setTooRecentMessage();
     } else {
-        acknowledmentLabel->setText(tr("Beta versions may leave unexpectedly or cause instabilities."));
+        setInstabilityMessage();
     }
-    acknowledmentLabel->setWordWrap(true);
-    acknowledmentLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    acknowledmentLayout->addWidget(acknowledmentLabel, 0, 1);
+    _acknowledmentLabel->setWordWrap(true);
+    _acknowledmentLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    acknowledmentLayout->addWidget(_acknowledmentLabel, 0, 1);
 
     _acknowledgmentCheckbox = new QCheckBox(tr("I understand"), this);
     acknowledmentLayout->addWidget(_acknowledgmentCheckbox, 1, 1);
@@ -161,7 +164,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
     connect(_saveButton, &QPushButton::clicked, this, &BetaProgramDialog::onSave);
     connect(cancelButton, &QPushButton::clicked, this, &BetaProgramDialog::reject);
     connect(this, &BetaProgramDialog::exit, this, &BetaProgramDialog::reject);
-    connect(_acknowledgmentCheckbox, &QCheckBox::clicked, this, &BetaProgramDialog::onAcknowledgement);
+    connect(_acknowledgmentCheckbox, &QCheckBox::toggled, this, &BetaProgramDialog::onAcknowledgement);
 }
 
 void BetaProgramDialog::onAcknowledgement() {
@@ -171,20 +174,72 @@ void BetaProgramDialog::onAcknowledgement() {
 void BetaProgramDialog::onSave() {
     if (_isStaff) {
         if (_staffSelectionBox->currentIndex() == indexNo)
-            _channel = DistributionChannel::Prod;
+            _newChannel = DistributionChannel::Prod;
         else if (_staffSelectionBox->currentIndex() == indexBeta)
-            _channel = DistributionChannel::Beta;
+            _newChannel = DistributionChannel::Beta;
         else if (_staffSelectionBox->currentIndex() == indexInternal)
-            _channel = DistributionChannel::Internal;
+            _newChannel = DistributionChannel::Internal;
     } else {
         if (_isQuit) {
-            _channel = DistributionChannel::Prod;
+            _newChannel = DistributionChannel::Prod;
         } else {
-            _channel = DistributionChannel::Beta;
+            _newChannel = DistributionChannel::Beta;
         }
     }
 
     accept();
+}
+
+DistributionChannel toDistributionChannel(const int index) {
+    switch (index) {
+        case indexNo:
+            return DistributionChannel::Prod;
+        case indexBeta:
+            return DistributionChannel::Beta;
+        case indexInternal:
+            return DistributionChannel::Internal;
+        default:
+            break;
+    }
+    return DistributionChannel::Unknown;
+}
+
+void BetaProgramDialog::onChannelChange(const int index) {
+    _acknowledgmentCheckbox->setChecked(false);
+    if (_initialIndex == index) {
+        _acknowlegmentFrame->setVisible(false);
+        return;
+    }
+
+    _acknowlegmentFrame->setVisible(true);
+
+    switch (index) {
+        case indexNo: {
+            setTooRecentMessage(); // TODO : maybe the user has not updated yet and the version is not too recent??
+            break;
+        }
+        case indexBeta:
+        case indexInternal: {
+            if (_initialIndex == indexNo) {
+                setInstabilityMessage();
+            } else {
+                setTooRecentMessage();
+            }
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+void BetaProgramDialog::setTooRecentMessage() const {
+    _acknowledmentLabel->setText(
+            tr("Your current version of the application might be too recent, so you won't be able to downgrade to a lower "
+               "version until an update is available."));
+}
+
+void BetaProgramDialog::setInstabilityMessage() const {
+    _acknowledmentLabel->setText(tr("Beta versions may leave unexpectedly or cause instabilities."));
 }
 
 } // namespace KDC

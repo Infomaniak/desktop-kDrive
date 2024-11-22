@@ -23,6 +23,8 @@
 
 #include "utility/types.h"
 
+
+class QLabel;
 class QCheckBox;
 
 namespace KDC {
@@ -35,19 +37,26 @@ class BetaProgramDialog final : public CustomDialog {
     public:
         explicit BetaProgramDialog(bool isQuit, bool isStaff, QWidget *parent = nullptr);
 
-        [[nodiscard]] DistributionChannel selectedDistributionChannel() const { return _channel; }
+        [[nodiscard]] DistributionChannel selectedDistributionChannel() const { return _newChannel; }
 
     private slots:
         void onAcknowledgement();
         void onSave();
+        void onChannelChange(int index);
 
     private:
+        void setTooRecentMessage() const;
+        void setInstabilityMessage() const;
+
         bool _isQuit{false};
         bool _isStaff{false};
-        DistributionChannel _channel{DistributionChannel::Unknown};
+        DistributionChannel _newChannel{DistributionChannel::Unknown};
         QCheckBox *_acknowledgmentCheckbox{nullptr};
+        QFrame *_acknowlegmentFrame{nullptr};
+        QLabel *_acknowledmentLabel{nullptr};
         CustomComboBox *_staffSelectionBox{nullptr};
         QPushButton *_saveButton{nullptr};
+        int _initialIndex{0};
 };
 
 } // namespace KDC
