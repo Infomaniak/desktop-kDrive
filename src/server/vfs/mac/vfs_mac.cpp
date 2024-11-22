@@ -94,12 +94,12 @@ VirtualFileMode VfsMac::mode() const {
     return VirtualFileMode::Mac;
 }
 
-bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
+ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
     LOG_DEBUG(logger(), "startImpl - syncDbId=" << _vfsSetupParams._syncDbId);
 
     if (!_connector) {
         LOG_WARN(logger(), "LiteSyncExtConnector not initialized!");
-        return false;
+        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
     }
 
     if (!installationDone) {
@@ -108,21 +108,21 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
         installationDone = _connector->install(activationDone);
         if (!installationDone) {
             LOG_WARN(logger(), "Error in LiteSyncExtConnector::install!");
-            return false;
+            return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
         }
     }
 
     if (!activationDone) {
         LOG_INFO(logger(), "LiteSync extension activation pending");
         connectionDone = false;
-        return false;
+        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
     }
 
     if (!connectionDone) {
         connectionDone = _connector->connect();
         if (!connectionDone) {
             LOG_WARN(logger(), "Error in LiteSyncExtConnector::connect!");
-            return false;
+            return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
         }
     }
 
@@ -137,7 +137,7 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
     if (!_connector->vfsStart(_vfsSetupParams._syncDbId, folderPath, isPlaceholder, isSyncing)) {
         LOG_WARN(logger(), "Error in vfsStart!");
         resetLiteSyncConnector();
-        return false;
+        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
     }
 
     QStringList filesToFix;
@@ -163,10 +163,10 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
                 ok = false;
             }
         }
-        return ok;
+        return ok ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::SystemError, ExitCause::UnableToCreateVfs);
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 void VfsMac::stopImpl(bool unregister) {

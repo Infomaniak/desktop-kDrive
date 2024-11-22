@@ -122,7 +122,7 @@ VirtualFileMode VfsWin::mode() const {
     return VirtualFileMode::Win;
 }
 
-bool VfsWin::startImpl(bool &, bool &, bool &) {
+ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
     LOG_DEBUG(logger(), "startImpl: syncDbId=" << _vfsSetupParams._syncDbId);
 
     wchar_t clsid[39] = L"";
@@ -131,12 +131,12 @@ bool VfsWin::startImpl(bool &, bool &, bool &) {
                  std::to_wstring(_vfsSetupParams._syncDbId).c_str(), _vfsSetupParams._localPath.filename().native().c_str(),
                  _vfsSetupParams._localPath.lexically_normal().native().c_str(), clsid, &clsidSize) != S_OK) {
         LOG_WARN(logger(), "Error in vfsStart: syncDbId=" << _vfsSetupParams._syncDbId);
-        return false;
+        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
     }
 
     _vfsSetupParams._namespaceCLSID = Utility::ws2s(std::wstring(clsid));
 
-    return true;
+    return ExitCode::Ok;
 }
 
 void VfsWin::stopImpl(bool unregister) {

@@ -83,7 +83,7 @@ class Vfs : public QObject {
          *
          * The plugin-specific work is done in startImpl().
          */
-        bool start(bool &installationDone, bool &activationDone, bool &connectionDone);
+        ExitInfo start(bool &installationDone, bool &activationDone, bool &connectionDone);
 
         /// Stop interaction with VFS provider. Like when the client application quits.
         /// Also deregister the folder with the sync provider, like when a folder is removed.
@@ -233,7 +233,7 @@ class Vfs : public QObject {
          * Usually some registration needs to be done with the backend. This function
          * should take care of it if necessary.
          */
-        virtual bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) = 0;
+        virtual ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) = 0;
 
         virtual void stopImpl(bool unregister) = 0;
 
@@ -292,7 +292,7 @@ class VfsOff : public Vfs {
         virtual void clearFileAttributes(const QString &) override {}
 
     protected:
-        bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
+        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool /*unregister*/) override {}
 
         friend class TestWorkers;

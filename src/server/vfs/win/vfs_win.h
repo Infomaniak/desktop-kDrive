@@ -105,7 +105,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         bool fileStatusChanged(const QString &path, KDC::SyncFileStatus status) override;
 
     protected:
-        bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
+        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool unregister) override;
 
         friend class TestWorkers;

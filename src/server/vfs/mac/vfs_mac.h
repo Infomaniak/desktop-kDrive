@@ -94,7 +94,7 @@ class VfsMac : public Vfs {
         virtual void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
 
     protected:
-        bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
+        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool unregister) override;
 
         friend class TestWorkers;

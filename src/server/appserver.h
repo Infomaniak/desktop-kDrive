@@ -141,9 +141,9 @@ class AppServer : public SharedTools::QtSingleApplication {
                              bool firstInit = false);
         ExitCode stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
-        ExitCode createAndStartVfs(const Sync &sync, ExitCause &exitCause) noexcept;
+        ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
-        ExitCode tryCreateAndStartVfs(Sync &sync) noexcept;
+        ExitInfo tryCreateAndStartVfs(Sync &sync) noexcept;
         ExitCode stopVfs(int syncDbId, bool unregister);
 
         ExitCode setSupportsVirtualFiles(int syncDbId, bool value);

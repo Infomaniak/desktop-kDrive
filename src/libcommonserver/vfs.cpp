@@ -67,13 +67,13 @@ KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {
     return {};
 }
 
-bool Vfs::start(bool &installationDone, bool &activationDone, bool &connectionDone) {
+ExitInfo Vfs::start(bool &installationDone, bool &activationDone, bool &connectionDone) {
     if (!_started) {
-        _started = startImpl(installationDone, activationDone, connectionDone);
-        return _started;
+        ExitInfo exitInfo = startImpl(installationDone, activationDone, connectionDone);
+        _started = exitInfo.code() == ExitCode::Ok;
+        return exitInfo;
     }
-
-    return true;
+    return ExitCode::Ok;
 }
 
 void Vfs::stop(bool unregister) {
@@ -109,8 +109,8 @@ bool VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, 
     return true;
 }
 
-bool VfsOff::startImpl(bool &, bool &, bool &) {
-    return true;
+ExitInfo VfsOff::startImpl(bool &, bool &, bool &) {
+    return ExitCode::Ok;
 }
 
 static QString modeToPluginName(KDC::VirtualFileMode virtualFileMode) {

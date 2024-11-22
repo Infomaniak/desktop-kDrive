@@ -965,7 +965,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             exitCode = tryCreateAndStartVfs(sync);
-            const bool resumedByUser = exitCode == ExitCode::Ok;
+            const bool resumedByUser = exitCode == ExitCode::Ok; 
 
             exitCode = initSyncPal(sync, std::unordered_set<NodeId>(), std::unordered_set<NodeId>(), std::unordered_set<NodeId>(),
                                    true, resumedByUser, false);
@@ -1105,7 +1105,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                tryCreateAndStartVfs(sync);
+                tryCreateAndStartVfs(sync); // TODO: We should handle potential errors here [KDESKTOP-1407]
 
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
@@ -1193,7 +1193,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                tryCreateAndStartVfs(sync);
+                tryCreateAndStartVfs(sync); // TODO: We should handle potential errors here [KDESKTOP-1407]
 
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
@@ -2778,15 +2778,13 @@ std::string liteSyncActivationLogMessage(bool enabled, int syncDbId) {
 }
 
 // This function will pause the synchronization in case of errors.
-ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
+ExitInfo AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg.c_str());
-
-    ExitCause exitCause = ExitCause::Unknown;
-    const ExitCode exitCode = createAndStartVfs(sync, exitCause);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " code=" << exitCode << ", pausing.");
-        addError(Error(sync.dbId(), errId(), exitCode, exitCause));
+    const ExitInfo exitInfo = createAndStartVfs(sync);
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo << ", pausing.");
+        addError(Error(sync.dbId(), errId(), exitInfo.code(), exitInfo.cause()));
 
         // Set sync's paused flag
         sync.setPaused(true);
@@ -2800,7 +2798,7 @@ ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
         }
     }
 
-    return exitCode;
+    return exitInfo;
 }
 
 ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
@@ -2883,7 +2881,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                     continue;
                 }
 
-                tryCreateAndStartVfs(sync);
+                tryCreateAndStartVfs(sync); // TODO: We should handle potential errors here [KDESKTOP-1407]
 
                 // Create and start SyncPal
                 exitCode =
@@ -3617,20 +3615,18 @@ ExitCode AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     return ExitCode::Ok;
 }
 
-ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) noexcept {
+ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     // Check that the sync folder exists.
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << Utility::formatIoError(sync.localPath(), ioError).c_str());
-        exitCause = ExitCause::Unknown;
         return ExitCode::SystemError;
     }
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()).c_str() << L" doesn't exist.");
-        exitCause = ExitCause::SyncDirDoesntExist;
-        return ExitCode::SystemError;
+        return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
     }
 
     if (_vfsMap.find(sync.dbId()) == _vfsMap.end()) {
@@ -3639,37 +3635,31 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
         bool found;
         if (!ParmsDb::instance()->selectDrive(sync.driveDbId(), drive, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectDrive");
-            exitCause = ExitCause::DbAccessError;
-            return ExitCode::DbError;
+            return {ExitCode::DbError, ExitCause::DbAccessError};
         }
         if (!found) {
             LOG_WARN(_logger, "Drive not found in drive table for driveDbId=" << sync.driveDbId());
-            exitCause = ExitCause::DbEntryNotFound;
-            return ExitCode::DataError;
+            return {ExitCode::DataError, ExitCause::DbEntryNotFound};
         }
 
         Account account;
         if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAccount");
-            exitCause = ExitCause::DbAccessError;
-            return ExitCode::DbError;
+            return {ExitCode::DbError, ExitCause::DbAccessError};
         }
         if (!found) {
             LOG_WARN(_logger, "Account not found in account table for accountDbId=" << drive.accountDbId());
-            exitCause = ExitCause::DbEntryNotFound;
-            return ExitCode::DataError;
+            return {ExitCode::DataError, ExitCause::DbEntryNotFound};
         }
 
         User user;
         if (!ParmsDb::instance()->selectUser(account.userDbId(), user, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectUser");
-            exitCause = ExitCause::DbAccessError;
-            return ExitCode::DbError;
+            return {ExitCode::DbError, ExitCause::DbAccessError};
         }
         if (!found) {
             LOG_WARN(_logger, "User not found in user table for userDbId=" << account.userDbId());
-            exitCause = ExitCause::DbEntryNotFound;
-            return ExitCode::DataError;
+            return {ExitCode::DataError, ExitCause::DbEntryNotFound};
         }
 #endif
 
@@ -3690,8 +3680,7 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
         if (!vfsPtr) {
             LOG_WARN(_logger, "Error in Vfs::createVfsFromPlugin for mode " << sync.virtualFileMode() << " : "
                                                                             << error.toStdString().c_str());
-            exitCause = ExitCause::UnableToCreateVfs;
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
         }
         _vfsMap[sync.dbId()] = vfsPtr;
         _vfsMap[sync.dbId()]->setExtendedLog(ParametersCache::isExtendedLogEnabled());
@@ -3706,7 +3695,8 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
     }
 
     // Start VFS
-    if (!_vfsMap[sync.dbId()]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone)) {
+    if (ExitInfo exitInfo = _vfsMap[sync.dbId()]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
+        !exitInfo) {
 #ifdef Q_OS_MAC
         if (sync.virtualFileMode() == VirtualFileMode::Mac) {
             if (_vfsInstallationDone && !_vfsActivationDone) {
@@ -3721,16 +3711,14 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
                         LOG_WARN(_logger, "LiteSync extension is not enabled or doesn't have full disk access: "
                                                   << liteSyncExtErrorDescr.c_str());
                     }
-                    exitCause = ExitCause::LiteSyncNotAllowed;
-                    return ExitCode::SystemError;
+                    return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
                 }
             }
         }
 #endif
 
         LOG_WARN(_logger, "Error in Vfs::start");
-        exitCause = ExitCause::UnableToCreateVfs;
-        return ExitCode::SystemError;
+        return exitInfo;
     }
 
 #ifdef Q_OS_WIN
@@ -3754,13 +3742,11 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
     bool found = false;
     if (!ParmsDb::instance()->updateSync(tmpSync, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::updateSync");
-        exitCause = ExitCause::DbAccessError;
-        return ExitCode::DbError;
+        return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
         LOG_WARN(_logger, "Sync not found in sync table for syncDbId=" << tmpSync.dbId());
-        exitCause = ExitCause::DbEntryNotFound;
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 #endif
     return ExitCode::Ok;
@@ -3862,7 +3848,7 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         // Delete previous vfs
         _vfsMap.erase(syncDbId);
 
-        tryCreateAndStartVfs(sync);
+        tryCreateAndStartVfs(sync); // TODO: We should handle potential errors here [KDESKTOP-1407]
 
         QTimer::singleShot(100, this, [=]() {
             bool ok = true;
