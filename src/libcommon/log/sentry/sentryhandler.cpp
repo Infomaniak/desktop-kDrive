@@ -451,9 +451,8 @@ SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::str
     title(title),
     message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 
-SentryHandler::PerformanceTrace::PerformanceTrace(pTraceId id) {
+SentryHandler::PerformanceTrace::PerformanceTrace(pTraceId id) : _pTraceId{id} {
     assert(id != 0 && "operationId must be different from 0");
-    _pTraceId = id;
 }
 
 void SentryHandler::stopPTrace(const pTraceId &id, bool aborted) {
@@ -591,192 +590,191 @@ void SentryHandler::stopPTrace(SentryHandler::PTraceName transactionIdentifier, 
     _pTraceNameToPTraceIdMap[syncDbId][transactionIdentifier] = 0;
 }
 
-SentryHandler::PTraceInfo::PTraceInfo(SentryHandler::PTraceName transactiontransactionIdentifier) {
-    _pTraceName = transactiontransactionIdentifier;
+SentryHandler::PTraceInfo::PTraceInfo(SentryHandler::PTraceName pTraceName) : _pTraceName{pTraceName} {
     switch (_pTraceName) {
-        case KDC::SentryHandler::PTraceName::None:
+        case SentryHandler::PTraceName::None:
             assert(false && "Transaction must be different from None");
             break;
         case SentryHandler::PTraceName::AppStart:
             _pTraceTitle = "AppStart";
             _pTraceDescription = "Strat the application";
             break;
-        case KDC::SentryHandler::PTraceName::SyncInit:
+        case SentryHandler::PTraceName::SyncInit:
             _pTraceTitle = "Synchronisation Init";
             _pTraceDescription = "Synchronisation initialization";
             break;
-        case KDC::SentryHandler::PTraceName::ResetStatus:
+        case SentryHandler::PTraceName::ResetStatus:
             _pTraceTitle = "ResetStatus";
             _pTraceDescription = "Reseting status";
             _parentPTraceName = SentryHandler::PTraceName::SyncInit;
             break;
-        case KDC::SentryHandler::PTraceName::Sync:
+        case SentryHandler::PTraceName::Sync:
             _pTraceTitle = "Synchronisation";
             _pTraceDescription = "Synchronisation.";
             break;
-        case KDC::SentryHandler::PTraceName::UpdateDetection1:
+        case SentryHandler::PTraceName::UpdateDetection1:
             _pTraceTitle = "UpdateDetection1";
             _pTraceDescription = "Compute FS operations";
             _parentPTraceName = SentryHandler::PTraceName::Sync;
             break;
-        case KDC::SentryHandler::PTraceName::UpdateUnsyncedList:
+        case SentryHandler::PTraceName::UpdateUnsyncedList:
             _pTraceTitle = "UpdateUnsyncedList";
             _pTraceDescription = "Update unsynced list";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
             break;
-        case KDC::SentryHandler::PTraceName::InferChangesFromDb:
+        case SentryHandler::PTraceName::InferChangesFromDb:
             _pTraceTitle = "InferChangesFromDb";
             _pTraceDescription = "Infer changes from DB";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
             break;
-        case KDC::SentryHandler::PTraceName::ExploreLocalSnapshot:
+        case SentryHandler::PTraceName::ExploreLocalSnapshot:
             _pTraceTitle = "ExploreLocalSnapshot";
             _pTraceDescription = "Explore local snapshot";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
             break;
-        case KDC::SentryHandler::PTraceName::ExploreRemoteSnapshot:
+        case SentryHandler::PTraceName::ExploreRemoteSnapshot:
             _pTraceTitle = "ExploreRemoteSnapshot";
             _pTraceDescription = "Explore remote snapshot";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
             break;
-        case KDC::SentryHandler::PTraceName::UpdateDetection2:
+        case SentryHandler::PTraceName::UpdateDetection2:
             _pTraceTitle = "UpdateDetection2";
             _pTraceDescription = "UpdateTree generation";
             _parentPTraceName = SentryHandler::PTraceName::Sync;
             break;
-        case KDC::SentryHandler::PTraceName::ResetNodes:
+        case SentryHandler::PTraceName::ResetNodes:
             _pTraceTitle = "ResetNodes";
             _pTraceDescription = "Reset nodes";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
             break;
-        case KDC::SentryHandler::PTraceName::Step1MoveDirectory:
+        case SentryHandler::PTraceName::Step1MoveDirectory:
             _pTraceTitle = "Step1MoveDirectory";
             _pTraceDescription = "Move directory";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
             break;
-        case KDC::SentryHandler::PTraceName::Step2MoveFile:
+        case SentryHandler::PTraceName::Step2MoveFile:
             _pTraceTitle = "Step2MoveFile";
             _pTraceDescription = "Move file";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
             break;
-        case KDC::SentryHandler::PTraceName::Step3DeleteDirectory:
+        case SentryHandler::PTraceName::Step3DeleteDirectory:
             _pTraceTitle = "Step3DeleteDirectory";
             _pTraceDescription = "Delete directory";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
             break;
-        case KDC::SentryHandler::PTraceName::Step4DeleteFile:
+        case SentryHandler::PTraceName::Step4DeleteFile:
             _pTraceTitle = "Step4DeleteFile";
             _pTraceDescription = "Delete file";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
             break;
-        case KDC::SentryHandler::PTraceName::Step5CreateDirectory:
+        case SentryHandler::PTraceName::Step5CreateDirectory:
             _pTraceTitle = "Step5CreateDirectory";
             _pTraceDescription = "Create directory";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
             break;
-        case KDC::SentryHandler::PTraceName::Step6CreateFile:
+        case SentryHandler::PTraceName::Step6CreateFile:
             _pTraceTitle = "Step6CreateFile";
             _pTraceDescription = "Create file";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
             break;
-        case KDC::SentryHandler::PTraceName::Step7EditFile:
+        case SentryHandler::PTraceName::Step7EditFile:
             _pTraceTitle = "Step7EditFile";
             _pTraceDescription = "Edit file";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
             break;
-        case KDC::SentryHandler::PTraceName::Step8CompleteUpdateTree:
+        case SentryHandler::PTraceName::Step8CompleteUpdateTree:
             _pTraceTitle = "Step8CompleteUpdateTree";
             _pTraceDescription = "Complete update tree";
             _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
             break;
-        case KDC::SentryHandler::PTraceName::Reconciliation1:
+        case SentryHandler::PTraceName::Reconciliation1:
             _pTraceTitle = "Reconciliation1";
             _pTraceDescription = "Platform inconsistency check";
             _parentPTraceName = SentryHandler::PTraceName::Sync;
             break;
-        case KDC::SentryHandler::PTraceName::CheckLocalTree:
+        case SentryHandler::PTraceName::CheckLocalTree:
             _pTraceTitle = "CheckLocalTree";
             _pTraceDescription = "Check local update tree integrity";
             _parentPTraceName = SentryHandler::PTraceName::Reconciliation1;
             break;
-        case KDC::SentryHandler::PTraceName::CheckRemoteTree:
+        case SentryHandler::PTraceName::CheckRemoteTree:
             _pTraceTitle = "CheckRemoteTree";
             _pTraceDescription = "Check remote update tree integrity";
             _parentPTraceName = SentryHandler::PTraceName::Reconciliation1;
             break;
-        case KDC::SentryHandler::PTraceName::Reconciliation2:
+        case SentryHandler::PTraceName::Reconciliation2:
             _pTraceTitle = "Reconciliation2";
             _pTraceDescription = "Find conflicts";
             _parentPTraceName = SentryHandler::PTraceName::Sync;
             break;
-        case KDC::SentryHandler::PTraceName::Reconciliation3:
+        case SentryHandler::PTraceName::Reconciliation3:
             _pTraceTitle = "Reconciliation3";
             _pTraceDescription = "Resolve conflicts";
             _parentPTraceName = SentryHandler::PTraceName::Sync;
             break;
-        case KDC::SentryHandler::PTraceName::Reconciliation4:
+        case SentryHandler::PTraceName::Reconciliation4:
             _pTraceTitle = "Reconciliation4";
             _pTraceDescription = "Operation Generator";
             _parentPTraceName = SentryHandler::PTraceName::Sync;
             break;
-        case KDC::SentryHandler::PTraceName::GenerateItemOperations:
+        case SentryHandler::PTraceName::GenerateItemOperations:
             _pTraceTitle = "GenerateItemOperations";
             _pTraceDescription = "Generate the list of operations for 1000 items";
             _parentPTraceName = SentryHandler::PTraceName::Reconciliation4;
             break;
-        case KDC::SentryHandler::PTraceName::Propagation1:
+        case SentryHandler::PTraceName::Propagation1:
             _pTraceTitle = "Propagation1";
             _pTraceDescription = "Operation Sorter";
             _parentPTraceName = SentryHandler::PTraceName::Sync;
             break;
-        case KDC::SentryHandler::PTraceName::Propagation2:
+        case SentryHandler::PTraceName::Propagation2:
             _pTraceTitle = "Propagation2";
             _pTraceDescription = "Executor";
             _parentPTraceName = SentryHandler::PTraceName::Sync;
             break;
-        case KDC::SentryHandler::PTraceName::InitProgress:
+        case SentryHandler::PTraceName::InitProgress:
             _pTraceTitle = "InitProgress";
             _pTraceDescription = "Init the progress manager";
             _parentPTraceName = SentryHandler::PTraceName::Propagation2;
             break;
-        case KDC::SentryHandler::PTraceName::JobGeneration:
+        case SentryHandler::PTraceName::JobGeneration:
             _pTraceTitle = "JobGeneration";
             _pTraceDescription = "Generate the list of jobs";
             _parentPTraceName = SentryHandler::PTraceName::Propagation2;
             break;
-        case KDC::SentryHandler::PTraceName::waitForAllJobsToFinish:
+        case SentryHandler::PTraceName::waitForAllJobsToFinish:
             _pTraceTitle = "waitForAllJobsToFinish";
             _pTraceDescription = "Wait for all jobs to finish";
             _parentPTraceName = SentryHandler::PTraceName::Propagation2;
             break;
-        case KDC::SentryHandler::PTraceName::LFSO_GenerateInitialSnapshot:
+        case SentryHandler::PTraceName::LFSO_GenerateInitialSnapshot:
             _pTraceTitle = "LFSO_GenerateInitialSnapshot";
             _pTraceDescription = "Explore sync directory";
             break;
-        case KDC::SentryHandler::PTraceName::LFSO_ExploreItem:
+        case SentryHandler::PTraceName::LFSO_ExploreItem:
             _pTraceTitle = "LFSO_ExploreItem(x1000)";
             _pTraceDescription = "Discover 1000 local files";
             _parentPTraceName = SentryHandler::PTraceName::LFSO_GenerateInitialSnapshot;
             break;
-        case KDC::SentryHandler::PTraceName::LFSO_ChangeDetected:
+        case SentryHandler::PTraceName::LFSO_ChangeDetected:
             _pTraceTitle = "LFSO_ChangeDetected";
             _pTraceDescription = "Handle one detected changes";
             break;
-        case KDC::SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot:
+        case SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot:
             _pTraceTitle = "RFSO_GenerateInitialSnapshot";
             _pTraceDescription = "Generate snapshot";
             break;
-        case KDC::SentryHandler::PTraceName::RFSO_BackRequest:
+        case SentryHandler::PTraceName::RFSO_BackRequest:
             _pTraceTitle = "RFSO_BackRequest";
             _pTraceDescription = "Request the list of all items to the backend";
             _parentPTraceName = SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot;
             break;
-        case KDC::SentryHandler::PTraceName::RFSO_ExploreItem:
+        case SentryHandler::PTraceName::RFSO_ExploreItem:
             _pTraceTitle = "RFSO_ExploreItem(x1000)";
             _pTraceDescription = "Discover 1000 remote files";
             _parentPTraceName = SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot;
             break;
-        case KDC::SentryHandler::PTraceName::RFSO_ChangeDetected:
+        case SentryHandler::PTraceName::RFSO_ChangeDetected:
             _pTraceTitle = "RFSO_ChangeDetected";
             _pTraceDescription = "Handle one detected changes";
             break;

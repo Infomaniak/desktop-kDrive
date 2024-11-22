@@ -136,6 +136,8 @@ class SentryHandler {
             private:
                 pTraceId _pTraceId{0};
                 bool _manualStopExpected{false};
+                ScopedPTrace &operator=(ScopedPTrace &&) = delete;
+
         };
 
     public:
