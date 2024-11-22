@@ -310,7 +310,7 @@ class SentryHandler {
                 std::string _pTraceTitle;
                 std::string _pTraceDescription;
         };
-        std::map<int /*syncDbId*/, std::map<SentryHandler::PTraceName, uint64_t /* pTraceId */>> _pTraceNameToPTraceIdMap;
+        std::map<int /*syncDbId*/, std::map<SentryHandler::PTraceName, pTraceId>> _pTraceNameToPTraceIdMap;
 
         // Debug
         static KDC::AppType _appType;

@@ -494,8 +494,8 @@ pTraceId SentryHandler::startTransaction(const std::string &name, const std::str
     sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(name.c_str(), description.c_str());
     sentry_transaction_t *tx = sentry_transaction_start(tx_ctx, sentry_value_new_null());
     _pTraceIdCounter++;
-    uint64_t operationId = _pTraceIdCounter;
-    auto [it, res] = _performanceTraces.try_emplace(operationId, operationId);
+    pTraceId traceId = _pTraceIdCounter;
+    auto [it, res] = _performanceTraces.try_emplace(traceId, traceId);
     if (!res) {
         assert(false && "Transaction already exists");
         return 0;
@@ -507,7 +507,7 @@ pTraceId SentryHandler::startTransaction(const std::string &name, const std::str
     return _pTraceIdCounter;
 }
 
-pTraceId SentryHandler::startSpan(const std::string &OperationName, const std::string &OperationDescription,
+pTraceId SentryHandler::startSpan(const std::string &name, const std::string &description,
                                   const pTraceId &parentId) {
     if (!_performanceTraces.contains(parentId)) {
         assert(false && "Parent transaction/span does not exist");
@@ -521,20 +521,20 @@ pTraceId SentryHandler::startSpan(const std::string &OperationName, const std::s
             assert(false && "Parent span is not valid");
             return 0;
         }
-        span = sentry_span_start_child(parent.span(), OperationName.c_str(), OperationDescription.c_str());
+        span = sentry_span_start_child(parent.span(), name.c_str(), description.c_str());
         assert(span);
     } else {
         if (!parent.transaction()) {
             assert(false && "Parent transaction is not valid");
             return 0;
         }
-        span = sentry_transaction_start_child(parent.transaction(), OperationName.c_str(), OperationDescription.c_str());
+        span = sentry_transaction_start_child(parent.transaction(), name.c_str(), description.c_str());
         assert(span);
     }
 
     _pTraceIdCounter++;
-    pTraceId operationId = _pTraceIdCounter;
-    auto [it, res] = _performanceTraces.try_emplace(operationId, operationId);
+    pTraceId traceId = _pTraceIdCounter;
+    auto [it, res] = _performanceTraces.try_emplace(traceId, traceId);
     if (!res) {
         assert(false && "Transaction already exists");
         return 0;
@@ -543,14 +543,14 @@ pTraceId SentryHandler::startSpan(const std::string &OperationName, const std::s
     PerformanceTrace &pTrace = it->second;
     pTrace.setSpan(span);
     parent.addChild(pTrace.id());
-    return operationId;
+    return traceId;
 }
 
-pTraceId SentryHandler::startPTrace(SentryHandler::PTraceName performanceTraceName, int syncDbId) {
+pTraceId SentryHandler::startPTrace(SentryHandler::PTraceName pTraceName, int syncDbId) {
     std::scoped_lock lock(_mutex);
-    if (!_isSentryActivated || performanceTraceName == SentryHandler::PTraceName::None) return 0;
+    if (!_isSentryActivated || pTraceName == SentryHandler::PTraceName::None) return 0;
 
-    if (PTraceInfo pTraceInfo(performanceTraceName); pTraceInfo._parentPTraceName != SentryHandler::PTraceName::None) {
+    if (PTraceInfo pTraceInfo(pTraceName); pTraceInfo._parentPTraceName != SentryHandler::PTraceName::None) {
         // Find the parent
         auto pTraceMap = _pTraceNameToPTraceIdMap.find(syncDbId);
         if (pTraceMap == _pTraceNameToPTraceIdMap.end()) {
@@ -574,20 +574,20 @@ pTraceId SentryHandler::startPTrace(SentryHandler::PTraceName performanceTraceNa
         _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] =
                 startTransaction(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription);
     }
-    return _pTraceNameToPTraceIdMap[syncDbId][performanceTraceName];
+    return _pTraceNameToPTraceIdMap[syncDbId][pTraceName];
 }
 
-void SentryHandler::stopPTrace(SentryHandler::PTraceName transactionIdentifier, int syncDbId, bool aborted) {
+void SentryHandler::stopPTrace(SentryHandler::PTraceName pTraceName, int syncDbId, bool aborted) {
     std::scoped_lock lock(_mutex);
-    if (!_isSentryActivated || transactionIdentifier == SentryHandler::PTraceName::None) return;
-    if (!_pTraceNameToPTraceIdMap.contains(syncDbId) || !_pTraceNameToPTraceIdMap[syncDbId].contains(transactionIdentifier) ||
-        _pTraceNameToPTraceIdMap[syncDbId][transactionIdentifier] == 0) {
+    if (!_isSentryActivated || pTraceName == SentryHandler::PTraceName::None) return;
+    if (!_pTraceNameToPTraceIdMap.contains(syncDbId) || !_pTraceNameToPTraceIdMap[syncDbId].contains(pTraceName) ||
+        _pTraceNameToPTraceIdMap[syncDbId][pTraceName] == 0) {
         assert(false && "Transaction is not running");
         return;
     }
 
-    stopPTrace(_pTraceNameToPTraceIdMap[syncDbId][transactionIdentifier], aborted);
-    _pTraceNameToPTraceIdMap[syncDbId][transactionIdentifier] = 0;
+    stopPTrace(_pTraceNameToPTraceIdMap[syncDbId][pTraceName], aborted);
+    _pTraceNameToPTraceIdMap[syncDbId][pTraceName] = 0;
 }
 
 SentryHandler::PTraceInfo::PTraceInfo(SentryHandler::PTraceName pTraceName) : _pTraceName{pTraceName} {
