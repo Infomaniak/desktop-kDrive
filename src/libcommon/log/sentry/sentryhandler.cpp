@@ -457,8 +457,11 @@ SentryHandler::PerformanceTrace::PerformanceTrace(pTraceId id) : _pTraceId{id} {
 
 void SentryHandler::stopPTrace(const pTraceId &id, bool aborted) {
     std::scoped_lock lock(_mutex);
-    if (id == 0 || !_performanceTraces.contains(id)) return;
-    const PerformanceTrace &performanceTrace = _performanceTraces.at(id);
+    auto performanceTraceIt = _performanceTraces.find(id);
+    if (id == 0 || performanceTraceIt == _performanceTraces.end()) {
+        return;
+    }
+    const PerformanceTrace &performanceTrace = performanceTraceIt->second;
 
     // Stop any child PerformanceTrace
     std::vector<pTraceId> toDelete;
@@ -509,12 +512,13 @@ pTraceId SentryHandler::startTransaction(const std::string &name, const std::str
 
 pTraceId SentryHandler::startSpan(const std::string &name, const std::string &description,
                                   const pTraceId &parentId) {
-    if (!_performanceTraces.contains(parentId)) {
+    auto parentIt = _performanceTraces.find(parentId);
+    if (parentIt == _performanceTraces.end()) {
         assert(false && "Parent transaction/span does not exist");
         return 0;
     }
 
-    PerformanceTrace &parent = _performanceTraces.at(parentId);
+    PerformanceTrace &parent = parentIt->second;
     sentry_span_t *span = nullptr;
     if (parent.isSpan()) {
         if (!parent.span()) {
