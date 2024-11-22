@@ -236,10 +236,6 @@ void VfsMac::clearFileAttributes(const QString &path) {
     _connector->vfsClearFileAttributes(path);
 }
 
-bool VfsMac::isHydrating() const {
-    return false;
-}
-
 bool VfsMac::updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
                             const QByteArray &fileId, QString *error) {
     Q_UNUSED(fileId);

@@ -212,10 +212,6 @@ void VfsWin::setPlaceholderStatus(const QString &path, bool syncOngoing) {
     }
 }
 
-bool VfsWin::isHydrating() const {
-    return false;
-}
-
 bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size, const QByteArray &,
                             QString *) {
     LOGW_DEBUG(logger(), L"updateMetadata: " << Utility::formatSyncPath(QStr2Path(filePath)).c_str() << L" creationTime="

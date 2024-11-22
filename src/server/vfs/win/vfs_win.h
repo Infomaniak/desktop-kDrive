@@ -68,7 +68,6 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         VirtualFileMode mode() const override;
 
         bool socketApiPinStateActionsShown() const override { return false; }
-        bool isHydrating() const override;
 
         bool updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size, const QByteArray &fileId,
                             QString *error) override;

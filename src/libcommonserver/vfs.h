@@ -96,12 +96,6 @@ class Vfs : public QObject {
          */
         virtual bool socketApiPinStateActionsShown() const = 0;
 
-        /** Return true when download of a file's data is currently ongoing.
-         *
-         * See also the beginHydrating() and doneHydrating() signals.
-         */
-        virtual bool isHydrating() const = 0;
-
         /** Update placeholder metadata during discovery.
          *
          * If the remote metadata changes, the local placeholder's metadata should possibly
@@ -267,7 +261,6 @@ class VfsOff : public Vfs {
         KDC::VirtualFileMode mode() const override { return KDC::VirtualFileMode::Off; }
 
         bool socketApiPinStateActionsShown() const override { return false; }
-        bool isHydrating() const override { return false; }
 
         bool updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &, QString *) override { return true; }
         bool createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return true; }
