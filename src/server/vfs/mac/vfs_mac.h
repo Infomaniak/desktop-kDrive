@@ -60,19 +60,22 @@ class VfsMac : public Vfs {
         VirtualFileMode mode() const override;
 
         bool socketApiPinStateActionsShown() const override { return true; }
-        ExitInfo updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
+        bool isHydrating() const override;
+
+        bool updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
                             const QByteArray &fileId, QString *error) override;
 
-        ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
-        ExitInfo dehydratePlaceholder(const QString &path) override;
-        ExitInfo convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
-        ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
+        bool createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
+        bool dehydratePlaceholder(const QString &path) override;
+        bool convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
+        bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
         void cancelHydrate(const QString &filePath) override;
-        ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
+        bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
         bool cleanUpStatuses() override;
         virtual void clearFileAttributes(const QString &path) override;
 
+        bool needsMetadataUpdate(const SyncFileItem &) override { return false; }
         bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) override;
 
         bool setPinState(const QString &fileRelativePath, PinState state) override;
@@ -91,7 +94,7 @@ class VfsMac : public Vfs {
         virtual void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
 
     protected:
-        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
+        bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool unregister) override;
 
         friend class TestWorkers;

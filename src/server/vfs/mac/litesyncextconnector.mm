@@ -415,21 +415,14 @@ namespace KDC {
 
 LiteSyncExtConnector *LiteSyncExtConnector::_liteSyncExtConnector = nullptr;
 
-static ExitInfo getXAttrValue(const QString &path, const QString &attrName, QString &value) {
+static bool getXAttrValue(const QString &path, const QString &attrName, QString &value, IoError &ioError) {
     std::string strValue;
-    IoError IoError = ioError::Success;
     bool result = IoHelper::getXAttrValue(SyncPath(path.toStdString()), attrName.toStdString(), strValue, ioError);
     if (!result) {
-        if(IoError == IoError::NoSuchFileOrDirectory) {
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        }
-        if(IoError == IoError::AccessDenied) {
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-        return ExitCode::SystemError;
+        return false;
     }
     value = QByteArray(strValue.c_str());
-    return ExitCode::Ok;
+    return true;
 }
 static bool setXAttrValue(const QString &path, const QString &attrName, const QString &value, IoError &ioError) {
     bool result = IoHelper::setXAttrValue(QStr2Path(path), attrName.toStdString(), value.toStdString(), ioError);
@@ -545,14 +538,19 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
 
     // Read folder status
     QString value;
-    if(const ExitInfo exitInfo = getXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], value); !exitInfo){
-        LOGW_WARN(_logger, L"Error in getXAttrValue: " << exitInfo);
-        return exitInfo;
+    IoError ioError = IoError::Success;
+    const bool result = getXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], value, ioError);
+    if (!result) {
+        LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(QStr2Path(folderPath), ioError).c_str());
+        return false;
+    }
+
+    if (checkIoErrorAndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
+        return false;
     }
 
     if (value.isEmpty()) {
         // Set default folder status
-        IoError ioError = IoError::Success;
         if (!setXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
             LOGW_WARN(_logger,
                       L"Error in setXAttrValue - "
@@ -796,9 +794,16 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
 
     // Read status
     QString value;
-    if(const ExitInfo exitInfo = getXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], value); !exitInfo){
-        LOGW_WARN(_logger, L"Error in getXAttrValue: " << exitInfo);
-        return exitInfo;
+    IoError ioError = IoError::Success;
+    const bool result = getXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], value, ioError);
+    if (!result) {
+        LOGW_WARN(_logger,
+                  L"Error in getXAttrValue: " << Utility::formatIoError(filePath, ioError).c_str());
+        return false;
+    }
+
+    if (checkIoErrorAndLogIfNeeded(ioError, "File", filePath, _logger)) {
+        return false;
     }
 
     if (value.isEmpty()) {
@@ -821,9 +826,15 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
 bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepath, const QString &localSyncPath) {
     // Read status
     QString value;
-    if(const ExitInfo exitInfo = getXAttrValue(absoluteFilepath, [EXT_ATTR_STATUS UTF8String], value); !exitInfo){ 
+    IoError ioError = IoError::Success;
+    const bool result = getXAttrValue(absoluteFilepath, [EXT_ATTR_STATUS UTF8String], value, ioError);
+    if (!result) {
         LOGW_WARN(_logger, L"Error in getXAttrValue - " << Utility::formatPath(absoluteFilepath).c_str());
-        return exitInfo;
+        return false;
+    }
+
+    if (checkIoErrorAndLogIfNeeded(ioError, "File", absoluteFilepath, _logger)) {
+        return false;
     }
 
     if (value.isEmpty()) {
@@ -942,9 +953,17 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &lo
 
 bool LiteSyncExtConnector::vfsGetPinState(const QString &path, QString &pinState) {
     // Read pin state
-    if(const ExitInfo exitInfo = getXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], value); !exitInfo){
-        LOGW_WARN(_logger, L"Error in getXAttrValue: " << exitInfo);
-        return exitInfo;
+    QString value;
+    IoError ioError = IoError::Success;
+    const bool result = getXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], value, ioError);
+    if (!result) {
+        LOGW_WARN(_logger,
+                  L"Error in getXAttrValue: " << Utility::formatIoError(path, ioError).c_str());
+        return false;
+    }
+
+    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
+        return false;
     }
 
     if (value.isEmpty()) {
@@ -957,7 +976,7 @@ bool LiteSyncExtConnector::vfsGetPinState(const QString &path, QString &pinState
     return true;
 }
 
-ExitInfo LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated) {
+bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated) {
     // Set status
     QString status = (isHydrated ? EXT_ATTR_STATUS_OFFLINE : EXT_ATTR_STATUS_ONLINE);
     IoError ioError = IoError::Success;
@@ -965,17 +984,11 @@ ExitInfo LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, 
         LOGW_WARN(_logger,
                   L"Call to setXAttrValue failed - "
                       << Utility::formatIoError(filePath, ioError).c_str());
-        return ExitCode::SystemError;
+        return false;
     }
 
     if (checkIoErrorAndLogIfNeeded(ioError, "Item", filePath, _logger)) {
-        if(ioError == IoError::AccessDenied){
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-        if(IoError == IoError::NoSuchFileOrDirectory){
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        }
-        return ExitCode::SystemError;
+        return false;
     }
 
     // Set pin state
@@ -984,26 +997,21 @@ ExitInfo LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, 
         LOGW_WARN(_logger,
                   L"Call to setXAttrValue failed - "
                       << Utility::formatIoError(filePath, ioError).c_str());
-        return ExitCode::SystemError;
+        return false;
     }
 
     if (checkIoErrorAndLogIfNeeded(ioError, "Item", filePath, _logger)) {
-        if(ioError == IoError::AccessDenied){
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-        if(IoError == IoError::NoSuchFileOrDirectory){
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        }    
+        return false;
     }
 
-    return ExitCode::Ok;
+    return true;
 }
 
-ExitInfo LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath,
+bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath,
                                                 const struct stat *fileStat) {
     if (!fileStat) {
         LOG_WARN(_logger, "Bad parameters");
-        return {ExitCode::SystemError, ExitCause::InvalidArgument};
+        return false;
     }
 
     QString path = localSyncPath + "/" + relativePath;
@@ -1011,18 +1019,18 @@ ExitInfo LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath,
     if (fileStat->st_mode == S_IFDIR) {
         SyncPath dirPath{QStr2Path(path)};
         IoError ioError = IoError::Success;
-        if (IoHelper::createDirectory(dirPath, ioError); ioError != IoError::Success) {
+        if (!IoHelper::createDirectory(dirPath, ioError)) {
             LOGW_WARN(_logger,
-                          L"Failed to create directory: "
-                              << Utility::formatIoError(dirPath, ioError));
-            switch(ioError){
-                case IoError::AccessDenied:
-                    return {ExitCode::SystemError, ExitCause::FileAccessError};
-                case IoError::DirectoryExists:
-                    return {ExitCode::SystemError, ExitCause::FileAlreadyExist};
-                default:
-                    return ExitCode::SystemError;
-            }
+                      L"Call to IoHelper::createDirectory failed: "
+                          << Utility::formatSyncPath(dirPath).c_str());
+            return false;
+        }
+
+        if (ioError != IoError::Success) {
+            LOGW_WARN(_logger,
+                      L"Failed to create directory: "
+                          << Utility::formatIoError(dirPath, ioError).c_str());
+            return false;
         }
     } else if (fileStat->st_mode == S_IFREG) {
         std::string stdPath = QStr2Str(path);
@@ -1031,24 +1039,21 @@ ExitInfo LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath,
 
         int fd = open(stdPath.c_str(), flags, mode);
         if (fd == -1) {
-            LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatPath(path) << L" errno=" << errno);
-            if(errno == EACCES){
-                return {ExitCode::SystemError, ExitCause::FileAccessError};
-            }
-            return ExitCode::SystemError;
+            LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatPath(path).c_str() << L" errno=" << errno);
+            return false;
         }
 
         if (fileStat->st_mode == S_IFREG) {
             if (ftruncate(fd, fileStat->st_size) == -1) {
-                LOGW_WARN(_logger, L"Call to ftruncate failed - " << Utility::formatPath(path) << L" errno=" << errno);
+                LOGW_WARN(_logger, L"Call to ftruncate failed - " << Utility::formatPath(path).c_str() << L" errno=" << errno);
                 close(fd);
-                return ExitCode::SystemError;
+                return false;
             }
         }
 
         if (close(fd) == -1) {
-            LOGW_WARN(_logger, L"Call to close failed - " << Utility::formatPath(path) << L" errno=" << errno);
-            return ExitCode::SystemError;
+            LOGW_WARN(_logger, L"Call to close failed - " << Utility::formatPath(path).c_str() << L" errno=" << errno);
+            return false;
         }
     }
 
@@ -1057,12 +1062,12 @@ ExitInfo LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath,
     if (!setXAttrValue(path, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
         const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
         LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed - " << Utility::formatPath(path) << L" Error: " << ioErrorMsg);
-        return ExitCode::SystemError;
+                  L"Call to setXAttrValue failed - " << Utility::formatPath(path).c_str() << L" Error: " << ioErrorMsg.c_str());
+        return false;
     }
 
     if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
-        return ExitCode::SystemError;
+        return false;
     }
 
     // Set pin state
@@ -1070,11 +1075,11 @@ ExitInfo LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath,
         const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
         LOGW_WARN(_logger,
                   L"Call to setXAttrValue failed - " << Utility::formatPath(path).c_str() << L" Error: " << ioErrorMsg.c_str());
-        return ExitCode::SystemError;
+        return false;
     }
 
     if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
-        return ExitCode::SystemError;
+        return false;
     }
 
     // Set file dates
@@ -1082,12 +1087,12 @@ ExitInfo LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath,
     if (!Utility::setFileDates(QStr2Path(path), std::make_optional<KDC::SyncTime>(fileStat->st_birthtimespec.tv_sec),
                                std::make_optional<KDC::SyncTime>(fileStat->st_mtimespec.tv_sec), false, exists)) {
         LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - " << Utility::formatPath(path).c_str());
-        return ExitCode::SystemError;
+        return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item doesn't exist - " << Utility::formatPath(path).c_str());
-        return ExitCode::SystemError;
+        return false;
     }
 
     // Update parent directory status if needed
@@ -1099,14 +1104,14 @@ ExitInfo LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath,
     int progress = 0;
 
     if (!vfsGetStatus(path, isPlaceholder, isHydrated, isSyncing, progress)) {
-        return ExitCode::SystemError;
+        return false;
     }
 
     if (isHydrated) {
         return vfsProcessDirStatus(info.dir().path(), localSyncPath);
     }
 
-    return ExitCode::Ok;
+    return true;
 }
 
 bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
@@ -1238,7 +1243,7 @@ bool LiteSyncExtConnector::vfsSetThumbnail(const QString &absoluteFilePath, cons
     return true;
 }
 
-ExitInfo LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                                         int &progress, log4cplus::Logger &logger) noexcept {
     isPlaceholder = false;
     isHydrated = false;
@@ -1251,11 +1256,13 @@ ExitInfo LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, boo
 
     // Read status
     QString value;
-    if (const ExitInfo exitInfo = getXAttrValue(absoluteFilePath, [EXT_ATTR_STATUS UTF8String], value); !exitInfo) {
-        LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatPath(absoluteFilePath) << " :" << exitInfo);
-        return exitInfo;
+    IoError ioError = IoError::Success;
+    if (!getXAttrValue(absoluteFilePath, [EXT_ATTR_STATUS UTF8String], value, ioError) && !isExpectedError(ioError)) {
+        LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatIoError(QStr2Str(absoluteFilePath), ioError).c_str());
+        return false;
     }
-    if (value.isEmpty()) return ExitCode::Ok;
+
+    if (value.isEmpty()) return true;
 
     isPlaceholder = true;
     isHydrated = (value == EXT_ATTR_STATUS_OFFLINE);
@@ -1266,7 +1273,7 @@ ExitInfo LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, boo
         progress = value.toInt();
     }
 
-    return ExitCode::Ok;
+    return true;
 }
 
 bool LiteSyncExtConnector::vfsSetAppExcludeList(const QString &appList) {
@@ -1285,13 +1292,13 @@ bool LiteSyncExtConnector::vfsGetFetchingAppList(QHash<QString, QString> &appTab
     return _private->getFetchingAppList(appTable);
 }
 
-ExitInfo LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error) {
+bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error) {
     FilePermissionHolder permHolder(absoluteFilePath);
 
     if (!fileStat) {
-        LOG_WARN(_logger, "Invalid argument");
+        LOG_WARN(_logger, "Bad parameters");
         *error = QObject::tr("Bad parameters");
-        return {ExitCode::FatalError, ExitCause::InvalidArgument};
+        return false;
     }
 
     std::string stdPath = absoluteFilePath.toStdString();
@@ -1304,7 +1311,7 @@ ExitInfo LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath
     vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress);
 
     if (!isPlaceholder || isHydrated || isSyncing) {
-        return ExitCode::Ok;
+        return true;
     }
 
     // Create sparse file with rights rw-r--r--
@@ -1317,7 +1324,7 @@ ExitInfo LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath
         if (fd == -1) {
             LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
             *error = QObject::tr("Call to open failed - path=%1").arg(absoluteFilePath);
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+            return false;
         }
     }
 
@@ -1325,13 +1332,13 @@ ExitInfo LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath
         LOGW_WARN(_logger,
                   L"Call to ftruncate failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
         *error = QObject::tr("Call to ftruncate failed - path=%1").arg(absoluteFilePath);
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return false;
     }
 
     if (close(fd) == -1) {
         LOGW_WARN(_logger, L"Call to close failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
         *error = QObject::tr("Call to close failed - path=%1").arg(absoluteFilePath);
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return false;
     }
 
     // Set file dates
@@ -1339,15 +1346,15 @@ ExitInfo LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath
     if (!Utility::setFileDates(QStr2Path(absoluteFilePath), fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec,
                                false, exists)) {
         LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - " << Utility::formatPath(absoluteFilePath).c_str());
-        return {ExitCode::SystemError};
+        return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item doesn't exist - " << Utility::formatPath(absoluteFilePath).c_str());
-        return {ExitCode::SystemError, ExitCause::NotFound};
+        return false;
     }
 
-    return ExitCode::Ok;
+    return true;
 }
 
 bool LiteSyncExtConnector::vfsIsExcluded(const QString &path) {
@@ -1439,26 +1446,26 @@ bool LiteSyncExtConnector::vfsCleanUpStatuses(const QString &localSyncPath) {
     return true;
 }
 
-ExitInfo LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QString &localSyncPath) {
+bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QString &localSyncPath) {
     bool isPlaceholder = false;
     bool isSyncing = false;
     bool isHydrated = false;
     int progress = 0;
     if (!vfsGetStatus(path, isPlaceholder, isHydrated, isSyncing, progress)) {
-        return ExitCode::SystemError;
+        return false;
     }
 
     if (!isPlaceholder) {
-        return ExitCode::Ok;
+        return true;
     }
 
     QString pinState;
     if (!vfsGetPinState(path, pinState)) {
-        return ExitCode::SystemError;
+        return false;
     }
 
     if (pinState == VFS_PIN_STATE_EXCLUDED) {
-        return ExitCode::Ok;
+        return true;
     }
 
     QDir dir(path);
@@ -1495,10 +1502,10 @@ ExitInfo LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QS
     }
 
     if (!vfsSetStatus(path, localSyncPath, hasASyncingChild, 100, !hasADehydratedChild)) {
-        return ExitCode::SystemError;
+        return false;
     }
 
-    return ExitCode::Ok;
+    return true;
 }
 
 void LiteSyncExtConnector::vfsClearFileAttributes(const QString &path) {

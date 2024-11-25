@@ -48,7 +48,7 @@ class LiteSyncExtConnector {
         LiteSyncExtConnector(LiteSyncExtConnector &other) = delete;
         void operator=(const LiteSyncExtConnector &) = delete;
         static LiteSyncExtConnector *instance(log4cplus::Logger logger, ExecuteCommand executeCommand);
-        static ExitInfo vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+        static bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                                  int &progress, log4cplus::Logger &logger) noexcept;
 
         ~LiteSyncExtConnector();
@@ -62,8 +62,8 @@ class LiteSyncExtConnector {
         bool vfsHydratePlaceHolder(const QString &filePath);
         bool vfsSetPinState(const QString &path, const QString &localSyncPath, const QString &pinState);
         bool vfsGetPinState(const QString &path, QString &pinState);
-        ExitInfo vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated);
-        ExitInfo vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath, const struct stat *fileStat);
+        bool vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated);
+        bool vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath, const struct stat *fileStat);
         bool vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
                                   unsigned long long completed, bool &canceled, bool &finished);
         bool vfsCancelHydrate(const QString &filePath);
@@ -71,15 +71,15 @@ class LiteSyncExtConnector {
         bool vfsSetStatus(const QString &path, const QString &localSyncPath, bool isSyncing, int progress,
                           bool isHydrated = false);
         bool vfsCleanUpStatuses(const QString &localSyncPath);
-        ExitInfo vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+        bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                           int &progress) noexcept {
             return vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress, _logger);
         };
         bool vfsSetAppExcludeList(const QString &appList);
         bool vfsGetFetchingAppList(QHash<QString, QString> &appTable);
-        ExitInfo vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error);
+        bool vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error);
         bool vfsIsExcluded(const QString &path);
-        ExitInfo vfsProcessDirStatus(const QString &path, const QString &localSyncPath);
+        bool vfsProcessDirStatus(const QString &path, const QString &localSyncPath);
         void vfsClearFileAttributes(const QString &path);
         bool checkFilesAttributes(const QString &path, const QString &localSyncPath, QStringList &filesToFix);
 
