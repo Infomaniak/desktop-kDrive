@@ -347,7 +347,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const QString &path) {
     return ExitCode::Ok;
 }
 
-ExitCode VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item) {
+ExitInfo VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item) {
     if (extendedLog()) {
         LOGW_DEBUG(logger(), L"convertToPlaceholder - " << Utility::formatPath(path).c_str());
     }

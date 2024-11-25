@@ -65,7 +65,7 @@ class VfsMac : public Vfs {
 
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
         ExitInfo dehydratePlaceholder(const QString &path) override;
-        ExitCode convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
+        ExitInfo convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
         bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
         void cancelHydrate(const QString &filePath) override;
