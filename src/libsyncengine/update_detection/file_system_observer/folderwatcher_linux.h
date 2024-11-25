@@ -47,11 +47,15 @@ class FolderWatcher_linux : public FolderWatcher {
         bool addFolderRecursive(const SyncPath &path);
         void removeFoldersBelow(const SyncPath &dirPath);
 
-        SyncPath getSyncPath(const inotify_event *event) const;
+
         void changeDetected(const SyncPath &path, OperationType opType);
 
         std::unordered_map<int, SyncPath> _watchToPath;
         std::map<std::string, int> _pathToWatch;
+
+        static SyncPath makeSyncPath(const SyncPath &path, const char *name);
+
+        friend class TestFolderWatcherLinux;
 };
 
 } // namespace KDC

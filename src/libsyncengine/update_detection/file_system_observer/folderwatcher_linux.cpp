@@ -39,10 +39,11 @@ FolderWatcher_linux::FolderWatcher_linux(LocalFileSystemObserverWorker *parent, 
 
 FolderWatcher_linux::~FolderWatcher_linux() {}
 
-SyncPath FolderWatcher_linux::getSyncPath(const inotify_event *event) const {
-    const auto syncName = SyncName(event->name); // `syncName` can be empty if the event is a permission change.
+SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, const char *fileName) {
+    const auto syncName = SyncName(fileName); // `syncName` is empty if for instance the event is a permission change on a watched
+                                              // directory (check inotify man page).
 
-    return syncName.empty() ? _watchToPath.at(event->wd) : _watchToPath.at(event->wd) / syncName;
+    return syncName.empty() ? watchedFolderPath : watchedFolderPath / syncName;
 }
 
 void FolderWatcher_linux::startWatching() {
@@ -95,7 +96,7 @@ void FolderWatcher_linux::startWatching() {
 
                 if (!skip && !_stop) {
                     if (_watchToPath.contains(event->wd)) {
-                        const SyncPath path = getSyncPath(event);
+                        const SyncPath path = makeSyncPath(_watchToPath[event->wd], event->name);
                         if (ParametersCache::isExtendedLogEnabled()) {
                             LOGW_DEBUG(_logger,
                                        L"Operation " << opType << L" detected on item with " << Utility::formatSyncPath(path));
@@ -103,7 +104,7 @@ void FolderWatcher_linux::startWatching() {
 
                         changeDetected(path, opType);
                         bool isDirectory = false;
-                        IoError ioError = IoError::Success;
+                        auto ioError = IoError::Success;
                         const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
                         if (!isDirSuccess) {
                             LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: "
