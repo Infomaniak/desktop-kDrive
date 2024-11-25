@@ -72,6 +72,10 @@ class TestIo : public CppUnit::TestFixture {
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
         CPPUNIT_TEST(testAccesDeniedOnLockedFiles);
+        CPPUNIT_TEST(testOpenFileSuccess);
+        CPPUNIT_TEST(testOpenFileAccessDenied);
+        CPPUNIT_TEST(testOpenFileNonExisting);
+        CPPUNIT_TEST(testOpenLockedFileRemovedBeforeTimedOut);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -128,6 +132,11 @@ class TestIo : public CppUnit::TestFixture {
         void testCheckDirectoryIteratorUnexpectedDelete();
         void testCheckDirectoryPermissionLost();
         void testAccesDeniedOnLockedFiles();
+        void testOpenFileSuccess();
+        void testOpenFileAccessDenied();
+        void testOpenFileNonExisting();
+        void testOpenLockedFileRemovedBeforeTimedOut();
+
     private:
         IoHelperTests *_testObj;
         const SyncPath _localTestDirPath;
