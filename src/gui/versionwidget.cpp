@@ -72,6 +72,74 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     connect(_joinBetaButton, &QPushButton::clicked, this, &VersionWidget::onJoinBetaButtonClicked);
 }
 
+void VersionWidget::refresh(const bool isStaff) {
+    _isStaff = isStaff;
+    refresh();
+}
+
+void VersionWidget::showAboutDialog() {
+    EnableStateHolder _(this);
+    AboutDialog dialog(this);
+    dialog.execAndMoveToCenter(GuiUtility::getTopLevelWidget(this));
+}
+
+void VersionWidget::showReleaseNotes() const {
+    QString os;
+#if defined(__APPLE__)
+    os = "macos";
+#elif defined(_WIN32)
+    os = "win";
+#else
+    os = "linux";
+#endif
+
+    VersionInfo versionInfo;
+    GuiRequests::versionInfo(versionInfo);
+
+    const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
+    QString languageCode = CommonUtility::languageCode(appLanguage);
+    if (languageCode.isEmpty()) languageCode = "en";
+    QDesktopServices::openUrl(
+            QUrl(QString("%1-%2-%3-%4.html")
+                         .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), os, languageCode.left(2))));
+}
+
+void VersionWidget::showDownloadPage() const {
+    QDesktopServices::openUrl(QUrl(APPLICATION_DOWNLOAD_URL));
+}
+
+void VersionWidget::onUpdateStateChanged(const UpdateState state) const {
+    refresh(state);
+}
+
+void VersionWidget::onLinkActivated(const QString &link) {
+    if (link == versionLink)
+        showAboutDialog();
+    else if (link == releaseNoteLink)
+        showReleaseNotes();
+    else if (link == downloadPageLink)
+        showDownloadPage();
+}
+
+void VersionWidget::onUpdateButtonClicked() {
+#if defined(__APPLE__)
+    GuiRequests::startInstaller();
+#else
+    VersionInfo versionInfo;
+    GuiRequests::versionInfo(versionInfo);
+    emit showUpdateDialog(versionInfo);
+#endif
+}
+
+void VersionWidget::onJoinBetaButtonClicked() {
+    if (auto dialog = BetaProgramDialog(
+                ParametersCache::instance()->parametersInfo().distributionChannel() != DistributionChannel::Prod, _isStaff, this);
+        dialog.exec() == QDialog::Accepted) {
+        saveDistributionChannel(dialog.selectedDistributionChannel());
+        refresh();
+    }
+}
+
 void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const {
     // Re-translate
     const QString releaseNoteLinkText =
@@ -148,75 +216,10 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
         _joinBetaButton->setText(tr("Join"));
         _betaTag->setVisible(false);
     } else {
-        bool isStaff = true; // TODO : get this valule from somewhere
-        _joinBetaButton->setText(isStaff ? tr("Modify") : tr("Quit"));
+        _joinBetaButton->setText(_isStaff ? tr("Modify") : tr("Quit"));
         _betaTag->setVisible(true);
         _betaTag->setBackgroundColor(channel == DistributionChannel::Beta ? betaTagColor : internalTagColor);
         _betaTag->setText(channel == DistributionChannel::Beta ? "BETA" : "INTERNAL");
-    }
-}
-
-void VersionWidget::showAboutDialog() {
-    EnableStateHolder _(this);
-    AboutDialog dialog(this);
-    dialog.execAndMoveToCenter(GuiUtility::getTopLevelWidget(this));
-}
-
-void VersionWidget::showReleaseNotes() const {
-    QString os;
-#if defined(__APPLE__)
-    os = "macos";
-#elif defined(_WIN32)
-    os = "win";
-#else
-    os = "linux";
-#endif
-
-    VersionInfo versionInfo;
-    GuiRequests::versionInfo(versionInfo);
-
-    const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
-    QString languageCode = CommonUtility::languageCode(appLanguage);
-    if (languageCode.isEmpty()) languageCode = "en";
-    QDesktopServices::openUrl(
-            QUrl(QString("%1-%2-%3-%4.html")
-                         .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), os, languageCode.left(2))));
-}
-
-void VersionWidget::showDownloadPage() const {
-    QDesktopServices::openUrl(QUrl(APPLICATION_DOWNLOAD_URL));
-}
-
-void VersionWidget::onUpdateStateChanged(const UpdateState state) const {
-    refresh(state);
-}
-
-void VersionWidget::onLinkActivated(const QString &link) {
-    if (link == versionLink)
-        showAboutDialog();
-    else if (link == releaseNoteLink)
-        showReleaseNotes();
-    else if (link == downloadPageLink)
-        showDownloadPage();
-}
-
-void VersionWidget::onUpdateButtonClicked() {
-#if defined(__APPLE__)
-    GuiRequests::startInstaller();
-#else
-    VersionInfo versionInfo;
-    GuiRequests::versionInfo(versionInfo);
-    emit showUpdateDialog(versionInfo);
-#endif
-}
-
-void VersionWidget::onJoinBetaButtonClicked() {
-    bool isStaff = true; // TODO : get this value from somewhere
-    if (auto dialog = BetaProgramDialog(
-                ParametersCache::instance()->parametersInfo().distributionChannel() != DistributionChannel::Prod, isStaff, this);
-        dialog.exec() == QDialog::Accepted) {
-        saveDistributionChannel(dialog.selectedDistributionChannel());
-        refresh();
     }
 }
 

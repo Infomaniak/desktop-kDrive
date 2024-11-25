@@ -95,6 +95,8 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
 
         void clearUndecidedLists();
 
+        bool isStaff();
+
     private slots:
         void onFolderConfirmationSwitchClicked(bool checked = false);
         void onFolderConfirmationAmountTextEdited(const QString &text);

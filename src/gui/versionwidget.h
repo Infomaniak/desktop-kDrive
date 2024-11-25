@@ -44,7 +44,7 @@ class VersionWidget final : public QWidget {
 
     public:
         explicit VersionWidget(QWidget *parent = nullptr);
-        void refresh(UpdateState state = UpdateState::Unknown) const;
+        void refresh(bool isStaff);
 
         void showAboutDialog();
         void showReleaseNotes() const;
@@ -62,9 +62,12 @@ class VersionWidget final : public QWidget {
         void onJoinBetaButtonClicked();
 
     private:
+        void refresh(UpdateState state = UpdateState::Unknown) const;
         void initVersionInfoBloc(PreferencesBlocWidget *prefBloc);
         void initBetaBloc(PreferencesBlocWidget *prefBloc);
         void saveDistributionChannel(DistributionChannel channel) const;
+
+        bool _isStaff{false};
 
         QLabel *_versionLabel{nullptr};
 

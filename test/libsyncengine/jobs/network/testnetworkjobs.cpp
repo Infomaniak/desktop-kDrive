@@ -296,8 +296,7 @@ void TestNetworkJobs::testGetAvatar() {
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     CPPUNIT_ASSERT(job.jsonRes());
-    Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
-    std::string avatarUrl = data->get(avatarKey);
+    const std::string avatarUrl = job.avatarUrl();
 
     GetAvatarJob avatarJob(avatarUrl);
     exitCode = avatarJob.runSynchronously();

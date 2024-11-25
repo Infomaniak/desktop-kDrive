@@ -787,27 +787,29 @@ ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
     }
 
     // Load User info
-    User userUpdated(user);
-    bool updated;
-    ExitCode exitCode = loadUserInfo(userUpdated, updated);
-    if (exitCode != ExitCode::Ok) {
+    User updatedUser(user);
+    bool updated = false;
+    bool isStaff = false;
+    if (ExitCode exitCode = loadUserInfo(updatedUser, updated, isStaff); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
         return exitCode;
     }
 
+    userInfo.setIsStaff(isStaff);
+
     if (updated) {
-        bool found;
-        if (!ParmsDb::instance()->updateUser(userUpdated, found)) {
+        bool found = false;
+        if (!ParmsDb::instance()->updateUser(updatedUser, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
             return ExitCode::DbError;
         }
         if (!found) {
-            LOG_WARN(Log::instance()->getLogger(), "User not found for userDbId=" << userUpdated.dbId());
+            LOG_WARN(Log::instance()->getLogger(), "User not found for userDbId=" << updatedUser.dbId());
             return ExitCode::DataError;
         }
     }
 
-    userToUserInfo(userUpdated, userInfo);
+    userToUserInfo(updatedUser, userInfo);
 
     return ExitCode::Ok;
 }
@@ -825,13 +827,13 @@ ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
 
     // Load User info
     User userUpdated(user);
-    bool updated;
-    ExitCode exitCode = loadUserInfo(userUpdated, updated);
-    if (exitCode != ExitCode::Ok) {
+    bool updated = false;
+    bool isStaff = false;
+    if (const ExitCode exitCode = loadUserInfo(userUpdated, updated, isStaff); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
         return exitCode;
     }
-
+    userInfo.setIsStaff(isStaff);
     userToUserInfo(userUpdated, userInfo);
 
     return ExitCode::Ok;
@@ -1672,7 +1674,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
+ExitCode ServerRequests::loadUserInfo(User &user, bool &updated, bool &isStaff) {
     updated = false;
 
     // Get user data
@@ -1680,7 +1682,7 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     try {
         job = std::make_shared<GetInfoUserJob>(user.dbId());
     } catch (const std::exception &e) {
-        std::string what = e.what();
+        const std::string what = e.what();
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " error=" << what.c_str());
         if (what == invalidToken) {
@@ -1697,8 +1699,8 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
         return exitCode;
     }
 
-    Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
-    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN ||
+    if (const Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
+        httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN ||
         httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to get user info for userId=" << user.userId());
         return ExitCode::DataError;
@@ -1707,47 +1709,31 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
         return ExitCode::NetworkError;
     }
 
-    Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey);
-    if (dataObj && dataObj->size() != 0) {
-        std::string name;
-        if (!JsonParserUtility::extractValue(dataObj, displayNameKey, name)) {
-            return ExitCode::BackError;
-        }
-        if (user.name() != name) {
-            user.setName(name);
-            updated = true;
-        }
-
-        std::string email;
-        if (!JsonParserUtility::extractValue(dataObj, emailKey, email)) {
-            return ExitCode::BackError;
-        }
-        if (user.email() != email) {
-            user.setEmail(email);
-            updated = true;
-        }
-
-        std::string avatarUrl;
-        if (!JsonParserUtility::extractValue(dataObj, avatarKey, avatarUrl)) {
-            return ExitCode::BackError;
-        }
-        if (user.avatarUrl() != avatarUrl) {
-            if (avatarUrl.empty()) {
-                user.setAvatar(nullptr);
-                user.setAvatarUrl(std::string());
-            } else if (user.avatarUrl() != avatarUrl) {
-                // get avatarData
-                user.setAvatarUrl(avatarUrl);
-                exitCode = loadUserAvatar(user);
-                if (exitCode != ExitCode::Ok) {
-                    return exitCode;
-                }
-            }
-            updated = true;
-        }
+    if (user.name() != job->name()) {
+        user.setName(job->name());
+        updated = true;
     }
 
-    return ExitCode::Ok;
+    if (user.email() != job->email()) {
+        user.setEmail(job->email());
+        updated = true;
+    }
+
+    if (user.avatarUrl() != job->avatarUrl()) {
+        if (job->avatarUrl().empty()) {
+            user.setAvatar(nullptr);
+            user.setAvatarUrl(std::string());
+        } else if (user.avatarUrl() != job->avatarUrl()) {
+            // get avatarData
+            user.setAvatarUrl(job->avatarUrl());
+            exitCode = loadUserAvatar(user);
+        }
+        updated = true;
+    }
+
+    isStaff = job->isStaff();
+
+    return exitCode;
 }
 
 ExitCode ServerRequests::loadUserAvatar(User &user) {
