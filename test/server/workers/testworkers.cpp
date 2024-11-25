@@ -297,8 +297,7 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // File already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::InvalidSnapshot, exitInfo.cause());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist), exitInfo);
 #endif
     }
 }
@@ -345,6 +344,7 @@ void TestWorkers::testConvertToPlaceholder() {
         syncItem.setPath(relativeFilePath);
         syncItem.setType(NodeType::File);
         syncItem.setDirection(SyncDirection::Down);
+        syncItem.setRemoteNodeId("1");
         CPPUNIT_ASSERT(_syncPal->initProgress(syncItem));
 
 #if defined(__APPLE__) || defined(_WIN32)
