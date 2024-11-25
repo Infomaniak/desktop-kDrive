@@ -64,13 +64,13 @@ ExitInfo TestWorkers::convertToPlaceholder(int syncDbId, const SyncPath &relativ
     return _vfsPtr->convertToPlaceholder(Path2QStr(relativeLocalPath), item);
 }
 
-bool TestWorkers::setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState) {
+ExitInfo TestWorkers::setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState) {
     (void) syncDbId;
 
-    if (_vfsPtr && !_vfsPtr->setPinState(Path2QStr(relativeLocalPath), pinState)) {
-        return false;
+    if (_vfsPtr) {
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
-    return true;
+    return _vfsPtr->setPinState(Path2QStr(relativeLocalPath), pinState);
 }
 
 void TestWorkers::setUp() {
@@ -271,7 +271,8 @@ void TestWorkers::testCreatePlaceholder() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
 #else
-        // Strangely (bug?), the Windows api is able to create a placeholder in a folder for which the user does not have rights
+        // Strangely (bug?), the Windows api is able to create a placeholder in a folder for which the user does not have
+        // rights
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, exitInfo.cause());
 

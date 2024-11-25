@@ -158,7 +158,7 @@ class Vfs : public QObject {
          *
          * fileRelativePath is relative to the sync folder. Can be "" for root folder.
          */
-        virtual bool setPinState(const QString &fileRelativePath, KDC::PinState state) = 0;
+        virtual ExitInfo setPinState(const QString &fileRelativePath, KDC::PinState state) = 0;
 
         /** Returns the pin state of an item at a path.
          *
@@ -170,7 +170,7 @@ class Vfs : public QObject {
          * Returns none on retrieval error.
          */
         virtual KDC::PinState pinState(const QString &fileRelativePath) = 0;
-        virtual bool status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) = 0;
+        virtual ExitInfo status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) = 0;
 
         virtual bool setThumbnail(const QString &filePath, const QPixmap &pixmap) = 0;
 
@@ -264,9 +264,9 @@ class VfsOff : public Vfs {
 
         bool isDehydratedPlaceholder(const QString &, bool) override { return false; }
 
-        bool setPinState(const QString &, KDC::PinState) override { return true; }
+        ExitInfo setPinState(const QString &, KDC::PinState) override { return ExitCode::Ok; }
         KDC::PinState pinState(const QString &) override { return KDC::PinState::AlwaysLocal; }
-        bool status(const QString &, bool &, bool &, bool &, int &) override { return true; }
+        ExitInfo status(const QString &, bool &, bool &, bool &, int &) override { return ExitCode::Ok; }
         virtual bool setThumbnail(const QString &, const QPixmap &) override { return true; }
         virtual bool setAppExcludeList() override { return true; }
         virtual bool getFetchingAppList(QHash<QString, QString> &) override { return true; }

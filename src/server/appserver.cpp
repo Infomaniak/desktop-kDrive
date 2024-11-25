@@ -1916,18 +1916,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> syncDbId;
             paramsStream >> state;
 
-            if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-                LOG_WARN(_logger, "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-                resultStream << ExitCode::DataError;
+            if (const ExitInfo exitInfo = vfsSetPinState(syncDbId, "", state); !exitInfo) {
+                LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId);
+                resultStream << exitInfo.code();
                 break;
             }
-
-            if (!_vfsMap[syncDbId]->setPinState(QString(), state)) {
-                LOG_WARN(_logger, "Error in Vfs::setPinState for root directory");
-                resultStream << ExitCode::SystemError;
-                break;
-            }
-
             resultStream << ExitCode::Ok;
             break;
         }
@@ -2327,27 +2320,33 @@ bool AppServer::vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState
     return true;
 }
 
-bool AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+ExitInfo AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState) {
+    auto vfsMapIt = _vfsMap.find(syncDbId);
+    if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
     SyncPath relativePath = CommonUtility::relativePath(_syncPalMap[syncDbId]->localPath(), itemPath);
-    if (!_vfsMap[syncDbId]->setPinState(SyncName2QStr(relativePath.native()), pinState)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in Vfs::setPinState for syncDbId=" << syncDbId << L" and path=" << Path2WStr(itemPath).c_str());
-        return false;
+    if (ExitInfo exitInfo = vfsMapIt->second->setPinState(SyncName2QStr(relativePath.native()), pinState); !exitInfo) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::setPinState for syncDbId="
+                                                        << syncDbId << L" and path=" << Path2WStr(itemPath) << L": " << exitInfo);
+        return exitInfo;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool AppServer::vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+ExitInfo AppServer::vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                           int &progress) {
+    auto vfsMapIt = _vfsMap.find(syncDbId);
     if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+    }
+    if (!vfsMapIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed}; 
     }
 
     return _vfsMap[syncDbId]->status(SyncName2QStr(itemPath.native()), isPlaceholder, isHydrated, isSyncing, progress);

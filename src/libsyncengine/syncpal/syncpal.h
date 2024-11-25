@@ -118,10 +118,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
         inline void setVfsExcludeCallback(bool (*vfsExclude)(int, const SyncPath &)) { _vfsExclude = vfsExclude; }
         inline void setVfsPinStateCallback(bool (*vfsPinState)(int, const SyncPath &, PinState &)) { _vfsPinState = vfsPinState; }
-        inline void setVfsSetPinStateCallback(bool (*vfsSetPinState)(int, const SyncPath &, PinState)) {
+        inline void setVfsSetPinStateCallback(ExitInfo (*vfsSetPinState)(int, const SyncPath &, PinState)) {
             _vfsSetPinState = vfsSetPinState;
         }
-        inline void setVfsStatusCallback(bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &)) {
+        inline void setVfsStatusCallback(ExitInfo (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &)) {
             _vfsStatus = vfsStatus;
         }
         inline void setVfsCreatePlaceholderCallback(ExitInfo (*vfsCreatePlaceholder)(int, const SyncPath &,
@@ -215,8 +215,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool vfsIsExcluded(const SyncPath &itemPath, bool &isExcluded);
         bool vfsExclude(const SyncPath &itemPath);
         bool vfsPinState(const SyncPath &itemPath, PinState &pinState);
-        bool vfsSetPinState(const SyncPath &itemPath, PinState pinState);
-        bool vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress);
+        ExitInfo vfsSetPinState(const SyncPath &itemPath, PinState pinState);
+        ExitInfo vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress);
         ExitInfo vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item);
         ExitInfo vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item);
         ExitInfo vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
@@ -289,8 +289,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool (*_vfsIsExcluded)(int syncDbId, const SyncPath &itemPath, bool &isExcluded){nullptr};
         bool (*_vfsExclude)(int syncDbId, const SyncPath &itemPath){nullptr};
         bool (*_vfsPinState)(int syncDbId, const SyncPath &itemPath, PinState &pinState){nullptr};
-        bool (*_vfsSetPinState)(int syncDbId, const SyncPath &itemPath, PinState pinState){nullptr};
-        bool (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+        ExitInfo (*_vfsSetPinState)(int syncDbId, const SyncPath &itemPath, PinState pinState){nullptr};
+        ExitInfo (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                            int &progress){nullptr};
         ExitInfo (*_vfsCreatePlaceholder)(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item){nullptr};
         ExitInfo (*_vfsConvertToPlaceholder)(int syncDbId, const SyncPath &path, const SyncFileItem &item){nullptr};

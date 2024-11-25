@@ -31,7 +31,7 @@
 namespace KDC {
 
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
-                                         bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
+                                         ExitInfo (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
                                          bool (*vfsClearFileAttributes)(int, const SyncPath &)) :
     _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
     _vfsClearFileAttributes(vfsClearFileAttributes) {}
@@ -92,10 +92,11 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             bool isSyncing = false;
             int progress = 0;
             assert(_vfsStatus);
-            if (!_vfsStatus(_syncDbId, dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress)) {
+            if (ExitInfo exitInfo = _vfsStatus(_syncDbId, dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress);
+                !exitInfo) {
                 LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(dirIt->path()).c_str());
-                _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::Unknown;
+                _exitCode = exitInfo.code();
+                _exitCause = exitInfo.cause();
                 return false;
             }
 

@@ -36,8 +36,8 @@ MoveJob::~MoveJob() {
         bool isHydrated = false;
         bool isSyncing = false;
         int progress = 0;
-        if (!_vfsStatus(_destFilepath, isPlaceholder, isHydrated, isSyncing, progress)) {
-            LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_destFilepath).c_str());
+        if (ExitInfo exitInfo = _vfsStatus(_destFilepath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_destFilepath) << L" : " << exitInfo);
         }
 
         if (ExitInfo exitInfo = _vfsForceStatus(_destFilepath, false, 100,

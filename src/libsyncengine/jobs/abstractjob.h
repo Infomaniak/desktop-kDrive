@@ -76,13 +76,13 @@ class AbstractJob : public Poco::Runnable {
                 std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> callback) noexcept {
             _vfsUpdateFetchStatus = callback;
         }
-        inline void setVfsSetPinStateCallback(std::function<bool(const SyncPath &, PinState)> callback) noexcept {
+        inline void setVfsSetPinStateCallback(std::function<ExitInfo(const SyncPath &, PinState)> callback) noexcept {
             _vfsSetPinState = callback;
         }
         inline void setVfsForceStatusCallback(std::function<ExitInfo(const SyncPath &, bool, int, bool)> callback) noexcept {
             _vfsForceStatus = callback;
         }
-        inline void setVfsStatusCallback(std::function<bool(const SyncPath &, bool &, bool &, bool &, int &)> callback) noexcept {
+        inline void setVfsStatusCallback(std::function<ExitInfo(const SyncPath &, bool &, bool &, bool &, int &)> callback) noexcept {
             _vfsStatus = callback;
         }
         inline void setVfsUpdateMetadataCallback(std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &,
@@ -109,9 +109,9 @@ class AbstractJob : public Poco::Runnable {
 
         std::function<ExitInfo(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled, bool &finished)>
                 _vfsUpdateFetchStatus = nullptr;
-        std::function<bool(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState = nullptr;
+        std::function<ExitInfo(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState = nullptr;
         std::function<ExitInfo(const SyncPath &path, bool isSyncing, int progress, bool isHydrated)> _vfsForceStatus = nullptr;
-        std::function<bool(const SyncPath &path, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress)>
+        std::function<ExitInfo(const SyncPath &path, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress)>
                 _vfsStatus = nullptr;
         std::function<ExitInfo(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
                            const NodeId &id, std::string &error)>

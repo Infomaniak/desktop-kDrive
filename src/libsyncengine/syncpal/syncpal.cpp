@@ -381,17 +381,17 @@ bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
     return _vfsPinState(syncDbId(), itemPath, pinState);
 }
 
-bool SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
+ExitInfo SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
     if (!_vfsSetPinState) {
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
     return _vfsSetPinState(syncDbId(), itemPath, pinState);
 }
 
-bool SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
+ExitInfo SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
     if (!_vfsStatus) {
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
     return _vfsStatus(syncDbId(), itemPath, isPlaceholder, isHydrated, isSyncing, progress);
@@ -423,7 +423,7 @@ ExitInfo SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creati
 }
 
 ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
-                                   bool &finished) {
+                                       bool &finished) {
     if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger,
                            L"vfsUpdateFetchStatus : " << Utility::formatSyncPath(path).c_str() << L" received=" << received);

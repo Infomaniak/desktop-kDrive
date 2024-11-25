@@ -172,7 +172,7 @@ class SocketApi : public QObject {
         void processFileList(const QStringList &inFileList, std::list<KDC::SyncPath> &outFileList);
         bool syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &status, bool &isPlaceholder, bool &isHydrated,
                             int &progress);
-        bool setPinState(const FileData &fileData, KDC::PinState pinState);
+        ExitInfo setPinState(const FileData &fileData, KDC::PinState pinState);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
         bool addDownloadJob(const FileData &fileData);
         bool cancelDownloadJobs(int syncDbId, const QStringList &fileList);
