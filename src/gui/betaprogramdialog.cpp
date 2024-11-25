@@ -107,7 +107,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
     // Acknowlegment
     _acknowlegmentFrame = new QFrame(this);
     _acknowlegmentFrame->setStyleSheet("QFrame {border-radius: 8px; background-color: #F4F6FC;}");
-    _acknowlegmentFrame->setVisible(false);
+    _acknowlegmentFrame->setVisible(!_isStaff);
     layout->addWidget(_acknowlegmentFrame);
 
     auto *acknowledmentLayout = new QGridLayout(this);
