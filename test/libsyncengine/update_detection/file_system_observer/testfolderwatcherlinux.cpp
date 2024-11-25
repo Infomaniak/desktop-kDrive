@@ -23,7 +23,7 @@
 
 namespace KDC {
 
-void TestFolderWatcherLinux::testGetSyncName() {
+void TestFolderWatcherLinux::testMakeSyncPath() {
     CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "file.txt").filename().empty());
     CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "").filename().empty());
 }

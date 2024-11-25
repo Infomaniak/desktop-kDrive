@@ -55,7 +55,7 @@ set(testsyncengine_SRCS
 
 if (APPLE)
     list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp)
-elif (__unix__)
+elseif (UNIX)
     list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherlinux.h update_detection/file_system_observer/testfolderwatcherlinux.cpp)
 endif ()
 
@@ -70,9 +70,7 @@ else()
     include_directories("/usr/local/include")
 endif ()
 
-add_executable(${testsyncengine_NAME} ${testsyncengine_SRCS}
-    update_detection/file_system_observer/testfolderwatcherlinux.cpp
-    update_detection/file_system_observer/testfolderwatcherlinux.hpp)
+add_executable(${testsyncengine_NAME} ${testsyncengine_SRCS})
 
 set_target_properties(${testsyncengine_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})

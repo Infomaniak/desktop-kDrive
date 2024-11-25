@@ -24,10 +24,11 @@ namespace KDC {
 
 class TestFolderWatcherLinux final : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestFolderWatcherLinux);
-        CPPUNIT_TEST(testGetSyncName);
+        CPPUNIT_TEST(testMakeSyncPath);
         CPPUNIT_TEST_SUITE_END();
 
-        void testGetSyncName();
+    private:
+        void testMakeSyncPath();
 };
 
 } // namespace KDC
