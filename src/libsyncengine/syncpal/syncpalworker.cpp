@@ -617,25 +617,25 @@ bool SyncPalWorker::resetVfsFilesStatus() {
 
                 // Fix pinstate if needed
                 if (isHydrated && pinState != PinState::AlwaysLocal) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::AlwaysLocal)) {
+                    if (ExitInfo exitInfo = _syncPal->vfsSetPinState(dirIt->path(), PinState::AlwaysLocal); !exitInfo) {
                         LOGW_SYNCPAL_WARN(_logger,
-                                          L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
+                                          L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()) << exitInfo);
                         ok = false;
                         continue;
                     }
                 } else if (!isHydrated && pinState != PinState::OnlineOnly) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::OnlineOnly)) {
+                    if (ExitInfo exitInfo = _syncPal->vfsSetPinState(dirIt->path(), PinState::OnlineOnly); !exitInfo) {
                         LOGW_SYNCPAL_WARN(_logger,
-                                          L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
+                                          L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()) << exitInfo);
                         ok = false;
                         continue;
                     }
                 }
             } else {
                 if (pinState == PinState::AlwaysLocal || pinState == PinState::OnlineOnly) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::Unspecified)) {
+                    if (ExitInfo exitInfo = _syncPal->vfsSetPinState(dirIt->path(), PinState::Unspecified); !exitInfo) {
                         LOGW_SYNCPAL_WARN(_logger,
-                                          L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
+                                          L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()) << exitInfo);
                         ok = false;
                         continue;
                     }

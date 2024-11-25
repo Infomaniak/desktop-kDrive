@@ -199,7 +199,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static bool vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded);
         static bool vfsExclude(int syncDbId, const SyncPath &itemPath);
         static bool vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState &pinState);
-        static bool vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState);
+        static ExitInfo vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState);
         static bool vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                               int &progress);
         static ExitInfo vfsCreatePlaceholder(int syncDbIdconst, const SyncPath &relativeLocalPath, const SyncFileItem &item);

@@ -85,7 +85,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) override;
 
-        bool setPinState(const QString &fileRelativePath, PinState state) override;
+        ExitInfo setPinState(const QString &fileRelativePath, PinState state) override;
         PinState pinState(const QString &relativePath) override;
         bool status(const QString &, bool &, bool &, bool &, int &) override;
         virtual bool setThumbnail(const QString &, const QPixmap &) override { return true; };

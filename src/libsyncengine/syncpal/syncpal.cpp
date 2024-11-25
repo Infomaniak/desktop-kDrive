@@ -381,9 +381,9 @@ bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
     return _vfsPinState(syncDbId(), itemPath, pinState);
 }
 
-bool SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
+ExitInfo SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
     if (!_vfsSetPinState) {
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
     return _vfsSetPinState(syncDbId(), itemPath, pinState);

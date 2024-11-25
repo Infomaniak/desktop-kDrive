@@ -477,15 +477,13 @@ std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator SocketApi::re
     return result;
 }
 
-bool SocketApi::setPinState(const FileData &fileData, KDC::PinState pinState) {
-    if (!fileData.syncDbId) return false;
+ExitInfo SocketApi::setPinState(const FileData &fileData, KDC::PinState pinState) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _vfsMap.cend()) return false;
+    if (vfsMapIt == _vfsMap.cend()) return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
 
-    vfsMapIt->second->setPinState(fileData.relativePath, pinState);
-
-    return true;
+    return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
 }
 
 ExitInfo SocketApi::dehydratePlaceholder(const FileData &fileData) {
@@ -697,9 +695,9 @@ void SocketApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, SocketL
         }
 
         // Set pin state
-        if (!setPinState(fileData, KDC::PinState::OnlineOnly)) {
+        if (ExitInfo exitInfo = setPinState(fileData, KDC::PinState::OnlineOnly); !exitInfo) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
-                      L"Error in SocketApi::setPinState - " << Utility::formatSyncPath(filePath).c_str());
+                      L"Error in SocketApi::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
         }
 

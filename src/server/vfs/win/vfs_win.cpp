@@ -595,14 +595,14 @@ bool VfsWin::isDehydratedPlaceholder(const QString &initFilePath, bool isAbsolut
     return isDehydrated;
 }
 
-bool VfsWin::setPinState(const QString &relativePath, PinState state) {
+ExitInfo VfsWin::setPinState(const QString &relativePath, PinState state) {
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
                   L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath).c_str() << L" code=" << errorCode);
-        return false;
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
     VfsPinState vfsState;
@@ -623,10 +623,10 @@ bool VfsWin::setPinState(const QString &relativePath, PinState state) {
 
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), vfsState) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return ExitCode::SystemError;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 PinState VfsWin::pinState(const QString &relativePath) {

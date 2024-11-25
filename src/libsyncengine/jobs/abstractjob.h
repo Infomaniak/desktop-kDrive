@@ -76,7 +76,7 @@ class AbstractJob : public Poco::Runnable {
                 std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> callback) noexcept {
             _vfsUpdateFetchStatus = callback;
         }
-        inline void setVfsSetPinStateCallback(std::function<bool(const SyncPath &, PinState)> callback) noexcept {
+        inline void setVfsSetPinStateCallback(std::function<ExitInfo(const SyncPath &, PinState)> callback) noexcept {
             _vfsSetPinState = callback;
         }
         inline void setVfsForceStatusCallback(std::function<ExitInfo(const SyncPath &, bool, int, bool)> callback) noexcept {
@@ -109,7 +109,7 @@ class AbstractJob : public Poco::Runnable {
 
         std::function<ExitInfo(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled, bool &finished)>
                 _vfsUpdateFetchStatus = nullptr;
-        std::function<bool(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState = nullptr;
+        std::function<ExitInfo(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState = nullptr;
         std::function<ExitInfo(const SyncPath &path, bool isSyncing, int progress, bool isHydrated)> _vfsForceStatus = nullptr;
         std::function<bool(const SyncPath &path, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress)>
                 _vfsStatus = nullptr;

@@ -62,8 +62,8 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 DownloadJob::~DownloadJob() {
     if (_responseHandlingCanceled) {
         if (_vfsSetPinState) {
-            if (!_vfsSetPinState(_localpath, PinState::OnlineOnly)) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath).c_str());
+            if (ExitInfo exitInfo = _vfsSetPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
             }
         }
 
@@ -81,8 +81,9 @@ DownloadJob::~DownloadJob() {
         }
     } else {
         if (_vfsSetPinState) {
-            if (!_vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly)) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath).c_str());
+            if (ExitInfo exitInfo =
+                        _vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
             }
         }
 
