@@ -251,7 +251,7 @@ void SparkleUpdater::reset(const std::string &url /*= ""*/) {
     if (!url.empty()) {
         [d->updaterDelegate setCustomFeedUrl:url];
 
-        if(startSparkleUpdater()) {
+        if (startSparkleUpdater()) {
             LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
         }
     }
