@@ -796,8 +796,7 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
 
     // Read status
     QString value;
-    IoError ioError = IoError::Success;
-    if(const ExitInfo exitInfo = getXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], value, ioError); !exitInfo){
+    if(const ExitInfo exitInfo = getXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], value); !exitInfo){
         LOGW_WARN(_logger, L"Error in getXAttrValue: " << exitInfo);
         return exitInfo;
     }
@@ -822,8 +821,7 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
 bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepath, const QString &localSyncPath) {
     // Read status
     QString value;
-    IoError ioError = IoError::Success;
-    if(const ExitInfo exitInfo = getXAttrValue(absoluteFilepath, [EXT_ATTR_STATUS UTF8String], value, ioError); !exitInfo){ 
+    if(const ExitInfo exitInfo = getXAttrValue(absoluteFilepath, [EXT_ATTR_STATUS UTF8String], value); !exitInfo){ 
         LOGW_WARN(_logger, L"Error in getXAttrValue - " << Utility::formatPath(absoluteFilepath).c_str());
         return exitInfo;
     }
@@ -944,7 +942,7 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &lo
 
 bool LiteSyncExtConnector::vfsGetPinState(const QString &path, QString &pinState) {
     // Read pin state
-    if(const ExitInfo exitInfo = getXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], value, ioError); !exitInfo){
+    if(const ExitInfo exitInfo = getXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], value); !exitInfo){
         LOGW_WARN(_logger, L"Error in getXAttrValue: " << exitInfo);
         return exitInfo;
     }
@@ -1253,7 +1251,7 @@ ExitInfo LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, boo
 
     // Read status
     QString value;
-    if (const ExitInfo exitInfo = getXAttrValue(absoluteFilePath, [EXT_ATTR_STATUS UTF8String], value, ioError); exitInfo) {
+    if (const ExitInfo exitInfo = getXAttrValue(absoluteFilePath, [EXT_ATTR_STATUS UTF8String], value); !exitInfo) {
         LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatPath(absoluteFilePath) << " :" << exitInfo);
         return exitInfo;
     }
