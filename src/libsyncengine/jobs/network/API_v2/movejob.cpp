@@ -25,8 +25,8 @@ namespace KDC {
 
 MoveJob::MoveJob(int driveDbId, const SyncPath &destFilepath, const NodeId &fileId, const NodeId &destDirId,
                  const SyncName &name /*= ""*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _destFilepath(destFilepath), _fileId(fileId),
-    _destDirId(destDirId), _name(name) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _destFilepath(destFilepath), _fileId(fileId), _destDirId(destDirId), _name(name) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
@@ -40,9 +40,10 @@ MoveJob::~MoveJob() {
             LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_destFilepath).c_str());
         }
 
-        if (!_vfsForceStatus(_destFilepath, false, 100,
-                             isHydrated)) { // TODO : to be refactored, some parameters are used on macOS only
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_destFilepath).c_str());
+        if (ExitInfo exitInfo = _vfsForceStatus(_destFilepath, false, 100,
+                                                isHydrated);
+            !exitInfo) { // TODO : to be refactored, some parameters are used on macOS only
+            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_destFilepath) << L" : " << exitInfo);
         }
     }
 }

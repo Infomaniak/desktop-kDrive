@@ -444,9 +444,9 @@ bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) 
     return _vfsFileStatusChanged(syncDbId(), path, status);
 }
 
-bool SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
+ExitInfo SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
     if (!_vfsForceStatus) {
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
     return _vfsForceStatus(syncDbId(), path, isSyncing, progress, isHydrated);

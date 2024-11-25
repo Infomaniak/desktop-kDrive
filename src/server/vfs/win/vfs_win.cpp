@@ -270,7 +270,10 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return ExitCode::SystemError;
     }
-
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(fullPath, ioError));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
     if (exists) {
         LOGW_WARN(logger(), L"Item already exists: " << Utility::formatSyncPath(fullPath).c_str());
         return {ExitCode::SystemError, ExitCause::FileAlreadyExist};
@@ -512,19 +515,18 @@ ExitInfo VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, 
     return error ? ExitCode::SystemError : ExitCode::Ok;
 }
 
-bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool) {
+ExitInfo VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool) {
     SyncPath stdPath = QStr2Path(absolutePath);
 
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError).c_str());
-        return false;
+        return ExitCode::SystemError;
     }
 
     if (!exists) {
-        // New file
-        return true;
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     DWORD dwAttrs = GetFileAttributesW(stdPath.native().c_str());
@@ -532,18 +534,18 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
                   L"Error in GetFileAttributesW: " << Utility::formatSyncPath(stdPath).c_str() << L" code=" << errorCode);
-        return false;
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
     if (dwAttrs & FILE_ATTRIBUTE_DEVICE) {
         LOGW_WARN(logger(), L"Not a valid file or directory: " << Utility::formatSyncPath(stdPath).c_str());
-        return false;
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
     bool isPlaceholder = false;
     if (vfsGetPlaceHolderStatus(stdPath.native().c_str(), &isPlaceholder, nullptr, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(stdPath).c_str());
-        return false;
+        return ExitCode::SystemError;
     }
 
     // Some editors (notepad++) seems to remove the file attributes, therfore we need to verify that the file is still a
@@ -553,15 +555,15 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
         IoError ioError = IoError::Success;
         if (!IoHelper::getFileStat(stdPath, &filestat, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(stdPath, ioError).c_str());
-            return false;
+            return ExitCode::SystemError;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(stdPath).c_str());
-            return true;
+            return {ExitCode::SystemError, ExitCause::NotFound};
         } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(logger(), L"Item: " << Utility::formatSyncPath(stdPath).c_str() << L" rejected because access is denied");
-            return true;
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
         NodeId localNodeId = std::to_string(filestat.inode);
@@ -569,7 +571,7 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
         // Convert to placeholder
         if (vfsConvertToPlaceHolder(Utility::s2ws(localNodeId).c_str(), stdPath.native().c_str()) != S_OK) {
             LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(stdPath).c_str());
-            return false;
+            return ExitCode::SystemError;
         }
     }
 
@@ -578,7 +580,7 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
                                                         << Utility::formatSyncPath(QStr2Path(absolutePath)).c_str());
     setPlaceholderStatus(absolutePath, isSyncing);
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool VfsWin::isDehydratedPlaceholder(const QString &initFilePath, bool isAbsolutePath /*= false*/) {

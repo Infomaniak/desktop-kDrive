@@ -210,19 +210,22 @@ void VfsMac::hydrate(const QString &path) {
     _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
-bool VfsMac::forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated /*= false*/) {
+ExitInfo VfsMac::forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated /*= false*/) {
     SyncPath stdPath = QStr2Path(path);
 
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError).c_str());
-        return false;
+        return ExitCode::SystemError;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
-        // New file
-        return true;
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     return _connector->vfsSetStatus(path, _localSyncPath, isSyncing, progress, isHydrated);
@@ -405,7 +408,6 @@ ExitInfo VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &i
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
                                             << Utility::formatIoError(fullPath, itemType.ioError).c_str());
                 return ExitCode::SystemError;
-
             }
         }
 
@@ -512,6 +514,7 @@ ExitInfo VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, 
         return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
+    SyncPath fullPath(QStr2Path(path));
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {

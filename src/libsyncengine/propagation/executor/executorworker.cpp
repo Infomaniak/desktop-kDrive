@@ -706,7 +706,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
             job->setVfsCancelHydrateCallback(vfsCancelHydrateCallback);
         }
 
-        std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+        std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
                 std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
                           std::placeholders::_4);
         job->setVfsForceStatusCallback(vfsForceStatusCallback);
@@ -933,7 +933,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
                     std::bind(&SyncPal::vfsSetPinState, _syncPal, std::placeholders::_1, std::placeholders::_2);
             downloadJob->setVfsSetPinStateCallback(vfsSetPinStateCallback);
 
-            std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+            std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
                     std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
                               std::placeholders::_3, std::placeholders::_4);
             downloadJob->setVfsForceStatusCallback(vfsForceStatusCallback);
@@ -991,7 +991,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             // Set callbacks
             std::shared_ptr<UploadJob> uploadJob = std::dynamic_pointer_cast<UploadJob>(job);
             if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-                std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+                std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
                         std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
                                   std::placeholders::_3, std::placeholders::_4);
                 uploadJob->setVfsForceStatusCallback(vfsForceStatusCallback);
@@ -1251,7 +1251,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
 
         // Set callbacks
         if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-            std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+            std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
                     std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
                               std::placeholders::_3, std::placeholders::_4);
             job->setVfsForceStatusCallback(vfsForceStatusCallback);

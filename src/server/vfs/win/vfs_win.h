@@ -81,7 +81,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
-        bool forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) override;
+        ExitInfo forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) override;
 
         bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) override;
 

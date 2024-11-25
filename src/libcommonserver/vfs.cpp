@@ -87,26 +87,25 @@ VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupPa
 
 VfsOff::~VfsOff() {}
 
-bool VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
+ExitInfo VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
     KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     bool exists = false;
     KDC::IoError ioError = KDC::IoError::Success;
     if (!KDC::IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << KDC::Utility::formatIoError(fullPath, ioError).c_str());
-        return false;
+        return ExitCode::SystemError;
     }
 
     if (!exists) {
         LOGW_DEBUG(logger(), L"Item does not exist anymore - path=" << Path2WStr(fullPath).c_str());
-        return true;
+        return {ExitCode::Ok, ExitCause::NotFound};
     }
-
     // Update Finder
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
     QString status = isSyncing ? "SYNC" : "OK";
     _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
 
-    return true;
+    return ExitCode::Ok;
 }
 
 ExitInfo VfsOff::startImpl(bool &, bool &, bool &) {

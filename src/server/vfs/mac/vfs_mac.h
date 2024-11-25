@@ -69,7 +69,7 @@ class VfsMac : public Vfs {
         ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
         void cancelHydrate(const QString &filePath) override;
-        bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
+        ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
         bool cleanUpStatuses() override;
         virtual void clearFileAttributes(const QString &path) override;
 

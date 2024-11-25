@@ -2415,7 +2415,7 @@ ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const 
 }
 
 ExitInfo AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
-                                     bool &canceled, bool &finished) {
+                                         bool &canceled, bool &finished) {
     auto vfsMapIt = _vfsMap.find(syncDbId);
     if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
@@ -2452,19 +2452,21 @@ bool AppServer::vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFil
     return true;
 }
 
-bool AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+ExitInfo AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
+    auto vfsMapIt = _vfsMap.find(syncDbId);
+    if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
-    if (!_vfsMap[syncDbId]->forceStatus(SyncName2QStr(path.native()), isSyncing, progress, isHydrated)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in Vfs::forceStatus for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
-        return false;
+    if (ExitInfo exitInfo = vfsMapIt->second->forceStatus(SyncName2QStr(path.native()), isSyncing, progress, isHydrated);
+        !exitInfo) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::forceStatus for syncDbId="
+                                                        << syncDbId << L" and path=" << Path2WStr(path) << L": " << exitInfo);
+        return exitInfo;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool AppServer::vfsCleanUpStatuses(int syncDbId) {

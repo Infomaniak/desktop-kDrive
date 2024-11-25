@@ -134,7 +134,7 @@ class Vfs : public QObject {
         virtual ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                        bool &finished) = 0;
 
-        virtual bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
+        virtual ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
         virtual bool cleanUpStatuses() { return true; };
 
         /// Determine whether the file at the given absolute path is a dehydrated placeholder.
@@ -260,7 +260,7 @@ class VfsOff : public Vfs {
         ExitInfo dehydratePlaceholder(const QString &) override { return ExitCode::Ok; }
         ExitInfo convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
         ExitInfo updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return ExitCode::Ok; }
-        bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
+        ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
 
         bool isDehydratedPlaceholder(const QString &, bool) override { return false; }
 
