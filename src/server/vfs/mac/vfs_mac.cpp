@@ -394,7 +394,7 @@ ExitInfo VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &i
         if (itemType.ioError == IoError::AccessDenied) {
             LOGW_DEBUG(KDC::Log::instance()->getLogger(),
                        L"Item misses search permission : " << Utility::formatSyncPath(fullPath).c_str());
-            return {ExitCode::SystemError, ExitCause::FileAcessError};
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
         const bool isLink = itemType.linkType != LinkType::None;
