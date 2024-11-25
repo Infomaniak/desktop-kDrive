@@ -45,7 +45,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_w
             LocalFileSystemObserverWorker_win::changesDetected(changes);
         }
 
-        bool waitForUpdate(uint64_t timeoutMs = 100000) const;
+        bool waitForUpdate(int64_t timeoutMs = 100000) const;
 };
 #else
 class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_unix {
@@ -58,7 +58,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_u
             Utility::msleep(200);
             LocalFileSystemObserverWorker_unix::changesDetected(changes);
         }
-        bool waitForUpdate(uint64_t timeoutMs = 100000) const;
+        bool waitForUpdate(int64_t timeoutMs = 100000) const;
 };
 #endif
 
