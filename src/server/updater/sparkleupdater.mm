@@ -179,6 +179,7 @@ class SparkleUpdater::Private {
 
 SparkleUpdater::SparkleUpdater() {
     d = new Private;
+    reset();
 }
 
 SparkleUpdater::~SparkleUpdater() {
@@ -215,7 +216,7 @@ void SparkleUpdater::unskipVersion() {
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-void SparkleUpdater::reset(const std::string &url) {
+void SparkleUpdater::reset(const std::string &url /*= ""*/) {
     [d->spuStandardUserDriver dismissUpdateInstallation];
     deleteUpdater();
 
@@ -247,10 +248,12 @@ void SparkleUpdater::reset(const std::string &url) {
     // Migrate away from using `-[SPUUpdater setFeedURL:]`
     [d->updater clearFeedURLFromUserDefaults];
 
-    [d->updaterDelegate setCustomFeedUrl:url];
+    if (!url.empty()) {
+        [d->updaterDelegate setCustomFeedUrl:url];
 
-    if(startSparkleUpdater()) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
+        if(startSparkleUpdater()) {
+            LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
+        }
     }
 }
 
