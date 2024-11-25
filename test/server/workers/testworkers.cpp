@@ -50,20 +50,18 @@ constexpr bool connectorsAreAlreadyInstalled = false;
 
 ExitInfo TestWorkers::createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     (void) syncDbId;
-
-    if (_vfsPtr && !_vfsPtr->createPlaceholder(relativeLocalPath, item)) {
+    if (!_vfsPtr) {
         return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
-    return ExitCode::Ok;
+    return _vfsPtr->createPlaceholder(relativeLocalPath, item);
 }
 
 ExitInfo TestWorkers::convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     (void) syncDbId;
-
-    if (_vfsPtr && !_vfsPtr->convertToPlaceholder(Path2QStr(relativeLocalPath), item)) {
+    if (!_vfsPtr) {
         return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
-    return ExitCode::Ok;
+    return _vfsPtr->convertToPlaceholder(Path2QStr(relativeLocalPath), item);
 }
 
 bool TestWorkers::setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState) {
@@ -240,14 +238,12 @@ void TestWorkers::testCreatePlaceholder() {
 
         // Folder doesn't exist (normal case)
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, exitInfo.cause());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::InvalidSnapshot, exitInfo.cause());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist), exitInfo);
 #endif
     }
 
