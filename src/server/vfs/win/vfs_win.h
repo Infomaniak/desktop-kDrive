@@ -73,7 +73,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
                                 const QByteArray &fileId,
                             QString *error) override;
 
-        bool createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
+        ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
         bool dehydratePlaceholder(const QString &path) override;
         bool convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
         void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;

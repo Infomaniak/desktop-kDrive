@@ -63,7 +63,7 @@ class LiteSyncExtConnector {
         bool vfsSetPinState(const QString &path, const QString &localSyncPath, const QString &pinState);
         bool vfsGetPinState(const QString &path, QString &pinState);
         bool vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated);
-        bool vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath, const struct stat *fileStat);
+        ExitInfo vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath, const struct stat *fileStat);
         bool vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
                                   unsigned long long completed, bool &canceled, bool &finished);
         bool vfsCancelHydrate(const QString &filePath);
@@ -79,7 +79,7 @@ class LiteSyncExtConnector {
         bool vfsGetFetchingAppList(QHash<QString, QString> &appTable);
         ExitInfo vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error);
         bool vfsIsExcluded(const QString &path);
-        bool vfsProcessDirStatus(const QString &path, const QString &localSyncPath);
+        ExitInfo vfsProcessDirStatus(const QString &path, const QString &localSyncPath);
         void vfsClearFileAttributes(const QString &path);
         bool checkFilesAttributes(const QString &path, const QString &localSyncPath, QStringList &filesToFix);
 

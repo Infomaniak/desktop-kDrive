@@ -2353,20 +2353,24 @@ bool AppServer::vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceh
     return _vfsMap[syncDbId]->status(SyncName2QStr(itemPath.native()), isPlaceholder, isHydrated, isSyncing, progress);
 }
 
-bool AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
+ExitInfo AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     auto vfsIt = _vfsMap.find(syncDbId);
     if (vfsIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+    }
+    if (!vfsIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
-    if (vfsIt->second && !vfsIt->second->createPlaceholder(relativeLocalPath, item)) {
+    if (const ExitInfo exitInfo = vfsIt->second->createPlaceholder(relativeLocalPath, item); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::createPlaceholder for syncDbId="
                                                         << syncDbId << L" and path=" << Path2WStr(item.path()).c_str());
-        return false;
+        return exitInfo;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item) {

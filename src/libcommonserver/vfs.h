@@ -107,7 +107,7 @@ class Vfs : public QObject {
                                     const QByteArray &fileId, QString *error) = 0;
 
         /// Create a new dehydrated placeholder
-        virtual bool createPlaceholder(const KDC::SyncPath &relativeLocalPath, const KDC::SyncFileItem &item) = 0;
+        virtual ExitInfo createPlaceholder(const KDC::SyncPath &relativeLocalPath, const KDC::SyncFileItem &item) = 0;
 
         /** Convert a hydrated placeholder to a dehydrated one. Called from PropagateDownlaod.
          *
@@ -263,7 +263,7 @@ class VfsOff : public Vfs {
         bool socketApiPinStateActionsShown() const override { return false; }
 
         ExitInfo updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &, QString *) override { return ExitCode::Ok; }
-        bool createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return true; }
+        ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
         bool dehydratePlaceholder(const QString &) override { return true; }
         bool convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return true; }
         bool updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return true; }

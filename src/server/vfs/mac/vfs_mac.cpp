@@ -264,21 +264,22 @@ ExitInfo VfsMac::updateMetadata(const QString &absoluteFilePath, time_t creation
     return ExitCode::Ok;
 }
 
-bool VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
+ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"createPlaceholder - file = " << Utility::formatSyncPath(relativeLocalPath).c_str());
+        LOGW_DEBUG(logger(), L"createPlaceholder - file = " << Utility::formatSyncPath(relativeLocalPath));
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
-    std::error_code ec;
-    if (std::filesystem::exists(fullPath, ec)) {
-        LOGW_WARN(logger(), L"File/directory " << Utility::formatSyncPath(relativeLocalPath).c_str() << L" already exists!");
-        return false;
+    bool exists = false;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError));
+        return ExitCode::SystemError;
     }
 
-    if (ec) {
-        LOGW_WARN(logger(), L"Failed to check if path exists " << Utility::formatStdError(fullPath, ec).c_str());
-        return false;
+    if (exists) {
+        LOGW_WARN(logger(), L"Item already exists: " << Utility::formatSyncPath(fullPath));
+        return {ExitCode::SystemError, ExitCause::FileAlreadyExist};
     }
 
     // Create placeholder
@@ -298,7 +299,7 @@ bool VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
         return false;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool VfsMac::dehydratePlaceholder(const QString &path) {

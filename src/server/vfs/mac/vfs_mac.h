@@ -63,7 +63,7 @@ class VfsMac : public Vfs {
         ExitInfo updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
                             const QByteArray &fileId, QString *error) override;
 
-        bool createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
+        ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
         bool dehydratePlaceholder(const QString &path) override;
         bool convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
         bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,

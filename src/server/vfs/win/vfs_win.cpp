@@ -250,17 +250,17 @@ ExitInfo VfsWin::updateMetadata(const QString &filePath, time_t creationTime, ti
     return ExitCode::Ok;
 }
 
-bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
+ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     LOGW_DEBUG(logger(), L"createPlaceholder: " << Utility::formatSyncPath(relativeLocalPath).c_str());
 
     if (relativeLocalPath.empty()) {
         LOG_WARN(logger(), "Empty file!");
-        return false;
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
     if (!item.remoteNodeId().has_value()) {
         LOGW_WARN(logger(), L"Empty remote nodeId: " << Utility::formatSyncPath(relativeLocalPath).c_str());
-        return false;
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
@@ -268,12 +268,12 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return false;
+        return ExitCode::SystemError;
     }
 
     if (exists) {
         LOGW_WARN(logger(), L"Item already exists: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAlreadyExist};
     }
 
     // Create placeholder
@@ -295,10 +295,10 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
     // Setting the pin state triggers an EDIT event and then the insertion into the local snapshot
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_UNPINNED) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return ExitCode::SystemError;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool VfsWin::dehydratePlaceholder(const QString &path) {
