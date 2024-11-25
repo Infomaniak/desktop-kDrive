@@ -73,7 +73,6 @@ class VfsMac : public Vfs {
         bool cleanUpStatuses() override;
         virtual void clearFileAttributes(const QString &path) override;
 
-        bool needsMetadataUpdate(const SyncFileItem &) override { return false; }
         bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) override;
 
         bool setPinState(const QString &fileRelativePath, PinState state) override;

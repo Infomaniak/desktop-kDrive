@@ -116,13 +116,6 @@ class Vfs : public QObject {
          */
         virtual ExitInfo dehydratePlaceholder(const QString &path) = 0;
 
-        /** Discovery hook: even unchanged files may need UPDATE_METADATA.
-         *
-         * For instance cfapi vfs wants local hydrated non-placeholder files to
-         * become hydrated placeholder files.
-         */
-        virtual bool needsMetadataUpdate(const KDC::SyncFileItem &item) = 0;
-
         /** Convert a new file to a hydrated placeholder.
          *
          * Some VFS integrations expect that every file, including those that have all
@@ -269,7 +262,6 @@ class VfsOff : public Vfs {
         bool updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return true; }
         bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
 
-        bool needsMetadataUpdate(const KDC::SyncFileItem &) override { return false; }
         bool isDehydratedPlaceholder(const QString &, bool) override { return false; }
 
         bool setPinState(const QString &, KDC::PinState) override { return true; }

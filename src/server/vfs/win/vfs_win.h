@@ -83,7 +83,6 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
                                bool &finished) override;
         bool forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) override;
 
-        bool needsMetadataUpdate(const SyncFileItem &) override { return false; }
         bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) override;
 
         bool setPinState(const QString &fileRelativePath, PinState state) override;
