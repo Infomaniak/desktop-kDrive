@@ -417,6 +417,7 @@ LiteSyncExtConnector *LiteSyncExtConnector::_liteSyncExtConnector = nullptr;
 
 static ExitInfo getXAttrValue(const QString &path, const QString &attrName, QString &value) {
     std::string strValue;
+    IoError IoError = ioError::Success;
     bool result = IoHelper::getXAttrValue(SyncPath(path.toStdString()), attrName.toStdString(), strValue, ioError);
     if (!result) {
         if(IoError == IoError::NoSuchFileOrDirectory) {
@@ -544,19 +545,14 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
 
     // Read folder status
     QString value;
-    IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], value, ioError);
-    if (!result) {
-        LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(QStr2Path(folderPath), ioError).c_str());
-        return false;
-    }
-
-    if (checkIoErrorAndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
-        return false;
+    if(const ExitInfo exitInfo = getXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], value); !exitInfo){
+        LOGW_WARN(_logger, L"Error in getXAttrValue: " << exitInfo);
+        return exitInfo;
     }
 
     if (value.isEmpty()) {
         // Set default folder status
+        IoError ioError = IoError::Success;
         if (!setXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
             LOGW_WARN(_logger,
                       L"Error in setXAttrValue - "
@@ -801,15 +797,9 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
     // Read status
     QString value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], value, ioError);
-    if (!result) {
-        LOGW_WARN(_logger,
-                  L"Error in getXAttrValue: " << Utility::formatIoError(filePath, ioError).c_str());
-        return false;
-    }
-
-    if (checkIoErrorAndLogIfNeeded(ioError, "File", filePath, _logger)) {
-        return false;
+    if(const ExitInfo exitInfo = getXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], value, ioError); !exitInfo){
+        LOGW_WARN(_logger, L"Error in getXAttrValue: " << exitInfo);
+        return exitInfo;
     }
 
     if (value.isEmpty()) {
@@ -833,14 +823,9 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
     // Read status
     QString value;
     IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(absoluteFilepath, [EXT_ATTR_STATUS UTF8String], value, ioError);
-    if (!result) {
+    if(const ExitInfo exitInfo = getXAttrValue(absoluteFilepath, [EXT_ATTR_STATUS UTF8String], value, ioError); !exitInfo){ 
         LOGW_WARN(_logger, L"Error in getXAttrValue - " << Utility::formatPath(absoluteFilepath).c_str());
-        return false;
-    }
-
-    if (checkIoErrorAndLogIfNeeded(ioError, "File", absoluteFilepath, _logger)) {
-        return false;
+        return exitInfo;
     }
 
     if (value.isEmpty()) {
@@ -959,17 +944,9 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &lo
 
 bool LiteSyncExtConnector::vfsGetPinState(const QString &path, QString &pinState) {
     // Read pin state
-    QString value;
-    IoError ioError = IoError::Success;
-    const bool result = getXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], value, ioError);
-    if (!result) {
-        LOGW_WARN(_logger,
-                  L"Error in getXAttrValue: " << Utility::formatIoError(path, ioError).c_str());
-        return false;
-    }
-
-    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
-        return false;
+    if(const ExitInfo exitInfo = getXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], value, ioError); !exitInfo){
+        LOGW_WARN(_logger, L"Error in getXAttrValue: " << exitInfo);
+        return exitInfo;
     }
 
     if (value.isEmpty()) {
@@ -1276,18 +1253,10 @@ ExitInfo LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, boo
 
     // Read status
     QString value;
-    IoError ioError = IoError::Success;
-    if (!getXAttrValue(absoluteFilePath, [EXT_ATTR_STATUS UTF8String], value, ioError) && !isExpectedError(ioError)) {
-        LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatIoError(QStr2Str(absoluteFilePath), ioError).c_str());
-        return false;
+    if (const ExitInfo exitInfo = getXAttrValue(absoluteFilePath, [EXT_ATTR_STATUS UTF8String], value, ioError); exitInfo) {
+        LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatPath(absoluteFilePath) << " :" << exitInfo);
+        return exitInfo;
     }
-    if(ioError == IoError::AccessDenied){
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-    if(ioError == IoError::NoSuchFileOrDirectory){
-        return {ExitCode::SystemError, ExitCause::NotFound};
-    }
-
     if (value.isEmpty()) return ExitCode::Ok;
 
     isPlaceholder = true;
