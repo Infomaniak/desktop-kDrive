@@ -192,6 +192,12 @@ void SparkleUpdater::onUpdateFound() {
         LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo().fullVersion().c_str() << " is skipped.");
         return;
     }
+
+    if (!d->updater) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
+
     if ([d->updater sessionInProgress]) {
         LOG_INFO(KDC::Log::instance()->getLogger(), "An update window is already opened or installation is in progress. No need to start a new one.");
         return;
@@ -200,12 +206,20 @@ void SparkleUpdater::onUpdateFound() {
 }
 
 void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) {
+    if (!d->updaterDelegate) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
     [d->updaterDelegate setQuitCallback:quitCallback];
 }
 
 void SparkleUpdater::startInstaller() {
     reset(versionInfo().downloadUrl);
 
+    if (!d->updater || !d->spuStandardUserDriver) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
     [d->updater checkForUpdatesInBackground];
     [d->spuStandardUserDriver showUpdateInFocus];
 }
@@ -217,6 +231,10 @@ void SparkleUpdater::unskipVersion() {
 }
 
 void SparkleUpdater::reset(const std::string &url /*= ""*/) {
+    if (!d->spuStandardUserDriver) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
     [d->spuStandardUserDriver dismissUpdateInstallation];
     deleteUpdater();
 
