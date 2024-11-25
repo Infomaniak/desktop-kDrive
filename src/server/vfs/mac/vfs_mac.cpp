@@ -503,25 +503,28 @@ void VfsMac::resetLiteSyncConnector() {
     }
 }
 
-bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled, bool &finished) {
+ExitInfo VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled, bool &finished) {
     if (extendedLog()) {
         LOGW_INFO(logger(), L"updateFetchStatus file " << Utility::formatPath(path).c_str() << L" - " << received);
     }
     if (tmpPath.isEmpty() || path.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
-        return false;
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
-    std::filesystem::path fullPath(QStr2Path(path));
-    std::error_code ec;
-    if (!std::filesystem::exists(fullPath, ec)) {
-        if (ec.value() != 0) {
-            LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatSyncPath(fullPath).c_str() << L": "
-                                                                     << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
-                                                                     << L")");
-            return false;
-        }
-        return true;
+    bool exists = false;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError));
+        return ExitCode::SystemError;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError));
+        return {ExitCode::SystemError, ExitCause::FileAcessError};
+    }
+    if (!exists) {
+        LOGW_WARN(logger(), L"Item does not exists: " << Utility::formatSyncPath(fullPath));
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     // Check if the file is a placeholder
@@ -529,12 +532,13 @@ bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
-    if (!_connector->vfsGetStatus(Path2QStr(fullPath), isPlaceholder, isHydrated, isSyncing, progress)) {
-        LOG_WARN(logger(), "Error in vfsGetStatus!");
-        return false;
+    if (ExitInfo exitInfo = _connector->vfsGetStatus(Path2QStr(fullPath), isPlaceholder, isHydrated, isSyncing, progress);
+        !exitInfo) {
+        LOG_WARN(logger(), "Error in vfsGetStatus: " << exitInfo);
+        return exitInfo;
     }
 
-    std::filesystem::path tmpFullPath(QStr2Path(tmpPath));
+    SyncPath tmpFullPath(QStr2Path(tmpPath));
     auto updateFct = [=, this](bool &canceled, bool &finished, bool &error) {
         // Update download progress
         finished = false;
@@ -554,7 +558,7 @@ bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     bool error = false;
     updateFct(canceled, finished, error);
 
-    return !error;
+    return error ? ExitCode::SystemError : ExitCode::Ok;
 }
 
 void VfsMac::cancelHydrate(const QString &filePath) {

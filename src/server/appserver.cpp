@@ -2414,20 +2414,27 @@ ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const 
     return ExitCode::Ok;
 }
 
-bool AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
+ExitInfo AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
                                      bool &canceled, bool &finished) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    auto vfsMapIt = _vfsMap.find(syncDbId);
+    if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+    }
+    if (!vfsMapIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
-    if (!_vfsMap[syncDbId]->updateFetchStatus(SyncName2QStr(tmpPath), SyncName2QStr(path), received, canceled, finished)) {
+    if (ExitInfo exitInfo =
+                vfsMapIt->second->updateFetchStatus(SyncName2QStr(tmpPath), SyncName2QStr(path), received, canceled, finished);
+        !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Vfs::updateFetchStatus for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
-        return false;
+        return exitInfo;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool AppServer::vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFileStatus status) {

@@ -79,7 +79,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
         virtual void clearFileAttributes(const QString &path) override;
 
-        bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
+        ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
         bool forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) override;
 

@@ -422,7 +422,7 @@ ExitInfo SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creati
     return _vfsUpdateMetadata(syncDbId(), path, creationTime, modtime, size, id, error);
 }
 
-bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
+ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) {
     if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger,
@@ -430,7 +430,7 @@ bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path
     }
 
     if (!_vfsUpdateFetchStatus) {
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
     return _vfsUpdateFetchStatus(syncDbId(), tmpPath, path, received, canceled, finished);
@@ -794,7 +794,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
 
     if (vfsMode() == VirtualFileMode::Mac || vfsMode() == VirtualFileMode::Win) {
         // Set callbacks
-        std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
+        std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
                 std::bind(&SyncPal::vfsUpdateFetchStatus, this, std::placeholders::_1, std::placeholders::_2,
                           std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
         job->setVfsUpdateFetchStatusCallback(vfsUpdateFetchStatusCallback);

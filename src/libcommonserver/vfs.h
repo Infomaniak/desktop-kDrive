@@ -131,7 +131,7 @@ class Vfs : public QObject {
          */
         virtual ExitInfo convertToPlaceholder(const QString &path, const KDC::SyncFileItem &item) = 0;
 
-        virtual bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
+        virtual ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                        bool &finished) = 0;
 
         virtual bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
@@ -259,7 +259,7 @@ class VfsOff : public Vfs {
         ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
         ExitInfo dehydratePlaceholder(const QString &) override { return ExitCode::Ok; }
         ExitInfo convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
-        bool updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return true; }
+        ExitInfo updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return ExitCode::Ok; }
         bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
 
         bool isDehydratedPlaceholder(const QString &, bool) override { return false; }

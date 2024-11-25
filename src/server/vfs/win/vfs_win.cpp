@@ -458,14 +458,14 @@ void VfsWin::clearFileAttributes(const QString &path) {
     }
 }
 
-bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled, bool &finished) {
+ExitInfo VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled, bool &finished) {
     Q_UNUSED(finished)
 
     LOGW_DEBUG(logger(), L"updateFetchStatus: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
     if (tmpPath.isEmpty() || path.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
-        return false;
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
     SyncPath fullTmpPath(QStr2Path(tmpPath));
@@ -475,18 +475,21 @@ bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return false;
+        return ExitCode::SystemError;
     }
-
+    if (ioError == IoError::AccessDenied) {
+        LOGW_DEBUG(logger(), L"File access error: " << Utility::formatIoError(fullPath, ioError));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
     if (!exists) {
-        return true;
+        return ExitCode::Ok;
     }
 
     // Check if the file is a placeholder
     bool isPlaceholder;
     if (vfsGetPlaceHolderStatus(fullPath.lexically_normal().native().c_str(), &isPlaceholder, nullptr, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return ExitCode::SystemError;
     }
 
     auto updateFct = [=](bool &canceled, bool &finished, bool &error) {
@@ -503,9 +506,10 @@ bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     // Launch update in a separate thread
     bool error = false;
     std::thread updateTask(updateFct, std::ref(canceled), std::ref(finished), std::ref(error));
+    // TODO: Check if we need to join the thread. If yes, why is it in a separate thread?
     updateTask.join();
 
-    return !error;
+    return error ? ExitCode::SystemError : ExitCode::Ok;
 }
 
 bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool) {

@@ -306,8 +306,11 @@ bool DownloadJob::handleResponse(std::istream &is) {
                     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
                     if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
-                        if (!_vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
-                            LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath).c_str());
+                        if (ExitInfo exitInfo =
+                                    _vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
+                            !exitInfo) {
+                            LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath) << L": "
+                                                                                  << exitInfo);
                             fetchError = true;
                             break;
                         } else if (fetchCanceled) {
@@ -333,8 +336,10 @@ bool DownloadJob::handleResponse(std::istream &is) {
         if (!_responseHandlingCanceled) {
             if (_vfsUpdateFetchStatus && !fetchFinished) {
                 // Update fetch status
-                if (!_vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
-                    LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath).c_str());
+                if (ExitInfo exitInfo = _vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
+                    !exitInfo) {
+                    LOGW_WARN(_logger,
+                              L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
                     fetchError = true;
                 } else if (fetchCanceled) {
                     LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_localpath).c_str());
