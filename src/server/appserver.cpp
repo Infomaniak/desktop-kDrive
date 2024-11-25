@@ -2397,7 +2397,7 @@ ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const 
                 _vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, &errorStr);
         !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::updateMetadata for syncDbId=" << syncDbId << L" and path="
-                                                                                              << Path2WStr(path).c_str() << ": "
+                                                                                              << Path2WStr(path) << L": "
                                                                                               << exitInfo);
         error = errorStr.toStdString();
         return exitInfo;
