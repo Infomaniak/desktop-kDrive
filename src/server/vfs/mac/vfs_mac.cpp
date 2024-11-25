@@ -278,7 +278,7 @@ ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError));
-        return {ExitCode::SystemError, ExitCause::FileAcessError};
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
     if (exists) {
         LOGW_WARN(logger(), L"Item already exists: " << Utility::formatSyncPath(fullPath));
@@ -300,7 +300,7 @@ ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     if (ExitInfo exitInfo =
                 _connector->vfsCreatePlaceHolder(QString::fromStdString(relativeLocalPath.native()), _localSyncPath, &fileStat);
         !exitInfo) {
-        LOGW_WARN(logger(), L"Error in vfsCreatePlaceHolder " << Utility::formatPath(relativeLocalPath) << L" " << exitInfo);
+        LOGW_WARN(logger(), L"Error in vfsCreatePlaceHolder " << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
         return exitInfo;
     }
 
@@ -309,7 +309,7 @@ ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
 
 ExitInfo VfsMac::dehydratePlaceholder(const QString &path) {
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"dehydratePlaceholder - file " << Utility::formatPath(path).c_str());
+        LOGW_DEBUG(logger(), L"dehydratePlaceholder - file " << Utility::formatSyncPath(path).c_str());
     }
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     bool exists = false;
@@ -320,7 +320,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const QString &path) {
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError));
-        return {ExitCode::SystemError, ExitCause::FileAcessError};
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
     if (!exists) {
         LOGW_WARN(logger(), L"Item does not exists: " << Utility::formatSyncPath(fullPath));
@@ -520,7 +520,7 @@ ExitInfo VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, 
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError));
-        return {ExitCode::SystemError, ExitCause::FileAcessError};
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
     if (!exists) {
         LOGW_WARN(logger(), L"Item does not exists: " << Utility::formatSyncPath(fullPath));
