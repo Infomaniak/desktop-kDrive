@@ -48,8 +48,8 @@ class TestWorkers : public CppUnit::TestFixture {
 
     protected:
         static bool startVfs();
-        static bool createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        static bool convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
+        static ExitInfo createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
+        static ExitInfo convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState);
 
         log4cplus::Logger _logger;

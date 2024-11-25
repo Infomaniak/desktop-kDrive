@@ -48,22 +48,22 @@ bool TestWorkers::_vfsConnectionDone = false;
 constexpr bool connectorsAreAlreadyInstalled = false;
 #endif
 
-bool TestWorkers::createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
+ExitInfo TestWorkers::createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     (void) syncDbId;
 
     if (_vfsPtr && !_vfsPtr->createPlaceholder(relativeLocalPath, item)) {
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
-    return true;
+    return ExitCode::Ok;
 }
 
-bool TestWorkers::convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
+ExitInfo TestWorkers::convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     (void) syncDbId;
 
     if (_vfsPtr && !_vfsPtr->convertToPlaceholder(Path2QStr(relativeLocalPath), item)) {
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
-    return true;
+    return ExitCode::Ok;
 }
 
 bool TestWorkers::setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState) {

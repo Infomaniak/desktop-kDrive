@@ -114,7 +114,7 @@ class Vfs : public QObject {
          * This is different from delete+create because preserving some file metadata
          * (like pin states) may be essential for some vfs plugins.
          */
-        virtual bool dehydratePlaceholder(const QString &path) = 0;
+        virtual ExitInfo dehydratePlaceholder(const QString &path) = 0;
 
         /** Discovery hook: even unchanged files may need UPDATE_METADATA.
          *
@@ -136,7 +136,7 @@ class Vfs : public QObject {
          * new placeholder shall supersede, for rename-replace actions with new downloads,
          * for example.
          */
-        virtual bool convertToPlaceholder(const QString &path, const KDC::SyncFileItem &item) = 0;
+        virtual ExitInfo convertToPlaceholder(const QString &path, const KDC::SyncFileItem &item) = 0;
 
         virtual bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                        bool &finished) = 0;
@@ -264,8 +264,8 @@ class VfsOff : public Vfs {
 
         ExitInfo updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &, QString *) override { return ExitCode::Ok; }
         ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
-        bool dehydratePlaceholder(const QString &) override { return true; }
-        bool convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return true; }
+        ExitInfo dehydratePlaceholder(const QString &) override { return ExitCode::Ok; }
+        ExitInfo convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
         bool updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return true; }
         bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
 

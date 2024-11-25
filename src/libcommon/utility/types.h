@@ -231,6 +231,7 @@ enum class ExitCause {
     MoveToTrashFailed,
     InvalidName,
     LiteSyncNotAllowed,
+    NotPlaceHolder,
     NetworkTimeout,
     SocketsDefuncted, // macOS: sockets defuncted by kernel
     NotFound,

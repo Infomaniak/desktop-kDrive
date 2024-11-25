@@ -789,10 +789,8 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
     syncItem.setLocalNodeId(std::to_string(fileStat.inode));
 #endif
 
-    if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem)) {
-        // TODO: vfs functions should output an ioError parameter
-        // Check that the item exists on local replica
-        return processCreateOrConvertToPlaceholderError(relativeLocalPath, false);
+    if (ExitInfo exitInfo = _syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem); !exitInfo) {
+        return exitInfo;
     }
 
     if (!_syncPal->vfsSetPinState(absoluteLocalFilePath, hydrated ? PinState::AlwaysLocal : PinState::OnlineOnly)) {

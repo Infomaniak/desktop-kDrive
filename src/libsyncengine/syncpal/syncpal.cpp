@@ -405,9 +405,9 @@ ExitInfo SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const 
     return _vfsCreatePlaceholder(syncDbId(), relativeLocalPath, item);
 }
 
-bool SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
+ExitInfo SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
     if (!_vfsConvertToPlaceholder) {
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
     return _vfsConvertToPlaceholder(syncDbId(), path, item);

@@ -92,7 +92,8 @@ struct ListenerHasSocketPred {
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
                      const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+    QObject(parent),
+    _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
@@ -487,11 +488,11 @@ bool SocketApi::setPinState(const FileData &fileData, KDC::PinState pinState) {
     return true;
 }
 
-bool SocketApi::dehydratePlaceholder(const FileData &fileData) {
-    if (!fileData.syncDbId) return false;
+ExitInfo SocketApi::dehydratePlaceholder(const FileData &fileData) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _vfsMap.cend()) return false;
+    if (vfsMapIt == _vfsMap.cend()) return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
 
     return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
 }
@@ -703,9 +704,9 @@ void SocketApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, SocketL
         }
 
         // Dehydrate placeholder
-        if (!dehydratePlaceholder(fileData)) {
+        if (ExitInfo exitInfo = dehydratePlaceholder(fileData); !exitInfo) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
-                      L"Error in SocketApi::dehydratePlaceholder - " << Utility::formatSyncPath(filePath).c_str());
+                      L"Error in SocketApi::dehydratePlaceholder - " << Utility::formatSyncPath(filePath) << exitInfo);
             continue;
         }
 

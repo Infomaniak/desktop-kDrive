@@ -2373,23 +2373,29 @@ ExitInfo AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeL
     return ExitCode::Ok;
 }
 
-bool AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+ExitInfo AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item) {
+    auto vfsIt = _vfsMap.find(syncDbId);
+    if (vfsIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+    }
+    if (!vfsIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
+        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
-    if (!_vfsMap[syncDbId]->convertToPlaceholder(SyncName2QStr(path.native()), item)) {
+    if (ExitInfo exitInfo = vfsIt->second->convertToPlaceholder(SyncName2QStr(path.native()), item); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::convertToPlaceholder for syncDbId="
-                                                        << syncDbId << L" and path=" << Path2WStr(item.path()).c_str());
-        return false;
+                                                        << syncDbId << L" and path=" << Path2WStr(item.path()) << L": "
+                                                        << exitInfo);
+        return exitInfo;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                  const int64_t size, const NodeId &id, std::string &error) {
+                                      const int64_t size, const NodeId &id, std::string &error) {
     if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return {ExitCode::LogicError, ExitCause::InvalidArgument};
@@ -2400,9 +2406,8 @@ ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const 
     if (ExitInfo exitInfo =
                 _vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, &errorStr);
         !exitInfo) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::updateMetadata for syncDbId=" << syncDbId << L" and path="
-                                                                                              << Path2WStr(path) << L": "
-                                                                                              << exitInfo);
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::updateMetadata for syncDbId="
+                                                        << syncDbId << L" and path=" << Path2WStr(path) << L": " << exitInfo);
         error = errorStr.toStdString();
         return exitInfo;
     }
