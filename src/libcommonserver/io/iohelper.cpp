@@ -29,7 +29,7 @@
 #if defined(__APPLE__) || defined(__unix__)
 #include <sys/stat.h>
 #endif
-
+#include <fstream>
 #include <log4cplus/loggingmacros.h> // LOGW_WARN
 
 namespace KDC {
@@ -147,6 +147,58 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "Invalid directory iterator";
         default:
             return "Unknown error";
+    }
+}
+
+bool IoHelper::openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut /*in seconds*/) {
+    int count = 0;
+    if (file.is_open()) file.close();
+    do {
+        file.open(path.native(), std::ifstream::binary);
+        if (!file.is_open()) {
+            bool exists = false;
+            if (!IoHelper::checkIfPathExists(path, exists, ioError)) {
+                LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
+                return isExpectedError(ioError);
+            }
+            if (ioError == IoError::AccessDenied) {
+                LOGW_DEBUG(logger(), L"Access denied to " << Utility::formatSyncPath(path));
+                return isExpectedError(ioError);
+            }
+            if (!exists) {
+                LOGW_DEBUG(logger(), L"Item does not exist anymore - " << Utility::formatSyncPath(path));
+                ioError = IoError::NoSuchFileOrDirectory;
+                return isExpectedError(ioError);
+            }
+            LOGW_DEBUG(logger(), L"File is locked, retrying in one second " << Utility::formatSyncPath(path));
+
+            if(count < timeOut) Utility::msleep(1000);
+        }
+    } while (++count < timeOut && !file.is_open());
+
+    if (!file.is_open()) {
+        LOGW_DEBUG(logger(), L"Failed to open file - " << Utility::formatSyncPath(path));
+        ioError = IoError::AccessDenied;
+        return isExpectedError(ioError);
+    }
+
+    ioError = IoError::Success;
+    return true;
+}
+
+ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeOut /*in seconds*/) {
+    IoError ioError = IoError::Success;
+    openFile(path, file, ioError, timeOut);
+    switch (ioError) {
+        case IoError::Success:
+            return ExitCode::Ok;
+        case IoError::AccessDenied:
+            return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
+        case IoError::NoSuchFileOrDirectory:
+            return ExitInfo{ExitCode::SystemError, ExitCause::NotFound};
+        default:
+            LOGW_WARN(logger(), L"Unexpected read error for " << Utility::formatIoError(path, ioError));
+            return ExitCode::SystemError;
     }
 }
 
