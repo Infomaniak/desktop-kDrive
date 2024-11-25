@@ -457,8 +457,9 @@ SentryHandler::PerformanceTrace::PerformanceTrace(pTraceId id) : _pTraceId{id} {
 
 void SentryHandler::stopPTrace(const pTraceId &id, bool aborted) {
     std::scoped_lock lock(_mutex);
+    if (id == 0) return;
     auto performanceTraceIt = _performanceTraces.find(id);
-    if (id == 0 || performanceTraceIt == _performanceTraces.end()) {
+    if (performanceTraceIt == _performanceTraces.end()) {
         return;
     }
     const PerformanceTrace &performanceTrace = performanceTraceIt->second;
@@ -466,7 +467,8 @@ void SentryHandler::stopPTrace(const pTraceId &id, bool aborted) {
     // Stop any child PerformanceTrace
     std::vector<pTraceId> toDelete;
     for (const auto &childPerformanceTraceId: performanceTrace.children()) {
-        toDelete.push_back(childPerformanceTraceId);
+        toDelete.push_back(childPerformanceTraceId); // We can't delete directly the childPerformanceTraceId from the map as we
+                                                     // are iterating over it
     }
     for (auto childPerformanceTraceId2: toDelete) {
         stopPTrace(childPerformanceTraceId2, aborted);
@@ -510,8 +512,7 @@ pTraceId SentryHandler::startTransaction(const std::string &name, const std::str
     return _pTraceIdCounter;
 }
 
-pTraceId SentryHandler::startSpan(const std::string &name, const std::string &description,
-                                  const pTraceId &parentId) {
+pTraceId SentryHandler::startSpan(const std::string &name, const std::string &description, const pTraceId &parentId) {
     auto parentIt = _performanceTraces.find(parentId);
     if (parentIt == _performanceTraces.end()) {
         assert(false && "Parent transaction/span does not exist");
@@ -554,16 +555,19 @@ pTraceId SentryHandler::startPTrace(SentryHandler::PTraceName pTraceName, int sy
     std::scoped_lock lock(_mutex);
     if (!_isSentryActivated || pTraceName == SentryHandler::PTraceName::None) return 0;
 
-    if (PTraceInfo pTraceInfo(pTraceName); pTraceInfo._parentPTraceName != SentryHandler::PTraceName::None) {
-        // Find the parent
-        auto pTraceMap = _pTraceNameToPTraceIdMap.find(syncDbId);
-        if (pTraceMap == _pTraceNameToPTraceIdMap.end()) {
-            assert(false && "Parent transaction/span is not running.");
-            return 0;
-        }
+    // Fetch the pTraceMap associated with the provided syncDbId
+    auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
+    if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
+        assert(false && "Parent transaction/span is not running.");
+        return 0;
+    }
+    auto pTraceMap = pTraceMapIt->second;
 
-        auto parentPTraceIt = pTraceMap->second.find(pTraceInfo._parentPTraceName);
-        if (parentPTraceIt == pTraceMap->second.end() || parentPTraceIt->second == 0) {
+    pTraceId newPTraceId = 0;
+    if (PTraceInfo pTraceInfo(pTraceName); pTraceInfo._parentPTraceName != SentryHandler::PTraceName::None) {
+        // Find the parent pTrace
+        auto parentPTraceIt = pTraceMap.find(pTraceInfo._parentPTraceName);
+        if (parentPTraceIt == pTraceMap.end() || parentPTraceIt->second == 0) {
             assert(false && "Parent transaction/span is not running.");
             return 0;
         }
@@ -571,27 +575,33 @@ pTraceId SentryHandler::startPTrace(SentryHandler::PTraceName pTraceName, int sy
         const pTraceId &parentId = parentPTraceIt->second;
 
         // Start the span
-        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] =
-                startSpan(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription, parentId);
+        newPTraceId = startSpan(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription, parentId);
+        pTraceMap[pTraceInfo._pTraceName] = newPTraceId;
     } else {
         // Start the transaction
-        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] =
-                startTransaction(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription);
+        newPTraceId = startTransaction(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription);
+        pTraceMap[pTraceInfo._pTraceName] = newPTraceId;
     }
-    return _pTraceNameToPTraceIdMap[syncDbId][pTraceName];
+    return newPTraceId;
 }
 
 void SentryHandler::stopPTrace(SentryHandler::PTraceName pTraceName, int syncDbId, bool aborted) {
     std::scoped_lock lock(_mutex);
     if (!_isSentryActivated || pTraceName == SentryHandler::PTraceName::None) return;
-    if (!_pTraceNameToPTraceIdMap.contains(syncDbId) || !_pTraceNameToPTraceIdMap[syncDbId].contains(pTraceName) ||
-        _pTraceNameToPTraceIdMap[syncDbId][pTraceName] == 0) {
+    auto pTraceMap = _pTraceNameToPTraceIdMap.find(syncDbId);
+    if (pTraceMap == _pTraceNameToPTraceIdMap.end()) {
         assert(false && "Transaction is not running");
         return;
     }
 
-    stopPTrace(_pTraceNameToPTraceIdMap[syncDbId][pTraceName], aborted);
-    _pTraceNameToPTraceIdMap[syncDbId][pTraceName] = 0;
+    auto pTraceIt = pTraceMap->second.find(pTraceName);
+    if (pTraceIt == pTraceMap->second.end() || pTraceIt->second == 0) {
+        assert(false && "Transaction is not running");
+        return;
+    }
+
+    stopPTrace(pTraceIt->second, aborted);
+    pTraceIt->second = 0;
 }
 
 SentryHandler::PTraceInfo::PTraceInfo(SentryHandler::PTraceName pTraceName) : _pTraceName{pTraceName} {

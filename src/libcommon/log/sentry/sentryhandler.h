@@ -284,15 +284,15 @@ class SentryHandler {
                     return _tx;
                 }
 
-                void addChild(pTraceId childId) { childIds.push_back(childId); }
-                void removeChild(pTraceId childId) { childIds.remove(childId); }
-                const std::list<pTraceId> &children() const { return childIds; }
+                void addChild(pTraceId childId) { _childIds.push_back(childId); }
+                void removeChild(pTraceId childId) { _childIds.remove(childId); }
+                const std::list<pTraceId> &children() const { return _childIds; }
 
                 const pTraceId &id() const { return _pTraceId; }
 
             private:
                 pTraceId _pTraceId;
-                std::list<pTraceId> childIds;
+                std::list<pTraceId> _childIds;
                 sentry_transaction_t *_tx{nullptr};
                 sentry_span_t *_span{nullptr};
         };
