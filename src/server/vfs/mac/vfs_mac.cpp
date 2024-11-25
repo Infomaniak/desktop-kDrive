@@ -294,9 +294,11 @@ ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
         fileStat.st_mode = S_IFREG;
     }
 
-    if (!_connector->vfsCreatePlaceHolder(QString::fromStdString(relativeLocalPath.native()), _localSyncPath, &fileStat)) {
-        LOG_WARN(logger(), "Error in vfsCreatePlaceHolder!");
-        return false;
+    if (ExitInfo exitInfo =
+                _connector->vfsCreatePlaceHolder(QString::fromStdString(relativeLocalPath.native()), _localSyncPath, &fileStat);
+        !exitInfo) {
+        LOGW_WARN(logger(), L"Error in vfsCreatePlaceHolder " << Utility::formatPath(path) << L" " << exitInfo);
+        return exitInfo;
     }
 
     return ExitCode::Ok;
