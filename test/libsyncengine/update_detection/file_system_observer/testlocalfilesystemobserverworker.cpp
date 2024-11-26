@@ -447,7 +447,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(std::to_string(fileStat.inode)));
 }
 
-bool MockLocalFileSystemObserverWorker::waitForUpdate(uint64_t timeoutMs) const {
+bool MockLocalFileSystemObserverWorker::waitForUpdate(int64_t timeoutMs) const {
     using namespace std::chrono;
     auto start = system_clock::now();
     while (!_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {

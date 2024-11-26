@@ -1513,6 +1513,7 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
 ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
     ExitInfo exitInfo = ExitCode::Ok;
     while (!_terminatedJobs.empty()) {
+        std::scoped_lock lock(_terminatedJobs);
         // Delete all terminated jobs
         if (exitInfo && _ongoingJobs.find(_terminatedJobs.front()) != _ongoingJobs.end()) {
             auto onGoingJobIt = _ongoingJobs.find(_terminatedJobs.front());
