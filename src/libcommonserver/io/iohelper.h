@@ -393,6 +393,9 @@ struct IoHelper {
         // The most common and expected errors during IO operations
         static bool isExpectedError(IoError ioError) noexcept;
 
+        static bool openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut = 10 /*in seconds*/);
+        static ExitInfo openFile(const SyncPath &path, std::ifstream &file, int timeOut = 10 /*in seconds*/);
+
     protected:
         friend class DirectoryIterator;
         friend class TestIo;

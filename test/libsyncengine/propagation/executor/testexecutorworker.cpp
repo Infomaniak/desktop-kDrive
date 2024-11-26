@@ -161,7 +161,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #endif
 }
 
-SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename) {
+SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
+                                                    const OperationType opType) {
     auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
                                        testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
                                        _syncPal->updateTree(ReplicaSide::Local)->rootNode());
@@ -172,8 +173,81 @@ SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, con
     SyncOpPtr op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
     op->setCorrespondingNode(correspondingNode);
+    op->setType(opType);
 
     return op;
+}
+
+void TestExecutorWorker::testIsValidDestination() {
+    // Always true if the target side is local or unknown
+    {
+        SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->isValidDestination(op));
+    }
+    // Always true if the operation is not of type Create
+    {
+        SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->isValidDestination(op));
+    }
+    // Always true if the item is created on the local replica, at the root of the synchronisation folder
+    {
+        SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"), OperationType::Create);
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(_syncPal->_executorWorker->isValidDestination(op));
+    }
+}
+
+void TestExecutorWorker::testTerminatedJobsQueue() {
+    TerminatedJobsQueue terminatedJobsQueue;
+
+    int ended = 0; // count the number of ended threads
+
+    // Function objects to be used in the thread
+    std::function inserter = [&terminatedJobsQueue, &ended](const UniqueId id) {
+        terminatedJobsQueue.push(id);
+        ended++;
+    };
+    std::function popper = [&terminatedJobsQueue, &ended]() {
+        terminatedJobsQueue.pop();
+        ended++;
+    };
+    std::function fronter = [&terminatedJobsQueue, &ended]() {
+        [[maybe_unused]] auto foo = terminatedJobsQueue.front();
+        ended++;
+    };
+    std::function emptyChecker = [&terminatedJobsQueue, &ended]() {
+        [[maybe_unused]] auto foo = terminatedJobsQueue.empty();
+        ended++;
+    };
+
+    // Check that all functions are thread safe
+    terminatedJobsQueue.lock(); // Lock the queue for the current thread
+
+    std::thread t1(inserter, 1);
+    Utility::msleep(10); // Give enough time for the thread to terminate
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    std::thread t2(fronter);
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    std::thread t3(popper);
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    std::thread t4(emptyChecker);
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    terminatedJobsQueue.unlock(); // Unlock the queue for the current thread
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(4, ended);
+
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join(); // Wait for all threads to finish.
 }
 
 void TestExecutorWorker::testLogCorrespondingNodeErrorMsg() {

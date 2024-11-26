@@ -70,6 +70,8 @@ std::string toString(const OperationType e) {
             return "Delete";
         case OperationType::Rights:
             return "Rights";
+        case OperationType::MoveOut:
+            return "MoveOut";
         default:
             return noConversionStr;
     }
@@ -199,6 +201,10 @@ std::string toString(const ExitCause e) {
         default:
             return noConversionStr;
     }
+}
+
+std::string toString(const ExitInfo e) {
+    return static_cast<std::string>(e);
 }
 
 std::string toString(const ConflictType e) {
