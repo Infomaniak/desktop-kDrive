@@ -572,8 +572,9 @@ void TestNetworkJobs::testGetInfoUser() {
     const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
-    //    CPPUNIT_ASSERT(data->get(emailKey).toString() == _email);
+    CPPUNIT_ASSERT_EQUAL(std::string("John Doe"), job.name());
+    CPPUNIT_ASSERT_EQUAL(std::string("john.doe@nogafam.ch"), job.email());
+    CPPUNIT_ASSERT_EQUAL(false, job.isStaff());
 }
 
 void TestNetworkJobs::testGetInfoDrive() {

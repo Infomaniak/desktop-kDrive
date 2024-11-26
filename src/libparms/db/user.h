@@ -51,6 +51,8 @@ class PARMS_EXPORT User {
         inline void setAvatar(std::shared_ptr<std::vector<char>> avatar) { _avatar = avatar; }
         inline void setToMigrate(bool toMigrate) { _toMigrate = toMigrate; }
         inline int toMigrate() const { return _toMigrate; }
+        [[nodiscard]] bool isStaff() const { return _isStaff; }
+        void setIsStaff(const bool isStaff) { _isStaff = isStaff; }
 
     private:
         log4cplus::Logger _logger;
@@ -62,6 +64,9 @@ class PARMS_EXPORT User {
         std::string _avatarUrl;
         std::shared_ptr<std::vector<char>> _avatar;
         bool _toMigrate;
+
+        // Non DB attributes
+        bool _isStaff{false};
 };
 
 } // namespace KDC

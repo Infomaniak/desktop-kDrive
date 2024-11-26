@@ -2580,14 +2580,12 @@ ExitCode AppServer::updateUserInfo(User &user) {
 
     bool found = false;
     bool updated = false;
-    bool isStaff = false;
-    ExitCode exitCode = ServerRequests::loadUserInfo(user, updated, isStaff);
+    ExitCode exitCode = ServerRequests::loadUserInfo(user, updated);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::loadUserInfo: code=" << exitCode);
         if (exitCode == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
             UserInfo userInfo;
-            userInfo.setIsStaff(isStaff);
             ServerRequests::userToUserInfo(user, userInfo);
             sendUserUpdated(userInfo);
         }

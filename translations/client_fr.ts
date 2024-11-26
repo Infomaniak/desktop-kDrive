@@ -432,7 +432,7 @@
     <message>
         <location filename="../src/gui/betaprogramdialog.cpp" line="242"/>
         <source>Beta versions may leave unexpectedly or cause instabilities.</source>
-        <translation type="unfinished">Les versions bêta peuvent quitter de manière inattendue ou provoquer des instabilités.</translation>
+        <translation>Les versions bêta peuvent quitter de manière inattendue ou provoquer des instabilités.</translation>
     </message>
 </context>
 <context>

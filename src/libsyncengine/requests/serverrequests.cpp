@@ -789,13 +789,10 @@ ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
     // Load User info
     User updatedUser(user);
     bool updated = false;
-    bool isStaff = false;
-    if (ExitCode exitCode = loadUserInfo(updatedUser, updated, isStaff); exitCode != ExitCode::Ok) {
+    if (ExitCode exitCode = loadUserInfo(updatedUser, updated); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
         return exitCode;
     }
-
-    userInfo.setIsStaff(isStaff);
 
     if (updated) {
         bool found = false;
@@ -815,7 +812,7 @@ ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
 }
 
 ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->updateUser(user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
         return ExitCode::DbError;
@@ -828,12 +825,10 @@ ExitCode ServerRequests::updateUser(const User &user, UserInfo &userInfo) {
     // Load User info
     User userUpdated(user);
     bool updated = false;
-    bool isStaff = false;
-    if (const ExitCode exitCode = loadUserInfo(userUpdated, updated, isStaff); exitCode != ExitCode::Ok) {
+    if (const ExitCode exitCode = loadUserInfo(userUpdated, updated); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in loadUserInfo");
         return exitCode;
     }
-    userInfo.setIsStaff(isStaff);
     userToUserInfo(userUpdated, userInfo);
 
     return ExitCode::Ok;
@@ -1674,7 +1669,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::loadUserInfo(User &user, bool &updated, bool &isStaff) {
+ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     updated = false;
 
     // Get user data
@@ -1731,7 +1726,10 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated, bool &isStaff) 
         updated = true;
     }
 
-    isStaff = job->isStaff();
+    if (user.isStaff() != job->isStaff()) {
+        user.setIsStaff(job->isStaff());
+        updated = true;
+    }
 
     return exitCode;
 }
@@ -1927,6 +1925,7 @@ void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
     }
     userInfo.setConnected(!user.keychainKey().empty());
     userInfo.setCredentialsAsked(false);
+    userInfo.setIsStaff(user.isStaff());
 }
 
 void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &accountInfo) {
