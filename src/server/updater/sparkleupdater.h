@@ -36,7 +36,6 @@ class SparkleUpdater final : public AbstractUpdater {
 
     private:
         void reset(const std::string &url = "");
-        void deleteUpdater();
         bool startSparkleUpdater();
 
         void skipVersionCallback();
