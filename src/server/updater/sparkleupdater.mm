@@ -231,11 +231,9 @@ void SparkleUpdater::unskipVersion() {
 }
 
 void SparkleUpdater::reset(const std::string &url /*= ""*/) {
-    if (!d->spuStandardUserDriver) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
-        return;
-    }
-    [d->spuStandardUserDriver dismissUpdateInstallation];
+    // Dismiss an eventual ongoing update
+    if (d->spuStandardUserDriver) [d->spuStandardUserDriver dismissUpdateInstallation];
+
     deleteUpdater();
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
