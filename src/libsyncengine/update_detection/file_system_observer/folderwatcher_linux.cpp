@@ -40,9 +40,7 @@ FolderWatcher_linux::FolderWatcher_linux(LocalFileSystemObserverWorker *parent, 
 FolderWatcher_linux::~FolderWatcher_linux() {}
 
 SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, const char *fileName) {
-    const auto syncName = SyncName(fileName); // `syncName` is empty if for instance the event is a permission change on a watched
-                                              // directory (check inotify man page).
-
+    const auto syncName = SyncName(fileName);
     return syncName.empty() ? watchedFolderPath : watchedFolderPath / syncName;
 }
 
@@ -96,6 +94,8 @@ void FolderWatcher_linux::startWatching() {
 
                 if (!skip && !_stop) {
                     if (_watchToPath.contains(event->wd)) {
+                        // `event->name` is empty for instance if the event is a permission change on a watched
+                        // directory (see inotify man page).
                         const SyncPath path = makeSyncPath(_watchToPath[event->wd], event->name);
                         if (ParametersCache::isExtendedLogEnabled()) {
                             LOGW_DEBUG(_logger,
