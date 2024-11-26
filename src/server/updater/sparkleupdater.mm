@@ -179,6 +179,7 @@ class SparkleUpdater::Private {
 
 SparkleUpdater::SparkleUpdater() {
     d = new Private;
+    reset();
 }
 
 SparkleUpdater::~SparkleUpdater() {
@@ -191,6 +192,12 @@ void SparkleUpdater::onUpdateFound() {
         LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo().fullVersion().c_str() << " is skipped.");
         return;
     }
+
+    if (!d->updater) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
+
     if ([d->updater sessionInProgress]) {
         LOG_INFO(KDC::Log::instance()->getLogger(), "An update window is already opened or installation is in progress. No need to start a new one.");
         return;
@@ -199,12 +206,20 @@ void SparkleUpdater::onUpdateFound() {
 }
 
 void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) {
+    if (!d->updaterDelegate) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
     [d->updaterDelegate setQuitCallback:quitCallback];
 }
 
 void SparkleUpdater::startInstaller() {
     reset(versionInfo().downloadUrl);
 
+    if (!d->updater || !d->spuStandardUserDriver) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
     [d->updater checkForUpdatesInBackground];
     [d->spuStandardUserDriver showUpdateInFocus];
 }
@@ -215,7 +230,11 @@ void SparkleUpdater::unskipVersion() {
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-void SparkleUpdater::reset(const std::string &url) {
+void SparkleUpdater::reset(const std::string &url /*= ""*/) {
+    if (!d->spuStandardUserDriver) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
     [d->spuStandardUserDriver dismissUpdateInstallation];
     deleteUpdater();
 
@@ -247,10 +266,12 @@ void SparkleUpdater::reset(const std::string &url) {
     // Migrate away from using `-[SPUUpdater setFeedURL:]`
     [d->updater clearFeedURLFromUserDefaults];
 
-    [d->updaterDelegate setCustomFeedUrl:url];
+    if (!url.empty()) {
+        [d->updaterDelegate setCustomFeedUrl:url];
 
-    if(startSparkleUpdater()) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
+        if (startSparkleUpdater()) {
+            LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
+        }
     }
 }
 

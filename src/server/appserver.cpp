@@ -302,18 +302,6 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-    // Update checks
-    _updateManager = std::make_unique<UpdateManager>(this);
-    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
-#ifdef Q_OS_MACOS
-    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    _updateManager->setQuitCallback(quitCallback);
-#endif
-
-    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
-    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
-
     // Init socket api
     _socketApi.reset(new SocketApi(_syncPalMap, _vfsMap));
     _socketApi->setAddErrorCallback(&addError);
@@ -343,6 +331,18 @@ AppServer::AppServer(int &argc, char **argv) :
 
     // Set sentry user
     updateSentryUser();
+
+    // Update checks
+    _updateManager = std::make_unique<UpdateManager>(this);
+    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
+#ifdef Q_OS_MACOS
+    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    _updateManager->setQuitCallback(quitCallback);
+#endif
+
+    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
 
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
