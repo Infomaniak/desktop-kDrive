@@ -140,15 +140,6 @@ class Vfs : public QObject {
         /// Determine whether the file at the given absolute path is a dehydrated placeholder.
         virtual bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) = 0;
 
-        /** Similar to isDehydratedPlaceholder() but used from sync discovery.
-         *
-         * This function shall set stat->type if appropriate.
-         * It may rely on stat->path and stat_data (platform specific data).
-         *
-         * Returning true means that type was fully determined.
-         */
-        // virtual bool statTypeVirtualFile(csync_file_stat_t *stat, void *stat_data, const QString &fileDirectory) = 0;
-
         /** Sets the pin state for the item at a path.
          *
          * The pin state is set on the item and for all items below it.
@@ -172,11 +163,11 @@ class Vfs : public QObject {
         virtual KDC::PinState pinState(const QString &fileRelativePath) = 0;
         virtual ExitInfo status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) = 0;
 
-        virtual bool setThumbnail(const QString &filePath, const QPixmap &pixmap) = 0;
+        virtual ExitInfo setThumbnail(const QString &filePath, const QPixmap &pixmap) = 0;
 
-        virtual bool setAppExcludeList() = 0;
+        virtual ExitInfo setAppExcludeList() = 0;
 
-        virtual bool getFetchingAppList(QHash<QString, QString> &appTable) = 0;
+        virtual ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) = 0;
 
         virtual void exclude(const QString &) = 0;
         virtual bool isExcluded(const QString &filePath) = 0;
@@ -267,14 +258,14 @@ class VfsOff : public Vfs {
         ExitInfo setPinState(const QString &, KDC::PinState) override { return ExitCode::Ok; }
         KDC::PinState pinState(const QString &) override { return KDC::PinState::AlwaysLocal; }
         ExitInfo status(const QString &, bool &, bool &, bool &, int &) override { return ExitCode::Ok; }
-        virtual bool setThumbnail(const QString &, const QPixmap &) override { return true; }
-        virtual bool setAppExcludeList() override { return true; }
-        virtual bool getFetchingAppList(QHash<QString, QString> &) override { return true; }
-        virtual void exclude(const QString &) override {}
-        virtual bool isExcluded(const QString &) override { return false; }
-        virtual bool fileStatusChanged(const QString &, KDC::SyncFileStatus) override { return true; }
+        ExitInfo setThumbnail(const QString &, const QPixmap &) override { return ExitCode::Ok; }
+        ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
+        ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
+        void exclude(const QString &) override {}
+        bool isExcluded(const QString &) override { return false; }
+        bool fileStatusChanged(const QString &, KDC::SyncFileStatus) override { return true; }
 
-        virtual void clearFileAttributes(const QString &) override {}
+        void clearFileAttributes(const QString &) override {}
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;

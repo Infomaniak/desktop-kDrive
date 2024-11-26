@@ -88,9 +88,9 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         ExitInfo setPinState(const QString &fileRelativePath, PinState state) override;
         PinState pinState(const QString &relativePath) override;
         ExitInfo status(const QString &, bool &, bool &, bool &, int &) override;
-        virtual bool setThumbnail(const QString &, const QPixmap &) override { return true; };
-        virtual bool setAppExcludeList() override { return true; }
-        virtual bool getFetchingAppList(QHash<QString, QString> &) override { return true; }
+        virtual ExitInfo setThumbnail(const QString &, const QPixmap &) override { return ExitCode::Ok; };
+        virtual ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
+        virtual ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
 
         bool isExcluded(const QString &) override { return false; }
         virtual bool setCreationDate(const QString &, time_t) { return false; }
