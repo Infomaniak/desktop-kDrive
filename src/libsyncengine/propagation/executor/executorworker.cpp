@@ -1513,6 +1513,7 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
 ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
     ExitInfo exitInfo = ExitCode::Ok;
     while (!_terminatedJobs.empty()) {
+        std::scoped_lock lock(_terminatedJobs);
         // Delete all terminated jobs
         if (exitInfo && _ongoingJobs.find(_terminatedJobs.front()) != _ongoingJobs.end()) {
             auto onGoingJobIt = _ongoingJobs.find(_terminatedJobs.front());
@@ -2507,6 +2508,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveToTrashFailed)): {
             return handleOpsFileAccessError(syncOp, opsExitInfo);
         }
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
+            return handleOpsFileNotFound(syncOp, opsExitInfo);
+        }
         case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist)):
         case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)): {
             return handleOpsAlreadyExistError(syncOp, opsExitInfo);
@@ -2536,6 +2540,16 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
             return exitInfo;
         }
     }
+    _syncPal->setRestart(true);
+    return removeDependentOps(syncOp);
+}
+
+ExitInfo ExecutorWorker::handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
+    if (syncOp->targetSide() != ReplicaSide::Remote) {
+        LOGW_SYNCPAL_WARN(_logger, L"Unhandled target side for " << opsExitInfo << L": " << syncOp->targetSide());
+        return opsExitInfo; // Unable to handle this error
+    }
+
     _syncPal->setRestart(true);
     return removeDependentOps(syncOp);
 }

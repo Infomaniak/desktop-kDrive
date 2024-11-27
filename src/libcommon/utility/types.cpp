@@ -203,6 +203,10 @@ std::string toString(const ExitCause e) {
     }
 }
 
+std::string toString(const ExitInfo e) {
+    return static_cast<std::string>(e);
+}
+
 std::string toString(const ConflictType e) {
     switch (e) {
         case ConflictType::None:

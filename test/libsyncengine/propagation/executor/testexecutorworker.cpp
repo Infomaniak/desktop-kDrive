@@ -312,6 +312,58 @@ void TestExecutorWorker::testIsValidDestination() {
     }
 }
 
+void TestExecutorWorker::testTerminatedJobsQueue() {
+    TerminatedJobsQueue terminatedJobsQueue;
+
+    int ended = 0; // count the number of ended threads
+
+    // Function objects to be used in the thread
+    std::function inserter = [&terminatedJobsQueue, &ended](const UniqueId id) {
+        terminatedJobsQueue.push(id);
+        ended++;
+    };
+    std::function popper = [&terminatedJobsQueue, &ended]() {
+        terminatedJobsQueue.pop();
+        ended++;
+    };
+    std::function fronter = [&terminatedJobsQueue, &ended]() {
+        [[maybe_unused]] auto foo = terminatedJobsQueue.front();
+        ended++;
+    };
+    std::function emptyChecker = [&terminatedJobsQueue, &ended]() {
+        [[maybe_unused]] auto foo = terminatedJobsQueue.empty();
+        ended++;
+    };
+
+    // Check that all functions are thread safe
+    terminatedJobsQueue.lock(); // Lock the queue for the current thread
+
+    std::thread t1(inserter, 1);
+    Utility::msleep(10); // Give enough time for the thread to terminate
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    std::thread t2(fronter);
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    std::thread t3(popper);
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    std::thread t4(emptyChecker);
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    terminatedJobsQueue.unlock(); // Unlock the queue for the current thread
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(4, ended);
+
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join(); // Wait for all threads to finish.
+}
+
 void TestExecutorWorker::testLogCorrespondingNodeErrorMsg() {
     SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
     _executorWorker->logCorrespondingNodeErrorMsg(op);
