@@ -188,7 +188,7 @@ class SentryHandler {
         static std::shared_ptr<SentryHandler> _instance;
         bool _isSentryActivated = false;
 
-        // The user that will be used to send genral events to Sentry. This variable can be updated with
+        // The user that will be used to send general events to Sentry. This variable can be updated with
         // `setAuthenticatedUser(...)`
         SentryUser _authenticatedUser;
 
