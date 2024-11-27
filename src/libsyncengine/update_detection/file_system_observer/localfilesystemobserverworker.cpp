@@ -650,13 +650,9 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         }
         DirectoryEntry entry;
         bool endOfDirectory = false;
-        int perfMonitorCounter = 0; // We monitor the performance for the treatement of 1000 items
-        SentryHandler::ScopedPTrace perfMonitor(SentryHandler::PTraceName::LFSO_ExploreItem, syncDbId(), true);
+        SentryHandler::CounterScopedPTrace perfMonitor(1000, SentryHandler::PTraceName::LFSO_ExploreItem, syncDbId());
         while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
-            perfMonitorCounter++;
-            if (perfMonitorCounter % 1000 == 0) {
-                perfMonitor.stopAndStart(SentryHandler::PTraceName::LFSO_ExploreItem, syncDbId(), true);
-            }
+            perfMonitor.increment();
 
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(entry.path()) << L" found");

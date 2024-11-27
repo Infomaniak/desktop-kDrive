@@ -267,7 +267,7 @@ ExitCode RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) 
 
 ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, const bool saveCursor) {
     // Send request
-    SentryHandler::ScopedPTrace sentryTransaction(SentryHandler::PTraceName::RFSO_BackRequest, syncDbId(), true);
+    SentryHandler::ScopedPTrace perfMonitor(SentryHandler::PTraceName::RFSO_BackRequest, syncDbId(), true);
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
         std::unordered_set<NodeId> blackList;
@@ -323,7 +323,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     bool eof = false;
     std::unordered_set<SyncName> existingFiles;
     uint64_t itemCount = 0;
-    sentryTransaction.stopAndStart(SentryHandler::PTraceName::RFSO_ExploreItem, syncDbId(), true);
+    perfMonitor.stop();
+    SentryHandler::CounterScopedPTrace counterPerfMonitor(1000, SentryHandler::PTraceName::RFSO_ExploreItem, syncDbId());
     while (job->getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
@@ -332,9 +333,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (eof) break;
 
         itemCount++;
-        if (itemCount % 1000 == 0) {
-            sentryTransaction.stopAndStart(SentryHandler::PTraceName::RFSO_ExploreItem, syncDbId(), true);
-        }
+        counterPerfMonitor.increment();
 
         if (error) {
             LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");

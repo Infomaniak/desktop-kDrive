@@ -109,7 +109,7 @@ class SentryHandler {
                 // failure.
                 explicit ScopedPTrace(const pTraceId &transactionId, bool manualStopExpected = false) :
                     _pTraceId(transactionId), _manualStopExpected(manualStopExpected) {}
-                ~ScopedPTrace() { stop(_manualStopExpected); }
+                virtual ~ScopedPTrace() { stop(_manualStopExpected); }
 
                 // Return the current performance trace id.
                 pTraceId id() const { return _pTraceId; }
@@ -135,6 +135,31 @@ class SentryHandler {
                 bool _manualStopExpected{false};
                 ScopedPTrace &operator=(ScopedPTrace &&) = delete;
         };
+
+        // Same as ScopedPTrace but the pTrace will automatically be stopped and started again after count call to increment();
+        struct CounterScopedPTrace : private ScopedPTrace {
+                CounterScopedPTrace(unsigned int count, const SentryHandler::PTraceName &pTraceName, int syncDbId = -1) :
+                    ScopedPTrace(pTraceName, syncDbId, true), _count(count), _counter(count), _pTraceName(pTraceName),
+                    _syncDbId(syncDbId) {}
+
+
+                void increment() {
+                    if (_counter == 0) {
+                        ScopedPTrace::stopAndStart(_pTraceName, _syncDbId, true);
+                        _counter = _count;
+                    } else {
+                        --_counter;
+                    }
+                }
+
+
+            private:
+                const unsigned int _count = 0;
+                unsigned int _counter = 0;
+                const SentryHandler::PTraceName _pTraceName;
+                const int _syncDbId = -1;
+        };
+
 
     public:
         virtual ~SentryHandler();
