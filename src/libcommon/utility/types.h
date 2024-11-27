@@ -17,8 +17,13 @@
  */
 
 #pragma once
+#ifdef _WIN32 // Still buggy on MacOS and not available on Linux
+#define KDC_SRC_LOC_AVAILABLE
+#endif // _WIN32
+#define KDC_STRICT_EXIT_INFO_CHECK
 
 #include <string>
+#include <set>
 #include <filesystem>
 #include <functional>
 #include <cctype>
@@ -28,8 +33,12 @@
 #include <variant>
 #include <qdebug.h>
 #include <signal.h>
-#include "libcommon/log/customlogwstream.h"
 
+#ifdef KDC_SRC_LOC_AVAILABLE
+#include <source_location>
+#endif // KDC_SRC_LOC_AVAILABLE
+
+#include "libcommon/log/customlogwstream.h"
 namespace KDC {
 
 using SyncTime = int64_t;
@@ -243,22 +252,101 @@ std::string toString(ExitCause e);
 
 struct ExitInfo {
         ExitInfo() = default;
+#ifdef KDC_SRC_LOC_AVAILABLE
+        constexpr ExitInfo(const ExitCode &code, const ExitCause &cause,
+                           std::source_location srcLoc = std::source_location::current()) :
+            _code(code),
+            _cause(cause), _srcLoc(srcLoc) {}
+        constexpr ExitInfo(const ExitCode &code, std::source_location srcLoc = std::source_location::current()) :
+            _code(code), _srcLoc(srcLoc) {}
+#else
         constexpr ExitInfo(const ExitCode &code, const ExitCause &cause) : _code(code), _cause(cause) {}
-        ExitInfo(const ExitCode &code) : _code(code) {}
+        constexpr ExitInfo(const ExitCode &code) : _code(code) {}
+#endif // KDC_SRC_LOC_AVAILABLE
         const ExitCode &code() const { return _code; }
         const ExitCause &cause() const { return _cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
-        explicit operator std::string() const { return "ExitInfo{" + toString(code()) + ", " + toString(cause()) + "}"; }
+        explicit operator std::string() const {
+            return "ExitInfo{" + toString(code()) + ", " + toString(cause()) + srcLocStr() + "}";
+        }
         constexpr operator bool() const { return _code == ExitCode::Ok; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
+        constexpr bool operator<(const ExitInfo &other) const { return static_cast<int>(*this) < static_cast<int>(other); }
+        constexpr bool operator>(const ExitInfo &other) const { return static_cast<int>(*this) > static_cast<int>(other); }
 
     private:
         ExitCode _code{ExitCode::Unknown};
         ExitCause _cause{ExitCause::Unknown};
+#ifdef KDC_SRC_LOC_AVAILABLE
+        std::source_location _srcLoc;
+#endif // KDC_SRC_LOC_AVAILABLE
+
+        std::string srcLocStr() const {
+#ifdef KDC_SRC_LOC_AVAILABLE
+            if (_code != ExitCode::Ok) {
+                return ", src - " + SyncPath(_srcLoc.file_name()).filename().string() + ":" + std::to_string(_srcLoc.line());
+            }
+#endif // KDC_SRC_LOC_AVAILABLE
+            return "";
+        }
 };
 std::string toString(ExitInfo e);
+
+class ExitInfoSecure : public ExitInfo {
+    private:
+        friend class ExitInfoChecker;
+        explicit ExitInfoSecure(const ExitInfo &exitInfo) : ExitInfo(exitInfo) { _possibleExitInfos.insert(exitInfo); }
+        ExitInfoSecure(const ExitInfo &exitInfo, std::set<ExitInfo> possibleExitInfos) :
+            ExitInfo(exitInfo), _possibleExitInfos(possibleExitInfos) {}
+        std::set<ExitInfo> _possibleExitInfos;
+};
+
+class ExitInfoChecker {
+    public:
+        explicit ExitInfoChecker(std::set<ExitInfo> expectedExitInfos) : _expectedExitInfos(std::move(expectedExitInfos)) {}
+
+        ExitInfoSecure check(const ExitInfo &&exitInfo) const {
+            if (!exitInfo && !_expectedExitInfos.contains(exitInfo)) {
+                assert(false && "Unexpected exit info");
+            }
+
+#ifdef KDC_STRICT_EXIT_INFO_CHECK
+            ExitInfoSecure exitInfoSecure(exitInfo, _expectedExitInfos);
+#else
+            ExitInfoSecure exitInfoSecure(exitInfo); // No need to store the expected exit infos
+#endif // KDC_STRICT_EXIT_INFO_CHECK
+
+            return exitInfoSecure;
+        };
+
+        ExitInfoSecure &check(ExitInfoSecure &exitInfoSecure) const {
+            if (!exitInfoSecure && !_expectedExitInfos.contains(exitInfoSecure)) {
+                assert(false && "Unexpected exit info");
+            }
+
+#ifdef KDC_STRICT_EXIT_INFO_CHECK
+            for (const auto &possibleExitInfoSrc: exitInfoSecure._possibleExitInfos) {
+                if (!possibleExitInfoSrc && !_expectedExitInfos.contains(possibleExitInfoSrc)) {
+                    assert(false && "The callee can return an ExitInfo that is not expected.");
+                }
+            }
+
+            for (const auto &expectedExitInfo: _expectedExitInfos) {
+                exitInfoSecure._possibleExitInfos.insert(expectedExitInfo);
+            }
+#endif // KDC_STRICT_EXIT_INFO_CHECK
+
+            return exitInfoSecure;
+        };
+
+    private:
+        std::set<ExitInfo> _expectedExitInfos;
+};
+
+#define EXITINFO_CHECKER(...) static ExitInfoChecker exitChecker(__VA_ARGS__);
+#define EXIT_CHECK(...) exitChecker.check(__VA_ARGS__);
 
 // Conflict types ordered by priority
 enum class ConflictType {
