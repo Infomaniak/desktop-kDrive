@@ -130,7 +130,9 @@ void TestNetworkJobs::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    MockIoHelperTestNetworkJobs::resetStdFunctions();
 }
+
 
 void TestNetworkJobs::testCreateDir() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testCreateDir");
@@ -260,34 +262,74 @@ void TestNetworkJobs::testDelete() {
 }
 
 void TestNetworkJobs::testDownload() {
-    const LocalTemporaryDirectory temporaryDirectory("testDownload");
-    SyncPath localDestFilePath = temporaryDirectory.path() / "test_file.txt";
-    DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        const LocalTemporaryDirectory temporaryDirectory("testDownload");
+        SyncPath localDestFilePath = temporaryDirectory.path() / "test_file.txt";
+        DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
 
-    // Check file content
-    std::ifstream ifs(localDestFilePath.string().c_str());
-    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-    CPPUNIT_ASSERT(content == "test");
+        // Check file content
+        std::ifstream ifs(localDestFilePath.string().c_str());
+        std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+        CPPUNIT_ASSERT(content == "test");
+    }
+
+    // Cross Device Link
+    {
+        const LocalTemporaryDirectory tmpdirectory("testDownloadCrossDeviceLnk_TMP");
+        const LocalTemporaryDirectory destDirectory("testDownloadCrossDeviceLnk_TMP");
+        SyncPath localDestFilePath = destDirectory.path() / bigFileName;
+
+        std::function<SyncPath(std::error_code & ec)> MockTempDirectoryPath = [&tmpdirectory](std::error_code &ec) {
+            ec.clear();
+            return tmpdirectory.path();
+        };
+        std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
+                [](const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec) {
+#ifdef _WIN32
+                    ec = std::make_error_code(static_cast<std::errc>(ERROR_NOT_SAME_DEVICE));
+#else
+                    ec = std::make_error_code(std::errc::cross_device_link);
+#endif
+                };
+        MockIoHelperTestNetworkJobs::setStdRename(MockRename);
+        MockIoHelperTestNetworkJobs::setStdTempDirectoryPath(MockTempDirectoryPath);
+
+        DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(tmpdirectory.path()));
+
+        // Check file content
+        std::ifstream ifs(localDestFilePath.string().c_str());
+        std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+        CPPUNIT_ASSERT(content == "test");
+    }
 }
 
 void TestNetworkJobs::testDownloadAborted() {
-    const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
-    SyncPath localDestFilePath = temporaryDirectory.path() / bigFileName;
-    std::shared_ptr<DownloadJob> job =
-            std::make_shared<DownloadJob>(_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
-    JobManager::instance()->queueAsyncJob(job);
+    {
+        const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
+        SyncPath localDestFilePath = temporaryDirectory.path() / bigFileName;
+        std::shared_ptr<DownloadJob> job =
+                std::make_shared<DownloadJob>(_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
+        JobManager::instance()->queueAsyncJob(job);
 
-    Utility::msleep(1000); // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
-    job->abort();
+        job->abort();
 
-    Utility::msleep(1000); // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
-    CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
+        CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
+    }
 }
 
 void TestNetworkJobs::testGetAvatar() {

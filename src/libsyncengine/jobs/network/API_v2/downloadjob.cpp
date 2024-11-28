@@ -513,12 +513,16 @@ bool DownloadJob::moveTmpFile(const SyncPath &tmpPath, bool &restartSync) {
     while (retry) {
         retry = false;
 #endif
-        std::filesystem::rename(tmpPath, _localpath, ec);
-#ifdef _WIN32
-        const bool crossDeviceLink = ec.value() == ERROR_NOT_SAME_DEVICE;
-#else
-    const bool crossDeviceLink = ec.value() == (int) std::errc::cross_device_link;
-#endif
+
+        IoError ioError = IoError::Success;
+        IoHelper::moveItem(tmpPath, _localpath, ioError);
+        const bool crossDeviceLink = ioError == IoError::CrossDeviceLink;
+        if (ioError != IoError::Success && !crossDeviceLink) {
+            LOGW_WARN(_logger, L"Failed to move: " << Utility::formatIoError(tmpPath, ioError) << L" to "
+                                                   << Utility::formatSyncPath(_localpath));
+            return false;
+        }
+
         if (crossDeviceLink) {
             // The sync might be on a different file system than tmp folder.
             // In that case, try to copy the file instead.
