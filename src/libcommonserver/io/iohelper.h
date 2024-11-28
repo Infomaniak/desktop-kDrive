@@ -408,7 +408,6 @@ struct IoHelper {
         static std::function<SyncPath(const SyncPath &path, std::error_code &ec)> _readSymlink;
         static std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> _fileSize;
         static std::function<SyncPath(std::error_code &ec)> _tempDirectoryPath;
-        static void resetStdFunctions();
 #ifdef __APPLE__
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
