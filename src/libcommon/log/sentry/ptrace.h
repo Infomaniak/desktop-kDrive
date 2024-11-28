@@ -34,11 +34,12 @@ struct PerformanceTrace {
             assert(pTraceId != 0 && "operationId must be different from 0");
         }
 
-        void setTransaction(sentry_transaction_t *tx) { // A transaction cannot have a parent.
+        void setTransaction(sentry_transaction_t *tx) { // A transaction allows to track the duration of an operation. It cannot
+                                                        // be a child of another transaction.
             assert(!_span);
             _tx = tx;
         }
-        void setSpan(sentry_span_t *span) { // A Span behave as a transaction, but it needs to have a parent
+        void setSpan(sentry_span_t *span) { // A Span work as a transaction, but it needs to have a parent
                                             // (which can be either a transaction or another span).
             assert(!_span);
             _span = span;

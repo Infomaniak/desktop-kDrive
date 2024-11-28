@@ -56,7 +56,7 @@ inline std::string toString(Sentry::Level level) {
 
 namespace Sentry {
 class Handler {
-     public:
+    public:
         virtual ~Handler();
         static std::shared_ptr<Handler> instance();
         static void init(AppType appType, int breadCrumbsSize = 100);
@@ -74,8 +74,8 @@ class Handler {
          *   - The event sent to Sentry will have a message indicating that the event has been rate limited.(see:
          *      void Handler::escalateSentryEvent(SentryEvent &event))
          */
-        static void captureMessage(Level level, const std::string& title, const std::string& message,
-            const SentryUser& user = SentryUser()) {
+        static void captureMessage(Level level, const std::string &title, const std::string &message,
+                                   const SentryUser &user = SentryUser()) {
             instance()->_captureMessage(level, title, message, user);
         }
 
@@ -101,6 +101,7 @@ class Handler {
         virtual void sendEventToSentry(const Level level, const std::string &title, const std::string &message) const;
 
         void _captureMessage(Level level, const std::string &title, std::string message, const SentryUser &user = SentryUser());
+
     private:
         Handler(const Handler &) = delete;
         Handler &operator=(const Handler &) = delete;
@@ -185,7 +186,12 @@ class Handler {
         pTraceId _pTraceIdCounter = 0;
         std::map<pTraceId, PerformanceTrace> _performanceTraces;
 
+        // A transaction allows to track the duration of an operation. It cannot
+        // be a child of another transaction.
         pTraceId startTransaction(const std::string &name, const std::string &description);
+
+        // A Span work as a transaction, but it needs to have a parent
+        // (which can be either a transaction or another span).
         pTraceId startSpan(const std::string &name, const std::string &description, const pTraceId &parentId);
 
         std::map<int /*syncDbId*/, std::map<PTraceName, pTraceId>> _pTraceNameToPTraceIdMap;
