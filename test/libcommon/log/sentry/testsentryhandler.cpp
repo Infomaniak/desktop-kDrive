@@ -38,8 +38,8 @@ void MockTestSentryHandler::sendEventToSentry(const Sentry::Level level, const s
 }
 
 
-void TestSentry::Handler::testMultipleSendEventForTheSameEvent() {
-    MockTestSentry::Handler mockSentry::Handler;
+void TestSentryHandler::testMultipleSendEventForTheSameEvent() {
+    MockTestSentryHandler mockSentryHandler;
 
     CPPUNIT_ASSERT_EQUAL(0, mockSentryHandler.sentryUploadedEventCount());
     mockSentryHandler.captureMessage(Sentry::Level::Info, "Test", "Test message"); // Should be sent
@@ -48,7 +48,7 @@ void TestSentry::Handler::testMultipleSendEventForTheSameEvent() {
     CPPUNIT_ASSERT_EQUAL(2, mockSentryHandler.sentryUploadedEventCount());
     mockSentryHandler.captureMessage(Sentry::Level::Info, "Test",
                                      "Test message"); // Rate limit reached, should be sent (first event on rate limit is sent).
-    CPPUNIT_ASSERT_EQUAL(3, mockSentry::Handler.sentryUploadedEventCount());
+    CPPUNIT_ASSERT_EQUAL(3, mockSentryHandler.sentryUploadedEventCount());
 
     for (int i = 3; i <= 4; i++) { // Done twice to check that the timer is well reset.
         mockSentryHandler.captureMessage(Sentry::Level::Info, "Test", "Test message"); // Rate limit reached, should not be sent
@@ -63,7 +63,7 @@ void TestSentry::Handler::testMultipleSendEventForTheSameEvent() {
 
         mockSentryHandler.captureMessage(Sentry::Level::Info, "Test",
                                          "Test message"); // Should be sent
-        CPPUNIT_ASSERT_EQUAL(i + 1, mockSentry::Handler.sentryUploadedEventCount());
+        CPPUNIT_ASSERT_EQUAL(i + 1, mockSentryHandler.sentryUploadedEventCount());
     }
 
     std::this_thread::sleep_for(
@@ -75,16 +75,16 @@ void TestSentry::Handler::testMultipleSendEventForTheSameEvent() {
     CPPUNIT_ASSERT_EQUAL(7, mockSentryHandler.sentryUploadedEventCount());
     mockSentryHandler.captureMessage(Sentry::Level::Info, "Test",
                                      "Test message"); // Rate limit reached, should be sent (first event on rate limit is sent).
-    CPPUNIT_ASSERT_EQUAL(8, mockSentry::Handler.sentryUploadedEventCount());
+    CPPUNIT_ASSERT_EQUAL(8, mockSentryHandler.sentryUploadedEventCount());
 
     mockSentryHandler.captureMessage(Sentry::Level::Info, "Test", "Test message"); // Rate limit reached, should not be sent
     CPPUNIT_ASSERT_EQUAL(8, mockSentryHandler.sentryUploadedEventCount());
 }
-void TestSentry::Handler::testMultipleSendEventForDifferentEvent() {
-    MockTestSentry::Handler mockSentry::Handler;
+void TestSentryHandler::testMultipleSendEventForDifferentEvent() {
+    MockTestSentryHandler mockSentryHandler;
 
     // Test all levels
-    CPPUNIT_ASSERT_EQUAL(0, mockSentry::Handler.sentryUploadedEventCount());
+    CPPUNIT_ASSERT_EQUAL(0, mockSentryHandler.sentryUploadedEventCount());
 
     mockSentryHandler.captureMessage(Sentry::Level::Info, "Test", "Test message"); // Should be sent
     CPPUNIT_ASSERT_EQUAL(1, mockSentryHandler.sentryUploadedEventCount());
@@ -125,7 +125,7 @@ void TestSentry::Handler::testMultipleSendEventForDifferentEvent() {
     CPPUNIT_ASSERT_EQUAL(12, mockSentryHandler.sentryUploadedEventCount());
 }
 
-void TestSentry::Handler::testWriteEvent() {
+void TestSentryHandler::testWriteEvent() {
     using namespace KDC::event_dump_files;
 
     // Test send event
