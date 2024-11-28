@@ -25,6 +25,8 @@
 
 #include <config.h>
 
+#include <chrono>
+
 namespace KDC::testhelpers {
 
 const SyncPath localTestDirPath(KDC::Utility::s2ws(TEST_DIR) + L"/test_ci");
@@ -54,5 +56,6 @@ struct TestVariables {
 };
 
 void generateOrEditTestFile(const SyncPath &path);
+void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
 
 } // namespace KDC::testhelpers

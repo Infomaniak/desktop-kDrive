@@ -26,7 +26,7 @@ namespace KDC {
 
 class MockTestSentryHandler : public Sentry::Handler {
     public:
-        MockTestSentryHandler();
+        MockTestSentry::Handler();
         int sentryUploadedEventCount() const { return _sentryUploadedEventCount; }
 
     private:
@@ -35,8 +35,8 @@ class MockTestSentryHandler : public Sentry::Handler {
 };
 
 
-class TestSentryHandler : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSentryHandler);
+class TestSentry::Handler : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestSentry::Handler);
         CPPUNIT_TEST(testMultipleSendEventForTheSameEvent);
         CPPUNIT_TEST(testMultipleSendEventForDifferentEvent);
         CPPUNIT_TEST(testWriteEvent);
