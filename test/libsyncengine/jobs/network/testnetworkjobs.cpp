@@ -315,21 +315,19 @@ void TestNetworkJobs::testDownload() {
 }
 
 void TestNetworkJobs::testDownloadAborted() {
-    {
-        const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
-        SyncPath localDestFilePath = temporaryDirectory.path() / bigFileName;
-        std::shared_ptr<DownloadJob> job =
-                std::make_shared<DownloadJob>(_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
-        JobManager::instance()->queueAsyncJob(job);
+    const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
+    SyncPath localDestFilePath = temporaryDirectory.path() / bigFileName;
+    std::shared_ptr<DownloadJob> job =
+            std::make_shared<DownloadJob>(_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
+    JobManager::instance()->queueAsyncJob(job);
 
-        Utility::msleep(1000); // Wait 1sec
+    Utility::msleep(1000); // Wait 1sec
 
-        job->abort();
+    job->abort();
 
-        Utility::msleep(1000); // Wait 1sec
+    Utility::msleep(1000); // Wait 1sec
 
-        CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
-    }
+    CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
 }
 
 void TestNetworkJobs::testGetAvatar() {
