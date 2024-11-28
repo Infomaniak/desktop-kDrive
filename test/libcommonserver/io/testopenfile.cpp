@@ -18,40 +18,12 @@
 
 #include "testio.h"
 #include "test_utility/testhelpers.h"
+#include "test_utility/timechecker.h"
+
 #include <thread>
 using namespace CppUnit;
 
 namespace KDC {
-
-class TimeOutChecker {
-    public:
-        explicit TimeOutChecker(bool start = false) {
-            if (start) this->start();
-        }
-        void start() { _time = std::chrono::steady_clock::now(); }
-        void stop() {
-            auto end = std::chrono::steady_clock::now();
-            _diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - _time).count();
-        }
-        bool lessOrEqualThan(long long value) {
-            if (_diff > value) std::cout << "TimeOutChecker::lessThan: " << _diff << " >= " << value << std::endl;
-            return _diff <= value;
-        }
-        bool greaterOrEqualThan(long long value) {
-            if (_diff < value) std::cout << "TimeOutChecker::greaterThan: " << _diff << " <= " << value << std::endl;
-            return _diff >= value;
-        }
-        bool between(long long min, long long max) {
-            if (_diff < min || _diff > max)
-                std::cout << "TimeOutChecker::between: " << _diff << " <= " << min << " || " << _diff << " >= " << max
-                          << std::endl;
-            return _diff >= min && _diff <= max;
-        }
-
-    private:
-        std::chrono::steady_clock::time_point _time;
-        long long _diff{0};
-};
 
 bool checkContent(std::ifstream &file) {
     std::string content;
@@ -80,7 +52,7 @@ void TestIo::testOpenFileAccessDenied() {
 
     // Without timeout
     std::ifstream file;
-    TimeOutChecker timeOutChecker(true);
+    TimeChecker timeOutChecker(true);
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), IoHelper::openFile(filePath, file, 0));
     timeOutChecker.stop();
     CPPUNIT_ASSERT(timeOutChecker.lessOrEqualThan(200));
@@ -98,7 +70,7 @@ void TestIo::testOpenFileNonExisting() {
     LocalTemporaryDirectory tempDir("testOpenFileNonExisting");
     SyncPath filePath = tempDir.path() / "testOpenFileNonExisting.txt";
     std::ifstream file;
-    TimeOutChecker timeOutChecker(true);
+    TimeChecker timeOutChecker(true);
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), IoHelper::openFile(filePath, file, 5));
     timeOutChecker.stop();
     CPPUNIT_ASSERT(timeOutChecker.lessOrEqualThan(200));
@@ -128,7 +100,7 @@ void TestIo::testOpenLockedFileRemovedBeforeTimedOut() {
     };
 
     std::thread restoreRightsThread(restoreRights);
-    TimeOutChecker timeOutChecker(true);
+    TimeChecker timeOutChecker(true);
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::openFile(filePath, file, 4));
     timeOutChecker.stop();
     restoreRightsThread.join();

@@ -42,7 +42,7 @@ set(libcommon_SRCS
     log/sentry/user.h 
     log/sentry/ptraceinfo.h log/sentry/ptraceinfo.cpp
     log/sentry/ptrace.h log/sentry/utility.h
-    log/customlogwstream.h
+    log/customlogstreams.h
     theme/theme.h theme/theme.cpp
 )
 

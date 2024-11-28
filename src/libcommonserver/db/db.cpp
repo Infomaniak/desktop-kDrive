@@ -376,7 +376,7 @@ bool Db::init(const std::string &version) {
             queryFree(CREATE_VERSION_TABLE_ID);
 
             // Insert version
-            LOG_DEBUG(_logger, "Insert version " << version.c_str());
+            LOG_DEBUG(_logger, "Insert version " << version);
             if (!prepareQuery(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST)) return false;
             if (!insertVersion(version)) {
                 LOG_WARN(_logger, "Error in Db::insertVersion");
@@ -386,7 +386,7 @@ bool Db::init(const std::string &version) {
             queryFree(INSERT_VERSION_REQUEST_ID);
 
             // Create DB
-            LOG_INFO(_logger, "Create " << dbType().c_str() << " DB");
+            LOG_INFO(_logger, "Create " << dbType() << " DB");
             if (bool retry = false; !create(retry)) {
                 if (retry) {
                     LOG_WARN(_logger, "Error in Db::create - Retry");
@@ -413,7 +413,7 @@ bool Db::init(const std::string &version) {
 void Db::startTransaction() {
     if (!_transaction) {
         if (!_sqliteDb->startTransaction()) {
-            LOG_WARN(_logger, "ERROR starting transaction: " << _sqliteDb->error().c_str());
+            LOG_WARN(_logger, "ERROR starting transaction: " << _sqliteDb->error());
             return;
         }
         _transaction = true;
