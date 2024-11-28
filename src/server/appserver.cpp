@@ -2394,20 +2394,19 @@ ExitInfo AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, 
 }
 
 ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                      const int64_t size, const NodeId &id, std::string &error) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+                                      const int64_t size, const NodeId &id) {
+    auto vfsMapIt = _vfsMap.find(syncDbId);
+    if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
     const QByteArray fileId(id.c_str());
-    QString errorStr;
     if (ExitInfo exitInfo =
-                _vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, &errorStr);
+                vfsMapIt->second->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId);
         !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::updateMetadata for syncDbId="
                                                         << syncDbId << L" and path=" << Path2WStr(path) << L": " << exitInfo);
-        error = errorStr.toStdString();
         return exitInfo;
     }
     return ExitCode::Ok;
@@ -3716,7 +3715,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     // Start VFS
     if (ExitInfo exitInfo = _vfsMap[sync.dbId()]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
         !exitInfo) {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MAC // TODO: If possible move this in VfsMac::start method
         if (sync.virtualFileMode() == VirtualFileMode::Mac) {
             if (_vfsInstallationDone && !_vfsActivationDone) {
                 // Check LiteSync ext authorizations
@@ -4354,8 +4353,10 @@ void AppServer::onRestartSyncs() {
                     sendErrorsCleared(syncPalMapElt.first);
 
                     // Start VFS
-                    if (!_vfsMap[syncPalMapElt.first]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone)) {
-                        LOG_WARN(Log::instance()->getLogger(), "Error in Vfs::start");
+                    if (ExitInfo exitInfo =
+                                _vfsMap[syncPalMapElt.first]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
+                        !exitInfo) {
+                        LOG_WARN(Log::instance()->getLogger(), "Error in Vfs::start: " << exitInfo);
                         continue;
                     }
 

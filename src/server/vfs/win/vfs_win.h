@@ -70,8 +70,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         bool socketApiPinStateActionsShown() const override { return false; }
 
         ExitInfo updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size,
-                                const QByteArray &fileId,
-                            QString *error) override;
+                                const QByteArray &fileId) override;
 
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
         ExitInfo dehydratePlaceholder(const QString &path) override;
@@ -83,7 +82,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
                                bool &finished) override;
         ExitInfo forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) override;
 
-        bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) override;
+        ExitInfo isDehydratedPlaceholder(const QString &filePath, bool &isDehydrated, bool isAbsolutePath = false) override;
 
         ExitInfo setPinState(const QString &fileRelativePath, PinState state) override;
         PinState pinState(const QString &relativePath) override;
@@ -113,7 +112,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         log4cplus::Logger _logger;
 
         void exclude(const QString &path) override;
-        void setPlaceholderStatus(const QString &path, bool syncOngoing);
+        ExitInfo setPlaceholderStatus(const QString &path, bool syncOngoing);
 };
 
 class Worker : public QObject {

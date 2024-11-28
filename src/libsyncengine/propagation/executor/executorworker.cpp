@@ -694,11 +694,10 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                     std::bind(&SyncPal::vfsSetPinState, _syncPal, std::placeholders::_1, std::placeholders::_2);
             job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
 
-            std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &,
-                                   std::string &)>
+            std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
                     vfsUpdateMetadataCallback =
                             std::bind(&SyncPal::vfsUpdateMetadata, _syncPal, std::placeholders::_1, std::placeholders::_2,
-                                      std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
+                                      std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
             job->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
 
             std::function<bool(const SyncPath &)> vfsCancelHydrateCallback =
@@ -940,11 +939,10 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
                               std::placeholders::_3, std::placeholders::_4);
             downloadJob->setVfsForceStatusCallback(vfsForceStatusCallback);
 
-            std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &,
-                                   std::string &)>
+            std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
                     vfsUpdateMetadataCallback =
                             std::bind(&SyncPal::vfsUpdateMetadata, _syncPal, std::placeholders::_1, std::placeholders::_2,
-                                      std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
+                                      std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
             downloadJob->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
         }
     } else {
@@ -1078,17 +1076,15 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                 }
                 case PinState::OnlineOnly: {
                     // Update metadata
-                    std::string error;
-                    _syncPal->vfsUpdateMetadata(
-                            absolutePath,
-                            syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
-                            syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
-                            syncOp->affectedNode()->size(),
-                            syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
-                    // TODO: Vfs functions should return an ExitInfo struct
                     syncOp->setOmit(true); // Do not propagate change in file system, only in DB
-                    if (!error.empty()) {
-                        return {ExitCode::SystemError, ExitCause::FileAccessError};
+                    if (ExitInfo exitInfo = _syncPal->vfsUpdateMetadata(
+                                absolutePath,
+                                syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
+                                syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
+                                syncOp->affectedNode()->size(),
+                                syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string());
+                        !exitInfo) {
+                        return exitInfo;
                     }
                     break;
                 }

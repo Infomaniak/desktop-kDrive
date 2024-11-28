@@ -414,12 +414,12 @@ ExitInfo SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileIt
 }
 
 ExitInfo SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                    const int64_t size, const NodeId &id, std::string &error) {
+                                    const int64_t size, const NodeId &id) {
     if (!_vfsUpdateMetadata) {
         return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
     }
 
-    return _vfsUpdateMetadata(syncDbId(), path, creationTime, modtime, size, id, error);
+    return _vfsUpdateMetadata(syncDbId(), path, creationTime, modtime, size, id);
 }
 
 ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
@@ -812,11 +812,10 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         job->setVfsForceStatusCallback(vfsForceStatusCallback);
 #endif
 
-        std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &,
-                               std::string &)>
+        std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
                 vfsUpdateMetadataCallback =
                         std::bind(&SyncPal::vfsUpdateMetadata, this, std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
+                                  std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
         job->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
 
         std::function<bool(const SyncPath &)> vfsCancelHydrateCallback =

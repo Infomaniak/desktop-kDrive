@@ -137,20 +137,24 @@ void DownloadJob::runJob() noexcept {
             IoError ioError = IoError::Success;
             if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError).c_str());
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::Unknown;
                 return;
             }
-
             if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath).c_str());
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::NotFound;
                 return;
             } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath).c_str());
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::FileAccessError;
                 return;
             }
 
-            std::string error;
             if (ExitInfo exitInfo = _vfsUpdateMetadata(_localpath, filestat.creationTime, filestat.modtime, _expectedSize,
-                                                       std::to_string(filestat.inode), error);
+                                                       std::to_string(filestat.inode));
                 !exitInfo) {
                 LOGW_WARN(_logger, L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_localpath));
                 _exitCode = exitInfo.code();

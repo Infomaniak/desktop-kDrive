@@ -82,6 +82,9 @@ class Vfs : public QObject {
         /** Initializes interaction with the VFS provider.
          *
          * The plugin-specific work is done in startImpl().
+         * Possible return values are:
+         * - ExitCode::Ok: Everything went fine.
+         * - ExitCode::LiteSyncError, ExitCause::UnableToCreateVfs: The VFS provider could not be started.
          */
         ExitInfo start(bool &installationDone, bool &activationDone, bool &connectionDone);
 
@@ -96,23 +99,44 @@ class Vfs : public QObject {
          */
         virtual bool socketApiPinStateActionsShown() const = 0;
 
-        /** Update placeholder metadata during discovery.
+        /** Update placeholder metadata.
          *
          * If the remote metadata changes, the local placeholder's metadata should possibly
          * change as well.
          *
-         * Returning false and setting error indicates an error.
+         * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the metadata was updated.
+         * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
+         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          */
         virtual ExitInfo updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size,
-                                    const QByteArray &fileId, QString *error) = 0;
+                                        const QByteArray &fileId) = 0;
 
-        /// Create a new dehydrated placeholder
+        /** Create a new dehydrated placeholder
+         *
+         * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the placeholder was created.
+         * - ExitCode::LogicError, ExitCause::InvalidArgument: relativeLocalPath is empty or item.remoteNodeId is not set.
+         * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the destination folder or it is
+         * locked.
+         * - ExitCode::SystemError, ExitCause::FileAlreadyExist: An item with the same name already exists in the destination
+         * folder.
+         */
         virtual ExitInfo createPlaceholder(const KDC::SyncPath &relativeLocalPath, const KDC::SyncFileItem &item) = 0;
 
         /** Convert a hydrated placeholder to a dehydrated one. Called from PropagateDownlaod.
          *
          * This is different from delete+create because preserving some file metadata
          * (like pin states) may be essential for some vfs plugins.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the placeholder is dehydrating (async).
+         * - ExitCode::LogicError, ExitCause::InvalidArgument: The provided path is empty.
+         * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
+         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          */
         virtual ExitInfo dehydratePlaceholder(const QString &path) = 0;
 
@@ -120,25 +144,58 @@ class Vfs : public QObject {
          *
          * Some VFS integrations expect that every file, including those that have all
          * the remote data, are "placeholders".
-         * to convert newly downloaded, fully hydrated files into placeholders.
          *
          * Implementations must make sure that calling this function on a file that already
          * is a placeholder is acceptable.
          *
-         * replacesFile can optionally contain a filesystem path to a placeholder that this
-         * new placeholder shall supersede, for rename-replace actions with new downloads,
-         * for example.
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the file is now a placeholder.
+         * - ExitCode::LogicError, ExitCause::InvalidArgument:
+         +++ The provided path is empty.
+         +++ The provided path is not file/directory (ie. probably a disk).
+         * -- item.localNodeId is not set.
+         * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          */
         virtual ExitInfo convertToPlaceholder(const QString &path, const KDC::SyncFileItem &item) = 0;
 
+        /** Update the fetch status of a file.
+         *
+         * This is used to update the progress of a file download in the OS file UI.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the fetch status was updated.
+         * - ExitCode::LogicError, ExitCause::InvalidArgument: Either the path or the tmpPath is empty.
+         * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked (The item is
+         * the file in the sync folder, any error on the tmpItem will lead to SystemError, Unknown).
+         */
         virtual ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
-                                       bool &finished) = 0;
+                                           bool &finished) = 0;
 
+        /** Force the status of a file.
+         *
+         * This is used to force the sync status of a file (isSyncing or not)
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the status was updated.
+         * - ExitCode::LogicError, ExitCause::InvalidArgument:
+         +++ The provided path is empty.
+         +++ The provided path is not file/directory (ie. probably a disk).
+         * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
+         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         */
         virtual ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
+
         virtual bool cleanUpStatuses() { return true; };
 
-        /// Determine whether the file at the given absolute path is a dehydrated placeholder.
-        virtual bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) = 0;
+        /** Determine whether the file at the given path is a dehydrated placeholder.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, isDehydrated is set to true if the file is a dehydrated placeholder.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: An error occurred while accessing the file.
+        */
+        virtual ExitInfo isDehydratedPlaceholder(const QString &filePath, bool &isDehydrated, bool isAbsolutePath = false) = 0;
 
         /** Sets the pin state for the item at a path.
          *
@@ -148,6 +205,11 @@ class Vfs : public QObject {
          * but some vfs plugins will store the pin state in file attributes instead.
          *
          * fileRelativePath is relative to the sync folder. Can be "" for root folder.
+         * 
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the pin state was updated.
+         * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
         virtual ExitInfo setPinState(const QString &fileRelativePath, KDC::PinState state) = 0;
 
@@ -161,7 +223,16 @@ class Vfs : public QObject {
          * Returns none on retrieval error.
          */
         virtual KDC::PinState pinState(const QString &fileRelativePath) = 0;
-        virtual ExitInfo status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) = 0;
+
+        /** Returns the status of a file.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the status was retrieved.
+         * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
+         */
+        virtual ExitInfo status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+                                int &progress) = 0;
 
         virtual ExitInfo setThumbnail(const QString &filePath, const QPixmap &pixmap) = 0;
 
@@ -246,14 +317,17 @@ class VfsOff : public Vfs {
 
         bool socketApiPinStateActionsShown() const override { return false; }
 
-        ExitInfo updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &, QString *) override { return ExitCode::Ok; }
+        ExitInfo updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &) override { return ExitCode::Ok; }
         ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
         ExitInfo dehydratePlaceholder(const QString &) override { return ExitCode::Ok; }
         ExitInfo convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
         ExitInfo updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return ExitCode::Ok; }
         ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
 
-        bool isDehydratedPlaceholder(const QString &, bool) override { return false; }
+        ExitInfo isDehydratedPlaceholder(const QString &, bool &isDehydrated, bool) override {
+            isDehydrated = false;
+            return ExitCode::Ok;
+        }
 
         ExitInfo setPinState(const QString &, KDC::PinState) override { return ExitCode::Ok; }
         KDC::PinState pinState(const QString &) override { return KDC::PinState::AlwaysLocal; }
