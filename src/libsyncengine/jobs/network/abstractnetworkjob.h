@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "libsyncengine/jobs/abstractjob.h"
 
 #include <string>
 #include <unordered_map>
@@ -115,8 +115,7 @@ class AbstractNetworkJob : public AbstractJob {
         std::string _octetStreamRes;
 
         virtual void setQueryParameters(Poco::URI &, bool &canceled) { canceled = false; };
-        virtual void setData(bool &canceled) { canceled = false; };
-
+        virtual ExitInfo setData() { return ExitCode::Ok; };
         virtual std::string getContentType(bool &canceled) {
             canceled = false;
             return {};

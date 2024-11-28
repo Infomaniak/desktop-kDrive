@@ -103,6 +103,8 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
     }
 
     if (!installationDone) {
+        activationDone = false;
+        connectionDone = false;
         installationDone = _connector->install(activationDone);
         if (!installationDone) {
             LOG_WARN(logger(), "Error in LiteSyncExtConnector::install!");
@@ -112,6 +114,7 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
 
     if (!activationDone) {
         LOG_INFO(logger(), "LiteSync extension activation pending");
+        connectionDone = false;
         return false;
     }
 

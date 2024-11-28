@@ -17,6 +17,7 @@
  */
 
 #include "error.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <ctime>
 #include <sstream>

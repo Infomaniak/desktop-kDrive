@@ -125,6 +125,23 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), _snapshot->nbItems());
 }
 
+void TestSnapshot::testDuplicatedItem() {
+    const NodeId rootNodeId = *SyncDb::driveRootNode().nodeIdLocal();
+
+    const DbNode dummyRootNode(0, std::nullopt, Str("Local Drive"), SyncName(), "1", "1", std::nullopt, std::nullopt,
+                               std::nullopt, NodeType::Directory, 0, std::nullopt);
+    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+
+    const SnapshotItem file1("A", rootNodeId, Str("file1"), 1640995201, -1640995201, NodeType::File, 123, false, true, true);
+    const SnapshotItem file2("B", rootNodeId, Str("file1"), 1640995201, -1640995201, NodeType::File, 123, false, true, true);
+
+    snapshot.updateItem(file1);
+    snapshot.updateItem(file2);
+
+    CPPUNIT_ASSERT(!snapshot.exists("A"));
+    CPPUNIT_ASSERT(snapshot.exists("B"));
+}
+
 void TestSnapshot::testSnapshotInsertionWithDifferentEncodings() {
     const SnapshotItem nfcItem("A", _rootNodeId, testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
                                -testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize, false, true, true);

@@ -32,13 +32,12 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         void start() override;
         void stop() override;
 
-        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
-
+        virtual void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
         virtual void forceUpdate() override;
 
     protected:
         virtual void execute() override;
-        ExitCode exploreDir(const SyncPath &absoluteParentDirPath);
+        ExitInfo exploreDir(const SyncPath &absoluteParentDirPath);
 
         SyncPath _rootFolder;
         //    std::unique_ptr<ContentChecksumWorker> _checksumWorker = nullptr;

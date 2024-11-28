@@ -38,22 +38,27 @@ class SyncDb;
  * In the context of `ExecutorWorker`, the terminated jobs queue is the only container that can be accessed from multiple threads,
  * namely, the job threads. Therefore, it is the only container that requires to be thread safe.
  */
-class TerminatedJobsQueue {
+class TerminatedJobsQueue : public std::recursive_mutex {
     public:
         void push(const UniqueId id) {
-            const std::scoped_lock lock(_mutex);
+            const std::scoped_lock lock(*this);
             _terminatedJobs.push(id);
         }
         void pop() {
-            const std::scoped_lock lock(_mutex);
+            const std::scoped_lock lock(*this);
             _terminatedJobs.pop();
         }
-        [[nodiscard]] UniqueId front() const { return _terminatedJobs.front(); }
-        [[nodiscard]] bool empty() const { return _terminatedJobs.empty(); }
+        [[nodiscard]] UniqueId front() {
+            const std::scoped_lock lock(*this);
+            return _terminatedJobs.front();
+        }
+        [[nodiscard]] bool empty() {
+            const std::scoped_lock lock(*this);
+            return _terminatedJobs.empty();
+        }
 
     private:
         std::queue<UniqueId> _terminatedJobs;
-        std::mutex _mutex;
 };
 
 class ExecutorWorker : public OperationProcessor {
@@ -67,23 +72,18 @@ class ExecutorWorker : public OperationProcessor {
         void execute() override;
 
     private:
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
-        void handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError, bool &ignored);
+        void initProgressManager();
+        void initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
 
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
-        void handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError, bool &ignored);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
+        ExitInfo handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored);
+        ExitInfo checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
+        ExitInfo generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
+        ExitInfo checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
+        ExitInfo createPlaceholder(const SyncPath &relativeLocalPath);
+        ExitInfo convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated);
+        ExitInfo processCreateOrConvertToPlaceholderError(const SyncPath &relativeLocalPath, bool create);
+        ExitInfo handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored);
+        ExitInfo generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
 
         /**
          * This method aims to fix the last modification date of a local file using the date stored in DB. This allows us to fix
@@ -93,72 +93,42 @@ class ExecutorWorker : public OperationProcessor {
          * @return `true` if the date is modified successfully.
          * @note _executorExitCode and _executorExitCause must be set when the function returns false
          */
-        bool fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath);
+        ExitInfo fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath);
+        ExitInfo checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
+                                          bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not
+                                                            // good, function probably does too much
 
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
-                                      bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not
-                                                        // good, function probably does too much
+        ExitInfo handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
+        ExitInfo generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
 
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
-        void handleMoveOp(SyncOpPtr syncOp, bool &hasError, bool &ignored, bool &bypassProgressComplete);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
-        void handleDeleteOp(SyncOpPtr syncOp, bool &hasError, bool &ignored, bool &bypassProgressComplete);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
+        ExitInfo handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
+        ExitInfo generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
 
         /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
         void waitForAllJobsToFinish(bool &hasError);
 
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool deleteFinishedAsyncJobs();
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue, bool downloadImpossible);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
-                               bool &ignored, bool &bypassProgressComplete);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                        std::shared_ptr<Node> &node);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
-                                      std::shared_ptr<Node> &node);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool propagateMoveToDbAndTree(SyncOpPtr syncOp);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool propagateDeleteToDbAndTree(SyncOpPtr syncOp);
-
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns false
-        bool deleteFromDb(std::shared_ptr<Node> node);
-
-        ExitCode createPlaceholder(const SyncPath &relativeLocalPath, ExitCause &exitCause);
-        ExitCode convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated, ExitCause &exitCause);
-        ExitCode processCreateOrConvertToPlaceholderError(const SyncPath &relativeLocalPath, bool create, ExitCause &exitCause);
-
-        void initProgressManager();
-        bool initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
-        void handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
+        ExitInfo waitForAllJobsToFinish();
+        ExitInfo deleteFinishedAsyncJobs();
+        ExitInfo handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue,
+                                        bool downloadImpossible);
+        ExitInfo handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
+                                   bool &ignored, bool &bypassProgressComplete);
+        ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
         void sendProgress();
-        bool hasRight(SyncOpPtr syncOp, bool &exists);
+        bool isValidDestination(SyncOpPtr syncOp);
         bool enoughLocalSpace(SyncOpPtr syncOp);
-        bool runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
+
+        ExitInfo propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propagateChange);
+        ExitInfo propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job, std::shared_ptr<Node> &node);
+        ExitInfo propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
+                                            std::shared_ptr<Node> &node);
+        ExitInfo propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &newNodeId, std::optional<SyncTime> newLastModTime,
+                                          std::shared_ptr<Node> &node);
+        ExitInfo propagateMoveToDbAndTree(SyncOpPtr syncOp);
+        ExitInfo propagateDeleteToDbAndTree(SyncOpPtr syncOp);
+        ExitInfo deleteFromDb(std::shared_ptr<Node> node);
+
+        ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
         void cancelAllOngoingJobs(bool reschedule = false);
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
@@ -173,20 +143,25 @@ class ExecutorWorker : public OperationProcessor {
 
         void increaseErrorCount(SyncOpPtr syncOp);
 
-        bool getFileSize(const SyncPath &path, uint64_t &size);
+        ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
         void logCorrespondingNodeErrorMsg(const SyncOpPtr syncOp);
 
         void setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status);
+
+        // This methode will return ExitCode::Ok if the error is safely managed and the executor can continue. Else, it will
+        // return opsExitInfo.
+        ExitInfo handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+        ExitInfo handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+        ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+        ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+
+        ExitInfo removeDependentOps(SyncOpPtr syncOp);
 
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
         std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
         std::list<UniqueId> _opList;
-
-        ExitCode _executorExitCode = ExitCode::Unknown;
-        ExitCause _executorExitCause = ExitCause::Unknown;
-
         std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
 
         bool _snapshotToInvalidate = false;

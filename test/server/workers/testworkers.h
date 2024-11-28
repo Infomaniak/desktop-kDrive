@@ -17,22 +17,24 @@
  */
 
 #include "testincludes.h"
+#include "socketapi.h"
 
 #if defined(__APPLE__)
 #include "server/vfs/mac/vfs_mac.h"
-#elif defined(__WIN32)
+#elif defined(_WIN32)
 #include "server/vfs/win/vfs_win.h"
 #else
 #include "libcommonserver/vfs.h"
 #endif
 
-#include "propagation/executor/executorworker.h"
+#include "libsyncengine/propagation/executor/executorworker.h"
 #include "test_utility/localtemporarydirectory.h"
 
 namespace KDC {
 
 class TestWorkers : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestWorkers);
+        CPPUNIT_TEST(testStartVfs);
         CPPUNIT_TEST(testCreatePlaceholder);
         CPPUNIT_TEST(testConvertToPlaceholder);
         CPPUNIT_TEST_SUITE_END();
@@ -40,10 +42,12 @@ class TestWorkers : public CppUnit::TestFixture {
     public:
         void setUp(void) final;
         void tearDown() override;
+        void testStartVfs();
         void testCreatePlaceholder();
         void testConvertToPlaceholder();
 
     protected:
+        static bool startVfs();
         static bool createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState);
@@ -53,13 +57,19 @@ class TestWorkers : public CppUnit::TestFixture {
         Sync _sync;
         LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
 
+        std::unique_ptr<SocketApi> _socketApi;
+
 #if defined(__APPLE__)
-        static std::unique_ptr<VfsMac> _vfsPtr;
-#elif defined(__WIN32)
-        static std::unique_ptr<VfsWin> _vfsPtr;
+        static std::shared_ptr<VfsMac> _vfsPtr;
+#elif defined(_WIN32)
+        static std::shared_ptr<VfsWin> _vfsPtr;
 #else
-        static std::unique_ptr<VfsOff> _vfsPtr;
+        static std::shared_ptr<VfsOff> _vfsPtr;
 #endif
+
+        static bool _vfsInstallationDone;
+        static bool _vfsActivationDone;
+        static bool _vfsConnectionDone;
 };
 
 } // namespace KDC

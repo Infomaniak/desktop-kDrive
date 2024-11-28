@@ -294,6 +294,8 @@ class VfsOff : public Vfs {
     protected:
         bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool /*unregister*/) override {}
+
+        friend class TestWorkers;
 };
 
 /// Check whether the plugin for the mode is available.

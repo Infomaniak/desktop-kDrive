@@ -121,6 +121,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void parseOptions(const QStringList &);
         bool initLogging() noexcept;
+        void logUsefulInformation() const;
         bool setupProxy() noexcept;
         void handleCrashRecovery(bool &shouldQuit); // Sets `shouldQuit` with true if the crash recovery is successful, false if
                                                     // the application should exit.
@@ -176,7 +177,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendSyncDeletionFailed(int syncDbId);
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
-        void sendErrorsCleared(int syncDbId);
+        static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
         // See types.h -> AppStateKey for the possible values of status

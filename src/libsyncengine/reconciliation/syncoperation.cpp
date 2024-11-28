@@ -36,6 +36,10 @@ SyncPath SyncOperation::nodePath(const ReplicaSide side) const {
     return node->getPath();
 }
 
+NodeType SyncOperation::nodeType() const noexcept {
+    return _affectedNode ? _affectedNode->type() : NodeType::Unknown;
+}
+
 bool SyncOperation::operator==(const SyncOperation &other) const {
     return _id == other.id();
 }
@@ -108,7 +112,7 @@ void SyncOperationList::operator=(const SyncOperationList &other) {
 }
 
 void SyncOperationList::getMapIndexToOp(std::unordered_map<UniqueId, int> &map,
-                                        OperationType typeFilter /*= OperationType::Unknown*/) {
+                                        OperationType typeFilter /*= OperationType::None*/) {
     int index = 0;
     for (const auto &opId: _opSortedList) {
         SyncOpPtr syncOp = getOp(opId);

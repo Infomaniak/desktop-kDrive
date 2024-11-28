@@ -167,13 +167,19 @@ bool AbstractUploadSession::canRun() {
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
+        _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger,
-                   L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_filePath).c_str());
+                   L"Item does not exist anymore. Aborting current sync and restart " << Utility::formatSyncPath(_filePath));
         _exitCode = ExitCode::NeedRestart;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
@@ -259,11 +265,15 @@ bool AbstractUploadSession::sendChunks() {
     bool checksumError = false;
     bool jobCreationError = false;
     bool sendChunksCanceled = false;
-    std::ifstream file(_filePath.native().c_str(), std::ifstream::binary);
-    if (!file.is_open()) {
-        LOGW_WARN(_logger, L"Failed to open file " << Path2WStr(_filePath).c_str());
-        _exitCode = ExitCode::DataError;
-        return false;
+
+    // Some applications generate locked temporary files during save operations. To avoid spurious "access denied" errors,
+    // we retry for 10 seconds, which is usually sufficient for the application to delete the tmp file. If the file is still
+    // locked after 10 seconds, a file access error is displayed to the user. Proper handling is also implemented for
+    // "file not found" errors.
+    std::ifstream file;
+    if (ExitInfo exitInfo = IoHelper::openFile(_filePath, file, 10); !exitInfo) {
+        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath));
+        return exitInfo;
     }
 
     // Create a hash state

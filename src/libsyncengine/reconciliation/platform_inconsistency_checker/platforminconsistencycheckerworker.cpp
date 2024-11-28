@@ -131,9 +131,8 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
         blacklistNode(localNode, InconsistencyType::NameLength);
         return ExitCode::Ok;
     }
-
-    auto childIt = localNode->children().begin();
-    for (; childIt != localNode->children().end(); childIt++) {
+    auto it = localNode->children().begin();
+    for (; it != localNode->children().end(); it++) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -146,7 +145,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
             Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
-        const ExitCode exitCode = checkLocalTree(childIt->second, parentPath / localNode->name());
+        const ExitCode exitCode = checkLocalTree(it->second, parentPath / localNode->name());
         if (exitCode != ExitCode::Ok) {
             return exitCode;
         }
@@ -191,7 +190,6 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     };
     nodeIDs.remoteId = safeNodeId(remoteNode);
     nodeIDs.localId = safeNodeId(localNode);
-
     _idsToBeRemoved.emplace_back(nodeIDs);
 }
 
@@ -218,8 +216,9 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
 void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode) {
 #if defined(__APPLE__) || defined(_WIN32)
     std::unordered_map<SyncName, std::shared_ptr<Node>> processedNodesByName; // key: lowercase name
-    auto it = remoteParentNode->children().begin();
-    for (; it != remoteParentNode->children().end(); it++) {
+    auto childrenCopy = remoteParentNode->children();
+    auto it = childrenCopy.begin();
+    for (; it != childrenCopy.end(); it++) {
         if (stopAsked()) {
             return;
         }
@@ -292,9 +291,9 @@ void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<N
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(absoluteLocalPath));
         }
     } else {
-        LOG_WARN(_logger, localNode
-                                  ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
-                                  : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb");
+        const char *msg = localNode ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
+                                    : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb";
+        LOG_WARN(_logger, msg);
         assert(false);
     }
 }

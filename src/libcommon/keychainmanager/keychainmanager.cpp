@@ -22,8 +22,6 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#include <sentry.h>
-
 #define PACKAGE "com.infomaniak.drive"
 #define SERVICE "desktopclient"
 

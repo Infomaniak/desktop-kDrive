@@ -101,6 +101,12 @@ bool LocalDeleteJob::canRun() {
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absolutePath).c_str());
+        _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
         return false;
     }
@@ -185,8 +191,13 @@ void LocalDeleteJob::runJob() {
     std::filesystem::remove_all(_absolutePath, ec);
     if (ec) {
         LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(_absolutePath, ec).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        if (IoHelper::stdError2ioError(ec) == IoError::AccessDenied) {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
+        } else {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
+        }
         return;
     }
 

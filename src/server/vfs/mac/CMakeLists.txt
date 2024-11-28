@@ -20,14 +20,6 @@ set_target_properties("${libsyncengine_NAME}_vfs_mac"
         AUTOMOC TRUE
 )
 
-# for being loadable when client run from build dir
-set(vfs_buildoutputdir "${BIN_OUTPUT_DIRECTORY}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/")
-set_target_properties("${libsyncengine_NAME}_vfs_mac"
-        PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY ${vfs_buildoutputdir}
-        RUNTIME_OUTPUT_DIRECTORY ${vfs_buildoutputdir}
-)
-
 # Link
 find_library(SYSTEM_EXTENSION_LIBRARY NAMES SystemExtensions)
 target_link_libraries("${libsyncengine_NAME}_vfs_mac"

@@ -19,7 +19,6 @@
 #pragma once
 
 #include "testincludes.h"
-#include "vfs.h"
 #include "propagation/executor/executorworker.h"
 #include "test_utility/localtemporarydirectory.h"
 
@@ -32,6 +31,9 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testAffectedUpdateTree);
         CPPUNIT_TEST(testTargetUpdateTree);
         CPPUNIT_TEST(testLogCorrespondingNodeErrorMsg);
+        CPPUNIT_TEST(testRemoveDependentOps);
+        CPPUNIT_TEST(testIsValidDestination);
+        CPPUNIT_TEST(testTerminatedJobsQueue);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -44,11 +46,19 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         void testAffectedUpdateTree();
         void testTargetUpdateTree();
         void testLogCorrespondingNodeErrorMsg();
+        void testRemoveDependentOps();
+        void testIsValidDestination();
+        void testTerminatedJobsQueue();
 
-        SyncOpPtr generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename);
+        bool opsExist(SyncOpPtr op);
+        SyncOpPtr generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
+                                        const OperationType opType = OperationType::None);
+        SyncOpPtr generateSyncOperationWithNestedNodes(const DbNodeId dbNodeId, const SyncName &filename,
+                                                       const OperationType opType, const NodeType nodeType);
 
         std::shared_ptr<SyncPal> _syncPal;
         Sync _sync;
+        std::shared_ptr<ExecutorWorker> _executorWorker;
         LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
 };
 

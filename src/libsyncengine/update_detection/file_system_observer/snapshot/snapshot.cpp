@@ -77,6 +77,27 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         return false;
     }
 
+    // Check if `newItem` already exists with the same path but a different Id
+    if (auto itNewParent = _items.find(newItem.parentId()); itNewParent != _items.end()) {
+        for (const NodeId &childId: itNewParent->second.childrenIds()) {
+            auto child = _items.find(childId);
+            if (child == _items.end()) {
+                assert(false && "Child not found in snapshot");
+                LOG_WARN(Log::instance()->getLogger(), "Child " << childId.c_str() << " not found in snapshot");
+                continue;
+            }
+
+            if (child->second.name() == newItem.name() && child->second.id() != newItem.id()) {
+                LOGW_DEBUG(Log::instance()->getLogger(),
+                           L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
+                                     << L") already exists in parent: " << Utility::s2ws(newItem.parentId())
+                                     << L" with a different id. Removing it and adding the new one.");
+                removeItem(childId);
+                break; // There should be (at most) only one item with the same name in a folder
+            }
+        }
+    }
+
     const SnapshotItem &prevItem = _items[newItem.id()];
 
     // Update parent's children lists
@@ -118,7 +139,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     return true;
 }
 
-bool Snapshot::removeItem(const NodeId &id) {
+bool Snapshot::removeItem(const NodeId id) {
     const std::scoped_lock lock(_mutex);
 
     if (id.empty()) {

@@ -32,6 +32,8 @@ class SparkleUpdater final : public AbstractUpdater {
         void setQuitCallback(const std::function<void()> &quitCallback) override;
         void startInstaller() override;
 
+        static void unskipVersion();
+
     private:
         void reset(const std::string &url);
         void deleteUpdater();

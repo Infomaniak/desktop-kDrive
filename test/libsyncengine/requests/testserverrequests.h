@@ -23,12 +23,18 @@ namespace KDC {
 class TestServerRequests : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestServerRequests);
         CPPUNIT_TEST(testFixProxyConfig);
+        CPPUNIT_TEST(testGetPublicLink);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void) final;
+        void setUp() final;
         void tearDown() override;
+
         void testFixProxyConfig();
+        void testGetPublicLink();
+
+    private:
+        int _driveDbId{0};
 };
 
 } // namespace KDC

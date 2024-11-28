@@ -70,6 +70,8 @@ std::string toString(const OperationType e) {
             return "Delete";
         case OperationType::Rights:
             return "Rights";
+        case OperationType::MoveOut:
+            return "MoveOut";
         default:
             return noConversionStr;
     }
@@ -101,8 +103,6 @@ std::string toString(const ExitCode e) {
             return "LogicError";
         case ExitCode::TokenRefreshed:
             return "TokenRefreshed";
-        case ExitCode::NoWritePermission:
-            return "NoWritePermission";
         case ExitCode::RateLimited:
             return "RateLimited";
         case ExitCode::InvalidSync:
@@ -134,10 +134,8 @@ std::string toString(const ExitCause e) {
             return "InvalidSnapshot";
         case ExitCause::SyncDirDoesntExist:
             return "SyncDirDoesntExist";
-        case ExitCause::SyncDirReadError:
-            return "SyncDirReadError";
-        case ExitCause::SyncDirWriteError:
-            return "SyncDirWriteError";
+        case ExitCause::SyncDirAccesError:
+            return "SyncDirAccesError";
         case ExitCause::HttpErr:
             return "HttpErr";
         case ExitCause::HttpErrForbidden:
@@ -190,8 +188,6 @@ std::string toString(const ExitCause e) {
             return "NetworkTimeout";
         case ExitCause::SocketsDefuncted:
             return "SocketsDefuncted";
-        case ExitCause::NoSearchPermission:
-            return "NoSearchPermission";
         case ExitCause::NotFound:
             return "NotFound";
         case ExitCause::QuotaExceeded:
@@ -200,9 +196,15 @@ std::string toString(const ExitCause e) {
             return "FullListParsingError";
         case ExitCause::OperationCanceled:
             return "OperationCanceled";
+        case ExitCause::ShareLinkAlreadyExists:
+            return "ShareLinkAlreadyExists";
         default:
             return noConversionStr;
     }
+}
+
+std::string toString(const ExitInfo e) {
+    return static_cast<std::string>(e);
 }
 
 std::string toString(const ConflictType e) {

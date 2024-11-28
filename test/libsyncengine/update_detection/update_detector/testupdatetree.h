@@ -29,7 +29,6 @@ class FSOperationSet;
 class TestUpdateTree : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUpdateTree);
         CPPUNIT_TEST(testConstructors);
-        CPPUNIT_TEST(testIsParentValid);
         CPPUNIT_TEST(testAll);
         CPPUNIT_TEST(testChangeEvents);
         CPPUNIT_TEST(testInsertionOfFileNamesWithDifferentEncodings);
@@ -41,7 +40,6 @@ class TestUpdateTree : public CppUnit::TestFixture {
 
     protected:
         void testConstructors();
-        void testIsParentValid();
         void testAll();
         void testChangeEvents();
         void testInsertionOfFileNamesWithDifferentEncodings();

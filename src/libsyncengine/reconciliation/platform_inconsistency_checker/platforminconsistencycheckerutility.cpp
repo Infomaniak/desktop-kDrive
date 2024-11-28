@@ -80,7 +80,7 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
     return sub + suffix + name.extension().native();
 }
 
-ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType,
+ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType,
                                                               SyncPath *newPathPtr /*= nullptr*/) {
     const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(absoluteLocalPath, suffixType);
     auto newFullPath = absoluteLocalPath.parent_path() / newName;
@@ -92,7 +92,7 @@ ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
         *newPathPtr = std::move(newFullPath);
     }
 
-    return moveJob.exitCode();
+    return {moveJob.exitCode(), moveJob.exitCause()};
 }
 
 bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {

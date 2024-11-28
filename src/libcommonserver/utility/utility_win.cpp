@@ -45,6 +45,8 @@
 #include <sentry.h>
 #include <WinSock2.h>
 
+constexpr int userNameBufLen = 4096;
+
 namespace KDC {
 
 static bool moveItemToTrash_private(const SyncPath &itemPath) {
@@ -281,6 +283,13 @@ static bool cpuUsage_private(uint64_t &previousTotalTicks, uint64_t &previousIdl
 
 static bool cpuUsageByProcess_private(double &percent) {
     return true;
+}
+
+static std::string userName_private() {
+    DWORD len = userNameBufLen;
+    wchar_t userName[userNameBufLen];
+    GetUserName(userName, &len);
+    return Utility::ws2s(std::wstring(userName));
 }
 
 } // namespace KDC

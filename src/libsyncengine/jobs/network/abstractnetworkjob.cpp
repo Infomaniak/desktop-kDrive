@@ -76,7 +76,7 @@ AbstractNetworkJob::AbstractNetworkJob() {
                     LOG_INFO(_logger,
                              "Unknown error in Poco::Net::Context constructor: " << errorText(e).c_str() << ", retrying...");
                 } else {
-                    LOG_ERROR(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e).c_str());
+                    LOG_ERROR(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e));
                     throw std::runtime_error(ABSTRACTNETWORKJOB_NEW_ERROR_MSG);
                 }
             }
@@ -89,9 +89,13 @@ AbstractNetworkJob::~AbstractNetworkJob() {
 }
 
 bool AbstractNetworkJob::isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept {
-    static const std::set<ExitCause> managedExitCauses = {ExitCause::InvalidName,   ExitCause::ApiErr,
-                                                          ExitCause::FileTooBig,    ExitCause::NotFound,
-                                                          ExitCause::QuotaExceeded, ExitCause::FileAlreadyExist};
+    static const std::set<ExitCause> managedExitCauses = {ExitCause::InvalidName,
+                                                          ExitCause::ApiErr,
+                                                          ExitCause::FileTooBig,
+                                                          ExitCause::NotFound,
+                                                          ExitCause::QuotaExceeded,
+                                                          ExitCause::FileAlreadyExist,
+                                                          ExitCause::ShareLinkAlreadyExists};
 
     switch (exitCode) {
         case ExitCode::BackError:
@@ -135,10 +139,10 @@ void AbstractNetworkJob::runJob() noexcept {
         }
 
         bool canceled = false;
-        setData(canceled); // Must be called before setQueryParameters
-        if (canceled) {
+        if (ExitInfo exitInfo = setData(); !exitInfo) { // Must be called before setQueryParameters
             LOG_WARN(_logger, "Job " << jobId() << " is cancelled");
-            _exitCode = ExitCode::DataError;
+            _exitCode = exitInfo.code();
+            _exitCause = exitInfo.cause();
             break;
         }
 

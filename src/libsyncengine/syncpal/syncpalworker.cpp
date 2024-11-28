@@ -51,6 +51,13 @@ void SyncPalWorker::execute() {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
         }
 
+        // Manage stop
+        if (stopAsked()) {
+            // Exit
+            exitCode = ExitCode::Ok;
+            setDone(exitCode);
+            return;
+        }
         if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
             // Reset nodes syncing flag
             if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
@@ -175,10 +182,12 @@ void SyncPalWorker::execute() {
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
                 if ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError)) ||
+                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccesError)) ||
                     (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError))) {
+                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccesError))) {
                     // Exit without error
                     exitCode = ExitCode::Ok;
                 } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
@@ -534,6 +543,9 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             return false;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+            if (stopAsked()) {
+                return true;
+            }
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {

@@ -35,7 +35,7 @@ class CopyToDirectoryJob : public AbstractTokenNetworkJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual void setData(bool &canceled) override;
+        virtual ExitInfo setData() override;
 
         NodeId _remoteFileId;
         NodeId _remoteDestId;

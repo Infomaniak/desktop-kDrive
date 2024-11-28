@@ -50,7 +50,6 @@ struct COMMON_EXPORT CommonUtility {
 
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);
-        static std::string generateAppId(int length = 10);
 
         static QString fileSystemName(const QString &dirPath);
 
@@ -105,7 +104,9 @@ struct COMMON_EXPORT CommonUtility {
         static bool dirNameIsValid(const SyncName &name);
         static bool fileNameIsValid(const SyncName &name);
 
-#ifdef Q_OS_MAC
+#ifdef __APPLE__
+        static const std::string loginItemAgentId();
+        static const std::string liteSyncExtBundleId();
         static bool isLiteSyncExtEnabled();
         static bool isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr);
 #endif
