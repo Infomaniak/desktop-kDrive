@@ -28,7 +28,10 @@ class MockTestSentryHandler : public Sentry::Handler {
     public:
         MockTestSentryHandler();
         int sentryUploadedEventCount() const { return _sentryUploadedEventCount; }
-
+        void captureMessage(Sentry::Level level, const std::string &title, const std::string &message,
+                                   const SentryUser &user = SentryUser()) {
+            _captureMessage(level, title, message, user);
+        }
     private:
         void sendEventToSentry(const Sentry::Level level, const std::string &title, const std::string &message) const final;
         mutable int _sentryUploadedEventCount = 0;
