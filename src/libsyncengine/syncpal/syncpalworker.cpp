@@ -51,6 +51,13 @@ void SyncPalWorker::execute() {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
         }
 
+        // Manage stop
+        if (stopAsked()) {
+            // Exit
+            exitCode = ExitCode::Ok;
+            setDone(exitCode);
+            return;
+        }
         if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
             // Reset nodes syncing flag
             if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
@@ -536,6 +543,9 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             return false;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+            if (stopAsked()) {
+                return true;
+            }
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {
