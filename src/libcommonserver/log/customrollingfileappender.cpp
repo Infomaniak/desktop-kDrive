@@ -303,8 +303,8 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         // Delete expired files
         if (_expire > 0 && entry.path().string().find(APPLICATION_NAME) != std::string::npos) {
             const auto now = std::chrono::system_clock::now();
-            auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modtime);
-            auto expireDateTime = lastModified + std::chrono::seconds(_expire);
+            const auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modtime); // Only 1s precision.
+            const auto expireDateTime = lastModified + std::chrono::seconds(_expire);
             if (expireDateTime < now) {
                 log4cplus::file_remove(Utility::s2ws(entry.path().string()));
                 continue;

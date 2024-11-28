@@ -15,10 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <fstream>
+
 #include "testhelpers.h"
 
 #include "libcommon/utility/utility.h"
+
+#include <fstream>
+
+
+#ifdef _WIN32
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include <sys/utime.h>
+#include <sys/types.h>
+#else
+#include <sys/stat.h>
+#include <utime.h>
+#endif
 
 namespace KDC::testhelpers {
 
@@ -51,5 +64,32 @@ std::string loadEnvVariable(const std::string& key) {
     }
     return val;
 }
+#ifdef _WIN32
+void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
+    struct _utimbuf timeBuffer;
+    const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
 
+    IoError ioError = IoError::Success;
+    FileStat fileStat;
+    ::KDC::IoHelper::getFileStat(path, &fileStat, ioError);
+
+    timeBuffer.actime = fileStat.creationTime;
+    timeBuffer.modtime = timeInSeconds;
+    _wutime(path.wstring().c_str(), &timeBuffer);
+}
+#else
+void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
+    struct stat fileStat;
+    struct utimbuf newTime;
+
+    const auto fileNameStr = path.string();
+    const auto fileName = fileNameStr.c_str();
+
+    stat(fileName, &fileStat);
+
+    const std::time_t timeInSeconds = std::chrono::system_clock::to_time_t(timePoint);
+    newTime.modtime = timeInSeconds;
+    utime(fileName, &newTime);
+}
+#endif
 } // namespace KDC::testhelpers
