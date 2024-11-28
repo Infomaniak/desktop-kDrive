@@ -67,7 +67,6 @@ void FolderWatcher_win::startWatching() {
     }
 
     LOGW_DEBUG(_logger, L"Folder watching stopped: " << _folder.wstring().c_str());
-    Utility::terminateThreadFunction();
 }
 
 void FolderWatcher_win::stopWatching() {
