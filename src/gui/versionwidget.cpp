@@ -26,6 +26,7 @@
 #include "preferencesblocwidget.h"
 #include "utility/utility.h"
 #include "utility/widgetsignalblocker.h"
+#include "libcommon/utility/utility.h"
 
 #include <QDesktopServices>
 #include <config.h>

@@ -19,7 +19,6 @@
 #include "commserver.h"
 #include "common/utility.h"
 #include "libcommon/comm.h"
-#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -29,7 +28,6 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QJsonObject>
-#include <QThread>
 #include <QTimer>
 
 #include <fstream>
@@ -53,7 +51,7 @@ std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
 }
 
 CommServer::CommServer(QObject *parent) :
-    QObject(parent), _requestWorkerThread(new QThread()), _requestWorker(new Worker()), _tcpSocket(nullptr),
+    QObject(parent), _requestWorkerThread(new QtLoggingThread()), _requestWorker(new Worker()), _tcpSocket(nullptr),
     _buffer(QByteArray()), _hasQuittedProperly(false) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);
@@ -398,7 +396,6 @@ void Worker::onStart() {
     }
 
     LOG_DEBUG(Log::instance()->getLogger(), "Worker ended");
-    Utility::terminateThreadFunction();
 }
 
 } // namespace KDC

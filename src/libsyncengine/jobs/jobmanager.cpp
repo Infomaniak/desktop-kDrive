@@ -138,7 +138,7 @@ JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
 
     _cpuUsageThreshold = ParametersCache::instance()->parameters().maxAllowedCpu() / 100.0;
 
-    _thread = std::make_unique<std::thread>(run);
+    _thread = std::make_unique<StdLoggingThread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
 }
 
@@ -196,8 +196,6 @@ void JobManager::run() noexcept {
 
         Utility::msleep(100); // Sleep for 0.1s
     }
-
-    Utility::terminateThreadFunction();
 }
 
 void JobManager::startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> nextJob) {

@@ -110,7 +110,6 @@ void FolderWatcher_mac::startWatching() {
     CFRunLoopRun();
 
     LOGW_DEBUG(_logger, L"Folder watching stopped: " << _folder.wstring().c_str());
-    Utility::terminateThreadFunction();
 }
 
 void FolderWatcher_mac::doNotifyParent(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {

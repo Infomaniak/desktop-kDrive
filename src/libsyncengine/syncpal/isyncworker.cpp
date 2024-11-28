@@ -154,9 +154,9 @@ void ISyncWorker::setDone(ExitCode exitCode) {
     log4cplus::threadCleanup();
 }
 
-void *ISyncWorker::executeFunc(void *thisWorker) {
+void ISyncWorker::executeFunc(void *thisWorker) {
     ((ISyncWorker *) thisWorker)->execute();
-    return nullptr;
+    log4cplus::threadCleanup();
 }
 
 } // namespace KDC

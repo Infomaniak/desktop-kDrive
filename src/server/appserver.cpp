@@ -2143,13 +2143,13 @@ ExitInfo AppServer::uploadLog(bool includeArchivedLogs) {
     if (exitCause == ExitCause::OperationCanceled) {
         LOG_DEBUG(_logger, "Log transfert canceled");
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
-        return Utility::terminateThreadFunction({exitCode, exitCause});
+        return {exitCode, exitCause};
     } else if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: code=" << exitCode << " cause=" << exitCause);
         addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
     }
     sendLogUploadStatusUpdated(exitCode == ExitCode::Ok ? LogUploadState::Success : LogUploadState::Failed, 0);
-    return Utility::terminateThreadFunction({exitCode, exitCause});
+    return {exitCode, exitCause};
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {
