@@ -27,7 +27,7 @@ namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestTypes);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestSentryHandler);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSentry::Handler);
 } // namespace KDC
 
 int main(int, char **) {

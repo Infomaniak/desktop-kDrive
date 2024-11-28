@@ -21,6 +21,7 @@
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/scopedptrace.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
@@ -72,24 +73,24 @@ void ComputeFSOperationWorker::execute() {
     _syncPal->updateSyncNode();
 
     // Update unsynced list cache
-    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::UpdateUnsyncedList, syncDbId());
+    auto perfMonitor = Sentry::ScopedPTrace(Sentry::PTraceName::UpdateUnsyncedList, syncDbId());
     updateUnsyncedList();
 
     _fileSizeMismatchMap.clear();
 
     NodeIdSet localIdsSet;
     NodeIdSet remoteIdsSet;
-    perfMonitor.stopAndStart(SentryHandler::PTraceName::InferChangesFromDb, syncDbId(), true);
+    perfMonitor.stopAndStart(Sentry::PTraceName::InferChangesFromDb, syncDbId(), true);
     if (ok && !stopAsked()) {
         exitCode = inferChangesFromDb(localIdsSet, remoteIdsSet);
         ok = exitCode == ExitCode::Ok;
     }
     if (ok && !stopAsked()) {
-        perfMonitor.stopAndStart(SentryHandler::PTraceName::ExploreLocalSnapshot, syncDbId(), true);
+        perfMonitor.stopAndStart(Sentry::PTraceName::ExploreLocalSnapshot, syncDbId(), true);
         exitCode = exploreSnapshotTree(ReplicaSide::Local, localIdsSet);
         ok = exitCode == ExitCode::Ok;
         if (ok) {
-            perfMonitor.stopAndStart(SentryHandler::PTraceName::ExploreRemoteSnapshot, syncDbId(), true);
+            perfMonitor.stopAndStart(Sentry::PTraceName::ExploreRemoteSnapshot, syncDbId(), true);
             exitCode = exploreSnapshotTree(ReplicaSide::Remote, remoteIdsSet);
         }
     }
@@ -616,7 +617,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         LOGW_SYNCPAL_DEBUG(_logger, L"File size mismatch for \"" << Path2WStr(absoluteLocalPath)
                                                                  << L"\". Remote version will be downloaded again.");
         _fileSizeMismatchMap.insert({dbNode.nodeIdLocal().value(), absoluteLocalPath});
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ComputeFSOperationWorker::exploreDbTree",
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "ComputeFSOperationWorker::exploreDbTree",
                                                   "File size mismatch detected");
     }
 
@@ -868,7 +869,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath)
                                          << L" still exists on local replica. Snapshot not up to date, restarting sync.");
 
-    SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ComputeFSOperationWorker::checkIfOkToDelete",
+    Sentry::Handler::captureMessage(Sentry::Level::Warning, "ComputeFSOperationWorker::checkIfOkToDelete",
                                               "Unwanted local delete operation averted");
 
     setExitCause(ExitCause::InvalidSnapshot);

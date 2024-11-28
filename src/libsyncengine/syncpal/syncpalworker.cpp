@@ -28,8 +28,8 @@
 #include "propagation/executor/executorworker.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/utility.h"
-
-
+#include <libcommon/log/sentry/scopedptrace.h>
+#include <libcommon/log/sentry/utility.h>
 #include <log4cplus/loggingmacros.h>
 
 #define UPDATE_PROGRESS_DELAY 1
@@ -42,11 +42,11 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
-    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::SyncInit, syncDbId());
+    auto perfMonitor = Sentry::ScopedPTrace(Sentry::PTraceName::SyncInit, syncDbId());
 
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-        auto perfMonitor1 = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::ResetStatus, syncDbId());
+        auto perfMonitor1 = Sentry::ScopedPTrace(Sentry::PTraceName::ResetStatus, syncDbId());
         // Reset vfs files status
         if (!resetVfsFilesStatus()) {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
@@ -276,10 +276,10 @@ std::string SyncPalWorker::stepName(SyncStep step) {
 void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                              std::shared_ptr<SharedObject> (&inputSharedObject)[2]) {
     if (step == SyncStep::UpdateDetection1) {
-        SentryHandler::instance()->startPTrace(SentryHandler::PTraceName::Sync, syncDbId());
+        Sentry::Handler::instance()->startPTrace(Sentry::PTraceName::Sync, syncDbId());
     }
-    SentryHandler::instance()->stopPTrace(setpToPTraceName(_step), syncDbId());
-    SentryHandler::instance()->startPTrace(setpToPTraceName(step), syncDbId());
+    Sentry::Handler::instance()->stopPTrace(Sentry::SyncSetpToPTraceName(_step), syncDbId());
+    Sentry::Handler::instance()->startPTrace(Sentry::SyncSetpToPTraceName(step), syncDbId());
     _step = step;
 
     switch (step) {
@@ -355,7 +355,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             if (!_syncPal->restart()) {
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
-            SentryHandler::instance()->stopPTrace(SentryHandler::PTraceName::Sync, syncDbId());
+            Sentry::Handler::instance()->stopPTrace(Sentry::PTraceName::Sync, syncDbId());
             break;
         default:
             LOG_SYNCPAL_WARN(_logger, "Invalid status");
@@ -367,39 +367,10 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
     }
 }
 
-SentryHandler::PTraceName SyncPalWorker::setpToPTraceName(SyncStep step) const {
-    switch (step) {
-        case KDC::SyncStep::UpdateDetection1:
-            return SentryHandler::PTraceName::UpdateDetection1;
-        case KDC::SyncStep::UpdateDetection2:
-            return SentryHandler::PTraceName::UpdateDetection2;
-        case KDC::SyncStep::Reconciliation1:
-            return SentryHandler::PTraceName::Reconciliation1;
-        case KDC::SyncStep::Reconciliation2:
-            return SentryHandler::PTraceName::Reconciliation2;
-        case KDC::SyncStep::Reconciliation3:
-            return SentryHandler::PTraceName::Reconciliation3;
-        case KDC::SyncStep::Reconciliation4:
-            return SentryHandler::PTraceName::Reconciliation4;
-        case KDC::SyncStep::Propagation1:
-            return SentryHandler::PTraceName::Propagation1;
-        case KDC::SyncStep::Propagation2:
-            return SentryHandler::PTraceName::Propagation2;
-        case KDC::SyncStep::Done:
-        case KDC::SyncStep::None:
-        case KDC::SyncStep::Idle:
-            return SentryHandler::PTraceName::None;
-            break;
-        default:
-            break;
-    }
-    return SentryHandler::PTraceName();
-}
-
 void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
                                   std::shared_ptr<SharedObject> (&inputSharedObject)[2], bool reset) {
     LOG_SYNCPAL_DEBUG(_logger, "Restart sync");
-    SentryHandler::instance()->stopPTrace(SentryHandler::PTraceName::Sync,
+    Sentry::Handler::instance()->stopPTrace(Sentry::PTraceName::Sync,
                                           syncDbId()); // Stop the transaction of the previous sync.
 
     if (reset) {

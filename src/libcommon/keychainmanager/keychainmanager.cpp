@@ -51,7 +51,7 @@ bool KeyChainManager::writeDummyTest() {
     if (!KeyChainManager::instance()->writeToken(dummyKeychainKey, dummyData)) {
         std::string error = "Test writing into the keychain failed. Token not refreshed.";
         LOG_WARN(Log::instance()->getLogger(), error.c_str());
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "KeyChain::writeDummyTest", error);
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "KeyChain::writeDummyTest", error);
 
         return false;
     }
@@ -74,7 +74,7 @@ bool KeyChainManager::writeToken(const std::string &keychainKey, const std::stri
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
                   "Failed to save authentication info to keychain: " << error.code << " - " << error.message.c_str());
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "KeyChain::writeToken", error.message);
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "KeyChain::writeToken", error.message);
 
         return false;
     }
@@ -128,7 +128,7 @@ bool KeyChainManager::deleteToken(const std::string &keychainKey) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
                   "Failed to delete authentication info to keychain: " << error.code << " - " << error.message.c_str());
 
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "KeyChain::deleteToken", error.message);
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "KeyChain::deleteToken", error.message);
 
         return false;
     }

@@ -33,7 +33,7 @@
 #include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
@@ -487,7 +487,7 @@ void AppServer::updateSentryUser() const {
         userName = user.name();
         userEmail = user.email();
     }
-    SentryHandler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
+    Sentry::Handler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
 }
 
 bool AppServer::clientHasCrashed() const {
@@ -1988,7 +1988,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::CLIENT_STARTED: {
-            SentryHandler::instance()->stopPTrace(SentryHandler::PTraceName::AppStart);
+            Sentry::Handler::instance()->stopPTrace(Sentry::PTraceName::AppStart);
         }
         default: {
             LOG_DEBUG(_logger, "Request not implemented!");
@@ -3967,7 +3967,7 @@ void AppServer::addError(const Error &error) {
         // Manage sockets defuncted error
         LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", "Sockets defuncted error");
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "AppServer::addError", "Sockets defuncted error");
 
         // Decrease upload session max parallel jobs
         ParametersCache::instance()->decreaseUploadSessionParallelThreads();
@@ -4004,7 +4004,7 @@ void AppServer::addError(const Error &error) {
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString(), sentryUser);
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
     }
 }
 

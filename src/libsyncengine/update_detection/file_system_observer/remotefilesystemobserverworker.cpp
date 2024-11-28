@@ -24,7 +24,8 @@
 #include "../../jobs/network/API_v2/continuefilelistwithcursorjob.h"
 #ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-#endif
+#endif 
+#include "libcommon/log/sentry/counterscopedptrace.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/syncnodecache.h"
@@ -90,7 +91,7 @@ void RemoteFileSystemObserverWorker::execute() {
 ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation");
     auto start = std::chrono::steady_clock::now();
-    SentryHandler::ScopedPTrace perfMonitor(SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot, syncDbId(), true);
+    Sentry::ScopedPTrace perfMonitor(Sentry::PTraceName::RFSO_GenerateInitialSnapshot, syncDbId(), true);
 
     _snapshot->init();
     _updating = true;
@@ -267,7 +268,7 @@ ExitCode RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) 
 
 ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, const bool saveCursor) {
     // Send request
-    SentryHandler::ScopedPTrace perfMonitor(SentryHandler::PTraceName::RFSO_BackRequest, syncDbId(), true);
+    Sentry::ScopedPTrace perfMonitor(Sentry::PTraceName::RFSO_BackRequest, syncDbId(), true);
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
         std::unordered_set<NodeId> blackList;
@@ -324,7 +325,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     std::unordered_set<SyncName> existingFiles;
     uint64_t itemCount = 0;
     perfMonitor.stop();
-    SentryHandler::CounterScopedPTrace counterPerfMonitor(1000, SentryHandler::PTraceName::RFSO_ExploreItem, syncDbId());
+    Sentry::CounterScopedPTrace counterPerfMonitor(1000, Sentry::PTraceName::RFSO_ExploreItem, syncDbId());
     while (job->getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
@@ -386,7 +387,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     if (!eof) {
         const std::string msg = "Failed to parse CSV reply: missing EOF delimiter";
         LOG_SYNCPAL_WARN(_logger, msg.c_str());
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", msg);
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", msg);
         setExitCause(ExitCause::FullListParsingError);
         return ExitCode::NetworkError;
     }
@@ -488,7 +489,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
     std::set<NodeId, std::less<>> movedItems;
 
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
-        SentryHandler::ScopedPTrace perfMonitor(SentryHandler::PTraceName::RFSO_ChangeDetected, syncDbId());
+        Sentry::ScopedPTrace perfMonitor(Sentry::PTraceName::RFSO_ChangeDetected, syncDbId());
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -787,7 +788,7 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     bool resetTimer = elapsedTime.count() > 3600; // 1h
     if (_listingFullCounter > 60) {
         // If there is more then 1 listing/full request per minute for an hour -> send a sentry
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "RemoteFileSystemObserverWorker::generateInitialSnapshot",
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "RemoteFileSystemObserverWorker::generateInitialSnapshot",
                                                   "Too many listing/full requests, sync is looping");
         resetTimer = true;
     }

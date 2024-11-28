@@ -24,19 +24,19 @@
 
 namespace KDC {
 
-class MockTestSentryHandler : public SentryHandler {
+class MockTestSentry::Handler : public Sentry::Handler {
     public:
-        MockTestSentryHandler();
+        MockTestSentry::Handler();
         int sentryUploadedEventCount() const { return _sentryUploadedEventCount; }
 
     private:
-        void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const final;
+        void sendEventToSentry(const Sentry::Level level, const std::string &title, const std::string &message) const final;
         mutable int _sentryUploadedEventCount = 0;
 };
 
 
-class TestSentryHandler : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSentryHandler);
+class TestSentry::Handler : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestSentry::Handler);
         CPPUNIT_TEST(testMultipleSendEventForTheSameEvent);
         CPPUNIT_TEST(testMultipleSendEventForDifferentEvent);
         CPPUNIT_TEST(testWriteEvent);
