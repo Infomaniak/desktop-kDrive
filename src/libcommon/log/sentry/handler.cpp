@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sentryhandler.h"
+#include "handler.h"
 #include "config.h"
 #include "version.h"
 #include "utility/utility.h"
@@ -27,13 +27,13 @@
 
 #include <asserts.h>
 
-namespace KDC {
+namespace KDC::Sentry {
 
-std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
+std::shared_ptr<Handler> Handler::_instance = nullptr;
 
-KDC::AppType SentryHandler::_appType = KDC::AppType::None;
-bool SentryHandler::_debugCrashCallback = false;
-bool SentryHandler::_debugBeforeSendCallback = false;
+AppType Handler::_appType = AppType::None;
+bool Handler::_debugCrashCallback = false;
+bool Handler::_debugBeforeSendCallback = false;
 
 /*
  *  sentry_value_t reader implementation - begin
@@ -148,16 +148,16 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
     (void) uctx;
     (void) closure;
 
-    std::cerr << "Sentry detected a crash in the app " << SentryHandler::appType() << std::endl;
+    std::cerr << "Sentry detected a crash in the app " << Handler::appType() << std::endl;
 
     // As `signum` is unknown, a crash is considered as a kill.
     const int signum{0};
-    KDC::CommonUtility::writeSignalFile(SentryHandler::appType(), KDC::fromInt<KDC::SignalType>(signum));
+    KDC::CommonUtility::writeSignalFile(Handler::appType(), KDC::fromInt<KDC::SignalType>(signum));
 
-    if (SentryHandler::debugCrashCallback()) {
+    if (Handler::debugCrashCallback()) {
         std::stringstream ss;
         readObject(event, ss);
-        SentryHandler::writeEvent(ss.str(), true);
+        Handler::writeEvent(ss.str(), true);
     }
 
     return event;
@@ -167,40 +167,40 @@ sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closur
     (void) hint;
     (void) closure;
 
-    std::cout << "Sentry will send an event for the app " << SentryHandler::appType() << std::endl;
+    std::cout << "Sentry will send an event for the app " << Handler::appType() << std::endl;
 
-    if (SentryHandler::debugBeforeSendCallback()) {
+    if (Handler::debugBeforeSendCallback()) {
         std::stringstream ss;
         readObject(event, ss);
-        SentryHandler::writeEvent(ss.str(), false);
+        Handler::writeEvent(ss.str(), false);
     }
 
     return event;
 }
 
-std::shared_ptr<SentryHandler> SentryHandler::instance() {
+std::shared_ptr<Handler> Handler::instance() {
     if (!_instance) {
-        assert(false && "SentryHandler must be initialized before calling instance");
+        assert(false && "Handler must be initialized before calling instance");
         // TODO: When the logger will be moved to the common library, add a log there.
-        return std::shared_ptr<SentryHandler>(new SentryHandler()); // Create a dummy instance to avoid crash but should never
+        return std::shared_ptr<Handler>(new Handler()); // Create a dummy instance to avoid crash but should never
                                                                     // happen (the sentry will not be sent)
     }
     return _instance;
 }
 
-void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
+void Handler::init(AppType appType, int breadCrumbsSize) {
     if (_instance) {
-        assert(false && "SentryHandler already initialized");
+        assert(false && "Handler already initialized");
         return;
     }
 
-    _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
+    _instance = std::shared_ptr<Handler>(new Handler());
     if (!_instance) {
         assert(false);
         return;
     }
 
-    if (appType == KDC::AppType::None) {
+    if (appType == AppType::None) {
         _instance->_isSentryActivated = false;
         return;
     }
@@ -222,7 +222,7 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
 
     // Sentry init
     sentry_options_t *options = sentry_options_new();
-    sentry_options_set_dsn(options, ((appType == KDC::AppType::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
+    sentry_options_set_dsn(options, ((appType == AppType::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
     const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
 #endif
@@ -277,18 +277,18 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
     _instance->_isSentryActivated = true;
 }
 
-void SentryHandler::setAuthenticatedUser(const SentryUser &user) {
+void Handler::setAuthenticatedUser(const SentryUser &user) {
     std::scoped_lock lock(_mutex);
     _authenticatedUser = user;
     updateEffectiveSentryUser();
 }
 
-void SentryHandler::setGlobalConfidentialityLevel(SentryConfidentialityLevel level) {
+void Handler::setGlobalConfidentialityLevel(SentryConfidentialityLevel level) {
     std::scoped_lock lock(_mutex);
     _globalConfidentialityLevel = level;
 }
 
-void SentryHandler::captureMessage(SentryLevel level, const std::string &title, std::string message /*Copy needed*/,
+void Handler::_captureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
                                    const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
     std::scoped_lock lock(_mutex);
     if (!_isSentryActivated) return;
@@ -303,21 +303,21 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
     sendEventToSentry(event.level, event.title, event.message);
 }
 
-void SentryHandler::sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const {
+void Handler::sendEventToSentry(const Level level, const std::string &title, const std::string &message) const {
     sentry_capture_event(sentry_value_new_message_event(static_cast<sentry_level_t>(level), title.c_str(), message.c_str()));
 }
 
-void SentryHandler::setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit) {
+void Handler::setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit) {
     assert(maxCaptureCountBeforeRateLimit > 0 && "Max capture count before rate limit must be greater than 0");
     _sentryMaxCaptureCountBeforeRateLimit = static_cast<unsigned int>(std::max(1, maxCaptureCountBeforeRateLimit));
 }
 
-void SentryHandler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) {
+void Handler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) {
     assert(minUploadIntervalOnRateLimit > 0 && "Min upload interval on rate limit must be greater than 0");
     _sentryMinUploadIntervaOnRateLimit = std::max(1, minUploadIntervalOnRateLimit);
 }
 
-sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {
+sentry_value_t Handler::toSentryValue(const SentryUser &user) const {
     sentry_value_t userValue = sentry_value_new_object();
     sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.email().data()));
     sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.username().data()));
@@ -325,7 +325,7 @@ sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {
     return userValue;
 }
 
-void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
+void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     using namespace std::chrono;
     std::scoped_lock lock(_mutex);
 
@@ -371,28 +371,28 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     escalateSentryEvent(event);
 }
 
-bool SentryHandler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
+bool Handler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
     return (event.lastCapture + seconds(_sentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
 }
 
-bool SentryHandler::lastEventUploadIsOutdated(const SentryEvent &event) const {
+bool Handler::lastEventUploadIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
     return (event.lastUpload + seconds(_sentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
 }
 
-void SentryHandler::escalateSentryEvent(SentryEvent &event) const {
+void Handler::escalateSentryEvent(SentryEvent &event) const {
     event.message += " (Rate limit reached: " + std::to_string(event.captureCount) + " captures.";
-    if (event.level == SentryLevel::Fatal || event.level == SentryLevel::Error) {
+    if (event.level == Level::Fatal || event.level == Level::Error) {
         event.message += ")";
         return;
     }
 
     event.message += " Level escalated from " + toString(event.level) + " to Error)";
-    event.level = SentryLevel::Error;
+    event.level = Level::Error;
 }
 
-void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
+void Handler::updateEffectiveSentryUser(const SentryUser &user) {
     if (_globalConfidentialityLevel == _lastConfidentialityLevel && user.isDefault()) return;
     _lastConfidentialityLevel = user.isDefault() ? _globalConfidentialityLevel : SentryConfidentialityLevel::Specific;
 
@@ -419,10 +419,10 @@ void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
     sentry_set_user(userValue);
 }
 
-void SentryHandler::writeEvent(const std::string &eventStr, bool crash) noexcept {
+void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
     using namespace KDC::event_dump_files;
     auto eventFilePath =
-            std::filesystem::temp_directory_path() / (SentryHandler::appType() == AppType::Server
+            std::filesystem::temp_directory_path() / (Handler::appType() == AppType::Server
                                                               ? (crash ? serverCrashEventFileName : serverSendEventFileName)
                                                               : (crash ? clientCrashEventFileName : clientSendEventFileName));
 
@@ -433,7 +433,7 @@ void SentryHandler::writeEvent(const std::string &eventStr, bool crash) noexcept
     }
 }
 
-SentryHandler::~SentryHandler() {
+Handler::~Handler() {
     if (this == _instance.get()) {
         _instance.reset();
 #if !defined(Q_OS_LINUX)
@@ -446,16 +446,12 @@ SentryHandler::~SentryHandler() {
     }
 }
 
-SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
+Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, Level level,
                                         SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
     title(title),
     message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 
-SentryHandler::PerformanceTrace::PerformanceTrace(pTraceId id) : _pTraceId{id} {
-    assert(id != 0 && "operationId must be different from 0");
-}
-
-void SentryHandler::stopPTrace(const pTraceId &id, bool aborted) {
+void Handler::stopPTrace(const pTraceId &id, bool aborted) {
     std::scoped_lock lock(_mutex);
     if (id == 0) return;
     auto performanceTraceIt = _performanceTraces.find(id);
@@ -495,7 +491,7 @@ void SentryHandler::stopPTrace(const pTraceId &id, bool aborted) {
     _performanceTraces.erase(id);
 }
 
-pTraceId SentryHandler::startTransaction(const std::string &name, const std::string &description) {
+pTraceId Handler::startTransaction(const std::string &name, const std::string &description) {
     sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(name.c_str(), description.c_str());
     sentry_transaction_t *tx = sentry_transaction_start(tx_ctx, sentry_value_new_null());
     _pTraceIdCounter++;
@@ -512,7 +508,7 @@ pTraceId SentryHandler::startTransaction(const std::string &name, const std::str
     return _pTraceIdCounter;
 }
 
-pTraceId SentryHandler::startSpan(const std::string &name, const std::string &description, const pTraceId &parentId) {
+pTraceId Handler::startSpan(const std::string &name, const std::string &description, const pTraceId &parentId) {
     auto parentIt = _performanceTraces.find(parentId);
     if (parentIt == _performanceTraces.end()) {
         assert(false && "Parent transaction/span does not exist");
@@ -551,12 +547,12 @@ pTraceId SentryHandler::startSpan(const std::string &name, const std::string &de
     return traceId;
 }
 
-pTraceId SentryHandler::startPTrace(SentryHandler::PTraceName pTraceName, int syncDbId) {
+pTraceId Handler::startPTrace(PTraceName pTraceName, int syncDbId) {
     std::scoped_lock lock(_mutex);
-    if (!_isSentryActivated || pTraceName == SentryHandler::PTraceName::None) return 0;
+    if (!_isSentryActivated || pTraceName == PTraceName::None) return 0;
 
     pTraceId newPTraceId = 0;
-    if (PTraceInfo pTraceInfo(pTraceName); pTraceInfo._parentPTraceName != SentryHandler::PTraceName::None) {
+    if (PTraceInfo pTraceInfo(pTraceName); pTraceInfo._parentPTraceName != PTraceName::None) {
         // Fetch the pTraceMap associated with the provided syncDbId
         auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
         if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
@@ -585,9 +581,9 @@ pTraceId SentryHandler::startPTrace(SentryHandler::PTraceName pTraceName, int sy
     return newPTraceId;
 }
 
-void SentryHandler::stopPTrace(SentryHandler::PTraceName pTraceName, int syncDbId, bool aborted) {
+void Handler::stopPTrace(PTraceName pTraceName, int syncDbId, bool aborted) {
     std::scoped_lock lock(_mutex);
-    if (!_isSentryActivated || pTraceName == SentryHandler::PTraceName::None) return;
+    if (!_isSentryActivated || pTraceName == PTraceName::None) return;
     auto pTraceMap = _pTraceNameToPTraceIdMap.find(syncDbId);
     if (pTraceMap == _pTraceNameToPTraceIdMap.end()) {
         assert(false && "Transaction is not running");
@@ -604,197 +600,4 @@ void SentryHandler::stopPTrace(SentryHandler::PTraceName pTraceName, int syncDbI
     pTraceIt->second = 0;
 }
 
-SentryHandler::PTraceInfo::PTraceInfo(SentryHandler::PTraceName pTraceName) : _pTraceName{pTraceName} {
-    switch (_pTraceName) {
-        case SentryHandler::PTraceName::None:
-            assert(false && "Transaction must be different from None");
-            break;
-        case SentryHandler::PTraceName::AppStart:
-            _pTraceTitle = "AppStart";
-            _pTraceDescription = "Strat the application";
-            break;
-        case SentryHandler::PTraceName::SyncInit:
-            _pTraceTitle = "Synchronisation Init";
-            _pTraceDescription = "Synchronisation initialization";
-            break;
-        case SentryHandler::PTraceName::ResetStatus:
-            _pTraceTitle = "ResetStatus";
-            _pTraceDescription = "Reseting status";
-            _parentPTraceName = SentryHandler::PTraceName::SyncInit;
-            break;
-        case SentryHandler::PTraceName::Sync:
-            _pTraceTitle = "Synchronisation";
-            _pTraceDescription = "Synchronisation.";
-            break;
-        case SentryHandler::PTraceName::UpdateDetection1:
-            _pTraceTitle = "UpdateDetection1";
-            _pTraceDescription = "Compute FS operations";
-            _parentPTraceName = SentryHandler::PTraceName::Sync;
-            break;
-        case SentryHandler::PTraceName::UpdateUnsyncedList:
-            _pTraceTitle = "UpdateUnsyncedList";
-            _pTraceDescription = "Update unsynced list";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
-            break;
-        case SentryHandler::PTraceName::InferChangesFromDb:
-            _pTraceTitle = "InferChangesFromDb";
-            _pTraceDescription = "Infer changes from DB";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
-            break;
-        case SentryHandler::PTraceName::ExploreLocalSnapshot:
-            _pTraceTitle = "ExploreLocalSnapshot";
-            _pTraceDescription = "Explore local snapshot";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
-            break;
-        case SentryHandler::PTraceName::ExploreRemoteSnapshot:
-            _pTraceTitle = "ExploreRemoteSnapshot";
-            _pTraceDescription = "Explore remote snapshot";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection1;
-            break;
-        case SentryHandler::PTraceName::UpdateDetection2:
-            _pTraceTitle = "UpdateDetection2";
-            _pTraceDescription = "UpdateTree generation";
-            _parentPTraceName = SentryHandler::PTraceName::Sync;
-            break;
-        case SentryHandler::PTraceName::ResetNodes:
-            _pTraceTitle = "ResetNodes";
-            _pTraceDescription = "Reset nodes";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
-            break;
-        case SentryHandler::PTraceName::Step1MoveDirectory:
-            _pTraceTitle = "Step1MoveDirectory";
-            _pTraceDescription = "Move directory";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
-            break;
-        case SentryHandler::PTraceName::Step2MoveFile:
-            _pTraceTitle = "Step2MoveFile";
-            _pTraceDescription = "Move file";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
-            break;
-        case SentryHandler::PTraceName::Step3DeleteDirectory:
-            _pTraceTitle = "Step3DeleteDirectory";
-            _pTraceDescription = "Delete directory";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
-            break;
-        case SentryHandler::PTraceName::Step4DeleteFile:
-            _pTraceTitle = "Step4DeleteFile";
-            _pTraceDescription = "Delete file";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
-            break;
-        case SentryHandler::PTraceName::Step5CreateDirectory:
-            _pTraceTitle = "Step5CreateDirectory";
-            _pTraceDescription = "Create directory";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
-            break;
-        case SentryHandler::PTraceName::Step6CreateFile:
-            _pTraceTitle = "Step6CreateFile";
-            _pTraceDescription = "Create file";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
-            break;
-        case SentryHandler::PTraceName::Step7EditFile:
-            _pTraceTitle = "Step7EditFile";
-            _pTraceDescription = "Edit file";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
-            break;
-        case SentryHandler::PTraceName::Step8CompleteUpdateTree:
-            _pTraceTitle = "Step8CompleteUpdateTree";
-            _pTraceDescription = "Complete update tree";
-            _parentPTraceName = SentryHandler::PTraceName::UpdateDetection2;
-            break;
-        case SentryHandler::PTraceName::Reconciliation1:
-            _pTraceTitle = "Reconciliation1";
-            _pTraceDescription = "Platform inconsistency check";
-            _parentPTraceName = SentryHandler::PTraceName::Sync;
-            break;
-        case SentryHandler::PTraceName::CheckLocalTree:
-            _pTraceTitle = "CheckLocalTree";
-            _pTraceDescription = "Check local update tree integrity";
-            _parentPTraceName = SentryHandler::PTraceName::Reconciliation1;
-            break;
-        case SentryHandler::PTraceName::CheckRemoteTree:
-            _pTraceTitle = "CheckRemoteTree";
-            _pTraceDescription = "Check remote update tree integrity";
-            _parentPTraceName = SentryHandler::PTraceName::Reconciliation1;
-            break;
-        case SentryHandler::PTraceName::Reconciliation2:
-            _pTraceTitle = "Reconciliation2";
-            _pTraceDescription = "Find conflicts";
-            _parentPTraceName = SentryHandler::PTraceName::Sync;
-            break;
-        case SentryHandler::PTraceName::Reconciliation3:
-            _pTraceTitle = "Reconciliation3";
-            _pTraceDescription = "Resolve conflicts";
-            _parentPTraceName = SentryHandler::PTraceName::Sync;
-            break;
-        case SentryHandler::PTraceName::Reconciliation4:
-            _pTraceTitle = "Reconciliation4";
-            _pTraceDescription = "Operation Generator";
-            _parentPTraceName = SentryHandler::PTraceName::Sync;
-            break;
-        case SentryHandler::PTraceName::GenerateItemOperations:
-            _pTraceTitle = "GenerateItemOperations";
-            _pTraceDescription = "Generate the list of operations for 1000 items";
-            _parentPTraceName = SentryHandler::PTraceName::Reconciliation4;
-            break;
-        case SentryHandler::PTraceName::Propagation1:
-            _pTraceTitle = "Propagation1";
-            _pTraceDescription = "Operation Sorter";
-            _parentPTraceName = SentryHandler::PTraceName::Sync;
-            break;
-        case SentryHandler::PTraceName::Propagation2:
-            _pTraceTitle = "Propagation2";
-            _pTraceDescription = "Executor";
-            _parentPTraceName = SentryHandler::PTraceName::Sync;
-            break;
-        case SentryHandler::PTraceName::InitProgress:
-            _pTraceTitle = "InitProgress";
-            _pTraceDescription = "Init the progress manager";
-            _parentPTraceName = SentryHandler::PTraceName::Propagation2;
-            break;
-        case SentryHandler::PTraceName::JobGeneration:
-            _pTraceTitle = "JobGeneration";
-            _pTraceDescription = "Generate the list of jobs";
-            _parentPTraceName = SentryHandler::PTraceName::Propagation2;
-            break;
-        case SentryHandler::PTraceName::waitForAllJobsToFinish:
-            _pTraceTitle = "waitForAllJobsToFinish";
-            _pTraceDescription = "Wait for all jobs to finish";
-            _parentPTraceName = SentryHandler::PTraceName::Propagation2;
-            break;
-        case SentryHandler::PTraceName::LFSO_GenerateInitialSnapshot:
-            _pTraceTitle = "LFSO_GenerateInitialSnapshot";
-            _pTraceDescription = "Explore sync directory";
-            break;
-        case SentryHandler::PTraceName::LFSO_ExploreItem:
-            _pTraceTitle = "LFSO_ExploreItem(x1000)";
-            _pTraceDescription = "Discover 1000 local files";
-            _parentPTraceName = SentryHandler::PTraceName::LFSO_GenerateInitialSnapshot;
-            break;
-        case SentryHandler::PTraceName::LFSO_ChangeDetected:
-            _pTraceTitle = "LFSO_ChangeDetected";
-            _pTraceDescription = "Handle one detected changes";
-            break;
-        case SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot:
-            _pTraceTitle = "RFSO_GenerateInitialSnapshot";
-            _pTraceDescription = "Generate snapshot";
-            break;
-        case SentryHandler::PTraceName::RFSO_BackRequest:
-            _pTraceTitle = "RFSO_BackRequest";
-            _pTraceDescription = "Request the list of all items to the backend";
-            _parentPTraceName = SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot;
-            break;
-        case SentryHandler::PTraceName::RFSO_ExploreItem:
-            _pTraceTitle = "RFSO_ExploreItem(x1000)";
-            _pTraceDescription = "Discover 1000 remote files";
-            _parentPTraceName = SentryHandler::PTraceName::RFSO_GenerateInitialSnapshot;
-            break;
-        case SentryHandler::PTraceName::RFSO_ChangeDetected:
-            _pTraceTitle = "RFSO_ChangeDetected";
-            _pTraceDescription = "Handle one detected changes";
-            break;
-        default:
-            assert(false && "Invalid transaction name");
-            break;
-    }
-}
-} // namespace KDC
+} // namespace KDC::Sentry

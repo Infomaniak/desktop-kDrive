@@ -20,17 +20,17 @@
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/sentry/handler.h"
 
 namespace KDC {
 
-class MockTestSentryHandler : public SentryHandler {
+class MockTestSentryHandler : public Sentry::Handler {
     public:
         MockTestSentryHandler();
         int sentryUploadedEventCount() const { return _sentryUploadedEventCount; }
 
     private:
-        void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const final;
+        void sendEventToSentry(const Sentry::Level level, const std::string &title, const std::string &message) const final;
         mutable int _sentryUploadedEventCount = 0;
 };
 

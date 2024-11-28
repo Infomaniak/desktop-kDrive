@@ -38,7 +38,6 @@ class SyncPalWorker : public ISyncWorker {
     private:
         SyncStep _step;
         std::chrono::time_point<std::chrono::system_clock> _pauseTime;
-        SentryHandler::PTraceName setpToPTraceName(SyncStep step) const;
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
@@ -54,5 +53,4 @@ class SyncPalWorker : public ISyncWorker {
         void unpauseAllWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         bool resetVfsFilesStatus();
 };
-
 } // namespace KDC

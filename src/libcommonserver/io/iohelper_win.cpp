@@ -634,7 +634,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             return true;
         }
         LOGW_WARN(logger(), L"Failed to get rights using Windows API, falling back to std::filesystem.");
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "IoHelper",
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "IoHelper",
                                                   "Failed to get rights using Windows API, falling back to std::filesystem.");
 
         IoHelper::getTrustee().ptstrName = nullptr;
@@ -710,7 +710,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         }
 
         LOGW_WARN(logger(), L"Failed to set rights using Windows API, falling back to std::filesystem.");
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "IoHelper",
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "IoHelper",
                                                   "Failed to set rights using Windows API, falling back to std::filesystem.");
         IoHelper::getTrustee().ptstrName = nullptr;
         _getAndSetRightsMethod = 1;

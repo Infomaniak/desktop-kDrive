@@ -24,7 +24,7 @@
 #include "cocoainitializer.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/sentry/handler.h"
 #include "libcommongui/utility/utility.h"
 
 #include <QtGlobal>
@@ -71,8 +71,8 @@ int main(int argc, char **argv) {
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
-    KDC::SentryHandler::init(KDC::AppType::Client);
-    KDC::SentryHandler::instance()->setGlobalConfidentialityLevel(KDC::SentryConfidentialityLevel::Authenticated);
+    KDC::Sentry::Handler::init(KDC::AppType::Client);
+    KDC::Sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::SentryConfidentialityLevel::Authenticated);
 
 #ifdef Q_OS_LINUX
     // Bug with multi-screen

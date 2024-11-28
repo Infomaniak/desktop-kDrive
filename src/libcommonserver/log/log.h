@@ -24,7 +24,7 @@
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/customlogwstream.h"
 
 namespace KDC {

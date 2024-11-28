@@ -23,7 +23,7 @@
 #include "libcommon/asserts.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/log/log.h"
 
 #include <QtGlobal>
@@ -69,9 +69,9 @@ int main(int argc, char **argv) {
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
-    KDC::SentryHandler::init(KDC::AppType::Server);
-    KDC::SentryHandler::instance()->setGlobalConfidentialityLevel(KDC::SentryConfidentialityLevel::Authenticated);
-    KDC::SentryHandler::instance()->startPTrace(KDC::SentryHandler::PTraceName::AppStart);
+    KDC::Sentry::Handler::init(KDC::AppType::Server);
+    KDC::Sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::SentryConfidentialityLevel::Authenticated);
+    KDC::Sentry::Handler::instance()->startPTrace(KDC::Sentry::PTraceName::AppStart);
     Q_INIT_RESOURCE(client);
 
     std::unique_ptr<KDC::AppServer> appPtr = nullptr;

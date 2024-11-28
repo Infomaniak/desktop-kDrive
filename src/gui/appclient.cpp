@@ -46,7 +46,7 @@
 #include <stdlib.h>
 
 #include <sentry.h>
-#include <log/sentry/sentryhandler.h>
+#include <log/sentry/handler.h>
 
 #define CONNECTION_TRIALS 3
 #define CHECKCOMMSTATUS_TRIALS 5
@@ -672,13 +672,13 @@ void AppClient::updateSentryUser() const {
     if (userInfo == _gui->userInfoMap().end()) {
         qCWarning(lcAppClient) << "No user found in updateSentryUser()";
         SentryUser user("No user logged", "No user logged", "No user logged");
-        SentryHandler::instance()->setAuthenticatedUser(user);
+        Sentry::Handler::instance()->setAuthenticatedUser(user);
         return;
     }
 
     SentryUser user(userInfo->second.email().toStdString(), userInfo->second.name().toStdString(),
                     std::to_string(userInfo->second.userId()));
-    SentryHandler::instance()->setAuthenticatedUser(user);
+    Sentry::Handler::instance()->setAuthenticatedUser(user);
 }
 
 void AppClient::onUseMonoIconsChanged(bool) {

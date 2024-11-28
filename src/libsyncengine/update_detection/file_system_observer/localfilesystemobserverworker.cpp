@@ -18,6 +18,8 @@
 
 #include "localfilesystemobserverworker.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/counterscopedptrace.h"
+
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -78,7 +80,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             _pendingFileEvents.clear();
             break;
         }
-        SentryHandler::ScopedPTrace sentryTransaction(SentryHandler::PTraceName::LFSO_ChangeDetected);
+        Sentry::ScopedPTrace sentryTransaction(Sentry::PTraceName::LFSO_ChangeDetected);
         // Raise flag _updating in order to wait 1sec without local changes before starting the sync
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
@@ -483,7 +485,7 @@ void LocalFileSystemObserverWorker::execute() {
 ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     LOG_SYNCPAL_INFO(_logger, "Starting local snapshot generation");
     auto start = std::chrono::steady_clock::now();
-    SentryHandler::ScopedPTrace perfMonitor(SentryHandler::PTraceName::LFSO_GenerateInitialSnapshot, syncDbId(), true);
+    Sentry::ScopedPTrace perfMonitor(Sentry::PTraceName::LFSO_GenerateInitialSnapshot, syncDbId(), true);
 
     _snapshot->init();
     _updating = true;
@@ -650,7 +652,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         }
         DirectoryEntry entry;
         bool endOfDirectory = false;
-        SentryHandler::CounterScopedPTrace perfMonitor(1000, SentryHandler::PTraceName::LFSO_ExploreItem, syncDbId());
+        Sentry::CounterScopedPTrace perfMonitor(1000, Sentry::PTraceName::LFSO_ExploreItem, syncDbId());
         while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
             perfMonitor.increment();
 

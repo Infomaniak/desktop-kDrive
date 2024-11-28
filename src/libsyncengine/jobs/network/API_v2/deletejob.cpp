@@ -105,7 +105,7 @@ bool DeleteJob::canRun() {
 
         std::stringstream ss;
         ss << "File exists with another ID (" << _localItemId << "/" << otherNodeId << ")";
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "IoHelper::checkIfPathExistsWithSameNodeId", ss.str());
+        Sentry::Handler::captureMessage(Sentry::Level::Warning, "IoHelper::checkIfPathExistsWithSameNodeId", ss.str());
     }
 
     return true;

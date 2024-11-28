@@ -37,8 +37,11 @@ set(libcommon_SRCS
     info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp
     info/exclusionappinfo.h info/exclusionappinfo.cpp
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
-    log/sentry/sentryhandler.h log/sentry/sentryhandler.cpp
-    log/sentry/sentryuser.h
+    log/sentry/handler.h log/sentry/handler.cpp
+    log/sentry/scopedptrace.h log/sentry/counterscopedptrace.h
+    log/sentry/user.h 
+    log/sentry/ptraceinfo.h log/sentry/ptraceinfo.cpp
+    log/sentry/ptrace.h log/sentry/utility.h
     log/customlogwstream.h
     theme/theme.h theme/theme.cpp
 )

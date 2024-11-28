@@ -310,7 +310,7 @@ bool AbstractUploadSession::sendChunks() {
         const std::streamsize actualChunkSize = file.gcount();
         if (actualChunkSize <= 0) {
             LOG_ERROR(_logger, "Chunk size is 0");
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "Upload chunk error", "Chunk size is 0");
+            Sentry::Handler::captureMessage(Sentry::Level::Warning, "Upload chunk error", "Chunk size is 0");
             readError = true;
             break;
         }

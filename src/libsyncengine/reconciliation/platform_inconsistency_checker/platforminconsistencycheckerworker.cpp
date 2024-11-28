@@ -18,6 +18,7 @@
 
 #include "platforminconsistencycheckerworker.h"
 #include "platforminconsistencycheckerutility.h"
+#include "libcommon/log/sentry/scopedptrace.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -36,9 +37,9 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
-    auto perfMonitor = SentryHandler::ScopedPTrace(SentryHandler::PTraceName::CheckRemoteTree, syncDbId());
+    auto perfMonitor = Sentry::ScopedPTrace(Sentry::PTraceName::CheckRemoteTree, syncDbId());
     checkTree(ReplicaSide::Remote);
-    perfMonitor.stopAndStart(SentryHandler::PTraceName::CheckLocalTree, syncDbId());
+    perfMonitor.stopAndStart(Sentry::PTraceName::CheckLocalTree, syncDbId());
     checkTree(ReplicaSide::Local);
     perfMonitor.stop();
 
