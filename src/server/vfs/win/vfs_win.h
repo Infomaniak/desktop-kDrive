@@ -79,7 +79,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         virtual void clearFileAttributes(const QString &path) override;
 
         ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
-                               bool &finished) override;
+                                   bool &finished) override;
         ExitInfo forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) override;
 
         ExitInfo isDehydratedPlaceholder(const QString &filePath, bool &isDehydrated, bool isAbsolutePath = false) override;
@@ -113,6 +113,12 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         void exclude(const QString &path) override;
         ExitInfo setPlaceholderStatus(const QString &path, bool syncOngoing);
+        ExitInfo handleVfsError(SyncPath &itemPath);
+
+        // By default we will return file access error.
+        ExitInfo defaultError() const {
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
 };
 
 class Worker : public QObject {
