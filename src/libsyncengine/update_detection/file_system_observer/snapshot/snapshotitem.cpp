@@ -49,6 +49,7 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _id = other.id();
     _parentId = other.parentId();
     _name = other.name();
+    _normalizedName = other.normalizedName();
     _createdAt = other.createdAt();
     _lastModified = other.lastModified();
     _type = other.type();
