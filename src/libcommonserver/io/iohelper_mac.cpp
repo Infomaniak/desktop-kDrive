@@ -30,9 +30,8 @@
 
 namespace KDC {
 
-static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
-static const std::string EXT_ATTR_PIN_STATE = "com.infomaniak.drive.desktopclient.litesync.pinstate";
-
+static constexpr std::string_view EXT_ATTR_STATUS("com.infomaniak.drive.desktopclient.litesync.status");
+static constexpr std::string_view EXT_ATTR_PIN_STATE("com.infomaniak.drive.desktopclient.litesync.pinstate");
 
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
@@ -44,7 +43,7 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
     value = "";
     ItemType itemType;
     if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
         ioError = itemType.ioError;
         return false;
     }
@@ -86,7 +85,7 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
                              IoError &ioError) noexcept {
     ItemType itemType;
     if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
         ioError = itemType.ioError;
         return false;
     }
@@ -112,7 +111,7 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
 bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string> &attrNames, IoError &ioError) noexcept {
     ItemType itemType;
     if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
         ioError = itemType.ioError;
         return false;
     }
@@ -138,7 +137,7 @@ bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string>
 }
 
 bool IoHelper::removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept {
-    const std::vector<std::string> liteSyncAttrName = {EXT_ATTR_STATUS, EXT_ATTR_PIN_STATE};
+    const std::vector<std::string> liteSyncAttrName = {std::string(EXT_ATTR_STATUS), std::string(EXT_ATTR_PIN_STATE)};
     return removeXAttrs(path, liteSyncAttrName, ioError);
 }
 
@@ -147,7 +146,7 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     ioError = IoError::Success;
 
     std::string value;
-    const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), std::string(EXT_ATTR_STATUS), value, ioError);
     if (!result) {
         return false;
     }
