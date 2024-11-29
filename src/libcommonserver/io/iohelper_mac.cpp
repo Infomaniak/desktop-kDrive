@@ -30,6 +30,10 @@
 
 namespace KDC {
 
+static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
+static const std::string EXT_ATTR_PIN_STATE = "com.infomaniak.drive.desktopclient.litesync.pinstate";
+
+
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
     return (error == IoError::NoSuchFileOrDirectory) || (error == IoError::AttrNotFound) || (error == IoError::AccessDenied);
@@ -105,11 +109,42 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
     return true;
 }
 
+bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string> &attrNames, IoError &ioError) noexcept {
+    ItemType itemType;
+    if (!getItemType(path, itemType)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError).c_str());
+        ioError = itemType.ioError;
+        return false;
+    }
+
+    // The item indicated by `path` doesn't exist.
+    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
+        ioError = IoError::NoSuchFileOrDirectory;
+        return true;
+    }
+
+    const bool isSymlink = itemType.linkType == LinkType::Symlink;
+
+    for (const auto &attrName: attrNames) {
+        if (removexattr(path.native().c_str(), attrName.c_str(), isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
+            ioError = posixError2ioError(errno);
+            return _isXAttrValueExpectedError(ioError);
+        }
+    }
+
+    // XAttr has been removed
+    ioError = IoError::Success;
+    return true;
+}
+
+bool IoHelper::removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept {
+    const std::vector<std::string> liteSyncAttrName = {EXT_ATTR_STATUS, EXT_ATTR_PIN_STATE};
+    return removeXAttrs(path, liteSyncAttrName, ioError);
+}
+
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
     isDehydrated = false;
     ioError = IoError::Success;
-
-    static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
 
     std::string value;
     const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);

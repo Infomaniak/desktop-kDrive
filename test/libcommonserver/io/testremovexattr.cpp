@@ -1,0 +1,92 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "testio.h"
+
+#include <filesystem>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+using namespace CppUnit;
+
+namespace KDC {
+
+void TestIo::testRemoveXAttr() {
+    // A regular file
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
+        {
+            std::ofstream ofs(path);
+            ofs << "Some content.\n";
+            ofs.close();
+        }
+
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status1", "to-be-deleted", ioError));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+
+        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status2", "to-be-deleted", ioError));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+
+        CPPUNIT_ASSERT(_testObj->removeXAttrs(path, {"status1", "status2"}, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+
+        std::string value;
+        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status1", value, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
+        CPPUNIT_ASSERT(value.empty());
+
+        CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status2", value, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
+        CPPUNIT_ASSERT(value.empty());
+    }
+
+    // A non-existing file
+    {
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(_testObj->removeXAttrs(path, {"status"}, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
+    }
+
+    // A regular file missing owner write permission: access denied expected
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
+        {
+            std::ofstream ofs(path);
+            ofs << "Some content.\n";
+        }
+
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "to-be-deleted", ioError));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+
+        std::filesystem::permissions(path, std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
+
+        CPPUNIT_ASSERT(_testObj->removeXAttrs(path, {"status"}, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
+
+        std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
+    }
+}
+
+} // namespace KDC
