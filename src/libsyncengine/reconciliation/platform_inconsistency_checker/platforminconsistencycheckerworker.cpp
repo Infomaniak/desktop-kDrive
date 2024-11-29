@@ -291,9 +291,9 @@ void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<N
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(absoluteLocalPath));
         }
     } else {
-        LOG_WARN(_logger, localNode
-                                  ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
-                                  : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb");
+        const char *msg = localNode ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
+                                    : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb";
+        LOG_WARN(_logger, msg);
         assert(false);
     }
 }

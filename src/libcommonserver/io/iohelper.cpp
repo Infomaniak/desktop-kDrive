@@ -19,7 +19,6 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
-#include "libcommon/utility/utility.h"
 
 #include "config.h" // APPLICATION
 
@@ -72,6 +71,7 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
         case static_cast<int>(std::errc::no_space_on_device):
             return IoError::DiskFull;
         case static_cast<int>(std::errc::permission_denied):
+        case static_cast<int>(std::errc::operation_not_permitted):
             return IoError::AccessDenied;
         default:
             return IoError::Unknown;

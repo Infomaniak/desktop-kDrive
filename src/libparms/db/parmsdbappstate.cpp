@@ -111,11 +111,8 @@ bool ParmsDb::insertDefaultAppState() {
     return true;
 }
 
-bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, bool noEmptyValue /*= false*/) {
+bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bool updateOnlyIfEmpty /*= false*/) {
     const std::scoped_lock lock(_mutex);
-    int errId = 0;
-    std::string error;
-    bool found = false;
     std::string valueStr = value;
     if (valueStr.empty()) {
         LOG_WARN(_logger, "Value is empty for AppStateKey: " << CommonUtility::appStateKeyToString(key).c_str());
@@ -127,31 +124,28 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, bool noE
 
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
     ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
+    bool found = false;
     if (!queryNext(SELECT_APP_STATE_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
     }
     std::string existingValue;
-    ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, existingValue))
+    if (found) {
+        ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, existingValue))
+    }
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
 
-    if (!found) {
-        ASSERT(queryResetAndClearBindings(INSERT_APP_STATE_REQUEST_ID))
-        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
-        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 2, valueStr))
-        if (!queryExec(INSERT_APP_STATE_REQUEST_ID, errId, error)) {
-            LOG_WARN(_logger, "Error running query: " << INSERT_APP_STATE_REQUEST_ID);
+    if (!found || (updateOnlyIfEmpty && existingValue.empty())) {
+        const auto requestId = found ? UPDATE_APP_STATE_REQUEST_ID : INSERT_APP_STATE_REQUEST_ID;
+        ASSERT(queryBindValue(requestId, 1, static_cast<int>(key)))
+        ASSERT(queryBindValue(requestId, 2, valueStr))
+        int errId = 0;
+        std::string error;
+        if (!queryExec(requestId, errId, error)) {
+            LOG_WARN(_logger, "Error running query: " << requestId);
             return false;
         }
-    } else if (noEmptyValue && existingValue.empty()) {
-        ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID))
-        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
-        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, valueStr))
-        if (!queryExec(UPDATE_APP_STATE_REQUEST_ID, errId, error)) {
-            LOG_WARN(_logger, "Error running query: " << UPDATE_APP_STATE_REQUEST_ID);
-            return false;
-        }
-        ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID))
+        ASSERT(queryResetAndClearBindings(requestId))
     }
     return true;
 }
