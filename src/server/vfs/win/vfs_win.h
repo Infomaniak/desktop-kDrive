@@ -113,6 +113,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         void exclude(const QString &path) override;
         ExitInfo setPlaceholderStatus(const QString &path, bool syncOngoing);
+        ExitInfo ToExitInfo(VfsWinExitInfo vfsWinExitInfo);
 };
 
 class Worker : public QObject {
