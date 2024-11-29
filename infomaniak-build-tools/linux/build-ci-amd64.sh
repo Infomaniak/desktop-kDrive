@@ -20,16 +20,68 @@
 
 set -xe
 
-BUILDTYPE="Debug"
-if [[ $1 == 'release' ]]; then
-    BUILDTYPE="Release";
+program_name="$(basename "$0")"
+
+function display_help {
+  echo "$program_name [-h] [-t build-type] [-u unit-tests]"
+  echo "  Build the desktop-kDrive application for Linux Amd64 with the specified build type ."
+  echo "where:"
+  echo "-h  Show this help text."
+  echo "-t <build-type>" 
+  echo "  Set the type of the build. Defaults to 'debug'. The valid values are: 'debug' or 'release'."
+  echo "-u <unit-tests>" 
+  echo "  Activate the build of unit tests. Without this flag, unit tests will not be built."
+}
+
+
+unit_tests=0
+build_type="debug"
+
+while :
+do
+    case "$1" in
+      -t | --build-type)
+          build_type="$2"   
+          shift 2
+          ;;
+      -u | --unit-tests)
+          unit_tests=1   
+          shift 1
+          ;;
+      -h | --help)
+          display_help 
+          exit 0
+          ;;
+      --) # End of all options
+          shift
+          break
+          ;;
+      -*)
+          echo "Error: Unknown option: $1" >&2
+          exit 1 
+          ;;
+      *)  # No more options
+          break
+          ;;
+    esac
+done
+
+
+if [[ $build_type == "release" ]]; then
+    build_type="Release"
+elif [[ $build_type == "debug" ]]; then
+    build_type="Debug"
 fi
+
+echo "Build type: $build_type"
+echo "Unit tests build flag: $unit_tests"
+
 
 export QT_BASE_DIR="~/Qt/6.2.3"
 export QTDIR="$QT_BASE_DIR/gcc_64"
 export BASEPATH=$PWD
 export CONTENTDIR="$BASEPATH/build-linux"
-export BUILDDIR="$CONTENTDIR/build"
+export build_dir="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
 extract_debug () {
@@ -39,7 +91,7 @@ extract_debug () {
 }
 
 mkdir -p $APPDIR
-mkdir -p $BUILDDIR
+mkdir -p $build_dir
 
 export QMAKE=$QTDIR/bin/qmake
 export PATH=$QTDIR/bin:$QTDIR/libexec:$PATH
@@ -50,14 +102,14 @@ export PKG_CONFIG_PATH=$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH
 export SUFFIX=""
 
 # Build client
-cd $BUILDDIR
-mkdir -p $BUILDDIR/client
+cd $build_dir
+mkdir -p $build_dir/client
 
 CMAKE_PARAMS=()
 
 export KDRIVE_DEBUG=0
 
-cmake -B$BUILDDIR -H$BASEPATH \
+cmake -B$build_dir -H$BASEPATH \
     -DOPENSSL_ROOT_DIR=/usr/local \
     -DOPENSSL_INCLUDE_DIR=/usr/local/include \
     -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
@@ -66,11 +118,11 @@ cmake -B$BUILDDIR -H$BASEPATH \
     -DCMAKE_BUILDTYPE=$BUILDTYPE \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DBIN_INSTALL_DIR=$BUILDDIR/client \
+    -DBIN_INSTALL_DIR=$build_dir/client \
     -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
-    -DBUILD_UNIT_TESTS=1 \
+    -DBUILD_UNIT_TESTS=$unit_tests \
     "${CMAKE_PARAMS[@]}" \
 
 make -j$(nproc)
@@ -80,4 +132,4 @@ extract_debug ./bin kDrive_client
 
 make DESTDIR=$APPDIR install
 
-cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
+cp $BASEPATH/sync-exclude-linux.lst $build_dir/bin/sync-exclude.lst

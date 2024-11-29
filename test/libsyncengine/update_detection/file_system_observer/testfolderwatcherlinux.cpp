@@ -16,33 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "testfolderwatcherlinux.h"
 
-#include "abstractupdater.h"
+#include "update_detection/file_system_observer/folderwatcher_linux.h"
+
 
 namespace KDC {
 
-class SparkleUpdater final : public AbstractUpdater {
-    public:
-        SparkleUpdater();
-        ~SparkleUpdater() override;
-
-        void onUpdateFound() override;
-
-        void setQuitCallback(const std::function<void()> &quitCallback) override;
-        void startInstaller() override;
-
-        static void unskipVersion();
-
-    private:
-        void reset(const std::string &url);
-        void deleteUpdater();
-        bool startSparkleUpdater();
-
-        void skipVersionCallback();
-
-        class Private;
-        Private *d;
-};
+void TestFolderWatcherLinux::testMakeSyncPath() {
+    CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "file.txt").filename().empty());
+    CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "").filename().empty());
+}
 
 } // namespace KDC

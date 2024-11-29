@@ -394,6 +394,14 @@ void TestParmsDb::testAppState(void) {
         CPPUNIT_ASSERT_EQUAL(std::string("value"), std::get<std::string>(valueRes));
         i++;
     };
+
+    // Test add defaut value if and only if value is empty
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertAppState(AppStateKey::Unknown, "test1", true));
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::Unknown, value, found) && found);
+    CPPUNIT_ASSERT_EQUAL(std::string("test1"), std::get<std::string>(value));
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertAppState(AppStateKey::Unknown, "test2", true));
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::Unknown, value, found) && found);
+    CPPUNIT_ASSERT_EQUAL(std::string("test1"), std::get<std::string>(value));
 }
 
 #ifdef __APPLE__

@@ -18,31 +18,17 @@
 
 #pragma once
 
-#include "abstractupdater.h"
+#include "testincludes.h"
 
 namespace KDC {
 
-class SparkleUpdater final : public AbstractUpdater {
-    public:
-        SparkleUpdater();
-        ~SparkleUpdater() override;
-
-        void onUpdateFound() override;
-
-        void setQuitCallback(const std::function<void()> &quitCallback) override;
-        void startInstaller() override;
-
-        static void unskipVersion();
+class TestFolderWatcherLinux final : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestFolderWatcherLinux);
+        CPPUNIT_TEST(testMakeSyncPath);
+        CPPUNIT_TEST_SUITE_END();
 
     private:
-        void reset(const std::string &url);
-        void deleteUpdater();
-        bool startSparkleUpdater();
-
-        void skipVersionCallback();
-
-        class Private;
-        Private *d;
+        void testMakeSyncPath();
 };
 
 } // namespace KDC
