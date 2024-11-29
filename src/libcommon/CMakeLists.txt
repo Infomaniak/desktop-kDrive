@@ -40,7 +40,7 @@ set(libcommon_SRCS
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     log/sentry/sentryhandler.h log/sentry/sentryhandler.cpp
     log/sentry/sentryuser.h
-    log/customlogwstream.h
+    log/customlogstreams.h
     theme/theme.h theme/theme.cpp
 )
 
