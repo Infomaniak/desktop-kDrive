@@ -1,4 +1,3 @@
-#include "vfs_win.h"
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -172,7 +171,7 @@ void VfsWin::hydrate(const QString &path) {
         LOGW_WARN(logger(), L"Error in vfsHydratePlaceHolder: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
     }
 
-            QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
+    QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
     _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
@@ -212,26 +211,6 @@ ExitInfo VfsWin::setPlaceholderStatus(const QString &path, bool syncOngoing) {
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
     return ExitCode::Ok;
-}
-
-ExitInfo VfsWin::ToExitInfo(VfsWinExitInfo vfsWinExitInfo) {
-    switch (vfsWinExitInfo) {
-        case VfsWinExitInfo::Ok:
-            return ExitCode::Ok;
-        case VfsWinExitInfo::Sys_Unknow:
-            return {ExitCode::SystemError, ExitCause::Unknown};
-        case VfsWinExitInfo::Sys_NotFound:
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        case VfsWinExitInfo::Sys_AccessError:
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        case VfsWinExitInfo::Logic_InvalidArg:
-            return {ExitCode::LogicError, ExitCause::InvalidArgument};
-        default:
-            assert(false && "All cases should be handled");
-            SentryHandler::instance()->captureMessage(SentryLevel::Error, "Unhandled VfsWinExitInfo value.",
-                                                      "VfsWinExitInfoToExitInfo");
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
 }
 
 ExitInfo VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size, const QByteArray &) {

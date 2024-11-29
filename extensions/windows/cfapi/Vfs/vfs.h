@@ -36,14 +36,6 @@ typedef enum {
     VFS_PIN_STATE_INHERIT = 4
 } VfsPinState;
 
-DLL_EXP enum class VfsWinExitInfo {
-    Ok = 0,
-    Sys_Unknow = 1,
-    Sys_NotFound = 2,
-    Sys_AccessError = 3,
-    Logic_InvalidArg = 4,
-};
-
 DLL_EXP int __cdecl vfsInit(TraceCbk debugCallback, const wchar_t *appName, DWORD processId, const wchar_t *version,
                             const wchar_t *trashURI);
 
