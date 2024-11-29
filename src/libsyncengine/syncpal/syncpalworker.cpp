@@ -203,13 +203,6 @@ void SyncPalWorker::execute() {
                     setExitCause(ExitCause::WorkerExited);
                 }
                 break;
-            } else if (interruptCondition()) {
-                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " interruption");
-
-                // Stop the step workers and restart a sync
-                stopAndWaitForExitOfWorkers(stepWorkers);
-                initStepFirst(stepWorkers, inputSharedObject, false);
-                continue;
             }
         } else {
             // Start workers
@@ -384,31 +377,7 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
         _syncPal->resetSharedObjects();
     }
 
-    *_syncPal->_interruptSync = false;
     initStep(SyncStep::Idle, workers, inputSharedObject);
-}
-
-bool SyncPalWorker::interruptCondition() const {
-    switch (_step) {
-        case SyncStep::Idle:
-            return false;
-            break;
-        case SyncStep::UpdateDetection1:
-        case SyncStep::UpdateDetection2:
-        case SyncStep::Reconciliation1:
-        case SyncStep::Reconciliation2:
-        case SyncStep::Reconciliation3:
-        case SyncStep::Reconciliation4:
-        case SyncStep::Propagation1:
-        case SyncStep::Propagation2:
-        case SyncStep::Done:
-            return _syncPal->interruptSync();
-            break;
-        default:
-            LOG_SYNCPAL_WARN(_logger, "Invalid status");
-            return false;
-            break;
-    }
 }
 
 SyncStep SyncPalWorker::nextStep() const {
@@ -420,10 +389,9 @@ SyncStep SyncPalWorker::nextStep() const {
                      _syncPal->restart()))
                            ? SyncStep::UpdateDetection1
                            : SyncStep::Idle;
-            break;
         case SyncStep::UpdateDetection1: {
-            auto logNbOps = [=](const ReplicaSide side) {
-                auto opsSet = _syncPal->operationSet(side);
+            auto logNbOps = [this](const ReplicaSide side) {
+                const auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->nbOps()
                                                    << " " << side << " operations detected (# CREATE: "
                                                    << opsSet->nbOpsByType(OperationType::Create)
@@ -445,38 +413,34 @@ SyncStep SyncPalWorker::nextStep() const {
                     _syncPal->operationSet(ReplicaSide::Remote)->updated())
                            ? SyncStep::UpdateDetection2
                            : SyncStep::Done;
-            break;
         }
         case SyncStep::UpdateDetection2:
             return (_syncPal->updateTree(ReplicaSide::Local)->updated() || _syncPal->updateTree(ReplicaSide::Remote)->updated())
                            ? SyncStep::Reconciliation1
                            : SyncStep::Done;
-            break;
         case SyncStep::Reconciliation1:
             return SyncStep::Reconciliation2;
-            break;
         case SyncStep::Reconciliation2:
-            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_conflictQueue->size() << " conflicts found");
+            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_conflictQueue->size() << " conflicts found")
             return _syncPal->_conflictQueue->empty() ? SyncStep::Reconciliation4 : SyncStep::Reconciliation3;
-            break;
         case SyncStep::Reconciliation3:
         case SyncStep::Reconciliation4:
-            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated");
+            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated")
             return _syncPal->_conflictQueue->empty() ? SyncStep::Propagation1 : SyncStep::Propagation2;
-            break;
         case SyncStep::Propagation1:
             return SyncStep::Propagation2;
-            break;
         case SyncStep::Propagation2:
+            if (_syncPal->computeFSOperationsWorker()->exitCode() == ExitCode::Ok) {
+                // The sync was successfull
+                _syncPal->_localFSObserverWorker->resetInvalidateCounter();
+                _syncPal->_remoteFSObserverWorker->resetInvalidateCounter();
+            }
             return SyncStep::Done;
-            break;
         case SyncStep::Done:
             return SyncStep::Idle;
-            break;
         default:
-            LOG_SYNCPAL_WARN(_logger, "Invalid status");
+            LOG_SYNCPAL_WARN(_logger, "Invalid status")
             return SyncStep::Idle;
-            break;
     }
 }
 

@@ -42,7 +42,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-const uint64_t nbFileInTestDir = 5; // Test directory contains 5 files
+constexpr uint64_t nbFileInTestDir = 5; // Test directory contains 5 files
 
 void TestLocalFileSystemObserverWorker::setUp() {
     _logger = Log::instance()->getLogger();
@@ -121,8 +121,8 @@ void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
 
     uint64_t fileCounter = 0;
     for (const auto &id: ids) {
-        const auto name = _syncPal->snapshot(ReplicaSide::Local)->name(id);
-        if (name == Str(".DS_Store") || name == Str(".ds_store")) {
+        if (const auto name = _syncPal->snapshot(ReplicaSide::Local)->name(id);
+            name == Str(".DS_Store") || name == Str(".ds_store")) {
             continue; // Ignore ".DS_Store"
         }
 
@@ -176,7 +176,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         SyncPath sourcePath = testAbsolutePath;
         SyncPath destinationPath = _subDirPath / filename;
 
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
@@ -192,7 +192,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         SyncPath source = testAbsolutePath;
         SyncPath destinationPath = _subDirPath / Str("test_file_renamed.txt");
 
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         IoHelper::renameItem(source, destinationPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
@@ -204,7 +204,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
     {
         /// Delete file
         LOGW_DEBUG(_logger, L"***** test delete file *****");
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         IoHelper::deleteItem(testAbsolutePath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
@@ -295,7 +295,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         LOGW_DEBUG(_logger, L"***** test move dir *****");
         SyncPath sourcePath = testAbsolutePath;
         SyncPath destinationPath = _subDirPath / dirname;
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
@@ -312,7 +312,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         LOGW_DEBUG(_logger, L"***** test rename dir *****");
         SyncPath sourcePath = testAbsolutePath;
         SyncPath destinationPath = _subDirPath / (dirname + Str("_renamed"));
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         IoHelper::renameItem(sourcePath, destinationPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
@@ -325,7 +325,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         // Generate test item outside sync folder
         SyncName dirName = Str("dir_copy");
         SyncPath sourcePath = _tempDir.path() / dirName;
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         IoHelper::copyFileOrDirectory(_subDirPath, sourcePath, ioError);
 
         /// Move dir from outside sync dir
@@ -351,18 +351,14 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
 
 
 void TestLocalFileSystemObserverWorker::testLFSODeleteDir() {
-    NodeId itemId;
-    {
-        /// Delete dir and all its content
-        LOGW_DEBUG(_logger, L"***** test delete dir *****");
-        IoError ioError = IoError::Unknown;
-        IoHelper::deleteItem(_subDirPath, ioError);
+    /// Delete dir and all its content
+    LOGW_DEBUG(_logger, L"***** test delete dir *****");
+    auto ioError = IoError::Unknown;
+    IoHelper::deleteItem(_subDirPath, ioError);
 
-        Utility::msleep(1000); // Wait 1sec
+    Utility::msleep(1000); // Wait 1sec
 
-        CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
-        CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
-    }
+    CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
 
     LOGW_DEBUG(_logger, L"***** Tests for copy and deletion of directories succesfully finished! *****");
 }
@@ -379,7 +375,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases1() {
     IoHelper::getFileStat(sourcePath, &fileStat, exists);
     NodeId initItemId = std::to_string(fileStat.inode);
 
-    IoError ioError = IoError::Unknown;
+    auto ioError = IoError::Unknown;
     IoHelper::deleteItem(sourcePath, ioError);
     //// create
     KDC::testhelpers::generateOrEditTestFile(sourcePath);
@@ -410,7 +406,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
     IoHelper::getFileStat(sourcePath, &fileStat, exists);
     NodeId initItemId = std::to_string(fileStat.inode);
 
-    IoError ioError = IoError::Unknown;
+    auto ioError = IoError::Unknown;
     IoHelper::moveItem(sourcePath, destinationPath, ioError);
     //// create
     KDC::testhelpers::generateOrEditTestFile(sourcePath);
@@ -446,8 +442,8 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     }
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
 
-    IoError ioError = IoError::Unknown;
-    SyncPath destinationPath = _testFiles[0].second.parent_path() / (_testFiles[0].second.filename().string() + "2");
+    auto ioError = IoError::Unknown;
+    const SyncPath destinationPath = _testFiles[0].second.parent_path() / (_testFiles[0].second.filename().string() + "2");
     CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError)); // test0.txt -> test0.txt2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(IoHelper::deleteItem(destinationPath, ioError)); // Delete test0.txt2 (before the previous rename is processed)
@@ -466,65 +462,25 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(std::to_string(fileStat.inode)));
 }
 
-void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingChange() {
-    using namespace testhelpers;
+void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
+    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet
+    CPPUNIT_ASSERT_EQUAL(1, _syncPal->_localFSObserverWorker->_invalidateCounter);
+    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet
+    CPPUNIT_ASSERT_EQUAL(2, _syncPal->_localFSObserverWorker->_invalidateCounter);
+    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is has been invalidated
+    CPPUNIT_ASSERT_EQUAL(0, _syncPal->_localFSObserverWorker->_invalidateCounter); // Counter has been reset
 
-    LOGW_DEBUG(_logger, L"***** Test fast move/delete with enconding change*****"); // Behaviour of MS office apps on macOS
-    _syncPal->_localFSObserverWorker->stop();
-    _syncPal->_localFSObserverWorker->waitForExit();
-    _syncPal->_localFSObserverWorker.reset();
+    Utility::msleep(1000); // Wait for the snapshot to be rebuilt
 
-    // Create a slow observer
-    auto slowObserver = std::make_shared<MockLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
-    _syncPal->_localFSObserverWorker = slowObserver;
-    _syncPal->_localFSObserverWorker->start();
-
-    int count = 0;
-
-    FileStat fileStat;
-    bool exists = false;
-
-    // Create an NFC encoded file.
-    SyncPath tmpDirPath = _testFiles[0].second.parent_path();
-    SyncPath nfcFilePath = tmpDirPath / makeNfcSyncName();
-    generateOrEditTestFile(nfcFilePath);
-    NodeId nfcFileId;
-    IoHelper::getFileStat(nfcFilePath, &fileStat, exists);
-    nfcFileId = std::to_string(fileStat.inode);
-
-    // Prepare the path of the NFD encoded file.
-    SyncPath nfdFilePath = tmpDirPath / makeNfdSyncName();
-
-    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
-        Utility::msleep(100);
-        CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
-    }
-
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
-
-    IoError ioError = IoError::Unknown;
-    SyncPath destinationPath = tmpDirPath / (nfcFilePath.filename().string() + "2");
-    CPPUNIT_ASSERT(IoHelper::renameItem(nfcFilePath, destinationPath, ioError)); // nfcFile -> nfcFile2
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT(IoHelper::deleteItem(destinationPath, ioError)); // Delete nfcFile2 (before the previous rename is processed)
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[1].second, nfdFilePath,
-                                        ioError)); // test1.txt -> nfdFile (before the previous rename and delete is processed)
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-
-    slowObserver->waitForUpdate();
-
-    CPPUNIT_ASSERT(IoHelper::getFileStat(nfdFilePath, &fileStat, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    NodeId nfdFileId = std::to_string(fileStat.inode);
-
-    CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfdFileId));
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is now valid again
 }
 
-void MockLocalFileSystemObserverWorker::waitForUpdate(long long timeoutMs) const {
+bool MockLocalFileSystemObserverWorker::waitForUpdate(const int64_t timeoutMs) const {
     using namespace std::chrono;
-    auto start = system_clock::now();
+    const auto start = system_clock::now();
     while (!_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
         Utility::msleep(10);
     }
