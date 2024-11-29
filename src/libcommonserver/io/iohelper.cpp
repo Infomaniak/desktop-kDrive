@@ -38,6 +38,8 @@ std::function<bool(const SyncPath &path, std::error_code &ec)> IoHelper::_isDire
         static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory);
 std::function<bool(const SyncPath &path, std::error_code &ec)> IoHelper::_isSymlink =
         static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink);
+std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> IoHelper::_rename =
+        static_cast<void (*)(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ecc)>(std::filesystem::rename);
 std::function<SyncPath(const SyncPath &path, std::error_code &ec)> IoHelper::_readSymlink =
         static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink);
 std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> IoHelper::_fileSize =
@@ -73,6 +75,8 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
         case static_cast<int>(std::errc::permission_denied):
         case static_cast<int>(std::errc::operation_not_permitted):
             return IoError::AccessDenied;
+        case static_cast<int>(std::errc::cross_device_link):
+            return IoError::CrossDeviceLink;
         default:
             return IoError::Unknown;
     }
@@ -172,7 +176,7 @@ bool IoHelper::openFile(const SyncPath &path, std::ifstream &file, IoError &ioEr
             }
             LOGW_DEBUG(logger(), L"File is locked, retrying in one second " << Utility::formatSyncPath(path));
 
-            if(count < timeOut) Utility::msleep(1000);
+            if (count < timeOut) Utility::msleep(1000);
         }
     } while (++count < timeOut && !file.is_open());
 
@@ -843,7 +847,7 @@ bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationP
 
 bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
     std::error_code ec;
-    std::filesystem::rename(sourcePath, destinationPath, ec);
+    _rename(sourcePath, destinationPath, ec);
     ioError = stdError2ioError(ec);
     return ioError == IoError::Success;
 }
