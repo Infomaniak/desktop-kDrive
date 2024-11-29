@@ -54,6 +54,8 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
         case ERROR_SUCCESS:
             return IoError::Success;
         case ERROR_ACCESS_DENIED:
+        case ERROR_SHARING_VIOLATION:
+        case ERROR_LOCK_VIOLATION:
             return IoError::AccessDenied;
         case ERROR_DISK_FULL:
             return IoError::DiskFull;
