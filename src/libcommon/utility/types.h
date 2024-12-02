@@ -421,6 +421,7 @@ enum class IoError {
     MaxDepthExceeded,
     NoSuchFileOrDirectory,
     ResultOutOfRange,
+    CrossDeviceLink,
     Unknown
 };
 std::string toString(IoError e);
