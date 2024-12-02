@@ -208,18 +208,20 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
     _updateButton->setVisible(showUpdateButton);
 
     // Beta version info
-    _betaVersionLabel->setText(tr("Beta program"));
-    _betaVersionDescription->setText(tr("Get early access to new versions of the application"));
+    if (_betaVersionLabel) {
+        _betaVersionLabel->setText(tr("Beta program"));
+        _betaVersionDescription->setText(tr("Get early access to new versions of the application"));
 
-    if (const auto channel = ParametersCache::instance()->parametersInfo().distributionChannel();
-        channel == DistributionChannel::Prod) {
+        if (const auto channel = ParametersCache::instance()->parametersInfo().distributionChannel();
+            channel == DistributionChannel::Prod) {
         _joinBetaButton->setText(tr("Join"));
         _betaTag->setVisible(false);
-    } else {
-        _joinBetaButton->setText(_isStaff ? tr("Modify") : tr("Quit"));
-        _betaTag->setVisible(true);
-        _betaTag->setBackgroundColor(channel == DistributionChannel::Beta ? betaTagColor : internalTagColor);
-        _betaTag->setText(channel == DistributionChannel::Beta ? "BETA" : "INTERNAL");
+        } else {
+            _joinBetaButton->setText(_isStaff ? tr("Modify") : tr("Quit"));
+            _betaTag->setVisible(true);
+            _betaTag->setBackgroundColor(channel == DistributionChannel::Beta ? betaTagColor : internalTagColor);
+            _betaTag->setText(channel == DistributionChannel::Beta ? "BETA" : "INTERNAL");
+        }
     }
 }
 
@@ -241,6 +243,7 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
 
     _betaTag = new TagLabel(betaTagColor, this);
     _betaTag->setText("BETA");
+    _betaTag->setVisible(false);
     statusLayout->addWidget(_betaTag);
     statusLayout->addStretch();
     verticalLayout->addLayout(statusLayout);

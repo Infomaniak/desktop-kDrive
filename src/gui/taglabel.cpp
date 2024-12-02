@@ -28,10 +28,10 @@
 namespace KDC {
 
 static constexpr int hMargin = 4;
-#ifdef _WIN32
-static constexpr int offset = 2;
-#else
+#ifdef __APPLE__
 static constexpr int offset = 0;
+#else
+static constexpr int offset = 2;
 #endif
 
 TagLabel::TagLabel(const QColor &color /*= Qt::transparent*/, QWidget *parent /*= nullptr*/) :
