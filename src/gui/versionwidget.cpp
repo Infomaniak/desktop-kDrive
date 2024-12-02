@@ -269,6 +269,10 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
 }
 
 void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
+#if defined(__unix__) && !defined(__APPLE__)
+    return; // Beta program is not available on Linux for now
+#endif
+
     auto *betaLayout = prefBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
     auto *verticalLayout = new QVBoxLayout(this);
