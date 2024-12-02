@@ -37,6 +37,11 @@ namespace KDC {
 FolderWatcher_linux::FolderWatcher_linux(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
     FolderWatcher(parent, path) {}
 
+SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, const char *fileName) {
+    const auto syncName = SyncName(fileName);
+    return syncName.empty() ? watchedFolderPath : watchedFolderPath / syncName;
+}
+
 void FolderWatcher_linux::startWatching() {
     LOG4CPLUS_DEBUG(_logger, L"Start watching folder " << Utility::formatSyncPath(_folder));
     LOG4CPLUS_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
