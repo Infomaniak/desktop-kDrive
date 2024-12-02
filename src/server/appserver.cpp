@@ -1656,7 +1656,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << toInt(exitCode);
             break;
         }
-        case RequestNum::GET_FETCHING_APP_LIST: {
+        case RequestNum::EXCLAPP_GET_FETCHING_APP_LIST: {
             ExitCode exitCode = ExitCode::Ok;
             QHash<QString, QString> appTable;
             for (const auto &vfsMapElt: _vfsMap) {

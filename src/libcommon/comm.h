@@ -92,7 +92,7 @@ enum class RequestNum {
 #ifdef __APPLE__
     EXCLAPP_GETLIST,
     EXCLAPP_SETLIST,
-    GET_FETCHING_APP_LIST,
+    EXCLAPP_GET_FETCHING_APP_LIST,
 #endif
     PARAMETERS_INFO,
     PARAMETERS_UPDATE,
@@ -225,7 +225,7 @@ inline std::string toString(RequestNum e) {
             return "EXCLAPP_GETLIST";
         case RequestNum::EXCLAPP_SETLIST:
             return "EXCLAPP_SETLIST";
-        case RequestNum::GET_FETCHING_APP_LIST:
+        case RequestNum::EXCLAPP_GET_FETCHING_APP_LIST:
             return "GET_FETCHING_APP_LIST";
 #endif
         case RequestNum::PARAMETERS_INFO:
