@@ -105,4 +105,84 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
     CPPUNIT_ASSERT_EQUAL(700, static_cast<int>(ei));
 }
+
+ExitInfoSecure test1() {
+    EXITINFO_CHECKER({ExitCode::BackError});
+    const int foo = 0;
+    switch (foo) {
+        // "Security breached detected at compilation time"
+        case 1:
+            return {ExitCode::BackError, ExitCause::ApiErr}; // Do not compil, not secure
+            return ExitCode::Ok; // Same
+        case 2:
+            return ExitInfoSecure(ExitCode::Ok); // Do not compil, not secure
+
+        // Explicit return
+        case 3:
+            return EXIT_CHECK(ExitCode::Ok); // Compil and no issue at execution, ExitCode::Ok is always a valid exitInfo
+        case 4:
+            return EXIT_CHECK(
+                    ExitCode::BackError); // Compil and no issue at execution, BackError is in the list of accepted Exitinfo
+        case 5:
+            return EXIT_CHECK(ExitCode::SystemError); // Compil but will assert at execution, SystemError is not in the list of
+                                                      // accepted ExitInfo
+
+        // Return the result of an other function.
+        case 6:
+            return test2(); // !! Compil and no issue at execution but break the safety, don't do this !!
+        case 7:
+            return EXIT_CHECK(test2()); // Compil and no issue at execution, All the possible exitInfo of test2 are also valide
+                                        // exitInfo for test1.
+        case 8:
+            return EXIT_CHECK(test3()); // Compil but will assert at execution, test3 can return SystemError and it is not in the
+                                        // list of accepted ExitInfo of test1
+        case 9:
+
+            if (ExitInfoSecure exitInfo = test3(); !exitInfo) {
+                if (exitInfo == ExitInfo(ExitCode::SystemError)) {
+                    // handle this case
+                    // the operator == automatically marked ExitCode::SystemError as treated.
+                }
+                return EXIT_CHECK(exitInfo); // Compil and no issue at execution, test3 can only return ExitCode::BackError and
+                                             // ExitCode::SystemError. This last one is handled just above so it won't assert.
+            }
+            return EXIT_CHECK(ExitCode::Ok);
+    }
+}
+
+void testFinalHandling1() {
+    ExitInfoSecure exitInfo = test3();
+    // Will assert as BackError and SystemError had not been handled
+}
+
+void testFinalHandling1() {
+    if (ExitInfoSecure exitInfo = test3(); !exitInfo) {
+        if (exitInfo == ExitInfo(ExitCode::BackError)) {
+            //Do someting
+        }
+    } // Will assert as exitInfo is destroyed but SystemError is never handled
+}
+
+void testFinalHandling2() {
+    if (ExitInfoSecure exitInfo = test3(); !exitInfo) {
+        if (exitInfo == ExitInfo(ExitCode::BackError)) {
+            // Do someting
+        }
+        else if (exitInfo == ExitInfo(ExitCode::SystemError)) {
+            // Do someting
+        }
+    } // All good
+}
+
+ExitInfoSecure test2() {
+    EXITINFO_CHECKER({ExitCode::BackError});
+    EXIT_CHECK(ExitCode::BackError);
+}
+ExitInfoSecure test3() {
+    EXITINFO_CHECKER({ExitCode::BackError, ExitCode::SystemError});
+    EXIT_CHECK(ExitCode::BackError);
+}
+
+
+void TestTypes::testExitInfoSecure() {}
 } // namespace KDC

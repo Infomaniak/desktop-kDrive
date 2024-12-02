@@ -295,12 +295,35 @@ struct ExitInfo {
 std::string toString(ExitInfo e);
 
 class ExitInfoSecure : public ExitInfo {
+    public:
+        ExitInfoSecure &operator=(ExitInfoSecure &other) {
+            assert(other.owner && "The source ExitInfoSecure has been transfered and should not be used anymore");
+            _possibleExitInfos = other._possibleExitInfos;
+            other.owner = false; // The responsability to check for the exitInfo handling is
+                                 // transfered to the new ExitInfoSecured.
+            return *this;
+        };
+
+        bool operator==(const ExitInfo &other) {
+            assert(owner && "This ExitInfoSecure has been transfered and should not be used anymore");
+            _possibleExitInfos.erase(other);
+            return ExitInfo::operator==(other);
+        };
+
+        ~ExitInfoSecure() {
+            if (!owner) return;
+            assert(_possibleExitInfos.size() == 1);
+            assert(_possibleExitInfos.find(ExitCode::Ok) != _possibleExitInfos.end());
+        }
+
     private:
         friend class ExitInfoChecker;
         explicit ExitInfoSecure(const ExitInfo &exitInfo) : ExitInfo(exitInfo) { _possibleExitInfos.insert(exitInfo); }
         ExitInfoSecure(const ExitInfo &exitInfo, std::set<ExitInfo> possibleExitInfos) :
             ExitInfo(exitInfo), _possibleExitInfos(possibleExitInfos) {}
         std::set<ExitInfo> _possibleExitInfos;
+        bool owner = true;
+        // Indicate weather this ExitInfoSecure is responsible to check that all ExitInfo are handled or not.
 };
 
 class ExitInfoChecker {
