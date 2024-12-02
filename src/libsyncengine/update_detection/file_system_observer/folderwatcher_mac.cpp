@@ -90,7 +90,7 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
 }
 
 void FolderWatcher_mac::startWatching() {
-    LOGW_DEBUG(_logger, L"Start watching folder: " << Path2WStr(_folder).c_str());
+    LOGW_DEBUG(_logger, L"Start watching folder: " << Path2WStr(_folder));
     LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
 
     CFStringRef path = CFStringCreateWithCString(nullptr, _folder.c_str(), kCFStringEncodingUTF8);
@@ -109,7 +109,7 @@ void FolderWatcher_mac::startWatching() {
     FSEventStreamStart(_stream);
     CFRunLoopRun();
 
-    LOGW_DEBUG(_logger, L"Folder watching stopped: " << _folder.wstring().c_str());
+    LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));
 }
 
 void FolderWatcher_mac::doNotifyParent(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
@@ -135,7 +135,7 @@ OperationType FolderWatcher_mac::getOpType(const FSEventStreamEventFlags eventFl
 
 void KDC::FolderWatcher_mac::stopWatching() {
     if (_stream) {
-        LOGW_DEBUG(_logger, L"Stop watching folder: " << Path2WStr(_folder).c_str());
+        LOGW_DEBUG(_logger, L"Stop watching folder: " << Path2WStr(_folder));
         FSEventStreamStop(_stream);
         FSEventStreamInvalidate(_stream);
         FSEventStreamRelease(_stream);
