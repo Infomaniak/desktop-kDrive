@@ -142,6 +142,7 @@ ExitInfoSecure test1() {
                 if (exitInfo == ExitInfo(ExitCode::SystemError)) {
                     // handle this case
                     // the operator == automatically marked ExitCode::SystemError as treated.
+                    return EXIT_CHECK(ExitCode::Ok); // Or any other ExitInfo in the signature.
                 }
                 return EXIT_CHECK(exitInfo); // Compil and no issue at execution, test3 can only return ExitCode::BackError and
                                              // ExitCode::SystemError. This last one is handled just above so it won't assert.
