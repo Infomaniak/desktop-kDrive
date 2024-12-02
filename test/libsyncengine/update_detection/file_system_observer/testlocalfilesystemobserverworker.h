@@ -70,6 +70,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testLFSODeleteDir);
         CPPUNIT_TEST(testLFSOWithDirs);
         CPPUNIT_TEST(testLFSOFastMoveDeleteMove);
+        CPPUNIT_TEST(testLFSOFastMoveDeleteMoveWithEncodingChange);
         CPPUNIT_TEST(testLFSOWithSpecialCases1);
         CPPUNIT_TEST(testLFSOWithSpecialCases2);
         CPPUNIT_TEST_SUITE_END();
@@ -93,6 +94,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         void testLFSOWithDirs();
         void testLFSODeleteDir();
         void testLFSOFastMoveDeleteMove();
+        void testLFSOFastMoveDeleteMoveWithEncodingChange();
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
 };

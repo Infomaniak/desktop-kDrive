@@ -210,42 +210,38 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
 
 void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     // Create two files with the same name, up to encoding (NFC vs NFC).
-    // On Windows and Linux systems, we expect to find two distinct items in the local snapshot.
-    // On MacOSX, a single item is expected as the system creates a single file (overwrite).
+    // On Windows and Linux systems, we expect to find two distinct items. But we will only consider one in the local snapshot and
+    // we do not guarantee that it will always be the same one. However, durring a synchronisation, we should always synchorize
+    // the item for wich we detected a change last time. On MacOSX, a single item is expected as the system creates a single file
+    // (overwrite).
     {
         using namespace testhelpers;
 
         LOGW_DEBUG(_logger, L"***** test create file with NFC-encoded name *****");
         generateOrEditTestFile(_rootFolderPath / makeNfcSyncName());
-        LOGW_DEBUG(_logger, L"***** test create file with NFD-encoded name *****");
-        generateOrEditTestFile(_rootFolderPath / makeNfdSyncName());
-
         Utility::msleep(1000); // Wait 1sec
 
         FileStat fileStat;
         bool exists = false;
+
         IoHelper::getFileStat(_rootFolderPath / makeNfcSyncName(), &fileStat, exists);
         const NodeId nfcNamedItemId = std::to_string(fileStat.inode);
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcNamedItemId));
+
+        LOGW_DEBUG(_logger, L"***** test create file with NFD-encoded name *****");
+        generateOrEditTestFile(_rootFolderPath / makeNfdSyncName()); // Should replace the Nfc item in the snapshot.
+        Utility::msleep(1000); // Wait 1sec
 
         IoHelper::getFileStat(_rootFolderPath / makeNfdSyncName(), &fileStat, exists);
         const NodeId nfdNamedItemId = std::to_string(fileStat.inode);
 
-        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcNamedItemId));
+        // Check that only the last modified item is in the snapshot.
+        CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(nfcNamedItemId));
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfdNamedItemId));
         SyncPath testSyncPath;
-#ifdef __APPLE__
-        const bool foundNfcItem =
-                _syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath) && testSyncPath == makeNfcSyncName();
-        const bool foundNfdItem =
-                _syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath) && testSyncPath == makeNfdSyncName();
 
-        CPPUNIT_ASSERT(foundNfcItem || foundNfdItem);
-#else
-        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath) &&
-                       testSyncPath == makeNfcSyncName());
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath) &&
                        testSyncPath == makeNfdSyncName());
-#endif
     }
 }
 
@@ -443,6 +439,61 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
 
     CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(std::to_string(fileStat.inode)));
+}
+
+void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingChange() {
+    using namespace testhelpers;
+
+    LOGW_DEBUG(_logger, L"***** Test fast move/delete with enconding change*****"); // Behaviour ou MS office apps on macOS
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker.reset();
+
+    // Create a slow observer
+    auto slowObserver = std::make_shared<MockLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
+    _syncPal->_localFSObserverWorker = slowObserver;
+    _syncPal->_localFSObserverWorker->start();
+
+    int count = 0;
+
+    FileStat fileStat;
+    bool exists = false;
+
+    // Create an NFC encoded file.
+    SyncPath tmpDirPath = _testFiles[0].second.parent_path();
+    SyncPath nfcFilePath = tmpDirPath / makeNfcSyncName();
+    generateOrEditTestFile(nfcFilePath);
+    NodeId nfcFileId;
+    IoHelper::getFileStat(nfcFilePath, &fileStat, exists);
+    nfcFileId = std::to_string(fileStat.inode);
+
+    // Prepare the path of the nfd encoded file.
+    SyncPath nfdFilePath = tmpDirPath / makeNfdSyncName();
+
+    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
+        Utility::msleep(100);
+        CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
+    }
+
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
+
+    IoError ioError = IoError::Unknown;
+    SyncPath destinationPath = tmpDirPath / (nfcFilePath.filename().string() + "2");
+    CPPUNIT_ASSERT(IoHelper::renameItem(nfcFilePath, destinationPath, ioError)); // nfcFile -> nfcFile2
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::deleteItem(destinationPath, ioError)); // Delete nfcFile2 (before the previous rename is processed)
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[1].second, nfdFilePath,
+                                        ioError)); // test1.txt -> nfdFile (before the previous rename and delete is processed)
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
+
+    CPPUNIT_ASSERT(IoHelper::getFileStat(nfdFilePath, &fileStat, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    NodeId nfdFileId = std::to_string(fileStat.inode);
+
+    CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfdFileId));
 }
 
 bool MockLocalFileSystemObserverWorker::waitForUpdate(int64_t timeoutMs) const {
