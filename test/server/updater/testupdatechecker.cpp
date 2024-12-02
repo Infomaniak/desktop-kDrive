@@ -40,6 +40,7 @@ class GetAppVersionJobTest final : public GetAppVersionJob {
             const std::istringstream iss(_updateShouldBeAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
             std::istream is(iss.rdbuf());
             GetAppVersionJob::handleResponse(is);
+            _exitCode = ExitCode::Ok;
         }
 
     private:
