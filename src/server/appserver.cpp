@@ -1896,6 +1896,19 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QTimer::singleShot(100, [this]() { cancelLogUpload(); });
             break;
         }
+        case RequestNum::UTILITY_CRASH: {
+            resultStream << ExitCode::Ok;
+            QTimer::singleShot(QUIT_DELAY, []() { CommonUtility::crash(); });
+            break;
+        }
+        case RequestNum::UTILITY_QUIT: {
+            CommServer::instance()->setHasQuittedProperly(true);
+            QTimer::singleShot(QUIT_DELAY, []() { quit(); });
+            break;
+        }
+        case RequestNum::UTILITY_REPORT_CLIENT_DISPLAYED: {
+            Sentry::Handler::instance()->stopPTrace(Sentry::PTraceName::AppStart);
+        }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId = 0;
             bool value = false;
@@ -1976,19 +1989,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> tmp;
             AbstractUpdater::skipVersion(tmp.toStdString());
             break;
-        }
-        case RequestNum::UTILITY_CRASH: {
-            resultStream << ExitCode::Ok;
-            QTimer::singleShot(QUIT_DELAY, []() { CommonUtility::crash(); });
-            break;
-        }
-        case RequestNum::UTILITY_QUIT: {
-            CommServer::instance()->setHasQuittedProperly(true);
-            QTimer::singleShot(QUIT_DELAY, []() { quit(); });
-            break;
-        }
-        case RequestNum::CLIENT_STARTED: {
-            Sentry::Handler::instance()->stopPTrace(Sentry::PTraceName::AppStart);
         }
         default: {
             LOG_DEBUG(_logger, "Request not implemented!");

@@ -112,14 +112,14 @@ enum class RequestNum {
     UTILITY_SEND_LOG_TO_SUPPORT,
     UTILITY_CANCEL_LOG_TO_SUPPORT,
     UTILITY_GET_LOG_ESTIMATED_SIZE,
+    UTILITY_CRASH,
+    UTILITY_QUIT,
+    UTILITY_REPORT_CLIENT_DISPLAYED, // Send by the client as soon the UI is visible for the user.
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
     UPDATER_SKIP_VERSION,
-    UTILITY_CRASH,
-    UTILITY_QUIT,
-    CLIENT_STARTED
 };
 
 inline std::string toString(RequestNum e) {
@@ -262,6 +262,12 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
             return "UTILITY_GET_LOG_ESTIMATED_SIZE";
+        case RequestNum::UTILITY_CRASH:
+            return "UTILITY_CRASH";
+        case RequestNum::UTILITY_QUIT:
+            return "UTILITY_QUIT";
+        case RequestNum::UTILITY_REPORT_CLIENT_DISPLAYED:
+            return "UTILITY_REPORT_CLIENT_DISPLAYED";
         case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO";
         case RequestNum::UPDATER_STATE:
@@ -270,12 +276,6 @@ inline std::string toString(RequestNum e) {
             return "UPDATER_START_INSTALLER";
         case RequestNum::UPDATER_SKIP_VERSION:
             return "UPDATER_SKIP_VERSION";
-        case RequestNum::UTILITY_CRASH:
-            return "UTILITY_CRASH";
-        case RequestNum::UTILITY_QUIT:
-            return "UTILITY_QUIT";
-        case RequestNum::CLIENT_STARTED:
-            return "CLIENT_STARTED";
         default:
             return "No conversion to string available";
     }

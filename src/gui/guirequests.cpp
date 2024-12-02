@@ -1253,7 +1253,7 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
 }
 
 ExitCode GuiRequests::clientStarted() {
-    CommClient::instance()->execute(RequestNum::CLIENT_STARTED);
+    CommClient::instance()->execute(RequestNum::UTILITY_REPORT_CLIENT_DISPLAYED);
     return ExitCode::Ok;
 }
 
