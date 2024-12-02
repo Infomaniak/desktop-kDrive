@@ -432,8 +432,7 @@ SyncStep SyncPalWorker::nextStep() const {
         case SyncStep::Propagation2:
             if (_syncPal->computeFSOperationsWorker()->exitCode() == ExitCode::Ok) {
                 // The sync was successfull
-                _syncPal->_localFSObserverWorker->resetInvalidateCounter();
-                _syncPal->_remoteFSObserverWorker->resetInvalidateCounter();
+                _syncPal->resetSanpshotInvalidationCounters();
             }
             return SyncStep::Done;
         case SyncStep::Done:

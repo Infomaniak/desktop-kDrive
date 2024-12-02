@@ -33,14 +33,14 @@ void FileSystemObserverWorker::invalidateSnapshot() {
 
     _invalidateCounter++;
     if (_invalidateCounter < maxRetryBeforeInvalidation) {
-        LOG_SYNCPAL_DEBUG(_logger, (_snapshot->side() == ReplicaSide::Local ? "Local" : "Remote")
+        LOG_SYNCPAL_DEBUG(_logger, _snapshot->side()
                                            << " snapshot is not invalidated. Invalidation count: " << _invalidateCounter);
         return;
     }
 
     _snapshot->init();
     _invalidateCounter = 0;
-    LOG_SYNCPAL_DEBUG(_logger, (_snapshot->side() == ReplicaSide::Local ? "Local" : "Remote") << " snapshot invalidated");
+    LOG_SYNCPAL_DEBUG(_logger, _snapshot->side() << " snapshot invalidated");
 }
 
 void FileSystemObserverWorker::forceUpdate() {

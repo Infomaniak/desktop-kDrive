@@ -236,6 +236,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
         bool isSnapshotValid(ReplicaSide side);
+        void resetSanpshotInvalidationCounters();
 
         ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath);
         ExitCode cancelDlDirectJobs(const std::list<SyncPath> &fileList);

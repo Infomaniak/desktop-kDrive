@@ -786,6 +786,11 @@ bool SyncPal::isSnapshotValid(ReplicaSide side) {
     return side == ReplicaSide::Local ? _localSnapshot->isValid() : _remoteSnapshot->isValid();
 }
 
+void SyncPal::resetSanpshotInvalidationCounters() {
+    _localFSObserverWorker->resetInvalidateCounter();
+    _remoteFSObserverWorker->resetInvalidateCounter();
+}
+
 ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath) {
     std::optional<NodeId> localNodeId = std::nullopt;
     bool found = false;
