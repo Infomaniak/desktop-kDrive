@@ -30,7 +30,7 @@ void FolderWatcher::start() {
     LOG_DEBUG(_logger, "Start Folder Watcher");
     _stop = false;
 
-    _thread = std::unique_ptr<std::thread>(new std::thread(executeFunc, this));
+    _thread = std::make_unique<std::thread>(executeFunc, this);
 
 #if defined(__APPLE__)
     _thread->detach();
@@ -54,7 +54,7 @@ void FolderWatcher::stop() {
 
 void FolderWatcher::executeFunc(void *thisWorker) {
     ((FolderWatcher *) thisWorker)->startWatching();
-    Utility::terminateThreadFunction();
+    log4cplus::threadCleanup();
 }
 
 } // namespace KDC

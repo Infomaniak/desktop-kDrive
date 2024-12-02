@@ -59,7 +59,7 @@ void PerformanceWatcher::stop() {
 }
 
 PerformanceWatcher::PerformanceWatcher() {
-    _thread = std::make_unique<std::thread>(run);
+    _thread = std::make_unique<StdLoggingThread>(run);
     LOG_DEBUG(_logger, "Performance Watcher started");
 }
 
@@ -85,8 +85,6 @@ void PerformanceWatcher::run() {
 
         Utility::msleep(1000); // Sleep for 1s
     }
-
-    Utility::terminateThreadFunction();
 }
 
 bool PerformanceWatcher::updateCpuUsage() {

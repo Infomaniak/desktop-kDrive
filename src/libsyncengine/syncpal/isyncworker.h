@@ -20,6 +20,7 @@
 
 #include "syncpal.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
 #include <thread>
 

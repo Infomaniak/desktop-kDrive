@@ -913,9 +913,4 @@ std::string Utility::userName() {
     return userName_private();
 }
 
-ExitInfo Utility::terminateThreadFunction(ExitInfo exitInfo) {
-    log4cplus::threadCleanup();
-    return exitInfo;
-}
-
 } // namespace KDC

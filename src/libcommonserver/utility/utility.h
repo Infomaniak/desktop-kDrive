@@ -184,8 +184,6 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath sharedFolderName();
         static std::string userName();
 
-        static ExitInfo terminateThreadFunction(ExitInfo exitInfo = ExitInfo());
-
     private:
         static log4cplus::Logger _logger;
 

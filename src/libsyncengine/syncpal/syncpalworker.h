@@ -30,7 +30,7 @@ class SyncPalWorker : public ISyncWorker {
     public:
         SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
 
-        void execute();
+        void execute() override;
         inline SyncStep step() const { return _step; }
         inline std::chrono::time_point<std::chrono::system_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);

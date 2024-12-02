@@ -55,7 +55,6 @@ class FileSystemObserverWorker : public ISyncWorker {
         virtual bool isFolderWatcherReliable() const { return true; }
 
     private:
-        static void *executeFunc(void *thisWorker);
         virtual ReplicaSide getSnapshotType() const = 0;
 
         friend class TestLocalFileSystemObserverWorker;

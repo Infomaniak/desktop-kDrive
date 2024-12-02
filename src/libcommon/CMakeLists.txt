@@ -2,6 +2,7 @@ project(libcommon)
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
+find_package(log4cplus 2.1.0 REQUIRED)
 find_package(sentry REQUIRED)
 
 if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
@@ -39,7 +40,7 @@ set(libcommon_SRCS
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     log/sentry/sentryhandler.h log/sentry/sentryhandler.cpp
     log/sentry/sentryuser.h
-    log/customlogwstream.h
+    log/customlogstreams.h
     theme/theme.h theme/theme.cpp
 )
 
@@ -83,6 +84,7 @@ endif()
 target_link_libraries(${libcommon_NAME}
     Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Sql
     Poco::Foundation Poco::JSON Poco::Util
+    log4cplus::log4cplusU
     sentry::sentry
     keychain
     libzip::zip

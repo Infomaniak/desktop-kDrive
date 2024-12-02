@@ -19,6 +19,7 @@
 #pragma once
 
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 
 #include <list>

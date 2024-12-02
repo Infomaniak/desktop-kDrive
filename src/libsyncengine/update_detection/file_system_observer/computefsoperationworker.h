@@ -42,7 +42,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         const std::unordered_map<NodeId, SyncPath> getFileSizeMismatchMap() const { return _fileSizeMismatchMap; }
 
     protected:
-        virtual void execute() override;
+        void execute() override;
 
     private:
         using NodeIdSet = std::unordered_set<NodeId>;

@@ -1119,7 +1119,7 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
                                        std::function<void(const QString &, qint64)> callback) {
     if (nodeId.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Node ID is empty");
-        return Utility::terminateThreadFunction(ExitCode::DataError);
+        return ExitCode::DataError;
     }
 
     // get size of folder
@@ -1130,7 +1130,7 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::GetSizeJob for userDbId=" << userDbId << " driveId=" << driveId
                                                                  << " nodeId=" << nodeId.c_str() << " error=" << e.what());
-        return Utility::terminateThreadFunction(ExitCode::DataError);
+        return ExitCode::DataError;
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1138,7 +1138,7 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
                                                                        << " nodeId=" << nodeId.c_str() << " code=" << exitCode);
-        return Utility::terminateThreadFunction(exitCode);
+        return exitCode;
     }
 
     Poco::JSON::Object::Ptr resObj = job->jsonRes();
@@ -1146,24 +1146,24 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
         // Level = Debug because access forbidden is a normal case
         LOG_DEBUG(Log::instance()->getLogger(),
                   "GetSizeJob failed for userDbId=" << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.c_str());
-        return Utility::terminateThreadFunction(ExitCode::BackError);
+        return ExitCode::BackError;
     }
 
     Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
     if (!dataObj) {
         LOG_WARN(Log::instance()->getLogger(),
                  "GetSizeJob failed for userDbId=" << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.c_str());
-        return Utility::terminateThreadFunction(ExitCode::BackError);
+        return ExitCode::BackError;
     }
 
     qint64 size = 0;
     if (!JsonParserUtility::extractValue(dataObj, sizeKey, size)) {
-        return Utility::terminateThreadFunction(ExitCode::BackError);
+        return ExitCode::BackError;
     }
 
     callback(QString::fromStdString(nodeId), size);
 
-    return Utility::terminateThreadFunction(ExitCode::Ok);
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl) {

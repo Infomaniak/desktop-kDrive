@@ -140,7 +140,7 @@ void ISyncWorker::setDone(ExitCode exitCode) {
 
 void ISyncWorker::executeFunc(void *thisWorker) {
     ((ISyncWorker *) thisWorker)->execute();
-    Utility::terminateThreadFunction();
+    log4cplus::threadCleanup();
 }
 
 } // namespace KDC
