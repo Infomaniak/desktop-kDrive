@@ -216,10 +216,17 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     // (overwrite).
     {
         using namespace testhelpers;
+        _syncPal->_localFSObserverWorker->stop();
+        _syncPal->_localFSObserverWorker.reset();
+
+        // Create a slow observer
+        auto slowObserver = std::make_shared<MockLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
+        _syncPal->_localFSObserverWorker = slowObserver;
+        _syncPal->_localFSObserverWorker->start();
 
         LOGW_DEBUG(_logger, L"***** test create file with NFC-encoded name *****");
         generateOrEditTestFile(_rootFolderPath / makeNfcSyncName());
-        Utility::msleep(1000); // Wait 1sec
+        CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
 
         FileStat fileStat;
         bool exists = false;
@@ -230,7 +237,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
 
         LOGW_DEBUG(_logger, L"***** test create file with NFD-encoded name *****");
         generateOrEditTestFile(_rootFolderPath / makeNfdSyncName()); // Should replace the Nfc item in the snapshot.
-        Utility::msleep(1000); // Wait 1sec
+        CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
 
         IoHelper::getFileStat(_rootFolderPath / makeNfdSyncName(), &fileStat, exists);
         const NodeId nfdNamedItemId = std::to_string(fileStat.inode);
