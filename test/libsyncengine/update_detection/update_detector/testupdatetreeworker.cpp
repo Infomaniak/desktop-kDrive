@@ -361,11 +361,11 @@ void TestUpdateTreeWorker::testHandleCreateOperationsWithSamePath() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->handleCreateOperationsWithSamePath());
 
 
-        // Duplicate paths but distinct name encodings: success
+        // Duplicate paths but distinct name encodings: DataError, Duplicate items with different encodings are not allowed in the snapshot.
         _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id6nfd", NodeType::File, 1654798336,
                                                               1654798336, 12345,
                                                               SyncPath("Dir 6") / testhelpers::makeNfdSyncName()));
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->handleCreateOperationsWithSamePath());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, _updateTreeWorker->handleCreateOperationsWithSamePath());
     }
 }
 
