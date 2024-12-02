@@ -28,17 +28,23 @@
 namespace KDC {
 
 static constexpr int hMargin = 4;
+#ifdef _WIN32
+static constexpr int offset = 2;
+#else
+static constexpr int offset = 0;
+#endif
 
 TagLabel::TagLabel(const QColor &color /*= Qt::transparent*/, QWidget *parent /*= nullptr*/) :
     QLabel(parent), _backgroundColor(color) {
     setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    setAlignment(Qt::AlignCenter);
 }
 
 
 QSize TagLabel::sizeHint() const {
     const QFontMetrics fm(_customFont);
     const auto textSize = fm.size(Qt::TextSingleLine, text());
-    return {textSize.width() + 2 * hMargin, textSize.height()};
+    return {textSize.width() + 2 * hMargin + offset, textSize.height() + offset};
 }
 
 void TagLabel::paintEvent(QPaintEvent *event) {
@@ -64,7 +70,9 @@ void TagLabel::paintEvent(QPaintEvent *event) {
     QTextOption textOption;
     textOption.setAlignment(Qt::AlignCenter);
     painter.setFont(_customFont);
-    painter.drawText(rect(), text(), textOption);
+    QRect tmp = rect();
+    tmp.translate(0, offset);
+    painter.drawText(tmp, text(), textOption);
 }
 
 } // namespace KDC
