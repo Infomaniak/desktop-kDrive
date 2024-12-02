@@ -68,7 +68,7 @@ jobs:
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
       - name: Build kDrive desktop
-        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh release
+        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -t release
 
       - name: Grant packaging script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/package-ci-amd64.sh
