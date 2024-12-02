@@ -224,6 +224,12 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     _syncPal->_localFSObserverWorker = slowObserver;
     _syncPal->_localFSObserverWorker->start();
 
+     int count = 0;
+    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
+        Utility::msleep(100);
+        CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
+    }
+
     LOGW_DEBUG(_logger, L"***** test create file with NFC-encoded name *****");
     generateOrEditTestFile(_rootFolderPath / makeNfcSyncName());
     CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
