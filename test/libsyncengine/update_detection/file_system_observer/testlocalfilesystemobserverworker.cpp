@@ -209,7 +209,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
 }
 
 void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
-    // Create two files with the same name, up to encoding (NFC vs NFC).
+    // Create two files with the same name, up to encoding (NFC vs NFD).
     // On Windows and Linux systems, we expect to find two distinct items. But we will only consider one in the local snapshot and
     // we do not guarantee that it will always be the same one. However, durring a synchronisation, we should always synchorize
     // the item for wich we detected a change last time. On MacOSX, a single item is expected as the system creates a single file
@@ -242,7 +242,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcNamedItemId));
 
     LOGW_DEBUG(_logger, L"***** test create file with NFD-encoded name *****");
-    generateOrEditTestFile(_rootFolderPath / makeNfdSyncName()); // Should replace the Nfc item in the snapshot.
+    generateOrEditTestFile(_rootFolderPath / makeNfdSyncName()); // Should replace the NFC item in the snapshot.
     CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
 
     IoHelper::getFileStat(_rootFolderPath / makeNfdSyncName(), &fileStat, exists);
@@ -479,7 +479,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     IoHelper::getFileStat(nfcFilePath, &fileStat, exists);
     nfcFileId = std::to_string(fileStat.inode);
 
-    // Prepare the path of the nfd encoded file.
+    // Prepare the path of the NFD encoded file.
     SyncPath nfdFilePath = tmpDirPath / makeNfdSyncName();
 
     while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
