@@ -45,7 +45,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_w
             LocalFileSystemObserverWorker_win::changesDetected(changes);
         }
 
-        void waitForUpdate(uint64_t timeoutMs = 10000) const;
+        void waitForUpdate(long long timeoutMs = 10000) const;
 };
 #else
 class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_unix {
@@ -58,7 +58,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_u
             Utility::msleep(200);
             LocalFileSystemObserverWorker_unix::changesDetected(changes);
         }
-        void waitForUpdate(uint64_t timeoutMs = 10000) const;
+        void waitForUpdate(long long timeoutMs = 10000) const;
 };
 #endif
 

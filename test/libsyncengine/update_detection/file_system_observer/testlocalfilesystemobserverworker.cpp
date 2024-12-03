@@ -513,17 +513,17 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfdFileId));
 }
 
-void MockLocalFileSystemObserverWorker::waitForUpdate(uint64_t timeoutMs) const {
+void MockLocalFileSystemObserverWorker::waitForUpdate(long long timeoutMs) const {
     using namespace std::chrono;
     auto start = system_clock::now();
     while (!_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(static_cast<long long>(timeoutMs), duration_cast<milliseconds>(system_clock::now() - start).count());
+    CPPUNIT_ASSERT_LESS(timeoutMs, duration_cast<milliseconds>(system_clock::now() - start).count());
     while (_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(static_cast<long long>(timeoutMs), duration_cast<milliseconds>(system_clock::now() - start).count());
+    CPPUNIT_ASSERT_LESS(timeoutMs, duration_cast<milliseconds>(system_clock::now() - start).count());
 }
 
 } // namespace KDC
