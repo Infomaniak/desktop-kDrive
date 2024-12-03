@@ -383,7 +383,7 @@ bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
 
 ExitInfo SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
     if (!_vfsSetPinState) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     return _vfsSetPinState(syncDbId(), itemPath, pinState);
@@ -391,7 +391,7 @@ ExitInfo SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
 
 ExitInfo SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
     if (!_vfsStatus) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     return _vfsStatus(syncDbId(), itemPath, isPlaceholder, isHydrated, isSyncing, progress);
@@ -399,7 +399,7 @@ ExitInfo SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool 
 
 ExitInfo SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     if (!_vfsCreatePlaceholder) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     return _vfsCreatePlaceholder(syncDbId(), relativeLocalPath, item);
@@ -407,7 +407,7 @@ ExitInfo SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const 
 
 ExitInfo SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
     if (!_vfsConvertToPlaceholder) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     return _vfsConvertToPlaceholder(syncDbId(), path, item);
@@ -416,7 +416,7 @@ ExitInfo SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileIt
 ExitInfo SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                     const int64_t size, const NodeId &id) {
     if (!_vfsUpdateMetadata) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     return _vfsUpdateMetadata(syncDbId(), path, creationTime, modtime, size, id);
@@ -430,7 +430,7 @@ ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &
     }
 
     if (!_vfsUpdateFetchStatus) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     return _vfsUpdateFetchStatus(syncDbId(), tmpPath, path, received, canceled, finished);
@@ -446,7 +446,7 @@ bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) 
 
 ExitInfo SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
     if (!_vfsForceStatus) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     return _vfsForceStatus(syncDbId(), path, isSyncing, progress, isHydrated);
