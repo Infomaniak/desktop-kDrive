@@ -29,13 +29,14 @@ namespace KDC {
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)),
-    _updateTree(syncPal->updateTree(side)), _side(side) {}
+    ISyncWorker(syncPal, name, shortName),
+    _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)), _updateTree(syncPal->updateTree(side)), _side(side) {}
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,
                                    std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(nullptr, name, shortName), _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
+    ISyncWorker(nullptr, name, shortName),
+    _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
 
 UpdateTreeWorker::~UpdateTreeWorker() {
     _operationSet.reset();
@@ -274,9 +275,15 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
         std::pair<FSOpPtrMap::iterator, bool> insertionResult;
         switch (createOp->objectType()) {
-            case NodeType::File:
-                insertionResult = _createFileOperationSet.try_emplace(createOp->path(), createOp);
+            case NodeType::File: {
+                SyncPath normalizedPath;
+                if (!Utility::normalizedSyncPath(createOp->path(), normalizedPath)) {
+                    normalizedPath = createOp->path();
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(createOp->path()));
+                }
+                insertionResult = _createFileOperationSet.try_emplace(normalizedPath, createOp);
                 break;
+            }
             case NodeType::Directory:
                 insertionResult = createDirectoryOperationSet.try_emplace(createOp->path(), createOp);
                 break;
@@ -379,7 +386,12 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             // Transform a Delete and a Create operations into one Edit operation.
             // Some software, such as Excel, keeps the current version into a temporary directory and move it to the destination,
             // replacing the original file. However, this behavior should be applied only on local side.
-            if (auto createFileOpSetIt = _createFileOperationSet.find(deleteOp->path());
+            SyncPath normalizedPath;
+            if (!Utility::normalizedSyncPath(deleteOp->path(), normalizedPath)) {
+                normalizedPath = deleteOp->path();
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(deleteOp->path()));
+            }
+            if (auto createFileOpSetIt = _createFileOperationSet.find(normalizedPath);
                 createFileOpSetIt != _createFileOperationSet.end()) {
                 FSOpPtr tmp = nullptr;
                 if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(),
@@ -389,7 +401,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
                 // op is now the createOperation
                 op = tmp;
-                _createFileOperationSet.erase(deleteOp->path());
+                _createFileOperationSet.erase(normalizedPath);
             }
         }
 
@@ -550,7 +562,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
 }
 
 ExitCode UpdateTreeWorker::step6CreateFile() {
-    for (const auto &op: _createFileOperationSet) {
+    for (const auto &[/*normalized path*/ _, operation]: _createFileOperationSet) {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -562,8 +574,6 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 
             Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
-
-        FSOpPtr operation = op.second;
 
         // find parentNode by path
         std::shared_ptr<Node> parentNode = getOrCreateNodeFromExistingPath(operation->path().parent_path());
