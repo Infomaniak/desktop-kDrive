@@ -118,6 +118,11 @@ struct COMMON_EXPORT CommonUtility {
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
         static void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
+#ifdef _WIN32
+        // Converts a std::wstring to std::string assuming that it contains only mono byte chars
+        static std::string toUnsafeStr(const SyncName &name);
+#endif
+
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
 };
