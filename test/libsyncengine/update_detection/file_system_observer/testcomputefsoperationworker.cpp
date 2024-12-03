@@ -228,7 +228,7 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
 
 void TestComputeFSOperationWorker::testMultipleOps() {
     // On local replica
-    // Create operation234
+    // Create operation
     _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime,
                                                       NodeType::File, 123, false, true, true));
     // Edit operation
