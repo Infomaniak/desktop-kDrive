@@ -46,6 +46,7 @@ void AbstractUpdater::onAppVersionReceived() {
     if (!_updateChecker->versionInfo().isValid()) {
         setState(UpdateState::CheckError);
         LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
+        return;
     }
 
     const bool available =
