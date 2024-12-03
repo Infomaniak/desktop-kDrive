@@ -429,6 +429,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 // replace node in _nodes map because id changed
                 auto node = _updateTree->nodes().extract(deleteOp->nodeId());
                 node.key() = op->nodeId();
+                node.mapped()->setName(op->destinationPath().filename().native());
                 _updateTree->nodes().insert(std::move(node));
             }
 
