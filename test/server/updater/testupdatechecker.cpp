@@ -35,9 +35,13 @@ static const std::string lowTagValue = "1.1.1";
 static constexpr uint64_t lowBuildVersionValue = 20200604;
 
 std::string generateJsonReply(const std::string &version, uint64_t buildVersion) {
+#if defined(__unix__) && !defined(__APPLE__)    // Require c++20
+    return "";
+#else
     return std::format(
             R"({{"result":"success","data":{{"application_id":27,"prod_version":"production","version":{{"tag":"{0}","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},"application":{{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"{0}","next_version_rate":0,"published_versions":[{{"tag":"{0}","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},{{"tag":"{0}","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},{{"tag":"{0}","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},{{"tag":"{0}","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}}]}}}}}})",
             version, buildVersion);
+#endif
 }
 
 class GetAppVersionJobTest final : public GetAppVersionJob {
