@@ -54,16 +54,16 @@ void TestOperationSorterWorker::tearDown() {
 }
 
 void TestOperationSorterWorker::testMoveFirstAfterSecond() {
-    const auto node1 = std::make_shared<Node>(ReplicaSide::Local, Str("1"), NodeType::Directory,
-                                              OperationType::None, std::nullopt, 0, 0, 12345, nullptr);
-    const auto node2 = std::make_shared<Node>(ReplicaSide::Local, Str("2"), NodeType::Directory,
-                                              OperationType::None, std::nullopt, 0, 0, 12345, nullptr);
-    const auto node3 = std::make_shared<Node>(ReplicaSide::Local, Str("3"), NodeType::Directory,
-                                              OperationType::None, std::nullopt, 0, 0, 12345, nullptr);
-    const auto node4 = std::make_shared<Node>(ReplicaSide::Local, Str("4"), NodeType::Directory,
-                                              OperationType::None, std::nullopt, 0, 0, 12345, nullptr);
-    const auto node5 = std::make_shared<Node>(ReplicaSide::Local, Str("5"), NodeType::Directory,
-                                              OperationType::None, std::nullopt, 0, 0, 12345, nullptr);
+    const auto node1 = std::make_shared<Node>(ReplicaSide::Local, Str("1"), NodeType::Directory, OperationType::None,
+                                              std::nullopt, 0, 0, 12345, nullptr);
+    const auto node2 = std::make_shared<Node>(ReplicaSide::Local, Str("2"), NodeType::Directory, OperationType::None,
+                                              std::nullopt, 0, 0, 12345, nullptr);
+    const auto node3 = std::make_shared<Node>(ReplicaSide::Local, Str("3"), NodeType::Directory, OperationType::None,
+                                              std::nullopt, 0, 0, 12345, nullptr);
+    const auto node4 = std::make_shared<Node>(ReplicaSide::Local, Str("4"), NodeType::Directory, OperationType::None,
+                                              std::nullopt, 0, 0, 12345, nullptr);
+    const auto node5 = std::make_shared<Node>(ReplicaSide::Local, Str("5"), NodeType::Directory, OperationType::None,
+                                              std::nullopt, 0, 0, 12345, nullptr);
     const auto op1 = std::make_shared<SyncOperation>();
     const auto op2 = std::make_shared<SyncOperation>();
     const auto op3 = std::make_shared<SyncOperation>();

@@ -522,8 +522,7 @@ void TestConflictFinderWorker::testCase55b() {
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
 
     // Conflict Situation
-    nodeA->setChangeEvents(
-        OperationType::Edit);
+    nodeA->setChangeEvents(OperationType::Edit);
     nodeA->setMoveOrigin("A");
     nodeA->setName(Str("B"));
     rNodeA->setChangeEvents(OperationType::Edit);
