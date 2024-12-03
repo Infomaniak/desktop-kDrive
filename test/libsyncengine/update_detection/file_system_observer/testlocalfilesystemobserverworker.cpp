@@ -519,11 +519,11 @@ void MockLocalFileSystemObserverWorker::waitForUpdate(long long timeoutMs) const
     while (!_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(timeoutMs, duration_cast<milliseconds>(system_clock::now() - start).count());
+    CPPUNIT_ASSERT_LESS(timeoutMs, static_cast<long long>(duration_cast<milliseconds>(system_clock::now() - start).count()));
     while (_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
         Utility::msleep(10);
     }
-    CPPUNIT_ASSERT_LESS(timeoutMs, duration_cast<milliseconds>(system_clock::now() - start).count());
+    CPPUNIT_ASSERT_LESS(timeoutMs, static_cast<long long>(duration_cast<milliseconds>(system_clock::now() - start).count()));
 }
 
 } // namespace KDC
