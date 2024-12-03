@@ -206,7 +206,7 @@ void VfsWin::exclude(const QString &path) {
     }
 }
 
-ExitInfo VfsWin::handleVfsError(SyncPath &itemPath) {
+ExitInfo VfsWin::handleVfsError(const SyncPath &itemPath) {
     bool exists = false;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
@@ -221,8 +221,7 @@ ExitInfo VfsWin::handleVfsError(SyncPath &itemPath) {
         LOGW_WARN(logger(), L"File doesn't exist anymore: " << Utility::formatSyncPath(itemPath));
         return {ExitCode::SystemError, ExitCause::NotFound};
     }
-
-    return defaultError();
+    return defaultVfsError();
 }
 
 ExitInfo VfsWin::setPlaceholderStatus(const QString &path, bool syncOngoing) {
@@ -243,13 +242,12 @@ ExitInfo VfsWin::updateMetadata(const QString &filePath, time_t creationTime, ti
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return defaultError();
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(logger(), L"UpdateMetadata failed because access is denied: " << Utility::formatSyncPath(fullPath).c_str());
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
-
     if (!exists) {
         LOGW_WARN(logger(), L"File/directory doesn't exists: " << Utility::formatSyncPath(fullPath).c_str());
         return {ExitCode::SystemError, ExitCause::NotFound};
@@ -277,7 +275,7 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
 
     if (relativeLocalPath.empty()) {
         LOG_WARN(logger(), "VfsWin::createPlaceholder - relativeLocalPath cannot be empty.");
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
     if (!item.remoteNodeId().has_value()) {
@@ -290,7 +288,7 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return defaultError();
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(fullPath, ioError));
@@ -299,6 +297,20 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     if (exists) {
         LOGW_WARN(logger(), L"Item already exists: " << Utility::formatSyncPath(fullPath).c_str());
         return {ExitCode::SystemError, ExitCause::FileAlreadyExist};
+    }
+
+    if (!IoHelper::checkIfPathExists(fullPath.parent_path(), exists, ioError)) {
+        LOGW_WARN(logger(),
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath.parent_path(), ioError).c_str());
+        return ExitCode::SystemError;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(fullPath.parent_path(), ioError));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+    if (!exists) {
+        LOGW_WARN(logger(), L"Parent directory doesn't exist: " << Utility::formatSyncPath(fullPath.parent_path()));
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     // Create placeholder
@@ -314,16 +326,16 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
                              relativeLocalPath.lexically_normal().native().c_str(),
                              _vfsSetupParams._localPath.lexically_normal().native().c_str(), &findData) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCreatePlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
-        return defaultError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return NotFound
-                               // as this make no sense in the context of a create
+        return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
+                                  // NotFound as this make no sense in the context of a create
     }
 
     // !!! Creating a placeholder DOESN'T triggers any file system event !!!
     // Setting the pin state triggers an EDIT event and then the insertion into the local snapshot
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_UNPINNED) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
-        return defaultError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return NotFound
-                               // as this make no sense in the context of a create
+        return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
+                                  // NotFound as this make no sense in the context of a create
     }
 
     return ExitCode::Ok;
@@ -334,7 +346,7 @@ ExitInfo VfsWin::dehydratePlaceholder(const QString &path) {
 
     if (path.isEmpty()) {
         LOG_WARN(logger(), "Empty file!");
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
@@ -342,7 +354,7 @@ ExitInfo VfsWin::dehydratePlaceholder(const QString &path) {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return defaultError();
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
         // File access error
@@ -381,7 +393,7 @@ ExitInfo VfsWin::convertToPlaceholder(const QString &path, const SyncFileItem &i
 
     if (path.isEmpty()) {
         LOG_WARN(logger(), "Empty path!");
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     SyncPath fullPath(QStr2Path(path));
@@ -390,12 +402,12 @@ ExitInfo VfsWin::convertToPlaceholder(const QString &path, const SyncFileItem &i
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
                   L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath).c_str() << L" code=" << errorCode);
-        return defaultError();
+        return defaultVfsError();
     }
 
     if (dwAttrs & FILE_ATTRIBUTE_DEVICE) {
         LOGW_DEBUG(logger(), L"Not a valid file or directory: " << Utility::formatSyncPath(fullPath).c_str());
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+        return defaultVfsError();
     }
 
     // Check if the file is already a placeholder
@@ -493,7 +505,7 @@ ExitInfo VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, 
 
     if (tmpPath.isEmpty() || path.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     SyncPath fullTmpPath(QStr2Path(tmpPath));
@@ -503,7 +515,7 @@ ExitInfo VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, 
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return defaultError();
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_DEBUG(logger(), L"File access error: " << Utility::formatIoError(fullPath, ioError));
@@ -534,7 +546,7 @@ ExitInfo VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, 
     // Launch update in a separate thread
     bool error = false;
     std::thread updateTask(updateFct, std::ref(canceled), std::ref(finished), std::ref(error));
-    // TODO: Check if we need to join the thread. If yes, why is it in a separate thread?
+    // TODO: Check if we need to join the thread. If yes, why should it be in a separate thread?
     updateTask.join();
 
     return error ? handleVfsError(fullPath) : ExitInfo(ExitCode::Ok);
@@ -542,19 +554,22 @@ ExitInfo VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, 
 
 ExitInfo VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool) {
     if (absolutePath.isEmpty()) {
-        LOG_WARN(logger(), "Empty path!");
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+        LOG_WARN(logger(), "Empty path in VfsWin::forceStatus");
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     SyncPath stdPath = QStr2Path(absolutePath);
 
     bool exists = false;
-
-    if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
+    IoError ioError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError).c_str());
-        return defaultError()
+        return ExitCode::SystemError;
     }
-
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(stdPath, ioError));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
     if (!exists) {
         return {ExitCode::SystemError, ExitCause::NotFound};
     }
@@ -564,12 +579,12 @@ ExitInfo VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, b
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
                   L"Error in GetFileAttributesW: " << Utility::formatSyncPath(stdPath).c_str() << L" code=" << errorCode);
-        return defaultError();
+        return defaultVfsError();
     }
 
     if (dwAttrs & FILE_ATTRIBUTE_DEVICE) {
         LOGW_WARN(logger(), L"Not a valid file or directory: " << Utility::formatSyncPath(stdPath).c_str());
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+        return defaultVfsError();
     }
 
     bool isPlaceholder = false;
@@ -585,13 +600,13 @@ ExitInfo VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, b
         IoError ioError = IoError::Success;
         if (!IoHelper::getFileStat(stdPath, &filestat, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(stdPath, ioError).c_str());
-            return defaultError();
+            return defaultVfsError();
         }
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(stdPath).c_str());
             return {ExitCode::SystemError, ExitCause::NotFound};
         } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(logger(), L"Item: " << Utility::formatSyncPath(stdPath).c_str() << L" rejected because access is denied");
+            LOGW_WARN(logger(), L"Access is denied for item: " << Utility::formatSyncPath(stdPath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
@@ -632,7 +647,7 @@ ExitInfo VfsWin::setPinState(const QString &relativePath, PinState state) {
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
                   L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath).c_str() << L" code=" << errorCode);
-        return defaultError();
+        return defaultVfsError();
     }
 
     VfsPinState vfsState;

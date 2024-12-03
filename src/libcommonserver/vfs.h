@@ -119,7 +119,7 @@ class Vfs : public QObject {
          * - ExitCode::Ok: Everything went fine, the placeholder was created.
          * - ExitCode::LogicError, ExitCause::InvalidArgument: relativeLocalPath is empty or item.remoteNodeId is not set.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::NotFoud: The parent folder does not exist.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the destination folder or it is
          * locked.
          * - ExitCode::SystemError, ExitCause::FileAlreadyExist: An item with the same name already exists in the destination
@@ -138,6 +138,8 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
+         * - ExitCode::SystemError, ExitCause::NotPlaceHolder: The item is not a placeholder.
+         * folder.
          */
         virtual ExitInfo dehydratePlaceholder(const QString &path) = 0;
 
@@ -151,10 +153,7 @@ class Vfs : public QObject {
          *
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the file is now a placeholder.
-         * - ExitCode::LogicError, ExitCause::InvalidArgument:
-         +++ The provided path is empty.
-         +++ The provided path is not file/directory (ie. probably a disk).
-         * -- item.localNodeId is not set.
+         * - ExitCode::LogicError, ExitCause::InvalidArgument: item.localNodeId is not set.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
@@ -167,7 +166,6 @@ class Vfs : public QObject {
          *
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the fetch status was updated.
-         * - ExitCode::LogicError, ExitCause::InvalidArgument: Either the path or the tmpPath is empty.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked (The item is
@@ -182,9 +180,6 @@ class Vfs : public QObject {
          *
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the status was updated.
-         * - ExitCode::LogicError, ExitCause::InvalidArgument:
-         +++ The provided path is empty.
-         +++ The provided path is not file/directory (ie. probably a disk).
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
@@ -294,8 +289,12 @@ class Vfs : public QObject {
 
         virtual void stopImpl(bool unregister) = 0;
 
-        inline log4cplus::Logger logger() { return _vfsSetupParams._logger; }
+        inline log4cplus::Logger logger() const { return _vfsSetupParams._logger; }
 
+        // By default we will return file access error.
+        inline ExitInfo defaultVfsError() const { 
+            LOG_WARN(logger(), "Default VFS error returned");
+            return {ExitCode::SystemError, ExitCause::FileAccessError}; }
     private:
         bool _extendedLog;
         bool _started;

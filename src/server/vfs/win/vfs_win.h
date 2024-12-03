@@ -113,12 +113,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         void exclude(const QString &path) override;
         ExitInfo setPlaceholderStatus(const QString &path, bool syncOngoing);
-        ExitInfo handleVfsError(SyncPath &itemPath);
-
-        // By default we will return file access error.
-        ExitInfo defaultError() const {
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
+        ExitInfo handleVfsError(const SyncPath &itemPath);
 };
 
 class Worker : public QObject {
