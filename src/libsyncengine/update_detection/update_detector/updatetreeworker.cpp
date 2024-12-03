@@ -29,14 +29,13 @@ namespace KDC {
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(syncPal, name, shortName),
-    _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)), _updateTree(syncPal->updateTree(side)), _side(side) {}
+    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)),
+    _updateTree(syncPal->updateTree(side)), _side(side) {}
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,
                                    std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(nullptr, name, shortName),
-    _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
+    ISyncWorker(nullptr, name, shortName), _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
 
 UpdateTreeWorker::~UpdateTreeWorker() {
     _operationSet.reset();
@@ -429,7 +428,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 // replace node in _nodes map because id changed
                 auto node = _updateTree->nodes().extract(deleteOp->nodeId());
                 node.key() = op->nodeId();
-                node.mapped()->setName(op->destinationPath().filename().native());
+                node.mapped()->setName(op->path().filename().native());
                 _updateTree->nodes().insert(std::move(node));
             }
 

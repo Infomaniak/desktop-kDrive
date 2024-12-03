@@ -69,7 +69,7 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
 
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_DEBUG(fw->logger(),
-                       L"Operation " << opType << L" detected on item " << Utility::s2ws(pathPtr ? pathPtr : "").c_str());
+                       L"Operation " << opType << L" detected on item " << Utility::s2ws(pathPtr ? pathPtr : pathBuf).c_str());
         }
 
         // TODO : to be tested to get inode (https://github.com/fsevents/fsevents/pull/360/files)
