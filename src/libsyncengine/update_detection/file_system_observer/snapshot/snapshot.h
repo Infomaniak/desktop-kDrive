@@ -45,7 +45,7 @@ class Snapshot : public SharedObject {
         NodeId itemId(const SyncPath &path) const;
         NodeId parentId(const NodeId &itemId) const;
         bool setParentId(const NodeId &itemId, const NodeId &newParentId);
-        bool path(const NodeId &itemId, SyncPath &path) const noexcept;
+        bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept;
         SyncName name(const NodeId &itemId) const;
         bool setName(const NodeId &itemId, const SyncName &newName);
         SyncTime createdAt(const NodeId &itemId) const;

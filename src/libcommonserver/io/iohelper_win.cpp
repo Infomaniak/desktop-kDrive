@@ -70,6 +70,8 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
         case ERROR_PATH_NOT_FOUND:
         case ERROR_INVALID_NAME:
             return IoError::NoSuchFileOrDirectory;
+        case ERROR_NOT_SAME_DEVICE:
+            return IoError::CrossDeviceLink;
         default:
             if (Log::isSet()) {
                 LOG_WARN(logger, "Unhandled DWORD error - error=" << error);
