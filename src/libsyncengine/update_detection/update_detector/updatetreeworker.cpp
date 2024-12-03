@@ -391,7 +391,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 normalizedPath = deleteOp->path();
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(deleteOp->path()));
             }
-            if (auto createFileOpSetIt = _createFileOperationSet.find(deleteOp->path());
+            if (auto createFileOpSetIt = _createFileOperationSet.find(normalizedPath);
                 createFileOpSetIt != _createFileOperationSet.end()) {
                 FSOpPtr tmp = nullptr;
                 if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(),
@@ -401,7 +401,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
                 // op is now the createOperation
                 op = tmp;
-                _createFileOperationSet.erase(deleteOp->path());
+                _createFileOperationSet.erase(normalizedPath);
             }
         }
 
