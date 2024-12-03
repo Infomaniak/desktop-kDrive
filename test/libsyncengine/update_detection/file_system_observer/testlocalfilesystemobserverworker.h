@@ -98,7 +98,6 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
 
-
         static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
         static bool vfsPinState(int, const SyncPath &, PinState &) { return true; };
         static bool vfsFileStatusChanged(int, const SyncPath &, SyncFileStatus) { return true; };
