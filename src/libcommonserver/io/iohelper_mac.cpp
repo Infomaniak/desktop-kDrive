@@ -109,23 +109,8 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
 }
 
 bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string> &attrNames, IoError &ioError) noexcept {
-    ItemType itemType;
-    if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
-        ioError = itemType.ioError;
-        return false;
-    }
-
-    // The item indicated by `path` doesn't exist.
-    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::NoSuchFileOrDirectory;
-        return true;
-    }
-
-    const bool isSymlink = itemType.linkType == LinkType::Symlink;
-
     for (const auto &attrName: attrNames) {
-        if (removexattr(path.native().c_str(), attrName.c_str(), isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
+        if (removexattr(path.native().c_str(), attrName.c_str(), XATTR_NOFOLLOW) == -1) {
             ioError = posixError2ioError(errno);
             return _isXAttrValueExpectedError(ioError);
         }

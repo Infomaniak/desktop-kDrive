@@ -59,6 +59,61 @@ void TestIo::testRemoveXAttr() {
         CPPUNIT_ASSERT(value.empty());
     }
 
+    // A symlink
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "file.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+            ofs.close();
+        }
+
+        const SyncPath linkPath = temporaryDirectory.path() / "link.txt";
+        std::error_code ec;
+        std::filesystem::create_symlink(targetPath, linkPath, ec);
+        CPPUNIT_ASSERT(!ec);
+
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(_testObj->setXAttrValue(linkPath, "link-status", "to-be-deleted", ioError));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+
+        CPPUNIT_ASSERT(_testObj->removeXAttrs(linkPath, {"link-status"}, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+
+        std::string value;
+        CPPUNIT_ASSERT(_testObj->getXAttrValue(linkPath, "link-status", value, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
+        CPPUNIT_ASSERT(value.empty());
+    }
+
+    // An alias
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "file.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+            ofs.close();
+        }
+
+        const SyncPath aliasPath = temporaryDirectory.path() / "alias.txt";
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, aliasPath, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+
+        CPPUNIT_ASSERT(_testObj->setXAttrValue(aliasPath, "alias-status", "to-be-deleted", ioError));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+
+        CPPUNIT_ASSERT(_testObj->removeXAttrs(aliasPath, {"alias-status"}, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+
+        std::string value;
+        CPPUNIT_ASSERT(_testObj->getXAttrValue(aliasPath, "alias-status", value, ioError));
+        CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
+        CPPUNIT_ASSERT(value.empty());
+    }
+
     // A non-existing file
     {
         const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
