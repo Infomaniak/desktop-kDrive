@@ -54,8 +54,8 @@ static void kdriveLogCatcher(QtMsgType type, const QMessageLogContext &ctx, cons
     }
 #ifdef _WIN32
     // For performance purposes, assume that the file name contains only mono byte chars
-    std::string fileNameStr(fileName.begin(), fileName.end());
-    const char *fileNamePtr = fileNameStr.c_str();
+    std::string unsafeFileName(CommonUtility::toUnsafeStr(fileName));
+    const char *fileNamePtr = unsafeFileName.c_str();
 #else
     const char *fileNamePtr = fileName.c_str();
 #endif
