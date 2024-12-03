@@ -83,6 +83,10 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->setLocalPath(_rootFolderPath);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
+    _syncPal->setVfsStatusCallback(&vfsStatus); // Do nothing
+    _syncPal->setVfsPinStateCallback(&vfsPinState); // Do nothing
+    _syncPal->setVfsFileStatusChangedCallback(&vfsFileStatusChanged); // Do nothing
+
 #if defined(_WIN32)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_win(_syncPal, "Local File System Observer", "LFSO"));
@@ -224,7 +228,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     _syncPal->_localFSObserverWorker = slowObserver;
     _syncPal->_localFSObserverWorker->start();
 
-     int count = 0;
+    int count = 0;
     while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
         Utility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
@@ -232,7 +236,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
 
     LOGW_DEBUG(_logger, L"***** test create file with NFC-encoded name *****");
     generateOrEditTestFile(_rootFolderPath / makeNfcSyncName());
-    CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
+    slowObserver->waitForUpdate();
 
     FileStat fileStat;
     bool exists = false;
@@ -243,7 +247,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
 
     LOGW_DEBUG(_logger, L"***** test create file with NFD-encoded name *****");
     generateOrEditTestFile(_rootFolderPath / makeNfdSyncName()); // Should replace the NFC item in the snapshot.
-    CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
+    slowObserver->waitForUpdate();
 
     IoHelper::getFileStat(_rootFolderPath / makeNfdSyncName(), &fileStat, exists);
     const NodeId nfdNamedItemId = std::to_string(fileStat.inode);
@@ -444,7 +448,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
                                         ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-    CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
+    slowObserver->waitForUpdate();
 
     FileStat fileStat;
     CPPUNIT_ASSERT(IoHelper::getFileStat(_testFiles[0].second, &fileStat, ioError));
@@ -499,7 +503,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
                                         ioError)); // test1.txt -> nfdFile (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-    CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
+    slowObserver->waitForUpdate();
 
     CPPUNIT_ASSERT(IoHelper::getFileStat(nfdFilePath, &fileStat, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -509,16 +513,17 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfdFileId));
 }
 
-bool MockLocalFileSystemObserverWorker::waitForUpdate(uint64_t timeoutMs) const {
+void MockLocalFileSystemObserverWorker::waitForUpdate(uint64_t timeoutMs) const {
     using namespace std::chrono;
     auto start = system_clock::now();
     while (!_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
         Utility::msleep(10);
     }
+    CPPUNIT_ASSERT_LESS(static_cast<long long>(timeoutMs), duration_cast<milliseconds>(system_clock::now() - start).count());
     while (_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
         Utility::msleep(10);
     }
-    return duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs;
+    CPPUNIT_ASSERT_LESS(static_cast<long long>(timeoutMs), duration_cast<milliseconds>(system_clock::now() - start).count());
 }
 
 } // namespace KDC

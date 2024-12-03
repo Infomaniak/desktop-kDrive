@@ -45,7 +45,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_w
             LocalFileSystemObserverWorker_win::changesDetected(changes);
         }
 
-        bool waitForUpdate(uint64_t timeoutMs = 100000) const;
+        void waitForUpdate(uint64_t timeoutMs = 10000) const;
 };
 #else
 class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_unix {
@@ -58,7 +58,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_u
             Utility::msleep(200);
             LocalFileSystemObserverWorker_unix::changesDetected(changes);
         }
-        bool waitForUpdate(uint64_t timeoutMs = 100000) const;
+        void waitForUpdate(uint64_t timeoutMs = 10000) const;
 };
 #endif
 
@@ -97,6 +97,11 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         void testLFSOFastMoveDeleteMoveWithEncodingChange();
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
+
+
+        static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
+        static bool vfsPinState(int, const SyncPath &, PinState &) { return true; };
+        static bool vfsFileStatusChanged(int, const SyncPath &, SyncFileStatus) { return true; };
 };
 
 } // namespace KDC
