@@ -400,12 +400,12 @@ bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
 bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame) {
     SyncName aNormalized;
     if (!Utility::normalizedSyncName(a, aNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(a));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(a));
         return false;
     }
     SyncName bNormalized;
     if (!Utility::normalizedSyncName(b, bNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(b));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(b));
         return false;
     }
     areSame = (aNormalized == bNormalized);
@@ -415,12 +415,12 @@ bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, boo
 bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame) {
     SyncPath aNormalized;
     if (!Utility::normalizedSyncPath(a, aNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
         return false;
     }
     SyncPath bNormalized;
     if (!Utility::normalizedSyncPath(b, bNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
         return false;
     }
     areSame = (aNormalized == bNormalized);
@@ -697,7 +697,7 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath)
     if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
         SyncName normalizedName;
         if (!Utility::normalizedSyncName(segment, normalizedName)) {
-            LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(segment));
+            LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(segment));
             return false;
         }
         segment = normalizedName;
@@ -709,7 +709,7 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath)
         if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
             SyncName normalizedName;
             if (!Utility::normalizedSyncName(*segmentIt, normalizedName)) {
-                LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*segmentIt));
+                LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*segmentIt));
                 return false;
             }
             normalizedPath /= normalizedName;
