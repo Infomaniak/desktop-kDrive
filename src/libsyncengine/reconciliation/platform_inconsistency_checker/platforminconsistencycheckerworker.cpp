@@ -53,8 +53,8 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _syncPal->updateTree(ReplicaSide::Remote)->setInconsistencyCheckDone();
 
-    setDone(ExitCode::Ok);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(ExitCode::Ok);
 }
 
 ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {

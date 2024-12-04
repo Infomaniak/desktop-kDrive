@@ -23,6 +23,7 @@
 #include "languagechangefilter.h"
 #include "utility/utility.h"
 #include "parameterscache.h"
+#include "libcommon/utility/utility.h"
 
 #include <QApplication>
 #include <QBoxLayout>
