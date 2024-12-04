@@ -290,8 +290,9 @@ void Handler::setGlobalConfidentialityLevel(SentryConfidentialityLevel level) {
 
 void Handler::_captureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
                               const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
-    std::scoped_lock lock(_mutex);
     if (!_isSentryActivated) return;
+
+    std::scoped_lock lock(_mutex);
 
     SentryEvent event(title, message, level, _globalConfidentialityLevel, user);
     bool toUpload = false;
@@ -451,8 +452,9 @@ Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &m
     message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 
 void Handler::stopPTrace(const pTraceId &id, bool aborted) {
-    std::scoped_lock lock(_mutex);
     if (id == 0) return;
+
+    std::scoped_lock lock(_mutex);
     auto performanceTraceIt = _performanceTraces.find(id);
     if (performanceTraceIt == _performanceTraces.end()) {
         return;
@@ -542,9 +544,9 @@ pTraceId Handler::startSpan(const std::string &name, const std::string &descript
 }
 
 pTraceId Handler::startPTrace(PTraceName pTraceName, int syncDbId) {
-    std::scoped_lock lock(_mutex);
-    if (!_isSentryActivated || pTraceName == PTraceName::None) return 0;
+    if (!_isSentryActivated || pTraceName == PTraceName::None) return;
 
+    std::scoped_lock lock(_mutex);
     pTraceId newPTraceId = 0;
     if (PTraceInfo pTraceInfo(pTraceName); pTraceInfo._parentPTraceName != PTraceName::None) {
         // Fetch the pTraceMap associated with the provided syncDbId
@@ -576,8 +578,9 @@ pTraceId Handler::startPTrace(PTraceName pTraceName, int syncDbId) {
 }
 
 void Handler::stopPTrace(PTraceName pTraceName, int syncDbId, bool aborted) {
-    std::scoped_lock lock(_mutex);
     if (!_isSentryActivated || pTraceName == PTraceName::None) return;
+
+    std::scoped_lock lock(_mutex);
     auto pTraceMap = _pTraceNameToPTraceIdMap.find(syncDbId);
     if (pTraceMap == _pTraceNameToPTraceIdMap.end()) {
         assert(false && "Transaction is not running");
