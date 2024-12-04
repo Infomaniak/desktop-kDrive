@@ -53,7 +53,7 @@ VfsMac::VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent) :
         // Start worker threads
         for (int i = 0; i < NB_WORKERS; i++) {
             for (int j = 0; j < s_nb_threads[i]; j++) {
-                QThread *workerThread = new QThread();
+                QtLoggingThread *workerThread = new QtLoggingThread();
                 _workerInfo[i]._threadList.append(workerThread);
                 Worker *worker = new Worker(this, i, j, logger());
                 worker->moveToThread(workerThread);

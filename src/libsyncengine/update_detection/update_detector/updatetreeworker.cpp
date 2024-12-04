@@ -94,8 +94,8 @@ void UpdateTreeWorker::execute() {
     // Clear unexpected operation set once used
     _operationSet->clear();
 
-    setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
 ExitCode UpdateTreeWorker::step1MoveDirectory() {
