@@ -45,8 +45,8 @@ void TestSnapshot::testItemId() {
     snapshot.updateItem(SnapshotItem("4", "2", Str("ab"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
     snapshot.updateItem(SnapshotItem("5", "2", Str("ac"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
     snapshot.updateItem(SnapshotItem("6", "4", Str("aba"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    snapshot.updateItem(SnapshotItem("8", "6", Str("abaa"), 1640995202, 1640995202, NodeType::File, 10, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab/aba/abaa")));
+    snapshot.updateItem(SnapshotItem("7", "6", Str("abaa"), 1640995202, 1640995202, NodeType::File, 10, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab/aba/abaa")));
 
     SyncName nfcNormalized;
     Utility::normalizedSyncName(Str("abà"), nfcNormalized);
@@ -55,14 +55,14 @@ void TestSnapshot::testItemId() {
     Utility::normalizedSyncName(Str("abà"), nfdNormalized, Utility::UnicodeNormalization::NFD);
 
     snapshot.updateItem(SnapshotItem("6", "4", nfcNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab") / nfcNormalized / "abaa"));
-    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(std::filesystem::path("a/ab") / nfdNormalized / "abaa"));
-    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab") / nfcNormalized / "abaa", true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa"), true));
 
     snapshot.updateItem(SnapshotItem("6", "4", nfdNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
-    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab") / nfdNormalized / "abaa"));
-    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(std::filesystem::path("a/ab") / nfcNormalized / "abaa"));
-    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab") / nfcNormalized / "abaa", true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa"), true));
 }
 
 /**
@@ -127,7 +127,7 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(1640995205), snapshot.lastModified("aaa"));
     CPPUNIT_ASSERT_EQUAL(NodeType::File, snapshot.type("aaa"));
     CPPUNIT_ASSERT(snapshot.contentChecksum("aaa").empty()); // Checksum never computed for now
-    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), snapshot.itemId(std::filesystem::path("A*/AA/AAA")));
+    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), snapshot.itemId(SyncPath("A*/AA/AAA")));
 
     // Move node AA under B
     snapshot.updateItem(SnapshotItem("aa", "b", Str("AA"), 1640995204, -1640995204, NodeType::Directory, 123, false, true, true));
