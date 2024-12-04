@@ -76,7 +76,7 @@ AbstractNetworkJob::AbstractNetworkJob() {
                     LOG_INFO(_logger,
                              "Unknown error in Poco::Net::Context constructor: " << errorText(e).c_str() << ", retrying...");
                 } else {
-                    LOG_ERROR(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e).c_str());
+                    LOG_ERROR(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e));
                     throw std::runtime_error(ABSTRACTNETWORKJOB_NEW_ERROR_MSG);
                 }
             }

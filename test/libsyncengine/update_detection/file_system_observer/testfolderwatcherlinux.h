@@ -19,32 +19,16 @@
 #pragma once
 
 #include "testincludes.h"
-#include "syncpal/syncpal.h"
-
-using namespace CppUnit;
 
 namespace KDC {
 
-class TestSnapshot : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSnapshot);
-        CPPUNIT_TEST(testSnapshot);
-        CPPUNIT_TEST(testDuplicatedItem);
-        CPPUNIT_TEST(testSnapshotInsertionWithDifferentEncodings);
-        CPPUNIT_TEST(testPath);
+class TestFolderWatcherLinux final : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestFolderWatcherLinux);
+        CPPUNIT_TEST(testMakeSyncPath);
         CPPUNIT_TEST_SUITE_END();
 
-    public:
-        void setUp() override;
-        void tearDown() override;
-
     private:
-        void testSnapshot();
-        void testDuplicatedItem();
-        void testSnapshotInsertionWithDifferentEncodings();
-        void testPath();
-
-        std::unique_ptr<Snapshot> _snapshot;
-        NodeId _rootNodeId;
+        void testMakeSyncPath();
 };
 
 } // namespace KDC

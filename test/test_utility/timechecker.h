@@ -38,8 +38,7 @@ class TimeChecker {
         }
         bool between(long long min, long long max) {
             if (_diff < min || _diff > max)
-                std::cout << "TimeChecker::between: " << _diff << " <= " << min << " || " << _diff << " >= " << max
-                          << std::endl;
+                std::cout << "TimeChecker::between: " << _diff << " <= " << min << " || " << _diff << " >= " << max << std::endl;
             return _diff >= min && _diff <= max;
         }
 
