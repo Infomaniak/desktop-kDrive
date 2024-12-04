@@ -786,7 +786,7 @@ bool SyncPal::isSnapshotValid(ReplicaSide side) {
     return side == ReplicaSide::Local ? _localSnapshot->isValid() : _remoteSnapshot->isValid();
 }
 
-void SyncPal::resetSanpshotInvalidationCounters() {
+void SyncPal::resetSnapshotInvalidationCounters() {
     _localFSObserverWorker->resetInvalidateCounter();
     _remoteFSObserverWorker->resetInvalidateCounter();
 }

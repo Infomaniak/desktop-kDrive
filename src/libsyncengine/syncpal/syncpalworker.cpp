@@ -354,6 +354,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
+            _syncPal->resetSnapshotInvalidationCounters();
             if (!_syncPal->restart()) {
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
@@ -430,10 +431,6 @@ SyncStep SyncPalWorker::nextStep() const {
         case SyncStep::Propagation1:
             return SyncStep::Propagation2;
         case SyncStep::Propagation2:
-            if (_syncPal->computeFSOperationsWorker()->exitCode() == ExitCode::Ok) {
-                // The sync was successfull
-                _syncPal->resetSanpshotInvalidationCounters();
-            }
             return SyncStep::Done;
         case SyncStep::Done:
             return SyncStep::Idle;
