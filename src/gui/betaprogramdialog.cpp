@@ -220,8 +220,8 @@ void BetaProgramDialog::onChannelChange(const int index) {
 
 void BetaProgramDialog::setTooRecentMessage() const {
     _acknowledmentLabel->setText(
-            tr("Your current version of the application might be too recent, so you won't be able to downgrade to a lower "
-               "version until an update is available."));
+            tr("Your current version of the application may be too recent, your choice will be effective when the next update is "
+               "available."));
 }
 
 void BetaProgramDialog::setInstabilityMessage() const {

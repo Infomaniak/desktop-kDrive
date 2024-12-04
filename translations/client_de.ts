@@ -426,12 +426,12 @@
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="237"/>
-        <source>Your current version of the application might be too recent, so you won&apos;t be able to downgrade to a lower version until an update is available.</source>
-        <translation>Möglicherweise ist Ihre aktuelle Version der Anwendung zu aktuell, so dass Sie nicht auf eine niedrigere Version zurückgehen können, bis ein Update verfügbar ist.</translation>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="223"/>
+        <source>Your current version of the application may be too recent, your choice will be effective when the next update is available.</source>
+        <translation>Ihre aktuelle Version der Anwendung ist möglicherweise zu aktuell. Ihre Auswahl wird ab dem nächsten verfügbaren Update wirksam.</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="242"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="228"/>
         <source>Beta versions may leave unexpectedly or cause instabilities.</source>
         <translation>Beta-Versionen können unerwartet verlassen werden oder Instabilitäten verursachen.</translation>
     </message>
@@ -479,17 +479,17 @@ Wählen Sie diejenigen aus, die Sie synchronisieren möchten:</translation>
         <translation>Es wurden keine Synchronisierungsordner konfiguriert.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1367"/>
+        <location filename="../src/gui/clientgui.cpp" line="1368"/>
         <source>Synthesis</source>
         <translation>Synthese</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1368"/>
+        <location filename="../src/gui/clientgui.cpp" line="1369"/>
         <source>Preferences</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1369"/>
+        <location filename="../src/gui/clientgui.cpp" line="1370"/>
         <source>Quit</source>
         <translation>Beenden</translation>
     </message>
@@ -534,22 +534,22 @@ Wählen Sie diejenigen aus, die Sie synchronisieren möchten:</translation>
         <translation>%1 (Synchronisierung wurde angehalten)</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1206"/>
+        <location filename="../src/gui/clientgui.cpp" line="1207"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Möchten Sie die Synchronisierungen des Kontos &lt;i&gt;%1&lt;/i&gt; wirklich entfernen?&lt;br&gt;&lt;b&gt;Hinweis:&lt;/b&gt; Dadurch werden &lt;b&gt;keine&lt;/b&gt; Dateien gelöscht.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1210"/>
+        <location filename="../src/gui/clientgui.cpp" line="1211"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
         <translation>ALLE SYNC. ENTFERNEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1211"/>
+        <location filename="../src/gui/clientgui.cpp" line="1212"/>
         <source>CANCEL</source>
         <translation>ABBRECHEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1557"/>
+        <location filename="../src/gui/clientgui.cpp" line="1558"/>
         <source>Failed to start synchronizations!</source>
         <translation>Synchronisierungen konnten nicht gestartet werden!</translation>
     </message>
@@ -1975,122 +1975,122 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>KDC::PreferencesWidget</name>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="559"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="570"/>
         <source>General</source>
         <translation>Allgemein</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="562"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="573"/>
         <source>Activate dark theme</source>
         <translation>Dunkles Thema aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="564"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="575"/>
         <source>Activate monochrome icons</source>
         <translation>Einfarbige Schaltflächen aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="565"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="576"/>
         <source>Launch kDrive at startup</source>
         <translation>kDrive beim Start öffnen</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="567"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="578"/>
         <source>Move deleted files to trash</source>
         <translation>Verschiebe gelöschte Dateien in den Papierkorb</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="585"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="596"/>
         <source>Advanced</source>
         <translation>Erweitert</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="586"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="597"/>
         <source>Debugging information</source>
         <translation>Debugging-Informationen</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="588"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="599"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Debugging-Ordner öffnen&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="589"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="600"/>
         <source>Files to exclude</source>
         <translation>Auszuschliessende Dateien</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="590"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="601"/>
         <source>Proxy server</source>
         <translation>Proxy-Server</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="535"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="546"/>
         <source>Unable to open folder %1.</source>
         <translation>Ordner %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="546"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="557"/>
         <source>Unable to open link %1.</source>
         <translation>Link %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="551"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="562"/>
         <source>Invalid link %1.</source>
         <translation>Ungültiger Link %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="583"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="594"/>
         <source>Show synchronized folders in File Explorer navigation pane</source>
         <translation>Synchronisierte Ordner im Navigationsbereich des Datei-Explorers anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="492"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="503"/>
         <source>You must restart your opened File Explorers for this change to take effect.</source>
         <translation>Sie müssen Ihre geöffneten Datei-Explorer neu starten, damit diese Änderung wirksam wird.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="592"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="603"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="566"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="577"/>
         <source>Language</source>
         <translation>Sprache</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="558"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="569"/>
         <source>Some process failed to run.</source>
         <translation>Ein Prozess ist fehlgeschlagen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="572"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="583"/>
         <source>English</source>
         <translation>Englisch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="573"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="584"/>
         <source>French</source>
         <translation>Französisch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="574"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="585"/>
         <source>German</source>
         <translation>Deutsch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="575"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="586"/>
         <source>Spanish</source>
         <translation>Spanisch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="576"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="587"/>
         <source>Italian</source>
         <translation>Italienisch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="571"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="582"/>
         <source>Default</source>
         <translation>Standard</translation>
     </message>
@@ -2632,87 +2632,87 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>KDC::VersionWidget</name>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="252"/>
+        <location filename="../src/gui/versionwidget.cpp" line="258"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="78"/>
+        <location filename="../src/gui/versionwidget.cpp" line="146"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Show release note&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Versionshinweis anzeigen&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="81"/>
+        <location filename="../src/gui/versionwidget.cpp" line="149"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="82"/>
+        <location filename="../src/gui/versionwidget.cpp" line="150"/>
         <source>UPDATE</source>
         <translation>AKTUALISIEREN</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="97"/>
+        <location filename="../src/gui/versionwidget.cpp" line="165"/>
         <source>%1 is up to date!</source>
         <translation>%1 ist auf dem neuesten Stand!</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="101"/>
+        <location filename="../src/gui/versionwidget.cpp" line="169"/>
         <source>Checking update on server...</source>
         <translation>Überprüfe Update auf dem Server...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="105"/>
+        <location filename="../src/gui/versionwidget.cpp" line="173"/>
         <source>An update is available: %1.&lt;br&gt;Please download it from &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;here&lt;/a&gt;.</source>
         <translation>Ein Update ist verfügbar: %1.&lt;br&gt;Bitte laden Sie es &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;hier&lt;/a&gt; herunter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="112"/>
+        <location filename="../src/gui/versionwidget.cpp" line="180"/>
         <source>An update is available: %1</source>
         <translation>Ein Update ist verfügbar: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="118"/>
+        <location filename="../src/gui/versionwidget.cpp" line="186"/>
         <source>Downloading %1. Please wait...</source>
         <translation>Herunterladen von %1. Bitte warten…</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="123"/>
+        <location filename="../src/gui/versionwidget.cpp" line="191"/>
         <source>Could not check for new updates.</source>
         <translation>Es konnte nicht nach neuen Updates gesucht werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="127"/>
+        <location filename="../src/gui/versionwidget.cpp" line="195"/>
         <source>An error occurred during update.</source>
         <translation>Während der Aktualisierung ist ein Fehler aufgetreten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="131"/>
+        <location filename="../src/gui/versionwidget.cpp" line="199"/>
         <source>Could not download update.</source>
         <translation>Das Update konnte nicht heruntergeladen werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="143"/>
+        <location filename="../src/gui/versionwidget.cpp" line="212"/>
         <source>Beta program</source>
         <translation>Beta-Programm</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="144"/>
+        <location filename="../src/gui/versionwidget.cpp" line="213"/>
         <source>Get early access to new versions of the application</source>
         <translation>Frühzeitiger Zugang zu neuen Versionen der Anwendung</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="148"/>
+        <location filename="../src/gui/versionwidget.cpp" line="217"/>
         <source>Join</source>
         <translation>Beitreten</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="152"/>
+        <location filename="../src/gui/versionwidget.cpp" line="220"/>
         <source>Modify</source>
         <translation>Ändern Sie</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="152"/>
+        <location filename="../src/gui/versionwidget.cpp" line="220"/>
         <source>Quit</source>
         <translation>Beenden</translation>
     </message>
@@ -2740,37 +2740,37 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Kann keinen gültigen Pfad finden</translation>
     </message>
     <message>
-        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1833"/>
+        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1817"/>
         <source>No valid folder selected!</source>
         <translation>Kein gültiger Ordner ausgewählt!</translation>
     </message>
     <message>
-        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1844"/>
+        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1828"/>
         <source>The selected path does not exist!</source>
         <translation>Der ausgewählte Pfad existiert nicht!</translation>
     </message>
     <message>
-        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1849"/>
+        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1833"/>
         <source>The selected path is not a folder!</source>
         <translation>Der ausgewählte Pfad ist kein Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1854"/>
+        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1838"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Sie haben keine Schreibberechtigung für den ausgewählten Ordner!</translation>
     </message>
     <message>
-        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1884"/>
+        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1868"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 enthält einen bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1892"/>
+        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1876"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Der lokale Ordner %1 befindet sich in einem bereits synchronisierten Ordner. Bitte wählen Sie einen anderen!</translation>
     </message>
     <message>
-        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1902"/>
+        <location filename="../src/libsyncengine/requests/serverrequests.cpp" line="1886"/>
         <source>The local folder %1 is already synced on the same drive. Please pick another one!</source>
         <translation>Der lokale Ordner %1 ist bereits auf demselben Drive synchronisiert. Bitte wählen Sie einen anderen!</translation>
     </message>
