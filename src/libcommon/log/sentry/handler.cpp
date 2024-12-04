@@ -266,11 +266,11 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     }
 
 #ifdef NDEBUG
-    sentry_options_set_traces_sample_rate(options, 0.1); // 10% of traces
+    sentry_options_set_traces_sample_rate(options, 0.001); // 0.1% of traces will be sent to sentry.
 #else
     sentry_options_set_traces_sample_rate(options, 1);
 #endif
-    sentry_options_set_max_spans(options, 1000);
+    sentry_options_set_max_spans(options, 1000); // Maximum number of spans per transaction
 
     // Init sentry
     ASSERT(sentry_init(options) == 0);
