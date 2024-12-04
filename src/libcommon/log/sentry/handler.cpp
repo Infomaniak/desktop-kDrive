@@ -183,7 +183,7 @@ std::shared_ptr<Handler> Handler::instance() {
         assert(false && "Handler must be initialized before calling instance");
         // TODO: When the logger will be moved to the common library, add a log there.
         return std::shared_ptr<Handler>(new Handler()); // Create a dummy instance to avoid crash but should never
-                                                                    // happen (the sentry will not be sent)
+                                                        // happen (the sentry will not be sent)
     }
     return _instance;
 }
@@ -289,7 +289,7 @@ void Handler::setGlobalConfidentialityLevel(SentryConfidentialityLevel level) {
 }
 
 void Handler::_captureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
-                                   const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
+                              const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
     std::scoped_lock lock(_mutex);
     if (!_isSentryActivated) return;
 
@@ -421,10 +421,9 @@ void Handler::updateEffectiveSentryUser(const SentryUser &user) {
 
 void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
     using namespace KDC::event_dump_files;
-    auto eventFilePath =
-            std::filesystem::temp_directory_path() / (Handler::appType() == AppType::Server
-                                                              ? (crash ? serverCrashEventFileName : serverSendEventFileName)
-                                                              : (crash ? clientCrashEventFileName : clientSendEventFileName));
+    auto eventFilePath = std::filesystem::temp_directory_path() /
+                         (Handler::appType() == AppType::Server ? (crash ? serverCrashEventFileName : serverSendEventFileName)
+                                                                : (crash ? clientCrashEventFileName : clientSendEventFileName));
 
     std::ofstream eventFile(eventFilePath, std::ios::app);
     if (eventFile) {
@@ -447,7 +446,7 @@ Handler::~Handler() {
 }
 
 Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, Level level,
-                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
+                                  SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
     title(title),
     message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 
@@ -458,16 +457,11 @@ void Handler::stopPTrace(const pTraceId &id, bool aborted) {
     if (performanceTraceIt == _performanceTraces.end()) {
         return;
     }
-    const PerformanceTrace &performanceTrace = performanceTraceIt->second;
+    PerformanceTrace &performanceTrace = performanceTraceIt->second;
 
     // Stop any child PerformanceTrace
-    std::vector<pTraceId> toDelete;
     for (const auto &childPerformanceTraceId: performanceTrace.children()) {
-        toDelete.push_back(childPerformanceTraceId); // We can't delete directly the childPerformanceTraceId from the map as we
-                                                     // are iterating over it
-    }
-    for (auto childPerformanceTraceId2: toDelete) {
-        stopPTrace(childPerformanceTraceId2, aborted);
+        stopPTrace(childPerformanceTraceId, aborted);
     }
 
     // Stop the PerformanceTrace

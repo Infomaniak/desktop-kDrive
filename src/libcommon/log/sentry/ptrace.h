@@ -56,7 +56,7 @@ struct PerformanceTrace {
 
         void addChild(pTraceId childId) { _childIds.push_back(childId); }
         void removeChild(pTraceId childId) { _childIds.remove(childId); }
-        const std::list<pTraceId> &children() const { return _childIds; }
+        std::list<pTraceId> &children() { return _childIds; }
 
         const pTraceId &id() const { return _pTraceId; }
 
