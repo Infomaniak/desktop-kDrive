@@ -172,7 +172,7 @@ bool Snapshot::removeItem(const NodeId id) {
     return true;
 }
 
-NodeId Snapshot::itemId(const SyncPath &path) const {
+NodeId Snapshot::itemId(const SyncPath &path, const bool normalizedSearch) const {
     const std::scoped_lock lock(_mutex);
 
     NodeId ret;
@@ -187,7 +187,18 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
 
         bool idFound = false;
         for (const NodeId &childId: itemIt->second.childrenIds()) {
-            if (name(childId) == *pathIt) {
+            SyncName childName;
+            if (normalizedSearch) {
+                if (!Utility::normalizedSyncName(name(childId), childName)) {
+                    LOGW_WARN(Log::instance()->getLogger(),
+                              L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(name(childId)));
+                    continue;
+                }
+            } else {
+                childName = name(childId);
+            }
+
+            if (childName == *pathIt) {
                 itemIt = _items.find(childId);
                 ret = childId;
                 idFound = true;

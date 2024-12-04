@@ -1733,7 +1733,7 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
                         absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted)) {
                 LOGW_SYNCPAL_WARN(_logger, L"PlatformInconsistencyCheckerUtility::renameLocalFile failed for: "
                                                    << Utility::formatSyncPath(absoluteLocalFilePath));
-                _syncPal->handleAccessDeniedItem(relativeLocalPath, ExitCause::FileAccessError);
+                _syncPal->handleAccessDeniedItem(relativeLocalPath);
                 return ExitCode::Ok;
             }
             removeFromDb = false;
@@ -2526,7 +2526,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
 ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
         // The item does not exist yet locally, we will only tmpBlacklist the remote item
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->affectedNode()->getPath()); !exitInfo) {
+        if (ExitInfo exitInfo =
+                    _syncPal->handleAccessDeniedItem(syncOp->affectedNode()->getPath(), ExitCause::FileAccessError, true);
+            !exitInfo) {
             return exitInfo;
         }
     } else {
@@ -2534,7 +2536,6 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
         auto localNode = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
         if (!localNode) return ExitCode::LogicError;
         SyncPath relativeLocalFilePath = localNode->getPath();
-        NodeId localNodeId = localNode->id().has_value() ? *localNode->id() : NodeId();
         if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, opsExitInfo.cause()); !exitInfo) {
             return exitInfo;
         }

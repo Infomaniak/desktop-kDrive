@@ -27,6 +27,7 @@ namespace KDC {
 
 class TestSnapshot : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSnapshot);
+        CPPUNIT_TEST(testItemId);
         CPPUNIT_TEST(testSnapshot);
         CPPUNIT_TEST(testDuplicatedItem);
         CPPUNIT_TEST(testSnapshotInsertionWithDifferentEncodings);
@@ -37,6 +38,7 @@ class TestSnapshot : public CppUnit::TestFixture {
         void tearDown() override;
 
     private:
+        void testItemId();
         void testSnapshot();
         void testDuplicatedItem();
         void testSnapshotInsertionWithDifferentEncodings();

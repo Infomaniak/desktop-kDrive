@@ -258,7 +258,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         virtual void removeItemFromTmpBlacklist(const SyncPath &relativePath);
 
-        ExitInfo handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause = ExitCause::FileAccessError);
+        ExitInfo handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause = ExitCause::FileAccessError,
+                                        const bool normalizedPath = false);
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 

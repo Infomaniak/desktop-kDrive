@@ -1448,7 +1448,7 @@ void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
 }
 
-ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause) {
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause, const bool normalizedPath) {
     if (relativePath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
         return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
@@ -1458,11 +1458,11 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
     addError(error);
 
     NodeId localNodeId;
-    if (localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath); localNodeId.empty()) {
+    if (localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath, normalizedPath); localNodeId.empty()) {
         // The file does not exit yet on local file system, or we do not have sufficient right on a parent folder.
         LOGW_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath)
                                      << L"is not present local file system, blacklisting the parent item.");
-        return handleAccessDeniedItem(relativePath.parent_path(), cause);
+        return handleAccessDeniedItem(relativePath.parent_path(), cause, normalizedPath);
     }
 
 

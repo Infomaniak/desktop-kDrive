@@ -32,6 +32,39 @@ void TestSnapshot::setUp() {
 
 void TestSnapshot::tearDown() {}
 
+void TestSnapshot::testItemId() {
+    const NodeId rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
+
+    const DbNode dummyRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
+                               NodeType::Directory, 0, std::nullopt);
+    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+
+    snapshot.updateItem(
+            SnapshotItem("2", rootNodeId, Str("a"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("3", "2", Str("aa"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("4", "2", Str("ab"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("5", "2", Str("ac"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("6", "4", Str("aba"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("8", "6", Str("abaa"), 1640995202, 1640995202, NodeType::File, 10, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab/aba/abaa")));
+
+    SyncName nfcNormalized;
+    Utility::normalizedSyncName("abà", nfcNormalized);
+
+    SyncName nfdNormalized;
+    Utility::normalizedSyncName("abà", nfdNormalized, Utility::UnicodeNormalization::NFD);
+
+    snapshot.updateItem(SnapshotItem("6", "4", nfcNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab") / nfcNormalized / "abaa"));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(std::filesystem::path("a/ab") / nfdNormalized / "abaa"));
+    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab") / nfcNormalized / "abaa", true));
+
+    snapshot.updateItem(SnapshotItem("6", "4", nfdNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab") / nfdNormalized / "abaa"));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(std::filesystem::path("a/ab") / nfcNormalized / "abaa"));
+    CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab") / nfcNormalized / "abaa", true));
+}
+
 /**
  * Tree:
  *

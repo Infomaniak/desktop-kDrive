@@ -42,7 +42,7 @@ class Snapshot : public SharedObject {
         bool updateItem(const SnapshotItem &newItem);
         bool removeItem(const NodeId id); // Do not pass by reference to avoid dangling references
 
-        NodeId itemId(const SyncPath &path) const;
+        NodeId itemId(const SyncPath &path, const bool normalizedSearch = false) const;
         NodeId parentId(const NodeId &itemId) const;
         bool setParentId(const NodeId &itemId, const NodeId &newParentId);
         bool path(const NodeId &itemId, SyncPath &path) const noexcept;
