@@ -15,11 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
-#ifdef _WIN32 // Still buggy on MacOS and not available on Linux
-#define KDC_SRC_LOC_AVAILABLE
-#endif // _WIN32
 
 #include <string>
 #include <filesystem>
@@ -31,12 +27,9 @@
 #include <variant>
 #include <qdebug.h>
 #include <signal.h>
-
-#ifdef KDC_SRC_LOC_AVAILABLE
-#include <source_location>
-#endif // KDC_SRC_LOC_AVAILABLE
-
 #include "libcommon/log/customlogwstream.h"
+#include "sourcelocation.h"
+
 namespace KDC {
 
 using SyncTime = int64_t;
@@ -252,23 +245,20 @@ std::string toString(ExitCause e);
 
 struct ExitInfo {
         ExitInfo() = default;
-#ifdef KDC_SRC_LOC_AVAILABLE
         constexpr ExitInfo(const ExitCode &code, const ExitCause &cause,
-                           std::source_location srcLoc = std::source_location::current()) :
+                           const SourceLocation srcLoc = SourceLocation::currentLoc()) :
             _code(code),
             _cause(cause), _srcLoc(srcLoc) {}
-        ExitInfo(const ExitCode &code, std::source_location srcLoc = std::source_location::current()) :
+
+        ExitInfo(const ExitCode &code, const SourceLocation srcLoc = SourceLocation::currentLoc()) :
             _code(code), _srcLoc(srcLoc) {}
-#else
-        constexpr ExitInfo(const ExitCode &code, const ExitCause &cause) : _code(code), _cause(cause) {}
-        ExitInfo(const ExitCode &code) : _code(code) {}
-#endif // KDC_SRC_LOC_AVAILABLE
+
         const ExitCode &code() const { return _code; }
         const ExitCause &cause() const { return _cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
         explicit operator std::string() const {
-            return "ExitInfo{" + toString(code()) + ", " + toString(cause()) + srcLocStr() + "}";
+            return "ExitInfo{" + toString(code()) + ", " + toString(cause()) + ", " + srcLocStr() + "}";
         }
         constexpr operator bool() const { return _code == ExitCode::Ok; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
@@ -277,16 +267,13 @@ struct ExitInfo {
     private:
         ExitCode _code{ExitCode::Unknown};
         ExitCause _cause{ExitCause::Unknown};
-#ifdef KDC_SRC_LOC_AVAILABLE
-        std::source_location _srcLoc;
-#endif // KDC_SRC_LOC_AVAILABLE
+        SourceLocation _srcLoc;
+
 
         std::string srcLocStr() const {
-#ifdef KDC_SRC_LOC_AVAILABLE
             if (_code != ExitCode::Ok) {
-                return ", src - " + SyncPath(_srcLoc.file_name()).filename().string() + ":" + std::to_string(_srcLoc.line());
+                return "(" + _srcLoc.fileName() + ":" + std::to_string(_srcLoc.line()) + "[" + _srcLoc.functionName() + "]";
             }
-#endif // KDC_SRC_LOC_AVAILABLE
             return "";
         }
 };

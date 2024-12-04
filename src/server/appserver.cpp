@@ -1917,7 +1917,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> state;
 
             if (const ExitInfo exitInfo = vfsSetPinState(syncDbId, "", state); !exitInfo) {
-                LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId);
+                LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId << " " << exitInfo);
                 resultStream << exitInfo.code();
                 break;
             }
@@ -2338,7 +2338,7 @@ ExitInfo AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinSt
 }
 
 ExitInfo AppServer::vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                          int &progress) {
+                              int &progress) {
     auto vfsMapIt = _vfsMap.find(syncDbId);
     if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
@@ -2364,8 +2364,9 @@ ExitInfo AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeL
     }
 
     if (const ExitInfo exitInfo = vfsIt->second->createPlaceholder(relativeLocalPath, item); !exitInfo) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::createPlaceholder for syncDbId="
-                                                        << syncDbId << L" and path=" << Path2WStr(item.path()).c_str());
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::createPlaceholder for syncDbId=" << syncDbId << L" and path="
+                                                                                                 << Path2WStr(item.path()) << L" "
+                                                                                                 << exitInfo);
         return exitInfo;
     }
 
@@ -2406,8 +2407,7 @@ ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const 
     }
 
     const QByteArray fileId(id.c_str());
-    if (ExitInfo exitInfo =
-                vfsMapIt->second->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId);
+    if (ExitInfo exitInfo = vfsMapIt->second->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId);
         !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::updateMetadata for syncDbId="
                                                         << syncDbId << L" and path=" << Path2WStr(path) << L": " << exitInfo);
@@ -2431,8 +2431,8 @@ ExitInfo AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, 
     if (ExitInfo exitInfo =
                 vfsMapIt->second->updateFetchStatus(SyncName2QStr(tmpPath), SyncName2QStr(path), received, canceled, finished);
         !exitInfo) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in Vfs::updateFetchStatus for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::updateFetchStatus for syncDbId="
+                                                        << syncDbId << L" and path=" << Path2WStr(path) << L" " << exitInfo);
         return exitInfo;
     }
 
@@ -3748,7 +3748,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         }
 #endif
 
-        LOG_WARN(_logger, "Error in Vfs::start");
+        LOG_WARN(_logger, "Error in Vfs::start " << exitInfo);
         return exitInfo;
     }
 

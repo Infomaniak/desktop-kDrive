@@ -19,6 +19,7 @@
 #include "config.h"
 #include "testutility.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
 #include <iostream>
@@ -297,6 +298,14 @@ void TestUtility::testCompressFile() {
 void TestUtility::testCurrentVersion() {
     const std::string test = CommonUtility::currentVersion();
     CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}\.{1}\d{1,2}\.{1}\d{1,2}\.{1}\d{0,8}$)")));
+}
+
+void TestUtility::testSourceLocation() {
+    SourceLocation location = SourceLocation::currentLoc();
+    uint32_t correctLine = __LINE__ - 1;
+    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
+    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
+    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
 }
 
 } // namespace KDC

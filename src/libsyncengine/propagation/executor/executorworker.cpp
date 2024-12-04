@@ -220,7 +220,7 @@ void ExecutorWorker::execute() {
 
     setExitCause(executorExitInfo.cause());
     setDone(executorExitInfo.code());
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str() << " " << executorExitInfo);
 }
 
 void ExecutorWorker::initProgressManager() {
@@ -322,7 +322,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in checkLiteSyncInfoForCreate");
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate"
+                                              << " " << exitInfo);
             return exitInfo;
         }
 
@@ -355,7 +356,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     syncOp->affectedNode()->lastmodified(), node);
             !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                                               << SyncName2WStr(syncOp->affectedNode()->name()));
+                                               << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
     } else {
@@ -400,6 +401,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
         }
 
         if (ExitInfo exitInfo = generateCreateJob(syncOp, job); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate create job for: " << SyncName2WStr(syncOp->affectedNode()->name())
+                                                                              << L" " << exitInfo);
             return exitInfo;
         }
 
@@ -412,13 +415,14 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded");
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
                     if (const ExitInfo exitInfo = handleForbiddenAction(syncOp, relativeLocalFilePath, ignored); !exitInfo) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in handleForbiddenAction for item: "
-                                                           << Utility::formatSyncPath(relativeLocalFilePath));
+                                                           << Utility::formatSyncPath(relativeLocalFilePath) << L" " << exitInfo);
                         return exitInfo;
                     }
                     return {ExitCode::BackError, ExitCause::FileAccessError};
@@ -429,8 +433,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
             if (const ExitInfo exitInfo =
                         convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
                 !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Failed to convert to placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()));
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
+                                                   << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
                 return exitInfo;
             }
 
@@ -554,7 +558,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                                                                syncOp->affectedNode()->lastmodified(), newNode);
                 !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                                                   << SyncName2WStr(syncOp->affectedNode()->name()));
+                                                   << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
                 return exitInfo;
             }
 
@@ -622,13 +626,13 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
         if (syncOp->affectedNode()->type() == NodeType::Directory) {
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
                 !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Failed to convert to placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()));
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
+                                                   << SyncName2WStr(syncOp->affectedNode()->name() << L" " << exitInfo));
                 _syncPal->setRestart(true);
 
                 if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->affectedNode())) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                                       << SyncName2WStr(syncOp->affectedNode()->name()));
+                                                       << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
                 }
 
                 return exitInfo;
@@ -646,15 +650,15 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
             }
         } else {
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, true); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Failed to convert to placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()));
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
+                                                   << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
                 return exitInfo;
             }
 
             uint64_t filesize = 0;
             if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in ExecutorWorker::getFileSize for " << Utility::formatSyncPath(absoluteLocalFilePath));
+                LOGW_SYNCPAL_WARN(_logger, L"Error in ExecutorWorker::getFileSize for "
+                                                   << Utility::formatSyncPath(absoluteLocalFilePath) << L" " << exitInfo);
                 return exitInfo;
             }
 
@@ -900,6 +904,8 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
         }
 
         if (ExitInfo exitInfo = generateEditJob(syncOp, job); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate edit job for: " << SyncName2WStr(syncOp->affectedNode()->name())
+                                                                            << L" " << exitInfo);
             return exitInfo;
         }
     }
@@ -951,7 +957,8 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
 
         uint64_t filesize;
         if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in ExecutorWorker::getFileSize for " << Utility::formatSyncPath(absoluteLocalFilePath));
+            LOGW_WARN(_logger, L"Error in ExecutorWorker::getFileSize for " << Utility::formatSyncPath(absoluteLocalFilePath)
+                                                                            << " " << exitInfo);
             return exitInfo;
         }
 
@@ -1139,11 +1146,13 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
 
         if (ExitInfo exitInfo = propagateMoveToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                                               << SyncName2WStr(syncOp->affectedNode()->name()));
+                                               << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
     } else {
         if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << SyncName2WStr(syncOp->affectedNode()->name())
+                                                                            << L" " << exitInfo);
             return exitInfo;
         }
     }
@@ -1269,8 +1278,8 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode = nullptr;
         if (ExitInfo exitInfo = propagateChangeToDbAndTree(syncOp, job, newNode); !exitInfo) {
-            LOGW_WARN(_logger,
-                      L"Failed to propagate changes in DB or update tree for: " << SyncName2WStr(syncOp->affectedNode()->name()));
+            LOGW_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
+                                       << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
 
@@ -1338,7 +1347,7 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
 
         if (ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                                               << SyncName2WStr(syncOp->affectedNode()->name()));
+                                               << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
     } else {
@@ -1645,14 +1654,13 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
         if (networkJob && (networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
                            networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT)) {
             if (ExitInfo exitInfo = handleForbiddenAction(syncOp, relativeLocalPath, ignored); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in handleForbiddenAction for item: " << Utility::formatSyncPath(relativeLocalPath));
+                LOGW_SYNCPAL_WARN(_logger, L"Error in handleForbiddenAction for item: "
+                                                   << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
                 return exitInfo;
             }
         } else if (!handleExecutorError(syncOp, {job->exitCode(), job->exitCause()})) {
             // Cancel all queued jobs
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Cancelling jobs. exit code: " << job->exitCode() << L" exit cause: " << job->exitCause());
+            LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. " << ExitInfo(job->exitCode(), job->exitCause()));
             cancelAllOngoingJobs();
             return {job->exitCode(), job->exitCause()};
 
@@ -2366,7 +2374,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     std::shared_ptr<Node> newNode = nullptr;
     if (ExitInfo exitInfo = propagateCreateToDbAndTree(syncOp, newNodeId, newModTime, newNode); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                                           << SyncName2WStr(syncOp->affectedNode()->name()));
+                                           << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
         return exitInfo;
     }
 
@@ -2479,6 +2487,8 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
         return opsExitInfo;
     }
 
+    LOG_WARN(_logger, "Handling " << opsExitInfo << " in ExecutorWorker::handleExecutorError");
+
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)):
@@ -2496,8 +2506,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
             break;
         }
     };
-    LOG_WARN(_logger,
-             "Unhandled error in ExecutorWorker::handleExecutorError: " << opsExitInfo.code() << " " << opsExitInfo.cause());
+    LOG_WARN(_logger, "Unhandled error in ExecutorWorker::handleExecutorError: " << opsExitInfo);
     return opsExitInfo;
 }
 
@@ -2577,8 +2586,7 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo o
     if (ExitInfo exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
                 absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
         !exitInfo) {
-        LOGW_WARN(_logger, L"Failed to blacklist file: " << Utility::formatSyncPath(absoluteLocalPath) << L" ExitCode::"
-                                                         << exitInfo.code() << L" ExitCause::" << exitInfo.cause());
+        LOGW_WARN(_logger, L"Failed to blacklist file: " << Utility::formatSyncPath(absoluteLocalPath) << L" " << exitInfo);
         return ExitCode::DataError; // The synchronization will be re-started.
     }
 
@@ -2586,7 +2594,7 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo o
     _syncPal->setRestart(true);
     if (ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                                           << SyncName2WStr(syncOp->affectedNode()->name()));
+                                           << SyncName2WStr(syncOp->affectedNode()->name()) << L" " << exitInfo);
         return exitInfo;
     }
     return removeDependentOps(syncOp);

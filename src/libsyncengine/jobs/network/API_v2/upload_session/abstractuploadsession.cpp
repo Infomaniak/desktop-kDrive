@@ -273,7 +273,7 @@ bool AbstractUploadSession::sendChunks() {
     // "file not found" errors.
     std::ifstream file;
     if (ExitInfo exitInfo = IoHelper::openFile(_filePath, file, 10); !exitInfo) {
-        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath));
+        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath) << L" " << exitInfo);
         return exitInfo;
     }
 

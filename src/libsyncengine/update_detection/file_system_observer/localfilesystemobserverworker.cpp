@@ -438,6 +438,7 @@ void LocalFileSystemObserverWorker::execute() {
             break;
         }
         if (!_folderWatcher->exitInfo()) {
+            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
             exitCode = _folderWatcher->exitInfo().code();
             setExitCause(_folderWatcher->exitInfo().cause());
             invalidateSnapshot();

@@ -94,7 +94,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             assert(_vfsStatus);
             if (ExitInfo exitInfo = _vfsStatus(_syncDbId, dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress);
                 !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(dirIt->path()).c_str());
+                LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(dirIt->path()) << L": " << exitInfo);
                 _exitCode = exitInfo.code();
                 _exitCause = exitInfo.cause();
                 return false;
