@@ -212,24 +212,10 @@ void BetaProgramDialog::onChannelChange(const int index) {
     }
 
     _acknowlegmentFrame->setVisible(true);
-
-    switch (index) {
-        case indexNo: {
-            setTooRecentMessage(); // TODO : maybe the user has not updated yet and the version is not too recent??
-            break;
-        }
-        case indexBeta:
-        case indexInternal: {
-            if (_initialIndex == indexNo) {
-                setInstabilityMessage();
-            } else {
-                setTooRecentMessage();
-            }
-            break;
-        }
-        default:
-            break;
-    }
+    if (index > _initialIndex)
+        setInstabilityMessage();
+    else
+        setTooRecentMessage();
 }
 
 void BetaProgramDialog::setTooRecentMessage() const {
