@@ -555,7 +555,7 @@ pTraceId Handler::startPTrace(PTraceName pTraceName, int syncDbId) {
             assert(false && "Parent transaction/span is not running.");
             return 0;
         }
-        auto pTraceMap = pTraceMapIt->second;
+        auto &pTraceMap = pTraceMapIt->second;
 
         // Find the parent pTrace
         auto parentPTraceIt = pTraceMap.find(pTraceInfo._parentPTraceName);
@@ -581,14 +581,15 @@ void Handler::stopPTrace(PTraceName pTraceName, int syncDbId, bool aborted) {
     if (!_isSentryActivated || pTraceName == PTraceName::None) return;
 
     std::scoped_lock lock(_mutex);
-    auto pTraceMap = _pTraceNameToPTraceIdMap.find(syncDbId);
-    if (pTraceMap == _pTraceNameToPTraceIdMap.end()) {
-        assert(false && "Transaction is not running");
+    auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
+    if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
+        assert(false && "Transaction/span is not running.");
         return;
     }
+    auto &pTraceMap = pTraceMapIt->second;
 
-    auto pTraceIt = pTraceMap->second.find(pTraceName);
-    if (pTraceIt == pTraceMap->second.end() || pTraceIt->second == 0) {
+    auto pTraceIt = pTraceMap.find(pTraceName);
+    if (pTraceIt == pTraceMap.end() || pTraceIt->second == 0) {
         assert(false && "Transaction is not running");
         return;
     }
