@@ -55,6 +55,8 @@ set(testsyncengine_SRCS
 
 if (APPLE)
     list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp)
+elseif (UNIX)
+    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherlinux.h update_detection/file_system_observer/testfolderwatcherlinux.cpp)
 endif ()
 
 if (USE_OUR_OWN_SQLITE3)

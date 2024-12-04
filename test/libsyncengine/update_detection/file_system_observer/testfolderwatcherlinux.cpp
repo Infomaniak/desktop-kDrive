@@ -16,35 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "testfolderwatcherlinux.h"
 
-#include "testincludes.h"
-#include "syncpal/syncpal.h"
+#include "update_detection/file_system_observer/folderwatcher_linux.h"
 
-using namespace CppUnit;
 
 namespace KDC {
 
-class TestSnapshot : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSnapshot);
-        CPPUNIT_TEST(testSnapshot);
-        CPPUNIT_TEST(testDuplicatedItem);
-        CPPUNIT_TEST(testSnapshotInsertionWithDifferentEncodings);
-        CPPUNIT_TEST(testPath);
-        CPPUNIT_TEST_SUITE_END();
-
-    public:
-        void setUp() override;
-        void tearDown() override;
-
-    private:
-        void testSnapshot();
-        void testDuplicatedItem();
-        void testSnapshotInsertionWithDifferentEncodings();
-        void testPath();
-
-        std::unique_ptr<Snapshot> _snapshot;
-        NodeId _rootNodeId;
-};
+void TestFolderWatcherLinux::testMakeSyncPath() {
+    CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "file.txt").filename().empty());
+    CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "").filename().empty());
+}
 
 } // namespace KDC

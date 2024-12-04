@@ -45,6 +45,8 @@
 
 #ifdef __APPLE__
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
+#elif __unix__
+#include "update_detection/file_system_observer/testfolderwatcherlinux.h"
 #endif
 
 namespace KDC {
@@ -60,6 +62,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
 #ifdef __APPLE__
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
+#elif __unix__
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
