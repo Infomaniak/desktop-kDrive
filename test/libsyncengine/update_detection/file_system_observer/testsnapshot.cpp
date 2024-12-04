@@ -49,10 +49,10 @@ void TestSnapshot::testItemId() {
     CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab/aba/abaa")));
 
     SyncName nfcNormalized;
-    Utility::normalizedSyncName("abà", nfcNormalized);
+    Utility::normalizedSyncName(Str("abà"), nfcNormalized);
 
     SyncName nfdNormalized;
-    Utility::normalizedSyncName("abà", nfdNormalized, Utility::UnicodeNormalization::NFD);
+    Utility::normalizedSyncName(Str("abà"), nfdNormalized, Utility::UnicodeNormalization::NFD);
 
     snapshot.updateItem(SnapshotItem("6", "4", nfcNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
     CPPUNIT_ASSERT_EQUAL(NodeId("8"), snapshot.itemId(std::filesystem::path("a/ab") / nfcNormalized / "abaa"));
