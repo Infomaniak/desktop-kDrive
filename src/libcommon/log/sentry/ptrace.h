@@ -24,7 +24,7 @@
 namespace KDC::Sentry {
 using pTraceId = uint64_t;
 
-// A PerformanceTrace allow to track the duration of several part of the code.
+// A PerformanceTrace allows to track the duration of the execution of several parts of the code.
 // https://docs.sentry.io/product/performance/
 struct PerformanceTrace {
         // PerformanceTrace is a structure that represents a sentry_transaction_t or a sentry_span_t that can be sent to
@@ -39,7 +39,7 @@ struct PerformanceTrace {
             assert(!_span);
             _tx = tx;
         }
-        void setSpan(sentry_span_t *span) { // A Span work as a transaction, but it needs to have a parent
+        void setSpan(sentry_span_t *span) { // A Span works as a transaction, but it needs to have a parent
                                             // (which can be either a transaction or another span).
             assert(!_span);
             _span = span;

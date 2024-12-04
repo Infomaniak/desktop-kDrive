@@ -114,7 +114,7 @@ enum class RequestNum {
     UTILITY_GET_LOG_ESTIMATED_SIZE,
     UTILITY_CRASH,
     UTILITY_QUIT,
-    UTILITY_REPORT_CLIENT_DISPLAYED, // Send by the client as soon the UI is visible for the user.
+    UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
     UPDATER_STATE,

@@ -481,7 +481,7 @@ void Handler::stopPTrace(const pTraceId &id, bool aborted) {
         }
         if (aborted)
             sentry_transaction_set_status(performanceTrace.transaction(),
-                                          SENTRY_SPAN_STATUS_ABORTED /*This enum is also valid for a transactrion.*/);
+                                          SENTRY_SPAN_STATUS_ABORTED /*This enum is also valid for a transaction.*/);
         sentry_transaction_finish(performanceTrace.transaction()); // Automatically stop any child transaction
     }
     _performanceTraces.erase(id);

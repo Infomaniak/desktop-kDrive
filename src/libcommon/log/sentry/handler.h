@@ -168,15 +168,15 @@ class Handler {
         /* Update the effective sentry user.
          * - If authentication type is `anonymous`, the user parameter will be ignored and the
          * effective user will be set to Anonymous.
-         * - If `user` parmater is not provided, the effective user will be set to Anonymous.
-         * - If authentication type is `authenticated` and `user` parmater is provided, the user parameter will be used.
+         * - If `user` parmeter is not provided, the effective user will be set to `Anonymous`.
+         * - If authentication type is `authenticated` and `user` parameter is provided, the user parameter will be used.
          */
         void updateEffectiveSentryUser(const SentryUser &user = SentryUser());
 
         // The events that have been recently captured, used to prevent flood from a single user.
         std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
 
-        // Number of capture before rate limiting an event
+        // Number of captures before rate limiting an event
         unsigned int _sentryMaxCaptureCountBeforeRateLimit = 10;
 
         // Min. interval between two uploads of a rate limited event (seconds)
@@ -190,7 +190,7 @@ class Handler {
         // be a child of another transaction.
         pTraceId startTransaction(const std::string &name, const std::string &description);
 
-        // A Span work as a transaction, but it needs to have a parent
+        // A Span works as a transaction, but it needs to have a parent
         // (which can be either a transaction or another span).
         pTraceId startSpan(const std::string &name, const std::string &description, const pTraceId &parentId);
 
