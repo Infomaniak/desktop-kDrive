@@ -258,7 +258,7 @@ struct ExitInfo {
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
         explicit operator std::string() const {
-            return "ExitInfo{" + toString(code()) + ", " + toString(cause()) + ", " + srcLocStr() + "}";
+            return "ExitInfo{" + toString(code()) + "-" + toString(cause()) + " from " + srcLocStr() + "}";
         }
         constexpr operator bool() const { return _code == ExitCode::Ok; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
