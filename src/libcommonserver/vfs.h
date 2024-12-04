@@ -293,7 +293,6 @@ class Vfs : public QObject {
 
         // By default we will return file access error.
         inline ExitInfo defaultVfsError() const { 
-            LOG_WARN(logger(), "Default VFS error returned");
             return {ExitCode::SystemError, ExitCause::FileAccessError}; }
     private:
         bool _extendedLog;
