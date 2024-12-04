@@ -56,8 +56,8 @@ void ComputeFSOperationWorker::execute() {
         ok = false;
     }
     if (!ok) {
-        setDone(exitCode);
         LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+        setDone(exitCode);
         return;
     }
 
@@ -98,8 +98,8 @@ void ComputeFSOperationWorker::execute() {
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsed_seconds.count() << "s");
 
-    setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
 

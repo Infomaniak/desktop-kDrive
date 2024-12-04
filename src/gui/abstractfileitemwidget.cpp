@@ -19,6 +19,7 @@
 #include "abstractfileitemwidget.h"
 #include "gui/custommessagebox.h"
 #include "guiutility.h"
+#include "libcommon/utility/utility.h"
 
 #include <QFileInfo>
 #include <QGraphicsDropShadowEffect>
