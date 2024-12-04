@@ -544,7 +544,7 @@ pTraceId Handler::startSpan(const std::string &name, const std::string &descript
 }
 
 pTraceId Handler::startPTrace(PTraceName pTraceName, int syncDbId) {
-    if (!_isSentryActivated || pTraceName == PTraceName::None) return;
+    if (!_isSentryActivated || pTraceName == PTraceName::None) return 0;
 
     std::scoped_lock lock(_mutex);
     pTraceId newPTraceId = 0;
