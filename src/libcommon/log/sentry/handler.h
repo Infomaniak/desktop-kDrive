@@ -180,7 +180,7 @@ class Handler {
         unsigned int _sentryMaxCaptureCountBeforeRateLimit = 10;
 
         // Min. interval between two uploads of a rate limited event (seconds)
-        int _sentryMinUploadIntervaOnRateLimit = 60;
+        int _sentryMinUploadIntervalOnRateLimit = 60;
 
 
         pTraceId _pTraceIdCounter = 0;

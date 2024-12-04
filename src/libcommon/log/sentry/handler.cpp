@@ -315,7 +315,7 @@ void Handler::setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLim
 
 void Handler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) {
     assert(minUploadIntervalOnRateLimit > 0 && "Min upload interval on rate limit must be greater than 0");
-    _sentryMinUploadIntervaOnRateLimit = std::max(1, minUploadIntervalOnRateLimit);
+    _sentryMinUploadIntervalOnRateLimit = std::max(1, minUploadIntervalOnRateLimit);
 }
 
 sentry_value_t Handler::toSentryValue(const SentryUser &user) const {
@@ -374,12 +374,12 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
 
 bool Handler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastCapture + seconds(_sentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
+    return (event.lastCapture + seconds(_sentryMinUploadIntervalOnRateLimit)) <= system_clock::now();
 }
 
 bool Handler::lastEventUploadIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastUpload + seconds(_sentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
+    return (event.lastUpload + seconds(_sentryMinUploadIntervalOnRateLimit)) <= system_clock::now();
 }
 
 void Handler::escalateSentryEvent(SentryEvent &event) const {
