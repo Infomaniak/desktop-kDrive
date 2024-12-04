@@ -2324,7 +2324,7 @@ ExitInfo AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinSt
     auto vfsMapIt = _vfsMap.find(syncDbId);
     if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     SyncPath relativePath = CommonUtility::relativePath(_syncPalMap[syncDbId]->localPath(), itemPath);
@@ -2340,13 +2340,13 @@ ExitInfo AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinSt
 ExitInfo AppServer::vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                           int &progress) {
     auto vfsMapIt = _vfsMap.find(syncDbId);
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
     if (!vfsMapIt->second) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed}; 
+        return ExitCode::LogicError;
     }
 
     return _vfsMap[syncDbId]->status(SyncName2QStr(itemPath.native()), isPlaceholder, isHydrated, isSyncing, progress);
@@ -2356,11 +2356,11 @@ ExitInfo AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeL
     auto vfsIt = _vfsMap.find(syncDbId);
     if (vfsIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
     if (!vfsIt->second) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     if (const ExitInfo exitInfo = vfsIt->second->createPlaceholder(relativeLocalPath, item); !exitInfo) {
@@ -2376,11 +2376,11 @@ ExitInfo AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, 
     auto vfsIt = _vfsMap.find(syncDbId);
     if (vfsIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
     if (!vfsIt->second) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     if (ExitInfo exitInfo = vfsIt->second->convertToPlaceholder(SyncName2QStr(path.native()), item); !exitInfo) {
@@ -2398,7 +2398,11 @@ ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const 
     auto vfsMapIt = _vfsMap.find(syncDbId);
     if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+        return ExitCode::LogicError;
+    }
+    if (!vfsMapIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
+        return ExitCode::LogicError;
     }
 
     const QByteArray fileId(id.c_str());
@@ -2417,11 +2421,11 @@ ExitInfo AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, 
     auto vfsMapIt = _vfsMap.find(syncDbId);
     if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
     if (!vfsMapIt->second) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
 
     if (ExitInfo exitInfo =
@@ -2436,12 +2440,17 @@ ExitInfo AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, 
 }
 
 bool AppServer::vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFileStatus status) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    auto vfsMapIt = _vfsMap.find(syncDbId);
+    if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
+    if (!vfsMapIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
+        return false;
+    }
 
-    if (!_vfsMap[syncDbId]->fileStatusChanged(SyncName2QStr(path.native()), status)) {
+    if (!vfsMapIt->second->fileStatusChanged(SyncName2QStr(path.native()), status)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Vfs::fileStatusChanged for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
         return false;
@@ -2454,7 +2463,11 @@ ExitInfo AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSy
     auto vfsMapIt = _vfsMap.find(syncDbId);
     if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
+    }
+    if (!vfsMapIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
+        return ExitCode::LogicError;
     }
 
     if (ExitInfo exitInfo = vfsMapIt->second->forceStatus(SyncName2QStr(path.native()), isSyncing, progress, isHydrated);
@@ -2504,8 +2517,8 @@ bool AppServer::vfsCancelHydrate(int syncDbId, const SyncPath &path) {
 }
 
 void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatus &status) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
+    if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
         addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
         return;
     }
@@ -2518,8 +2531,8 @@ void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatu
 }
 
 void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncing) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
+    if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
         addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
         return;
     }
@@ -2532,8 +2545,8 @@ void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncin
 }
 
 void AppServer::setSyncFileSyncing(int syncDbId, const SyncPath &path, bool syncing) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
+    if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
         addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
         return;
     }

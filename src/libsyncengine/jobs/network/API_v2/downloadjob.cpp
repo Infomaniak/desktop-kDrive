@@ -82,7 +82,8 @@ DownloadJob::~DownloadJob() {
     } else {
         if (_vfsSetPinState) {
             if (ExitInfo exitInfo =
-                        _vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly); !exitInfo) {
+                        _vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
+                !exitInfo) {
                 LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
             }
         }
@@ -166,6 +167,8 @@ void DownloadJob::runJob() noexcept {
         if (_vfsForceStatus) {
             if (ExitInfo exitInfo = _vfsForceStatus(_localpath, true, 0, false); !exitInfo) {
                 LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+                _exitCode = exitInfo.code();
+                _exitCause = exitInfo.cause();
                 return;
             }
         }

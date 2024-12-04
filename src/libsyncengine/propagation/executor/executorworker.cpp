@@ -528,8 +528,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
 
         if (placeholderCreation) {
             if (ExitInfo exitInfo = createPlaceholder(relativeLocalFilePath); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Failed to create placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()));
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to create placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name())
+                                                                                 << L" " << exitInfo);
                 return exitInfo;
             }
 
@@ -779,7 +779,7 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath));
-        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     } else if (ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
@@ -868,7 +868,7 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<Abstract
         bool ignoreItem = false;
         bool isSyncing = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForEdit(syncOp, absoluteLocalFilePath, ignoreItem, isSyncing); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in checkLiteSyncInfoForEdit");
+            LOGW_SYNCPAL_WARN(_logger, L"Error in checkLiteSyncInfoForEdit " << exitInfo);
             return exitInfo;
         }
 
@@ -2483,7 +2483,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
     switch (static_cast<int>(opsExitInfo)) {
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)):
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveToTrashFailed)): {
-            return handleOpsFileAccessError(syncOp, opsExitInfo);
+            return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
             return handleOpsFileNotFound(syncOp, opsExitInfo);
@@ -2501,7 +2501,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
     return opsExitInfo;
 }
 
-ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
+ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
         // The item does not exist yet locally, we will only tmpBlacklist the remote item
         if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->affectedNode()->getPath()); !exitInfo) {
@@ -2522,11 +2522,6 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
 }
 
 ExitInfo ExecutorWorker::handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
-    if (syncOp->targetSide() != ReplicaSide::Remote) {
-        LOGW_SYNCPAL_WARN(_logger, L"Unhandled target side for " << opsExitInfo << L": " << syncOp->targetSide());
-        return opsExitInfo; // Unable to handle this error
-    }
-
     _syncPal->setRestart(true);
     return removeDependentOps(syncOp);
 }

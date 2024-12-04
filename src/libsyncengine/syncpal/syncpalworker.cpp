@@ -608,7 +608,7 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                     // Force status to dehydrated
                     if (ExitInfo exitInfo = _syncPal->vfsForceStatus(dirIt->path(), false, 0, false)) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path())
-                                                                                 << L" : " << exitInfo);
+                                                                                 << L": " << exitInfo);
                         ok = false;
                         continue;
                     }
