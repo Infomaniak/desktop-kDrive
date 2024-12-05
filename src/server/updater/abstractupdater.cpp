@@ -47,6 +47,7 @@ void AbstractUpdater::onAppVersionReceived() {
     if (!_updateChecker->isVersionReceived()) {
         setState(UpdateState::CheckError);
         LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
+        return;
     }
 
     const VersionInfo& versionInfo = _updateChecker->versionInfo(_currentChannel);

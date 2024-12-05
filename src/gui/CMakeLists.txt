@@ -263,7 +263,6 @@ target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE}
     Qt6::Network Qt6::Sql Qt6::SvgWidgets Qt6::WebEngineWidgets
     sentry::sentry
     Poco::Foundation Poco::Net
-    ${libcommon_NAME}
     ${libcommongui_NAME})
 
 ## handle DBUS for Fdo notifications

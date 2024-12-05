@@ -219,8 +219,8 @@ void ExecutorWorker::execute() {
     _syncPal->vfsCleanUpStatuses();
 
     setExitCause(executorExitInfo.cause());
-    setDone(executorExitInfo.code());
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(executorExitInfo.code());
 }
 
 void ExecutorWorker::initProgressManager() {

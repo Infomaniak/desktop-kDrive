@@ -943,8 +943,8 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist ? snapshot(ReplicaSide::Local, true)->exists(*nodeIdIt)
-                                                                        : snapshot(ReplicaSide::Remote, true)->exists(*nodeIdIt);
+        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist ? snapshotCopy(ReplicaSide::Local)->exists(*nodeIdIt)
+                                                                        : snapshotCopy(ReplicaSide::Remote)->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
