@@ -114,11 +114,12 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             NodeId prevNodeId = _snapshot->itemId(relativePath);
             bool existsWithSameId = false;
             NodeId otherNodeId;
-            ioError = IoError::Success;
             if (!prevNodeId.empty()) {
                 if (_syncPal->isTmpBlacklisted(prevNodeId, ReplicaSide::Local))
                     _syncPal->removeItemFromTmpBlacklist(relativePath);
-                if (IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId, ioError) &&
+                if (auto checkError = IoError::Success;
+                    IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId,
+                                                              checkError) &&
                     !existsWithSameId) {
                     if (_snapshot->removeItem(prevNodeId)) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
@@ -204,10 +205,10 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     // Remove it from snapshot
                     _snapshot->removeItem(itemId);
                     LOGW_SYNCPAL_DEBUG(_logger,
-                                       L"Item removed from sync because it's hidden: " << Utility::formatSyncPath(absolutePath));
+                                       L"Item removed from sync because it is hidden: " << Utility::formatSyncPath(absolutePath));
                 } else {
                     LOGW_SYNCPAL_DEBUG(_logger,
-                                       L"Item not processed because it's excluded: " << Utility::formatSyncPath(absolutePath));
+                                       L"Item not processed because it is excluded: " << Utility::formatSyncPath(absolutePath));
                 }
 
                 if (!_syncPal->vfsExclude(
@@ -624,14 +625,13 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath) << L" doesn't exist");
+        LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" doesn't exist");
         setExitCause(ExitCause::SyncDirDoesntExist);
         return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath) << L" misses read permission");
+        LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatSyncPath(absoluteParentDirPath) << L" misses read permission");
         setExitCause(ExitCause::SyncDirAccesError);
         return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
     }
@@ -651,13 +651,13 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatIoError(absoluteParentDirPath, ioError));
+            LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
             setExitCause(ExitCause::SyncDirDoesntExist);
             return {ExitCode::SystemError, ExitCause::SyncDirDoesntExist};
         }
 
         if (ioError == IoError::AccessDenied) {
-            LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatIoError(absoluteParentDirPath, ioError));
+            LOGW_SYNCPAL_WARN(_logger, L"Local " << Utility::formatIoError(absoluteParentDirPath, ioError));
             setExitCause(ExitCause::SyncDirAccesError);
             return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
         }
@@ -722,7 +722,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 }
                 if (isExcluded) {
                     LOGW_SYNCPAL_INFO(_logger,
-                                      L"Item: " << Utility::formatSyncPath(absolutePath) << L" rejected because it's excluded");
+                                      L"Item: " << Utility::formatSyncPath(absolutePath) << L" rejected because it is excluded");
                     toExclude = true;
                 }
             }
