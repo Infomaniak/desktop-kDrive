@@ -2123,6 +2123,10 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
         return ExitCode::DataError;
     }
 
+    // In case of Delete+Create, the encoding might have changed. Therefor, we update the name anyway.
+    dbNode.setNameLocal(localName);
+    dbNode.setNameRemote(remoteName);
+
     dbNode.setNodeIdLocal(localId);
     dbNode.setNodeIdRemote(remoteId);
     dbNode.setLastModifiedLocal(newLastModTime);
