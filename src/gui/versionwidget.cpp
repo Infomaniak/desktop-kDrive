@@ -26,6 +26,7 @@
 #include "parameterscache.h"
 #include "preferencesblocwidget.h"
 #include "taglabel.h"
+#include "libcommon/utility/utility.h"
 #include "utility/utility.h"
 
 #include <QDesktopServices>
@@ -214,8 +215,8 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
 
         if (const auto channel = ParametersCache::instance()->parametersInfo().distributionChannel();
             channel == DistributionChannel::Prod) {
-        _joinBetaButton->setText(tr("Join"));
-        _betaTag->setVisible(false);
+            _joinBetaButton->setText(tr("Join"));
+            _betaTag->setVisible(false);
         } else {
             _joinBetaButton->setText(_isStaff ? tr("Modify") : tr("Quit"));
             _betaTag->setVisible(true);
