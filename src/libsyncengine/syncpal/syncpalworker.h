@@ -45,6 +45,7 @@ class SyncPalWorker : public ISyncWorker {
                            bool reset);
         bool interruptCondition() const;
         SyncStep nextStep() const;
+        void stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> worker);
         void stopWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void waitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);

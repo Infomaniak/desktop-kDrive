@@ -35,6 +35,7 @@ void TestConflictResolverWorker::setUp() {
     std::filesystem::remove(syncDbPath);
     _syncPal = std::make_shared<SyncPal>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
+    _syncPal->createSharedObjects();
 
     _syncPal->_conflictResolverWorker = std::make_shared<ConflictResolverWorker>(_syncPal, "Conflict Resolver", "CORE");
 
