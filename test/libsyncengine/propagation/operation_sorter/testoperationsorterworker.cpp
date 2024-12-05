@@ -42,6 +42,7 @@ void TestOperationSorterWorker::setUp() {
     std::filesystem::remove(syncDbPath);
     _syncPal = std::make_shared<SyncPal>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
+    _syncPal->createSharedObjects();
 
     _syncPal->_operationsSorterWorker = std::make_shared<OperationSorterWorker>(_syncPal, "Operation Sorter", "OPSO");
 }

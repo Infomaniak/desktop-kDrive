@@ -81,6 +81,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     // Create SyncPal
     _syncPal = std::make_shared<SyncPalTest>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
+    _syncPal->createSharedObjects();
     _syncPal->setLocalPath(_rootFolderPath);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 #if defined(_WIN32)
@@ -416,6 +417,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
 void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Office test
     LOGW_DEBUG(_logger, L"***** Test fast move/delete *****");
     _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
     _syncPal->_localFSObserverWorker.reset();
 
     // Create a slow observer
