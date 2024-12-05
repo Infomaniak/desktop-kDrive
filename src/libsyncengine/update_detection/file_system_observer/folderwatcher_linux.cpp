@@ -132,6 +132,8 @@ void FolderWatcher_linux::startWatching() {
             Utility::msleep(SLEEP_TIME);
         }
     }
+
+    LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));
 }
 
 bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList) {

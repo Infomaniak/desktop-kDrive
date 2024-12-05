@@ -83,11 +83,11 @@ class Snapshot : public SharedObject {
         bool isValid() const;
         void setValid(bool newIsValid);
 
-        bool checkIntegrityRecursively();
+        bool checkIntegrityRecursively() const;
 
     private:
         void removeChildrenRecursively(const NodeId &parentId);
-        bool checkIntegrityRecursively(const NodeId &parentId);
+        bool checkIntegrityRecursively(const NodeId &parentId) const;
 
         ReplicaSide _side = ReplicaSide::Unknown;
         NodeId _rootFolderId;
