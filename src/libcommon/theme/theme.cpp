@@ -140,6 +140,14 @@ QString Theme::helpUrl() const {
 #endif
 }
 
+QString Theme::feedbackUrl(const Language language) const {
+    if (language == Language::French) return FEEDBACK_FR_URL;
+    if (language == Language::German) return FEEDBACK_DE_URL;
+    if (language == Language::Spanish) return FEEDBACK_ES_URL;
+    if (language == Language::Italian) return FEEDBACK_IT_URL;
+    return FEEDBACK_EN_URL;
+}
+
 QString Theme::conflictHelpUrl() const {
 #ifdef APPLICATION_CONFLICT_HELP_URL
     return QString::fromLatin1(APPLICATION_CONFLICT_HELP_URL);

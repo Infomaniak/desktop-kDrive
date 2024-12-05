@@ -963,9 +963,7 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
     }
 }
 
-void SynthesisPopover::onOpenErrorsMenu(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenErrorsMenu() {
     QList<ErrorsPopup::DriveError> driveErrorList;
     getDriveErrorList(driveErrorList);
 
@@ -1110,16 +1108,12 @@ void SynthesisPopover::onRefreshErrorList(int /*driveDbId*/) {
     refreshErrorsButton();
 }
 
-void SynthesisPopover::onOpenFolder(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenFolder() {
     int syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     openUrl(syncDbId);
 }
 
-void SynthesisPopover::onOpenWebview(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenWebview() {
     if (_gui->currentDriveDbId() != 0) {
         const auto driveInfoIt = _gui->driveInfoMap().find(_gui->currentDriveDbId());
         if (driveInfoIt == _gui->driveInfoMap().end()) {
@@ -1143,9 +1137,7 @@ void SynthesisPopover::onOpenWebview(bool checked) {
     }
 }
 
-void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenMiscellaneousMenu() {
     MenuWidget *menu = new MenuWidget(MenuWidget::Menu, this);
 
     // Open Folder
@@ -1262,6 +1254,14 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     connect(helpAction, &QWidgetAction::triggered, this, &SynthesisPopover::onDisplayHelp);
     menu->addAction(helpAction);
 
+    // Send feedbacks
+    QWidgetAction *feedbacksAction = new QWidgetAction(this);
+    MenuItemWidget *feedbacksMenuItemWidget = new MenuItemWidget(tr("Send feedbacks"));
+    feedbacksMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/messages-bubble-square-typing.svg");
+    feedbacksAction->setDefaultWidget(feedbacksMenuItemWidget);
+    connect(feedbacksAction, &QWidgetAction::triggered, this, &SynthesisPopover::onSendFeedback);
+    menu->addAction(feedbacksAction);
+
     // Quit
     QWidgetAction *exitAction = new QWidgetAction(this);
     MenuItemWidget *exitMenuItemWidget = new MenuItemWidget(tr("Quit kDrive"));
@@ -1303,52 +1303,41 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     menu->exec(QWidget::mapToGlobal(_menuButton->geometry().center()));
 }
 
-void SynthesisPopover::onOpenPreferences(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenPreferences() {
     emit showParametersDialog();
 }
 
-void SynthesisPopover::onDisplayHelp(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onDisplayHelp() {
     QDesktopServices::openUrl(QUrl(Theme::instance()->helpUrl()));
 }
 
-void SynthesisPopover::onExit(bool checked) {
-    Q_UNUSED(checked)
+void SynthesisPopover::onSendFeedback() {
+    const auto url = QUrl(Theme::instance()->feedbackUrl(ParametersCache::instance()->parametersInfo().language()));
+    QDesktopServices::openUrl(url);
+}
 
+void SynthesisPopover::onExit() {
     hide();
     emit exit();
 }
 
-void SynthesisPopover::onCrash(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onCrash() {
     emit crash();
 }
 
-void SynthesisPopover::onCrashServer(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onCrashServer() {
     emit crashServer();
 }
 
-void SynthesisPopover::onCrashEnforce(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onCrashEnforce() {
     emit crashEnforce();
 }
 
-void SynthesisPopover::onCrashFatal(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onCrashFatal() {
     emit crashFatal();
 }
 
-void SynthesisPopover::onNotificationActionTriggered(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onNotificationActionTriggered() {
     bool notificationAlreadyDisabledForPeriod =
             _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
 
@@ -1383,9 +1372,7 @@ void SynthesisPopover::onNotificationActionTriggered(bool checked) {
     emit disableNotifications(_notificationsDisabled, _notificationsDisabledUntilDateTime);
 }
 
-void SynthesisPopover::onOpenDriveParameters(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenDriveParameters() {
     emit showParametersDialog(_gui->currentDriveDbId());
 }
 

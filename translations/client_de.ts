@@ -2428,43 +2428,48 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Für 1 weitere Woche</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1543"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1259"/>
+        <source>Send feedbacks</source>
+        <translation>Senden Sie Feedback</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1530"/>
         <source>Update kDrive App</source>
         <translation>Aktualisieren Sie die kDrive-App</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1544"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1531"/>
         <source>This kDrive app version is not supported anymore. To access the latest features and enhancements, please update.</source>
         <translation>Diese kDrive-App-Version wird nicht mehr unterstützt. Um auf die neuesten Funktionen und Verbesserungen zuzugreifen, aktualisieren Sie bitte.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1069"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1546"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1067"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1533"/>
         <source>Update</source>
         <translation>Aktualisieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1548"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1535"/>
         <source>Please download the latest version on the website.</source>
         <translation>Bitte laden Sie die neueste Version auf der Website herunter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1072"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1070"/>
         <source>Update download in progress</source>
         <translation>Update-Download läuft</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1075"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1073"/>
         <source>Looking for update...</source>
         <translation>Auf der Suche nach Updates...</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1078"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1076"/>
         <source>Manual update</source>
         <translation>Manuelles Update</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1081"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1079"/>
         <source>Unavailable</source>
         <translation>Nicht verfügbar</translation>
     </message>
@@ -2474,27 +2479,27 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>kDrive beenden</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1539"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1526"/>
         <source>Show errors and informations</source>
         <translation>Fehler und Informationen anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1540"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1527"/>
         <source>Show informations</source>
         <translation>Informationen anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1561"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1548"/>
         <source>You can synchronize files &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;from your computer&lt;/a&gt; or on &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</source>
         <translation>Sie können Dateien &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;von Ihrem Computer&lt;/a&gt; oder von &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt; synchronisieren.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1156"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1148"/>
         <source>Open in folder</source>
         <translation>Im Ordner öffnen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1541"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1528"/>
         <source>More actions</source>
         <translation>Weitere Aktionen</translation>
     </message>
@@ -2514,53 +2519,53 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Aktivität</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1494"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1542"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1481"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1529"/>
         <source>Not implemented!</source>
         <translation>Nicht implementiert!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1554"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1541"/>
         <source>No synchronized folder for this Drive!</source>
         <translation>Kein synchronisierter Ordner für diesen kDrive!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1557"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1544"/>
         <source>No kDrive configured!</source>
         <translation>Kein kDrive eingerichtet!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1139"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1133"/>
         <source>Unable to access web site %1.</source>
         <translation>Zugang zu Website %1 nicht möglich.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1193"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1185"/>
         <source>Open %1 web version</source>
         <translation>Webversion %1 öffnen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1216"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1208"/>
         <source>Notifications disabled until %1</source>
         <translation>Benachrichtigungen deaktiviert bis %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1217"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1209"/>
         <source>Disable Notifications</source>
         <translation>Benachrichtigungen deaktivieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1259"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1251"/>
         <source>Need help</source>
         <translation>Hilfe benötigt</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1527"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1514"/>
         <source>Unable to open link %1.</source>
         <translation>Link %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1532"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1519"/>
         <source>Invalid link %1.</source>
         <translation>Ungültiger Link %1.</translation>
     </message>
@@ -2570,12 +2575,12 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Ordner-URL %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1203"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1195"/>
         <source>Drive parameters</source>
         <translation>Drive-Einstellungen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1251"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1243"/>
         <source>Application preferences</source>
         <translation>Anwendungseinstellungen</translation>
     </message>
