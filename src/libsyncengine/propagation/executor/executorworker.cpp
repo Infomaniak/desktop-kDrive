@@ -220,7 +220,7 @@ void ExecutorWorker::execute() {
 
     setExitCause(executorExitInfo.cause());
     setDone(executorExitInfo.code());
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str() << " " << executorExitInfo);
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name() << " " << executorExitInfo));
 }
 
 void ExecutorWorker::initProgressManager() {

@@ -479,8 +479,8 @@ void LocalFileSystemObserverWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
 ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
