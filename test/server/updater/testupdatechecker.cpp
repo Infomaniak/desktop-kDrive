@@ -21,15 +21,24 @@
 #include "jobs/jobmanager.h"
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
+#include "requests/parameterscache.h"
 #include "server/updater/updatechecker.h"
 #include "utility/utility.h"
 
 namespace KDC {
 
-static const std::string bigVersionJsonUpdateStr =
-        R"({"result":"success","data":{"application_id":27,"prod_version":"production","version":{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"99.99.99","next_version_rate":0,"published_versions":[{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]}]}}})";
-static const std::string smallVersionJsonUpdateStr =
-        R"({"result":"success","data":{"application_id":27,"prod_version":"production","version":{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"1.1.1","next_version_rate":0,"published_versions":[{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]}]}}})";
+static const std::string highTagValue = "99.99.99";
+static constexpr uint64_t highBuildVersionValue = 21240604;
+static const std::string mediumTagValue = "55.55.55";
+static constexpr uint64_t mediumBuildVersionValue = 20240604;
+static const std::string lowTagValue = "1.1.1";
+static constexpr uint64_t lowBuildVersionValue = 20200604;
+
+std::string generateJsonReply(const std::string &version, uint64_t buildVersion) {
+    return std::format(
+            R"({{"result":"success","data":{{"application_id":27,"prod_version":"production","version":{{"tag":"{0}","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},"application":{{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"{0}","next_version_rate":0,"published_versions":[{{"tag":"{0}","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},{{"tag":"{0}","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},{{"tag":"{0}","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},{{"tag":"{0}","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}}]}}}}}})",
+            version, buildVersion);
+}
 
 class GetAppVersionJobTest final : public GetAppVersionJob {
     public:
@@ -37,7 +46,9 @@ class GetAppVersionJobTest final : public GetAppVersionJob {
             GetAppVersionJob(platform, appID), _updateShouldBeAvailable(updateShouldBeAvailable) {}
 
         void runJob() noexcept override {
-            const std::istringstream iss(_updateShouldBeAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
+            const auto str = _updateShouldBeAvailable ? generateJsonReply(highTagValue, highBuildVersionValue)
+                                                      : generateJsonReply(lowTagValue, lowBuildVersionValue);
+            const std::istringstream iss(str);
             std::istream is(iss.rdbuf());
             GetAppVersionJob::handleResponse(is);
             _exitCode = ExitCode::Ok;
@@ -61,6 +72,10 @@ class UpdateCheckerTest final : public UpdateChecker {
         bool _updateShouldBeAvailable{false};
 };
 
+void TestUpdateChecker::setUp() {
+    ParametersCache::instance(true);
+}
+
 void TestUpdateChecker::testCheckUpdateAvailable() {
     // Version is higher than current version
     {
@@ -81,6 +96,96 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(DistributionChannel::Beta).isValid());
     }
+}
+
+enum VersionValue { High, Medium, Low };
+
+const std::string &tag(const VersionValue versionNumber) {
+    switch (versionNumber) {
+        case High:
+            return highTagValue;
+        case Medium:
+            return mediumTagValue;
+        case Low:
+            return lowTagValue;
+    }
+    return lowTagValue;
+}
+
+uint64_t buildVersion(const VersionValue versionNumber) {
+    switch (versionNumber) {
+        case High:
+            return highBuildVersionValue;
+        case Medium:
+            return mediumBuildVersionValue;
+        case Low:
+            return lowBuildVersionValue;
+    }
+    return lowBuildVersionValue;
+}
+
+VersionInfo getVersionInfo(const DistributionChannel channel, const VersionValue versionNumber) {
+    VersionInfo versionInfo;
+    versionInfo.channel = channel;
+    versionInfo.tag = tag(versionNumber);
+    versionInfo.buildVersion = buildVersion(versionNumber);
+    versionInfo.downloadUrl = "test";
+    return versionInfo;
+}
+
+void TestUpdateChecker::testVersionInfo() {
+    UpdateChecker testObj;
+    testObj._prodVersionChannel = DistributionChannel::Prod;
+
+    auto testFunc = [&testObj](const VersionValue expectedValue, const DistributionChannel expectedChannel,
+                               const DistributionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber) {
+        testObj._versionsInfo.clear();
+        testObj._versionsInfo.try_emplace(DistributionChannel::Prod,
+                                          getVersionInfo(DistributionChannel::Prod, versionsNumber[0]));
+        testObj._versionsInfo.try_emplace(DistributionChannel::Beta,
+                                          getVersionInfo(DistributionChannel::Beta, versionsNumber[1]));
+        testObj._versionsInfo.try_emplace(DistributionChannel::Internal,
+                                          getVersionInfo(DistributionChannel::Internal, versionsNumber[2]));
+        CPPUNIT_ASSERT_EQUAL(expectedChannel, testObj.versionInfo(selectedChannel).channel);
+        CPPUNIT_ASSERT_EQUAL(tag(expectedValue), testObj.versionInfo(selectedChannel).tag);
+        CPPUNIT_ASSERT_EQUAL(buildVersion(expectedValue), testObj.versionInfo(selectedChannel).buildVersion);
+    };
+
+    // selected version: Prod
+    /// versions values: Prod > Beta > Internal
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Prod, {High, Medium, Low});
+    /// versions values: Internal > Beta > Prod
+    testFunc(Low, DistributionChannel::Prod, DistributionChannel::Prod, {Low, Medium, High});
+    /// versions values: Prod == Beta == Internal
+    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Prod, {Medium, Medium, Medium});
+
+    // selected version: Beta
+    /// versions values: Prod > Beta > Internal
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Beta, {High, Medium, Low});
+    /// versions values: Internal > Beta > Prod
+    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Beta, {Low, Medium, High});
+    /// versions values: Prod == Beta == Internal
+    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Beta, {Medium, Medium, Medium});
+
+    // selected version: Internal
+    /// versions values: Prod > Beta > Internal
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Medium, Low});
+    /// versions values: Internal > Beta > Prod
+    testFunc(High, DistributionChannel::Internal, DistributionChannel::Internal, {Low, Medium, High});
+    /// versions values: Beta > Prod > Internal
+    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Medium, High, Low});
+    /// versions values: Prod > Internal > Beta
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Low, Medium});
+    /// versions values: Beta > Internal > Prod
+    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Low, High, Medium});
+    /// versions values: Prod == Beta == Internal
+    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Medium, Medium});
+    /// versions values:  Beta == Prod > Internal
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, High, Low});
+    /// versions values: Beta == Internal > Prod
+    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Internal, {Low, Medium, Medium});
+    /// versions values: Prod == Internal > Beta
+    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Low, Medium});
 }
 
 } // namespace KDC

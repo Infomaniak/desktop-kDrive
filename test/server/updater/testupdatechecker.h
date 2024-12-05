@@ -26,10 +26,15 @@ class TestUpdateChecker final : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestUpdateChecker);
         CPPUNIT_TEST(testCheckUpdateAvailable);
+        CPPUNIT_TEST(testVersionInfo);
         CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp() override;
 
     protected:
         void testCheckUpdateAvailable();
+        void testVersionInfo();
 };
 
 } // namespace KDC

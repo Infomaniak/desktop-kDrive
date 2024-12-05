@@ -24,6 +24,7 @@
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
+#include "utility/utility.h"
 
 namespace KDC {
 
@@ -42,6 +43,66 @@ ExitCode UpdateChecker::checkUpdateAvailability(UniqueId *id /*= nullptr*/) {
 void UpdateChecker::setCallback(const std::function<void()> &callback) {
     LOG_INFO(Log::instance()->getLogger(), "Set callback");
     _callback = callback;
+}
+
+const VersionInfo &UpdateChecker::versionInfo(const DistributionChannel channel) {
+    const VersionInfo &prodVersion = prodVersionInfo();
+
+    // If the user wants only `Production` versions, just return the current `Production` version.
+    if (channel == DistributionChannel::Prod) return prodVersion;
+
+    // Otherwise, we need to check if there is not a newer version in other channels.
+    /// The use wants `Beta` updates.
+    const VersionInfo &betaVersion =
+            _versionsInfo.contains(DistributionChannel::Beta) ? _versionsInfo[DistributionChannel::Beta] : _defaultVersionInfo;
+    if (channel == DistributionChannel::Beta) {
+        if (CommonUtility::isVersionLower(prodVersion.fullVersion(), betaVersion.fullVersion())) {
+            // Beta > Prod
+            return betaVersion;
+        }
+
+        // Prod > Beta
+        return prodVersion;
+    }
+
+    /// The user wants `Internal` updates.
+    const VersionInfo &internalVersion = _versionsInfo.contains(DistributionChannel::Internal)
+                                                 ? _versionsInfo[DistributionChannel::Internal]
+                                                 : _defaultVersionInfo;
+    if (channel == DistributionChannel::Internal) {
+        bool betaIsLower = false;
+        if (CommonUtility::isVersionLower(betaVersion.fullVersion(), internalVersion.fullVersion())) {
+            betaIsLower = true;
+        }
+        bool prodIsLower = false;
+        if (CommonUtility::isVersionLower(prodVersion.fullVersion(), internalVersion.fullVersion())) {
+            prodIsLower = true;
+        }
+
+        if (betaIsLower && prodIsLower) {
+            // Internal > Prod && Beta
+            return internalVersion;
+        }
+        if (prodIsLower) {
+            // Beta > Internal > Prod
+            return betaVersion;
+        }
+        if (betaIsLower) {
+            // Prod > Internal > Beta
+            return prodVersion;
+        }
+
+        // Prod && Beta > Internal
+        if (CommonUtility::isVersionLower(prodVersion.fullVersion(), betaVersion.fullVersion())) {
+            // Beta > Prod > Internal
+            return betaVersion;
+        }
+
+        // Prod > Beta > Internal
+        return prodVersion;
+    }
+
+    return _defaultVersionInfo;
 }
 
 void UpdateChecker::versionInfoReceived(UniqueId jobId) {

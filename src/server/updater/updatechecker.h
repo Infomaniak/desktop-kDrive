@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "server/updater/testupdatechecker.h"
 #include "utility/types.h"
 
 namespace KDC {
@@ -38,11 +39,16 @@ class UpdateChecker {
 
         void setCallback(const std::function<void()> &callback);
 
-
-        const VersionInfo &versionInfo(const DistributionChannel channel) {
-            if (channel == DistributionChannel::Prod) return prodVersionInfo();
-            return _versionsInfo.contains(channel) ? _versionsInfo[channel] : _defaultVersionInfo;
-        }
+        /**
+         * @brief Return the version information. Implements some logic to always return the highest available versions according
+         * to the selected distribution channel. That means if `Beta` version is newer than `Internal` version, the `Beta` version
+         * wins over `Internal` one and must be proposed even if the user has selected `Internal` channel.
+         * The rule is `Production` wins over all others, `Beta` wins over `Internal`.
+         * @param channel The selected distribution channel.
+         * @return A reference to the found `VersionInfo` object. If not found, return a reference to default constructed, invalid
+         * `VersionInfo`object.
+         */
+        const VersionInfo &versionInfo(DistributionChannel channel);
 
         [[nodiscard]] const std::unordered_map<DistributionChannel, VersionInfo> &versionsInfo() const { return _versionsInfo; }
         [[nodiscard]] bool isVersionReceived() const { return _isVersionReceived; }
@@ -76,6 +82,8 @@ class UpdateChecker {
         const VersionInfo _defaultVersionInfo;
         AllVersionsInfo _versionsInfo;
         bool _isVersionReceived{false};
+
+        friend TestUpdateChecker;
 };
 
 } // namespace KDC
