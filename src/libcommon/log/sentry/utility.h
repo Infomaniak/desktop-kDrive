@@ -18,35 +18,36 @@
 #pragma once
 #include <string>
 #include <libcommon/utility/types.h>
-#include "ptraceinfo.h"
+#include <libcommon/log/sentry/ptraces.h>
 
 namespace KDC::Sentry {
-static inline PTraceName SyncSetpToPTraceName(SyncStep step) {
+static inline std::unique_ptr<AbstractPTrace> SyncSetpToPTrace(SyncStep step, int syncDbId) {
     switch (step) {
         case KDC::SyncStep::UpdateDetection1:
-            return PTraceName::UpdateDetection1;
+            return std::make_unique<Sentry::PTraces::Basic::UpdateDetection1>(syncDbId);
         case KDC::SyncStep::UpdateDetection2:
-            return PTraceName::UpdateDetection2;
+            return std::make_unique<Sentry::PTraces::Basic::UpdateDetection2>(syncDbId);
         case KDC::SyncStep::Reconciliation1:
-            return PTraceName::Reconciliation1;
+            return std::make_unique<Sentry::PTraces::Basic::Reconciliation1>(syncDbId);
         case KDC::SyncStep::Reconciliation2:
-            return PTraceName::Reconciliation2;
+            return std::make_unique<Sentry::PTraces::Basic::Reconciliation2>(syncDbId);
         case KDC::SyncStep::Reconciliation3:
-            return PTraceName::Reconciliation3;
+            return std::make_unique<Sentry::PTraces::Basic::Reconciliation3>(syncDbId);
         case KDC::SyncStep::Reconciliation4:
-            return PTraceName::Reconciliation4;
+            return std::make_unique<Sentry::PTraces::Basic::Reconciliation4>(syncDbId);
         case KDC::SyncStep::Propagation1:
-            return PTraceName::Propagation1;
+            return std::make_unique<Sentry::PTraces::Basic::Propagation1>(syncDbId);
         case KDC::SyncStep::Propagation2:
-            return PTraceName::Propagation2;
+            return std::make_unique<Sentry::PTraces::Basic::Propagation2>(syncDbId);
         case KDC::SyncStep::Done:
         case KDC::SyncStep::None:
         case KDC::SyncStep::Idle:
-            return PTraceName::None;
+            return std::make_unique<Sentry::PTraces::None>(syncDbId);
             break;
         default:
+            // Log an error when the logger will be available in libcommon.
             break;
     }
-    return PTraceName();
+    return std::make_unique<Sentry::PTraces::None>(syncDbId);
 }
 } // namespace KDC

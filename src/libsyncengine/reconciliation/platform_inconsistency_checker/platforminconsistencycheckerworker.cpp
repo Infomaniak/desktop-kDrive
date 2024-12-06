@@ -18,7 +18,7 @@
 
 #include "platforminconsistencycheckerworker.h"
 #include "platforminconsistencycheckerutility.h"
-#include "libcommon/log/sentry/scopedptrace.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -37,11 +37,8 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
-    auto perfMonitor = Sentry::ScopedPTrace(Sentry::PTraceName::CheckRemoteTree, syncDbId());
     checkTree(ReplicaSide::Remote);
-    perfMonitor.stopAndStart(Sentry::PTraceName::CheckLocalTree, syncDbId());
     checkTree(ReplicaSide::Local);
-    perfMonitor.stop();
 
     for (const auto &idItem: _idsToBeRemoved) {
         if (!idItem.remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
@@ -68,13 +65,18 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
            side == ReplicaSide::Local && "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
 
     ExitCode exitCode = ExitCode::Unknown;
+    Sentry::PTraceUPtr perfmonitor;
     if (side == ReplicaSide::Remote) {
+        perfmonitor = std::make_unique<Sentry::PTraces::Scoped::CheckLocalTree>(syncDbId());
         exitCode = checkRemoteTree(node, parentPath);
     } else if (side == ReplicaSide::Local) {
+        perfmonitor = std::make_unique<Sentry::PTraces::Scoped::CheckRemoteTree>(syncDbId());
         exitCode = checkLocalTree(node, parentPath);
     }
 
-    if (exitCode != ExitCode::Ok) {
+    if (exitCode == ExitCode::Ok) {
+        perfmonitor->stop();
+    } else {
         LOG_SYNCPAL_WARN(_logger,
                          "PlatformInconsistencyCheckerWorker::check" << side << "Tree partially failed: code=" << exitCode);
     }

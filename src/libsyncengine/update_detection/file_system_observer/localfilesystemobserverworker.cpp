@@ -18,7 +18,7 @@
 
 #include "localfilesystemobserverworker.h"
 #include "libcommon/utility/utility.h"
-#include "libcommon/log/sentry/counterscopedptrace.h"
+#include "libcommon/log/sentry/ptraces.h"
 
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
@@ -80,7 +80,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             _pendingFileEvents.clear();
             break;
         }
-        Sentry::ScopedPTrace sentryTransaction(Sentry::PTraceName::LFSO_ChangeDetected);
+        Sentry::PTraces::Scoped::LFSO_ChangeDetected perfMonitor(syncDbId());
         // Raise flag _updating in order to wait 1sec without local changes before starting the sync
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
@@ -364,7 +364,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     continue;
                 }
 
-                if (!exploreDir(absolutePath)) {
+                if (!exploreDir(absolutePath, true)) {
                     // Error while exploring directory, we need to invalidate the snapshot
                     invalidateSnapshot();
                     return;
@@ -485,7 +485,7 @@ void LocalFileSystemObserverWorker::execute() {
 ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     LOG_SYNCPAL_INFO(_logger, "Starting local snapshot generation");
     auto start = std::chrono::steady_clock::now();
-    Sentry::ScopedPTrace perfMonitor(Sentry::PTraceName::LFSO_GenerateInitialSnapshot, syncDbId(), true);
+    auto perfMonitor = Sentry::PTraces::Scoped::LFSO_GenerateInitialSnapshot(syncDbId());
 
     _snapshot->init();
     _updating = true;
@@ -599,7 +599,7 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     _syncPal->handleAccessDeniedItem(relativePath);
 }
 
-ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath) {
+ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath, bool changeDetected) {
     // Check if root dir exists
     IoError ioError = IoError::Success;
 
@@ -652,9 +652,9 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         }
         DirectoryEntry entry;
         bool endOfDirectory = false;
-        Sentry::CounterScopedPTrace perfMonitor(1000, Sentry::PTraceName::LFSO_ExploreItem, syncDbId());
+        Sentry::PTraces::CounterScoped::LFSO_ExploreItem perfMonitor(changeDetected, syncDbId());
         while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
-            perfMonitor.increment();
+            perfMonitor.start();
 
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(entry.path()) << L" found");

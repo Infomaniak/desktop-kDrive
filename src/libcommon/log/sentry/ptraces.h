@@ -1,0 +1,352 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#pragma once
+
+#include "abstractptrace.h"
+#include "abstractscopedptrace.h"
+#include "abstractcounterscopedptrace.h"
+
+namespace KDC::Sentry::PTraces {
+
+class None : public AbstractPTrace {
+    public:
+        None() = default;
+        None(int syncdbId) : AbstractPTrace({}, syncdbId) {}
+        void start() final {}
+        void stop(PTraceStatus status = PTraceStatus::Ok) final {}
+        void restart() final {}
+};
+
+/*
+ Basic performance traces are useful for operation that are spread accross multiple scopes.
+ They should be used with care as they do not provide security against multiple/missing start() or stop() calls.
+ The start() and stop() methods can be called on different objects.
+ | PTraces::Basic::AppStart().start();
+ | PTraces::Basic::AppStart().stop();
+ is equivalent to (but less efficient):
+ | PTraces::Basic::AppStart perfMonitor();
+ | perfMonitor.start();
+ | perfMonitor.stop();
+ */
+namespace Basic {
+class AppStart : public AbstractPTrace {
+    public:
+        [[nodiscard]] AppStart() : AbstractPTrace({"AppStart", "Strat the application", PTraceName::AppStart}) {}
+};
+
+class Sync : public AbstractPTrace {
+    public:
+        [[nodiscard]] explicit Sync(int dbId) :
+            AbstractPTrace({"Synchronisation", "Synchronisation initialization", PTraceName::Sync}, dbId){};
+};
+
+class UpdateDetection1 : public AbstractPTrace {
+    public:
+        [[nodiscard]] explicit UpdateDetection1(int dbId) :
+            AbstractPTrace({"UpdateDetection1", "Compute FS operations", PTraceName::UpdateDetection1, PTraceName::Sync}, dbId) {}
+};
+
+class UpdateDetection2 : public AbstractPTrace {
+    public:
+        [[nodiscard]] explicit UpdateDetection2(int dbId) :
+            AbstractPTrace({"UpdateDetection2", "UpdateTree generation", PTraceName::UpdateDetection2, PTraceName::Sync}, dbId) {}
+};
+
+class Reconciliation1 : public AbstractPTrace {
+    public:
+        [[nodiscard]] explicit Reconciliation1(int dbId) :
+            AbstractPTrace({"Reconciliation1", "Platform inconsistency check", PTraceName::Reconciliation1, PTraceName::Sync},
+                           dbId){};
+};
+
+class Reconciliation2 : public AbstractPTrace {
+    public:
+        [[nodiscard]] explicit Reconciliation2(int dbId) :
+            AbstractPTrace({"Reconciliation2", "Find conflicts", PTraceName::Reconciliation2, PTraceName::Sync}, dbId) {}
+};
+
+class Reconciliation3 : public AbstractPTrace {
+    public:
+        [[nodiscard]] explicit Reconciliation3(int dbId) :
+            AbstractPTrace({"Reconciliation3", "Resolve conflicts", PTraceName::Reconciliation3, PTraceName::Sync}, dbId) {}
+};
+
+class Reconciliation4 : public AbstractPTrace {
+    public:
+        [[nodiscard]] explicit Reconciliation4(int dbId) :
+            AbstractPTrace({"Reconciliation4", "Operation Generator", PTraceName::Reconciliation4, PTraceName::Sync}, dbId) {}
+};
+
+class Propagation1 : public AbstractPTrace {
+    public:
+        [[nodiscard]] explicit Propagation1(int dbId) :
+            AbstractPTrace({"Propagation1", "Operation Sorter", PTraceName::Propagation1, PTraceName::Sync}, dbId) {}
+};
+
+class Propagation2 : public AbstractPTrace {
+    public:
+        [[nodiscard]] explicit Propagation2(int dbId) :
+            AbstractPTrace({"Propagation2", "Executor", PTraceName::Propagation2, PTraceName::Sync}, dbId) {}
+};
+} // namespace Basic
+
+/* Scoped performance traces will automatically start when the object is created and stop when the object is
+ destroyed.
+ Some scoped performance traces expect to be manually stopped. In this case, the stop() method must be called, else the trace will
+ be consider as aborted when the object will be destroyed. Such traces are indicated by a comment in their class definition.
+ */
+namespace Scoped {
+class LFSO_ChangeDetected : public AbstractScopedPTrace {
+    public:
+        explicit LFSO_ChangeDetected(int syncDbId) :
+            AbstractScopedPTrace({"LFSO_ChangeDetected", "Handle one detected changes", PTraceName::LFSO_ChangeDetected},
+                                 PTraceStatus::Ok, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class LFSO_GenerateInitialSnapshot : public AbstractScopedPTrace {
+    public:
+        explicit LFSO_GenerateInitialSnapshot(int syncDbId) :
+            AbstractScopedPTrace({"LFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::LFSO_GenerateInitialSnapshot},
+                                 PTraceStatus::Aborted, syncDbId) {}
+};
+
+class RFSO_ChangeDetected : public AbstractScopedPTrace {
+    public:
+        explicit RFSO_ChangeDetected(int syncDbId) :
+            AbstractScopedPTrace({"RFSO_ChangeDetected", "Handle one detected changes", PTraceName::RFSO_ChangeDetected},
+                                 PTraceStatus::Ok, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class RFSO_GenerateInitialSnapshot : public AbstractScopedPTrace {
+    public:
+        explicit RFSO_GenerateInitialSnapshot(int syncDbId) :
+            AbstractScopedPTrace({"RFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::RFSO_GenerateInitialSnapshot},
+                                 PTraceStatus::Aborted, syncDbId){};
+};
+
+// This scoped performance trace expects to be manually stopped.
+class RFSO_BackRequest : public AbstractScopedPTrace {
+    public:
+        explicit RFSO_BackRequest(bool fromChangeDetected, int syncDbId) :
+            AbstractScopedPTrace(
+                    {"RFSO_BackRequest", "Request the list of all items to the backend", PTraceName::RFSO_BackRequest,
+                     (fromChangeDetected ? PTraceName::RFSO_ChangeDetected : PTraceName::RFSO_GenerateInitialSnapshot)},
+                    PTraceStatus::Aborted, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class SyncInit : public AbstractScopedPTrace {
+    public:
+        explicit SyncInit(int syncDbId) :
+            AbstractScopedPTrace({"SyncInit", "Synchronisation initialization", PTraceName::SyncInit}, PTraceStatus::Aborted,
+                                 syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class ResetStatus : public AbstractScopedPTrace {
+    public:
+        explicit ResetStatus(int syncDbId) :
+            AbstractScopedPTrace({"ResetStatus", "Reseting vfs status", PTraceName::ResetStatus, PTraceName::SyncInit},
+                                 PTraceStatus::Aborted, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class Sync : public AbstractScopedPTrace {
+    public:
+        explicit Sync(int syncDbId) :
+            AbstractScopedPTrace({"Synchronisation", "Synchronisation.", PTraceName::Sync}, PTraceStatus::Aborted, syncDbId) {}
+};
+
+class UpdateUnsyncedList : public AbstractScopedPTrace {
+    public:
+        explicit UpdateUnsyncedList(int syncDbId) :
+            AbstractScopedPTrace(
+                    {"UpdateUnsyncedList", "Update unsynced list.", PTraceName::UpdateUnsyncedList, PTraceName::UpdateDetection1},
+                    PTraceStatus::Ok, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class InferChangesFromDb : public AbstractScopedPTrace {
+    public:
+        explicit InferChangesFromDb(int syncDbId) :
+            AbstractScopedPTrace(
+                    {"InferChangesFromDb", "Infer changes from DB", PTraceName::InferChangesFromDb, PTraceName::UpdateDetection1},
+                    PTraceStatus::Aborted, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class ExploreLocalSnapshot : public AbstractScopedPTrace {
+    public:
+        explicit ExploreLocalSnapshot(int syncDbId) :
+            AbstractScopedPTrace({"ExploreLocalSnapshot", "Explore local snapshot", PTraceName::ExploreLocalSnapshot,
+                                  PTraceName::UpdateDetection1},
+                                 PTraceStatus::Aborted, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class ExploreRemoteSnapshot : public AbstractScopedPTrace {
+    public:
+        explicit ExploreRemoteSnapshot(int syncDbId) :
+            AbstractScopedPTrace({"ExploreRemoteSnapshot", "Explore remote snapshot", PTraceName::ExploreRemoteSnapshot,
+                                  PTraceName::UpdateDetection1},
+                                 PTraceStatus::Aborted, syncDbId) {}
+};
+
+class Step1MoveDirectory : public AbstractScopedPTrace {
+    public:
+        explicit Step1MoveDirectory(int syncDbId) :
+            AbstractScopedPTrace(
+                    {"Step1MoveDirectory", "Move directory", PTraceName::Step1MoveDirectory, PTraceName::UpdateDetection2},
+                    PTraceStatus::Ok, syncDbId) {}
+};
+
+class Step2MoveFile : public AbstractScopedPTrace {
+    public:
+        explicit Step2MoveFile(int syncDbId) :
+            AbstractScopedPTrace({"Step2MoveFile", "Move File", PTraceName::Step2MoveFile, PTraceName::UpdateDetection2},
+                                 PTraceStatus::Ok, syncDbId) {}
+};
+
+class Step3DeleteDirectory : public AbstractScopedPTrace {
+    public:
+        explicit Step3DeleteDirectory(int syncDbId) :
+            AbstractScopedPTrace(
+                    {"Step3DeleteDirectory", "Delete directory", PTraceName::Step3DeleteDirectory, PTraceName::UpdateDetection2},
+                    PTraceStatus::Ok, syncDbId) {}
+};
+
+class Step4DeleteFile : public AbstractScopedPTrace {
+    public:
+        explicit Step4DeleteFile(int syncDbId) :
+            AbstractScopedPTrace({"Step4DeleteFile", "Delete file", PTraceName::Step4DeleteFile, PTraceName::UpdateDetection2},
+                                 PTraceStatus::Ok, syncDbId) {}
+};
+
+class Step5CreateDirectory : public AbstractScopedPTrace {
+    public:
+        explicit Step5CreateDirectory(int syncDbId) :
+            AbstractScopedPTrace(
+                    {"Step5CreateDirectory", "Create directory", PTraceName::Step5CreateDirectory, PTraceName::UpdateDetection2},
+                    PTraceStatus::Ok, syncDbId) {}
+};
+
+class Step6CreateFile : public AbstractScopedPTrace {
+    public:
+        explicit Step6CreateFile(int syncDbId) :
+            AbstractScopedPTrace({"Step6CreateFile", "Create file", PTraceName::Step6CreateFile, PTraceName::UpdateDetection2},
+                                 PTraceStatus::Ok, syncDbId) {}
+};
+
+class Step7EditFile : public AbstractScopedPTrace {
+    public:
+        explicit Step7EditFile(int syncDbId) :
+            AbstractScopedPTrace({"Step7EditFile", "Edit file", PTraceName::Step7EditFile, PTraceName::UpdateDetection2},
+                                 PTraceStatus::Ok, syncDbId) {}
+};
+
+class Step8CompleteUpdateTree : public AbstractScopedPTrace {
+    public:
+        explicit Step8CompleteUpdateTree(int syncDbId) :
+            AbstractScopedPTrace({"Step8CompleteUpdateTree", "Complete update tree", PTraceName::Step8CompleteUpdateTree,
+                                  PTraceName::UpdateDetection2},
+                                 PTraceStatus::Ok, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class CheckLocalTree : public AbstractScopedPTrace {
+    public:
+        explicit CheckLocalTree(int syncDbId) :
+            AbstractScopedPTrace({"CheckLocalTree", "Check local update tree integrity", PTraceName::CheckLocalTree,
+                                  PTraceName::Reconciliation1},
+                                 PTraceStatus::Aborted, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class CheckRemoteTree : public AbstractScopedPTrace {
+    public:
+        explicit CheckRemoteTree(int syncDbId) :
+            AbstractScopedPTrace({"CheckRemoteTree", "Check remote update tree integrity", PTraceName::CheckRemoteTree,
+                                  PTraceName::Reconciliation1},
+                                 PTraceStatus::Aborted, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class InitProgress : public AbstractScopedPTrace {
+    public:
+        explicit InitProgress(int syncDbId) :
+            AbstractScopedPTrace(
+                    {"InitProgress", "Init the progress manager", PTraceName::InitProgress, PTraceName::Propagation2},
+                    PTraceStatus::Aborted, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class JobGeneration : public AbstractScopedPTrace {
+    public:
+        explicit JobGeneration(int syncDbId) :
+            AbstractScopedPTrace(
+                    {"JobGeneration", "Generate the list of jobs", PTraceName::JobGeneration, PTraceName::Propagation2},
+                    PTraceStatus::Aborted, syncDbId) {}
+};
+
+// This scoped performance trace expects to be manually stopped.
+class waitForAllJobsToFinish : public AbstractScopedPTrace {
+    public:
+        explicit waitForAllJobsToFinish(int syncDbId) :
+            AbstractScopedPTrace({"waitForAllJobsToFinish", "Wait for all jobs to finish", PTraceName::waitForAllJobsToFinish,
+                                  PTraceName::Propagation2},
+                                 PTraceStatus::Aborted, syncDbId) {}
+};
+} // namespace Scoped
+
+/* CounterScoped performance traces will start when the object is created and will be stopped after nbOfCyclePerTrace() calls to
+ * start(). A new trace will also be started as soon as the counter is reached. When the object is destroyed, the running trace
+ * will be cancelled. Stop() and restart() methods will not have any effect on CounterScoped performance traces.
+ *
+ * It is useful when you want to trace short part of the code that are called multiple times successively.
+ */
+namespace CounterScoped {
+class LFSO_ExploreItem : public AbstractCounterScopedPTrace {
+    public:
+        explicit LFSO_ExploreItem(bool fromChangeDetected, int syncDbId) :
+            AbstractCounterScopedPTrace(
+                    {"LFSO_ExploreItem(x1000)", "Discover 1000 local files", PTraceName::LFSO_ExploreItem,
+                     (fromChangeDetected ? PTraceName::LFSO_ChangeDetected : PTraceName::LFSO_GenerateInitialSnapshot)},
+                    1000, syncDbId) {}
+};
+
+class RFSO_ExploreItem : public AbstractCounterScopedPTrace {
+    public:
+        explicit RFSO_ExploreItem(bool fromChangeDetected, int syncDbId) :
+            AbstractCounterScopedPTrace(
+                    {"RFSO_ExploreItem(x1000)", "Discover 1000 remote files", PTraceName::RFSO_ExploreItem,
+                     (fromChangeDetected ? PTraceName::RFSO_ChangeDetected : PTraceName::RFSO_GenerateInitialSnapshot)},
+                    1000, syncDbId) {}
+};
+
+class GenerateItemOperations : public AbstractCounterScopedPTrace {
+    public:
+        explicit GenerateItemOperations(int syncDbId) :
+            AbstractCounterScopedPTrace({"GenerateItemOperations", "Generate the list of operations for 1000 items",
+                                         PTraceName::GenerateItemOperations, PTraceName::Reconciliation4},
+                                        1000, syncDbId) {}
+};
+} // namespace CounterScoped
+
+} // namespace KDC::Sentry::PTraces

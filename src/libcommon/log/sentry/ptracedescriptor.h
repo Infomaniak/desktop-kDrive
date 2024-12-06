@@ -20,7 +20,7 @@
 
 namespace KDC::Sentry {
 
-// Each PTraceName need to be defined in PTraceInfo constructor.
+// Each PTraceName need to be defined in PTraceDescriptor constructor.
 enum class PTraceName {
     None,
     AppStart,
@@ -63,10 +63,16 @@ enum class PTraceName {
     RFSO_ChangeDetected,
 };
 
-// The PTraceInfo structure is used to store information about the different performance traces available throughout the
+// The PTraceDescriptor structure is used to store information about the different performance traces available throughout the
 // application.
-struct PTraceInfo {
-        explicit PTraceInfo(PTraceName transactionIdentifier);
+struct PTraceDescriptor {
+        PTraceDescriptor() = default;
+        PTraceDescriptor(std::string pTraceTitle, std::string pTraceDescription, PTraceName pTraceName,
+                            PTraceName parentPTraceName = PTraceName::None) :
+            _pTraceName{pTraceName},
+            _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
+            _pTraceDescription{std::move(pTraceDescription)} {}
+
         PTraceName _pTraceName = PTraceName::None;
         PTraceName _parentPTraceName = PTraceName::None;
         std::string _pTraceTitle;

@@ -20,6 +20,7 @@
 #include "update_detection/update_detector/updatetree.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "libcommon/log/sentry/ptraces.h"
 
 namespace KDC {
 
@@ -46,7 +47,9 @@ void OperationGeneratorWorker::execute() {
     _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     // Explore both update trees
+    Sentry::PTraces::CounterScoped::GenerateItemOperations perfMonitor(syncDbId());
     while (!_queuedToExplore.empty()) {
+        perfMonitor.start();
         if (stopAsked()) {
             exitCode = ExitCode::Ok;
             break;

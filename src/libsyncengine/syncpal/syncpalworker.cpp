@@ -28,7 +28,7 @@
 #include "propagation/executor/executorworker.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/utility.h"
-#include <libcommon/log/sentry/scopedptrace.h>
+#include <libcommon/log/sentry/ptraces.h>
 #include <libcommon/log/sentry/utility.h>
 #include <log4cplus/loggingmacros.h>
 
@@ -42,11 +42,11 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
-    auto perfMonitor = Sentry::ScopedPTrace(Sentry::PTraceName::SyncInit, syncDbId());
-
+    Sentry::PTraces::Scoped::SyncInit perfMonitor(syncDbId());
+    int id = syncDbId();
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-        auto perfMonitor1 = Sentry::ScopedPTrace(Sentry::PTraceName::ResetStatus, syncDbId());
+        Sentry::PTraces::Scoped::ResetStatus perfMonitor1(syncDbId());
         // Reset vfs files status
         if (!resetVfsFilesStatus()) {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
@@ -230,7 +230,7 @@ void SyncPalWorker::execute() {
 
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-  
+
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
     setDone(exitCode);
 }
@@ -284,12 +284,12 @@ std::string SyncPalWorker::stepName(SyncStep step) {
 void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                              std::shared_ptr<SharedObject> (&inputSharedObject)[2]) {
     if (step == SyncStep::UpdateDetection1) {
-        Sentry::Handler::instance()->startPTrace(Sentry::PTraceName::Sync, syncDbId());
+        Sentry::PTraces::Basic::Sync(syncDbId()).start();
     }
-    Sentry::Handler::instance()->stopPTrace(Sentry::SyncSetpToPTraceName(_step), syncDbId());
-    Sentry::Handler::instance()->startPTrace(Sentry::SyncSetpToPTraceName(step), syncDbId());
-    _step = step;
+    Sentry::SyncSetpToPTrace(_step, syncDbId())->stop();
+    Sentry::SyncSetpToPTrace(step, syncDbId())->start();
 
+    _step = step;
     switch (step) {
         case SyncStep::Idle:
             workers[0] = nullptr;
@@ -363,7 +363,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             if (!_syncPal->restart()) {
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
-            Sentry::Handler::instance()->stopPTrace(Sentry::PTraceName::Sync, syncDbId());
+            Sentry::PTraces::Basic::Sync(syncDbId()).stop();
             break;
         default:
             LOG_SYNCPAL_WARN(_logger, "Invalid status");
@@ -378,8 +378,6 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
 void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
                                   std::shared_ptr<SharedObject> (&inputSharedObject)[2], bool reset) {
     LOG_SYNCPAL_DEBUG(_logger, "Restart sync");
-    Sentry::Handler::instance()->stopPTrace(Sentry::PTraceName::Sync,
-                                          syncDbId()); // Stop the transaction of the previous sync.
 
     if (reset) {
         _syncPal->resetSharedObjects();

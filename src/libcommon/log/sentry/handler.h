@@ -25,7 +25,7 @@
 #include "libcommon/utility/types.h"
 #include "user.h"
 #include "ptrace.h"
-#include "ptraceinfo.h"
+#include "ptracedescriptor.h"
 
 namespace KDC {
 namespace Sentry {
@@ -35,6 +35,13 @@ enum class Level { // Not defined in types.h as we don't want to include sentry.
     Warning = SENTRY_LEVEL_WARNING,
     Error = SENTRY_LEVEL_ERROR,
     Fatal = SENTRY_LEVEL_FATAL
+};
+
+// The final status of a performance trace.
+enum class PTraceStatus {
+    Ok = SENTRY_SPAN_STATUS_OK, 
+    Cancelled = SENTRY_SPAN_STATUS_CANCELLED, // The operation hasn't terminated but should not be considered as a faillure.
+    Aborted = SENTRY_SPAN_STATUS_ABORTED, // The operation failed.
 };
 }
 inline std::string toString(Sentry::Level level) {
@@ -80,9 +87,9 @@ class Handler {
         }
 
         // Performances monitoring
-        pTraceId startPTrace(PTraceName pTraceName, int syncDbId = -1);
-        void stopPTrace(PTraceName pTraceName, int syncDbId = -1, bool aborted = false);
-        void stopPTrace(const pTraceId &pTraceId, bool aborted = false);
+        pTraceId startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1);
+        void stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1, PTraceStatus status = PTraceStatus::Ok);
+        void stopPTrace(const pTraceId &pTraceId, PTraceStatus status = PTraceStatus::Ok);
 
 
         // Debugging

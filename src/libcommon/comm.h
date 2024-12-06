@@ -266,8 +266,8 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
             return "UTILITY_QUIT";
-        case RequestNum::UTILITY_REPORT_CLIENT_DISPLAYED:
-            return "UTILITY_REPORT_CLIENT_DISPLAYED";
+        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT:
+            return "UTILITY_DISPLAY_CLIENT_REPORT";
         case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO";
         case RequestNum::UPDATER_STATE:

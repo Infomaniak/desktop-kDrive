@@ -451,7 +451,7 @@ Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &m
     title(title),
     message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 
-void Handler::stopPTrace(const pTraceId &id, bool aborted) {
+void Handler::stopPTrace(const pTraceId &id, PTraceStatus status) {
     if (id == 0) return;
 
     std::scoped_lock lock(_mutex);
@@ -463,7 +463,7 @@ void Handler::stopPTrace(const pTraceId &id, bool aborted) {
 
     // Stop any child PerformanceTrace
     for (const auto &childPerformanceTraceId: performanceTrace.children()) {
-        stopPTrace(childPerformanceTraceId, aborted);
+        stopPTrace(childPerformanceTraceId, status);
     }
 
     // Stop the PerformanceTrace
@@ -472,16 +472,14 @@ void Handler::stopPTrace(const pTraceId &id, bool aborted) {
             assert(false && "Span is not valid");
             return;
         }
-        if (aborted) sentry_span_set_status(performanceTrace.span(), SENTRY_SPAN_STATUS_ABORTED);
+        sentry_span_set_status(performanceTrace.span(), static_cast<sentry_span_status_t>(status));
         sentry_span_finish(performanceTrace.span()); // Automatically stop any child transaction
     } else {
         if (!performanceTrace.transaction()) {
             assert(false && "Transaction is not valid");
             return;
         }
-        if (aborted)
-            sentry_transaction_set_status(performanceTrace.transaction(),
-                                          SENTRY_SPAN_STATUS_ABORTED /*This enum is also valid for a transaction.*/);
+        sentry_transaction_set_status(performanceTrace.transaction(), static_cast<sentry_span_status_t>(status));
         sentry_transaction_finish(performanceTrace.transaction()); // Automatically stop any child transaction
     }
     _performanceTraces.erase(id);
@@ -543,12 +541,12 @@ pTraceId Handler::startSpan(const std::string &name, const std::string &descript
     return traceId;
 }
 
-pTraceId Handler::startPTrace(PTraceName pTraceName, int syncDbId) {
-    if (!_isSentryActivated || pTraceName == PTraceName::None) return 0;
+pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) {
+    if (!_isSentryActivated || pTraceInfo._pTraceName == PTraceName::None) return 0;
 
     std::scoped_lock lock(_mutex);
     pTraceId newPTraceId = 0;
-    if (PTraceInfo pTraceInfo(pTraceName); pTraceInfo._parentPTraceName != PTraceName::None) {
+    if (pTraceInfo._parentPTraceName != PTraceName::None) {
         // Fetch the pTraceMap associated with the provided syncDbId
         auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
         if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
@@ -577,8 +575,8 @@ pTraceId Handler::startPTrace(PTraceName pTraceName, int syncDbId) {
     return newPTraceId;
 }
 
-void Handler::stopPTrace(PTraceName pTraceName, int syncDbId, bool aborted) {
-    if (!_isSentryActivated || pTraceName == PTraceName::None) return;
+void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTraceStatus status) {
+    if (!_isSentryActivated || pTraceInfo._pTraceName == PTraceName::None) return;
 
     std::scoped_lock lock(_mutex);
     auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
@@ -588,13 +586,13 @@ void Handler::stopPTrace(PTraceName pTraceName, int syncDbId, bool aborted) {
     }
     auto &pTraceMap = pTraceMapIt->second;
 
-    auto pTraceIt = pTraceMap.find(pTraceName);
+    auto pTraceIt = pTraceMap.find(pTraceInfo._pTraceName);
     if (pTraceIt == pTraceMap.end() || pTraceIt->second == 0) {
         assert(false && "Transaction is not running");
         return;
     }
 
-    stopPTrace(pTraceIt->second, aborted);
+    stopPTrace(pTraceIt->second, status);
     pTraceIt->second = 0;
 }
 

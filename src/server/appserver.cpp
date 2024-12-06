@@ -34,6 +34,7 @@
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/log/sentry/handler.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
@@ -1906,8 +1907,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             break;
         }
-        case RequestNum::UTILITY_REPORT_CLIENT_DISPLAYED: {
-            Sentry::Handler::instance()->stopPTrace(Sentry::PTraceName::AppStart);
+        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
+            Sentry::PTraces::Basic::AppStart().stop();
         }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId = 0;

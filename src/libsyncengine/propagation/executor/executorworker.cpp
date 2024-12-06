@@ -32,7 +32,7 @@
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
 #include "jobs/jobmanager.h"
-#include "libcommon/log/sentry/scopedptrace.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -69,12 +69,11 @@ void ExecutorWorker::execute() {
 
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
-    auto perfMonitor = Sentry::ScopedPTrace(Sentry::PTraceName::InitProgress, syncDbId());
     initProgressManager();
     uint64_t changesCounter = 0;
     while (!_opList.empty()) { // Same loop twice because we might reschedule the jobs after a pause TODO : refactor double loop
         // Create all the jobs
-        perfMonitor.stopAndStart(Sentry::PTraceName::JobGeneration, syncDbId());
+        Sentry::PTraces::Scoped::JobGeneration perfMonitor(syncDbId());
         while (!_opList.empty()) {
             if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
                 executorExitInfo = exitInfo;
@@ -196,12 +195,13 @@ void ExecutorWorker::execute() {
                 }
             }
         }
-        perfMonitor.stopAndStart(Sentry::PTraceName::waitForAllJobsToFinish, syncDbId());
+        perfMonitor.stop();
+        Sentry::PTraces::Scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
         if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
             executorExitInfo = exitInfo;
             break;
         }
-        perfMonitor.stop();
+        perfMonitorwaitForAllJobsToFinish.stop();
     }
 
     _syncPal->_syncOps->clear();
@@ -226,6 +226,8 @@ void ExecutorWorker::execute() {
 }
 
 void ExecutorWorker::initProgressManager() {
+    Sentry::PTraces::Scoped::InitProgress perfMonitor(syncDbId());
+
     for (const auto syncOpId: _opList) {
         SyncFileItem syncItem;
         SyncOpPtr syncOp = _syncPal->_syncOps->getOp(syncOpId);
