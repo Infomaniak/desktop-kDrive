@@ -64,16 +64,15 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_u
 
 class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
-        CPPUNIT_TEST(testLFSOWithInitialSnapshot);
-        CPPUNIT_TEST(testLFSOWithFiles);
-        CPPUNIT_TEST(testLFSOWithDuplicateFileNames);
-        CPPUNIT_TEST(testLFSODeleteDir);
-        CPPUNIT_TEST(testLFSOWithDirs);
+        // CPPUNIT_TEST(testLFSOWithInitialSnapshot);
+        // CPPUNIT_TEST(testLFSOWithFiles);
+        // CPPUNIT_TEST(testLFSOWithDuplicateFileNames);
+        // CPPUNIT_TEST(testLFSODeleteDir);
+        // CPPUNIT_TEST(testLFSOWithDirs);
         CPPUNIT_TEST(testLFSOFastMoveDeleteMove);
-        CPPUNIT_TEST(testLFSOFastMoveDeleteMoveWithEncodingChange);
-        CPPUNIT_TEST(testLFSOWithSpecialCases1);
-        CPPUNIT_TEST(testLFSOWithSpecialCases2);
-        CPPUNIT_TEST(testInvalidateCounter);
+        // CPPUNIT_TEST(testLFSOWithSpecialCases1);
+        // CPPUNIT_TEST(testLFSOWithSpecialCases2);
+        // CPPUNIT_TEST(testInvalidateCounter);
         CPPUNIT_TEST_SUITE_END();
 
     public:

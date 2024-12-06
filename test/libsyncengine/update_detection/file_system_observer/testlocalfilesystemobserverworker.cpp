@@ -425,7 +425,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
 }
 
 void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Office test
-    LOGW_DEBUG(_logger, L"***** Test fast move/delete *****");
+    LOGW_DEBUG(_logger, L"***** Test fast move/delete *****")
     _syncPal->_localFSObserverWorker->stop();
     _syncPal->_localFSObserverWorker->waitForExit();
     _syncPal->_localFSObserverWorker.reset();
@@ -435,8 +435,11 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     _syncPal->_localFSObserverWorker = slowObserver;
     _syncPal->_localFSObserverWorker->start();
 
+    auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
+    CPPUNIT_ASSERT(localFSO);
+
     int count = 0;
-    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
+    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid() || !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation and folder watcher start
         Utility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
     }
@@ -452,7 +455,9 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
                                         ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-    slowObserver->waitForUpdate();
+    LOG_DEBUG(_logger, "Operations finished")
+
+    CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
 
     FileStat fileStat;
     CPPUNIT_ASSERT(IoHelper::getFileStat(_testFiles[0].second, &fileStat, ioError));
