@@ -82,8 +82,8 @@ void RemoteFileSystemObserverWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
 ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
@@ -354,7 +354,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                                                    << SyncName2WStr(_snapshot->name(item.parentId())).c_str() << L"\"");
 
             SyncPath path;
-            _snapshot->path(item.parentId(), path);
+            _snapshot->path(item.parentId(), path, ignore);
             path /= item.name();
 
             Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,

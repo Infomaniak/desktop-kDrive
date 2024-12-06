@@ -219,8 +219,8 @@ void ExecutorWorker::execute() {
     _syncPal->vfsCleanUpStatuses();
 
     setExitCause(executorExitInfo.cause());
-    setDone(executorExitInfo.code());
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(executorExitInfo.code());
 }
 
 void ExecutorWorker::initProgressManager() {
@@ -405,7 +405,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
 
         if (job && syncOp->affectedNode()->type() == NodeType::Directory) {
             // Propagate the directory creation immediately in order to avoid blocking other dependant job creation
-            if (const ExitInfo exitInfoRunCreateDirJob = runCreateDirJob(syncOp, job); !exitInfoRunCreateDirJob ) {
+            if (const ExitInfo exitInfoRunCreateDirJob = runCreateDirJob(syncOp, job); !exitInfoRunCreateDirJob) {
                 std::shared_ptr<CreateDirJob> createDirJob = std::dynamic_pointer_cast<CreateDirJob>(job);
                 if (createDirJob && (createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST ||
                                      createDirJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN)) {
@@ -423,7 +423,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     }
                     return {ExitCode::BackError, ExitCause::FileAccessError};
                 }
-            return exitInfoRunCreateDirJob;
+                return exitInfoRunCreateDirJob;
             }
 
             if (const ExitInfo exitInfo =
@@ -645,11 +645,14 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 return ExitCode::DataError;
             }
         } else {
+#ifdef _WIN32
+            // Don't do this on macOS as status and pin state are set at the end of the upload
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, true); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Failed to convert to placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()));
                 return exitInfo;
             }
+#endif
 
             uint64_t filesize = 0;
             if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {
@@ -758,6 +761,11 @@ ExitInfo ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
         return ExitCode::SystemError;
     }
 
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(absoluteLocalPath).c_str());
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
     if (exists) {
         LOGW_WARN(_logger, L"Item already exists: " << Utility::formatSyncPath(absoluteLocalPath));
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
@@ -838,7 +846,7 @@ ExitInfo ExecutorWorker::processCreateOrConvertToPlaceholderError(const SyncPath
     if (create && exists) {
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     } else if (!create && !exists) {
-        return {ExitCode::DataError, ExitCause::FileAlreadyExist};
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     }
 
     if (create) {
@@ -1101,7 +1109,11 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                             syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
                             syncOp->affectedNode()->size(),
                             syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
+                    // TODO: Vfs functions should return an ExitInfo struct
                     syncOp->setOmit(true); // Do not propagate change in file system, only in DB
+                    if (!error.empty()) {
+                        return {ExitCode::SystemError, ExitCause::FileAccessError};
+                    }
                     break;
                 }
                 case PinState::Unspecified:
@@ -1428,7 +1440,7 @@ bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
             return false;
         }
 
-        if (newCorrespondingParentNode->isCommonDocumentsFolder()) {
+        if (newCorrespondingParentNode->isCommonDocumentsFolder() && syncOp->nodeType() != NodeType::Directory) {
             return false;
         }
 
@@ -1436,6 +1448,7 @@ bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
             return false;
         }
     }
+
     return true;
 }
 
@@ -1503,6 +1516,7 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
 ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
     ExitInfo exitInfo = ExitCode::Ok;
     while (!_terminatedJobs.empty()) {
+        std::scoped_lock lock(_terminatedJobs);
         // Delete all terminated jobs
         if (exitInfo && _ongoingJobs.find(_terminatedJobs.front()) != _ongoingJobs.end()) {
             auto onGoingJobIt = _ongoingJobs.find(_terminatedJobs.front());
@@ -2497,6 +2511,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveToTrashFailed)): {
             return handleOpsFileAccessError(syncOp, opsExitInfo);
         }
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
+            return handleOpsFileNotFound(syncOp, opsExitInfo);
+        }
         case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist)):
         case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)): {
             return handleOpsAlreadyExistError(syncOp, opsExitInfo);
@@ -2526,6 +2543,16 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
             return exitInfo;
         }
     }
+    _syncPal->setRestart(true);
+    return removeDependentOps(syncOp);
+}
+
+ExitInfo ExecutorWorker::handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
+    if (syncOp->targetSide() != ReplicaSide::Remote) {
+        LOGW_SYNCPAL_WARN(_logger, L"Unhandled target side for " << opsExitInfo << L": " << syncOp->targetSide());
+        return opsExitInfo; // Unable to handle this error
+    }
+
     _syncPal->setRestart(true);
     return removeDependentOps(syncOp);
 }

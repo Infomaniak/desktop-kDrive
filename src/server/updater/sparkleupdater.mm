@@ -126,9 +126,9 @@
 }
 
 // Sent when a valid update is not found.
-- (void)updaterDidNotFindUpdate:(SPUUpdater *)update {
+- (void)updaterDidNotFindUpdate:(SPUUpdater *)update error:(nonnull NSError *)error {
     (void)update;
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "No valid update found");
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "No valid update found - Error code: " << [error code] << ", reason: " << [error.userInfo[SPUNoUpdateFoundReasonKey] integerValue]);
 }
 
 // Sent immediately before installing the specified update.
@@ -187,7 +187,14 @@ SparkleUpdater::~SparkleUpdater() {
 }
 
 void SparkleUpdater::onUpdateFound() {
-    if (isVersionSkipped(versionInfo().fullVersion())) return;
+    if (isVersionSkipped(versionInfo().fullVersion())) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo().fullVersion().c_str() << " is skipped.");
+        return;
+    }
+    if ([d->updater sessionInProgress]) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "An update window is already opened or installation is in progress. No need to start a new one.");
+        return;
+    }
     startInstaller();
 }
 
@@ -200,6 +207,12 @@ void SparkleUpdater::startInstaller() {
 
     [d->updater checkForUpdatesInBackground];
     [d->spuStandardUserDriver showUpdateInFocus];
+}
+
+void SparkleUpdater::unskipVersion() {
+    // Discard skipped version in Sparkle
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@ "SUSkippedVersion"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 void SparkleUpdater::reset(const std::string &url) {

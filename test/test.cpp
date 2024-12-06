@@ -18,16 +18,15 @@
 
 #include "testincludes.h"
 
-#include "libcommonserver/log/log.h"
 #include "libcommon/log/sentry/sentryhandler.h"
-#include "utility/utility.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/initializer.h>
 
 int runTestSuite(const std::string &logFileName) {
     /* initialize random seed: */
     srand(static_cast<unsigned int>(time(NULL)));
-
 
     // Disable sentry
     KDC::SentryHandler::init(KDC::AppType::None);

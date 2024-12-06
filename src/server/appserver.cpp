@@ -2106,7 +2106,7 @@ void AppServer::cancelLogUpload() {
     sendLogUploadStatusUpdated(LogUploadState::CancelRequested, 0);
 }
 
-void AppServer::uploadLog(bool includeArchivedLogs) {
+ExitInfo AppServer::uploadLog(bool includeArchivedLogs) {
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::None, found) ||
                             !found) { // Reset status
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
@@ -2143,12 +2143,13 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
     if (exitCause == ExitCause::OperationCanceled) {
         LOG_DEBUG(_logger, "Log transfert canceled");
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
-        return;
+        return {exitCode, exitCause};
     } else if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: code=" << exitCode << " cause=" << exitCause);
         addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
     }
     sendLogUploadStatusUpdated(exitCode == ExitCode::Ok ? LogUploadState::Success : LogUploadState::Failed, 0);
+    return {exitCode, exitCause};
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {
@@ -2391,12 +2392,12 @@ bool AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const Sync
         return false;
     }
 
-    QByteArray fileId(id.c_str());
-    QString *errorStr = nullptr;
-    if (!_vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, errorStr)) {
+    const QByteArray fileId(id.c_str());
+    QString errorStr;
+    if (!_vfsMap[syncDbId]->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId, &errorStr)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Vfs::updateMetadata for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
-        error = errorStr ? errorStr->toStdString() : "";
+        error = errorStr.toStdString();
         return false;
     }
 
@@ -4354,8 +4355,24 @@ void AppServer::onRestartSyncs() {
                         continue;
                     }
 
-                    // Start sync
-                    syncPalMapElt.second->start();
+                    // Start SyncPal if not paused
+                    Sync sync;
+                    bool found = false;
+                    if (!ParmsDb::instance()->selectSync(syncPalMapElt.first, sync, found)) {
+                        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
+                        continue;
+                    }
+
+                    if (!found) {
+                        LOG_WARN(Log::instance()->getLogger(),
+                                 "Sync not found in sync table for syncDbId=" << syncPalMapElt.first);
+                        continue;
+                    }
+
+                    if (!sync.paused()) {
+                        // Start sync
+                        syncPalMapElt.second->start();
+                    }
                 }
             }
         }

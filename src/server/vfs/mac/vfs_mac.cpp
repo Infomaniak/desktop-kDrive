@@ -53,7 +53,7 @@ VfsMac::VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent) :
         // Start worker threads
         for (int i = 0; i < NB_WORKERS; i++) {
             for (int j = 0; j < s_nb_threads[i]; j++) {
-                QThread *workerThread = new QThread();
+                QtLoggingThread *workerThread = new QtLoggingThread();
                 _workerInfo[i]._threadList.append(workerThread);
                 Worker *worker = new Worker(this, i, j, logger());
                 worker->moveToThread(workerThread);
@@ -103,6 +103,8 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
     }
 
     if (!installationDone) {
+        activationDone = false;
+        connectionDone = false;
         installationDone = _connector->install(activationDone);
         if (!installationDone) {
             LOG_WARN(logger(), "Error in LiteSyncExtConnector::install!");
@@ -112,6 +114,7 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
 
     if (!activationDone) {
         LOG_INFO(logger(), "LiteSync extension activation pending");
+        connectionDone = false;
         return false;
     }
 

@@ -33,9 +33,8 @@ void ConflictFinderWorker::execute() {
     findConflicts();
     exitCode = ExitCode::Ok;
 
-    setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
-    return;
+    setDone(exitCode);
 }
 
 void ConflictFinderWorker::findConflicts() {

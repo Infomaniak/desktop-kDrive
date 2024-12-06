@@ -28,7 +28,6 @@
 #include <variant>
 #include <qdebug.h>
 #include <signal.h>
-#include "libcommon/log/customlogwstream.h"
 
 namespace KDC {
 
@@ -118,11 +117,14 @@ concept EnumClass = std::is_enum_v<C>;
 template<class C> // Any enum class that can be converted to (and from) int
 concept IntegralEnum = EnumClass<C> && std::is_convertible_v<std::underlying_type_t<C>, int>;
 
-template<class C> // Any enum class that  can be printed (with enumClassToString)
-concept PrintableEnum = EnumClass<C> && requires(C e) { toString(e); };
+template<class C> // Any types that can be converted to an int
+concept ConvertibleToInt = requires(C e) { static_cast<int>(e); };
+
+template<class C> // Any types that can be converted to string
+concept LogableType = requires(C e) { toString(e); };
 
 // Converters
-template<IntegralEnum C>
+template<ConvertibleToInt C>
 inline constexpr int toInt(C e) {
     return static_cast<int>(e);
 }
@@ -168,7 +170,7 @@ enum class NodeType {
 };
 std::string toString(NodeType e);
 
-enum class OperationType { None = 0x00, Create = 0x01, Move = 0x02, Edit = 0x04, Delete = 0x08, Rights = 0x10 };
+enum class OperationType { None = 0x00, Create = 0x01, Move = 0x02, Edit = 0x04, Delete = 0x08, Rights = 0x10, MoveOut = 0x20 };
 std::string toString(OperationType e);
 
 enum class ExitCode {
@@ -246,6 +248,7 @@ struct ExitInfo {
         const ExitCause &cause() const { return _cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
+        explicit operator std::string() const { return "ExitInfo{" + toString(code()) + ", " + toString(cause()) + "}"; }
         constexpr operator bool() const { return _code == ExitCode::Ok; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
@@ -254,6 +257,7 @@ struct ExitInfo {
         ExitCode _code{ExitCode::Unknown};
         ExitCause _cause{ExitCause::Unknown};
 };
+std::string toString(ExitInfo e);
 
 // Conflict types ordered by priority
 enum class ConflictType {
@@ -417,6 +421,7 @@ enum class IoError {
     MaxDepthExceeded,
     NoSuchFileOrDirectory,
     ResultOutOfRange,
+    CrossDeviceLink,
     Unknown
 };
 std::string toString(IoError e);
@@ -589,27 +594,22 @@ std::wstring stringToWideString(const std::string &str); // Convert string to ws
 // Stream Operator (toString)
 static const std::string noConversionStr("No conversion to string available");
 
-template<PrintableEnum C>
+template<LogableType C>
 std::string toStringWithCode(C e) {
     return toString(e) + "(" + std::to_string(toInt(e)) + ")"; // Example: "Ok(1)"
 }
 
-template<PrintableEnum C>
+template<LogableType C>
 inline std::wostream &operator<<(std::wostream &wos, C e) {
     return wos << typesUtility::stringToWideString(toStringWithCode(e));
 }
 
-template<PrintableEnum C>
+template<LogableType C>
 inline std::ostream &operator<<(std::ostream &os, C e) {
     return os << toStringWithCode(e);
 }
 
-template<PrintableEnum C>
-inline CustomLogWStream &operator<<(CustomLogWStream &os, C e) {
-    return os << typesUtility::stringToWideString(toStringWithCode(e));
-}
-
-template<PrintableEnum C>
+template<LogableType C>
 inline QDebug &operator<<(QDebug &os, C e) {
     return os << toStringWithCode(e).c_str();
 }

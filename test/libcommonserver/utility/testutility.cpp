@@ -19,9 +19,10 @@
 #include "testutility.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "config.h"
-
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
-#include "Poco/URI.h"
+#include "libcommonserver/log/log.h"
+
+#include <Poco/URI.h>
 
 #include <climits>
 #include <iostream>
@@ -105,8 +106,9 @@ void TestUtility::testMsSleep() {
     auto end = std::chrono::high_resolution_clock::now();
     auto timeSpan = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << " timeSpan=" << timeSpan.count();
-    // CPPUNIT_ASSERT(timeSpan.count() > 800 && timeSpan.count() < 1200);
-    CPPUNIT_ASSERT(true);
+    long long timeSpanCount = static_cast<long long>(timeSpan.count());
+    CPPUNIT_ASSERT_GREATER((long long) (800), timeSpanCount);
+    CPPUNIT_ASSERT_LESS((long long) (1200), timeSpanCount);
 }
 
 void TestUtility::testV2ws() {
@@ -480,6 +482,31 @@ void TestUtility::testIsSameOrParentPath() {
     CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a", ""));
     CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b"));
     CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a"));
+}
+
+void TestUtility::testUserName() {
+    std::string userName(Utility::userName());
+    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName.c_str());
+
+#ifdef _WIN32
+    const char *value = std::getenv("USERPROFILE");
+    CPPUNIT_ASSERT(value);
+    const SyncPath homeDir(value);
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+
+    if (homeDir.filename().native() == std::wstring(L"systemprofile")) {
+        // CI execution
+        CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), userName);
+    } else {
+        CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename().native()), userName);
+    }
+#else
+    const char *value = std::getenv("HOME");
+    CPPUNIT_ASSERT(value);
+    const SyncPath homeDir(value);
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+    CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), userName);
+#endif
 }
 
 } // namespace KDC

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 
 #include <list>
@@ -31,7 +32,7 @@ class LocalFileSystemObserverWorker;
 class FolderWatcher {
     public:
         FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPath &rootFolder);
-        virtual ~FolderWatcher();
+        virtual ~FolderWatcher() = default;
 
         const log4cplus::Logger &logger() const { return _logger; }
 
@@ -54,7 +55,7 @@ class FolderWatcher {
         bool _stop = false;
 
     private:
-        static void *executeFunc(void *thisWorker);
+        static void executeFunc(void *thisWorker);
 
         std::unique_ptr<std::thread> _thread = nullptr;
         ExitInfo _exitInfo = ExitCode::Ok;
