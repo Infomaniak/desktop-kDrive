@@ -219,8 +219,8 @@ void ExecutorWorker::execute() {
     _syncPal->vfsCleanUpStatuses();
 
     setExitCause(executorExitInfo.cause());
-    setDone(executorExitInfo.code());
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(executorExitInfo.code());
 }
 
 void ExecutorWorker::initProgressManager() {
@@ -645,11 +645,14 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 return ExitCode::DataError;
             }
         } else {
+#ifdef _WIN32
+            // Don't do this on macOS as status and pin state are set at the end of the upload
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, true); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Failed to convert to placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()));
                 return exitInfo;
             }
+#endif
 
             uint64_t filesize = 0;
             if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {

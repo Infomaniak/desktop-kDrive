@@ -23,15 +23,19 @@
 #include "libcommon/info/nodeinfo.h"
 
 #include <string>
+#include <thread>
+
+#ifdef _WIN32
+#include <strsafe.h>
+#endif
 
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QDataStream>
 #include <QIODevice>
+#include <QThread>
 
-#ifdef _WIN32
-#include <strsafe.h>
-#endif
+#include <log4cplus/log4cplus.h>
 
 namespace KDC {
 struct COMMON_EXPORT CommonUtility {
@@ -120,6 +124,24 @@ struct COMMON_EXPORT CommonUtility {
 
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
+};
+
+struct COMMON_EXPORT StdLoggingThread : public std::thread {
+        template<class... Args>
+        explicit StdLoggingThread(void (*runFct)(Args...), Args &&...args) :
+            std::thread(
+                    [=]() {
+                        runFct(args...);
+                        log4cplus::threadCleanup();
+                    },
+                    args...) {}
+};
+
+struct COMMON_EXPORT QtLoggingThread : public QThread {
+        void run() override {
+            QThread::run();
+            log4cplus::threadCleanup();
+        }
 };
 
 struct ArgsReader {

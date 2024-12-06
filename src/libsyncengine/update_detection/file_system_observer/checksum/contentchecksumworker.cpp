@@ -101,8 +101,8 @@ void ContentChecksumWorker::execute() {
         Utility::msleep(10);
     }
 
-    setDone(exitCode);
     LOG_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
 } // namespace KDC

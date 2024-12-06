@@ -20,6 +20,7 @@
 
 #include "syncpal.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
 #include <thread>
 
@@ -73,7 +74,7 @@ class ISyncWorker {
         inline int syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
 
     private:
-        static void *executeFunc(void *thisWorker);
+        static void executeFunc(void *thisWorker);
 
         const std::string _name;
         const std::string _shortName;
