@@ -520,7 +520,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
     if (syncOp->targetSide() == ReplicaSide::Local) {
         SyncPath relativeLocalFilePath = newCorrespondingParentNode->getPath() / syncOp->newName();
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
-        syncOp->setTargetPath(relativeLocalFilePath);
+        syncOp->setLocalCreationTargetPath(relativeLocalFilePath);
 
         bool placeholderCreation = isLiteSyncActivated() && syncOp->affectedNode()->type() == NodeType::File;
         if (placeholderCreation && syncOp->affectedNode()->id().has_value()) {
@@ -2533,7 +2533,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
 ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
         // The item does not exist yet locally, we will only tmpBlacklist the remote item
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->targetPath()); !exitInfo) {
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->localCreationTargetPath()); !exitInfo) {
             return exitInfo;
         }
     } else {
