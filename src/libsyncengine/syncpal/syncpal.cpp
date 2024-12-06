@@ -509,7 +509,6 @@ void SyncPal::loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &c
 
 void SyncPal::createSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Create shared objects");
-    _interruptSync = std::make_shared<bool>(false);
     _localSnapshot = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
     _remoteSnapshot = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
     _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
@@ -527,7 +526,6 @@ void SyncPal::createSharedObjects() {
 
 void SyncPal::freeSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Free shared objects");
-    _interruptSync.reset();
     _localSnapshot.reset();
     _remoteSnapshot.reset();
     _localSnapshotCopy.reset();
@@ -541,7 +539,6 @@ void SyncPal::freeSharedObjects() {
     _progressInfo.reset();
 
     // Check that there is no memory leak
-    ASSERT(_interruptSync.use_count() == 0);
     ASSERT(_localSnapshot.use_count() == 0);
     ASSERT(_remoteSnapshot.use_count() == 0);
     ASSERT(_localSnapshotCopy.use_count() == 0);
