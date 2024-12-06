@@ -162,9 +162,10 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             // Check that the file/directory really does not exist on replica
             bool isExcluded = false;
             if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
+                // Can happen only on local side
                 if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)) {
                     // Blacklist node
-                    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(dbPath); !exitInfo) {
+                    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(localDbPath); !exitInfo) {
                         return exitInfo;
                     }
 
