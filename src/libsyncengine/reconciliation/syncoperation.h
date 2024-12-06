@@ -43,8 +43,15 @@ class SyncOperation {
         void setOmit(bool newOmit) { _omit = newOmit; }
         [[nodiscard]] const SyncName &newName() const { return _newName; }
         void setNewName(const SyncName &newNewName) { _newName = newNewName; }
-        [[nodiscard]] const SyncPath &targetPath() const { return _targetPath; }
-        void setTargetPath(const SyncPath &targetPath) { _targetPath = targetPath; }
+        [[nodiscard]] const SyncPath &targetPath() const {
+            assert(_type == OperationType::Create && _targetSide == ReplicaSide::Local);
+            assert(!_targetPath.empty());
+            return _targetPath;
+        }
+        void setTargetPath(const SyncPath &targetPath) {
+            assert(_type == OperationType::Create && _targetSide == ReplicaSide::Local);
+            _targetPath = targetPath;
+        }
         [[nodiscard]] const std::shared_ptr<Node> &newParentNode() const { return _newParentNode; }
         void setNewParentNode(const std::shared_ptr<Node> &newParentNode) { _newParentNode = newParentNode; }
         [[nodiscard]] bool hasConflict() const { return _conflict.type() != ConflictType::None; }
