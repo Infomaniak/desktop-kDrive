@@ -106,8 +106,9 @@ void TestUtility::testMsSleep() {
     auto end = std::chrono::high_resolution_clock::now();
     auto timeSpan = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << " timeSpan=" << timeSpan.count();
-    // CPPUNIT_ASSERT(timeSpan.count() > 800 && timeSpan.count() < 1200);
-    CPPUNIT_ASSERT(true);
+    long long timeSpanCount = static_cast<long long>(timeSpan.count());
+    CPPUNIT_ASSERT_GREATER((long long) (800), timeSpanCount);
+    CPPUNIT_ASSERT_LESS((long long) (1200), timeSpanCount);
 }
 
 void TestUtility::testV2ws() {

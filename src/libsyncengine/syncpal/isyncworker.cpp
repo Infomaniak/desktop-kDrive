@@ -28,15 +28,11 @@ ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &na
 
 ISyncWorker::~ISyncWorker() {
     if (_isRunning) {
-        stop();
-    }
-
-    if (_thread && _thread->joinable()) {
-        _thread->join();
-        _thread = nullptr;
+        ISyncWorker::stop();
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " destroyed");
+    log4cplus::threadCleanup();
 }
 
 void ISyncWorker::start() {
@@ -46,12 +42,6 @@ void ISyncWorker::start() {
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " start");
-
-    if (_thread && _thread->joinable()) {
-        _thread->join();
-        _thread.release();
-        _thread = nullptr;
-    }
 
     _stopAsked = false;
     _isRunning = true;
@@ -114,14 +104,11 @@ void ISyncWorker::stop() {
 }
 
 void ISyncWorker::waitForExit() {
-    if (!_isRunning) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is not running");
-        return;
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " wait for exit");
+
+    if (_thread && _thread->joinable()) {
+        _thread->join();
     }
-
-    _thread->join();
-
-    _isRunning = false;
 }
 
 void ISyncWorker::setPauseDone() {
@@ -150,11 +137,12 @@ void ISyncWorker::setDone(ExitCode exitCode) {
     _isRunning = false;
     _stopAsked = false;
     _exitCode = exitCode;
+    log4cplus::threadCleanup();
 }
 
-void *ISyncWorker::executeFunc(void *thisWorker) {
+void ISyncWorker::executeFunc(void *thisWorker) {
     ((ISyncWorker *) thisWorker)->execute();
-    return nullptr;
+    log4cplus::threadCleanup();
 }
 
 } // namespace KDC

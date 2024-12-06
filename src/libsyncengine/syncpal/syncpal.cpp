@@ -62,8 +62,6 @@ SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, const b
     if (!createOrOpenDb(syncDbPath, version)) {
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
-
-    createSharedObjects();
 }
 
 SyncPal::SyncPal(const int syncDbId_, const std::string &version) : _logger(Log::instance()->getLogger()) {
@@ -166,8 +164,6 @@ SyncPal::SyncPal(const int syncDbId_, const std::string &version) : _logger(Log:
 
     fixInconsistentFileNames();
     fixNodeTableDeleteItemsWithNullParentNodeId();
-
-    createSharedObjects();
 }
 
 SyncPal::~SyncPal() {
@@ -512,7 +508,8 @@ void SyncPal::loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &c
 }
 
 void SyncPal::createSharedObjects() {
-    // Create shared objects
+    LOG_SYNCPAL_DEBUG(_logger, "Create shared objects");
+    _interruptSync = std::make_shared<bool>(false);
     _localSnapshot = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
     _remoteSnapshot = std::make_shared<Snapshot>(ReplicaSide::Remote, _syncDb->rootNode());
     _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSide::Local, _syncDb->rootNode());
@@ -523,26 +520,66 @@ void SyncPal::createSharedObjects() {
     _remoteUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Remote, _syncDb->rootNode());
     _conflictQueue = std::make_shared<ConflictQueue>(_localUpdateTree, _remoteUpdateTree);
     _syncOps = std::make_shared<SyncOperationList>();
+    _progressInfo = std::make_shared<ProgressInfo>(shared_from_this());
 
-    // Init SyncNode table cache
-    SyncNodeCache::instance()->initCache(syncDbId(), _syncDb);
+    initSharedObjects();
+}
+
+void SyncPal::freeSharedObjects() {
+    LOG_SYNCPAL_DEBUG(_logger, "Free shared objects");
+    _interruptSync.reset();
+    _localSnapshot.reset();
+    _remoteSnapshot.reset();
+    _localSnapshotCopy.reset();
+    _remoteSnapshotCopy.reset();
+    _localOperationSet.reset();
+    _remoteOperationSet.reset();
+    _localUpdateTree.reset();
+    _remoteUpdateTree.reset();
+    _conflictQueue.reset();
+    _syncOps.reset();
+    _progressInfo.reset();
+
+    // Check that there is no memory leak
+    ASSERT(_interruptSync.use_count() == 0);
+    ASSERT(_localSnapshot.use_count() == 0);
+    ASSERT(_remoteSnapshot.use_count() == 0);
+    ASSERT(_localSnapshotCopy.use_count() == 0);
+    ASSERT(_remoteSnapshotCopy.use_count() == 0);
+    ASSERT(_localOperationSet.use_count() == 0);
+    ASSERT(_remoteOperationSet.use_count() == 0);
+    ASSERT(_localUpdateTree.use_count() == 0);
+    ASSERT(_remoteUpdateTree.use_count() == 0);
+    ASSERT(_conflictQueue.use_count() == 0);
+    ASSERT(_syncOps.use_count() == 0);
+    ASSERT(_progressInfo.use_count() == 0);
+}
+
+void SyncPal::initSharedObjects() {
+    LOG_SYNCPAL_DEBUG(_logger, "Init shared objects");
+    if (_localUpdateTree) _localUpdateTree->init();
+    if (_remoteUpdateTree) _remoteUpdateTree->init();
+
+    setSyncHasFullyCompleted(false);
 }
 
 void SyncPal::resetSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects");
 
-    _localOperationSet->clear();
-    _remoteOperationSet->clear();
-    _localUpdateTree->init();
-    _remoteUpdateTree->init();
-    _conflictQueue->clear();
-    _syncOps->clear();
-    setSyncHasFullyCompleted(false);
+    if (_localOperationSet) _localOperationSet->clear();
+    if (_remoteOperationSet) _remoteOperationSet->clear();
+    if (_localUpdateTree) _localUpdateTree->clear();
+    if (_remoteUpdateTree) _remoteUpdateTree->clear();
+    if (_conflictQueue) _conflictQueue->clear();
+    if (_syncOps) _syncOps->clear();
+
+    initSharedObjects();
 
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects done");
 }
 
 void SyncPal::createWorkers() {
+    LOG_SYNCPAL_DEBUG(_logger, "Create workers");
 #if defined(_WIN32)
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_win(shared_from_this(), "Local File System Observer", "LFSO"));
@@ -574,7 +611,8 @@ void SyncPal::createWorkers() {
     _tmpBlacklistManager = std::shared_ptr<TmpBlacklistManager>(new TmpBlacklistManager(shared_from_this()));
 }
 
-void SyncPal::free() {
+void SyncPal::freeWorkers() {
+    LOG_SYNCPAL_DEBUG(_logger, "Free workers");
     _localFSObserverWorker.reset();
     _remoteFSObserverWorker.reset();
     _computeFSOperationsWorker.reset();
@@ -588,31 +626,6 @@ void SyncPal::free() {
     _executorWorker.reset();
     _syncPalWorker.reset();
     _tmpBlacklistManager.reset();
-
-    _interruptSync.reset();
-    _localSnapshot.reset();
-    _remoteSnapshot.reset();
-    _localSnapshotCopy.reset();
-    _remoteSnapshotCopy.reset();
-    _localOperationSet.reset();
-    _remoteOperationSet.reset();
-    _localUpdateTree.reset();
-    _remoteUpdateTree.reset();
-    _conflictQueue.reset();
-    _syncOps.reset();
-
-    // Check that there is no memory leak
-    ASSERT(_interruptSync.use_count() == 0);
-    ASSERT(_localSnapshot.use_count() == 0);
-    ASSERT(_remoteSnapshot.use_count() == 0);
-    ASSERT(_localSnapshotCopy.use_count() == 0);
-    ASSERT(_remoteSnapshotCopy.use_count() == 0);
-    ASSERT(_localOperationSet.use_count() == 0);
-    ASSERT(_remoteOperationSet.use_count() == 0);
-    ASSERT(_localUpdateTree.use_count() == 0);
-    ASSERT(_remoteUpdateTree.use_count() == 0);
-    ASSERT(_conflictQueue.use_count() == 0);
-    ASSERT(_syncOps.use_count() == 0);
 }
 
 ExitCode SyncPal::setSyncPaused(bool value) {
@@ -643,6 +656,9 @@ bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &vers
         _syncDb.reset();
         return false;
     }
+
+    // Init SyncNode table cache
+    SyncNodeCache::instance()->initCache(syncDbId(), _syncDb);
 
     return true;
 }
@@ -943,8 +959,8 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist ? snapshot(ReplicaSide::Local, true)->exists(*nodeIdIt)
-                                                                        : snapshot(ReplicaSide::Remote, true)->exists(*nodeIdIt);
+        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist ? snapshotCopy(ReplicaSide::Local)->exists(*nodeIdIt)
+                                                                        : snapshotCopy(ReplicaSide::Remote)->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
@@ -1193,15 +1209,12 @@ void SyncPal::start() {
     }
     setVfsMode(sync.virtualFileMode());
 
-    // Reset shared objects
-    resetSharedObjects();
-
     // Clear tmp blacklist
     SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpRemoteBlacklist, std::unordered_set<NodeId>());
     SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpLocalBlacklist, std::unordered_set<NodeId>());
 
-    // Create ProgressInfo
-    createProgressInfo();
+    // Create and init shared objects
+    createSharedObjects();
 
     // Create workers
     createWorkers();
@@ -1281,13 +1294,11 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
         }
     }
 
-    if (quit) {
-        // Free workers
-        free();
+    // Free workers
+    freeWorkers();
 
-        // Free progressInfo
-        _progressInfo.reset();
-    }
+    // Free shared objects
+    freeSharedObjects();
 
     _syncDb->setAutoDelete(clear);
 }

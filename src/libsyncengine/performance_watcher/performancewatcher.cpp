@@ -59,7 +59,7 @@ void PerformanceWatcher::stop() {
 }
 
 PerformanceWatcher::PerformanceWatcher() {
-    _thread = std::make_unique<std::thread>(run);
+    _thread = std::make_unique<StdLoggingThread>(run);
     LOG_DEBUG(_logger, "Performance Watcher started");
 }
 

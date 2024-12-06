@@ -79,7 +79,8 @@ bool UploadJob::canRun() {
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart - path=" << Path2WStr(_filePath));
+        LOGW_DEBUG(_logger,
+                   L"Item does not exist anymore. Aborting current sync and restart " << Utility::formatSyncPath(_filePath));
         _exitCode = ExitCode::NeedRestart;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
@@ -184,10 +185,14 @@ std::string UploadJob::getContentType(bool &canceled) {
 }
 
 ExitInfo UploadJob::readFile() {
-    std::ifstream file(_filePath, std::ios_base::in | std::ios_base::binary);
-    if (!file.is_open()) {
-        LOGW_WARN(_logger, L"Failed to open file - path=" << Path2WStr(_filePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    // Some applications generate locked temporary files during save operations. To avoid spurious "access denied" errors,
+    // we retry for 10 seconds, which is usually sufficient for the application to delete the tmp file. If the file is still
+    // locked after 10 seconds, a file access error is displayed to the user. Proper handling is also implemented for
+    // "file not found" errors.
+    std::ifstream file;
+    if (ExitInfo exitInfo = IoHelper::openFile(_filePath, file, 10); !exitInfo) {
+        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath));
+        return exitInfo;
     }
 
     std::ostringstream ostrm;

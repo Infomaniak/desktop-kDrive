@@ -129,8 +129,8 @@ void OperationGeneratorWorker::execute() {
         }
     }
 
-    setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
 void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> currentNode,

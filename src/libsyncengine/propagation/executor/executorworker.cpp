@@ -219,8 +219,8 @@ void ExecutorWorker::execute() {
     _syncPal->vfsCleanUpStatuses();
 
     setExitCause(executorExitInfo.cause());
-    setDone(executorExitInfo.code());
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(executorExitInfo.code());
 }
 
 void ExecutorWorker::initProgressManager() {
@@ -645,11 +645,14 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 return ExitCode::DataError;
             }
         } else {
+#ifdef _WIN32
+            // Don't do this on macOS as status and pin state are set at the end of the upload
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, true); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Failed to convert to placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()));
                 return exitInfo;
             }
+#endif
 
             uint64_t filesize = 0;
             if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {
@@ -1513,6 +1516,7 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
 ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
     ExitInfo exitInfo = ExitCode::Ok;
     while (!_terminatedJobs.empty()) {
+        std::scoped_lock lock(_terminatedJobs);
         // Delete all terminated jobs
         if (exitInfo && _ongoingJobs.find(_terminatedJobs.front()) != _ongoingJobs.end()) {
             auto onGoingJobIt = _ongoingJobs.find(_terminatedJobs.front());
@@ -2507,6 +2511,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveToTrashFailed)): {
             return handleOpsFileAccessError(syncOp, opsExitInfo);
         }
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
+            return handleOpsFileNotFound(syncOp, opsExitInfo);
+        }
         case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist)):
         case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)): {
             return handleOpsAlreadyExistError(syncOp, opsExitInfo);
@@ -2544,6 +2551,16 @@ ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo ops
     }
     _syncPal->setRestart(true);
     return removeDependentOps(localBlacklistedNode, remoteBlacklistedNode, syncOp->type());
+}
+
+ExitInfo ExecutorWorker::handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
+    if (syncOp->targetSide() != ReplicaSide::Remote) {
+        LOGW_SYNCPAL_WARN(_logger, L"Unhandled target side for " << opsExitInfo << L": " << syncOp->targetSide());
+        return opsExitInfo; // Unable to handle this error
+    }
+
+    _syncPal->setRestart(true);
+    return removeDependentOps(syncOp);
 }
 
 ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo) {
