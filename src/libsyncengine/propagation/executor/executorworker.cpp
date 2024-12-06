@@ -2572,9 +2572,13 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo o
     SyncPath relativeRemotePath;
     if (syncOp->targetSide() == ReplicaSide::Local) {
         relativeRemotePath = syncOp->affectedNode()->getPath();
-        // In case of a create the corresponding node is not set, remote and local relative path are the same
-        relativeLocalPath = syncOp->correspondingNode() ? syncOp->correspondingNode()->parentNode()->getPath() / syncOp->newName()
-                                                        : relativeRemotePath;
+        if (syncOp->type() == OperationType::Create) {
+            relativeLocalPath = syncOp->localCreationTargetPath();
+        } else {
+            assert(syncOp->type() == OperationType::Move);
+            assert(syncOp->correspondingNode());
+            relativeLocalPath = syncOp->correspondingNode()->parentNode()->getPath() / syncOp->newName();
+        }
 
         if (_syncPal->isTmpBlacklisted(relativeLocalPath, ReplicaSide::Local)) {
             LOGW_SYNCPAL_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath)
