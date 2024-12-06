@@ -40,6 +40,9 @@ class GetAppVersionJob : public AbstractNetworkJob {
 
         std::string getUrl() override { return INFOMANIAK_API_URL + getSpecificUrl(); }
 
+        static std::string toStr(Platform platform);
+        static std::string toStr(DistributionChannel channel);
+
     protected:
         bool handleResponse(std::istream &is) override;
 

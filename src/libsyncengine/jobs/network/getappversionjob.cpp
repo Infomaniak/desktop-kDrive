@@ -45,7 +45,7 @@ GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &a
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-std::string toStr(const Platform platform) {
+std::string GetAppVersionJob::toStr(const Platform platform) {
     switch (platform) {
         case Platform::MacOS:
             return platformMacOsKey;
@@ -66,6 +66,21 @@ DistributionChannel toDistributionChannel(const std::string &str) {
     if (str == versionTypeBetaKey) return DistributionChannel::Beta;
     if (str == versionTypeInternalKey) return DistributionChannel::Internal;
     return DistributionChannel::Unknown;
+}
+
+std::string GetAppVersionJob::toStr(const DistributionChannel channel) {
+    switch (channel) {
+        case DistributionChannel::Prod:
+            return versionTypeProdKey;
+        case DistributionChannel::Next:
+            return versionTypeNextKey;
+        case DistributionChannel::Beta:
+            return versionTypeBetaKey;
+        case DistributionChannel::Internal:
+            return versionTypeInternalKey;
+        default:
+            return "unknown";
+    }
 }
 
 std::string GetAppVersionJob::getSpecificUrl() {

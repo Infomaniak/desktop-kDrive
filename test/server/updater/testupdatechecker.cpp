@@ -34,14 +34,53 @@ static constexpr uint64_t mediumBuildVersionValue = 20240604;
 static const std::string lowTagValue = "1.1.1";
 static constexpr uint64_t lowBuildVersionValue = 20200604;
 
-std::string generateJsonReply(const std::string &version, uint64_t buildVersion) {
-#if defined(__unix__) && !defined(__APPLE__)    // Require c++20
-    return "";
-#else
-    return std::format(
-            R"({{"result":"success","data":{{"application_id":27,"prod_version":"production","version":{{"tag":"{0}","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},"application":{{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"{0}","next_version_rate":0,"published_versions":[{{"tag":"{0}","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},{{"tag":"{0}","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},{{"tag":"{0}","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}},{{"tag":"{0}","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"{1}","build_min_os_version":"xxxx","download_link":"test","data":["[]"]}}]}}}}}})",
-            version, buildVersion);
-#endif
+std::string generateJsonReply(const std::string &tag, uint64_t buildVersion) {
+    Poco::JSON::Object versionObj;
+    versionObj.set("tag", tag);
+    versionObj.set("tag_updated_at", "2020-06-04 15:06:37");
+    versionObj.set("version_changelog", "test");
+    versionObj.set("type", "production");
+    versionObj.set("build_version", buildVersion);
+    versionObj.set("build_min_os_version", "XXXX");
+    versionObj.set("download_link", "test");
+
+    Poco::JSON::Array publishedVersionsArray;
+    for (const auto channel:
+         {DistributionChannel::Prod, DistributionChannel::Next, DistributionChannel::Beta, DistributionChannel::Internal}) {
+        Poco::JSON::Object tmpObj;
+        tmpObj.set("tag", tag);
+        tmpObj.set("tag_updated_at", "2020-06-04 15:06:37");
+        tmpObj.set("version_changelog", "test");
+        tmpObj.set("type", GetAppVersionJob::toStr(channel));
+        tmpObj.set("build_version", buildVersion);
+        tmpObj.set("build_min_os_version", "XXXX");
+        tmpObj.set("download_link", "test");
+        publishedVersionsArray.add(tmpObj);
+    }
+
+    Poco::JSON::Object applicationObj;
+    applicationObj.set("id", "27");
+    applicationObj.set("name", "com.infomaniak.drive");
+    applicationObj.set("platform", "mac-os");
+    applicationObj.set("store", "kStore");
+    applicationObj.set("api_id", "com.infomaniak.drive");
+    applicationObj.set("min_version", "3.6.2");
+    applicationObj.set("next_version_rate", "0");
+    applicationObj.set("published_versions", publishedVersionsArray);
+
+    Poco::JSON::Object dataObj;
+    dataObj.set("application_id", "27");
+    dataObj.set("prod_version", "production");
+    dataObj.set("version", versionObj);
+    dataObj.set("application", applicationObj);
+
+    Poco::JSON::Object mainObj;
+    mainObj.set("result", "success");
+    mainObj.set("data", dataObj);
+
+    std::ostringstream out;
+    mainObj.stringify(out);
+    return out.str();
 }
 
 class GetAppVersionJobTest final : public GetAppVersionJob {

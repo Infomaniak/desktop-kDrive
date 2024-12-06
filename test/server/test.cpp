@@ -34,9 +34,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
-#if defined(__unix__) && !defined(__APPLE__)    // This test require c++20
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
-#endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 } // namespace KDC
 
