@@ -65,6 +65,7 @@ class TestIo : public CppUnit::TestFixture {
 #endif
 
 #if defined(__APPLE__)
+        CPPUNIT_TEST(testRemoveXAttr);
         CPPUNIT_TEST(testCreateAlias);
 #endif
 #if defined(_WIN32)
@@ -104,6 +105,7 @@ class TestIo : public CppUnit::TestFixture {
         void testSetXAttrValue(void);
 #endif
 #if defined(__APPLE__)
+        void testRemoveXAttr(void);
         void testCreateAlias(void);
 #elif defined(_WIN32)
         void testCreateJunction(void);
