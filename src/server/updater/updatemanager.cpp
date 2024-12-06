@@ -26,11 +26,9 @@
 #include "linuxupdater.h"
 #endif
 
-#include "db/parmsdb.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
-#include "utility/utility.h"
 
 namespace KDC {
 

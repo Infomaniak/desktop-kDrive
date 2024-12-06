@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "server/updater/testupdatechecker.h"
 #include "utility/types.h"
 
 namespace KDC {
@@ -31,9 +30,9 @@ class UpdateChecker {
         virtual ~UpdateChecker() = default;
 
         /**
-         * @brief Asynchronously check for new version informations.
+         * @brief Asynchronously check for new version information.
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
-         * @return ExitCode::Ok if the job has been succesfully created.
+         * @return ExitCode::Ok if the job has been successfully created.
          */
         ExitCode checkUpdateAvailability(UniqueId *id = nullptr);
 
@@ -64,13 +63,13 @@ class UpdateChecker {
          * @brief Create a shared pointer to the `GetAppVersionJob`. Override this method in test class to test different
          * scenarios.
          * @param job The `GetAppVersionJob` we want to use in `checkUpdateAvailable()`.
-         * @return ExitCode::Ok if the job has been succesfully created.
+         * @return ExitCode::Ok if the job has been successfully created.
          */
         virtual ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job);
 
         /**
-         * @brief Return the adequat version info, according to wether the current app has been selected in the progressive update
-         * distribution process.
+         * @brief Return the adequate version info, according to whether the current app has been selected in the progressive
+         * update distribution process.
          * @return const reference on a VersionInfo
          */
         const VersionInfo &prodVersionInfo() {
@@ -83,7 +82,7 @@ class UpdateChecker {
         AllVersionsInfo _versionsInfo;
         bool _isVersionReceived{false};
 
-        friend TestUpdateChecker;
+        friend class TestUpdateChecker;
 };
 
 } // namespace KDC
