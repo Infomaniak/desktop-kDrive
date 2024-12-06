@@ -1492,7 +1492,6 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
                                          << L" is blacklisted temporarily because of a denied access.");
 
     NodeId remoteNodeId = snapshot(ReplicaSide::Remote)->itemId(relativePath);
-    remoteNodeId = snapshot(ReplicaSide::Remote)->itemId(relativePath);
     if (bool found; remoteNodeId.empty() && !localNodeId.empty() &&
                     !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
