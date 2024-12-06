@@ -23,7 +23,7 @@ set(testcommonserver_SRCS
 )
 
 if (APPLE)
-    list(APPEND testcommonserver_SRCS io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp)
+    list(APPEND testcommonserver_SRCS io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
 endif ()
 
 if (WIN32)
