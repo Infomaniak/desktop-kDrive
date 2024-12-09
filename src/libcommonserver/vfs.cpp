@@ -83,6 +83,24 @@ void Vfs::stop(bool unregister) {
     }
 }
 
+ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation location) const {
+    bool exists = false;
+    IoError ioError = IoError::Unknown;
+    if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(itemPath, ioError));
+        return {ExitCode::SystemError, location};
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(itemPath, ioError));
+        return {ExitCode::SystemError, ExitCause::FileAccessError, location};
+    }
+    if (!exists) {
+        LOGW_WARN(logger(), L"File doesn't exist anymore: " << Utility::formatSyncPath(itemPath));
+        return {ExitCode::SystemError, ExitCause::NotFound, location};
+    }
+    return defaultVfsError(location);
+}
+
 VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
 VfsOff::~VfsOff() {}

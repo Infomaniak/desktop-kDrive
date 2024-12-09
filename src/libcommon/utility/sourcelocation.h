@@ -32,7 +32,7 @@ namespace KDC {
 
 class SourceLocation {
     public:
-        constexpr SourceLocation() : _line(0), _fileName(""), _functionName(""){};
+        constexpr SourceLocation() : _line(0){};
 
 #ifdef SRC_LOC_AVALAIBALE
         [[nodiscard]] static consteval SourceLocation currentLoc(
@@ -44,7 +44,7 @@ class SourceLocation {
             return result;
         }
 #else
-#define currentLoc() currentLocCompatibility(__LINE__, __FILE__, __func__)
+#define currentLoc() currentLocCompatibility(__LINE__, __FILE__, "unknown") // Cannot be used as a default argument...
         [[nodiscard]] static consteval SourceLocation currentLocCompatibility(uint32_t line, const char* file,
                                                                               const char* function) {
             SourceLocation result;
@@ -60,15 +60,17 @@ class SourceLocation {
         [[nodiscard]] const std::string functionName() const {
             std::string str(_functionName);
             auto firstParenthesis = str.find_first_of('(');
-            str = firstParenthesis >= 0 ? str.substr(0, firstParenthesis) : str; // "namespace::class::function(namespace::args)" -> "namespace::class::function"
+            str = firstParenthesis != std::string::npos
+                          ? str.substr(0, firstParenthesis)
+                          : str; // "namespace::class::function(namespace::args)" -> "namespace::class::function"
             auto lastDot = str.find_last_of(':');
-            return lastDot >= 0 ? str.substr(lastDot + 1) : str; // "namespace::class::function" -> "function"
+            return lastDot != std::string::npos ? str.substr(lastDot + 1) : str; // "namespace::class::function" -> "function"
         }
 
     private:
-        uint32_t _line{};
-        const char* _fileName;
-        const char* _functionName;
+        uint32_t _line = 0;
+        const char* _fileName = "";
+        const char* _functionName = "";
 };
 
 } // namespace KDC

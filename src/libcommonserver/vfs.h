@@ -20,6 +20,7 @@
 
 #include "libcommon/utility/types.h"
 #include "libsyncengine/progress/syncfileitem.h"
+#include "libcommon/utility/sourcelocation.h"
 
 #include <memory>
 
@@ -106,6 +107,7 @@ class Vfs : public QObject {
          *
          * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the metadata was updated.
+         * - ExitCode::LogicError, ExitCause::Unknown: The liteSync connector is not initialized.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
@@ -291,9 +293,13 @@ class Vfs : public QObject {
 
         inline log4cplus::Logger logger() const { return _vfsSetupParams._logger; }
 
+        ExitInfo handleVfsError(const SyncPath &itemPath, const SourceLocation location = SourceLocation::currentLoc()) const;
+
         // By default we will return file access error.
-        inline ExitInfo defaultVfsError() const { 
-            return {ExitCode::SystemError, ExitCause::FileAccessError}; }
+        inline ExitInfo defaultVfsError(const SourceLocation location = SourceLocation::currentLoc()) const {
+            return {ExitCode::SystemError, ExitCause::FileAccessError, location};
+        }
+
     private:
         bool _extendedLog;
         bool _started;

@@ -206,24 +206,6 @@ void VfsWin::exclude(const QString &path) {
     }
 }
 
-ExitInfo VfsWin::handleVfsError(const SyncPath &itemPath) {
-    bool exists = false;
-    IoError ioError = IoError::Unknown;
-    if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(itemPath, ioError));
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(itemPath, ioError));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-    if (!exists) {
-        LOGW_WARN(logger(), L"File doesn't exist anymore: " << Utility::formatSyncPath(itemPath));
-        return {ExitCode::SystemError, ExitCause::NotFound};
-    }
-    return defaultVfsError();
-}
-
 ExitInfo VfsWin::setPlaceholderStatus(const QString &path, bool syncOngoing) {
     SyncPath stdPath = QStr2Path(QDir::toNativeSeparators(path));
     if (vfsSetPlaceHolderStatus(stdPath.c_str(), syncOngoing) != S_OK) {
