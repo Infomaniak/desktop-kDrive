@@ -300,12 +300,36 @@ void TestUtility::testCurrentVersion() {
     CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}\.{1}\d{1,2}\.{1}\d{1,2}\.{1}\d{0,8}$)")));
 }
 
+SourceLocation testSourceLocationFooFunc(uint32_t &constructLine, SourceLocation location = SourceLocation::currentLoc()) {
+    constructLine = __LINE__ - 1;
+    return location;
+}
+
 void TestUtility::testSourceLocation() {
     SourceLocation location = SourceLocation::currentLoc();
     uint32_t correctLine = __LINE__ - 1;
+
     CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
     CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
-    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
-}
 
+#ifdef SRC_LOC_AVALAIBALE
+    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
+#else
+    CPPUNIT_ASSERT_EQUAL(std::string("unknown"), location.functionName());
+#endif
+
+    // Test as a default argument
+    uint32_t fooFuncLine = 0;
+    location = testSourceLocationFooFunc(fooFuncLine);
+    correctLine = __LINE__ - 1;
+
+    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
+#ifdef SRC_LOC_AVALAIBALE
+    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
+    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
+#else
+    CPPUNIT_ASSERT_EQUAL(std::string("unknown"), location.functionName());
+    CPPUNIT_ASSERT_EQUAL(fooFuncLine, location.line());
+#endif
+}
 } // namespace KDC
