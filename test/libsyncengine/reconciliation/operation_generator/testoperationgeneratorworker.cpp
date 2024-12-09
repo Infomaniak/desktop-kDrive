@@ -38,6 +38,7 @@ void KDC::TestOperationGeneratorWorker::setUp() {
     std::filesystem::remove(syncDbPath);
     _syncPal = std::make_shared<SyncPal>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
+    _syncPal->createSharedObjects();
 
     _syncPal->_operationsGeneratorWorker = std::make_shared<OperationGeneratorWorker>(_syncPal, "Operation Generator", "OPGE");
 
