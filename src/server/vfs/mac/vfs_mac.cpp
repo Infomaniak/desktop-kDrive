@@ -540,6 +540,7 @@ ExitInfo VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, 
         return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
+    std::filesystem::path fullPath(QStr2Path(path));
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
