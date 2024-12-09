@@ -97,12 +97,12 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     // A hydrated placeholder.
     {
         _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
+                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> ExitInfo {
             isPlaceholder = true;
             isHydrated = true;
             isSyncing = false;
             progress = 0;
-            return true;
+            return ExitCode::Ok;
         });
 
         bool isDehydratedPlaceholder = false;
@@ -114,12 +114,12 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     // A dehydrated placeholder.
     {
         _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
+                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> ExitInfo {
             isPlaceholder = true;
             isHydrated = false;
             isSyncing = false;
             progress = 0;
-            return true;
+            return ExitCode::Ok;
         });
 
         bool isDehydratedPlaceholder = false;
@@ -131,12 +131,12 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     // A partially hydrated placeholder (syncing item).
     {
         _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
+                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> ExitInfo {
             isPlaceholder = true;
             isHydrated = false;
             isSyncing = true;
             progress = 30;
-            return true;
+            return ExitCode::Ok;
         });
 
         bool isDehydratedPlaceholder = false;
@@ -148,12 +148,12 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     // Not a placeholder.
     {
         _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
+                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> ExitInfo {
             isPlaceholder = false;
             isHydrated = false;
             isSyncing = false;
             progress = 0;
-            return true;
+            return ExitCode::Ok;
         });
 
         bool isDehydratedPlaceholder = false;
