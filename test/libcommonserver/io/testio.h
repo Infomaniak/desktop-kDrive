@@ -65,12 +65,14 @@ class TestIo : public CppUnit::TestFixture {
 #endif
 
 #if defined(__APPLE__)
+        CPPUNIT_TEST(testRemoveXAttr);
         CPPUNIT_TEST(testCreateAlias);
 #endif
 #if defined(_WIN32)
         CPPUNIT_TEST(testCreateJunction);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
+        CPPUNIT_TEST(testAccesDeniedOnLockedFiles);
         CPPUNIT_TEST(testOpenFileSuccess);
         CPPUNIT_TEST(testOpenFileAccessDenied);
         CPPUNIT_TEST(testOpenFileNonExisting);
@@ -103,6 +105,7 @@ class TestIo : public CppUnit::TestFixture {
         void testSetXAttrValue(void);
 #endif
 #if defined(__APPLE__)
+        void testRemoveXAttr(void);
         void testCreateAlias(void);
 #elif defined(_WIN32)
         void testCreateJunction(void);
@@ -130,6 +133,7 @@ class TestIo : public CppUnit::TestFixture {
         void testCheckDirectoryRecursive();
         void testCheckDirectoryIteratorUnexpectedDelete();
         void testCheckDirectoryPermissionLost();
+        void testAccesDeniedOnLockedFiles();
         void testOpenFileSuccess();
         void testOpenFileAccessDenied();
         void testOpenFileNonExisting();

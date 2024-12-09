@@ -30,7 +30,6 @@
 #include <QUrl>
 #include <QProcess>
 #include <QObject>
-#include <QThread>
 #include <QDateTime>
 #include <QSysInfo>
 #include <QStandardPaths>

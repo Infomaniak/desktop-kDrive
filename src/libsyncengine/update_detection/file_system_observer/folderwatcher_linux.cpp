@@ -37,10 +37,13 @@ namespace KDC {
 FolderWatcher_linux::FolderWatcher_linux(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
     FolderWatcher(parent, path) {}
 
-FolderWatcher_linux::~FolderWatcher_linux() {}
+SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, const char *fileName) {
+    const auto syncName = SyncName(fileName);
+    return syncName.empty() ? watchedFolderPath : watchedFolderPath / syncName;
+}
 
 void FolderWatcher_linux::startWatching() {
-    LOG4CPLUS_DEBUG(_logger, L"Start watching folder: " << Path2WStr(_folder).c_str());
+    LOG4CPLUS_DEBUG(_logger, L"Start watching folder " << Utility::formatSyncPath(_folder));
     LOG4CPLUS_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
 
     _fileDescriptor = inotify_init();
@@ -88,16 +91,18 @@ void FolderWatcher_linux::startWatching() {
                 }
 
                 if (!skip && !_stop) {
-                    if (_watchToPath.find(event->wd) != _watchToPath.end()) {
-                        const SyncPath path = _watchToPath[event->wd] / SyncName(event->name);
+                    if (_watchToPath.contains(event->wd)) {
+                        // `event->name` is empty for instance if the event is a permission change on a watched
+                        // directory (see inotify man page).
+                        const SyncPath path = makeSyncPath(_watchToPath[event->wd], event->name);
                         if (ParametersCache::isExtendedLogEnabled()) {
-                            LOGW_DEBUG(_logger, L"Operation " << opType << L" detected on item with "
-                                                              << Utility::formatSyncPath(path).c_str());
+                            LOGW_DEBUG(_logger,
+                                       L"Operation " << opType << L" detected on item with " << Utility::formatSyncPath(path));
                         }
 
                         changeDetected(path, opType);
                         bool isDirectory = false;
-                        IoError ioError = IoError::Success;
+                        auto ioError = IoError::Success;
                         const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
                         if (!isDirSuccess) {
                             LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: "
@@ -106,7 +111,7 @@ void FolderWatcher_linux::startWatching() {
                         }
 
                         if (ioError == IoError::AccessDenied) {
-                            LOGW_WARN(_logger, L"The item misses search/exec permission - path=" << Path2WStr(path).c_str());
+                            LOGW_WARN(_logger, L"The item misses search/exec permission - " << Utility::formatSyncPath(path));
                         }
 
                         if ((event->mask & (IN_MOVED_TO | IN_CREATE)) && isDirectory) {
@@ -125,23 +130,25 @@ void FolderWatcher_linux::startWatching() {
             Utility::msleep(SLEEP_TIME);
         }
     }
+
+    LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));
 }
 
 bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList) {
     bool ok = true;
     bool isReadable = access(dir.c_str(), R_OK) == 0;
     if (!isReadable) {
-        LOG4CPLUS_WARN(_logger, L"SyncDir is not readable: " << Utility::formatSyncPath(dir).c_str());
+        LOG4CPLUS_WARN(_logger, L"SyncDir is not readable: " << Utility::formatSyncPath(dir));
         setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
         return false;
     }
     std::error_code ec;
     if (!(std::filesystem::exists(dir, ec) && isReadable)) {
         if (ec) {
-            LOG4CPLUS_WARN(_logger, L"Failed to check existence of " << Utility::formatSyncPath(dir).c_str() << L": "
-                                                                     << Utility::formatStdError(ec).c_str());
+            LOG4CPLUS_WARN(_logger, L"Failed to check existence of " << Utility::formatSyncPath(dir) << L": "
+                                                                     << Utility::formatStdError(ec));
         } else {
-            LOG4CPLUS_WARN(_logger, L"Non existing path coming in: " << Path2WStr(dir).c_str());
+            LOG4CPLUS_WARN(_logger, L"Non existing path coming in: " << Utility::formatSyncPath(dir));
         }
         ok = false;
     } else {
@@ -150,7 +157,7 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
             const auto dirIt = std::filesystem::recursive_directory_iterator(
                     dir, std::filesystem::directory_options::skip_permission_denied, ec);
             if (ec) {
-                LOG4CPLUS_WARN(_logger, L"Error in findSubFolders: " << Utility::formatStdError(ec).c_str());
+                LOG4CPLUS_WARN(_logger, L"Error in findSubFolders: " << Utility::formatStdError(ec));
                 return false;
             }
 

@@ -31,6 +31,7 @@ class TestSnapshot : public CppUnit::TestFixture {
         CPPUNIT_TEST(testSnapshot);
         CPPUNIT_TEST(testDuplicatedItem);
         CPPUNIT_TEST(testSnapshotInsertionWithDifferentEncodings);
+        CPPUNIT_TEST(testPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -42,6 +43,10 @@ class TestSnapshot : public CppUnit::TestFixture {
         void testSnapshot();
         void testDuplicatedItem();
         void testSnapshotInsertionWithDifferentEncodings();
+        void testPath();
+
+        std::unique_ptr<Snapshot> _snapshot;
+        NodeId _rootNodeId;
 };
 
 } // namespace KDC

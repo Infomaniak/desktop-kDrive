@@ -41,10 +41,10 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     for (const auto &idItem: _idsToBeRemoved) {
         if (!idItem.remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.remoteId.c_str()));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.remoteId));
         }
         if (!idItem.localId.empty() && !_syncPal->updateTree(ReplicaSide::Local)->deleteNode(idItem.localId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.localId.c_str()));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.localId));
         }
     }
 
@@ -53,8 +53,8 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _syncPal->updateTree(ReplicaSide::Remote)->setInconsistencyCheckDone();
 
-    setDone(ExitCode::Ok);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(ExitCode::Ok);
 }
 
 ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
@@ -291,9 +291,9 @@ void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<N
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(absoluteLocalPath));
         }
     } else {
-        LOG_WARN(_logger, localNode
-                                  ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
-                                  : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb");
+        const char *msg = localNode ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
+                                    : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb";
+        LOG_WARN(_logger, msg);
         assert(false);
     }
 }

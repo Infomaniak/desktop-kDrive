@@ -130,8 +130,8 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(newItem.name()).c_str() << L" ("
-                                                           << Utility::s2ws(newItem.id()).c_str() << L") updated at:"
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(newItem.name()) << L" ("
+                                                           << Utility::s2ws(newItem.id()) << L") updated at:"
                                                            << newItem.lastModified());
     }
 
@@ -226,8 +226,9 @@ bool Snapshot::setParentId(const NodeId &itemId, const NodeId &newParentId) {
     return false;
 }
 
-bool Snapshot::path(const NodeId &itemId, SyncPath &path) const noexcept {
+bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept {
     path.clear();
+    ignore = false;
 
     if (itemId.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Snapshot::path: empty item ID argument.");
@@ -255,12 +256,16 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path) const noexcept {
     }
 
     // Construct path
-    SyncPath tmp;
+    SyncPath tmpParentPath;
     while (!names.empty()) {
-        tmp /= names.back();
+        path /= names.back();
         names.pop_back();
+        if (path.parent_path() != tmpParentPath) {
+            ignore = true;
+            return false;
+        }
+        tmpParentPath = path;
     }
-    path = tmp;
     return ok;
 }
 
@@ -502,26 +507,25 @@ void Snapshot::setValid(bool newIsValid) {
     _isValid = newIsValid;
 }
 
-bool Snapshot::checkIntegrityRecursively() {
+bool Snapshot::checkIntegrityRecursively() const {
     return checkIntegrityRecursively(rootFolderId());
 }
 
-bool Snapshot::checkIntegrityRecursively(const NodeId &parentId) {
+bool Snapshot::checkIntegrityRecursively(const NodeId &parentId) const {
     // Check that we do not have the same file twice in the same folder
-    const auto &parentItem = _items[parentId];
+    const auto &parentItem = _items.at(parentId);
     std::set<SyncName> names;
     for (auto childId = parentItem.childrenIds().begin(), end = parentItem.childrenIds().end(); childId != end; childId++) {
         if (!checkIntegrityRecursively(*childId)) {
             return false;
         }
 
-        auto result = names.insert(_items[*childId].name());
+        auto result = names.insert(_items.at(*childId).name());
         if (!result.second) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Snapshot integrity check failed, the folder named: \""
-                                                            << SyncName2WStr(parentItem.name()).c_str() << L"\"("
-                                                            << Utility::s2ws(parentItem.id()).c_str() << L") contains: \""
-                                                            << SyncName2WStr(_items[*childId].name()).c_str()
-                                                            << L"\" twice with two differents NodeId");
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Snapshot integrity check failed, the folder named: \""
+                              << SyncName2WStr(parentItem.name()) << L"\"(" << Utility::s2ws(parentItem.id()) << L") contains: \""
+                              << SyncName2WStr(_items.at(*childId).name()) << L"\" twice with two different NodeIds");
             return false;
         }
     }

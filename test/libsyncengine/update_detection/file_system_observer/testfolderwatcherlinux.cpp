@@ -16,19 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "testfolderwatcherlinux.h"
 
-#include "localfilesystemobserverworker.h"
+#include "update_detection/file_system_observer/folderwatcher_linux.h"
+
 
 namespace KDC {
 
-class LocalFileSystemObserverWorker_unix : public LocalFileSystemObserverWorker {
-    public:
-        LocalFileSystemObserverWorker_unix(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                           const std::string &shortName);
-
-    protected:
-        virtual bool isFolderWatcherReliable() const override { return (_folderWatcher && _folderWatcher->isReliable()); }
-};
+void TestFolderWatcherLinux::testMakeSyncPath() {
+    CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "file.txt").filename().empty());
+    CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "").filename().empty());
+}
 
 } // namespace KDC

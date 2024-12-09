@@ -44,7 +44,7 @@ class ContentChecksumWorker : public ISyncWorker {
         static void callback(UniqueId jobId);
 
     protected:
-        virtual void execute() override;
+        void execute() override;
 
     private:
         std::shared_ptr<Snapshot> _localSnapshot;
