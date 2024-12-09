@@ -303,7 +303,7 @@ void TestWorkers::testCreatePlaceholder() {
         // File already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
         CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::InvalidSnapshot, exitInfo.cause());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::FileAlreadyExist, exitInfo.cause());
 #endif
     }
 }
