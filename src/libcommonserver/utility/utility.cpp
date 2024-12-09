@@ -648,8 +648,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                 // Real error, not buffer error
                 LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
                                                                    << std::to_wstring(dwError));
-                Sentry::Handler::captureMessage(Sentry::Level::Fatal, "Utility::normalizedSyncName",
-                                                          "Failed to normalize string");
+                Sentry::Handler::captureMessage(Sentry::Level::Error, "Utility::normalizedSyncName",
+                                                "Failed to normalize string");
                 return false;
             }
 
@@ -662,8 +662,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
         DWORD dwError = GetLastError();
         LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
                                                            << std::to_wstring(dwError));
-        Sentry::Handler::captureMessage(Sentry::Level::Fatal, "Utility::normalizedSyncName",
-                                                  "Failed to normalize string");
+        Sentry::Handler::captureMessage(Sentry::Level::Error, "Utility::normalizedSyncName", "Failed to normalize string");
         return false;
     }
 
