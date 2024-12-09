@@ -55,9 +55,9 @@ class SourceLocation {
         }
 #endif // SRC_LOC_AVALAIBALE
 
-        [[nodiscard]] const uint32_t line() const { return _line; }
-        [[nodiscard]] const std::string fileName() const { return std::filesystem::path(_fileName).filename().string(); }
-        [[nodiscard]] const std::string functionName() const {
+        [[nodiscard]] uint32_t line() const { return _line; }
+        [[nodiscard]] std::string fileName() const { return std::filesystem::path(_fileName).filename().string(); }
+        [[nodiscard]] std::string functionName() const {
             std::string str(_functionName);
             auto firstParenthesis = str.find_first_of('(');
             str = firstParenthesis != std::string::npos

@@ -326,8 +326,8 @@ void TestWorkers::testConvertToPlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder doesn't exist
         exitInfo = _syncPal->_executorWorker->convertToPlaceholder(relativeFolderPath, true);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::InvalidSnapshot, exitInfo.cause());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::NotFound, exitInfo.cause());
 #endif
 
         // Folder already exists (normal case)
