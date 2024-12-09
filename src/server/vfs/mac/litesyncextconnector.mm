@@ -1297,7 +1297,6 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
 
     if (!fileStat) {
         LOG_WARN(_logger, "Bad parameters");
-        *error = QObject::tr("Bad parameters");
         return false;
     }
 
