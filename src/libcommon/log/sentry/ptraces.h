@@ -23,8 +23,7 @@
 
 namespace KDC::Sentry::PTraces {
 
-class None : public AbstractPTrace {
-    public:
+struct None : public AbstractPTrace {
         None() = default;
         None(int syncdbId) : AbstractPTrace({}, syncdbId) {}
         void start() final {}
@@ -44,62 +43,52 @@ class None : public AbstractPTrace {
  | perfMonitor.stop();
  */
 namespace Basic {
-class AppStart : public AbstractPTrace {
-    public:
+struct AppStart : public AbstractPTrace {
         [[nodiscard]] AppStart() : AbstractPTrace({"AppStart", "Strat the application", PTraceName::AppStart}) {}
 };
 
-class Sync : public AbstractPTrace {
-    public:
+struct Sync : public AbstractPTrace {
         [[nodiscard]] explicit Sync(int dbId) :
             AbstractPTrace({"Synchronisation", "Synchronisation initialization", PTraceName::Sync}, dbId){};
 };
 
-class UpdateDetection1 : public AbstractPTrace {
-    public:
+struct UpdateDetection1 : public AbstractPTrace {
         [[nodiscard]] explicit UpdateDetection1(int dbId) :
             AbstractPTrace({"UpdateDetection1", "Compute FS operations", PTraceName::UpdateDetection1, PTraceName::Sync}, dbId) {}
 };
 
-class UpdateDetection2 : public AbstractPTrace {
-    public:
+struct UpdateDetection2 : public AbstractPTrace {
         [[nodiscard]] explicit UpdateDetection2(int dbId) :
             AbstractPTrace({"UpdateDetection2", "UpdateTree generation", PTraceName::UpdateDetection2, PTraceName::Sync}, dbId) {}
 };
 
-class Reconciliation1 : public AbstractPTrace {
-    public:
+struct Reconciliation1 : public AbstractPTrace {
         [[nodiscard]] explicit Reconciliation1(int dbId) :
             AbstractPTrace({"Reconciliation1", "Platform inconsistency check", PTraceName::Reconciliation1, PTraceName::Sync},
                            dbId){};
 };
 
-class Reconciliation2 : public AbstractPTrace {
-    public:
+struct Reconciliation2 : public AbstractPTrace {
         [[nodiscard]] explicit Reconciliation2(int dbId) :
             AbstractPTrace({"Reconciliation2", "Find conflicts", PTraceName::Reconciliation2, PTraceName::Sync}, dbId) {}
 };
 
-class Reconciliation3 : public AbstractPTrace {
-    public:
+struct Reconciliation3 : public AbstractPTrace {
         [[nodiscard]] explicit Reconciliation3(int dbId) :
             AbstractPTrace({"Reconciliation3", "Resolve conflicts", PTraceName::Reconciliation3, PTraceName::Sync}, dbId) {}
 };
 
-class Reconciliation4 : public AbstractPTrace {
-    public:
+struct Reconciliation4 : public AbstractPTrace {
         [[nodiscard]] explicit Reconciliation4(int dbId) :
             AbstractPTrace({"Reconciliation4", "Operation Generator", PTraceName::Reconciliation4, PTraceName::Sync}, dbId) {}
 };
 
-class Propagation1 : public AbstractPTrace {
-    public:
+struct Propagation1 : public AbstractPTrace {
         [[nodiscard]] explicit Propagation1(int dbId) :
             AbstractPTrace({"Propagation1", "Operation Sorter", PTraceName::Propagation1, PTraceName::Sync}, dbId) {}
 };
 
-class Propagation2 : public AbstractPTrace {
-    public:
+struct Propagation2 : public AbstractPTrace {
         [[nodiscard]] explicit Propagation2(int dbId) :
             AbstractPTrace({"Propagation2", "Executor", PTraceName::Propagation2, PTraceName::Sync}, dbId) {}
 };
@@ -111,39 +100,34 @@ class Propagation2 : public AbstractPTrace {
  be consider as aborted when the object will be destroyed. Such traces are indicated by a comment in their class definition.
  */
 namespace Scoped {
-class LFSO_ChangeDetected : public AbstractScopedPTrace {
-    public:
+struct LFSO_ChangeDetected : public AbstractScopedPTrace {
         explicit LFSO_ChangeDetected(int syncDbId) :
             AbstractScopedPTrace({"LFSO_ChangeDetected", "Handle one detected changes", PTraceName::LFSO_ChangeDetected},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
 // This scoped performance trace expects to be manually stopped.
-class LFSO_GenerateInitialSnapshot : public AbstractScopedPTrace {
-    public:
+struct LFSO_GenerateInitialSnapshot : public AbstractScopedPTrace {
         explicit LFSO_GenerateInitialSnapshot(int syncDbId) :
             AbstractScopedPTrace({"LFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::LFSO_GenerateInitialSnapshot},
                                  PTraceStatus::Aborted, syncDbId) {}
 };
 
-class RFSO_ChangeDetected : public AbstractScopedPTrace {
-    public:
+struct RFSO_ChangeDetected : public AbstractScopedPTrace {
         explicit RFSO_ChangeDetected(int syncDbId) :
             AbstractScopedPTrace({"RFSO_ChangeDetected", "Handle one detected changes", PTraceName::RFSO_ChangeDetected},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
 // This scoped performance trace expects to be manually stopped.
-class RFSO_GenerateInitialSnapshot : public AbstractScopedPTrace {
-    public:
+struct RFSO_GenerateInitialSnapshot : public AbstractScopedPTrace {
         explicit RFSO_GenerateInitialSnapshot(int syncDbId) :
             AbstractScopedPTrace({"RFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::RFSO_GenerateInitialSnapshot},
                                  PTraceStatus::Aborted, syncDbId){};
 };
 
 // This scoped performance trace expects to be manually stopped.
-class RFSO_BackRequest : public AbstractScopedPTrace {
-    public:
+struct RFSO_BackRequest : public AbstractScopedPTrace {
         explicit RFSO_BackRequest(bool fromChangeDetected, int syncDbId) :
             AbstractScopedPTrace(
                     {"RFSO_BackRequest", "Request the list of all items to the backend", PTraceName::RFSO_BackRequest,
@@ -152,30 +136,26 @@ class RFSO_BackRequest : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-class SyncInit : public AbstractScopedPTrace {
-    public:
+struct SyncInit : public AbstractScopedPTrace {
         explicit SyncInit(int syncDbId) :
             AbstractScopedPTrace({"SyncInit", "Synchronisation initialization", PTraceName::SyncInit}, PTraceStatus::Aborted,
                                  syncDbId) {}
 };
 
 // This scoped performance trace expects to be manually stopped.
-class ResetStatus : public AbstractScopedPTrace {
-    public:
+struct ResetStatus : public AbstractScopedPTrace {
         explicit ResetStatus(int syncDbId) :
             AbstractScopedPTrace({"ResetStatus", "Reseting vfs status", PTraceName::ResetStatus, PTraceName::SyncInit},
                                  PTraceStatus::Aborted, syncDbId) {}
 };
 
 // This scoped performance trace expects to be manually stopped.
-class Sync : public AbstractScopedPTrace {
-    public:
+struct Sync : public AbstractScopedPTrace {
         explicit Sync(int syncDbId) :
             AbstractScopedPTrace({"Synchronisation", "Synchronisation.", PTraceName::Sync}, PTraceStatus::Aborted, syncDbId) {}
 };
 
-class UpdateUnsyncedList : public AbstractScopedPTrace {
-    public:
+struct UpdateUnsyncedList : public AbstractScopedPTrace {
         explicit UpdateUnsyncedList(int syncDbId) :
             AbstractScopedPTrace(
                     {"UpdateUnsyncedList", "Update unsynced list.", PTraceName::UpdateUnsyncedList, PTraceName::UpdateDetection1},
@@ -183,8 +163,7 @@ class UpdateUnsyncedList : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-class InferChangesFromDb : public AbstractScopedPTrace {
-    public:
+struct InferChangesFromDb : public AbstractScopedPTrace {
         explicit InferChangesFromDb(int syncDbId) :
             AbstractScopedPTrace(
                     {"InferChangesFromDb", "Infer changes from DB", PTraceName::InferChangesFromDb, PTraceName::UpdateDetection1},
@@ -192,8 +171,7 @@ class InferChangesFromDb : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-class ExploreLocalSnapshot : public AbstractScopedPTrace {
-    public:
+struct ExploreLocalSnapshot : public AbstractScopedPTrace {
         explicit ExploreLocalSnapshot(int syncDbId) :
             AbstractScopedPTrace({"ExploreLocalSnapshot", "Explore local snapshot", PTraceName::ExploreLocalSnapshot,
                                   PTraceName::UpdateDetection1},
@@ -201,67 +179,60 @@ class ExploreLocalSnapshot : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-class ExploreRemoteSnapshot : public AbstractScopedPTrace {
-    public:
+struct ExploreRemoteSnapshot : public AbstractScopedPTrace {
         explicit ExploreRemoteSnapshot(int syncDbId) :
             AbstractScopedPTrace({"ExploreRemoteSnapshot", "Explore remote snapshot", PTraceName::ExploreRemoteSnapshot,
                                   PTraceName::UpdateDetection1},
                                  PTraceStatus::Aborted, syncDbId) {}
 };
 
-class Step1MoveDirectory : public AbstractScopedPTrace {
-    public:
+struct Step1MoveDirectory : public AbstractScopedPTrace {
         explicit Step1MoveDirectory(int syncDbId) :
             AbstractScopedPTrace(
                     {"Step1MoveDirectory", "Move directory", PTraceName::Step1MoveDirectory, PTraceName::UpdateDetection2},
                     PTraceStatus::Ok, syncDbId) {}
 };
 
-class Step2MoveFile : public AbstractScopedPTrace {
-    public:
+struct Step2MoveFile : public AbstractScopedPTrace {
         explicit Step2MoveFile(int syncDbId) :
             AbstractScopedPTrace({"Step2MoveFile", "Move File", PTraceName::Step2MoveFile, PTraceName::UpdateDetection2},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
-class Step3DeleteDirectory : public AbstractScopedPTrace {
-    public:
+struct Step3DeleteDirectory : public AbstractScopedPTrace {
         explicit Step3DeleteDirectory(int syncDbId) :
             AbstractScopedPTrace(
                     {"Step3DeleteDirectory", "Delete directory", PTraceName::Step3DeleteDirectory, PTraceName::UpdateDetection2},
                     PTraceStatus::Ok, syncDbId) {}
 };
 
-class Step4DeleteFile : public AbstractScopedPTrace {
-    public:
+struct Step4DeleteFile : public AbstractScopedPTrace {
         explicit Step4DeleteFile(int syncDbId) :
             AbstractScopedPTrace({"Step4DeleteFile", "Delete file", PTraceName::Step4DeleteFile, PTraceName::UpdateDetection2},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
-class Step5CreateDirectory : public AbstractScopedPTrace {
-    public:
+struct Step5CreateDirectory : public AbstractScopedPTrace {
         explicit Step5CreateDirectory(int syncDbId) :
             AbstractScopedPTrace(
                     {"Step5CreateDirectory", "Create directory", PTraceName::Step5CreateDirectory, PTraceName::UpdateDetection2},
                     PTraceStatus::Ok, syncDbId) {}
 };
 
-class Step6CreateFile : public AbstractScopedPTrace {
-    public:
+struct Step6CreateFile : public AbstractScopedPTrace {
         explicit Step6CreateFile(int syncDbId) :
             AbstractScopedPTrace({"Step6CreateFile", "Create file", PTraceName::Step6CreateFile, PTraceName::UpdateDetection2},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
-class Step7EditFile : public AbstractScopedPTrace {
+struct Step7EditFile : public AbstractScopedPTrace {
     public:
         explicit Step7EditFile(int syncDbId) :
             AbstractScopedPTrace({"Step7EditFile", "Edit file", PTraceName::Step7EditFile, PTraceName::UpdateDetection2},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
-class Step8CompleteUpdateTree : public AbstractScopedPTrace {
+struct Step8CompleteUpdateTree : public AbstractScopedPTrace {
     public:
         explicit Step8CompleteUpdateTree(int syncDbId) :
             AbstractScopedPTrace({"Step8CompleteUpdateTree", "Complete update tree", PTraceName::Step8CompleteUpdateTree,
@@ -270,8 +241,7 @@ class Step8CompleteUpdateTree : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-class CheckLocalTree : public AbstractScopedPTrace {
-    public:
+struct CheckLocalTree : public AbstractScopedPTrace {
         explicit CheckLocalTree(int syncDbId) :
             AbstractScopedPTrace({"CheckLocalTree", "Check local update tree integrity", PTraceName::CheckLocalTree,
                                   PTraceName::Reconciliation1},
@@ -279,8 +249,7 @@ class CheckLocalTree : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-class CheckRemoteTree : public AbstractScopedPTrace {
-    public:
+struct CheckRemoteTree : public AbstractScopedPTrace {
         explicit CheckRemoteTree(int syncDbId) :
             AbstractScopedPTrace({"CheckRemoteTree", "Check remote update tree integrity", PTraceName::CheckRemoteTree,
                                   PTraceName::Reconciliation1},
@@ -288,8 +257,7 @@ class CheckRemoteTree : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-class InitProgress : public AbstractScopedPTrace {
-    public:
+struct InitProgress : public AbstractScopedPTrace {
         explicit InitProgress(int syncDbId) :
             AbstractScopedPTrace(
                     {"InitProgress", "Init the progress manager", PTraceName::InitProgress, PTraceName::Propagation2},
@@ -297,8 +265,7 @@ class InitProgress : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-class JobGeneration : public AbstractScopedPTrace {
-    public:
+struct JobGeneration : public AbstractScopedPTrace {
         explicit JobGeneration(int syncDbId) :
             AbstractScopedPTrace(
                     {"JobGeneration", "Generate the list of jobs", PTraceName::JobGeneration, PTraceName::Propagation2},
@@ -306,8 +273,7 @@ class JobGeneration : public AbstractScopedPTrace {
 };
 
 // This scoped performance trace expects to be manually stopped.
-class waitForAllJobsToFinish : public AbstractScopedPTrace {
-    public:
+struct waitForAllJobsToFinish : public AbstractScopedPTrace {
         explicit waitForAllJobsToFinish(int syncDbId) :
             AbstractScopedPTrace({"waitForAllJobsToFinish", "Wait for all jobs to finish", PTraceName::waitForAllJobsToFinish,
                                   PTraceName::Propagation2},
@@ -322,8 +288,7 @@ class waitForAllJobsToFinish : public AbstractScopedPTrace {
  * It is useful when you want to trace short part of the code that are called multiple times successively.
  */
 namespace CounterScoped {
-class LFSO_ExploreItem : public AbstractCounterScopedPTrace {
-    public:
+struct LFSO_ExploreItem : public AbstractCounterScopedPTrace {
         explicit LFSO_ExploreItem(bool fromChangeDetected, int syncDbId) :
             AbstractCounterScopedPTrace(
                     {"LFSO_ExploreItem(x1000)", "Discover 1000 local files", PTraceName::LFSO_ExploreItem,
@@ -331,8 +296,7 @@ class LFSO_ExploreItem : public AbstractCounterScopedPTrace {
                     1000, syncDbId) {}
 };
 
-class RFSO_ExploreItem : public AbstractCounterScopedPTrace {
-    public:
+struct RFSO_ExploreItem : public AbstractCounterScopedPTrace {
         explicit RFSO_ExploreItem(bool fromChangeDetected, int syncDbId) :
             AbstractCounterScopedPTrace(
                     {"RFSO_ExploreItem(x1000)", "Discover 1000 remote files", PTraceName::RFSO_ExploreItem,
@@ -340,8 +304,7 @@ class RFSO_ExploreItem : public AbstractCounterScopedPTrace {
                     1000, syncDbId) {}
 };
 
-class GenerateItemOperations : public AbstractCounterScopedPTrace {
-    public:
+struct GenerateItemOperations : public AbstractCounterScopedPTrace {
         explicit GenerateItemOperations(int syncDbId) :
             AbstractCounterScopedPTrace({"GenerateItemOperations", "Generate the list of operations for 1000 items",
                                          PTraceName::GenerateItemOperations, PTraceName::Reconciliation4},

@@ -28,8 +28,8 @@
 #include "propagation/executor/executorworker.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/utility.h"
-#include <libcommon/log/sentry/ptraces.h>
-#include <libcommon/log/sentry/utility.h>
+#include "libcommon/log/sentry/ptraces.h"
+#include "libcommon/log/sentry/utility.h"
 #include <log4cplus/loggingmacros.h>
 
 #define UPDATE_PROGRESS_DELAY 1

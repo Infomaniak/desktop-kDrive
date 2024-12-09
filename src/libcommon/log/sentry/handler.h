@@ -91,7 +91,6 @@ class Handler {
         void stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1, PTraceStatus status = PTraceStatus::Ok);
         void stopPTrace(const pTraceId &pTraceId, PTraceStatus status = PTraceStatus::Ok);
 
-
         // Debugging
         inline static AppType appType() { return _appType; }
         inline static bool debugCrashCallback() { return _debugCrashCallback; }

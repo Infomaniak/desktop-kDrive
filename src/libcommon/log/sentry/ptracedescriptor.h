@@ -73,9 +73,9 @@ struct PTraceDescriptor {
             _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
             _pTraceDescription{std::move(pTraceDescription)} {}
 
-        PTraceName _pTraceName = PTraceName::None;
-        PTraceName _parentPTraceName = PTraceName::None;
-        std::string _pTraceTitle;
-        std::string _pTraceDescription;
+        const PTraceName _pTraceName = PTraceName::None;
+        const PTraceName _parentPTraceName = PTraceName::None;
+        const std::string _pTraceTitle;
+        const std::string _pTraceDescription;
 };
 } // namespace KDC::Sentry

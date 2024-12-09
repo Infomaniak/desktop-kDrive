@@ -17,11 +17,11 @@
  */
 #pragma once
 
-#include <libcommon/log/sentry/abstractscopedptrace.h>
+#include "libcommon/log/sentry/abstractscopedptrace.h"
 
 namespace KDC::Sentry {
 
-struct AbstractCounterScopedPTrace : public AbstractScopedPTrace {
+class AbstractCounterScopedPTrace : public AbstractScopedPTrace {
     public:
         void start() final {
             if (_counter >= _nbOfCyclePerTrace) {

@@ -20,7 +20,6 @@
 #include <list>
 #include <assert.h>
 
-
 namespace KDC::Sentry {
 using pTraceId = uint64_t;
 

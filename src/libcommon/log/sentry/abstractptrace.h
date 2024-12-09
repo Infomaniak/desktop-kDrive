@@ -17,8 +17,8 @@
  */
 #pragma once
 
-#include <libcommon/log/sentry/handler.h>
-#include <libcommon/log/sentry/ptracedescriptor.h>
+#include "libcommon/log/sentry/handler.h"
+#include "libcommon/log/sentry/ptracedescriptor.h"
 
 namespace KDC::Sentry {
 class AbstractPTrace;

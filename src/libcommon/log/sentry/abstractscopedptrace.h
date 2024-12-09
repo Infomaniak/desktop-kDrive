@@ -17,11 +17,11 @@
  */
 #pragma once
 
-#include <libcommon/log/sentry/abstractptrace.h>
+#include "libcommon/log/sentry/abstractptrace.h"
 
 namespace KDC::Sentry {
 
-struct AbstractScopedPTrace : public AbstractPTrace {
+class AbstractScopedPTrace : public AbstractPTrace {
     public:
         ~AbstractScopedPTrace() override { _stop(_autoStopStatus); }
 
