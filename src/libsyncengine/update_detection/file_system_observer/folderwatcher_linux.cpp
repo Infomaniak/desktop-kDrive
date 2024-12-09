@@ -37,8 +37,6 @@ namespace KDC {
 FolderWatcher_linux::FolderWatcher_linux(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
     FolderWatcher(parent, path) {}
 
-FolderWatcher_linux::~FolderWatcher_linux() {}
-
 SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, const char *fileName) {
     const auto syncName = SyncName(fileName);
     return syncName.empty() ? watchedFolderPath : watchedFolderPath / syncName;

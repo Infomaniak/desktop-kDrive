@@ -85,7 +85,7 @@ void SyncPalWorker::execute() {
                     // Pause sync
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
-                    fsoWorkers[index]->stop();
+                    stopAndWaitForExitOfWorker(fsoWorkers[index]);
                     pause();
                 } else {
                     // Start worker
@@ -147,6 +147,7 @@ void SyncPalWorker::execute() {
                 SyncStep step = nextStep();
                 if (step != _step) {
                     LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has finished");
+                    waitForExitOfWorkers(stepWorkers);
                     initStep(step, stepWorkers, inputSharedObject);
                     isStepInProgress = false;
                 }
@@ -477,6 +478,11 @@ SyncStep SyncPalWorker::nextStep() const {
             return SyncStep::Idle;
             break;
     }
+}
+
+void SyncPalWorker::stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> worker) {
+    worker->stop();
+    worker->waitForExit();
 }
 
 void SyncPalWorker::stopWorkers(std::shared_ptr<ISyncWorker> workers[2]) {

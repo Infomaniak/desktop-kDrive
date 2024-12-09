@@ -156,8 +156,6 @@ void UpdateTree::markAllNodesUnprocessed() {
 }
 
 void UpdateTree::init() {
-    clear();
-
     insertNode(_rootNode);
     _inconsistencyCheckDone = false;
 }
