@@ -30,10 +30,12 @@
 
 namespace KDC {
 
-VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
-                                         ExitInfo (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
-                                         bool (*vfsClearFileAttributes)(int, const SyncPath &)) :
-    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
+VirtualFilesCleaner::VirtualFilesCleaner(
+        const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
+        const std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> &vfsStatus,
+        const std::function<bool(int syncDbId, const SyncPath &path)> &vfsClearFileAttributes) :
+    _logger(Log::instance()->getLogger()),
+    _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
     _vfsClearFileAttributes(vfsClearFileAttributes) {}
 
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId) :

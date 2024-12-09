@@ -106,51 +106,63 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual ~SyncPal();
 
         ExitCode setTargetNodeId(const std::string &targetNodeId);
-
-        inline void setAddErrorCallback(void (*addError)(const Error &)) { _addError = addError; }
-        inline void setAddCompletedItemCallback(void (*addCompletedItem)(int, const SyncFileItem &, bool)) {
+        inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
+        inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;
         }
-        inline void setSendSignalCallback(void (*sendSignal)(SignalNum, int, const SigValueType &)) { _sendSignal = sendSignal; }
 
-        inline void setVfsIsExcludedCallback(bool (*vfsIsExcluded)(int, const SyncPath &, bool &)) {
+        inline void setSendSignalCallback(const std::function<void(SignalNum, int, const SigValueType &)> &sendSignal) {
+            _sendSignal = sendSignal;
+        }
+
+        inline void setVfsIsExcludedCallback(const std::function<bool(int, const SyncPath &, bool &)> &vfsIsExcluded) {
             _vfsIsExcluded = vfsIsExcluded;
         }
-        inline void setVfsExcludeCallback(bool (*vfsExclude)(int, const SyncPath &)) { _vfsExclude = vfsExclude; }
-        inline void setVfsPinStateCallback(bool (*vfsPinState)(int, const SyncPath &, PinState &)) { _vfsPinState = vfsPinState; }
-        inline void setVfsSetPinStateCallback(ExitInfo (*vfsSetPinState)(int, const SyncPath &, PinState)) {
+        inline void setVfsExcludeCallback(const std::function<bool(int, const SyncPath &)> &vfsExclude) {
+            _vfsExclude = vfsExclude;
+        }
+        inline void setVfsPinStateCallback(const std::function<bool(int, const SyncPath &, PinState &)> &vfsPinState) {
+            _vfsPinState = vfsPinState;
+        }
+        inline void setVfsSetPinStateCallback(const std::function<ExitInfo(int, const SyncPath &, PinState)> &vfsSetPinState) {
             _vfsSetPinState = vfsSetPinState;
         }
-        inline void setVfsStatusCallback(ExitInfo (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &)) {
+        inline void setVfsStatusCallback(
+                const std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> &vfsStatus) {
             _vfsStatus = vfsStatus;
         }
-        inline void setVfsCreatePlaceholderCallback(ExitInfo (*vfsCreatePlaceholder)(int, const SyncPath &,
-                                                                                     const SyncFileItem &)) {
+        inline void setVfsCreatePlaceholderCallback(
+                const std::function<ExitInfo(int, const SyncPath &, const SyncFileItem &)> &vfsCreatePlaceholder) {
             _vfsCreatePlaceholder = vfsCreatePlaceholder;
         }
-        inline void setVfsConvertToPlaceholderCallback(ExitInfo (*vfsConvertToPlaceholder)(int, const SyncPath &,
-                                                                                           const SyncFileItem &)) {
+        inline void setVfsConvertToPlaceholderCallback(
+                const std::function<ExitInfo(int, const SyncPath &, const SyncFileItem &)> &vfsConvertToPlaceholder) {
             _vfsConvertToPlaceholder = vfsConvertToPlaceholder;
         }
-        inline void setVfsUpdateMetadataCallback(ExitInfo (*vfsUpdateMetadata)(int, const SyncPath &, const SyncTime &,
-                                                                               const SyncTime &, const int64_t, const NodeId &)) {
+        inline void setVfsUpdateMetadataCallback(
+                const std::function<ExitInfo(int, const SyncPath &, const SyncTime &, const SyncTime &, const int64_t,
+                                             const NodeId &)> &vfsUpdateMetadata) {
             _vfsUpdateMetadata = vfsUpdateMetadata;
         }
-        inline void setVfsUpdateFetchStatusCallback(ExitInfo (*vfsUpdateFetchStatus)(int, const SyncPath &, const SyncPath &,
-                                                                                     int64_t, bool &, bool &)) {
+        inline void setVfsUpdateFetchStatusCallback(const std::function<ExitInfo(int, const SyncPath &, const SyncPath &, int64_t,
+                                                                                 bool &, bool &)> &vfsUpdateFetchStatus) {
             _vfsUpdateFetchStatus = vfsUpdateFetchStatus;
         }
-        inline void setVfsFileStatusChangedCallback(bool (*vfsFileStatusChanged)(int, const SyncPath &, SyncFileStatus)) {
+        inline void setVfsFileStatusChangedCallback(
+                const std::function<bool(int, const SyncPath &, SyncFileStatus)> &vfsFileStatusChanged) {
             _vfsFileStatusChanged = vfsFileStatusChanged;
         }
-        inline void setVfsForceStatusCallback(ExitInfo (*vfsForceStatus)(int, const SyncPath &, bool, int, bool)) {
+        inline void setVfsForceStatusCallback(
+                const std::function<ExitInfo(int, const SyncPath &, bool, int, bool)> &vfsForceStatus) {
             _vfsForceStatus = vfsForceStatus;
         }
-        inline void setVfsCleanUpStatusesCallback(bool (*vfsCleanUpStatuses)(int)) { _vfsCleanUpStatuses = vfsCleanUpStatuses; }
-        inline void setVfsClearFileAttributesCallback(bool (*vfsClearFileAttributes)(int, const SyncPath &)) {
+        inline void setVfsCleanUpStatusesCallback(const std::function<bool(int)> &vfsCleanUpStatuses) {
+            _vfsCleanUpStatuses = vfsCleanUpStatuses;
+        }
+        inline void setVfsClearFileAttributesCallback(const std::function<bool(int, const SyncPath &)> &vfsClearFileAttributes) {
             _vfsClearFileAttributes = vfsClearFileAttributes;
         }
-        inline void setVfsCancelHydrateCallback(bool (*vfsCancelHydrate)(int, const SyncPath &)) {
+        inline void setVfsCancelHydrateCallback(const std::function<bool(int, const SyncPath &)> &vfsCancelHydrate) {
             _vfsCancelHydrate = vfsCancelHydrate;
         }
 
@@ -221,7 +233,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitInfo vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                    const int64_t size, const NodeId &id);
         ExitInfo vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
-                                  bool &finished);
+                                      bool &finished);
         bool vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status);
         ExitInfo vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false);
         bool vfsCleanUpStatuses();
@@ -281,27 +293,28 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::mutex _directDownloadJobsMapMutex;
 
         // Callbacks
-        void (*_addError)(const Error &error){nullptr};
-        void (*_addCompletedItem)(int syncDbId, const SyncFileItem &item, bool notify){nullptr};
-        void (*_sendSignal)(SignalNum sigId, int syncDbId, const SigValueType &val){nullptr};
+        std::function<void(const Error &error)> _addError;
+        std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
+        std::function<void(SignalNum sigId, int syncDbId, const SigValueType &val)> _sendSignal;
+        std::function<bool(int syncDbId, const SyncPath &, bool &)> _vfsIsExcluded;
+        std::function<bool(int syncDbId, const SyncPath &)> _vfsExclude;
+        std::function<bool(int syncDbId, const SyncPath &, PinState &)> _vfsPinState;
+        std::function<ExitInfo(int, const SyncPath &, PinState)> _vfsSetPinState;
+        std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> _vfsStatus;
+        std::function<ExitInfo(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item)> _vfsCreatePlaceholder;
+        std::function<ExitInfo(int, const SyncPath &, const SyncFileItem &)> _vfsConvertToPlaceholder;
+        std::function<ExitInfo(int, const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
+                _vfsUpdateMetadata;
+        std::function<ExitInfo(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
+                               bool &finished)>
+                _vfsUpdateFetchStatus;
+        std::function<bool(int syncDbId, const SyncPath &path, SyncFileStatus status)> _vfsFileStatusChanged;
+        std::function<ExitInfo(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated)>
+                _vfsForceStatus;
 
-        bool (*_vfsIsExcluded)(int syncDbId, const SyncPath &itemPath, bool &isExcluded){nullptr};
-        bool (*_vfsExclude)(int syncDbId, const SyncPath &itemPath){nullptr};
-        bool (*_vfsPinState)(int syncDbId, const SyncPath &itemPath, PinState &pinState){nullptr};
-        ExitInfo (*_vfsSetPinState)(int syncDbId, const SyncPath &itemPath, PinState pinState){nullptr};
-        ExitInfo (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                           int &progress){nullptr};
-        ExitInfo (*_vfsCreatePlaceholder)(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item){nullptr};
-        ExitInfo (*_vfsConvertToPlaceholder)(int syncDbId, const SyncPath &path, const SyncFileItem &item){nullptr};
-        ExitInfo (*_vfsUpdateMetadata)(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                       const int64_t size, const NodeId &id){nullptr};
-        ExitInfo (*_vfsUpdateFetchStatus)(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
-                                      bool &canceled, bool &finished){nullptr};
-        bool (*_vfsFileStatusChanged)(int syncDbId, const SyncPath &path, SyncFileStatus status){nullptr};
-        ExitInfo (*_vfsForceStatus)(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated){nullptr};
-        bool (*_vfsCleanUpStatuses)(int syncDbId){nullptr};
-        bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &path){nullptr};
-        bool (*_vfsCancelHydrate)(int syncDbId, const SyncPath &path){nullptr};
+        std::function<bool(int syncDbId)> _vfsCleanUpStatuses;
+        std::function<bool(int syncDbId, const SyncPath &path)> _vfsClearFileAttributes;
+        std::function<bool(int syncDbId, const SyncPath &path)> _vfsCancelHydrate;
 
         // DB
         std::shared_ptr<SyncDb> _syncDb{nullptr};

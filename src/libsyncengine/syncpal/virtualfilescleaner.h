@@ -29,8 +29,8 @@ class SyncDb;
 class VirtualFilesCleaner {
     public:
         VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
-                            ExitInfo (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
-                            bool (*vfsClearFileAttributes)(int, const SyncPath &));
+                            const std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> &,
+                            const std::function<bool(int, const SyncPath &)> &vfsClearFileAttributes);
 
         VirtualFilesCleaner(const SyncPath &path, int syncDbId);
 
@@ -50,9 +50,8 @@ class VirtualFilesCleaner {
         SyncPath _rootPath;
         int _syncDbId{-1};
         std::shared_ptr<SyncDb> _syncDb = nullptr;
-        ExitInfo (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                           int &progress) = nullptr;
-        bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &itemPath) = nullptr;
+        std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> _vfsStatus;
+        std::function<bool(int syncDbId, const SyncPath &path)> _vfsClearFileAttributes;
 
         ExitCode _exitCode = ExitCode::Unknown;
         ExitCause _exitCause = ExitCause::Unknown;

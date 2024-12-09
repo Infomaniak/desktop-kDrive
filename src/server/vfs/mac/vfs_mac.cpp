@@ -163,7 +163,7 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
                 ok = false;
             }
         }
-        return ok ? ExitCode::Ok : ExitInfo(ExitCode::SystemError, ExitCause::UnableToCreateVfs);
+        return ok ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::SystemError, ExitCause::UnableToCreateVfs);
     }
 
     return ExitCode::Ok;
@@ -265,7 +265,7 @@ ExitInfo VfsMac::updateMetadata(const QString &absoluteFilePath, time_t creation
 
     if (!_connector->vfsUpdateMetadata(absoluteFilePath, &fileStat)) {
         LOG_WARN(logger(), "Error in vfsUpdateMetadata!");
-        return handleVfsErrorabsoluteFilePath);
+        return handleVfsError(absoluteFilePath);
     }
 
     return ExitCode::Ok;
@@ -282,7 +282,8 @@ ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
-
+    bool exists = false;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return ExitCode::SystemError;
@@ -716,13 +717,13 @@ bool VfsMac::isExcluded(const QString &filePath) {
     return false;
 }
 
-bool VfsMac::setThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) {
+ExitInfo VfsMac::setThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) {
     if (!_connector->vfsSetThumbnail(absoluteFilePath, pixmap)) {
         LOG_WARN(logger(), "Error in vfsSetThumbnail!");
         return handleVfsError(QStr2Path(absoluteFilePath));
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 ExitInfo VfsMac::setAppExcludeList() {
@@ -799,7 +800,12 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
             QString fileRelativePath =
                     QStringView(path).mid(static_cast<qsizetype>(_vfsSetupParams._localPath.string().size())).toUtf8();
             auto localPinState = pinState(fileRelativePath);
-            bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
+            bool isDehydrated = false;
+            if (ExitInfo exitInfo = isDehydratedPlaceholder(fileRelativePath, isDehydrated); !exitInfo) {
+                LOGW_WARN(logger(),
+                          L"Error in isDehydratedPlaceholder : " << Utility::formatSyncPath(fullPath) << L" " << exitInfo);
+                return false;
+            }
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
                 _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
