@@ -2607,7 +2607,8 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo o
         IoHelper::checkIfPathExists(_syncPal->localPath() / relativeLocalPath, exist, ioError);
         if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath)
-                                        << L"has no read access, converting already exist error in file access error.");
+                                        << L"has no read access, converting " << opsExitInfo << L" to "
+                                        << ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError));
             return handleExecutorError(
                     syncOp, {ExitCode::SystemError, ExitCause::FileAccessError}); // We got the write right but not the read right
         }
