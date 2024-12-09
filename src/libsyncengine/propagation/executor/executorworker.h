@@ -150,10 +150,10 @@ class ExecutorWorker : public OperationProcessor {
 
         // This methode will return ExitCode::Ok if the error is safely managed and the executor can continue. Else, it will
         // return opsExitInfo.
-        ExitInfo handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
-        ExitInfo handleOpsLocalFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
-        ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo);
-        ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+        ExitInfo handleExecutorError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsLocalFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
 

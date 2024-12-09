@@ -347,15 +347,18 @@ class VfsOff : public Vfs {
         ExitInfo setThumbnail(const QString &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const QString &) override {}
+        void exclude(const QString &) override { /*VfsOff*/
+        }
         bool isExcluded(const QString &) override { return false; }
         bool fileStatusChanged(const QString &, KDC::SyncFileStatus) override { return true; }
 
-        void clearFileAttributes(const QString &) override {}
+        void clearFileAttributes(const QString &) override { /*VfsOff*/
+        }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override {}
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
+        }
 
         friend class TestWorkers;
 };

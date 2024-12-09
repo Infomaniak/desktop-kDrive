@@ -32,7 +32,7 @@ namespace KDC {
 
 class SourceLocation {
     public:
-        constexpr SourceLocation() : _line(0){};
+        constexpr SourceLocation() = default;
 
 #ifdef SRC_LOC_AVALAIBALE
         [[nodiscard]] static consteval SourceLocation currentLoc(
