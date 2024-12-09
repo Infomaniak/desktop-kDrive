@@ -32,9 +32,8 @@ void TestConflictFinderWorker::setUp() {
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(syncDbPath, KDRIVE_VERSION_STRING, true);
+    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(syncDbPath, KDRIVE_VERSION_STRING, true));
     _syncPal->syncDb()->setAutoDelete(true);
-    _syncPal->createSharedObjects();
 
     _syncPal->_conflictFinderWorker =
             std::shared_ptr<ConflictFinderWorker>(new ConflictFinderWorker(_syncPal, "Conflict Finder", "COFD"));
@@ -522,7 +521,8 @@ void TestConflictFinderWorker::testCase55b() {
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
 
     // Conflict Situation
-    nodeA->setChangeEvents(OperationType::Edit);
+    nodeA->setChangeEvents(
+        OperationType::Edit);
     nodeA->setMoveOrigin("A");
     nodeA->setName(Str("B"));
     rNodeA->setChangeEvents(OperationType::Edit);

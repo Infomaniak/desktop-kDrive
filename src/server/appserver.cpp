@@ -2108,7 +2108,7 @@ void AppServer::cancelLogUpload() {
     sendLogUploadStatusUpdated(LogUploadState::CancelRequested, 0);
 }
 
-ExitInfo AppServer::uploadLog(bool includeArchivedLogs) {
+void AppServer::uploadLog(bool includeArchivedLogs) {
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::None, found) ||
                             !found) { // Reset status
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
@@ -2145,13 +2145,12 @@ ExitInfo AppServer::uploadLog(bool includeArchivedLogs) {
     if (exitCause == ExitCause::OperationCanceled) {
         LOG_DEBUG(_logger, "Log transfert canceled");
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
-        return {exitCode, exitCause};
+        return;
     } else if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: code=" << exitCode << " cause=" << exitCause);
         addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
     }
     sendLogUploadStatusUpdated(exitCode == ExitCode::Ok ? LogUploadState::Success : LogUploadState::Failed, 0);
-    return {exitCode, exitCause};
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {

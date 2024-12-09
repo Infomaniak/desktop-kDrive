@@ -9,7 +9,7 @@ set(testcommonserver_SRCS
         ../test.cpp
         ../test_utility/localtemporarydirectory.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
-        ../test_utility/timechecker.h
+
         test.cpp
         # Utility
         utility/testutility.h utility/testutility.cpp
@@ -23,7 +23,7 @@ set(testcommonserver_SRCS
 )
 
 if (APPLE)
-    list(APPEND testcommonserver_SRCS io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
+    list(APPEND testcommonserver_SRCS io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp)
 endif ()
 
 if (WIN32)

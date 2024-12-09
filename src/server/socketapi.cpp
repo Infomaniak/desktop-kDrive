@@ -1096,8 +1096,8 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
             }
 
             if (isSingleFile) {
-                canHydrate = isPlaceholder && !isSyncing && !isHydrated;
-                canDehydrate = isPlaceholder && !isSyncing && isHydrated;
+                canHydrate = !isSyncing && !isHydrated;
+                canDehydrate = !isSyncing && isHydrated;
             }
         }
 

@@ -30,6 +30,8 @@ namespace KDC {
 
 FolderWatcher_win::FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path) : FolderWatcher(parent, path) {}
 
+FolderWatcher_win::~FolderWatcher_win() {}
+
 bool FolderWatcher_win::ready() const {
     return _ready;
 }

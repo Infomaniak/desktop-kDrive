@@ -32,6 +32,7 @@ class LocalFileSystemObserverWorker;
 class FolderWatcher_win : public FolderWatcher {
     public:
         FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path);
+        ~FolderWatcher_win();
 
         bool ready() const;
 

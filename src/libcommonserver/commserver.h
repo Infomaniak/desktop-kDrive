@@ -19,7 +19,6 @@
 #pragma once
 
 #include "libcommon/comm.h"
-#include "libcommon/utility/utility.h"
 
 #include <deque>
 
@@ -60,7 +59,7 @@ class CommServer : public QObject {
 
     private:
         static std::shared_ptr<CommServer> _instance;
-        QtLoggingThread *_requestWorkerThread;
+        QThread *_requestWorkerThread;
         Worker *_requestWorker;
         QTcpServer _tcpServer;
         QTcpSocket *_tcpSocket;

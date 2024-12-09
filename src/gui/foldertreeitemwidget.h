@@ -26,6 +26,7 @@
 #include <QColor>
 #include <QTreeWidget>
 #include <QSize>
+#include <QThread>
 
 namespace KDC {
 

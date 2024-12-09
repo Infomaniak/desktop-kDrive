@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "log/log.h"
 
@@ -52,7 +51,7 @@ class PerformanceWatcher {
         static bool _stop;
 
         log4cplus::Logger _logger = Log::instance()->getLogger();
-        std::unique_ptr<StdLoggingThread> _thread = nullptr;
+        std::unique_ptr<std::thread> _thread = nullptr;
 
         static void updateAllStats();
 

@@ -150,7 +150,6 @@ void TestWorkers::setUp() {
 
     // Setup SyncPal
     _syncPal = std::make_shared<SyncPal>(_sync.dbId(), KDRIVE_VERSION_STRING);
-    _syncPal->createSharedObjects();
     _syncPal->createWorkers();
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();

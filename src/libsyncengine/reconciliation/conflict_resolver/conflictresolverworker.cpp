@@ -50,8 +50,8 @@ void ConflictResolverWorker::execute() {
     // The sync must be restarted after the execution of the operations that resolve the conflict
     _syncPal->setRestart(true);
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(exitCode);
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
 }
 
 ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bool &continueSolving) {

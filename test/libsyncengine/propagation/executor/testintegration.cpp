@@ -108,7 +108,6 @@ void TestIntegration::setUp() {
     }
 
     _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
-    _syncPal->createSharedObjects();
 
     // Insert items to blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {test_beaucoupRemoteId});

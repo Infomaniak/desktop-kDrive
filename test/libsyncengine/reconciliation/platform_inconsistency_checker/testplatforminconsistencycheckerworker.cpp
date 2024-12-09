@@ -65,7 +65,6 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     // Create SyncPal
     _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
-    _syncPal->createSharedObjects();
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
     _syncPal->_platformInconsistencyCheckerWorker =
@@ -279,7 +278,7 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
 #if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(exactly1exist);
 #else
-    (void) exactly1exist;
+    (void)exactly1exist;
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
                    _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
 #endif

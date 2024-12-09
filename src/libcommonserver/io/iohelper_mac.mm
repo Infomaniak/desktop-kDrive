@@ -104,7 +104,7 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
     CFRelease(aliasUrl);
     if (!ret) {
         if (error) {
-            ioError = nsError2ioError((__bridge NSError *) error);
+            ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
             if (ioError != IoError::Unknown) {
                 return true;
@@ -136,7 +136,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     CFRelease(aliasUrl);
     if (bookmarkRef == nil) {
         if (error) {
-            ioError = nsError2ioError((__bridge NSError *) error);
+            ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
             if (ioError != IoError::Unknown) {
                 return true;
@@ -170,7 +170,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
 
     CFStringRef targetPathStr = CFURLCopyFileSystemPath(targetUrl, kCFURLPOSIXPathStyle);
     CFRelease(targetUrl);
-    targetPath = SyncPath(std::string([(__bridge NSString *) targetPathStr UTF8String]));
+    targetPath = SyncPath(std::string([(NSString *)targetPathStr UTF8String]));
     CFRelease(targetPathStr);
 
     return true;
@@ -194,7 +194,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
 
     if (bookmarkRef == nil) {
         if (error) {
-            ioError = nsError2ioError((__bridge NSError *) error);
+            ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
         }
         CFRelease(aliasUrl);
@@ -212,7 +212,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
 
     if (!result) {
         if (error) {
-            ioError = nsError2ioError((__bridge NSError *) error);
+            ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
         }
         LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath).c_str());

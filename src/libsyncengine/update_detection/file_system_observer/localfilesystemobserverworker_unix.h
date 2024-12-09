@@ -26,6 +26,7 @@ class LocalFileSystemObserverWorker_unix : public LocalFileSystemObserverWorker 
     public:
         LocalFileSystemObserverWorker_unix(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                            const std::string &shortName);
+        ~LocalFileSystemObserverWorker_unix();
 
     protected:
         virtual bool isFolderWatcherReliable() const override { return (_folderWatcher && _folderWatcher->isReliable()); }

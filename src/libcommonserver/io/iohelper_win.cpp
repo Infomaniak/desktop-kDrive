@@ -54,8 +54,6 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
         case ERROR_SUCCESS:
             return IoError::Success;
         case ERROR_ACCESS_DENIED:
-        case ERROR_SHARING_VIOLATION:
-        case ERROR_LOCK_VIOLATION:
             return IoError::AccessDenied;
         case ERROR_DISK_FULL:
             return IoError::DiskFull;
@@ -70,8 +68,6 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
         case ERROR_PATH_NOT_FOUND:
         case ERROR_INVALID_NAME:
             return IoError::NoSuchFileOrDirectory;
-        case ERROR_NOT_SAME_DEVICE:
-            return IoError::CrossDeviceLink;
         default:
             if (Log::isSet()) {
                 LOG_WARN(logger, "Unhandled DWORD error - error=" << error);

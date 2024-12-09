@@ -29,6 +29,7 @@ class LocalFileSystemObserverWorker;
 class FolderWatcher_mac : public FolderWatcher {
     public:
         FolderWatcher_mac(LocalFileSystemObserverWorker *parent, const SyncPath &path);
+        ~FolderWatcher_mac();
 
         void startWatching() override;
         void stopWatching() override;

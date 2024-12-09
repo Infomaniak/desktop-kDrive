@@ -82,8 +82,8 @@ void RemoteFileSystemObserverWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(exitCode);
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
 }
 
 ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
@@ -354,7 +354,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                                                    << SyncName2WStr(_snapshot->name(item.parentId())).c_str() << L"\"");
 
             SyncPath path;
-            _snapshot->path(item.parentId(), path, ignore);
+            _snapshot->path(item.parentId(), path);
             path /= item.name();
 
             Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
@@ -623,15 +623,11 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         case ActionCode::actionCodeMoveIn:
         case ActionCode::actionCodeRestore:
         case ActionCode::actionCodeCreate:
-        case ActionCode::actionCodeRename: {
-            const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
-                                    actionInfo.actionCode != ActionCode::actionCodeCreate &&
-                                    !_snapshot->exists(actionInfo.snapshotItem.id());
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
             _snapshot->updateItem(actionInfo.snapshotItem);
-            if (exploreDir) {
+            if (actionInfo.snapshotItem.type() == NodeType::Directory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
                 // Retrieve all children
                 const ExitCode exitCode = exploreDirectory(actionInfo.snapshotItem.id());
+
                 switch (exitCode) {
                     case ExitCode::NetworkError:
                         if (exitCause() == ExitCause::NetworkTimeout) {
@@ -654,7 +650,13 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
                 movedItems.insert(actionInfo.snapshotItem.id());
             }
             break;
-        }
+
+        // Item renamed
+        case ActionCode::actionCodeRename:
+            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
+            _snapshot->updateItem(actionInfo.snapshotItem);
+            break;
+
         // Item edited
         case ActionCode::actionCodeEdit:
             _snapshot->updateItem(actionInfo.snapshotItem);

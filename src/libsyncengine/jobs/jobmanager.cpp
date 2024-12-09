@@ -25,6 +25,7 @@
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
 
+#include <thread>
 #include <algorithm> // std::max
 
 #include <log4cplus/loggingmacros.h>
@@ -138,7 +139,7 @@ JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
 
     _cpuUsageThreshold = ParametersCache::instance()->parameters().maxAllowedCpu() / 100.0;
 
-    _thread = std::make_unique<StdLoggingThread>(run);
+    _thread = std::make_unique<std::thread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
 }
 

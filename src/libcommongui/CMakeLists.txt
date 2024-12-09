@@ -25,6 +25,5 @@ set_target_properties(${libcommongui_NAME} PROPERTIES
 )
 
 target_link_libraries(${libcommongui_NAME}
-    ${libcommon_NAME}
     Qt6::Core
 )

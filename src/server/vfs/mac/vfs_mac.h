@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "libcommon/utility/utility.h"
 #include "libcommonserver/vfs.h"
 #include "libcommonserver/plugin.h"
 #include "litesyncextconnector.h"
@@ -29,6 +28,7 @@
 #include <QMutex>
 #include <QObject>
 #include <QScopedPointer>
+#include <QThread>
 #include <QWaitCondition>
 
 #define WORKER_HYDRATION 0
@@ -44,7 +44,7 @@ struct WorkerInfo {
         std::deque<QString> _queue;
         QWaitCondition _queueWC;
         bool _stop = false;
-        QList<QtLoggingThread *> _threadList;
+        QList<QThread *> _threadList;
 };
 
 class VfsMac : public Vfs {

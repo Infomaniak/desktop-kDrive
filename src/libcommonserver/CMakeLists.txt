@@ -3,6 +3,7 @@ project(libcommonserver)
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+find_package(log4cplus 2.1.0 REQUIRED)
 find_package(xxHash 0.8.2 REQUIRED)
 
 if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
@@ -38,10 +39,7 @@ set(libcommonserver_SRCS
 
 if(APPLE)
     list(APPEND libcommonserver_SRCS io/iohelper_mac.mm io/iohelper_mac.cpp)
-    set_property(SOURCE io/iohelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
-
     list(APPEND libcommonserver_SRCS utility/utility_mac.mm)
-    set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
     list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp)
 else()
@@ -72,6 +70,7 @@ if (WIN32)
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        "C:/Program Files (x86)/log4cplus/include"
         "C:/Program Files (x86)/libzip/include"
         "C:/Program Files (x86)/xxHash/include"
     )
@@ -100,6 +99,7 @@ target_link_libraries(${libcommonserver_NAME}
 
 if (WIN32)
     target_link_libraries(${libcommonserver_NAME}
+        log4cplus::log4cplusU
         xxHash::xxhash
         Secur32)
 elseif(APPLE)
@@ -109,6 +109,7 @@ elseif(APPLE)
     find_library(APPKIT_LIBRARY NAMES AppKit)
 
     target_link_libraries(${libcommonserver_NAME}
+        log4cplus::log4cplusU
         xxHash::xxhash
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
@@ -116,6 +117,7 @@ elseif(APPLE)
         utf8proc)
 else()
     target_link_libraries(${libcommonserver_NAME}
+        "/usr/local/lib/liblog4cplusU.so"
         "/usr/local/lib/libxxhash.so"
         utf8proc)
 endif()

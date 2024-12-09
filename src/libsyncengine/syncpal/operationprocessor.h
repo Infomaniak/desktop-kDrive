@@ -36,7 +36,7 @@ class OperationProcessor : public ISyncWorker {
          * @param node a shared pointer to the node in current tree.
          * @return a shared pointer to the node in other tree. nullptr il not found.
          */
-        virtual std::shared_ptr<Node> correspondingNodeInOtherTree(std::shared_ptr<Node> node);
+        std::shared_ptr<Node> correspondingNodeInOtherTree(std::shared_ptr<Node> node);
         /**
          * Find the corresponding node in other tree.
          * Looks in DB only.

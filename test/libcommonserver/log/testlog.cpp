@@ -16,20 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "test_utility/testhelpers.h"
 #include "testlog.h"
-
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 
 #include <config.h>
-#include <log/customrollingfileappender.h>
 #include <log4cplus/loggingmacros.h>
-
 #include <iostream>
-#include <chrono>
+#include <log/customrollingfileappender.h>
 
 using namespace CppUnit;
 namespace KDC {
@@ -40,21 +37,14 @@ void TestLog::setUp() {
 }
 
 void TestLog::testLog() {
-    LOG_DEBUG(_logger, "Test debug log " << (int) 1 << " " << true << " " << (double) 1.0);
-    LOG_INFO(_logger, "Test info log " << (unsigned int) 2 << " " << false << " " << (float) 1.0);
-    LOG_WARN(_logger, "Test warn log " << (long unsigned int) 3 << " " << false << " " << std::error_code{});
-    LOG_ERROR(_logger, "Test error log " << (long long unsigned int) 4 << " " << true);
-    const QIODevice *device = nullptr;
-    LOG_FATAL(_logger, "Test fatal log" << std::error_code{} << " " << device);
+    LOG4CPLUS_TRACE(_logger, "Test trace log");
+    LOG4CPLUS_DEBUG(_logger, "Test debug log");
+    LOG4CPLUS_INFO(_logger, "Test info log");
+    LOG4CPLUS_WARN(_logger, "Test warn log");
+    LOG4CPLUS_ERROR(_logger, "Test error log");
+    LOG4CPLUS_FATAL(_logger, "Test fatal log");
 
-    LOGW_DEBUG(_logger, L"Test debug log " << (int) 1 << L" " << true << L" " << (double) 1.0);
-    LOGW_INFO(_logger, L"Test info log " << (unsigned int) 2 << L" " << false << L" " << (float) 1.0);
-    LOGW_WARN(_logger, L"Test warn log " << (long unsigned int) 3 << L" " << false << L" " << std::error_code{});
-    LOGW_ERROR(_logger, L"Test error log " << (long long unsigned int) 4 << L" " << true);
-    LOGW_FATAL(_logger, L"Test fatal log " << std::error_code{} << L" " << device << L" " << (long unsigned int) 5);
-
-    // Wide characters are mandatory in this case as a bare call to LOG4CPLUS_DEBUG fails to print the string below.
-    LOGW_DEBUG(_logger, L"Test debug log " << L" " << L"家屋香袈睷晦");
+    LOG4CPLUS_DEBUG(_logger, L"家屋香袈睷晦");
 
     CPPUNIT_ASSERT(true);
 }
@@ -69,13 +59,11 @@ void TestLog::testLargeLogRolling(void) {
     customRollingFileAppender->setMaxFileSize(maxSize);
 
     LOG_DEBUG(_logger, "Ensure the log file is created");
-
     CPPUNIT_ASSERT_GREATER(1, countFilesInDirectory(_logDir));
 
     // Generate a log larger than the max log file size. (log header is 50bytes)
     const auto testLog = std::string(maxSize, 'a');
     LOG_DEBUG(_logger, testLog.c_str());
-
     CPPUNIT_ASSERT_GREATER(2, countFilesInDirectory(_logDir));
 
     SyncPath rolledFile = _logDir / (Log::instance()->getLogFilePath().filename().string() + ".1.gz");
@@ -88,31 +76,27 @@ void TestLog::testLargeLogRolling(void) {
 }
 
 void TestLog::testExpiredLogFiles(void) {
-    // This test checks that old archived log files are deleted after a certain time
+    // This test check that old archived log files are deleted after a certain time
     clearLogDirectory();
 
     // Generate a fake log file
     std::ofstream fakeLogFile(_logDir / APPLICATION_NAME "_fake.log.gz");
     fakeLogFile << "Fake old log file" << std::endl;
     fakeLogFile.close();
-    LOG_INFO(_logger, "Test log file expiration"); // Ensure the log file is created.
+    LOG_INFO(_logger, "Test log file expiration"); // Ensure the log file is created
 
-    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); // The current log file and the fake archived log file.
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); // The current log file and the fake archived log file
 
     auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
-    appender->setExpire(2); // 2 seconds
+    appender->setExpire(2); // 1 seconds
     Utility::msleep(1000);
     appender->checkForExpiredFiles();
-
-    const auto now = std::chrono::system_clock::now();
-    KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(), now);
-
-    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); // The fake log file should not be deleted yet (< 2 seconds).
+    LOG_INFO(_logger, "Test log file expiration"); // Ensure the current log file is not older than 2 seconds
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); // The fake log file should not be deleted (< 2 seconds)
 
     Utility::msleep(1000);
     appender->checkForExpiredFiles();
-
-    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file should be deleted now.
+    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file should be deleted
     appender->setExpire(CommonUtility::logsPurgeRate * 24 * 3600);
 }
 
@@ -129,7 +113,6 @@ int TestLog::countFilesInDirectory(const SyncPath &directory) const {
         count++;
     }
     CPPUNIT_ASSERT(endOfDirectory);
-
     return count;
 }
 

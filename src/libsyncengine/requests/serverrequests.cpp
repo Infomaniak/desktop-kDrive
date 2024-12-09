@@ -1115,7 +1115,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
+ExitCode ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
                                        std::function<void(const QString &, qint64)> callback) {
     if (nodeId.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Node ID is empty");

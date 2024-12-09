@@ -19,7 +19,6 @@
 #pragma once
 
 #include "libcommon/comm.h"
-#include "libcommon/utility/utility.h"
 
 #include <deque>
 
@@ -30,6 +29,7 @@
 #include <QString>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QThread>
 #include <QWaitCondition>
 
 namespace KDC {
@@ -61,7 +61,7 @@ class CommClient : public QObject {
 
     private:
         static std::shared_ptr<CommClient> _instance;
-        QtLoggingThread *_requestWorkerThread;
+        QThread *_requestWorkerThread;
         Worker *_requestWorker;
         QTcpSocket *_tcpConnection;
         QByteArray _buffer;

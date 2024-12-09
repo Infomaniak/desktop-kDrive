@@ -26,6 +26,7 @@
 
 #include <QBoxLayout>
 #include <QLabel>
+#include <QThread>
 #include <QLoggingCategory>
 
 namespace KDC {

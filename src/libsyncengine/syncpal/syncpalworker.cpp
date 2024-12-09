@@ -51,13 +51,6 @@ void SyncPalWorker::execute() {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
         }
 
-        // Manage stop
-        if (stopAsked()) {
-            // Exit
-            exitCode = ExitCode::Ok;
-            setDone(exitCode);
-            return;
-        }
         if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
             // Reset nodes syncing flag
             if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
@@ -81,7 +74,7 @@ void SyncPalWorker::execute() {
                     // Pause sync
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
-                    stopAndWaitForExitOfWorker(fsoWorkers[index]);
+                    fsoWorkers[index]->stop();
                     pause();
                 } else {
                     // Start worker
@@ -143,7 +136,6 @@ void SyncPalWorker::execute() {
                 SyncStep step = nextStep();
                 if (step != _step) {
                     LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has finished");
-                    waitForExitOfWorkers(stepWorkers);
                     initStep(step, stepWorkers, inputSharedObject);
                     isStepInProgress = false;
                 }
@@ -228,8 +220,8 @@ void SyncPalWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
     setDone(exitCode);
+    LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
 }
 
 std::string SyncPalWorker::stepName(SyncStep step) {
@@ -295,12 +287,12 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[0] = _syncPal->computeFSOperationsWorker();
             workers[1] = nullptr;
             _syncPal->copySnapshots();
-            assert(_syncPal->snapshotCopy(ReplicaSide::Local)->checkIntegrityRecursively() &&
+            assert(_syncPal->snapshot(ReplicaSide::Local, true)->checkIntegrityRecursively() &&
                    "Local snapshot is corrupted, see logs for details");
-            assert(_syncPal->snapshotCopy(ReplicaSide::Remote)->checkIntegrityRecursively() &&
+            assert(_syncPal->snapshot(ReplicaSide::Remote, true)->checkIntegrityRecursively() &&
                    "Remote snapshot is corrupted, see logs for details");
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
+            inputSharedObject[0] = _syncPal->snapshot(ReplicaSide::Local, true);
+            inputSharedObject[1] = _syncPal->snapshot(ReplicaSide::Remote, true);
             _syncPal->setRestart(false);
             break;
         case SyncStep::UpdateDetection2:
@@ -471,11 +463,6 @@ SyncStep SyncPalWorker::nextStep() const {
     }
 }
 
-void SyncPalWorker::stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> worker) {
-    worker->stop();
-    worker->waitForExit();
-}
-
 void SyncPalWorker::stopWorkers(std::shared_ptr<ISyncWorker> workers[2]) {
     for (int index = 0; index < 2; index++) {
         if (workers[index]) {
@@ -549,9 +536,6 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             return false;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (stopAsked()) {
-                return true;
-            }
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {

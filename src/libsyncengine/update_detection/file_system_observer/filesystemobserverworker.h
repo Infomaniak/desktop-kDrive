@@ -38,7 +38,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         virtual void forceUpdate();
         virtual inline bool updating() const { return _updating; }
 
-        std::shared_ptr<Snapshot> snapshot() const { return _snapshot; }
+        std::shared_ptr<Snapshot> snapshot() const { return _snapshot; };
 
     protected:
         std::shared_ptr<SyncDb> _syncDb;
@@ -55,6 +55,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         virtual bool isFolderWatcherReliable() const { return true; }
 
     private:
+        static void *executeFunc(void *thisWorker);
         virtual ReplicaSide getSnapshotType() const = 0;
 
         friend class TestLocalFileSystemObserverWorker;

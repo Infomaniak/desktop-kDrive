@@ -322,4 +322,5 @@ void TestIo::testCheckDirectoryPermissionLost() {
         CPPUNIT_ASSERT(endOfDirectory);
     }
 }
+
 } // namespace KDC

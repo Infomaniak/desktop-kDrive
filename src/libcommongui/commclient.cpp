@@ -47,7 +47,7 @@ std::shared_ptr<CommClient> CommClient::instance(QObject *parent) {
 }
 
 CommClient::CommClient(QObject *parent) :
-    QObject(parent), _requestWorkerThread(new QtLoggingThread()), _requestWorker(new Worker()), _tcpConnection(new QTcpSocket()),
+    QObject(parent), _requestWorkerThread(new QThread()), _requestWorker(new Worker()), _tcpConnection(new QTcpSocket()),
     _buffer(QByteArray()) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);

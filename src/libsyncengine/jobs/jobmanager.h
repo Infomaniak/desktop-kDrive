@@ -20,7 +20,6 @@
 #pragma once
 
 #include "abstractjob.h"
-#include "libcommon/utility/utility.h"
 
 #include <log4cplus/logger.h>
 
@@ -97,7 +96,7 @@ class JobManager {
         static std::chrono::time_point<std::chrono::steady_clock> _maxNbThreadChrono;
 
         log4cplus::Logger _logger;
-        std::unique_ptr<StdLoggingThread> _thread;
+        std::unique_ptr<std::thread> _thread;
 
         static std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs; // queued + running + pending jobs
         static std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,

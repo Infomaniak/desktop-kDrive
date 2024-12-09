@@ -36,6 +36,7 @@
 #include <QElapsedTimer>
 #include <QPointer>
 #include <QQueue>
+#include <QThread>
 #include <QTimer>
 
 namespace KDC {
@@ -181,7 +182,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         // See types.h -> AppStateKey for the possible values of status
         void cancelLogUpload();
-        ExitInfo uploadLog(bool includeArchivedLogs);
+        void uploadLog(bool includeArchivedLogs);
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();

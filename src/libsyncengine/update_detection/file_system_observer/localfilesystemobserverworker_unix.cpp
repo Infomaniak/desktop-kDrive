@@ -38,4 +38,9 @@ LocalFileSystemObserverWorker_unix::LocalFileSystemObserverWorker_unix(std::shar
 #endif
 }
 
+LocalFileSystemObserverWorker_unix::~LocalFileSystemObserverWorker_unix() {
+    FolderWatcher *ptr = _folderWatcher.release();
+    delete ptr;
+}
+
 } // namespace KDC

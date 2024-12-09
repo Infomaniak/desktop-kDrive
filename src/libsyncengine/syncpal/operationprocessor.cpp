@@ -31,8 +31,8 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         return false;
     }
 
-    std::shared_ptr<const Snapshot> snapshot = _syncPal->snapshotCopy(node->side());
-    std::shared_ptr<const Snapshot> otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
+    std::shared_ptr<Snapshot> snapshot = _syncPal->snapshot(node->side(), true);
+    std::shared_ptr<Snapshot> otherSnapshot = _syncPal->snapshot(correspondingNode->side(), true);
 
     // Create-Create pseudo-conflict
     if (node->hasChangeEvent(OperationType::Create) && correspondingNode->hasChangeEvent(OperationType::Create) &&

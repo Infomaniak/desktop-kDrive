@@ -18,6 +18,8 @@
 
 #include "utility.h"
 
+#include <QCollator>
+
 #if defined(Q_OS_WIN)
 #include "utility_win.cpp"
 #elif defined(Q_OS_MAC)
@@ -25,9 +27,6 @@
 #else
 #include "utility_linux.cpp"
 #endif
-
-#include <QCollator>
-#include <QThread>
 
 namespace KDC {
 struct Period {
