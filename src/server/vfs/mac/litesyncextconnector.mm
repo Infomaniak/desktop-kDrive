@@ -1292,7 +1292,7 @@ bool LiteSyncExtConnector::vfsGetFetchingAppList(QHash<QString, QString> &appTab
     return _private->getFetchingAppList(appTable);
 }
 
-bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error) {
+bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat) {
     FilePermissionHolder permHolder(absoluteFilePath);
 
     if (!fileStat) {
@@ -1323,7 +1323,6 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
         fd = open(stdPath.c_str(), FWRITE);
         if (fd == -1) {
             LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
-            *error = QObject::tr("Call to open failed - path=%1").arg(absoluteFilePath);
             return false;
         }
     }
@@ -1331,13 +1330,11 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     if (ftruncate(fd, fileStat->st_size) == -1) {
         LOGW_WARN(_logger,
                   L"Call to ftruncate failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
-        *error = QObject::tr("Call to ftruncate failed - path=%1").arg(absoluteFilePath);
         return false;
     }
 
     if (close(fd) == -1) {
         LOGW_WARN(_logger, L"Call to close failed - " << Utility::formatPath(absoluteFilePath).c_str() << L" errno=" << errno);
-        *error = QObject::tr("Call to close failed - path=%1").arg(absoluteFilePath);
         return false;
     }
 

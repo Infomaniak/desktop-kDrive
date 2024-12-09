@@ -60,33 +60,31 @@ class VfsMac : public Vfs {
         VirtualFileMode mode() const override;
 
         bool socketApiPinStateActionsShown() const override { return true; }
-        bool isHydrating() const override;
 
-        bool updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
-                            const QByteArray &fileId, QString *error) override;
+        ExitInfo updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
+                            const QByteArray &fileId) override;
 
-        bool createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
-        bool dehydratePlaceholder(const QString &path) override;
-        bool convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
-        bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
+        ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
+        ExitInfo dehydratePlaceholder(const QString &path) override;
+        ExitInfo convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
+        ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
         void cancelHydrate(const QString &filePath) override;
-        bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
+        ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
         bool cleanUpStatuses() override;
         virtual void clearFileAttributes(const QString &path) override;
 
-        bool needsMetadataUpdate(const SyncFileItem &) override { return false; }
-        bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) override;
+        ExitInfo isDehydratedPlaceholder(const QString &filePath, bool &isDehydrated, bool isAbsolutePath = false) override;
 
-        bool setPinState(const QString &fileRelativePath, PinState state) override;
+        ExitInfo setPinState(const QString &fileRelativePath, PinState state) override;
         PinState pinState(const QString &relativePath) override;
-        bool status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) override;
-        virtual void exclude(const QString &path) override;
-        virtual bool isExcluded(const QString &filePath) override;
-        virtual bool setThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) override;
-        virtual bool setAppExcludeList() override;
-        virtual bool getFetchingAppList(QHash<QString, QString> &appTable) override;
-        virtual bool fileStatusChanged(const QString &path, SyncFileStatus status) override;
+        ExitInfo status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) override;
+        void exclude(const QString &path) override;
+        bool isExcluded(const QString &filePath) override;
+        ExitInfo setThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) override;
+        ExitInfo setAppExcludeList() override;
+        ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) override;
+        bool fileStatusChanged(const QString &path, SyncFileStatus status) override;
 
         void dehydrate(const QString &path);
         void hydrate(const QString &path);
@@ -94,7 +92,7 @@ class VfsMac : public Vfs {
         virtual void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
 
     protected:
-        bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
+        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool unregister) override;
 
         friend class TestWorkers;
