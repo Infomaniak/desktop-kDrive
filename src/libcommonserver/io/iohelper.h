@@ -331,6 +331,21 @@ struct IoHelper {
          */
         static bool setXAttrValue(const SyncPath &path, const std::string &attrName, const std::string &value,
                                   IoError &ioError) noexcept;
+        //! Remove the extended attributes with specified names for the item indicated by path.
+        /*!
+         \param path is the file system path of the item.
+         \param attrNames is a vector of the names of the extended attributes to remove.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool removeXAttrs(const SyncPath &path, const std::vector<std::string> &attrNames, IoError &ioError) noexcept;
+        //! Remove the LiteSync extended attributes for the item indicated by path.
+        /*!
+         \param path is the file system path of the item.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept;
 #endif
 
 #ifdef _WIN32

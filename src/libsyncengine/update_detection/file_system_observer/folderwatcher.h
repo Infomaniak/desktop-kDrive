@@ -32,7 +32,7 @@ class LocalFileSystemObserverWorker;
 class FolderWatcher {
     public:
         FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPath &rootFolder);
-        virtual ~FolderWatcher();
+        virtual ~FolderWatcher() = default;
 
         const log4cplus::Logger &logger() const { return _logger; }
 
