@@ -819,11 +819,11 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
 #ifdef __APPLE__
         // Not done in Windows case: the pin state and the status must not be set by the download job because hydration could be
         // asked for a move and so, the file place will change just after the dl.
-        std::function<bool(const SyncPath &, PinState)> vfsSetPinStateCallback =
+        std::function<ExitInfo(const SyncPath &, PinState)> vfsSetPinStateCallback =
                 std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);
         job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
 
-        std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+        std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
                 std::bind(&SyncPal::vfsForceStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
                           std::placeholders::_4);
         job->setVfsForceStatusCallback(vfsForceStatusCallback);
