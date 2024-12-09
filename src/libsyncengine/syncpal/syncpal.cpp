@@ -1505,7 +1505,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
     }
 
     localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
-    remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(correspondingNodeId);
+    remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(remoteNodeId);
     
     // Blacklist the item
     if (!localNodeId.empty()) {
