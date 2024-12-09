@@ -622,7 +622,7 @@ ExitInfo VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, b
     // Set status
     LOGW_DEBUG(logger(), L"Setting syncing status to: " << isSyncing << L" for file: " << Utility::formatSyncPath(stdPath));
     if (ExitInfo exitInfo = setPlaceholderStatus(absolutePath, isSyncing); !exitInfo) {
-        LOG_WARN(logger(), L"Error in setPlaceholderStatus: " << Utility::formatSyncPath(stdPath) << exitInfo);
+        LOGW_WARN(logger(), L"Error in setPlaceholderStatus: " << Utility::formatSyncPath(stdPath) << L" " << exitInfo);
         return exitInfo;
     }
 
