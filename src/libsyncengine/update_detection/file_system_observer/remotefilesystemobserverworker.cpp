@@ -623,11 +623,15 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         case ActionCode::actionCodeMoveIn:
         case ActionCode::actionCodeRestore:
         case ActionCode::actionCodeCreate:
+        case ActionCode::actionCodeRename: {
+            const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
+                                    actionInfo.actionCode != ActionCode::actionCodeCreate &&
+                                    !_snapshot->exists(actionInfo.snapshotItem.id());
+            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
             _snapshot->updateItem(actionInfo.snapshotItem);
-            if (actionInfo.snapshotItem.type() == NodeType::Directory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
+            if (exploreDir) {
                 // Retrieve all children
                 const ExitCode exitCode = exploreDirectory(actionInfo.snapshotItem.id());
-
                 switch (exitCode) {
                     case ExitCode::NetworkError:
                         if (exitCause() == ExitCause::NetworkTimeout) {
@@ -650,13 +654,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
                 movedItems.insert(actionInfo.snapshotItem.id());
             }
             break;
-
-        // Item renamed
-        case ActionCode::actionCodeRename:
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
-            _snapshot->updateItem(actionInfo.snapshotItem);
-            break;
-
+        }
         // Item edited
         case ActionCode::actionCodeEdit:
             _snapshot->updateItem(actionInfo.snapshotItem);
