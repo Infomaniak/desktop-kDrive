@@ -265,7 +265,7 @@ ExitInfo VfsMac::updateMetadata(const QString &absoluteFilePath, time_t creation
 
     if (!_connector->vfsUpdateMetadata(absoluteFilePath, &fileStat)) {
         LOG_WARN(logger(), "Error in vfsUpdateMetadata!");
-        return handleVfsError(absoluteFilePath);
+        return handleVfsError(QStr2Path(absoluteFilePath));
     }
 
     return ExitCode::Ok;
