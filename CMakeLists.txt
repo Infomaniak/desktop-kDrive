@@ -47,6 +47,7 @@ set(libcommonserver_NAME "${APPLICATION_NAME}commonserver")
 set(libcommongui_NAME "${APPLICATION_NAME}commongui")
 set(libsyncengine_NAME "${APPLICATION_NAME}syncengine")
 set(libparms_NAME "${APPLICATION_NAME}parms")
+set(libcommonext_NAME "${APPLICATION_NAME}commonext")
 
 # For PocoUtilConfig
 set(ENABLE_XML TRUE)
@@ -178,6 +179,8 @@ endif()
 # Handle Translations, pick all client_* files from trans directory.
 file(GLOB TRANS_FILES ${CMAKE_SOURCE_DIR}/translations/client_*.ts)
 set(TRANSLATIONS ${TRANS_FILES})
+
+add_subdirectory(libcommonext)
 
 if (BUILD_CLIENT)
     add_subdirectory(src)

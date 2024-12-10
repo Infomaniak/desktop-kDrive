@@ -20,6 +20,8 @@ set_target_properties("${libsyncengine_NAME}_vfs_mac"
         AUTOMOC TRUE
 )
 
+target_include_directories("${libsyncengine_NAME}_vfs_mac" PRIVATE ${CMAKE_SOURCE_DIR}/libcommonext)
+
 # Link
 find_library(SYSTEM_EXTENSION_LIBRARY NAMES SystemExtensions)
 target_link_libraries("${libsyncengine_NAME}_vfs_mac"

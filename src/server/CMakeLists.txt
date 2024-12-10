@@ -169,6 +169,7 @@ if (WIN32)
         ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
         ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
         ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+        ${CMAKE_SOURCE_DIR}/libcommonext
         ${CMAKE_CURRENT_BINARY_DIR}
         "C:/Program Files (x86)/log4cplus/include")
 else()
@@ -176,6 +177,7 @@ else()
         ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
         ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
         ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+        ${CMAKE_SOURCE_DIR}/libcommonext
         ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
@@ -188,6 +190,7 @@ target_link_libraries(updater
     Qt6::Network
     Poco::XML
     ${libsyncengine_NAME}
+    ${libcommonext_NAME}
     ${updater_DEPS})
 
 target_link_libraries(${APPLICATION_EXECUTABLE}

@@ -16,15 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "commonext.h"
 
-#define EXT_ATTR_STATUS @"com.infomaniak.drive.desktopclient.litesync.status"
-#define EXT_ATTR_PIN_STATE @"com.infomaniak.drive.desktopclient.litesync.pinstate"
+#ifdef __APPLE__
 
-#define EXT_ATTR_STATUS_ONLINE "O"
-#define EXT_ATTR_STATUS_OFFLINE "F"
-#define EXT_ATTR_STATUS_HYDRATING "H"
 
-#define EXT_ATTR_PIN_STATE_UNPINNED "U"
-#define EXT_ATTR_PIN_STATE_PINNED "P"
-#define EXT_ATTR_PIN_STATE_EXCLUDED "E"
+#endif
