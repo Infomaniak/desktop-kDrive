@@ -156,6 +156,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
+        ExitInfo removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, OperationType opType);
 
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
