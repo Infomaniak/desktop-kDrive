@@ -60,6 +60,7 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 }
 
 DownloadJob::~DownloadJob() {
+    try{
     if (_responseHandlingCanceled) {
         if (_vfsSetPinState) {
             if (ExitInfo exitInfo = _vfsSetPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
@@ -93,6 +94,9 @@ DownloadJob::~DownloadJob() {
                 LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
             }
         }
+    }
+    } catch (const std::bad_function_call &e) {
+        LOG_ERROR(_logger, "Error in DownloadJob::~DownloadJob: " << e.what());
     }
 }
 

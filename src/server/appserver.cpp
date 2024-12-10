@@ -1105,7 +1105,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                tryCreateAndStartVfs(sync); // TODO: We should handle potential errors here [KDESKTOP-1407]
+                if(ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo){
+                    LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
+                    return;
+                }
 
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
@@ -1193,8 +1196,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                tryCreateAndStartVfs(sync); // TODO: We should handle potential errors here [KDESKTOP-1407]
-
+                if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+                    LOG_WARN(_logger,
+                             "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
+                    return;
+                }
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
                 if (exitCode != ExitCode::Ok) {
@@ -2918,6 +2924,13 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
 
                 tryCreateAndStartVfs(sync); // TODO: We should handle potential errors here [KDESKTOP-1407]
 
+                if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+                    LOG_WARN(_logger,
+                             "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
+                    mainExitCode = exitInfo.code();
+                    continue;
+                }
+
                 // Create and start SyncPal
                 exitCode =
                         initSyncPal(sync, blackList, undecidedList, QSet<QString>(), !user.keychainKey().empty(), false, false);
@@ -3883,7 +3896,10 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         // Delete previous vfs
         _vfsMap.erase(syncDbId);
 
-        tryCreateAndStartVfs(sync); // TODO: We should handle potential errors here [KDESKTOP-1407]
+        if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+            LOG_WARN(_logger, "Error in tryCreateAndStartVfs " << exitInfo);
+            return exitInfo;
+        }
 
         QTimer::singleShot(100, this, [=]() {
             bool ok = true;

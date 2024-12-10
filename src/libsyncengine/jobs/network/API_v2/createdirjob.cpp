@@ -34,18 +34,21 @@ CreateDirJob::CreateDirJob(int driveDbId, const NodeId &parentId, const SyncName
 
 CreateDirJob::~CreateDirJob() {
     if (_filePath.empty()) return;
-    if (_vfsSetPinState && _vfsForceStatus) {
-        if (ExitInfo exitInfo = _vfsSetPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
-            LOGW_WARN(_logger,
-                      L"Error in CreateDirJob::vfsSetPinState for " << Utility::formatSyncPath(_filePath) << L" : " << exitInfo);
+    try {
+        if (_vfsSetPinState && _vfsForceStatus) {
+            if (ExitInfo exitInfo = _vfsSetPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in CreateDirJob::vfsSetPinState for " << Utility::formatSyncPath(_filePath) << L" : "
+                                                                                 << exitInfo);
+            }
+            if (ExitInfo exitInfo = _vfsForceStatus(_filePath, false, 0, true); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in CreateDirJob::vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L" : "
+                                                                                 << exitInfo);
+            }
         }
-        if (ExitInfo exitInfo = _vfsForceStatus(_filePath, false, 0, true); !exitInfo) {
-            LOGW_WARN(_logger,
-                      L"Error in CreateDirJob::vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L" : " << exitInfo);
-        }
+    } catch (const std::bad_function_call &e) {
+        LOG_WARN(_logger, "Error in CreateDirJob::~CreateDirJob: " << e.what());
     }
 }
-
 std::string CreateDirJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
