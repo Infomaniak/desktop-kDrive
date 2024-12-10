@@ -104,8 +104,8 @@ class Utilities {
 
         static std::wstring getLastErrorMessage();
 
-        static bool checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJunction, bool &exists);
-        static bool checkIfDirectory(const wchar_t *path, bool &isDirectory, bool &exists);
+        static bool checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunction, bool &exists);
+        static bool checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool &exists);
         static bool getCreateFileFlagsAndAttributes(const wchar_t *path, DWORD &dwFlagsAndAttributes, bool &exists);
 
         static TraceCbk s_traceCbk;

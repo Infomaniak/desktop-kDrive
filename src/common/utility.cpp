@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include "common/utility.h"
-#include "version.h"
 
 // Note:  This file must compile without QtGui
 #include <QCoreApplication>
@@ -52,10 +51,6 @@
 
 #include <math.h>
 #include <stdarg.h>
-#include <cstring>
-#include <sstream>
-#include <iostream>
-#include <string>
 
 #if defined(Q_OS_WIN)
 #include "utility_win.cpp"
