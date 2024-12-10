@@ -110,18 +110,19 @@ bool LocalDeleteJob::canRun() {
         _exitCause = ExitCause::FileAccessError;
         return false;
     }
+
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore: "
+        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart: "
                                     << Utility::formatSyncPath(_absolutePath).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::NotFound;
+        _exitCode = ExitCode::NeedRestart;
+        _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
 
     if (_remoteNodeId.empty()) {
         LOG_WARN(_logger, "Remote node ID is empty");
-        _exitCode = ExitCode::LogicError;
-        _exitCause = ExitCause::InvalidArgument;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 

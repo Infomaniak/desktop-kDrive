@@ -422,6 +422,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         _exitCause = ExitCause::Unknown;
         return false;
     }
+
     if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath));
         _exitCode = ExitCode::DataError;
