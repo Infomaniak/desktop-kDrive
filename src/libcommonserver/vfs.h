@@ -18,18 +18,26 @@
 
 #pragma once
 
+#include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
 #include "libsyncengine/progress/syncfileitem.h"
 #include "libcommon/utility/sourcelocation.h"
 
 #include <memory>
+#include <deque>
 
 #include <QObject>
 #include <QScopedPointer>
 #include <QSharedPointer>
+#include <QList>
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
+
+#define NB_WORKERS 2
 
 namespace KDC {
 
@@ -44,6 +52,13 @@ struct VfsSetupParams {
         log4cplus::Logger _logger;
 };
 
+struct WorkerInfo {
+        QMutex _mutex;
+        std::deque<QString> _queue;
+        QWaitCondition _queueWC;
+        bool _stop = false;
+        QList<QtLoggingThread *> _threadList;
+};
 /** Interface describing how to deal with virtual/placeholder files.
  *
  * There are different ways of representing files locally that will only
@@ -60,12 +75,13 @@ class Vfs : public QObject {
         Q_OBJECT
 
     public:
+        std::array<WorkerInfo, NB_WORKERS> _workerInfo;
         static QString modeToString(KDC::VirtualFileMode virtualFileMode);
         static KDC::VirtualFileMode modeFromString(const QString &str);
 
         explicit Vfs(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
-        virtual ~Vfs();
+        ~Vfs() override;
 
         inline void setSyncFileStatusCallback(void (*syncFileStatus)(int, const KDC::SyncPath &, KDC::SyncFileStatus &)) {
             _syncFileStatus = syncFileStatus;
@@ -323,7 +339,7 @@ class VfsOff : public Vfs {
     public:
         VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
-        virtual ~VfsOff();
+        ~VfsOff() override;
 
         KDC::VirtualFileMode mode() const override { return KDC::VirtualFileMode::Off; }
 

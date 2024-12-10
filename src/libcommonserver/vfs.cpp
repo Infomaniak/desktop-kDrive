@@ -35,7 +35,28 @@ using namespace KDC;
 Vfs::Vfs(VfsSetupParams &vfsSetupParams, QObject *parent) :
     QObject(parent), _vfsSetupParams(vfsSetupParams), _extendedLog(false), _started(false) {}
 
-Vfs::~Vfs() {}
+Vfs::~Vfs() {
+    // Ask worker threads to stop
+    for (auto &worker: _workerInfo) {
+        worker._mutex.lock();
+        worker._stop = true;
+        worker._mutex.unlock();
+        worker._queueWC.wakeAll();
+    }
+
+    // Force threads to stop if needed
+    for (auto &worker: _workerInfo) {
+        for (QThread *thread: qAsConst(worker._threadList)) {
+            if (thread) {
+                thread->quit();
+                if (!thread->wait(1000)) {
+                    thread->terminate();
+                    thread->wait();
+                }
+            }
+        }
+    }
+}
 
 QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     // Note: Strings are used for config and must be stable

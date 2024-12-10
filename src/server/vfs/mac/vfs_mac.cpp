@@ -66,30 +66,6 @@ VfsMac::VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent) :
     }
 }
 
-VfsMac::~VfsMac() {
-    // Ask worker threads to stop
-    for (int i = 0; i < NB_WORKERS; i++) {
-        _workerInfo[i]._mutex.lock();
-        _workerInfo[i]._stop = true;
-        _workerInfo[i]._mutex.unlock();
-        _workerInfo[i]._queueWC.wakeAll();
-    }
-
-    // Force threads to stop if needed
-    for (int i = 0; i < NB_WORKERS; i++) {
-        for (QThread *thread: qAsConst(_workerInfo[i]._threadList)) {
-            if (thread) {
-                thread->quit();
-                if (!thread->wait(1000)) {
-                    thread->terminate();
-                    thread->wait();
-                }
-            }
-        }
-    }
-}
-
-
 VirtualFileMode VfsMac::mode() const {
     return VirtualFileMode::Mac;
 }

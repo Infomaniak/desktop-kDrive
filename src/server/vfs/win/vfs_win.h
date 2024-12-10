@@ -30,38 +30,19 @@
 #include "debug.h"
 #include "vfs.h"
 
-#include <QList>
-#include <QMutex>
-#include <QObject>
-#include <QScopedPointer>
-#include <QThread>
-#include <QWaitCondition>
-
 #define WORKER_HYDRATION 0
 #define WORKER_DEHYDRATION 1
-#define NB_WORKERS 2
 
 namespace KDC {
 
 class Worker;
-
-struct WorkerInfo {
-        QMutex _mutex;
-        std::deque<QString> _queue;
-        QWaitCondition _queueWC;
-        bool _stop = false;
-        QList<QThread *> _threadList;
-};
 
 class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         Q_OBJECT
         Q_INTERFACES(KDC::Vfs)
 
     public:
-        WorkerInfo _workerInfo[NB_WORKERS];
-
         explicit VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
-        ~VfsWin();
 
         void debugCbk(TraceLevel level, const wchar_t *msg);
 

@@ -1,4 +1,3 @@
-#include "vfs_win.h"
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -66,7 +65,7 @@ VfsWin::VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupPa
         // Start worker threads
         for (int i = 0; i < NB_WORKERS; i++) {
             for (int j = 0; j < s_nb_threads[i]; j++) {
-                QThread *workerThread = new QThread();
+                QtLoggingThread *workerThread = new QtLoggingThread();
                 _workerInfo[i]._threadList.append(workerThread);
                 Worker *worker = new Worker(this, i, j, logger());
                 worker->moveToThread(workerThread);
@@ -74,29 +73,6 @@ VfsWin::VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupPa
                 connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
                 connect(workerThread, &QThread::finished, workerThread, &QObject::deleteLater);
                 workerThread->start();
-            }
-        }
-    }
-}
-
-VfsWin::~VfsWin() {
-    // Ask worker threads to stop
-    for (int i = 0; i < NB_WORKERS; i++) {
-        _workerInfo[i]._mutex.lock();
-        _workerInfo[i]._stop = true;
-        _workerInfo[i]._mutex.unlock();
-        _workerInfo[i]._queueWC.wakeAll();
-    }
-
-    // Force threads to stop if needed
-    for (int i = 0; i < NB_WORKERS; i++) {
-        for (QThread *thread: qAsConst(_workerInfo[i]._threadList)) {
-            if (thread) {
-                thread->quit();
-                if (!thread->wait(1000)) {
-                    thread->terminate();
-                    thread->wait();
-                }
             }
         }
     }

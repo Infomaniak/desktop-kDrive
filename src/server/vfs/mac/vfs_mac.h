@@ -33,29 +33,17 @@
 
 #define WORKER_HYDRATION 0
 #define WORKER_DEHYDRATION 1
-#define NB_WORKERS 2
 
 namespace KDC {
 
 class Worker;
-
-struct WorkerInfo {
-        QMutex _mutex;
-        std::deque<QString> _queue;
-        QWaitCondition _queueWC;
-        bool _stop = false;
-        QList<QtLoggingThread *> _threadList;
-};
 
 class VfsMac : public Vfs {
         Q_OBJECT
         Q_INTERFACES(KDC::Vfs)
 
     public:
-        WorkerInfo _workerInfo[NB_WORKERS];
-
         explicit VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
-        ~VfsMac();
 
         VirtualFileMode mode() const override;
 
