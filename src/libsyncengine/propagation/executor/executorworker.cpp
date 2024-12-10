@@ -2514,7 +2514,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     return opsExitInfo;
 }
 
-ExitInfo ExecutorWorker::handleOpsFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
+ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
     std::shared_ptr<Node> localBlacklistedNode = nullptr;
     std::shared_ptr<Node> remoteBlacklistedNode = nullptr;
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
