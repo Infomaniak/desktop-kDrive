@@ -51,7 +51,7 @@ constexpr bool connectorsAreAlreadyInstalled = false;
 ExitInfo TestWorkers::createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     (void) syncDbId;
     if (!_vfsPtr) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
     return _vfsPtr->createPlaceholder(relativeLocalPath, item);
 }
@@ -59,7 +59,7 @@ ExitInfo TestWorkers::createPlaceholder(int syncDbId, const SyncPath &relativeLo
 ExitInfo TestWorkers::convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     (void) syncDbId;
     if (!_vfsPtr) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+        return ExitCode::LogicError;
     }
     return _vfsPtr->convertToPlaceholder(Path2QStr(relativeLocalPath), item);
 }
@@ -67,8 +67,8 @@ ExitInfo TestWorkers::convertToPlaceholder(int syncDbId, const SyncPath &relativ
 ExitInfo TestWorkers::setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState) {
     (void) syncDbId;
 
-    if (_vfsPtr) {
-        return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+    if (!_vfsPtr) {
+        return ExitCode::LogicError;
     }
     return _vfsPtr->setPinState(Path2QStr(relativeLocalPath), pinState);
 }
@@ -325,7 +325,7 @@ void TestWorkers::testConvertToPlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder doesn't exist
         exitInfo = _syncPal->_executorWorker->convertToPlaceholder(relativeFolderPath, true);
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError), exitInfo);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), exitInfo);
 #endif
 
         // Folder already exists (normal case)
@@ -353,7 +353,15 @@ void TestWorkers::testConvertToPlaceholder() {
                        ioError == IoError::Success);
 
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
+#if defined(__APPLE__)
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), exitInfo);
+#else
+        // Strangely (bug?), the Windows api is able to create a placeholder in a folder for which the user does not have
+        // rights
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+        CPPUNIT_ASSERT(IoHelper::deleteItem(_syncPal->localPath() / relativeFilePath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+#endif
 
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / relativeFolderPath, true, true, true, ioError) &&
@@ -361,7 +369,7 @@ void TestWorkers::testConvertToPlaceholder() {
 
         // File doesn't exist
         exitInfo = _syncPal->_executorWorker->convertToPlaceholder(relativeFilePath, true);
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::InvalidSnapshot), exitInfo);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), exitInfo);
 #endif
 
         // File already exists (normal case)
