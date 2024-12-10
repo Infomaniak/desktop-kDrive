@@ -755,7 +755,7 @@ ExitInfo ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     }
 
-  if (ExitInfo exitInfo = _syncPal->vfsCreatePlaceholder(relativeLocalPath, syncItem); !exitInfo) {
+    if (ExitInfo exitInfo = _syncPal->vfsCreatePlaceholder(relativeLocalPath, syncItem); !exitInfo) {
         return exitInfo;
     }
 
@@ -2501,10 +2501,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
             return handleOpsFileNotFound(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist)): {
-            case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)):
-
-                return handleOpsAlreadyExistError(syncOp, opsExitInfo);
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist)):
+        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)): {
+            return handleOpsAlreadyExistError(syncOp, opsExitInfo);
         }
         default: {
             break;
