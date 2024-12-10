@@ -778,14 +778,10 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
 }
 
 #ifdef _WIN32
-bool Utility::fileExists(DWORD dwError) noexcept {
-    return (dwError != ERROR_FILE_NOT_FOUND && dwError != ERROR_PATH_NOT_FOUND && dwError != ERROR_INVALID_DRIVE);
-}
-
 bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
     int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
     if (!length) {
-        const bool exists = fileExists(GetLastError());
+        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
@@ -799,7 +795,7 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
     if (!length) {
-        const bool exists = fileExists(GetLastError());
+        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }

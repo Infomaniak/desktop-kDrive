@@ -25,13 +25,16 @@ namespace KDC {
 
 class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUtility);
-        /* CPPUNIT_TEST(testGetAppSupportDir);
+        CPPUNIT_TEST(testGetAppSupportDir);
         CPPUNIT_TEST(testIsVersionLower);
         CPPUNIT_TEST(testStringToAppStateValue);
         CPPUNIT_TEST(testArgsWriter);
         CPPUNIT_TEST(testCompressFile);
-        CPPUNIT_TEST(testCurrentVersion);*/
+        CPPUNIT_TEST(testCurrentVersion);
         CPPUNIT_TEST(testSourceLocation);
+#ifdef _WIN32
+        CPPUNIT_TEST(testGetLastErrorMessage);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     protected:
@@ -42,6 +45,10 @@ class TestUtility : public CppUnit::TestFixture {
         void testCompressFile();
         void testCurrentVersion();
         void testSourceLocation();
+#ifdef _WIN32
+        void testGetLastErrorMessage();
+#endif
 };
+
 
 } // namespace KDC

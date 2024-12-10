@@ -332,4 +332,20 @@ void TestUtility::testSourceLocation() {
     CPPUNIT_ASSERT_EQUAL(fooFuncLine, location.line());
 #endif
 }
+
+#ifdef _WIN32
+void TestUtility::testGetLastErrorMessage() {
+    // No actual error. Display the expected success message.
+    {
+        const std::wstring msg = CommonUtility::getLastErrorMessage();
+        CPPUNIT_ASSERT(msg.starts_with(L"(0) - "));
+    }
+    // Display the file-not-found error message.
+    {
+        GetFileAttributesW(L"this_file_does_not_exist.txt");
+        const std::wstring msg = CommonUtility::getLastErrorMessage();
+        CPPUNIT_ASSERT(msg.starts_with(L"(2) - "));
+    }
+}
+#endif
 } // namespace KDC
