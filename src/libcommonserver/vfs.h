@@ -18,21 +18,30 @@
 
 #pragma once
 
+#include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
 #include "libsyncengine/progress/syncfileitem.h"
 #include "libcommon/utility/sourcelocation.h"
 
 #include <memory>
+#include <deque>
 
 #include <QObject>
 #include <QScopedPointer>
 #include <QSharedPointer>
+#include <QList>
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
-namespace KDC {
+#define NB_WORKERS 2
+#define WORKER_HYDRATION 0
+#define WORKER_DEHYDRATION 1
 
+namespace KDC {
 struct VfsSetupParams {
         int _syncDbId;
         int _driveId;
@@ -44,6 +53,13 @@ struct VfsSetupParams {
         log4cplus::Logger _logger;
 };
 
+struct WorkerInfo {
+        QMutex _mutex;
+        std::deque<QString> _queue;
+        QWaitCondition _queueWC;
+        bool _stop = false;
+        QList<QtLoggingThread *> _threadList;
+};
 /** Interface describing how to deal with virtual/placeholder files.
  *
  * There are different ways of representing files locally that will only
@@ -60,12 +76,13 @@ class Vfs : public QObject {
         Q_OBJECT
 
     public:
+        std::array<WorkerInfo, NB_WORKERS> _workerInfo;
         static QString modeToString(KDC::VirtualFileMode virtualFileMode);
         static KDC::VirtualFileMode modeFromString(const QString &str);
 
-        explicit Vfs(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
+        explicit Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
-        virtual ~Vfs();
+        ~Vfs() override;
 
         inline void setSyncFileStatusCallback(void (*syncFileStatus)(int, const KDC::SyncPath &, KDC::SyncFileStatus &)) {
             _syncFileStatus = syncFileStatus;
@@ -261,6 +278,9 @@ class Vfs : public QObject {
         inline const std::string &namespaceCLSID() { return _vfsSetupParams._namespaceCLSID; }
         inline void setNamespaceCLSID(const std::string &CLSID) { _vfsSetupParams._namespaceCLSID = CLSID; }
 
+        virtual void dehydrate(const QString &path) = 0;
+        virtual void hydrate(const QString &path) = 0;
+
     signals:
         /// Emitted when a user-initiated hydration starts
         void beginHydrating();
@@ -269,6 +289,8 @@ class Vfs : public QObject {
 
     protected:
         VfsSetupParams _vfsSetupParams;
+        void starVfsWorkers();
+        const std::array<int, NB_WORKERS> s_nb_threads = {5, 5};
 
         // Callbacks
         void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status) = nullptr;
@@ -305,6 +327,21 @@ class Vfs : public QObject {
         bool _started;
 };
 
+class VfsWorker : public QObject {
+        Q_OBJECT
+
+    public:
+        VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger);
+        void start();
+
+    private:
+        Vfs *_vfs;
+        int _type;
+        int _num;
+        log4cplus::Logger _logger;
+
+        inline log4cplus::Logger logger() { return _logger; }
+};
 } // namespace KDC
 
 Q_DECLARE_INTERFACE(KDC::Vfs, "Vfs")
@@ -323,7 +360,7 @@ class VfsOff : public Vfs {
     public:
         VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
-        virtual ~VfsOff();
+        ~VfsOff() override;
 
         KDC::VirtualFileMode mode() const override { return KDC::VirtualFileMode::Off; }
 
@@ -353,6 +390,10 @@ class VfsOff : public Vfs {
         bool fileStatusChanged(const QString &, KDC::SyncFileStatus) override { return true; }
 
         void clearFileAttributes(const QString &) override { /*VfsOff*/
+        }
+        void dehydrate(const QString &) final { /*VfsOff*/
+        }
+        void hydrate(const QString &) final { /*VfsOff*/
         }
 
     protected:

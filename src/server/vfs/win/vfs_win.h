@@ -30,38 +30,14 @@
 #include "debug.h"
 #include "vfs.h"
 
-#include <QList>
-#include <QMutex>
-#include <QObject>
-#include <QScopedPointer>
-#include <QThread>
-#include <QWaitCondition>
-
-#define WORKER_HYDRATION 0
-#define WORKER_DEHYDRATION 1
-#define NB_WORKERS 2
-
 namespace KDC {
-
-class Worker;
-
-struct WorkerInfo {
-        QMutex _mutex;
-        std::deque<QString> _queue;
-        QWaitCondition _queueWC;
-        bool _stop = false;
-        QList<QThread *> _threadList;
-};
 
 class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         Q_OBJECT
         Q_INTERFACES(KDC::Vfs)
 
     public:
-        WorkerInfo _workerInfo[NB_WORKERS];
-
-        explicit VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
-        ~VfsWin();
+        explicit VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
         void debugCbk(TraceLevel level, const wchar_t *msg);
 
@@ -96,8 +72,8 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         void cancelHydrate(const QString &path) final;
 
-        void dehydrate(const QString &path);
-        void hydrate(const QString &path);
+        void dehydrate(const QString &path) final;
+        void hydrate(const QString &path) final;
 
     public slots:
         bool fileStatusChanged(const QString &path, KDC::SyncFileStatus status) final;
@@ -113,22 +89,6 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         void exclude(const QString &path) final;
         ExitInfo setPlaceholderStatus(const QString &path, bool syncOngoing);
-};
-
-class Worker : public QObject {
-        Q_OBJECT
-
-    public:
-        Worker(VfsWin *vfs, int type, int num, log4cplus::Logger logger);
-        void start();
-
-    private:
-        VfsWin *_vfs;
-        int _type;
-        int _num;
-        log4cplus::Logger _logger;
-
-        inline log4cplus::Logger logger() { return _logger; }
 };
 
 class WinVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsWin> {

@@ -33,29 +33,15 @@
 
 #define WORKER_HYDRATION 0
 #define WORKER_DEHYDRATION 1
-#define NB_WORKERS 2
 
 namespace KDC {
-
-class Worker;
-
-struct WorkerInfo {
-        QMutex _mutex;
-        std::deque<QString> _queue;
-        QWaitCondition _queueWC;
-        bool _stop = false;
-        QList<QtLoggingThread *> _threadList;
-};
 
 class VfsMac : public Vfs {
         Q_OBJECT
         Q_INTERFACES(KDC::Vfs)
 
     public:
-        WorkerInfo _workerInfo[NB_WORKERS];
-
-        explicit VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
-        ~VfsMac();
+        explicit VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
         VirtualFileMode mode() const override;
 
@@ -86,8 +72,8 @@ class VfsMac : public Vfs {
         ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) override;
         bool fileStatusChanged(const QString &path, SyncFileStatus status) override;
 
-        void dehydrate(const QString &path);
-        void hydrate(const QString &path);
+        void dehydrate(const QString &path) final;
+        void hydrate(const QString &path) final;
 
         virtual void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
 
@@ -102,22 +88,6 @@ class VfsMac : public Vfs {
 
         void resetLiteSyncConnector();
         const QString _localSyncPath;
-};
-
-class Worker : public QObject {
-        Q_OBJECT
-
-    public:
-        Worker(VfsMac *vfs, int type, int num, log4cplus::Logger logger);
-        void start();
-
-    private:
-        VfsMac *_vfs;
-        int _type;
-        int _num;
-        log4cplus::Logger _logger;
-
-        inline log4cplus::Logger logger() { return _logger; }
 };
 
 class MacVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsMac> {

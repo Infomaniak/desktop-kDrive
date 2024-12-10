@@ -32,10 +32,90 @@
 
 using namespace KDC;
 
-Vfs::Vfs(VfsSetupParams &vfsSetupParams, QObject *parent) :
+VfsWorker::VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger) :
+    _vfs(vfs), _type(type), _num(num), _logger(logger) {}
+
+Vfs::Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     QObject(parent), _vfsSetupParams(vfsSetupParams), _extendedLog(false), _started(false) {}
 
-Vfs::~Vfs() {}
+void VfsWorker::start() {
+    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " started");
+
+    WorkerInfo &workerInfo = _vfs->_workerInfo[_type];
+
+    forever {
+        workerInfo._mutex.lock();
+        while (workerInfo._queue.empty() && !workerInfo._stop) {
+            LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " waiting");
+            workerInfo._queueWC.wait(&workerInfo._mutex);
+        }
+
+        if (workerInfo._stop) {
+            workerInfo._mutex.unlock();
+            break;
+        }
+
+        QString path = workerInfo._queue.back();
+        workerInfo._queue.pop_back();
+        workerInfo._mutex.unlock();
+
+        LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " working");
+
+        switch (_type) {
+            case WORKER_HYDRATION:
+                _vfs->hydrate(path);
+                break;
+            case WORKER_DEHYDRATION:
+                _vfs->dehydrate(path);
+                break;
+        }
+    }
+
+    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " ended");
+}
+
+void Vfs::starVfsWorkers() {
+    // Start hydration/dehydration workers
+    // !!! Disabled for testing because no QEventLoop !!!
+    if (qApp) {
+        // Start worker threads
+        for (int i = 0; i < NB_WORKERS; i++) {
+            for (int j = 0; j < s_nb_threads[i]; j++) {
+                auto *workerThread = new QtLoggingThread();
+                _workerInfo[i]._threadList.append(workerThread);
+                VfsWorker *worker = new VfsWorker(this, i, j, logger());
+                worker->moveToThread(workerThread);
+                connect(workerThread, &QThread::started, worker, &VfsWorker::start);
+                connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
+                connect(workerThread, &QThread::finished, workerThread, &QObject::deleteLater);
+                workerThread->start();
+            }
+        }
+    }
+}
+
+Vfs::~Vfs() {
+    // Ask worker threads to stop
+    for (auto &worker: _workerInfo) {
+        worker._mutex.lock();
+        worker._stop = true;
+        worker._mutex.unlock();
+        worker._queueWC.wakeAll();
+    }
+
+    // Force threads to stop if needed
+    for (auto &worker: _workerInfo) {
+        for (QThread *thread: qAsConst(worker._threadList)) {
+            if (thread) {
+                thread->quit();
+                if (!thread->wait(1000)) {
+                    thread->terminate();
+                    thread->wait();
+                }
+            }
+        }
+    }
+}
 
 QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     // Note: Strings are used for config and must be stable

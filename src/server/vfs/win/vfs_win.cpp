@@ -1,4 +1,3 @@
-#include "vfs_win.h"
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -38,12 +37,7 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-
-const int s_nb_threads[NB_WORKERS] = {5, 5};
-
-std::unordered_map<QString, SyncFileStatus> s_fetchMap;
-
-VfsWin::VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {
+VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
 
@@ -60,46 +54,7 @@ VfsWin::VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupPa
         return;
     }
 
-    // Start hydration/dehydration workers
-    // !!! Disabled for testing because no QEventLoop !!!
-    if (qApp) {
-        // Start worker threads
-        for (int i = 0; i < NB_WORKERS; i++) {
-            for (int j = 0; j < s_nb_threads[i]; j++) {
-                QThread *workerThread = new QThread();
-                _workerInfo[i]._threadList.append(workerThread);
-                Worker *worker = new Worker(this, i, j, logger());
-                worker->moveToThread(workerThread);
-                connect(workerThread, &QThread::started, worker, &Worker::start);
-                connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
-                connect(workerThread, &QThread::finished, workerThread, &QObject::deleteLater);
-                workerThread->start();
-            }
-        }
-    }
-}
-
-VfsWin::~VfsWin() {
-    // Ask worker threads to stop
-    for (int i = 0; i < NB_WORKERS; i++) {
-        _workerInfo[i]._mutex.lock();
-        _workerInfo[i]._stop = true;
-        _workerInfo[i]._mutex.unlock();
-        _workerInfo[i]._queueWC.wakeAll();
-    }
-
-    // Force threads to stop if needed
-    for (int i = 0; i < NB_WORKERS; i++) {
-        for (QThread *thread: qAsConst(_workerInfo[i]._threadList)) {
-            if (thread) {
-                thread->quit();
-                if (!thread->wait(1000)) {
-                    thread->terminate();
-                    thread->wait();
-                }
-            }
-        }
-    }
+    starVfsWorkers();
 }
 
 void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
@@ -772,43 +727,4 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
     }
     return true;
 }
-
-Worker::Worker(VfsWin *vfs, int type, int num, log4cplus::Logger logger) : _vfs(vfs), _type(type), _num(num), _logger(logger) {}
-
-void Worker::start() {
-    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " started");
-
-    WorkerInfo &workerInfo = _vfs->_workerInfo[_type];
-
-    forever {
-        workerInfo._mutex.lock();
-        while (workerInfo._queue.empty() && !workerInfo._stop) {
-            LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " waiting");
-            workerInfo._queueWC.wait(&workerInfo._mutex);
-        }
-
-        if (workerInfo._stop) {
-            workerInfo._mutex.unlock();
-            break;
-        }
-
-        QString path = workerInfo._queue.back();
-        workerInfo._queue.pop_back();
-        workerInfo._mutex.unlock();
-
-        LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " working");
-
-        switch (_type) {
-            case WORKER_HYDRATION:
-                _vfs->hydrate(path);
-                break;
-            case WORKER_DEHYDRATION:
-                _vfs->dehydrate(path);
-                break;
-        }
-    }
-
-    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " ended");
-}
-
 } // namespace KDC
