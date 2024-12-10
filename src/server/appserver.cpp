@@ -2922,8 +2922,6 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                     continue;
                 }
 
-                tryCreateAndStartVfs(sync); // TODO: We should handle potential errors here [KDESKTOP-1407]
-
                 if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
                     LOG_WARN(_logger,
                              "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
