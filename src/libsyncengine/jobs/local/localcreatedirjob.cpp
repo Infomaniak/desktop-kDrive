@@ -50,7 +50,7 @@ bool LocalCreateDirJob::canRun() {
 
     if (exists) {
         LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" already exist.");
-        _exitCode = ExitCode::DataError;
+        _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAlreadyExist;
         return false;
     }
@@ -96,8 +96,8 @@ void LocalCreateDirJob::runJob() {
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath).c_str());
-            _exitCode = ExitCode::DataError;
-            _exitCause = ExitCause::InvalidSnapshot;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::NotFound;
             return;
         } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath).c_str());
