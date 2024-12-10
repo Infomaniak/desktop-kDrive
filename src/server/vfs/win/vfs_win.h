@@ -76,7 +76,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         ExitInfo dehydratePlaceholder(const QString &path) final;
         ExitInfo convertToPlaceholder(const QString &path, const SyncFileItem &item) final;
         void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) final;
-        virtual void clearFileAttributes(const QString &path) final;
+        void clearFileAttributes(const QString &path) final;
 
         ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                    bool &finished) final;

@@ -2501,8 +2501,10 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
             return handleOpsFileNotFound(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist)):
-        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)): {
-            return handleOpsAlreadyExistError(syncOp, opsExitInfo);
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist)): {
+            case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)):
+
+                return handleOpsAlreadyExistError(syncOp, opsExitInfo);
         }
         default: {
             break;
