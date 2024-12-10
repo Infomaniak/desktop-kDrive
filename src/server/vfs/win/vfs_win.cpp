@@ -207,7 +207,7 @@ void VfsWin::exclude(const QString &path) {
 }
 
 ExitInfo VfsWin::setPlaceholderStatus(const QString &path, bool syncOngoing) {
-    SyncPath stdPath = QStr2Path(QDir::toNativeSeparators(path));
+    auto stdPath = QStr2Path(QDir::toNativeSeparators(path));
     if (vfsSetPlaceHolderStatus(stdPath.c_str(), syncOngoing) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPlaceHolderStatus: " << Utility::formatSyncPath(stdPath));
         return handleVfsError(stdPath);
@@ -514,24 +514,14 @@ ExitInfo VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, 
         return handleVfsError(fullPath);
     }
 
-    auto updateFct = [=](bool &canceled, bool &finished, bool &error) {
-        // Update download progress
-        if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams._driveId).c_str(),
-                                 std::to_wstring(_vfsSetupParams._syncDbId).c_str(), fullPath.lexically_normal().native().c_str(),
-                                 fullTmpPath.lexically_normal().native().c_str(), received, &canceled, &finished) != S_OK) {
-            LOGW_WARN(logger(), L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(fullPath).c_str());
-            error = true;
-            return;
-        }
-    };
+    if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams._driveId).c_str(),
+                             std::to_wstring(_vfsSetupParams._syncDbId).c_str(), fullPath.lexically_normal().native().c_str(),
+                             fullTmpPath.lexically_normal().native().c_str(), received, &canceled, &finished) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(fullPath).c_str());
+        return handleVfsError(fullPath);
+    }
+    return ExitCode::Ok;
 
-    // Launch update in a separate thread
-    bool error = false;
-    std::thread updateTask(updateFct, std::ref(canceled), std::ref(finished), std::ref(error));
-    // TODO: Check if we need to join the thread. If yes, why should it be in a separate thread?
-    updateTask.join();
-
-    return error ? handleVfsError(fullPath) : ExitInfo(ExitCode::Ok);
 }
 
 ExitInfo VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool) {
@@ -696,8 +686,8 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
 
     SyncPath fullPath(QStr2Path(path));
     bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
+
+    if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
     }
@@ -707,71 +697,79 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
         return true;
     }
 
-    if (status == SyncFileStatus::Conflict || status == SyncFileStatus::Ignored) {
-        exclude(path);
-    } else if (status == SyncFileStatus::Success) {
-        bool isDirectory = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
-            LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
-            return false;
-        }
+    switch (status) {
+        case SyncFileStatus::Conflict:
+        case SyncFileStatus::Ignored:
+            exclude(path);
+            break;
+        case SyncFileStatus::Success: {
+            bool isDirectory = false;
 
-        if (!isDirectory) {
-            // File
-            QString fileRelativePath = QStringView{path}.mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
-            bool isDehydrated = false;
-            if (ExitInfo exitInfo = isDehydratedPlaceholder(fileRelativePath, isDehydrated); !exitInfo) {
-                LOGW_WARN(logger(), L"Error in isDehydratedPlaceholder: " << Utility::formatSyncPath(QStr2Path(path)) << L" - "
-                                                                          << exitInfo);
+            if (IoError ioError = IoError::Success; !IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
+                LOGW_WARN(logger(),
+                          L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
                 return false;
             }
-            forceStatus(path, false, 100, !isDehydrated);
-        }
-    } else if (status == SyncFileStatus::Syncing) {
-        bool isDirectory = false;
 
-        if (IoError ioError = IoError::Success; !IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
-            LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
-            return false;
-        }
-        if (!isDirectory) {
-            // File
-            QString fileRelativePath = QStringView{path}.mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
-            auto localPinState = pinState(fileRelativePath);
-            if (localPinState == PinState::OnlineOnly || localPinState == PinState::AlwaysLocal) {
+            if (!isDirectory) {
+                // File
+                QString fileRelativePath = QStringView{path}.mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
                 bool isDehydrated = false;
                 if (ExitInfo exitInfo = isDehydratedPlaceholder(fileRelativePath, isDehydrated); !exitInfo) {
                     LOGW_WARN(logger(), L"Error in isDehydratedPlaceholder: " << Utility::formatSyncPath(QStr2Path(path))
                                                                               << L" - " << exitInfo);
                     return false;
                 }
-                if (localPinState == PinState::OnlineOnly && !isDehydrated) {
-                    // Add file path to dehydration queue
-                    _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
-                    _workerInfo[WORKER_DEHYDRATION]._queue.push_front(path);
-                    _workerInfo[WORKER_DEHYDRATION]._mutex.unlock();
-                    _workerInfo[WORKER_DEHYDRATION]._queueWC.wakeOne();
-                } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
-                    bool syncing;
-                    _syncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), syncing);
-                    if (!syncing) {
-                        // Set hydrating indicator (avoid double hydration)
-                        _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), true);
-
-                        // Add file path to hydration queue
-                        _workerInfo[WORKER_HYDRATION]._mutex.lock();
-                        _workerInfo[WORKER_HYDRATION]._queue.push_front(path);
-                        _workerInfo[WORKER_HYDRATION]._mutex.unlock();
-                        _workerInfo[WORKER_HYDRATION]._queueWC.wakeOne();
-                    }
-                }
+                forceStatus(path, false, 100, !isDehydrated);
             }
-        }
-    } else if (status == SyncFileStatus::Error) {
-        // Nothing to do
-    }
+        } break;
+        case SyncFileStatus::Syncing: {
+            bool isDirectory = false;
 
+            if (IoError ioError = IoError::Success; !IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
+                LOGW_WARN(logger(),
+                          L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
+                return false;
+            }
+            if (isDirectory) break;
+            // File
+            QString fileRelativePath = QStringView{path}.mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
+            auto localPinState = pinState(fileRelativePath);
+
+            if (localPinState != PinState::OnlineOnly && localPinState != PinState::AlwaysLocal) break;
+
+            bool isDehydrated = false;
+            if (ExitInfo exitInfo = isDehydratedPlaceholder(fileRelativePath, isDehydrated); !exitInfo) {
+                LOGW_WARN(logger(), L"Error in isDehydratedPlaceholder: " << Utility::formatSyncPath(QStr2Path(path)) << L" - "
+                                                                          << exitInfo);
+                return false;
+            }
+
+            bool syncing;
+            _syncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), syncing);
+
+            if (localPinState == PinState::OnlineOnly && !isDehydrated) {
+                // Add file path to dehydration queue
+                _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
+                _workerInfo[WORKER_DEHYDRATION]._queue.push_front(path);
+                _workerInfo[WORKER_DEHYDRATION]._mutex.unlock();
+                _workerInfo[WORKER_DEHYDRATION]._queueWC.wakeOne();
+            } else if (localPinState == PinState::AlwaysLocal && isDehydrated && !syncing) {
+                // Set hydrating indicator (avoid double hydration)
+                _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), true);
+
+                // Add file path to hydration queue
+                _workerInfo[WORKER_HYDRATION]._mutex.lock();
+                _workerInfo[WORKER_HYDRATION]._queue.push_front(path);
+                _workerInfo[WORKER_HYDRATION]._mutex.unlock();
+                _workerInfo[WORKER_HYDRATION]._queueWC.wakeOne();
+            }
+
+        } break;
+        default:
+            // Nothing to do
+            break;
+    }
     return true;
 }
 

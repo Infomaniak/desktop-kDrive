@@ -2518,13 +2518,14 @@ bool AppServer::vfsCancelHydrate(int syncDbId, const SyncPath &path) {
 }
 
 void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatus &status) {
-    if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+    auto syncPalMapIt = _syncPalMap.find(syncDbId);
+    if (syncPalMapIt == _syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
         addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
         return;
     }
 
-    ExitCode exitCode = _syncPalMap[syncDbId]->fileStatus(ReplicaSide::Local, path, status);
+    ExitCode exitCode = syncPalMapIt->second->fileStatus(ReplicaSide::Local, path, status);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::fileStatus for syncDbId=" << syncDbId);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
@@ -2532,13 +2533,14 @@ void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatu
 }
 
 void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncing) {
-    if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+    auto syncPalMapIt = _syncPalMap.find(syncDbId);
+    if (syncPalMapIt == _syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
         addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
         return;
     }
 
-    ExitCode exitCode = _syncPalMap[syncDbId]->fileSyncing(ReplicaSide::Local, path, syncing);
+    ExitCode exitCode = syncPalMapIt->second->fileSyncing(ReplicaSide::Local, path, syncing);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::fileSyncing for syncDbId=" << syncDbId);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
@@ -2546,13 +2548,14 @@ void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncin
 }
 
 void AppServer::setSyncFileSyncing(int syncDbId, const SyncPath &path, bool syncing) {
-    if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+    auto syncPalMapIt = _syncPalMap.find(syncDbId);
+    if (syncPalMapIt == _syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
         addError(Error(errId(), ExitCode::DataError, ExitCause::Unknown));
         return;
     }
 
-    ExitCode exitCode = _syncPalMap[syncDbId]->setFileSyncing(ReplicaSide::Local, path, syncing);
+    ExitCode exitCode = syncPalMapIt->second->setFileSyncing(ReplicaSide::Local, path, syncing);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::setFileSyncing for syncDbId=" << syncDbId);
         addError(Error(errId(), exitCode, ExitCause::Unknown));
@@ -3729,7 +3732,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     // Start VFS
     if (ExitInfo exitInfo = _vfsMap[sync.dbId()]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
         !exitInfo) {
-#ifdef Q_OS_MAC // TODO: If possible move this in VfsMac::start method
+#ifdef Q_OS_MAC
         if (sync.virtualFileMode() == VirtualFileMode::Mac) {
             if (_vfsInstallationDone && !_vfsActivationDone) {
                 // Check LiteSync ext authorizations

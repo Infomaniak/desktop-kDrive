@@ -120,8 +120,8 @@ bool DownloadJob::canRun() {
     }
 
     if (_isCreate && exists) {
-        LOGW_DEBUG(_logger,
-                   L"Item with " << Utility::formatSyncPath(_localpath) << L" already exists. Aborting current sync and restarting.");
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_localpath)
+                                          << L" already exists. Aborting current sync and restarting.");
         _exitCode = ExitCode::NeedRestart;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
@@ -219,8 +219,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 #endif
 
         SyncPath tmpPath;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::tempDirectoryPath(tmpPath, ioError)) {
+        if (IoError ioError = IoError::Success; !IoHelper::tempDirectoryPath(tmpPath, ioError)) {
             LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpPath, ioError));
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::Unknown;
@@ -451,8 +450,8 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
             return false;
         }
 
-        LOGW_DEBUG(_logger,
-                   L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", " << Utility::formatSyncPath(_localpath));
+        LOGW_DEBUG(_logger, L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", "
+                                                           << Utility::formatSyncPath(_localpath));
 
         bool isFolder = mimeType == mimeTypeSymlinkFolder;
         IoError ioError = IoError::Success;

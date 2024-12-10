@@ -65,53 +65,53 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         void debugCbk(TraceLevel level, const wchar_t *msg);
 
-        VirtualFileMode mode() const override;
+        VirtualFileMode mode() const final;
 
-        bool socketApiPinStateActionsShown() const override { return false; }
+        bool socketApiPinStateActionsShown() const final { return false; }
 
         ExitInfo updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size,
-                                const QByteArray &fileId) override;
+                                const QByteArray &fileId) final;
 
-        ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
-        ExitInfo dehydratePlaceholder(const QString &path) override;
-        ExitInfo convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
-        void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
-        virtual void clearFileAttributes(const QString &path) override;
+        ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) final;
+        ExitInfo dehydratePlaceholder(const QString &path) final;
+        ExitInfo convertToPlaceholder(const QString &path, const SyncFileItem &item) final;
+        void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) final;
+        virtual void clearFileAttributes(const QString &path) final;
 
         ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
-                                   bool &finished) override;
-        ExitInfo forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) override;
+                                   bool &finished) final;
+        ExitInfo forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) final;
 
-        ExitInfo isDehydratedPlaceholder(const QString &filePath, bool &isDehydrated, bool isAbsolutePath = false) override;
+        ExitInfo isDehydratedPlaceholder(const QString &filePath, bool &isDehydrated, bool isAbsolutePath = false) final;
 
-        ExitInfo setPinState(const QString &fileRelativePath, PinState state) override;
-        PinState pinState(const QString &relativePath) override;
-        ExitInfo status(const QString &, bool &, bool &, bool &, int &) override;
-        virtual ExitInfo setThumbnail(const QString &, const QPixmap &) override { return ExitCode::Ok; };
-        virtual ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
-        virtual ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
+        ExitInfo setPinState(const QString &fileRelativePath, PinState state) final;
+        PinState pinState(const QString &relativePath) final;
+        ExitInfo status(const QString &, bool &, bool &, bool &, int &) final;
+        ExitInfo setThumbnail(const QString &, const QPixmap &) final { return ExitCode::Ok; };
+        ExitInfo setAppExcludeList() final { return ExitCode::Ok; }
+        ExitInfo getFetchingAppList(QHash<QString, QString> &) final { return ExitCode::Ok; }
 
-        bool isExcluded(const QString &) override { return false; }
+        bool isExcluded(const QString &) final { return false; }
         virtual bool setCreationDate(const QString &, time_t) { return false; }
 
-        virtual void cancelHydrate(const QString &path) override;
+        void cancelHydrate(const QString &path) final;
 
         void dehydrate(const QString &path);
         void hydrate(const QString &path);
 
     public slots:
-        bool fileStatusChanged(const QString &path, KDC::SyncFileStatus status) override;
+        bool fileStatusChanged(const QString &path, KDC::SyncFileStatus status) final;
 
     protected:
-        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool unregister) override;
+        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) final;
+        void stopImpl(bool unregister) final;
 
         friend class TestWorkers;
 
     private:
         log4cplus::Logger _logger;
 
-        void exclude(const QString &path) override;
+        void exclude(const QString &path) final;
         ExitInfo setPlaceholderStatus(const QString &path, bool syncOngoing);
 };
 
