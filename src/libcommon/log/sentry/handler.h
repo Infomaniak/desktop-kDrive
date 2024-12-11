@@ -137,8 +137,8 @@ class Handler {
                 }
         };
 
-        // SentryEvent is a structure that represents an event that has been send to sentry. It allow us to keep track of
-        // the sended event and block any sentry flood from a single user.
+        // SentryEvent is a structure that represents an event that has been send to sentry. It allows us to keep track of
+        // the sent event and block any sentry flood from a single user.
         struct SentryEvent {
                 using time_point = std::chrono::system_clock::time_point;
 
@@ -157,7 +157,7 @@ class Handler {
 
         /* This method is called before uploading an event to Sentry.
          *  It will check if the event should be uploaded or not. (see: void Handler::captureMessage(...))
-         *  The event passed as parameter will be updated if it is rate limite is reached (level and message).
+         *  The event passed as parameter will be updated if it is rate limit is reached (level and message).
          */
         void handleEventsRateLimit(SentryEvent &event, bool &toUpload);
 

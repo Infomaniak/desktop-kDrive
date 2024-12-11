@@ -38,6 +38,6 @@ class AbstractScopedPTrace : public AbstractPTrace {
         }
 
     private:
-        PTraceStatus _autoStopStatus = PTraceStatus::Ok; // The status to use when the obejct is stopped due to its destruction.
+        PTraceStatus _autoStopStatus = PTraceStatus::Ok; // The status to use when the object is stopped due to its destruction.
 };
 } // namespace KDC::sentry
