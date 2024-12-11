@@ -164,6 +164,13 @@ void Vfs::stop(bool unregister) {
 }
 
 ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation location) const {
+    if (ExitInfo exitInfo = checkIfPathExists(itemPath, true); !exitInfo) {
+        return exitInfo;
+    }
+    return defaultVfsError(location);
+}
+
+ExitInfo Vfs::checkIfPathExists(const SyncPath &itemPath, bool shouldExist, const SourceLocation location) const {
     bool exists = false;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
@@ -174,11 +181,16 @@ ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation loca
         LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(itemPath, ioError));
         return {ExitCode::SystemError, ExitCause::FileAccessError, location};
     }
-    if (!exists) {
-        LOGW_WARN(logger(), L"File doesn't exist anymore: " << Utility::formatSyncPath(itemPath));
-        return {ExitCode::SystemError, ExitCause::NotFound, location};
+    if (exists != shouldExist) {
+        if (shouldExist) {
+            LOGW_DEBUG(logger(), L"File doesn't exist: " << Utility::formatSyncPath(itemPath));
+            return {ExitCode::SystemError, ExitCause::NotFound, location};
+        } else {
+            LOGW_DEBUG(logger(), L"File already exists: " << Utility::formatSyncPath(itemPath));
+            return {ExitCode::SystemError, ExitCause::FileAlreadyExist, location};
+        }
     }
-    return defaultVfsError(location);
+    return ExitCode::Ok;
 }
 
 VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
@@ -187,16 +199,8 @@ VfsOff::~VfsOff() {}
 
 ExitInfo VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
     KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
-    bool exists = false;
-    KDC::IoError ioError = KDC::IoError::Success;
-    if (!KDC::IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << KDC::Utility::formatIoError(fullPath, ioError).c_str());
-        return ExitCode::SystemError;
-    }
-
-    if (!exists) {
-        LOGW_DEBUG(logger(), L"Item does not exist anymore - path=" << Path2WStr(fullPath).c_str());
-        return {ExitCode::Ok, ExitCause::NotFound};
+    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+        return exitInfo;
     }
     // Update Finder
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());

@@ -175,19 +175,8 @@ ExitInfo VfsWin::updateMetadata(const QString &filePath, time_t creationTime, ti
                                              << creationTime << L" modtime=" << modtime);
 
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(filePath));
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(logger(), L"UpdateMetadata failed because access is denied: " << Utility::formatSyncPath(fullPath).c_str());
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-    if (!exists) {
-        LOGW_WARN(logger(), L"File/directory doesn't exists: " << Utility::formatSyncPath(fullPath).c_str());
-        return {ExitCode::SystemError, ExitCause::NotFound};
+    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+        return exitInfo;
     }
 
     // Update placeholder
@@ -221,33 +210,11 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return ExitCode::SystemError;
+    if (ExitInfo exitInfo = checkIfPathExists(fullPath, false); !exitInfo) {
+        return exitInfo;
     }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(fullPath, ioError));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-    if (exists) {
-        LOGW_WARN(logger(), L"Item already exists: " << Utility::formatSyncPath(fullPath).c_str());
-        return {ExitCode::SystemError, ExitCause::FileAlreadyExist};
-    }
-
-    if (!IoHelper::checkIfPathExists(fullPath.parent_path(), exists, ioError)) {
-        LOGW_WARN(logger(),
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath.parent_path(), ioError).c_str());
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(fullPath.parent_path(), ioError));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-    if (!exists) {
-        LOGW_WARN(logger(), L"Parent directory doesn't exist: " << Utility::formatSyncPath(fullPath.parent_path()));
-        return {ExitCode::SystemError, ExitCause::NotFound};
+    if (ExitInfo exitInfo = checkIfPathExists(fullPath.parent_path(), true); !exitInfo) {
+        return exitInfo;
     }
 
     // Create placeholder
@@ -287,21 +254,9 @@ ExitInfo VfsWin::dehydratePlaceholder(const QString &path) {
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        // File access error
-        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(fullPath, ioError));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-    if (!exists) {
-        // File doesn't exist
-        LOGW_WARN(logger(), L"File doesn't exist: " << Utility::formatSyncPath(fullPath).c_str());
-        return {ExitCode::SystemError, ExitCause::NotFound};
+
+    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+        return exitInfo;
     }
 
     // Check if the file is a placeholder
@@ -377,17 +332,13 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
         }
 
         SyncPath fullPath(QStr2Path(tmpPath));
-        bool exists = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-            return;
-        }
 
-        if (!exists) {
-            // File creation and rename
-            LOGW_DEBUG(logger(), L"File doesn't exist: " << Utility::formatSyncPath(fullPath).c_str());
-            continue;
+        if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+            if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
+                continue;
+            }
+            LOGW_WARN(logger(), L"Error in checkIfPathExists: " << Utility::formatSyncPath(fullPath));
+            return;
         }
 
         // Check if the file is already a placeholder
@@ -448,18 +399,10 @@ ExitInfo VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, 
     SyncPath fullTmpPath(QStr2Path(tmpPath));
     SyncPath fullPath(QStr2Path(path));
 
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(logger(), L"File access error: " << Utility::formatIoError(fullPath, ioError));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-    if (!exists) {
-        return ExitCode::Ok;
+    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+        if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
+            return ExitCode::Ok;
+        }
     }
 
     // Check if the file is a placeholder
@@ -476,7 +419,6 @@ ExitInfo VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, 
         return handleVfsError(fullPath);
     }
     return ExitCode::Ok;
-
 }
 
 ExitInfo VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool) {
@@ -487,18 +429,8 @@ ExitInfo VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, b
 
     SyncPath stdPath = QStr2Path(absolutePath);
 
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError).c_str());
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(stdPath, ioError));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-    if (!exists) {
-        return {ExitCode::SystemError, ExitCause::NotFound};
+    if (ExitInfo exitInfo = checkIfPathExists(stdPath, true); !exitInfo) {
+        return exitInfo;
     }
 
     DWORD dwAttrs = GetFileAttributesW(stdPath.native().c_str());
@@ -640,16 +572,11 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged: " << Utility::formatSyncPath(QStr2Path(path)).c_str() << L" status = " << status);
 
     SyncPath fullPath(QStr2Path(path));
-    bool exists = false;
-
-    if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
+    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+        if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
+            return true;
+        }
         return false;
-    }
-
-    if (!exists) {
-        // New file
-        return true;
     }
 
     switch (status) {

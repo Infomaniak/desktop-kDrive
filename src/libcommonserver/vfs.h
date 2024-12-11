@@ -316,7 +316,7 @@ class Vfs : public QObject {
         inline log4cplus::Logger logger() const { return _vfsSetupParams._logger; }
 
         ExitInfo handleVfsError(const SyncPath &itemPath, const SourceLocation location = SourceLocation::currentLoc()) const;
-
+        ExitInfo checkIfPathExists(const SyncPath &itemPath, bool shouldExist, const SourceLocation location = SourceLocation::currentLoc()) const;
         // By default we will return file access error.
         inline ExitInfo defaultVfsError(const SourceLocation location = SourceLocation::currentLoc()) const {
             return {ExitCode::SystemError, ExitCause::FileAccessError, location};
