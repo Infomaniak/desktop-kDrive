@@ -672,13 +672,13 @@ void AppClient::updateSentryUser() const {
     if (userInfo == _gui->userInfoMap().end()) {
         qCWarning(lcAppClient) << "No user found in updateSentryUser()";
         SentryUser user("No user logged", "No user logged", "No user logged");
-        Sentry::Handler::instance()->setAuthenticatedUser(user);
+        sentry::Handler::instance()->setAuthenticatedUser(user);
         return;
     }
 
     SentryUser user(userInfo->second.email().toStdString(), userInfo->second.name().toStdString(),
                     std::to_string(userInfo->second.userId()));
-    Sentry::Handler::instance()->setAuthenticatedUser(user);
+    sentry::Handler::instance()->setAuthenticatedUser(user);
 }
 
 void AppClient::onUseMonoIconsChanged(bool) {

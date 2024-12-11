@@ -119,7 +119,7 @@ void JobManager::decreasePoolCapacity() {
         Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
         LOG_DEBUG(Log::instance()->getLogger(), "Job Manager capacity set to " << _maxNbThread);
     } else {
-        Sentry::Handler::captureMessage(Sentry::Level::Warning, "JobManager::defaultCallback",
+        sentry::Handler::captureMessage(sentry::Level::Warning, "JobManager::defaultCallback",
                                                   "JobManager capacity cannot be decreased");
     }
 }

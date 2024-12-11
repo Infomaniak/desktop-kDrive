@@ -19,7 +19,7 @@
 
 #include "libcommon/log/sentry/abstractptrace.h"
 
-namespace KDC::Sentry {
+namespace KDC::sentry {
 
 class AbstractScopedPTrace : public AbstractPTrace {
     public:
@@ -40,4 +40,4 @@ class AbstractScopedPTrace : public AbstractPTrace {
     private:
         PTraceStatus _autoStopStatus = PTraceStatus::Ok; // The status to use when the obejct is stopped due to its destruction.
 };
-} // namespace KDC::Sentry
+} // namespace KDC::sentry

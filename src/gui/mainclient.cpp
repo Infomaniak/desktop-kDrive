@@ -71,8 +71,8 @@ int main(int argc, char **argv) {
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
-    KDC::Sentry::Handler::init(KDC::AppType::Client);
-    KDC::Sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::SentryConfidentialityLevel::Authenticated);
+    KDC::sentry::Handler::init(KDC::AppType::Client);
+    KDC::sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::sentry::ConfidentialityLevel::Authenticated);
 
 #ifdef Q_OS_LINUX
     // Bug with multi-screen

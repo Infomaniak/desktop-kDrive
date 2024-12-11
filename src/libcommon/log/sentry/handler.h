@@ -28,7 +28,7 @@
 #include "ptracedescriptor.h"
 
 namespace KDC {
-namespace Sentry {
+namespace sentry {
 enum class Level { // Not defined in types.h as we don't want to include sentry.h in types.h
     Debug = SENTRY_LEVEL_DEBUG,
     Info = SENTRY_LEVEL_INFO,
@@ -44,31 +44,31 @@ enum class PTraceStatus {
     Aborted = SENTRY_SPAN_STATUS_ABORTED, // The operation failed.
 };
 }
-inline std::string toString(Sentry::Level level) {
+inline std::string toString(sentry::Level level) {
     switch (level) {
-        case Sentry::Level::Debug:
+        case sentry::Level::Debug:
             return "Debug";
-        case Sentry::Level::Info:
+        case sentry::Level::Info:
             return "Info";
-        case Sentry::Level::Warning:
+        case sentry::Level::Warning:
             return "Warning";
-        case Sentry::Level::Error:
+        case sentry::Level::Error:
             return "Error";
-        case Sentry::Level::Fatal:
+        case sentry::Level::Fatal:
             return "Fatal";
         default:
             return "No conversion to string available";
     }
 };
 
-namespace Sentry {
+namespace sentry {
 class Handler {
     public:
         virtual ~Handler();
         static std::shared_ptr<Handler> instance();
         static void init(AppType appType, int breadCrumbsSize = 100);
         void setAuthenticatedUser(const SentryUser &user);
-        void setGlobalConfidentialityLevel(SentryConfidentialityLevel level);
+        void setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level);
 
         // Capture an event
         /*   If the same event has been captured more than 10 times in the last 10 minutes, it will be flagged as a rate
@@ -122,8 +122,8 @@ class Handler {
         // `setAuthenticatedUser(...)`
         SentryUser _authenticatedUser;
 
-        SentryConfidentialityLevel _globalConfidentialityLevel = SentryConfidentialityLevel::Anonymous; // Default value
-        SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::None;
+        sentry::ConfidentialityLevel _globalConfidentialityLevel = sentry::ConfidentialityLevel::Anonymous; // Default value
+        sentry::ConfidentialityLevel _lastConfidentialityLevel = sentry::ConfidentialityLevel::None;
 
         // Convert a `SentryUser` structure to a `sentry_value_t` that can safely be passed to
         // `sentry_set_user(sentry_value_t)`
@@ -143,12 +143,12 @@ class Handler {
                 using time_point = std::chrono::system_clock::time_point;
 
                 SentryEvent(const std::string &title, const std::string &message, Level level,
-                            SentryConfidentialityLevel userType, const SentryUser &user);
+                            sentry::ConfidentialityLevel userType, const SentryUser &user);
                 std::string getStr() const { return title + message + static_cast<char>(level) + userId; }
                 std::string title;
                 std::string message;
                 Level level;
-                SentryConfidentialityLevel confidentialityLevel = SentryConfidentialityLevel::Anonymous;
+                sentry::ConfidentialityLevel confidentialityLevel = sentry::ConfidentialityLevel::Anonymous;
                 std::string userId;
                 time_point lastCapture;
                 time_point lastUpload;

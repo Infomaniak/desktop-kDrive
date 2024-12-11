@@ -61,7 +61,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
         if (errorItem->second.count >= 1) { // We try only once. TODO: If we keep this logic, no need to keep _count
             insertInBlacklist(nodeId, side);
 
-            Sentry::Handler::captureMessage(Sentry::Level::Warning, "TmpBlacklistManager::increaseErrorCount",
+            sentry::Handler::captureMessage(sentry::Level::Warning, "TmpBlacklistManager::increaseErrorCount",
                                                       "Blacklisting item temporarily to avoid infinite loop");
             Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyType::None,
                       CancelType::TmpBlacklisted);

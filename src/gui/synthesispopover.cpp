@@ -1079,7 +1079,7 @@ void SynthesisPopover::onUpdateAvailabilityChange(const UpdateState updateState)
             break;
         default:
             _lockedAppUpdateButton->setText(tr("Unavailable"));
-            Sentry::Handler::captureMessage(Sentry::Level::Fatal, "AppLocked",
+            sentry::Handler::captureMessage(sentry::Level::Fatal, "AppLocked",
                                                       "HTTP Error426 received but unable to fetch an update");
             break;
     }

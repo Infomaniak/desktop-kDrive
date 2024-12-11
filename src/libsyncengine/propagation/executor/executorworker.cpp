@@ -73,7 +73,7 @@ void ExecutorWorker::execute() {
     uint64_t changesCounter = 0;
     while (!_opList.empty()) { // Same loop twice because we might reschedule the jobs after a pause TODO : refactor double loop
         // Create all the jobs
-        Sentry::PTraces::Scoped::JobGeneration perfMonitor(syncDbId());
+        sentry::pTraces::scoped::JobGeneration perfMonitor(syncDbId());
         while (!_opList.empty()) {
             if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
                 executorExitInfo = exitInfo;
@@ -196,7 +196,7 @@ void ExecutorWorker::execute() {
             }
         }
         perfMonitor.stop();
-        Sentry::PTraces::Scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
+        sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
         if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
             executorExitInfo = exitInfo;
             break;
@@ -226,7 +226,7 @@ void ExecutorWorker::execute() {
 }
 
 void ExecutorWorker::initProgressManager() {
-    Sentry::PTraces::Scoped::InitProgress perfMonitor(syncDbId());
+    sentry::pTraces::scoped::InitProgress perfMonitor(syncDbId());
 
     for (const auto syncOpId: _opList) {
         SyncFileItem syncItem;
@@ -989,7 +989,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             // Should not happen
             LOGW_SYNCPAL_WARN(_logger, L"Edit operation with empty corresponding node id for "
                                                << Utility::formatSyncPath(absoluteLocalFilePath));
-            Sentry::Handler::captureMessage(Sentry::Level::Warning, "ExecutorWorker::generateEditJob",
+            sentry::Handler::captureMessage(sentry::Level::Warning, "ExecutorWorker::generateEditJob",
                                                       "Edit operation with empty corresponding node id");
             return ExitCode::DataError;
         }

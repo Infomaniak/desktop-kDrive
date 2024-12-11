@@ -18,7 +18,7 @@
 #pragma once
 #include <string>
 
-namespace KDC::Sentry {
+namespace KDC::sentry {
 
 // Each PTraceName need to be defined in PTraceDescriptor constructor.
 enum class PTraceName {
@@ -54,13 +54,13 @@ enum class PTraceName {
     /*Sync*/ /*Propagation2*/ InitProgress,
     /*Sync*/ /*Propagation2*/ JobGeneration,
     /*Sync*/ /*Propagation2*/ waitForAllJobsToFinish,
-    LFSO_GenerateInitialSnapshot,
-    /*LFSO_GenerateInitialSnapshot*/ LFSO_ExploreItem,
-    LFSO_ChangeDetected,
-    RFSO_GenerateInitialSnapshot,
-    /*RFSO_GenerateInitialSnapshot*/ RFSO_BackRequest,
-    /*RFSO_GenerateInitialSnapshot*/ RFSO_ExploreItem,
-    RFSO_ChangeDetected,
+    LFSOGenerateInitialSnapshot,
+    /*LFSO_GenerateInitialSnapshot*/ LFSOExploreItem,
+    LFSOChangeDetected,
+    RFSOGenerateInitialSnapshot,
+    /*RFSO_GenerateInitialSnapshot*/ RFSOBackRequest,
+    /*RFSO_GenerateInitialSnapshot*/ RFSOExploreItem,
+    RFSOChangeDetected,
 };
 
 // The PTraceDescriptor structure is used to store information about the different performance traces available throughout the
@@ -78,4 +78,4 @@ struct PTraceDescriptor {
         const std::string _pTraceTitle;
         const std::string _pTraceDescription;
 };
-} // namespace KDC::Sentry
+} // namespace KDC::sentry

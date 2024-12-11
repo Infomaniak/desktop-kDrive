@@ -47,7 +47,7 @@ void OperationGeneratorWorker::execute() {
     _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     // Explore both update trees
-    Sentry::PTraces::CounterScoped::GenerateItemOperations perfMonitor(syncDbId());
+    sentry::pTraces::counterScoped::GenerateItemOperations perfMonitor(syncDbId());
     while (!_queuedToExplore.empty()) {
         perfMonitor.start();
         if (stopAsked()) {

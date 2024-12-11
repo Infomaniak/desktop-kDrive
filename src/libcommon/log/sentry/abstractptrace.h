@@ -20,7 +20,7 @@
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptracedescriptor.h"
 
-namespace KDC::Sentry {
+namespace KDC::sentry {
 class AbstractPTrace;
 using PTraceUPtr = std::unique_ptr<AbstractPTrace>;
 class AbstractPTrace {
@@ -39,7 +39,7 @@ class AbstractPTrace {
 
         // Start a new performance trace.
         inline AbstractPTrace &_start() {
-            _pTraceId = Sentry::Handler::instance()->startPTrace(_pTraceInfo, _syncDbId);
+            _pTraceId = sentry::Handler::instance()->startPTrace(_pTraceInfo, _syncDbId);
             return *this;
         }
 
@@ -65,4 +65,4 @@ class AbstractPTrace {
         PTraceDescriptor _pTraceInfo;
         int _syncDbId = -1;
 };
-} // namespace KDC::Sentry
+} // namespace KDC::sentry

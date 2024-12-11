@@ -288,7 +288,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
 
     if (!res) {
         std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
-        Sentry::Handler::captureMessage(Sentry::Level::Warning, "CommonUtility::stringToAppStateValue", message);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::stringToAppStateValue", message);
     }
 
     return res;

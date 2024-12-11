@@ -70,9 +70,9 @@ int main(int argc, char **argv) {
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
-    KDC::Sentry::Handler::init(KDC::AppType::Server);
-    KDC::Sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::SentryConfidentialityLevel::Authenticated);
-    KDC::Sentry::PTraces::Basic::AppStart().start();
+    KDC::sentry::Handler::init(KDC::AppType::Server);
+    KDC::sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::sentry::ConfidentialityLevel::Authenticated);
+    KDC::sentry::pTraces::basic::AppStart().start();
 
     Q_INIT_RESOURCE(client);
 

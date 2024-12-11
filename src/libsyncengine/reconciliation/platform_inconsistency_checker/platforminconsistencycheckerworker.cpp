@@ -65,12 +65,12 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
            side == ReplicaSide::Local && "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
 
     ExitCode exitCode = ExitCode::Unknown;
-    Sentry::PTraceUPtr perfmonitor;
+    sentry::PTraceUPtr perfmonitor;
     if (side == ReplicaSide::Remote) {
-        perfmonitor = std::make_unique<Sentry::PTraces::Scoped::CheckLocalTree>(syncDbId());
+        perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckLocalTree>(syncDbId());
         exitCode = checkRemoteTree(node, parentPath);
     } else if (side == ReplicaSide::Local) {
-        perfmonitor = std::make_unique<Sentry::PTraces::Scoped::CheckRemoteTree>(syncDbId());
+        perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckRemoteTree>(syncDbId());
         exitCode = checkLocalTree(node, parentPath);
     }
 

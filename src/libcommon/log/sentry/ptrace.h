@@ -20,7 +20,7 @@
 #include <list>
 #include <assert.h>
 
-namespace KDC::Sentry {
+namespace KDC::sentry {
 using pTraceId = uint64_t;
 
 // A PerformanceTrace allows to track the duration of the execution of several parts of the code.
@@ -66,4 +66,4 @@ struct PerformanceTrace {
         sentry_span_t *_span{nullptr};
 };
 
-} // namespace KDC::Sentry
+} // namespace KDC::sentry

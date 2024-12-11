@@ -27,7 +27,7 @@
 
 #include <asserts.h>
 
-namespace KDC::Sentry {
+namespace KDC::sentry {
 
 std::shared_ptr<Handler> Handler::_instance = nullptr;
 
@@ -283,7 +283,7 @@ void Handler::setAuthenticatedUser(const SentryUser &user) {
     updateEffectiveSentryUser();
 }
 
-void Handler::setGlobalConfidentialityLevel(SentryConfidentialityLevel level) {
+void Handler::setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level) {
     std::scoped_lock lock(_mutex);
     _globalConfidentialityLevel = level;
 }
@@ -395,10 +395,10 @@ void Handler::escalateSentryEvent(SentryEvent &event) const {
 
 void Handler::updateEffectiveSentryUser(const SentryUser &user) {
     if (_globalConfidentialityLevel == _lastConfidentialityLevel && user.isDefault()) return;
-    _lastConfidentialityLevel = user.isDefault() ? _globalConfidentialityLevel : SentryConfidentialityLevel::Specific;
+    _lastConfidentialityLevel = user.isDefault() ? _globalConfidentialityLevel : sentry::ConfidentialityLevel::Specific;
 
     sentry_value_t userValue;
-    if (_globalConfidentialityLevel == SentryConfidentialityLevel::Anonymous) {
+    if (_globalConfidentialityLevel == sentry::ConfidentialityLevel::Anonymous) {
         userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
         sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("0.0.0.0"));
         sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
@@ -406,7 +406,7 @@ void Handler::updateEffectiveSentryUser(const SentryUser &user) {
         userValue = toSentryValue(user);
         sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
         sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
-    } else if (_globalConfidentialityLevel == SentryConfidentialityLevel::Authenticated) {
+    } else if (_globalConfidentialityLevel == sentry::ConfidentialityLevel::Authenticated) {
         userValue = toSentryValue(_authenticatedUser);
         sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
         sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
@@ -447,7 +447,7 @@ Handler::~Handler() {
 }
 
 Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, Level level,
-                                  SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
+                                  sentry::ConfidentialityLevel confidentialityLevel, const SentryUser &user) :
     title(title),
     message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 
@@ -596,4 +596,4 @@ void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTrac
     pTraceIt->second = 0;
 }
 
-} // namespace KDC::Sentry
+} // namespace KDC::sentry

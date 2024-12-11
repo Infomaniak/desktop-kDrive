@@ -19,12 +19,12 @@
 
 #include "libcommon/log/sentry/abstractscopedptrace.h"
 
-namespace KDC::Sentry {
+namespace KDC::sentry {
 
 class AbstractCounterScopedPTrace : public AbstractScopedPTrace {
     public:
         void start() final {
-            if (_counter >= _nbOfCyclePerTrace) {
+            if (_counter >= _nbOfCyclesPerTrace) {
                 AbstractScopedPTrace::stop();
                 AbstractScopedPTrace::start();
                 _counter = 0;
@@ -34,21 +34,19 @@ class AbstractCounterScopedPTrace : public AbstractScopedPTrace {
 
     protected:
         explicit AbstractCounterScopedPTrace(const PTraceDescriptor &info, unsigned int nbOfCyclePerTrace) :
-            AbstractScopedPTrace(info, PTraceStatus::Cancelled), _nbOfCyclePerTrace(nbOfCyclePerTrace) {}
+            AbstractScopedPTrace(info, PTraceStatus::Cancelled), _nbOfCyclesPerTrace(nbOfCyclePerTrace) {}
 
         explicit AbstractCounterScopedPTrace(const PTraceDescriptor &info, unsigned int nbOfCyclePerTrace, int syncDbId) :
-            AbstractScopedPTrace(info, PTraceStatus::Cancelled, syncDbId), _nbOfCyclePerTrace(nbOfCyclePerTrace) {}
+            AbstractScopedPTrace(info, PTraceStatus::Cancelled, syncDbId), _nbOfCyclesPerTrace(nbOfCyclePerTrace) {}
 
     private:
         void stop(PTraceStatus status = PTraceStatus::Ok) final {
             assert(false && "stop() should not be called with CounterScopedPTrace.");
-            // Not available for CounterScopedPTrace.
         }
         void restart() final {
             assert(false && "restart() should not be called with CounterScopedPTrace.");
-            // Not available for CounterScopedPTrace.
         }
-        unsigned int _nbOfCyclePerTrace = 0;
+        unsigned int _nbOfCyclesPerTrace = 0; // The number of time start() should be called before stopping the trace.
         unsigned int _counter = 0;
 };
-} // namespace KDC::Sentry
+} // namespace KDC::sentry

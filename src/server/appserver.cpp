@@ -488,7 +488,7 @@ void AppServer::updateSentryUser() const {
         userName = user.name();
         userEmail = user.email();
     }
-    Sentry::Handler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
+    sentry::Handler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
 }
 
 bool AppServer::clientHasCrashed() const {
@@ -1908,7 +1908,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
-            Sentry::PTraces::Basic::AppStart().stop();
+            sentry::pTraces::basic::AppStart().stop();
         }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId = 0;
@@ -3969,7 +3969,7 @@ void AppServer::addError(const Error &error) {
         // Manage sockets defuncted error
         LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
-        Sentry::Handler::captureMessage(Sentry::Level::Warning, "AppServer::addError", "Sockets defuncted error");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", "Sockets defuncted error");
 
         // Decrease upload session max parallel jobs
         ParametersCache::instance()->decreaseUploadSessionParallelThreads();
@@ -4006,7 +4006,7 @@ void AppServer::addError(const Error &error) {
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
-        Sentry::Handler::captureMessage(Sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
     }
 }
 

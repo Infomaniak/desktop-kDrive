@@ -21,7 +21,7 @@
 #include "abstractscopedptrace.h"
 #include "abstractcounterscopedptrace.h"
 
-namespace KDC::Sentry::PTraces {
+namespace KDC::sentry::pTraces {
 
 struct None : public AbstractPTrace {
         None() = default;
@@ -42,7 +42,7 @@ struct None : public AbstractPTrace {
  | perfMonitor.start();
  | perfMonitor.stop();
  */
-namespace Basic {
+namespace basic {
 struct AppStart : public AbstractPTrace {
         [[nodiscard]] AppStart() : AbstractPTrace({"AppStart", "Strat the application", PTraceName::AppStart}) {}
 };
@@ -92,46 +92,46 @@ struct Propagation2 : public AbstractPTrace {
         [[nodiscard]] explicit Propagation2(int dbId) :
             AbstractPTrace({"Propagation2", "Executor", PTraceName::Propagation2, PTraceName::Sync}, dbId) {}
 };
-} // namespace Basic
+} // namespace basic
 
 /* Scoped performance traces will automatically start when the object is created and stop when the object is
  destroyed.
  Some scoped performance traces expect to be manually stopped. In this case, the stop() method must be called, else the trace will
  be consider as aborted when the object will be destroyed. Such traces are indicated by a comment in their class definition.
  */
-namespace Scoped {
-struct LFSO_ChangeDetected : public AbstractScopedPTrace {
-        explicit LFSO_ChangeDetected(int syncDbId) :
-            AbstractScopedPTrace({"LFSO_ChangeDetected", "Handle one detected changes", PTraceName::LFSO_ChangeDetected},
+namespace scoped {
+struct LFSOChangeDetected : public AbstractScopedPTrace {
+        explicit LFSOChangeDetected(int syncDbId) :
+            AbstractScopedPTrace({"LFSO_ChangeDetected", "Handle one detected changes", PTraceName::LFSOChangeDetected},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
 // This scoped performance trace expects to be manually stopped.
-struct LFSO_GenerateInitialSnapshot : public AbstractScopedPTrace {
-        explicit LFSO_GenerateInitialSnapshot(int syncDbId) :
-            AbstractScopedPTrace({"LFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::LFSO_GenerateInitialSnapshot},
+struct LFSOGenerateInitialSnapshot : public AbstractScopedPTrace {
+        explicit LFSOGenerateInitialSnapshot(int syncDbId) :
+            AbstractScopedPTrace({"LFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::LFSOGenerateInitialSnapshot},
                                  PTraceStatus::Aborted, syncDbId) {}
 };
 
-struct RFSO_ChangeDetected : public AbstractScopedPTrace {
-        explicit RFSO_ChangeDetected(int syncDbId) :
-            AbstractScopedPTrace({"RFSO_ChangeDetected", "Handle one detected changes", PTraceName::RFSO_ChangeDetected},
+struct RFSOChangeDetected : public AbstractScopedPTrace {
+        explicit RFSOChangeDetected(int syncDbId) :
+            AbstractScopedPTrace({"RFSO_ChangeDetected", "Handle one detected changes", PTraceName::RFSOChangeDetected},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
 // This scoped performance trace expects to be manually stopped.
-struct RFSO_GenerateInitialSnapshot : public AbstractScopedPTrace {
-        explicit RFSO_GenerateInitialSnapshot(int syncDbId) :
-            AbstractScopedPTrace({"RFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::RFSO_GenerateInitialSnapshot},
+struct RFSOGenerateInitialSnapshot : public AbstractScopedPTrace {
+        explicit RFSOGenerateInitialSnapshot(int syncDbId) :
+            AbstractScopedPTrace({"RFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::RFSOGenerateInitialSnapshot},
                                  PTraceStatus::Aborted, syncDbId){};
 };
 
 // This scoped performance trace expects to be manually stopped.
-struct RFSO_BackRequest : public AbstractScopedPTrace {
-        explicit RFSO_BackRequest(bool fromChangeDetected, int syncDbId) :
+struct RFSOBackRequest : public AbstractScopedPTrace {
+        explicit RFSOBackRequest(bool fromChangeDetected, int syncDbId) :
             AbstractScopedPTrace(
-                    {"RFSO_BackRequest", "Request the list of all items to the backend", PTraceName::RFSO_BackRequest,
-                     (fromChangeDetected ? PTraceName::RFSO_ChangeDetected : PTraceName::RFSO_GenerateInitialSnapshot)},
+                    {"RFSO_BackRequest", "Request the list of all items to the backend", PTraceName::RFSOBackRequest,
+                     (fromChangeDetected ? PTraceName::RFSOChangeDetected : PTraceName::RFSOGenerateInitialSnapshot)},
                     PTraceStatus::Aborted, syncDbId) {}
 };
 
@@ -279,7 +279,7 @@ struct waitForAllJobsToFinish : public AbstractScopedPTrace {
                                   PTraceName::Propagation2},
                                  PTraceStatus::Aborted, syncDbId) {}
 };
-} // namespace Scoped
+} // namespace scoped
 
 /* CounterScoped performance traces will start when the object is created and will be stopped after nbOfCyclePerTrace() calls to
  * start(). A new trace will also be started as soon as the counter is reached. When the object is destroyed, the running trace
@@ -287,20 +287,20 @@ struct waitForAllJobsToFinish : public AbstractScopedPTrace {
  *
  * It is useful when you want to trace short part of the code that are called multiple times successively.
  */
-namespace CounterScoped {
-struct LFSO_ExploreItem : public AbstractCounterScopedPTrace {
-        explicit LFSO_ExploreItem(bool fromChangeDetected, int syncDbId) :
+namespace counterScoped {
+struct LFSOExploreItem : public AbstractCounterScopedPTrace {
+        explicit LFSOExploreItem(bool fromChangeDetected, int syncDbId) :
             AbstractCounterScopedPTrace(
-                    {"LFSO_ExploreItem(x1000)", "Discover 1000 local files", PTraceName::LFSO_ExploreItem,
-                     (fromChangeDetected ? PTraceName::LFSO_ChangeDetected : PTraceName::LFSO_GenerateInitialSnapshot)},
+                    {"LFSO_ExploreItem(x1000)", "Discover 1000 local files", PTraceName::LFSOExploreItem,
+                     (fromChangeDetected ? PTraceName::LFSOChangeDetected : PTraceName::LFSOGenerateInitialSnapshot)},
                     1000, syncDbId) {}
 };
 
-struct RFSO_ExploreItem : public AbstractCounterScopedPTrace {
-        explicit RFSO_ExploreItem(bool fromChangeDetected, int syncDbId) :
+struct RFSOExploreItem : public AbstractCounterScopedPTrace {
+        explicit RFSOExploreItem(bool fromChangeDetected, int syncDbId) :
             AbstractCounterScopedPTrace(
-                    {"RFSO_ExploreItem(x1000)", "Discover 1000 remote files", PTraceName::RFSO_ExploreItem,
-                     (fromChangeDetected ? PTraceName::RFSO_ChangeDetected : PTraceName::RFSO_GenerateInitialSnapshot)},
+                    {"RFSO_ExploreItem(x1000)", "Discover 1000 remote files", PTraceName::RFSOExploreItem,
+                     (fromChangeDetected ? PTraceName::RFSOChangeDetected : PTraceName::RFSOGenerateInitialSnapshot)},
                     1000, syncDbId) {}
 };
 
@@ -310,6 +310,6 @@ struct GenerateItemOperations : public AbstractCounterScopedPTrace {
                                          PTraceName::GenerateItemOperations, PTraceName::Reconciliation4},
                                         1000, syncDbId) {}
 };
-} // namespace CounterScoped
+} // namespace counterScoped
 
-} // namespace KDC::Sentry::PTraces
+} // namespace KDC::sentry::pTraces

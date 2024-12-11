@@ -70,7 +70,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
                     << L" - CoCreateInstance failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
-        Sentry::Handler::captureMessage(Sentry::Level::Error, "Utility::moveItemToTrash", "CoCreateInstance failed");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "CoCreateInstance failed");
         CoUninitialize();
         return false;
     }
@@ -88,7 +88,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
-        Sentry::Handler::captureMessage(Sentry::Level::Error, "Utility::moveItemToTrash", "SetOperationFlags failed");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SetOperationFlags failed");
         fileOperation->Release();
         CoUninitialize();
         return false;
@@ -110,7 +110,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
-        Sentry::Handler::captureMessage(Sentry::Level::Error, "Utility::moveItemToTrash",
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash",
                                                   "SHCreateItemFromParsingName failed");
         fileOperation->Release();
         CoUninitialize();
@@ -129,7 +129,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
                     << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
-        Sentry::Handler::captureMessage(Sentry::Level::Error, "Utility::moveItemToTrash", "DeleteItem failed");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "DeleteItem failed");
 
         fileOrFolderItem->Release();
         fileOperation->Release();
@@ -150,7 +150,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
-        Sentry::Handler::captureMessage(Sentry::Level::Error, "Utility::moveItemToTrash", "PerformOperations failed");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "PerformOperations failed");
         fileOrFolderItem->Release();
         fileOperation->Release();
         CoUninitialize();
@@ -170,7 +170,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
-        Sentry::Handler::captureMessage(Sentry::Level::Error, "Utility::moveItemToTrash", "Move to trash aborted");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "Move to trash aborted");
 
         fileOrFolderItem->Release();
         fileOperation->Release();

@@ -78,35 +78,35 @@ void ComputeFSOperationWorker::execute() {
     NodeIdSet localIdsSet;
     NodeIdSet remoteIdsSet;
     if (!stopAsked()) {
-        Sentry::PTraces::Scoped::InferChangesFromDb perfMonitor(syncDbId());
+        sentry::pTraces::scoped::InferChangesFromDb perfMonitor(syncDbId());
         exitCode = inferChangesFromDb(localIdsSet, remoteIdsSet);
         ok = exitCode == ExitCode::Ok;
         if (ok) perfMonitor.stop();
     }
     if (ok && !stopAsked()) {
-        Sentry::PTraces::Scoped::ExploreLocalSnapshot perfMonitor(syncDbId());
+        sentry::pTraces::scoped::ExploreLocalSnapshot perfMonitor(syncDbId());
         exitCode = exploreSnapshotTree(ReplicaSide::Local, localIdsSet);
         ok = exitCode == ExitCode::Ok;
         if (ok) perfMonitor.stop();
     }
     if (ok && !stopAsked()) {
-        Sentry::PTraces::Scoped::ExploreRemoteSnapshot perfMonitor(syncDbId());
+        sentry::pTraces::scoped::ExploreRemoteSnapshot perfMonitor(syncDbId());
         exitCode = exploreSnapshotTree(ReplicaSide::Remote, remoteIdsSet);
         ok = exitCode == ExitCode::Ok;
         if (ok) perfMonitor.stop();
     }
 
-    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
+    std::chrono::duration<double> elapsedSeconds = std::chrono::steady_clock::now() - start;
 
     if (!ok || stopAsked()) {
         // Do not keep operations if there was an error or sync was stopped
         _syncPal->operationSet(ReplicaSide::Local)->clear();
         _syncPal->operationSet(ReplicaSide::Remote)->clear();
-        LOG_SYNCPAL_INFO(_logger, "FS operation aborted after: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_INFO(_logger, "FS operation aborted after: " << elapsedSeconds.count() << "s");
 
     } else {
         exitCode = ExitCode::Ok;
-        LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsed_seconds.count() << "s");
+        LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
@@ -634,7 +634,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         LOGW_SYNCPAL_DEBUG(_logger, L"File size mismatch for \"" << Path2WStr(absoluteLocalPath)
                                                                  << L"\". Remote version will be downloaded again.");
         _fileSizeMismatchMap.insert({dbNode.nodeIdLocal().value(), absoluteLocalPath});
-        Sentry::Handler::captureMessage(Sentry::Level::Warning, "ComputeFSOperationWorker::exploreDbTree",
+        sentry::Handler::captureMessage(sentry::Level::Warning, "ComputeFSOperationWorker::exploreDbTree",
                                         "File size mismatch detected");
     }
 
@@ -891,7 +891,7 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath)
                                          << L" still exists on local replica. Snapshot not up to date, restarting sync.");
 
-    Sentry::Handler::captureMessage(Sentry::Level::Warning, "ComputeFSOperationWorker::checkIfOkToDelete",
+    sentry::Handler::captureMessage(sentry::Level::Warning, "ComputeFSOperationWorker::checkIfOkToDelete",
                                     "Unwanted local delete operation averted");
 
     setExitCause(ExitCause::InvalidSnapshot);
@@ -913,7 +913,7 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<co
 }
 
 void ComputeFSOperationWorker::updateUnsyncedList() {
-    Sentry::PTraces::Scoped::UpdateUnsyncedList perfMonitor(syncDbId());
+    sentry::pTraces::scoped::UpdateUnsyncedList perfMonitor(syncDbId());
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::UndecidedList, _remoteUnsyncedList);
     NodeIdSet tmp;
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, tmp);

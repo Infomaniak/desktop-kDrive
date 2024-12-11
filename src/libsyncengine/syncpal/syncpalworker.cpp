@@ -42,11 +42,11 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
-    Sentry::PTraces::Scoped::SyncInit perfMonitor(syncDbId());
+    sentry::pTraces::scoped::SyncInit perfMonitor(syncDbId());
     int id = syncDbId();
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-        Sentry::PTraces::Scoped::ResetStatus perfMonitor1(syncDbId());
+        sentry::pTraces::scoped::ResetStatus perfMonitor1(syncDbId());
         // Reset vfs files status
         if (!resetVfsFilesStatus()) {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
@@ -285,10 +285,10 @@ std::string SyncPalWorker::stepName(SyncStep step) {
 void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                              std::shared_ptr<SharedObject> (&inputSharedObject)[2]) {
     if (step == SyncStep::UpdateDetection1) {
-        Sentry::PTraces::Basic::Sync(syncDbId()).start();
+        sentry::pTraces::basic::Sync(syncDbId()).start();
     }
-    Sentry::SyncSetpToPTrace(_step, syncDbId())->stop();
-    Sentry::SyncSetpToPTrace(step, syncDbId())->start();
+    sentry::syncStepToPTrace(_step, syncDbId())->stop();
+    sentry::syncStepToPTrace(step, syncDbId())->start();
 
     _step = step;
     switch (step) {
@@ -364,7 +364,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             if (!_syncPal->restart()) {
                 _syncPal->setSyncHasFullyCompletedInParms(true);
             }
-            Sentry::PTraces::Basic::Sync(syncDbId()).stop();
+            sentry::pTraces::basic::Sync(syncDbId()).stop();
             break;
         default:
             LOG_SYNCPAL_WARN(_logger, "Invalid status");

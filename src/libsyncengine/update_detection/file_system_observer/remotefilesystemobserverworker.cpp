@@ -91,7 +91,7 @@ void RemoteFileSystemObserverWorker::execute() {
 ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation");
     auto start = std::chrono::steady_clock::now();
-    Sentry::PTraces::Scoped::RFSO_GenerateInitialSnapshot perfMonitor(syncDbId());
+    sentry::pTraces::scoped::RFSOGenerateInitialSnapshot perfMonitor(syncDbId());
 
     _snapshot->init();
     _updating = true;
@@ -268,7 +268,7 @@ ExitCode RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) 
 
 ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, const bool saveCursor) {
     // Send request
-    Sentry::PTraces::Scoped::RFSO_BackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
+    sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
         std::unordered_set<NodeId> blackList;
@@ -325,7 +325,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     std::unordered_set<SyncName> existingFiles;
     uint64_t itemCount = 0;
     perfMonitorBackRequest.stop();
-    Sentry::PTraces::CounterScoped::RFSO_ExploreItem perfMonitorExploreItem(!saveCursor, syncDbId());
+    sentry::pTraces::counterScoped::RFSOExploreItem perfMonitorExploreItem(!saveCursor, syncDbId());
     while (job->getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
@@ -386,7 +386,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     if (!eof) {
         const std::string msg = "Failed to parse CSV reply: missing EOF delimiter";
         LOG_SYNCPAL_WARN(_logger, msg.c_str());
-        Sentry::Handler::captureMessage(Sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", msg);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", msg);
         setExitCause(ExitCause::FullListParsingError);
         return ExitCode::NetworkError;
     }
@@ -488,7 +488,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
     std::set<NodeId, std::less<>> movedItems;
 
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
-        Sentry::PTraces::Scoped::RFSO_ChangeDetected perfMonitor(syncDbId());
+        sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -787,7 +787,7 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     bool resetTimer = elapsedTime.count() > 3600; // 1h
     if (_listingFullCounter > 60) {
         // If there is more then 1 listing/full request per minute for an hour -> send a sentry
-        Sentry::Handler::captureMessage(Sentry::Level::Warning, "RemoteFileSystemObserverWorker::generateInitialSnapshot",
+        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::generateInitialSnapshot",
                                         "Too many listing/full requests, sync is looping");
         resetTimer = true;
     }
