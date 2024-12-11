@@ -702,7 +702,7 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
         text += (text.isEmpty() ? "" : "\n");
         text +=
                 tr("The file/directory name contains a recent UNICODE character not yet supported by your filesystem.<br>"
-                   "The parent directory has been excluded from synchronization.");
+                   "It has been excluded from synchronization.");
     }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::DuplicateNames)) {
         text += (text.isEmpty() ? "" : "\n");
