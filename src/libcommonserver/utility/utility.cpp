@@ -326,8 +326,8 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
     } else {
         // Not all the requested information is retrieved
         DWORD dwError = GetLastError();
-        LOGW_WARN(logger(),
-                  L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" (" << dwError << L")");
+        LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
+                                                                  << getErrorMessage(dwError) << L")");
 
         // !!! File system name can be OK or not !!!
         return ws2s(szFileSystemName);
@@ -645,8 +645,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
             DWORD dwError = GetLastError();
             if (dwError != ERROR_INSUFFICIENT_BUFFER) {
                 // Real error, not buffer error
-                LOGW_DEBUG(logger(), L"Failed to normalize string " << formatSyncName(name) << L" - error code: "
-                                                                    << std::to_wstring(dwError));
+                LOGW_DEBUG(logger(),
+                           L"Failed to normalize " << formatSyncName(name) << L" - error code: " << getErrorMessage(dwError));
                 return false;
             }
 
@@ -657,8 +657,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
 
     if (iSizeEstimated <= 0) {
         DWORD dwError = GetLastError();
-        LOGW_DEBUG(logger(),
-                   L"Failed to normalize string " << formatSyncName(name) << L" - error code: " << std::to_wstring(dwError));
+        LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" - error code: " << getErrorMessage(dwError));
         return false;
     }
 
@@ -675,7 +674,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
 
     if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion
                       // has failed. e.g.: Linux can sometime send filesystem events with strange character in the path
-        LOGW_DEBUG(logger(), L"Failed to normalize string " << formatSyncName(name));
+        LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name));
         return false;
     }
 
@@ -740,8 +739,8 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
 
     isLink = itemType.linkType != LinkType::None;
     if (!dirEntry.is_directory() && !dirEntry.is_regular_file() && !isLink) {
-        LOGW_WARN(logger(),
-                  L"Ignore " << formatSyncPath(dirEntry.path()) << L" because it's not a directory, a regular file or a symlink");
+        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
+                                       << L" because it is not a directory, a regular file or a symlink");
         isManaged = false;
         return true;
     }
