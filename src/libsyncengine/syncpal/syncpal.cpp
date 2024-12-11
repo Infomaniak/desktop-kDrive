@@ -58,7 +58,7 @@ namespace KDC {
 SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
     _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
-    LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init : " << Utility::formatSyncPath(syncDbPath).c_str());
+    LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init : " << Utility::formatSyncPath(syncDbPath));
 
     if (!createOrOpenDb(syncDbPath, version)) {
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
@@ -174,12 +174,16 @@ SyncPal::~SyncPal() {
 
 ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
     bool found = false;
+
+    ASSERT(_remoteSnapshot)
+    ASSERT(_remoteUpdateTree)
+
     if (!_syncDb->setTargetNodeId(targetNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setTargetNodeId");
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Root node not found in node table");
+        LOG_SYNCPAL_WARN(_logger, "Root node not found in node table");
         return ExitCode::DataError;
     }
 
@@ -201,6 +205,9 @@ SyncStatus SyncPal::status() const {
         // Has started
         if (_syncPalWorker->isRunning()) {
             // Still running
+            ASSERT(_localSnapshot)
+            ASSERT(_remoteSnapshot)
+
             if (_syncPalWorker->pauseAsked()) {
                 // Auto pausing after a NON fatal error (network, back...)
                 return SyncStatus::PauseAsked;
@@ -268,7 +275,7 @@ ExitCode SyncPal::fileSyncing(ReplicaSide side, const SyncPath &path, bool &sync
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -282,7 +289,7 @@ ExitCode SyncPal::setFileSyncing(ReplicaSide side, const SyncPath &path, bool sy
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -297,7 +304,7 @@ ExitCode SyncPal::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path) {
     }
 
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -422,8 +429,7 @@ bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTi
 bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) {
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger,
-                           L"vfsUpdateFetchStatus : " << Utility::formatSyncPath(path).c_str() << L" received=" << received);
+        LOGW_SYNCPAL_DEBUG(_logger, L"vfsUpdateFetchStatus : " << Utility::formatSyncPath(path) << L" received=" << received);
     }
 
     if (!_vfsUpdateFetchStatus) {
@@ -702,7 +708,7 @@ bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
             return false;
         }
         if (item.instruction() != SyncFileInstruction::Get && item.instruction() != SyncFileInstruction::Put) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node not found : " << Utility::formatSyncPath(relativePath).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Node not found : " << Utility::formatSyncPath(relativePath));
             return false;
         }
     }
@@ -724,7 +730,7 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
     }
     if (!found) {
         // Can happen for a dehydrated placeholder
-        LOGW_SYNCPAL_DEBUG(_logger, L"Node not found : " << Utility::formatSyncPath(relativeLocalPath).c_str());
+        LOGW_SYNCPAL_DEBUG(_logger, L"Node not found : " << Utility::formatSyncPath(relativeLocalPath));
     }
     return true;
 }
@@ -759,6 +765,9 @@ bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
 }
 
 bool SyncPal::isSnapshotValid(ReplicaSide side) {
+    ASSERT(_localSnapshot)
+    ASSERT(_remoteSnapshot)
+
     return side == ReplicaSide::Local ? _localSnapshot->isValid() : _remoteSnapshot->isValid();
 }
 
@@ -770,7 +779,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(relativePath).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(relativePath));
         return ExitCode::DataError;
     }
 
@@ -780,7 +789,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId));
         return ExitCode::DataError;
     }
 
@@ -790,7 +799,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId));
         return ExitCode::DataError;
     }
 
@@ -1033,7 +1042,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -1052,6 +1061,8 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
 bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
     exists = false;
 
+    if (!_remoteSnapshot) return false;
+
     // Path is normalized on server side
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
@@ -1066,6 +1077,8 @@ bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
 bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
+    if (!_remoteSnapshot) return false;
+
     // Path is normalized on server side
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
@@ -1073,7 +1086,6 @@ bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
         return false;
     }
 
-    const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
     if (const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath); !nodeId.empty()) {
         canShare = _remoteSnapshot->canShare(nodeId);
     }
@@ -1167,8 +1179,8 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
         if (ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(
                     localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, &destPath);
             exitCode != ExitCode::Ok) {
-            LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Path2WStr(localFileInfo.second).c_str() << L" into "
-                                                          << Path2WStr(destPath).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Utility::formatSyncPath(localFileInfo.second) << L" into "
+                                                          << Utility::formatSyncPath(destPath));
 
             return exitCode;
         }
@@ -1526,6 +1538,9 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
 }
 
 void SyncPal::copySnapshots() {
+    ASSERT(_localSnapshot)
+    ASSERT(_remoteSnapshot)
+
     *_localSnapshotCopy = *_localSnapshot;
     *_remoteSnapshotCopy = *_remoteSnapshot;
     _localSnapshot->startRead();

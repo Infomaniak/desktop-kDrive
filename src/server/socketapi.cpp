@@ -992,16 +992,16 @@ void SocketApi::addSharingContextMenuOptions(const FileData &fileData, QTextStre
 
     bool isOnTheServer = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(QStr2Path(fileData.relativePath), isOnTheServer)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
-        // Continue
+        LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatPath(fileData.relativePath));
+        // Occurs when the sync is stopped
     }
 
     bool canShare = false;
     if (!syncPalMapIt->second->checkIfCanShareItem(QStr2Path(fileData.relativePath), canShare)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatPath(fileData.relativePath));
-        // Continue
+        LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+                   L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatPath(fileData.relativePath));
+        // Occurs when the sync is stopped
     }
 
     const auto flagString = QString("%1%2%1").arg(MSG_CDE_SEPARATOR).arg(isOnTheServer ? QString() : QString("d"));
