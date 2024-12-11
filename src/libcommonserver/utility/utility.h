@@ -163,7 +163,6 @@ struct COMMONSERVER_EXPORT Utility {
         static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept;
 
 #ifdef _WIN32
-        static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif

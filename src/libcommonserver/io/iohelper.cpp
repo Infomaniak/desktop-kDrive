@@ -241,10 +241,6 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
 }
 
 #if defined(__APPLE__) || defined(__unix__)
-bool IoHelper::fileExists(const std::error_code &ec) noexcept {
-    return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
-}
-
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     struct stat sb;
 
@@ -256,9 +252,9 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     return true;
 }
 
-bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
-    (void) absolutePath;
-    (void) ioError;
+bool IoHelper::isFileAccessible(const SyncPath &, IoError &ioError) {
+    ioError = IoError::Success;
+
     return true;
 }
 
