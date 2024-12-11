@@ -17,7 +17,6 @@
  */
 
 #include "libcommon/utility/utility.h"
-#include "libcommon/asserts.h"
 #include "libcommon/utility/types.h"
 
 #include <shlobj.h>
@@ -50,6 +49,7 @@ static SyncPath getAppSupportDir_private() {
     }
     sentry::Handler::captureMessage(sentry::Level::Warning, "Utility_win::getAppSupportDir_private",
                                               "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method");
+
     return std::filesystem::temp_directory_path().parent_path().parent_path().native();
 }
 
@@ -58,9 +58,9 @@ static KDC::SyncPath getAppDir_private() {
 }
 
 static inline bool hasDarkSystray_private() {
-    QString themePath = QLatin1String(themePathC);
-    QSettings settings(themePath, QSettings::NativeFormat);
+    const QString themePath = QLatin1String(themePathC);
+    const QSettings settings(themePath, QSettings::NativeFormat);
+
     return !settings.value(QLatin1String(lightThemeKeyC), true).toBool();
 }
-
 } // namespace KDC
