@@ -287,7 +287,7 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
-    SentryHandler::instance()->captureMessage(SentryLevel::Warning, errorTitle, errorMsg);
+    sentry::Handler::captureMessage(sentry::Level::Warning, errorTitle, errorMsg);
     LOG_WARN(logger, errorTitle.c_str() << ": " << errorMsg.c_str());
 }
 
