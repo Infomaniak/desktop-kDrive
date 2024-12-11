@@ -497,7 +497,7 @@ pTraceId Handler::makeUniquePTraceId() {
             _pTraceIdCounter = 1;
             reseted = true;
         }
-    } while (_pTraces.find(_pTraceIdCounter) != _pTraces.end()); // Ensure the pTraceId is unique
+    } while (_pTraces.contains(_pTraceIdCounter)); // Ensure the pTraceId is unique
     return _pTraceIdCounter;
 }
 
