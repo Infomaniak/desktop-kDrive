@@ -455,8 +455,8 @@ void Handler::stopPTrace(const pTraceId &id, PTraceStatus status) {
     if (id == 0) return;
 
     std::scoped_lock lock(_mutex);
-    auto performanceTraceIt = _performanceTraces.find(id);
-    if (performanceTraceIt == _performanceTraces.end()) {
+    auto performanceTraceIt = _pTraces.find(id);
+    if (performanceTraceIt == _pTraces.end()) {
         return;
     }
     PerformanceTrace &performanceTrace = performanceTraceIt->second;
@@ -482,15 +482,30 @@ void Handler::stopPTrace(const pTraceId &id, PTraceStatus status) {
         sentry_transaction_set_status(performanceTrace.transaction(), static_cast<sentry_span_status_t>(status));
         sentry_transaction_finish(performanceTrace.transaction()); // Automatically stop any child transaction
     }
-    _performanceTraces.erase(id);
+    _pTraces.erase(id);
+}
+
+pTraceId Handler::makeUniquePTraceId() {
+    bool reseted = false;
+    do {
+        _pTraceIdCounter++;
+        if (_pTraceIdCounter >= std::numeric_limits<pTraceId>::max()-1) {
+            if (reseted) {
+                assert(false && "No more unique pTraceId available");
+                return 0;
+            }
+            _pTraceIdCounter = 1;
+            reseted = true;
+        }
+    } while (_pTraces.find(_pTraceIdCounter) != _pTraces.end()); // Ensure the pTraceId is unique
+    return _pTraceIdCounter;
 }
 
 pTraceId Handler::startTransaction(const std::string &name, const std::string &description) {
     sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(name.c_str(), description.c_str());
     sentry_transaction_t *tx = sentry_transaction_start(tx_ctx, sentry_value_new_null());
-    _pTraceIdCounter++;
-    pTraceId traceId = _pTraceIdCounter;
-    auto [it, res] = _performanceTraces.try_emplace(traceId, traceId);
+    pTraceId traceId = makeUniquePTraceId();
+    auto [it, res] = _pTraces.try_emplace(traceId, traceId);
     if (!res) {
         assert(false && "Transaction already exists");
         return 0;
@@ -503,8 +518,8 @@ pTraceId Handler::startTransaction(const std::string &name, const std::string &d
 }
 
 pTraceId Handler::startSpan(const std::string &name, const std::string &description, const pTraceId &parentId) {
-    auto parentIt = _performanceTraces.find(parentId);
-    if (parentIt == _performanceTraces.end()) {
+    auto parentIt = _pTraces.find(parentId);
+    if (parentIt == _pTraces.end()) {
         assert(false && "Parent transaction/span does not exist");
         return 0;
     }
@@ -527,9 +542,8 @@ pTraceId Handler::startSpan(const std::string &name, const std::string &descript
         assert(span);
     }
 
-    _pTraceIdCounter++;
-    pTraceId traceId = _pTraceIdCounter;
-    auto [it, res] = _performanceTraces.try_emplace(traceId, traceId);
+    pTraceId traceId = makeUniquePTraceId();
+    auto [it, res] = _pTraces.try_emplace(traceId, traceId);
     if (!res) {
         assert(false && "Transaction already exists");
         return 0;

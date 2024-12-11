@@ -21,7 +21,7 @@
 #include <assert.h>
 
 namespace KDC::sentry {
-using pTraceId = uint64_t;
+using pTraceId = long long;
 
 // A PerformanceTrace allows to track the duration of the execution of several parts of the code.
 // https://docs.sentry.io/product/performance/

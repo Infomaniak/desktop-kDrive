@@ -39,11 +39,11 @@ enum class Level { // Not defined in types.h as we don't want to include sentry.
 
 // The final status of a performance trace.
 enum class PTraceStatus {
-    Ok = SENTRY_SPAN_STATUS_OK, 
+    Ok = SENTRY_SPAN_STATUS_OK,
     Cancelled = SENTRY_SPAN_STATUS_CANCELLED, // The operation hasn't terminated but should not be considered as a faillure.
     Aborted = SENTRY_SPAN_STATUS_ABORTED, // The operation failed.
 };
-}
+} // namespace sentry
 inline std::string toString(sentry::Level level) {
     switch (level) {
         case sentry::Level::Debug:
@@ -188,9 +188,10 @@ class Handler {
         // Min. interval between two uploads of a rate limited event (seconds)
         int _sentryMinUploadIntervalOnRateLimit = 60;
 
-
-        pTraceId _pTraceIdCounter = 0;
-        std::map<pTraceId, PerformanceTrace> _performanceTraces;
+        pTraceId _pTraceIdCounter = 1;
+        // Generate a unique pTraceId. Automatically reset to 1 when reaching the maximum value.
+        pTraceId makeUniquePTraceId();
+        std::map<pTraceId, PerformanceTrace> _pTraces;
 
         // A transaction allows to track the duration of an operation. It cannot
         // be a child of another transaction.
@@ -207,5 +208,5 @@ class Handler {
         static bool _debugCrashCallback;
         static bool _debugBeforeSendCallback;
 };
-} // namespace Sentry
+} // namespace sentry
 } // namespace KDC
