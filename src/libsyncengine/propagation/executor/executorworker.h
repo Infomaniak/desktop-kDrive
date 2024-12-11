@@ -81,7 +81,6 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath);
         ExitInfo convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated);
-        ExitInfo processCreateOrConvertToPlaceholderError(const SyncPath &relativeLocalPath, bool create);
         ExitInfo handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored);
         ExitInfo generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
 

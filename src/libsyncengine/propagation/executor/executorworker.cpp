@@ -808,52 +808,6 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::processCreateOrConvertToPlaceholderError(const SyncPath &relativeLocalPath, bool create) {
-    // TODO: Simplify/remove this function when vfs functions will output an ioError parameter
-    SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteLocalFilePath, ioError));
-        return ExitCode::SystemError;
-    }
-
-    if (ioError == IoError::AccessDenied) {
-        LOGW_SYNCPAL_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-
-    if (create && exists) {
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    } else if (!create && !exists) {
-        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
-    }
-
-    if (create) {
-        // Check if the parent folder exists on local replica
-        bool parentExists = false;
-        if (!IoHelper::checkIfPathExists(absoluteLocalFilePath.parent_path(), parentExists, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                       << Utility::formatIoError(absoluteLocalFilePath.parent_path(), ioError));
-            return ExitCode::SystemError;
-        }
-
-        if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger,
-                      L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath.parent_path()));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-
-        if (!parentExists) {
-            return {ExitCode::DataError, ExitCause::InvalidSnapshot};
-        }
-    }
-
-    return {ExitCode::SystemError, ExitCause::FileAccessError};
-}
-
-// !!! When returning with hasError == true, _executorExitCode and _executorExitCause must be set !!!
 ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored) {
     // The execution of the edit operation consists of three steps:
     // 1. If omit-flag is False, propagate the file to replicaY, replacing the existing one.

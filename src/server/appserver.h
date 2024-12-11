@@ -195,6 +195,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         static void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
+        static ExitInfo getVfsPtr(int syncDbId, std::shared_ptr<Vfs> &vfs);
         static bool vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded);
         static bool vfsExclude(int syncDbId, const SyncPath &itemPath);
         static bool vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState &pinState);

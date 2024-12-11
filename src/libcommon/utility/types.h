@@ -29,7 +29,6 @@
 #include <signal.h>
 #include "sourcelocation.h"
 
-
 namespace KDC {
 
 using SyncTime = int64_t;
@@ -258,6 +257,7 @@ struct ExitInfo {
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
         explicit operator std::string() const {
+            // Example: "ExitInfo{SystemError-NotFound from (file.cpp:42[functionName])}"
             return "ExitInfo{" + toString(code()) + "-" + toString(cause()) + srcLocStr() + "}";
         }
         constexpr operator bool() const { return _code == ExitCode::Ok; }
@@ -269,12 +269,10 @@ struct ExitInfo {
         ExitCause _cause{ExitCause::Unknown};
         SourceLocation _srcLoc;
 
-
         std::string srcLocStr() const {
-            if (_code != ExitCode::Ok) {
-                return " from (" + _srcLoc.fileName() + ":" + std::to_string(_srcLoc.line()) + "[" + _srcLoc.functionName() + "]";
-            }
-            return "";
+            if (_code == ExitCode::Ok) return "";
+            return " from (" + _srcLoc.fileName() + ":" + std::to_string(_srcLoc.line()) +
+                   (!_srcLoc.functionName().empty() ? "[" + _srcLoc.functionName() + "]" : "");
         }
 };
 std::string toString(ExitInfo e);

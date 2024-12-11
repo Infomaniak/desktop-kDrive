@@ -451,9 +451,9 @@ ExitInfo VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, 
     if (extendedLog()) {
         LOGW_INFO(logger(), L"updateFetchStatus file " << Utility::formatPath(path).c_str() << L" - " << received);
     }
-    if (tmpPath.isEmpty() || path.isEmpty()) {
+    if (tmpPath.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
-        return {ExitCode::SystemError, ExitCause::NotFound};
+        return ExitCode::SystemError;
     }
 
     std::filesystem::path fullPath(QStr2Path(path));
@@ -474,27 +474,15 @@ ExitInfo VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, 
         return handleVfsError(fullPath);
     }
 
+    finished = false;
     std::filesystem::path tmpFullPath(QStr2Path(tmpPath));
-    auto updateFct = [=, this](bool &canceled, bool &finished, bool &error) {
-        // Update download progress
-        finished = false;
-        if (!_connector->vfsUpdateFetchStatus(Path2QStr(tmpFullPath), Path2QStr(fullPath), _localSyncPath,
-                                              static_cast<uint64_t>(received), canceled, finished)) {
-            LOG_WARN(logger(), "Error in vfsUpdateFetchStatus!");
-            error = true;
-            return;
-        }
+    if (!_connector->vfsUpdateFetchStatus(Path2QStr(tmpFullPath), Path2QStr(fullPath), _localSyncPath,
+                                          static_cast<uint64_t>(received), canceled, finished)) {
+        LOG_WARN(logger(), "Error in vfsUpdateFetchStatus!");
+        return handleVfsError(fullPath);
+    }
 
-        if (finished) {
-            // Do nothing
-        }
-    };
-
-    // Launch update in a separate thread
-    bool error = false;
-    updateFct(canceled, finished, error);
-
-    return error ? handleVfsError(fullPath) : ExitInfo(ExitCode::Ok);
+    return ExitCode::Ok;
 }
 
 void VfsMac::cancelHydrate(const QString &filePath) {
@@ -706,10 +694,10 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
             }
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
-                _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
-                _workerInfo[WORKER_DEHYDRATION]._queue.push_front(path);
-                _workerInfo[WORKER_DEHYDRATION]._mutex.unlock();
-                _workerInfo[WORKER_DEHYDRATION]._queueWC.wakeOne();
+                _workerInfo[workerDehydration]._mutex.lock();
+                _workerInfo[workerDehydration]._queue.push_front(path);
+                _workerInfo[workerDehydration]._mutex.unlock();
+                _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
                 bool syncing;
                 _syncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), syncing);
@@ -718,10 +706,10 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
                     _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), true);
 
                     // Add file path to hydration queue
-                    _workerInfo[WORKER_HYDRATION]._mutex.lock();
-                    _workerInfo[WORKER_HYDRATION]._queue.push_front(path);
-                    _workerInfo[WORKER_HYDRATION]._mutex.unlock();
-                    _workerInfo[WORKER_HYDRATION]._queueWC.wakeOne();
+                    _workerInfo[workerHydration]._mutex.lock();
+                    _workerInfo[workerHydration]._queue.push_front(path);
+                    _workerInfo[workerHydration]._mutex.unlock();
+                    _workerInfo[workerHydration]._queueWC.wakeOne();
                 }
             }
         }

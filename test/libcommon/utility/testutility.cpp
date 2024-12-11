@@ -315,7 +315,7 @@ void TestUtility::testSourceLocation() {
 #ifdef SRC_LOC_AVALAIBALE
     CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
 #else
-    CPPUNIT_ASSERT_EQUAL(std::string("unknown"), location.functionName());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
 #endif
 
     // Test as a default argument
@@ -328,7 +328,7 @@ void TestUtility::testSourceLocation() {
     CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
     CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
 #else
-    CPPUNIT_ASSERT_EQUAL(std::string("unknown"), location.functionName());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
     CPPUNIT_ASSERT_EQUAL(fooFuncLine, location.line());
 #endif
 }

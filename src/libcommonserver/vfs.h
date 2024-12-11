@@ -37,17 +37,17 @@
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
-#define NB_WORKERS 2
-#define WORKER_HYDRATION 0
-#define WORKER_DEHYDRATION 1
+constexpr short nbWorkers = 2;
+constexpr short workerHydration = 0;
+constexpr short workerDehydration = 1;
 
 namespace KDC {
 struct VfsSetupParams {
         int _syncDbId;
         int _driveId;
         int _userId;
-        std::filesystem::path _localPath;
-        std::filesystem::path _targetPath;
+        SyncPath _localPath;
+        SyncPath _targetPath;
         std::string _namespaceCLSID;
         KDC::ExecuteCommand _executeCommand;
         log4cplus::Logger _logger;
@@ -60,6 +60,7 @@ struct WorkerInfo {
         bool _stop = false;
         QList<QtLoggingThread *> _threadList;
 };
+
 /** Interface describing how to deal with virtual/placeholder files.
  *
  * There are different ways of representing files locally that will only
@@ -76,7 +77,7 @@ class Vfs : public QObject {
         Q_OBJECT
 
     public:
-        std::array<WorkerInfo, NB_WORKERS> _workerInfo;
+        std::array<WorkerInfo, nbWorkers> _workerInfo;
         static QString modeToString(KDC::VirtualFileMode virtualFileMode);
         static KDC::VirtualFileMode modeFromString(const QString &str);
 
@@ -256,10 +257,30 @@ class Vfs : public QObject {
         virtual ExitInfo status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                                 int &progress) = 0;
 
+        /** Set the thumbnail for a file.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the status was retrieved.
+         * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
+         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
+         */
         virtual ExitInfo setThumbnail(const QString &filePath, const QPixmap &pixmap) = 0;
 
+        /** Set the list of applications that should not be hydrated.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the list was set.
+         * - ExitCode::LogicError, ExitCause::Unknown: An unknown error occurred.
+         */
         virtual ExitInfo setAppExcludeList() = 0;
 
+        /** Set the list of applications that should not be hydrated.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the list was set.
+         * - ExitCode::LogicError, ExitCause::Unknown: An unknown error occurred.
+         */
         virtual ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) = 0;
 
         virtual void exclude(const QString &) = 0;
@@ -290,7 +311,7 @@ class Vfs : public QObject {
     protected:
         VfsSetupParams _vfsSetupParams;
         void starVfsWorkers();
-        const std::array<int, NB_WORKERS> s_nb_threads = {5, 5};
+        const std::array<int, nbWorkers> s_nb_threads = {5, 5};
 
         // Callbacks
         void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status) = nullptr;
@@ -360,36 +381,36 @@ class VfsOff : public Vfs {
     public:
         VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
-        ~VfsOff() override;
+        ~VfsOff() final;
 
-        KDC::VirtualFileMode mode() const override { return KDC::VirtualFileMode::Off; }
+        KDC::VirtualFileMode mode() const final { return KDC::VirtualFileMode::Off; }
 
-        bool socketApiPinStateActionsShown() const override { return false; }
+        bool socketApiPinStateActionsShown() const final { return false; }
 
-        ExitInfo updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &) override { return ExitCode::Ok; }
-        ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
-        ExitInfo dehydratePlaceholder(const QString &) override { return ExitCode::Ok; }
-        ExitInfo convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
-        ExitInfo updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return ExitCode::Ok; }
-        ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
+        ExitInfo updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &) final { return ExitCode::Ok; }
+        ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) final { return ExitCode::Ok; }
+        ExitInfo dehydratePlaceholder(const QString &) final { return ExitCode::Ok; }
+        ExitInfo convertToPlaceholder(const QString &, const KDC::SyncFileItem &) final { return ExitCode::Ok; }
+        ExitInfo updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) final { return ExitCode::Ok; }
+        ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) final;
 
-        ExitInfo isDehydratedPlaceholder(const QString &, bool &isDehydrated, bool) override {
+        ExitInfo isDehydratedPlaceholder(const QString &, bool &isDehydrated, bool) final {
             isDehydrated = false;
             return ExitCode::Ok;
         }
 
-        ExitInfo setPinState(const QString &, KDC::PinState) override { return ExitCode::Ok; }
-        KDC::PinState pinState(const QString &) override { return KDC::PinState::AlwaysLocal; }
-        ExitInfo status(const QString &, bool &, bool &, bool &, int &) override { return ExitCode::Ok; }
-        ExitInfo setThumbnail(const QString &, const QPixmap &) override { return ExitCode::Ok; }
-        ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
-        ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const QString &) override { /*VfsOff*/
+        ExitInfo setPinState(const QString &, KDC::PinState) final { return ExitCode::Ok; }
+        KDC::PinState pinState(const QString &) final { return KDC::PinState::AlwaysLocal; }
+        ExitInfo status(const QString &, bool &, bool &, bool &, int &) final { return ExitCode::Ok; }
+        ExitInfo setThumbnail(const QString &, const QPixmap &) final { return ExitCode::Ok; }
+        ExitInfo setAppExcludeList() final { return ExitCode::Ok; }
+        ExitInfo getFetchingAppList(QHash<QString, QString> &) final { return ExitCode::Ok; }
+        void exclude(const QString &) final { /*VfsOff*/
         }
-        bool isExcluded(const QString &) override { return false; }
-        bool fileStatusChanged(const QString &, KDC::SyncFileStatus) override { return true; }
+        bool isExcluded(const QString &) final { return false; }
+        bool fileStatusChanged(const QString &, KDC::SyncFileStatus) final { return true; }
 
-        void clearFileAttributes(const QString &) override { /*VfsOff*/
+        void clearFileAttributes(const QString &) final { /*VfsOff*/
         }
         void dehydrate(const QString &) final { /*VfsOff*/
         }
@@ -397,8 +418,8 @@ class VfsOff : public Vfs {
         }
 
     protected:
-        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
+        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) final;
+        void stopImpl(bool /*unregister*/) final { /*VfsOff*/
         }
 
         friend class TestWorkers;

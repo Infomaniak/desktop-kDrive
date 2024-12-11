@@ -1105,7 +1105,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                if(ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo){
+                if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
                     return;
                 }
@@ -1197,8 +1197,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
 
                 if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
-                    LOG_WARN(_logger,
-                             "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
+                    LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
                     return;
                 }
                 // Create and start SyncPal
@@ -2293,49 +2292,64 @@ void AppServer::sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &v
     CommServer::instance()->sendSignal(sigNum, params, id);
 }
 
-bool AppServer::vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
-    }
-
-    isExcluded = _vfsMap[syncDbId]->isExcluded(SyncName2QStr(itemPath.native()));
-
-    return true;
-}
-
-bool AppServer::vfsExclude(int syncDbId, const SyncPath &itemPath) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
-    }
-
-    _vfsMap[syncDbId]->exclude(SyncName2QStr(itemPath.native()));
-
-    return true;
-}
-
-bool AppServer::vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState &pinState) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
-    }
-
-    SyncPath relativePath = CommonUtility::relativePath(_syncPalMap[syncDbId]->localPath(), absolutePath);
-    PinState tmpPinState = _vfsMap[syncDbId]->pinState(SyncName2QStr(relativePath.native()));
-    pinState = (tmpPinState != PinState::Inherited) ? tmpPinState : PinState::Unspecified;
-    return true;
-}
-
-ExitInfo AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState) {
+ExitInfo AppServer::getVfsPtr(int syncDbId, std::shared_ptr<Vfs> &vfs) {
     auto vfsMapIt = _vfsMap.find(syncDbId);
     if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return ExitCode::LogicError;
     }
+    if (!vfsMapIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
+        return ExitCode::LogicError;
+    }
+    vfs = vfsMapIt->second;
+    return ExitCode::Ok;
+}
+
+bool AppServer::vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded) {
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
+    }
+
+    isExcluded = vfs->isExcluded(SyncName2QStr(itemPath.native()));
+    return true;
+}
+
+bool AppServer::vfsExclude(int syncDbId, const SyncPath &itemPath) {
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
+    }
+    vfs->exclude(SyncName2QStr(itemPath.native()));
+
+    return true;
+}
+
+bool AppServer::vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState &pinState) {
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
+    }
+
+    SyncPath relativePath = CommonUtility::relativePath(_syncPalMap[syncDbId]->localPath(), absolutePath);
+    PinState tmpPinState = vfs->pinState(SyncName2QStr(relativePath.native()));
+    pinState = (tmpPinState != PinState::Inherited) ? tmpPinState : PinState::Unspecified;
+    return true;
+}
+
+ExitInfo AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState) {
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
+    }
 
     SyncPath relativePath = CommonUtility::relativePath(_syncPalMap[syncDbId]->localPath(), itemPath);
-    if (ExitInfo exitInfo = vfsMapIt->second->setPinState(SyncName2QStr(relativePath.native()), pinState); !exitInfo) {
+    if (ExitInfo exitInfo = vfs->setPinState(SyncName2QStr(relativePath.native()), pinState); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::setPinState for syncDbId="
                                                         << syncDbId << L" and path=" << Path2WStr(itemPath) << L": " << exitInfo);
         return exitInfo;
@@ -2346,31 +2360,23 @@ ExitInfo AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinSt
 
 ExitInfo AppServer::vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                               int &progress) {
-    auto vfsMapIt = _vfsMap.find(syncDbId);
-    if (vfsMapIt == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
-    }
-    if (!vfsMapIt->second) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
     }
 
-    return _vfsMap[syncDbId]->status(SyncName2QStr(itemPath.native()), isPlaceholder, isHydrated, isSyncing, progress);
+    return vfs->status(SyncName2QStr(itemPath.native()), isPlaceholder, isHydrated, isSyncing, progress);
 }
 
 ExitInfo AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
-    auto vfsIt = _vfsMap.find(syncDbId);
-    if (vfsIt == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
-    }
-    if (!vfsIt->second) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
     }
 
-    if (const ExitInfo exitInfo = vfsIt->second->createPlaceholder(relativeLocalPath, item); !exitInfo) {
+    if (const ExitInfo exitInfo = vfs->createPlaceholder(relativeLocalPath, item); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::createPlaceholder for syncDbId=" << syncDbId << L" and path="
                                                                                                  << Path2WStr(item.path()) << L" "
                                                                                                  << exitInfo);
@@ -2381,17 +2387,13 @@ ExitInfo AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeL
 }
 
 ExitInfo AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item) {
-    auto vfsIt = _vfsMap.find(syncDbId);
-    if (vfsIt == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
-    }
-    if (!vfsIt->second) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
     }
 
-    if (ExitInfo exitInfo = vfsIt->second->convertToPlaceholder(SyncName2QStr(path.native()), item); !exitInfo) {
+    if (ExitInfo exitInfo = vfs->convertToPlaceholder(SyncName2QStr(path.native()), item); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::convertToPlaceholder for syncDbId="
                                                         << syncDbId << L" and path=" << Path2WStr(item.path()) << L": "
                                                         << exitInfo);
@@ -2403,19 +2405,14 @@ ExitInfo AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, 
 
 ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                       const int64_t size, const NodeId &id) {
-    auto vfsMapIt = _vfsMap.find(syncDbId);
-    if (vfsMapIt == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
-    }
-    if (!vfsMapIt->second) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
     }
 
     const QByteArray fileId(id.c_str());
-    if (ExitInfo exitInfo = vfsMapIt->second->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId);
-        !exitInfo) {
+    if (ExitInfo exitInfo = vfs->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::updateMetadata for syncDbId="
                                                         << syncDbId << L" and path=" << Path2WStr(path) << L": " << exitInfo);
         return exitInfo;
@@ -2425,39 +2422,29 @@ ExitInfo AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const 
 
 ExitInfo AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
                                          bool &canceled, bool &finished) {
-    auto vfsMapIt = _vfsMap.find(syncDbId);
-    if (vfsMapIt == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
-    }
-    if (!vfsMapIt->second) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
     }
 
-    if (ExitInfo exitInfo =
-                vfsMapIt->second->updateFetchStatus(SyncName2QStr(tmpPath), SyncName2QStr(path), received, canceled, finished);
+    if (ExitInfo exitInfo = vfs->updateFetchStatus(SyncName2QStr(tmpPath), SyncName2QStr(path), received, canceled, finished);
         !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::updateFetchStatus for syncDbId="
                                                         << syncDbId << L" and path=" << Path2WStr(path) << L" " << exitInfo);
         return exitInfo;
     }
-
     return ExitCode::Ok;
 }
 
 bool AppServer::vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFileStatus status) {
-    auto vfsMapIt = _vfsMap.find(syncDbId);
-    if (vfsMapIt == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
-    }
-    if (!vfsMapIt->second) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return false;
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
     }
 
-    if (!vfsMapIt->second->fileStatusChanged(SyncName2QStr(path.native()), status)) {
+    if (!vfs->fileStatusChanged(SyncName2QStr(path.native()), status)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Vfs::fileStatusChanged for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
         return false;
@@ -2467,17 +2454,13 @@ bool AppServer::vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFil
 }
 
 ExitInfo AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
-    auto vfsMapIt = _vfsMap.find(syncDbId);
-    if (vfsMapIt == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
-    }
-    if (!vfsMapIt->second) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs is null for syncDbId=" << syncDbId);
-        return ExitCode::LogicError;
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
     }
 
-    if (ExitInfo exitInfo = vfsMapIt->second->forceStatus(SyncName2QStr(path.native()), isSyncing, progress, isHydrated);
+    if (ExitInfo exitInfo = vfs->forceStatus(SyncName2QStr(path.native()), isSyncing, progress, isHydrated);
         !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::forceStatus for syncDbId="
                                                         << syncDbId << L" and path=" << Path2WStr(path) << L": " << exitInfo);
@@ -2488,38 +2471,38 @@ ExitInfo AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSy
 }
 
 bool AppServer::vfsCleanUpStatuses(int syncDbId) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
     }
 
-    if (!_vfsMap[syncDbId]->cleanUpStatuses()) {
+    if (!vfs->cleanUpStatuses()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::cleanUpStatuses for syncDbId=" << syncDbId);
         return false;
     }
-
     return true;
 }
 
 bool AppServer::vfsClearFileAttributes(int syncDbId, const SyncPath &path) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
-    }
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
+    } 
 
-    _vfsMap[syncDbId]->clearFileAttributes(SyncName2QStr(path.native()));
-
+    vfs->clearFileAttributes(SyncName2QStr(path.native()));
     return true;
 }
 
 bool AppServer::vfsCancelHydrate(int syncDbId, const SyncPath &path) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
-        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return false;
+    std::shared_ptr<Vfs> vfs;
+    if (ExitInfo exitInfo = getVfsPtr(syncDbId, vfs); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in getVfsPtr for syncDbId=" << syncDbId << ": " << exitInfo);
+        return exitInfo;
     }
 
     _vfsMap[syncDbId]->cancelHydrate(SyncName2QStr(path.native()));
-
     return true;
 }
 
@@ -2923,8 +2906,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                 }
 
                 if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
-                    LOG_WARN(_logger,
-                             "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
+                    LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
                     mainExitCode = exitInfo.code();
                     continue;
                 }

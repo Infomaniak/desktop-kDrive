@@ -32,54 +32,15 @@
 
 using namespace KDC;
 
-VfsWorker::VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger) :
-    _vfs(vfs), _type(type), _num(num), _logger(logger) {}
-
 Vfs::Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     QObject(parent), _vfsSetupParams(vfsSetupParams), _extendedLog(false), _started(false) {}
-
-void VfsWorker::start() {
-    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " started");
-
-    WorkerInfo &workerInfo = _vfs->_workerInfo[_type];
-
-    forever {
-        workerInfo._mutex.lock();
-        while (workerInfo._queue.empty() && !workerInfo._stop) {
-            LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " waiting");
-            workerInfo._queueWC.wait(&workerInfo._mutex);
-        }
-
-        if (workerInfo._stop) {
-            workerInfo._mutex.unlock();
-            break;
-        }
-
-        QString path = workerInfo._queue.back();
-        workerInfo._queue.pop_back();
-        workerInfo._mutex.unlock();
-
-        LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " working");
-
-        switch (_type) {
-            case WORKER_HYDRATION:
-                _vfs->hydrate(path);
-                break;
-            case WORKER_DEHYDRATION:
-                _vfs->dehydrate(path);
-                break;
-        }
-    }
-
-    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " ended");
-}
 
 void Vfs::starVfsWorkers() {
     // Start hydration/dehydration workers
     // !!! Disabled for testing because no QEventLoop !!!
     if (qApp) {
         // Start worker threads
-        for (int i = 0; i < NB_WORKERS; i++) {
+        for (int i = 0; i < nbWorkers; i++) {
             for (int j = 0; j < s_nb_threads[i]; j++) {
                 auto *workerThread = new QtLoggingThread();
                 _workerInfo[i]._threadList.append(workerThread);
@@ -164,13 +125,24 @@ void Vfs::stop(bool unregister) {
 }
 
 ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation location) const {
-    if (ExitInfo exitInfo = checkIfPathExists(itemPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathExists(itemPath, true, location); !exitInfo) {
         return exitInfo;
     }
     return defaultVfsError(location);
 }
 
 ExitInfo Vfs::checkIfPathExists(const SyncPath &itemPath, bool shouldExist, const SourceLocation location) const {
+    if (itemPath.empty()) {
+        LOGW_WARN(logger(), L"Empty path");
+        assert(false && "Empty path in a VFS call");
+        return {ExitCode::SystemError, ExitCause::NotFound, location};
+    }
+    if (itemPath == _vfsSetupParams._localPath) {
+        LOGW_WARN(logger(), L"Root path");
+        assert(false && "Root path in a VFS call");
+        return {ExitCode::SystemError, ExitCause::NotFound, location};
+    }
+
     bool exists = false;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
@@ -191,6 +163,45 @@ ExitInfo Vfs::checkIfPathExists(const SyncPath &itemPath, bool shouldExist, cons
         }
     }
     return ExitCode::Ok;
+}
+
+VfsWorker::VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger) :
+    _vfs(vfs), _type(type), _num(num), _logger(logger) {}
+
+void VfsWorker::start() {
+    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " started");
+
+    WorkerInfo &workerInfo = _vfs->_workerInfo[_type];
+
+    forever {
+        workerInfo._mutex.lock();
+        while (workerInfo._queue.empty() && !workerInfo._stop) {
+            LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " waiting");
+            workerInfo._queueWC.wait(&workerInfo._mutex);
+        }
+
+        if (workerInfo._stop) {
+            workerInfo._mutex.unlock();
+            break;
+        }
+
+        QString path = workerInfo._queue.back();
+        workerInfo._queue.pop_back();
+        workerInfo._mutex.unlock();
+
+        LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " working");
+
+        switch (_type) {
+            case workerHydration:
+                _vfs->hydrate(path);
+                break;
+            case workerDehydration:
+                _vfs->dehydrate(path);
+                break;
+        }
+    }
+
+    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " ended");
 }
 
 VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}

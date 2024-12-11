@@ -31,9 +31,6 @@
 #include <QScopedPointer>
 #include <QWaitCondition>
 
-#define WORKER_HYDRATION 0
-#define WORKER_DEHYDRATION 1
-
 namespace KDC {
 
 class VfsMac : public Vfs {

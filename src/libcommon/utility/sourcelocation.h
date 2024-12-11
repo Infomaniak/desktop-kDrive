@@ -18,22 +18,22 @@
 
 #pragma once
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
 #define SRC_LOC_AVALAIBALE
 #endif
 
 #ifdef SRC_LOC_AVALAIBALE
 #include <source_location>
+#endif // SRC_LOC_AVALAIBALE
+
 #include <filesystem>
 #include <string>
-#endif // SRC_LOC_AVALAIBALE
 
 namespace KDC {
 
 class SourceLocation {
     public:
         constexpr SourceLocation() = default;
-
 #ifdef SRC_LOC_AVALAIBALE
         [[nodiscard]] static consteval SourceLocation currentLoc(
                 const std::source_location& loc = std::source_location::current()) {
@@ -44,7 +44,9 @@ class SourceLocation {
             return result;
         }
 #else
-#define currentLoc() currentLocCompatibility(__LINE__, __FILE__, "unknown") // Cannot be used as a default argument...
+#define currentLoc()                            \
+    currentLocCompatibility(__LINE__, __FILE__, \
+                            "") // Cannot be used as a default argument as it will be evaluated at the definition site.
         [[nodiscard]] static consteval SourceLocation currentLocCompatibility(uint32_t line, const char* file,
                                                                               const char* function) {
             SourceLocation result;
@@ -63,8 +65,8 @@ class SourceLocation {
             str = firstParenthesis != std::string::npos
                           ? str.substr(0, firstParenthesis)
                           : str; // "namespace::class::function(namespace::args)" -> "namespace::class::function"
-            auto lastDot = str.find_last_of(':');
-            return lastDot != std::string::npos ? str.substr(lastDot + 1) : str; // "namespace::class::function" -> "function"
+            auto lastColon = str.find_last_of(':');
+            return lastColon != std::string::npos ? str.substr(lastColon + 1) : str; // "namespace::class::function" -> "function"
         }
 
     private:
