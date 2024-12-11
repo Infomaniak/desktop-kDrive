@@ -29,6 +29,7 @@
 #include "reconciliation/syncoperation.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/types.h"
+#include "libcommonserver/vfs.h"
 #include "libparms/db/parmsdb.h"
 
 #include <memory>
@@ -115,56 +116,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _sendSignal = sendSignal;
         }
 
-        inline void setVfsIsExcludedCallback(const std::function<bool(int, const SyncPath &, bool &)> &vfsIsExcluded) {
-            _vfsIsExcluded = vfsIsExcluded;
-        }
-        inline void setVfsExcludeCallback(const std::function<bool(int, const SyncPath &)> &vfsExclude) {
-            _vfsExclude = vfsExclude;
-        }
-        inline void setVfsPinStateCallback(const std::function<bool(int, const SyncPath &, PinState &)> &vfsPinState) {
-            _vfsPinState = vfsPinState;
-        }
-        inline void setVfsSetPinStateCallback(const std::function<ExitInfo(int, const SyncPath &, PinState)> &vfsSetPinState) {
-            _vfsSetPinState = vfsSetPinState;
-        }
-        inline void setVfsStatusCallback(
-                const std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> &vfsStatus) {
-            _vfsStatus = vfsStatus;
-        }
-        inline void setVfsCreatePlaceholderCallback(
-                const std::function<ExitInfo(int, const SyncPath &, const SyncFileItem &)> &vfsCreatePlaceholder) {
-            _vfsCreatePlaceholder = vfsCreatePlaceholder;
-        }
-        inline void setVfsConvertToPlaceholderCallback(
-                const std::function<ExitInfo(int, const SyncPath &, const SyncFileItem &)> &vfsConvertToPlaceholder) {
-            _vfsConvertToPlaceholder = vfsConvertToPlaceholder;
-        }
-        inline void setVfsUpdateMetadataCallback(
-                const std::function<ExitInfo(int, const SyncPath &, const SyncTime &, const SyncTime &, const int64_t,
-                                             const NodeId &)> &vfsUpdateMetadata) {
-            _vfsUpdateMetadata = vfsUpdateMetadata;
-        }
-        inline void setVfsUpdateFetchStatusCallback(const std::function<ExitInfo(int, const SyncPath &, const SyncPath &, int64_t,
-                                                                                 bool &, bool &)> &vfsUpdateFetchStatus) {
-            _vfsUpdateFetchStatus = vfsUpdateFetchStatus;
-        }
-        inline void setVfsFileStatusChangedCallback(
-                const std::function<bool(int, const SyncPath &, SyncFileStatus)> &vfsFileStatusChanged) {
-            _vfsFileStatusChanged = vfsFileStatusChanged;
-        }
-        inline void setVfsForceStatusCallback(
-                const std::function<ExitInfo(int, const SyncPath &, bool, int, bool)> &vfsForceStatus) {
-            _vfsForceStatus = vfsForceStatus;
-        }
-        inline void setVfsCleanUpStatusesCallback(const std::function<bool(int)> &vfsCleanUpStatuses) {
-            _vfsCleanUpStatuses = vfsCleanUpStatuses;
-        }
-        inline void setVfsClearFileAttributesCallback(const std::function<bool(int, const SyncPath &)> &vfsClearFileAttributes) {
-            _vfsClearFileAttributes = vfsClearFileAttributes;
-        }
-        inline void setVfsCancelHydrateCallback(const std::function<bool(int, const SyncPath &)> &vfsCancelHydrate) {
-            _vfsCancelHydrate = vfsCancelHydrate;
-        }
+        inline void setVfsPtr(const std::shared_ptr<Vfs> &vfs) { _vfs = vfs; }
 
         // SyncPalInfo
         [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
@@ -271,8 +223,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual void removeItemFromTmpBlacklist(const SyncPath &relativePath);
         ExitInfo handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause = ExitCause::FileAccessError);
         ExitInfo handleAccessDeniedItem(const SyncPath &relativePath, std::shared_ptr<Node> &localBlacklistedNode,
-                                        std::shared_ptr<Node> &remoteBlacklistedNode,
-                                        ExitCause cause);
+                                        std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause);
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
@@ -298,25 +249,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::function<void(const Error &error)> _addError;
         std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SignalNum sigId, int syncDbId, const SigValueType &val)> _sendSignal;
-        std::function<bool(int syncDbId, const SyncPath &, bool &)> _vfsIsExcluded;
-        std::function<bool(int syncDbId, const SyncPath &)> _vfsExclude;
-        std::function<bool(int syncDbId, const SyncPath &, PinState &)> _vfsPinState;
-        std::function<ExitInfo(int, const SyncPath &, PinState)> _vfsSetPinState;
-        std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> _vfsStatus;
-        std::function<ExitInfo(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item)> _vfsCreatePlaceholder;
-        std::function<ExitInfo(int, const SyncPath &, const SyncFileItem &)> _vfsConvertToPlaceholder;
-        std::function<ExitInfo(int, const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
-                _vfsUpdateMetadata;
-        std::function<ExitInfo(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
-                               bool &finished)>
-                _vfsUpdateFetchStatus;
-        std::function<bool(int syncDbId, const SyncPath &path, SyncFileStatus status)> _vfsFileStatusChanged;
-        std::function<ExitInfo(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated)>
-                _vfsForceStatus;
-
-        std::function<bool(int syncDbId)> _vfsCleanUpStatuses;
-        std::function<bool(int syncDbId, const SyncPath &path)> _vfsClearFileAttributes;
-        std::function<bool(int syncDbId, const SyncPath &path)> _vfsCancelHydrate;
+        std::shared_ptr<Vfs> _vfs;
 
         // DB
         std::shared_ptr<SyncDb> _syncDb{nullptr};

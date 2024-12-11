@@ -196,23 +196,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
         static ExitInfo getVfsPtr(int syncDbId, std::shared_ptr<Vfs> &vfs);
-        static bool vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded);
-        static bool vfsExclude(int syncDbId, const SyncPath &itemPath);
-        static bool vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState &pinState);
-        static ExitInfo vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState);
-        static ExitInfo vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                              int &progress);
-        static ExitInfo vfsCreatePlaceholder(int syncDbIdconst, const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        static ExitInfo vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item);
-        static ExitInfo vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                      const int64_t size, const NodeId &id);
-        static ExitInfo vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
-                                         bool &canceled, bool &finished);
-        static bool vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFileStatus status);
-        static ExitInfo vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false);
-        static bool vfsCleanUpStatuses(int syncDbId);
-        static bool vfsClearFileAttributes(int syncDbId, const SyncPath &path);
-        static bool vfsCancelHydrate(int syncDbId, const SyncPath &path);
 
         static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
@@ -256,6 +239,4 @@ class AppServer : public SharedTools::QtSingleApplication {
     signals:
         void socketApiExecuteCommandDirect(const QString &commandLine);
 };
-
-
 } // namespace KDC

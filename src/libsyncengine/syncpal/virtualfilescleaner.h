@@ -19,6 +19,7 @@
 #pragma once
 
 #include "utility/types.h"
+#include "libcommonserver/vfs.h"
 
 #include <log4cplus/logger.h>
 
@@ -28,11 +29,9 @@ class SyncDb;
 
 class VirtualFilesCleaner {
     public:
-        VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
-                            const std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> &,
-                            const std::function<bool(int, const SyncPath &)> &vfsClearFileAttributes);
+        VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> &vfs);
 
-        VirtualFilesCleaner(const SyncPath &path, int syncDbId);
+        VirtualFilesCleaner(const SyncPath &path);
 
         bool run();
         bool removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders);
@@ -50,8 +49,7 @@ class VirtualFilesCleaner {
         SyncPath _rootPath;
         int _syncDbId{-1};
         std::shared_ptr<SyncDb> _syncDb = nullptr;
-        std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> _vfsStatus;
-        std::function<bool(int syncDbId, const SyncPath &path)> _vfsClearFileAttributes;
+        std::shared_ptr<Vfs> _vfs;
 
         ExitCode _exitCode = ExitCode::Unknown;
         ExitCause _exitCause = ExitCause::Unknown;

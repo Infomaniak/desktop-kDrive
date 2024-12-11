@@ -48,31 +48,6 @@ bool TestWorkers::_vfsConnectionDone = false;
 constexpr bool connectorsAreAlreadyInstalled = false;
 #endif
 
-ExitInfo TestWorkers::createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
-    (void) syncDbId;
-    if (!_vfsPtr) {
-        return ExitCode::LogicError;
-    }
-    return _vfsPtr->createPlaceholder(relativeLocalPath, item);
-}
-
-ExitInfo TestWorkers::convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
-    (void) syncDbId;
-    if (!_vfsPtr) {
-        return ExitCode::LogicError;
-    }
-    return _vfsPtr->convertToPlaceholder(Path2QStr(relativeLocalPath), item);
-}
-
-ExitInfo TestWorkers::setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState) {
-    (void) syncDbId;
-
-    if (!_vfsPtr) {
-        return ExitCode::LogicError;
-    }
-    return _vfsPtr->setPinState(Path2QStr(relativeLocalPath), pinState);
-}
-
 void TestWorkers::setUp() {
     _logger = Log::instance()->getLogger();
 
@@ -152,9 +127,7 @@ void TestWorkers::setUp() {
     _syncPal->createWorkers();
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
-    _syncPal->setVfsCreatePlaceholderCallback(createPlaceholder);
-    _syncPal->setVfsConvertToPlaceholderCallback(convertToPlaceholder);
-    _syncPal->setVfsSetPinStateCallback(setPinState);
+    _syncPal->setVfsPtr(_vfsPtr);
 
     // Setup SocketApi
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;

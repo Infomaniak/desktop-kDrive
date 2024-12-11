@@ -137,12 +137,6 @@ ExitInfo Vfs::checkIfPathExists(const SyncPath &itemPath, bool shouldExist, cons
         assert(false && "Empty path in a VFS call");
         return {ExitCode::SystemError, ExitCause::NotFound, location};
     }
-    if (itemPath == _vfsSetupParams._localPath) {
-        LOGW_WARN(logger(), L"Root path");
-        assert(false && "Root path in a VFS call");
-        return {ExitCode::SystemError, ExitCause::NotFound, location};
-    }
-
     bool exists = false;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {

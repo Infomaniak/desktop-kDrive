@@ -355,68 +355,64 @@ void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
 }
 
 bool SyncPal::vfsIsExcluded(const SyncPath &itemPath, bool &isExcluded) {
-    if (!_vfsIsExcluded) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsIsExcluded(syncDbId(), itemPath, isExcluded);
+    isExcluded = _vfs->isExcluded(SyncName2QStr(itemPath.native()));
+    return true;
 }
 
 bool SyncPal::vfsExclude(const SyncPath &itemPath) {
-    if (!_vfsExclude) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsExclude(syncDbId(), itemPath);
+    _vfs->exclude(SyncName2QStr(itemPath.native()));
+    return true;
 }
 
 bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
-    if (!_vfsPinState) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsPinState(syncDbId(), itemPath, pinState);
+    pinState = _vfs->pinState(SyncName2QStr(itemPath.native()));
+    return true;
 }
 
 ExitInfo SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
-    if (!_vfsSetPinState) {
+    if (!_vfs) {
         return ExitCode::LogicError;
     }
-
-    return _vfsSetPinState(syncDbId(), itemPath, pinState);
+    return _vfs->setPinState(SyncName2QStr(itemPath.native()), pinState);
 }
 
 ExitInfo SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
-    if (!_vfsStatus) {
+    if (!_vfs) {
         return ExitCode::LogicError;
     }
-
-    return _vfsStatus(syncDbId(), itemPath, isPlaceholder, isHydrated, isSyncing, progress);
+    return _vfs->status(SyncName2QStr(itemPath.native()), isPlaceholder, isHydrated, isSyncing, progress);
 }
 
 ExitInfo SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
-    if (!_vfsCreatePlaceholder) {
+    if (!_vfs) {
         return ExitCode::LogicError;
     }
-
-    return _vfsCreatePlaceholder(syncDbId(), relativeLocalPath, item);
+    return _vfs->createPlaceholder(relativeLocalPath, item);
 }
 
 ExitInfo SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
-    if (!_vfsConvertToPlaceholder) {
+    if (!_vfs) {
         return ExitCode::LogicError;
     }
-
-    return _vfsConvertToPlaceholder(syncDbId(), path, item);
+    return _vfs->convertToPlaceholder(SyncName2QStr(path.native()), item);
 }
 
 ExitInfo SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                     const int64_t size, const NodeId &id) {
-    if (!_vfsUpdateMetadata) {
+    if (!_vfs) {
         return ExitCode::LogicError;
     }
-
-    return _vfsUpdateMetadata(syncDbId(), path, creationTime, modtime, size, id);
+    const QByteArray fileId(id.c_str());
+    return _vfs->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId);
 }
 
 ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
@@ -425,57 +421,56 @@ ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &
         LOGW_SYNCPAL_DEBUG(_logger,
                            L"vfsUpdateFetchStatus : " << Utility::formatSyncPath(path).c_str() << L" received=" << received);
     }
-
-    if (!_vfsUpdateFetchStatus) {
+    if (!_vfs) {
         return ExitCode::LogicError;
     }
-
-    return _vfsUpdateFetchStatus(syncDbId(), tmpPath, path, received, canceled, finished);
+    return _vfs->updateFetchStatus(SyncName2QStr(tmpPath.native()), SyncName2QStr(path.native()), received, canceled, finished);
 }
 
 bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) {
-    if (!_vfsFileStatusChanged) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsFileStatusChanged(syncDbId(), path, status);
+    return _vfs->fileStatusChanged(SyncName2QStr(path.native()), status);
 }
 
 ExitInfo SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
-    if (!_vfsForceStatus) {
+    if (!_vfs) {
         return ExitCode::LogicError;
     }
-
-    return _vfsForceStatus(syncDbId(), path, isSyncing, progress, isHydrated);
+    return _vfs->forceStatus(SyncName2QStr(path.native()), isSyncing, progress, isHydrated);
 }
 
 bool SyncPal::vfsCleanUpStatuses() {
-    if (!_vfsCleanUpStatuses) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsCleanUpStatuses(syncDbId());
+    return _vfs->cleanUpStatuses();
 }
 
 bool SyncPal::vfsClearFileAttributes(const SyncPath &path) {
-    if (!_vfsClearFileAttributes) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsClearFileAttributes(syncDbId(), path);
+    _vfs->clearFileAttributes(SyncName2QStr(path.native()));
+    return true;
 }
 
 bool SyncPal::vfsCancelHydrate(const SyncPath &path) {
-    if (!_vfsCancelHydrate) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsCancelHydrate(syncDbId(), path);
+    _vfs->cancelHydrate(SyncName2QStr(path.native()));
+    return true;
 }
 
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");
-    VirtualFilesCleaner virtualFileCleaner(localPath(), syncDbId(), _syncDb, _vfsStatus, _vfsClearFileAttributes);
+    if (!_vfs) {
+        addError(Error(syncDbId(), errId(), ExitCode::LogicError, ExitCause::Unknown));
+        return false;
+    }
+    VirtualFilesCleaner virtualFileCleaner(localPath(), _syncDb, _vfs);
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
         addError(Error(syncDbId(), errId(), virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
@@ -486,7 +481,7 @@ bool SyncPal::wipeVirtualFiles() {
 
 bool SyncPal::wipeOldPlaceholders() {
     LOG_SYNCPAL_INFO(_logger, "Wiping old placeholders files");
-    VirtualFilesCleaner virtualFileCleaner(localPath(), syncDbId());
+    VirtualFilesCleaner virtualFileCleaner(localPath());
     std::vector<SyncPath> failedToRemovePlaceholders;
     if (!virtualFileCleaner.removeDehydratedPlaceholders(failedToRemovePlaceholders)) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
@@ -1506,7 +1501,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
 
     localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
     remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(remoteNodeId);
-    
+
     // Blacklist the item
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativePath, ReplicaSide::Local);

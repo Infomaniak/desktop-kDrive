@@ -30,21 +30,16 @@
 
 namespace KDC {
 
-VirtualFilesCleaner::VirtualFilesCleaner(
-        const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
-        const std::function<ExitInfo(int, const SyncPath &, bool &, bool &, bool &, int &)> &vfsStatus,
-        const std::function<bool(int syncDbId, const SyncPath &path)> &vfsClearFileAttributes) :
-    _logger(Log::instance()->getLogger()),
-    _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
-    _vfsClearFileAttributes(vfsClearFileAttributes) {}
+VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> &vfs) :
+    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDb(syncDb), _vfs(vfs) {}
 
-VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId) :
-    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId) {}
+VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path) :
+    _logger(Log::instance()->getLogger()), _rootPath(path) {}
 
 bool VirtualFilesCleaner::run() {
     // Clear xattr on root path
-    assert(_vfsClearFileAttributes);
-    _vfsClearFileAttributes(_syncDbId, _rootPath);
+    assert(_vfs);
+    _vfs->clearFileAttributes(SyncName2QStr(_rootPath.native()));
     return removePlaceholdersRecursively(_rootPath);
 }
 
@@ -93,8 +88,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             bool isHydrated = false;
             bool isSyncing = false;
             int progress = 0;
-            assert(_vfsStatus);
-            if (ExitInfo exitInfo = _vfsStatus(_syncDbId, dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress);
+            assert(_vfs);
+            if (ExitInfo exitInfo = _vfs->status(SyncName2QStr(entryPathStr), isPlaceholder, isHydrated, isSyncing, progress);
                 !exitInfo) {
                 LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(dirIt->path()) << L": " << exitInfo);
                 _exitCode = exitInfo.code();
@@ -167,8 +162,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             }
 
             // Clear xattr
-            assert(_vfsClearFileAttributes);
-            _vfsClearFileAttributes(_syncDbId, dirIt->path());
+            assert(_vfs);
+            _vfs->clearFileAttributes(SyncName2QStr(entryPathStr));
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively: code=" << e.code()
