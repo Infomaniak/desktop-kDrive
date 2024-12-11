@@ -646,7 +646,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
             if (dwError != ERROR_INSUFFICIENT_BUFFER) {
                 // Real error, not buffer error
                 LOGW_DEBUG(logger(),
-                           L"Failed to normalize " << formatSyncName(name) << L" - error code: " << getErrorMessage(dwError));
+                           L"Failed to normalize " << formatSyncName(name) << L" (" << getErrorMessage(dwError) << L")");
                 return false;
             }
 
@@ -657,7 +657,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
 
     if (iSizeEstimated <= 0) {
         DWORD dwError = GetLastError();
-        LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" - error code: " << getErrorMessage(dwError));
+        LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" (" << getErrorMessage(dwError) << L")");
         return false;
     }
 
