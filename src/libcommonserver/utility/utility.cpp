@@ -327,7 +327,7 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
         // Not all the requested information is retrieved
         DWORD dwError = GetLastError();
         LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
-                                                                  << getErrorMessage(dwError) << L")");
+                                                                  << CommonUtility::getErrorMessage(dwError) << L")");
 
         // !!! File system name can be OK or not !!!
         return ws2s(szFileSystemName);
@@ -645,8 +645,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
             DWORD dwError = GetLastError();
             if (dwError != ERROR_INSUFFICIENT_BUFFER) {
                 // Real error, not buffer error
-                LOGW_DEBUG(logger(),
-                           L"Failed to normalize " << formatSyncName(name) << L" (" << getErrorMessage(dwError) << L")");
+                LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" ("
+                                                             << CommonUtility::getErrorMessage(dwError) << L")");
                 return false;
             }
 
@@ -657,7 +657,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
 
     if (iSizeEstimated <= 0) {
         DWORD dwError = GetLastError();
-        LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" (" << getErrorMessage(dwError) << L")");
+        LOGW_DEBUG(logger(),
+                   L"Failed to normalize " << formatSyncName(name) << L" (" << CommonUtility::getErrorMessage(dwError) << L")");
         return false;
     }
 
