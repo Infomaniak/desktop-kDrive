@@ -89,23 +89,28 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     //  Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
     opPtr->setTargetSide(ReplicaSide::Remote);
-    const auto node = std::make_shared<Node>(1, ReplicaSide::Local, "test_file.txt", NodeType::File, OperationType::None, "1234",
+    const auto node = std::make_shared<Node>(1, ReplicaSide::Local, Str2SyncName("test_file.txt"), NodeType::File,
+                                             OperationType::None,
+                                             "1234",
                                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
                                              _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
 
     class MockVfs : public VfsOff {
         public:
-            void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing) {
+            explicit MockVfs() : VfsOff(vfsSetupParams) {}
+            void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing, int progress) {
                 vfsStatusIsHydrated = isHydrated;
                 vfsStatusIsSyncing = isSyncing;
                 vfsStatusIsPlaceholder = isPlaceholder;
+                vfsStatusProgress = progress;
             }
-            ExitInfo status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+            ExitInfo status([[maybe_unused]] const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                             int &progress) override {
                 isHydrated = vfsStatusIsHydrated;
                 isSyncing = vfsStatusIsSyncing;
                 isPlaceholder = vfsStatusIsPlaceholder;
+                progress = vfsStatusProgress;
                 return ExitCode::Ok;
             }
 
@@ -113,12 +118,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
             bool vfsStatusIsHydrated = false;
             bool vfsStatusIsSyncing = false;
             bool vfsStatusIsPlaceholder = false;
+            int vfsStatusProgress = 0;
+            VfsSetupParams vfsSetupParams;
     };
-    auto mockVfs = std::make_shared<MockVfs>(VfsSetupParams());
+    auto mockVfs = std::make_shared<MockVfs>();
     _syncPal->setVfsPtr(mockVfs);
     // A hydrated placeholder.
     {
-        mockVfs->setVfsStatusOutput(true, true, false);
+        mockVfs->setVfsStatusOutput(true, true, false, 0);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -127,7 +134,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A dehydrated placeholder.
     {
-        mockVfs->setVfsStatusOutput(true, false, false);
+        mockVfs->setVfsStatusOutput(true, false, false, 0);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -136,7 +143,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A partially hydrated placeholder (syncing item).
     {
-        mockVfs->setVfsStatusOutput(true, false, true);
+        mockVfs->setVfsStatusOutput(true, false, true, 0);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -145,7 +152,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // Not a placeholder.
     {
-        mockVfs->setVfsStatusOutput(false, false, false);
+        mockVfs->setVfsStatusOutput(false, false, false, 0);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
