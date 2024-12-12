@@ -122,7 +122,7 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
 uint64_t computeNodeId(const PFILE_ID_FULL_DIR_INFORMATION pFileInfo) {
     // We keep `long long` type cast for legacy reason.
     auto longLongId =
-            static_cast<long long>(pFileInfo->FileId.HighPart << 32) + static_cast<long long>(pFileInfo->FileId.LowPart);
+            (static_cast<long long>(pFileInfo->FileId.HighPart) << 32) + static_cast<long long>(pFileInfo->FileId.LowPart);
 
     return static_cast<uint64_t>(longLongId);
 }
