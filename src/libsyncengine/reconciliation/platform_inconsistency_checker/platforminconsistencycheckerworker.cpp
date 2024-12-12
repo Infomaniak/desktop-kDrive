@@ -18,6 +18,7 @@
 
 #include "platforminconsistencycheckerworker.h"
 #include "platforminconsistencycheckerutility.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -64,13 +65,18 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
            side == ReplicaSide::Local && "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
 
     ExitCode exitCode = ExitCode::Unknown;
+    sentry::PTraceUPtr perfmonitor;
     if (side == ReplicaSide::Remote) {
+        perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckLocalTree>(syncDbId());
         exitCode = checkRemoteTree(node, parentPath);
     } else if (side == ReplicaSide::Local) {
+        perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckRemoteTree>(syncDbId());
         exitCode = checkLocalTree(node, parentPath);
     }
 
-    if (exitCode != ExitCode::Ok) {
+    if (exitCode == ExitCode::Ok) {
+        perfmonitor->stop();
+    } else {
         LOG_SYNCPAL_WARN(_logger,
                          "PlatformInconsistencyCheckerWorker::check" << side << "Tree partially failed: code=" << exitCode);
     }

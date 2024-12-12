@@ -287,7 +287,7 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
-    SentryHandler::instance()->captureMessage(SentryLevel::Warning, errorTitle, errorMsg);
+    sentry::Handler::captureMessage(sentry::Level::Warning, errorTitle, errorMsg);
     LOG_WARN(logger, errorTitle.c_str() << ": " << errorMsg.c_str());
 }
 
@@ -648,8 +648,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                 // Real error, not buffer error
                 LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
                                                                    << std::to_wstring(dwError));
-                SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
-                                                          "Failed to normalize string");
+                sentry::Handler::captureMessage(sentry::Level::Error, "Utility::normalizedSyncName",
+                                                "Failed to normalize string");
                 return false;
             }
 
@@ -662,8 +662,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
         DWORD dwError = GetLastError();
         LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
                                                            << std::to_wstring(dwError));
-        SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
-                                                  "Failed to normalize string");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::normalizedSyncName", "Failed to normalize string");
         return false;
     }
 
