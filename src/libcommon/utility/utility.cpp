@@ -17,7 +17,7 @@
  */
 
 #include "utility.h"
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
 
@@ -288,7 +288,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
 
     if (!res) {
         std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "CommonUtility::stringToAppStateValue", message);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::stringToAppStateValue", message);
     }
 
     return res;

@@ -767,11 +767,11 @@ std::string toString(const Platform e) {
     }
 }
 
-std::string toString(const SentryConfidentialityLevel e) {
+std::string toString(const sentry::ConfidentialityLevel e) {
     switch (e) {
-        case SentryConfidentialityLevel::Authenticated:
+        case sentry::ConfidentialityLevel::Authenticated:
             return "Authenticated";
-        case SentryConfidentialityLevel::Anonymous:
+        case sentry::ConfidentialityLevel::Anonymous:
             return "Anonymous";
         default:
             return noConversionStr;

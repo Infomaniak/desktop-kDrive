@@ -72,7 +72,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     const auto downloadJob = std::dynamic_pointer_cast<DirectDownloadJob>(job);
     if (!downloadJob) {
         const auto error = "Could not cast job pointer.";
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::downloadFinished", error);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::downloadFinished", error);
         LOG_ERROR(Log::instance()->getLogger(), error);
         setState(UpdateState::DownloadError);
         assert(false);
@@ -84,7 +84,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     if (downloadJob->hasErrorApi(&errorCode, &errorDescr)) {
         std::stringstream ss;
         ss << errorCode << " - " << errorDescr;
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::downloadFinished", ss.str());
+        sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::downloadFinished", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
         setState(UpdateState::DownloadError);
         return;
@@ -98,7 +98,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     }
     if (!std::filesystem::exists(filepath)) {
         const auto error = "Installer file not found.";
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::downloadFinished", error);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::downloadFinished", error);
         LOG_ERROR(Log::instance()->getLogger(), error);
         setState(UpdateState::DownloadError);
         return;
@@ -114,7 +114,7 @@ bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
     const auto installerName = versionInfo().downloadUrl.substr(pos + 1);
     SyncPath tmpDirPath;
     if (IoError ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "WindowsUpdater::getInstallerPath",
+        sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::getInstallerPath",
                                                   "Impossible to retrieve installer destination directory.");
         return false;
     }
