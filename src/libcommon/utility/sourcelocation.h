@@ -18,7 +18,9 @@
 
 #pragma once
 
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32)
+// || defined(__APPLE__) still buggy on macOS
+// https://www.reddit.com/r/cpp/comments/1b1pjii/comment/ksg8efc/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 #define SRC_LOC_AVALAIBALE
 #endif
 

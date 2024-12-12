@@ -47,7 +47,6 @@ class VirtualFilesCleaner {
         log4cplus::Logger _logger;
 
         SyncPath _rootPath;
-        int _syncDbId{-1};
         std::shared_ptr<SyncDb> _syncDb = nullptr;
         std::shared_ptr<Vfs> _vfs;
 
