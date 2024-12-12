@@ -442,7 +442,7 @@ bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &st
 
     if (vfsMapIt->second->mode() == KDC::VirtualFileMode::Mac || vfsMapIt->second->mode() == KDC::VirtualFileMode::Win) {
         bool isSyncing = false;
-        if (!vfsMapIt->second->status(fileData.localPath, isPlaceholder, isHydrated, isSyncing, progress)) {
+        if (!vfsMapIt->second->status(QStr2Path(fileData.localPath), isPlaceholder, isHydrated, isSyncing, progress)) {
             LOGW_WARN(KDC::Log::instance()->getLogger(),
                       L"Error in Vfs::status - " << Utility::formatPath(fileData.localPath).c_str());
             return false;
@@ -483,7 +483,7 @@ ExitInfo SocketApi::setPinState(const FileData &fileData, KDC::PinState pinState
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
     if (vfsMapIt == _vfsMap.cend()) return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
 
-    return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+    return vfsMapIt->second->setPinState(QStr2Path(fileData.relativePath), pinState);
 }
 
 ExitInfo SocketApi::dehydratePlaceholder(const FileData &fileData) {
@@ -492,7 +492,7 @@ ExitInfo SocketApi::dehydratePlaceholder(const FileData &fileData) {
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
     if (vfsMapIt == _vfsMap.cend()) return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
 
-    return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
+    return vfsMapIt->second->dehydratePlaceholder(QStr2Path(fileData.relativePath));
 }
 
 bool SocketApi::addDownloadJob(const FileData &fileData) {
@@ -757,7 +757,7 @@ void SocketApi::command_CANCEL_HYDRATION_DIRECT(const QString &filesArg) {
         auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
         if (vfsMapIt == _vfsMap.cend()) continue;
 
-        vfsMapIt->second->cancelHydrate(filePath);
+        vfsMapIt->second->cancelHydrate(QStr2Path(filePath));
     }
 #endif
 }
@@ -916,7 +916,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Thumbnail fetched - size=" << pixmap.width() << "x" << pixmap.height());
 
     // Set thumbnail
-    if (!vfsMapIt->second->setThumbnail(fileData.localPath, pixmap)) {
+    if (!vfsMapIt->second->setThumbnail(QStr2Path(fileData.localPath), pixmap)) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in setThumbnail - " << Utility::formatPath(filePath).c_str());
         return;
     }
@@ -1089,7 +1089,7 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
             bool isHydrated = false;
             bool isSyncing = false;
             int progress = 0;
-            if (!canCancelHydration && vfsMapIt->second->status(file, isPlaceholder, isHydrated, isSyncing, progress) &&
+            if (!canCancelHydration && vfsMapIt->second->status(QStr2Path(file), isPlaceholder, isHydrated, isSyncing, progress) &&
                 isSyncing) {
                 canCancelHydration = syncPalMapIt->second->isDownloadOngoing(QStr2Path(file));
             }
@@ -1145,7 +1145,7 @@ void SocketApi::manageActionsOnSingleFile(SocketListener *listener, const QStrin
     if (fileData.localPath.isEmpty()) {
         return;
     }
-    bool isExcluded = vfsMapIt->second->isExcluded(fileData.localPath);
+    bool isExcluded = vfsMapIt->second->isExcluded(QStr2Path(fileData.localPath));
     if (isExcluded) {
         return;
     }

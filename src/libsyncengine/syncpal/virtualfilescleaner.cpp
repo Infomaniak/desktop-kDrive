@@ -39,7 +39,7 @@ VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path) :
 bool VirtualFilesCleaner::run() {
     // Clear xattr on root path
     assert(_vfs);
-    _vfs->clearFileAttributes(SyncName2QStr(_rootPath.native()));
+    _vfs->clearFileAttributes(_rootPath);
     return removePlaceholdersRecursively(_rootPath);
 }
 
@@ -89,7 +89,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             bool isSyncing = false;
             int progress = 0;
             assert(_vfs);
-            if (ExitInfo exitInfo = _vfs->status(SyncName2QStr(entryPathStr), isPlaceholder, isHydrated, isSyncing, progress);
+            if (ExitInfo exitInfo = _vfs->status(entryPathStr, isPlaceholder, isHydrated, isSyncing, progress);
                 !exitInfo) {
                 LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(dirIt->path()) << L": " << exitInfo);
                 _exitCode = exitInfo.code();
@@ -163,7 +163,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
 
             // Clear xattr
             assert(_vfs);
-            _vfs->clearFileAttributes(SyncName2QStr(entryPathStr));
+            _vfs->clearFileAttributes(entryPathStr);
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively: code=" << e.code()

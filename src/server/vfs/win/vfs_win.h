@@ -45,38 +45,38 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         bool socketApiPinStateActionsShown() const final { return false; }
 
-        ExitInfo updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size,
-                                const QByteArray &fileId) final;
+        ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modtime, int64_t size,
+                                const NodeId &fileId) final;
 
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) final;
-        ExitInfo dehydratePlaceholder(const QString &path) final;
-        ExitInfo convertToPlaceholder(const QString &path, const SyncFileItem &item) final;
+        ExitInfo dehydratePlaceholder(const SyncPath &path) final;
+        ExitInfo convertToPlaceholder(const SyncPath &path, const SyncFileItem &item) final;
         void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) final;
-        void clearFileAttributes(const QString &path) final;
+        void clearFileAttributes(const SyncPath &path) final;
 
-        ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
+        ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) final;
-        ExitInfo forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) final;
+        ExitInfo forceStatus(const SyncPath &absolutePath, bool isSyncing, int progress, bool isHydrated = false) final;
 
-        ExitInfo isDehydratedPlaceholder(const QString &filePath, bool &isDehydrated, bool isAbsolutePath = false) final;
+        ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated, bool isAbsolutePath = false) final;
 
-        ExitInfo setPinState(const QString &fileRelativePath, PinState state) final;
-        PinState pinState(const QString &relativePath) final;
-        ExitInfo status(const QString &, bool &, bool &, bool &, int &) final;
-        ExitInfo setThumbnail(const QString &, const QPixmap &) final { return ExitCode::Ok; };
+        ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) final;
+        PinState pinState(const SyncPath &relativePath) final;
+        ExitInfo status(const SyncPath &, bool &, bool &, bool &, int &) final;
+        ExitInfo setThumbnail(const SyncPath &, const QPixmap &) final { return ExitCode::Ok; };
         ExitInfo setAppExcludeList() final { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) final { return ExitCode::Ok; }
 
-        bool isExcluded(const QString &) final { return false; }
+        bool isExcluded(const SyncPath &) final { return false; }
         virtual bool setCreationDate(const QString &, time_t) { return false; }
 
-        void cancelHydrate(const QString &path) final;
+        void cancelHydrate(const SyncPath &path) final;
 
         void dehydrate(const QString &path) final;
         void hydrate(const QString &path) final;
 
     public slots:
-        bool fileStatusChanged(const QString &path, KDC::SyncFileStatus status) final;
+        bool fileStatusChanged(const SyncPath &path, KDC::SyncFileStatus status) final;
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) final;
@@ -87,7 +87,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
     private:
         log4cplus::Logger _logger;
 
-        void exclude(const QString &path) final;
+        void exclude(const SyncPath &path) final;
         ExitInfo setPlaceholderStatus(const QString &path, bool syncOngoing);
 };
 

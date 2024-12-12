@@ -44,30 +44,30 @@ class VfsMac : public Vfs {
 
         bool socketApiPinStateActionsShown() const override { return true; }
 
-        ExitInfo updateMetadata(const QString &absoluteFilePath, time_t creationTime, time_t modtime, qint64 size,
-                            const QByteArray &fileId) override;
+        ExitInfo updateMetadata(const SyncPath &absoluteFilePath, time_t creationTime, time_t modtime, int64_t size,
+                            const NodeId &fileId) override;
 
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
-        ExitInfo dehydratePlaceholder(const QString &path) override;
-        ExitInfo convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
-        ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
+        ExitInfo dehydratePlaceholder(const SyncPath &path) override;
+        ExitInfo convertToPlaceholder(const SyncPath &path, const SyncFileItem &item) override;
+        ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                bool &finished) override;
-        void cancelHydrate(const QString &filePath) override;
-        ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
+        void cancelHydrate(const SyncPath &filePath) override;
+        ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) override;
         bool cleanUpStatuses() override;
-        virtual void clearFileAttributes(const QString &path) override;
+        virtual void clearFileAttributes(const SyncPath &path) override;
 
-        ExitInfo isDehydratedPlaceholder(const QString &filePath, bool &isDehydrated, bool isAbsolutePath = false) override;
+        ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated, bool isAbsolutePath = false) override;
 
-        ExitInfo setPinState(const QString &fileRelativePath, PinState state) override;
-        PinState pinState(const QString &relativePath) override;
-        ExitInfo status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) override;
-        void exclude(const QString &path) override;
-        bool isExcluded(const QString &filePath) override;
-        ExitInfo setThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) override;
+        ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) override;
+        PinState pinState(const SyncPath &relativePath) override;
+        ExitInfo status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) override;
+        void exclude(const SyncPath &path) override;
+        bool isExcluded(const SyncPath &filePath) override;
+        ExitInfo setThumbnail(const SyncPath &absoluteFilePath, const QPixmap &pixmap) override;
         ExitInfo setAppExcludeList() override;
         ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) override;
-        bool fileStatusChanged(const QString &path, SyncFileStatus status) override;
+        bool fileStatusChanged(const SyncPath &path, SyncFileStatus status) override;
 
         void dehydrate(const QString &path) final;
         void hydrate(const QString &path) final;

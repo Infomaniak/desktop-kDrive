@@ -202,7 +202,8 @@ VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupPa
 
 VfsOff::~VfsOff() {}
 
-ExitInfo VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
+ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
+    QString path = SyncName2QStr(pathStd.native());
     KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
         return exitInfo;

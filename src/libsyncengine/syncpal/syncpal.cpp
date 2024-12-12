@@ -358,7 +358,7 @@ bool SyncPal::vfsIsExcluded(const SyncPath &itemPath, bool &isExcluded) {
     if (!_vfs) {
         return false;
     }
-    isExcluded = _vfs->isExcluded(SyncName2QStr(itemPath.native()));
+    isExcluded = _vfs->isExcluded(itemPath.native());
     return true;
 }
 
@@ -366,7 +366,7 @@ bool SyncPal::vfsExclude(const SyncPath &itemPath) {
     if (!_vfs) {
         return false;
     }
-    _vfs->exclude(SyncName2QStr(itemPath.native()));
+    _vfs->exclude(itemPath);
     return true;
 }
 
@@ -374,7 +374,7 @@ bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
     if (!_vfs) {
         return false;
     }
-    pinState = _vfs->pinState(SyncName2QStr(itemPath.native()));
+    pinState = _vfs->pinState(itemPath);
     return true;
 }
 
@@ -382,14 +382,14 @@ ExitInfo SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
     if (!_vfs) {
         return ExitCode::LogicError;
     }
-    return _vfs->setPinState(SyncName2QStr(itemPath.native()), pinState);
+    return _vfs->setPinState(itemPath, pinState);
 }
 
 ExitInfo SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
     if (!_vfs) {
         return ExitCode::LogicError;
     }
-    return _vfs->status(SyncName2QStr(itemPath.native()), isPlaceholder, isHydrated, isSyncing, progress);
+    return _vfs->status(itemPath, isPlaceholder, isHydrated, isSyncing, progress);
 }
 
 ExitInfo SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
@@ -403,7 +403,7 @@ ExitInfo SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileIt
     if (!_vfs) {
         return ExitCode::LogicError;
     }
-    return _vfs->convertToPlaceholder(SyncName2QStr(path.native()), item);
+    return _vfs->convertToPlaceholder(path, item);
 }
 
 ExitInfo SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
@@ -411,8 +411,7 @@ ExitInfo SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creati
     if (!_vfs) {
         return ExitCode::LogicError;
     }
-    const QByteArray fileId(id.c_str());
-    return _vfs->updateMetadata(SyncName2QStr(path.native()), creationTime, modtime, size, fileId);
+    return _vfs->updateMetadata(path, creationTime, modtime, size, id);
 }
 
 ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
@@ -424,21 +423,21 @@ ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &
     if (!_vfs) {
         return ExitCode::LogicError;
     }
-    return _vfs->updateFetchStatus(SyncName2QStr(tmpPath.native()), SyncName2QStr(path.native()), received, canceled, finished);
+    return _vfs->updateFetchStatus(tmpPath.native(), path.native(), received, canceled, finished);
 }
 
 bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) {
     if (!_vfs) {
         return false;
     }
-    return _vfs->fileStatusChanged(SyncName2QStr(path.native()), status);
+    return _vfs->fileStatusChanged(path, status);
 }
 
 ExitInfo SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
     if (!_vfs) {
         return ExitCode::LogicError;
     }
-    return _vfs->forceStatus(SyncName2QStr(path.native()), isSyncing, progress, isHydrated);
+    return _vfs->forceStatus(path, isSyncing, progress, isHydrated);
 }
 
 bool SyncPal::vfsCleanUpStatuses() {
@@ -452,7 +451,7 @@ bool SyncPal::vfsClearFileAttributes(const SyncPath &path) {
     if (!_vfs) {
         return false;
     }
-    _vfs->clearFileAttributes(SyncName2QStr(path.native()));
+    _vfs->clearFileAttributes(path);
     return true;
 }
 
@@ -460,7 +459,7 @@ bool SyncPal::vfsCancelHydrate(const SyncPath &path) {
     if (!_vfs) {
         return false;
     }
-    _vfs->cancelHydrate(SyncName2QStr(path.native()));
+    _vfs->cancelHydrate(path);
     return true;
 }
 

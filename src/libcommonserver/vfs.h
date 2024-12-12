@@ -130,8 +130,8 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size,
-                                        const QByteArray &fileId) = 0;
+        virtual ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modtime, int64_t size,
+                                        const NodeId &fileId) = 0;
 
         /** Create a new dehydrated placeholder
          *
@@ -145,7 +145,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::FileAlreadyExist: An item with the same name already exists in the destination
          * folder.
          */
-        virtual ExitInfo createPlaceholder(const KDC::SyncPath &relativeLocalPath, const KDC::SyncFileItem &item) = 0;
+        virtual ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) = 0;
 
         /** Convert a hydrated placeholder to a dehydrated one. Called from PropagateDownlaod.
          *
@@ -161,7 +161,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotPlaceHolder: The item is not a placeholder.
          * folder.
          */
-        virtual ExitInfo dehydratePlaceholder(const QString &path) = 0;
+        virtual ExitInfo dehydratePlaceholder(const SyncPath &path) = 0;
 
         /** Convert a new file to a hydrated placeholder.
          *
@@ -178,7 +178,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo convertToPlaceholder(const QString &path, const KDC::SyncFileItem &item) = 0;
+        virtual ExitInfo convertToPlaceholder(const SyncPath &path, const KDC::SyncFileItem &item) = 0;
 
         /** Update the fetch status of a file.
          *
@@ -191,7 +191,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked (The item is
          * the file in the sync folder, any error on the tmpItem will lead to SystemError, Unknown).
          */
-        virtual ExitInfo updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
+        virtual ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                            bool &finished) = 0;
 
         /** Force the status of a file.
@@ -204,7 +204,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
+        virtual ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
 
         virtual bool cleanUpStatuses() { return true; };
 
@@ -216,7 +216,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo isDehydratedPlaceholder(const QString &filePath, bool &isDehydrated, bool isAbsolutePath = false) = 0;
+        virtual ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated, bool isAbsolutePath = false) = 0;
 
         /** Sets the pin state for the item at a path.
          *
@@ -233,7 +233,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo setPinState(const QString &fileRelativePath, KDC::PinState state) = 0;
+        virtual ExitInfo setPinState(const SyncPath &fileRelativePath, KDC::PinState state) = 0;
 
         /** Returns the pin state of an item at a path.
          *
@@ -244,7 +244,7 @@ class Vfs : public QObject {
          *
          * Returns none on retrieval error.
          */
-        virtual KDC::PinState pinState(const QString &fileRelativePath) = 0;
+        virtual KDC::PinState pinState(const SyncPath &fileRelativePath) = 0;
 
         /** Returns the status of a file.
          *
@@ -254,7 +254,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+        virtual ExitInfo status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                                 int &progress) = 0;
 
         /** Set the thumbnail for a file.
@@ -265,7 +265,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo setThumbnail(const QString &filePath, const QPixmap &pixmap) = 0;
+        virtual ExitInfo setThumbnail(const SyncPath &filePath, const QPixmap &pixmap) = 0;
 
         /** Set the list of applications that should not be hydrated.
          *
@@ -283,16 +283,16 @@ class Vfs : public QObject {
          */
         virtual ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) = 0;
 
-        virtual void exclude(const QString &) = 0;
-        virtual bool isExcluded(const QString &filePath) = 0;
+        virtual void exclude(const SyncPath &) = 0;
+        virtual bool isExcluded(const SyncPath &filePath) = 0;
 
-        virtual void cancelHydrate(const QString &) {}
+        virtual void cancelHydrate(const SyncPath &) {}
 
-        virtual bool fileStatusChanged(const QString &systemFileName, KDC::SyncFileStatus fileStatus) = 0;
+        virtual bool fileStatusChanged(const SyncPath &systemFileName, KDC::SyncFileStatus fileStatus) = 0;
 
         virtual void convertDirContentToPlaceholder(const QString &, bool) {}
 
-        virtual void clearFileAttributes(const QString &) = 0;
+        virtual void clearFileAttributes(const SyncPath &) = 0;
 
         inline void setExtendedLog(bool extendedLog) { _extendedLog = extendedLog; }
 
@@ -387,30 +387,30 @@ class VfsOff : public Vfs {
 
         bool socketApiPinStateActionsShown() const final { return false; }
 
-        ExitInfo updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &) final { return ExitCode::Ok; }
+        ExitInfo updateMetadata(const SyncPath &, time_t, time_t, int64_t, const NodeId &) final { return ExitCode::Ok; }
         ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) final { return ExitCode::Ok; }
-        ExitInfo dehydratePlaceholder(const QString &) final { return ExitCode::Ok; }
-        ExitInfo convertToPlaceholder(const QString &, const KDC::SyncFileItem &) final { return ExitCode::Ok; }
-        ExitInfo updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) final { return ExitCode::Ok; }
-        ExitInfo forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) final;
+        ExitInfo dehydratePlaceholder(const SyncPath &) final { return ExitCode::Ok; }
+        ExitInfo convertToPlaceholder(const SyncPath &, const KDC::SyncFileItem &) final { return ExitCode::Ok; }
+        ExitInfo updateFetchStatus(const SyncPath &, const SyncPath &, int64_t, bool &, bool &) final { return ExitCode::Ok; }
+        ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) final;
 
-        ExitInfo isDehydratedPlaceholder(const QString &, bool &isDehydrated, bool) final {
+        ExitInfo isDehydratedPlaceholder(const SyncPath &, bool &isDehydrated, bool) final {
             isDehydrated = false;
             return ExitCode::Ok;
         }
 
-        ExitInfo setPinState(const QString &, KDC::PinState) final { return ExitCode::Ok; }
-        KDC::PinState pinState(const QString &) final { return KDC::PinState::AlwaysLocal; }
-        ExitInfo status(const QString &, bool &, bool &, bool &, int &) final { return ExitCode::Ok; }
-        ExitInfo setThumbnail(const QString &, const QPixmap &) final { return ExitCode::Ok; }
+        ExitInfo setPinState(const SyncPath &, KDC::PinState) final { return ExitCode::Ok; }
+        KDC::PinState pinState(const SyncPath &) final { return KDC::PinState::AlwaysLocal; }
+        ExitInfo status(const SyncPath &, bool &, bool &, bool &, int &) final { return ExitCode::Ok; }
+        ExitInfo setThumbnail(const SyncPath &, const QPixmap &) final { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() final { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) final { return ExitCode::Ok; }
-        void exclude(const QString &) final { /*VfsOff*/
+        void exclude(const SyncPath &) final { /*VfsOff*/
         }
-        bool isExcluded(const QString &) final { return false; }
-        bool fileStatusChanged(const QString &, KDC::SyncFileStatus) final { return true; }
+        bool isExcluded(const SyncPath &) final { return false; }
+        bool fileStatusChanged(const SyncPath &, KDC::SyncFileStatus) final { return true; }
 
-        void clearFileAttributes(const QString &) final { /*VfsOff*/
+        void clearFileAttributes(const SyncPath &) final { /*VfsOff*/
         }
         void dehydrate(const QString &) final { /*VfsOff*/
         }
