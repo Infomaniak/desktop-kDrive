@@ -44,7 +44,7 @@ void Vfs::starVfsWorkers() {
             for (int j = 0; j < s_nb_threads[i]; j++) {
                 auto *workerThread = new QtLoggingThread();
                 _workerInfo[i]._threadList.append(workerThread);
-                VfsWorker *worker = new VfsWorker(this, i, j, logger());
+                auto *worker = new VfsWorker(this, i, j, logger());
                 worker->moveToThread(workerThread);
                 connect(workerThread, &QThread::started, worker, &VfsWorker::start);
                 connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
@@ -191,6 +191,9 @@ void VfsWorker::start() {
                 break;
             case workerDehydration:
                 _vfs->dehydrate(path);
+                break;
+            default:
+                LOG_ERROR(logger(), "Unknown vfs worker type=" << _type);
                 break;
         }
     }

@@ -31,7 +31,7 @@ class VirtualFilesCleaner {
     public:
         VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> &vfs);
 
-        VirtualFilesCleaner(const SyncPath &path);
+        explicit VirtualFilesCleaner(const SyncPath &path);
 
         bool run();
         bool removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders);
