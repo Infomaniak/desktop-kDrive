@@ -24,11 +24,14 @@
 namespace KDC::sentry::pTraces {
 
 struct None : public AbstractPTrace {
-        None() = default;
-        None(int syncdbId) : AbstractPTrace({}, syncdbId) {}
-        void start() final {}
-        void stop(PTraceStatus status = PTraceStatus::Ok) final {}
-        void restart() final {}
+        None() : AbstractPTrace({}){};
+        explicit None(int syncdbId) : AbstractPTrace({}, syncdbId) {}
+        void start() final { /* Do nothing */
+        }
+        void stop([[maybe_unused]] PTraceStatus status = PTraceStatus::Ok) final { /* Do nothing */
+        }
+        void restart() final { /* Do nothing */
+        }
 };
 
 /*
