@@ -639,7 +639,7 @@ ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
 }
 
 bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
-    LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatSyncPath(fullPath) << L" - status = " << status);
+    LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatSyncPath(pathStd) << L" - status = " << status);
     const QString path = SyncName2QStr(pathStd.native());
     SyncPath fullPath(pathStd.native());
     std::error_code ec;
