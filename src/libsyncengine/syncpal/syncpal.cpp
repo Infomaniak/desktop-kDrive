@@ -647,8 +647,10 @@ bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &vers
     // Create/open sync DB
     try {
         _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), version, targetNodeId));
-    } catch (std::exception const &) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath));
+    } catch (std::exception const &e) {
+        const auto exceptionMsg = Utility::s2ws(std::string(e.what()));
+        LOGW_SYNCPAL_WARN(
+                _logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath) << L", Exception: " << exceptionMsg);
         return false;
     }
 
@@ -1506,7 +1508,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
 
     localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
     remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(remoteNodeId);
-    
+
     // Blacklist the item
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativePath, ReplicaSide::Local);

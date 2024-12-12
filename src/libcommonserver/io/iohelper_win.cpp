@@ -119,6 +119,14 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
     return FileTimeToUnixTime(&ft, remainder);
 }
 
+uint64_t computeNodeId(const PFILE_ID_FULL_DIR_INFORMATION pFileInfo) {
+    // We keep `long long` type cast for legacy reason.
+    auto longLongId =
+            static_cast<long long>(pFileInfo->FileId.HighPart << 32) + static_cast<long long>(pFileInfo->FileId.LowPart);
+
+    return static_cast<uint64_t>(longLongId);
+}
+
 } // namespace
 
 int IoHelper::_getAndSetRightsMethod = -1; // -1: not initialized, 0: Windows API, 1: std::filesystem
@@ -138,7 +146,8 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
                           FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
     if (hParent == INVALID_HANDLE_VALUE) {
-        LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()).c_str());
+        LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()) << "L, "
+                                                      << CommonUtility::getLastErrorMessage());
         return false;
     }
 
@@ -161,7 +170,8 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
             (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
 
     if (zwQueryDirectoryFile == 0) {
-        LOGW_WARN(logger(), L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()).c_str());
+        LOGW_WARN(logger(), L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()) << L", "
+                                                         << CommonUtility::getLastErrorMessage());
         return false;
     }
 
@@ -174,7 +184,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     }
 
     // Get the Windows file id as an inode replacement.
-    nodeId = std::to_string(((long long) pFileInfo->FileId.HighPart << 32) + (long long) pFileInfo->FileId.LowPart);
+    nodeId = std::to_string(computeNodeId(pFileInfo));
 
     CloseHandle(hParent);
     return true;
@@ -260,7 +270,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     }
 
     // Get the Windows file id as an inode replacement.
-    filestat->inode = ((long long) pFileInfo->FileId.HighPart << 32) + (long long) pFileInfo->FileId.LowPart;
+    filestat->inode = computeNodeId(pFileInfo);
     filestat->size = ((long long) pFileInfo->EndOfFile.HighPart << 32) + (long long) pFileInfo->EndOfFile.LowPart;
 
     DWORD rem;
@@ -631,7 +641,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         }
         LOGW_WARN(logger(), L"Failed to get rights using Windows API, falling back to std::filesystem.");
         sentry::Handler::captureMessage(sentry::Level::Warning, "IoHelper",
-                                                  "Failed to get rights using Windows API, falling back to std::filesystem.");
+                                        "Failed to get rights using Windows API, falling back to std::filesystem.");
 
         IoHelper::getTrustee().ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
@@ -707,7 +717,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
 
         LOGW_WARN(logger(), L"Failed to set rights using Windows API, falling back to std::filesystem.");
         sentry::Handler::captureMessage(sentry::Level::Warning, "IoHelper",
-                                                  "Failed to set rights using Windows API, falling back to std::filesystem.");
+                                        "Failed to set rights using Windows API, falling back to std::filesystem.");
         IoHelper::getTrustee().ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
     }
