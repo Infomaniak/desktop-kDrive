@@ -38,8 +38,6 @@ endif()
 
 set(server_SRCS
     ../libcommonserver/commserver.h ../libcommonserver/commserver.cpp
-    ../libcommonserver/vfs.h ../libcommonserver/vfs.cpp
-    ../libcommonserver/plugin.h ../libcommonserver/plugin.cpp
     navigationpanehelper.h navigationpanehelper.cpp
     logarchiver/logarchiver.h logarchiver/logarchiver.cpp
     logarchiver/logarchiverhelper.h logarchiver/logarchiverhelper.cpp

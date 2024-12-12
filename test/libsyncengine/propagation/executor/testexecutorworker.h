@@ -24,6 +24,33 @@
 
 namespace KDC {
 
+class MockVfs : public VfsOff {
+        Q_OBJECT
+    public:
+        explicit MockVfs() : VfsOff(vfsSetupParams) {}
+        void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing, int progress) {
+            vfsStatusIsHydrated = isHydrated;
+            vfsStatusIsSyncing = isSyncing;
+            vfsStatusIsPlaceholder = isPlaceholder;
+            vfsStatusProgress = progress;
+        }
+        ExitInfo status([[maybe_unused]] const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+                        int &progress) override {
+            isHydrated = vfsStatusIsHydrated;
+            isSyncing = vfsStatusIsSyncing;
+            isPlaceholder = vfsStatusIsPlaceholder;
+            progress = vfsStatusProgress;
+            return ExitCode::Ok;
+        }
+
+    private:
+        bool vfsStatusIsHydrated = false;
+        bool vfsStatusIsSyncing = false;
+        bool vfsStatusIsPlaceholder = false;
+        int vfsStatusProgress = 0;
+        VfsSetupParams vfsSetupParams;
+};
+
 class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
         CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);

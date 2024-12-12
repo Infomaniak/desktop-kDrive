@@ -10,8 +10,6 @@ set(testserver_NAME ${APPLICATION_NAME}_test_server)
 set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
-    ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/vfs.cpp
-    ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.h ${CMAKE_SOURCE_DIR}/src/libcommonserver/plugin.cpp
     ${server_srcs_path}/logarchiver/logarchiver.h ${server_srcs_path}/logarchiver/logarchiver.cpp
     ${server_srcs_path}/socketapi.h ${server_srcs_path}/socketapi.cpp
     ${server_srcs_path}/socketlistener.h ${server_srcs_path}/socketlistener.cpp

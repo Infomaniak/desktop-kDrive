@@ -11,6 +11,8 @@ if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
 endif ()
 find_package(libzip 1.10.1 REQUIRED)
 
+set(CMAKE_AUTOMOC TRUE)
+
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
@@ -34,6 +36,9 @@ set(libcommonserver_SRCS
     # Io
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
+    # Vfs
+    vfs.h vfs.cpp
+    plugin.h plugin.cpp
 )
 
 if(APPLE)

@@ -2,8 +2,6 @@ find_package(Qt6)
 
 set(libsyncengine_vfs_win_SRCS
     vfs_win.h vfs_win.cpp
-    ../../../libcommonserver/vfs.h ../../../libcommonserver/vfs.cpp
-    ../../../libcommonserver/plugin.h ../../../libcommonserver/plugin.cpp
     ../../../common/filepermissionholder.h ../../../common/filepermissionholder.cpp
     ../../../common/filesystembase.h ../../../common/filesystembase.cpp
 )

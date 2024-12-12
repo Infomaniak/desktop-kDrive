@@ -4,8 +4,6 @@ find_package(Qt6)
 add_library("${libsyncengine_NAME}_vfs_mac" SHARED
         vfs_mac.h vfs_mac.cpp
         litesyncextconnector.h litesyncextconnector.mm
-        ../../../libcommonserver/vfs.h ../../../libcommonserver/vfs.cpp
-        ../../../libcommonserver/plugin.h ../../../libcommonserver/plugin.cpp
         ../../../common/filepermissionholder.h ../../../common/filepermissionholder.cpp
         ../../../common/filesystembase.h ../../../common/filesystembase.cpp
 )
