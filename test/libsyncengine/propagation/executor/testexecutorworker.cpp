@@ -85,7 +85,7 @@ void TestExecutorWorker::tearDown() {
 }
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
-    // #ifdef __APPLE__
+#ifdef __APPLE__
     //   Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
     opPtr->setTargetSide(ReplicaSide::Remote);
@@ -94,7 +94,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
                                              testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
 
-    std::shared_ptr<MockVfs> mockVfs(new MockVfs());//    = std::make_shared<MockVfs>();
+    std::shared_ptr<MockVfs> mockVfs = std::make_shared<MockVfs>();
     _syncPal->setVfsPtr(mockVfs);
     // A hydrated placeholder.
     {
@@ -131,7 +131,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
         CPPUNIT_ASSERT(!isDehydratedPlaceholder);
     }
-    // #endif
+#endif
 }
 
 SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
