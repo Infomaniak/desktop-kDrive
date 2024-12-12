@@ -381,45 +381,45 @@ class VfsOff : public Vfs {
     public:
         VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
-        ~VfsOff() final;
+        ~VfsOff() override;
 
-        KDC::VirtualFileMode mode() const final { return KDC::VirtualFileMode::Off; }
+        KDC::VirtualFileMode mode() const override { return KDC::VirtualFileMode::Off; }
 
-        bool socketApiPinStateActionsShown() const final { return false; }
+        bool socketApiPinStateActionsShown() const override { return false; }
 
-        ExitInfo updateMetadata(const SyncPath &, time_t, time_t, int64_t, const NodeId &) final { return ExitCode::Ok; }
-        ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) final { return ExitCode::Ok; }
-        ExitInfo dehydratePlaceholder(const SyncPath &) final { return ExitCode::Ok; }
-        ExitInfo convertToPlaceholder(const SyncPath &, const KDC::SyncFileItem &) final { return ExitCode::Ok; }
-        ExitInfo updateFetchStatus(const SyncPath &, const SyncPath &, int64_t, bool &, bool &) final { return ExitCode::Ok; }
-        ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) final;
+        ExitInfo updateMetadata(const SyncPath &, time_t, time_t, int64_t, const NodeId &) override { return ExitCode::Ok; }
+        ExitInfo createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
+        ExitInfo dehydratePlaceholder(const SyncPath &) override { return ExitCode::Ok; }
+        ExitInfo convertToPlaceholder(const SyncPath &, const KDC::SyncFileItem &) override { return ExitCode::Ok; }
+        ExitInfo updateFetchStatus(const SyncPath &, const SyncPath &, int64_t, bool &, bool &) override { return ExitCode::Ok; }
+        ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) override;
 
-        ExitInfo isDehydratedPlaceholder(const SyncPath &, bool &isDehydrated, bool) final {
+        ExitInfo isDehydratedPlaceholder(const SyncPath &, bool &isDehydrated, bool) override {
             isDehydrated = false;
             return ExitCode::Ok;
         }
 
-        ExitInfo setPinState(const SyncPath &, KDC::PinState) final { return ExitCode::Ok; }
-        KDC::PinState pinState(const SyncPath &) final { return KDC::PinState::AlwaysLocal; }
-        ExitInfo status(const SyncPath &, bool &, bool &, bool &, int &) final { return ExitCode::Ok; }
-        ExitInfo setThumbnail(const SyncPath &, const QPixmap &) final { return ExitCode::Ok; }
-        ExitInfo setAppExcludeList() final { return ExitCode::Ok; }
-        ExitInfo getFetchingAppList(QHash<QString, QString> &) final { return ExitCode::Ok; }
-        void exclude(const SyncPath &) final { /*VfsOff*/
+        ExitInfo setPinState(const SyncPath &, KDC::PinState) override { return ExitCode::Ok; }
+        KDC::PinState pinState(const SyncPath &) override { return KDC::PinState::AlwaysLocal; }
+        ExitInfo status(const SyncPath &, bool &, bool &, bool &, int &) override { return ExitCode::Ok; }
+        ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
+        ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
+        ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
+        void exclude(const SyncPath &) override { /*VfsOff*/
         }
-        bool isExcluded(const SyncPath &) final { return false; }
+        bool isExcluded(const SyncPath &) override { return false; }
         bool fileStatusChanged(const SyncPath &, KDC::SyncFileStatus) final { return true; }
 
-        void clearFileAttributes(const SyncPath &) final { /*VfsOff*/
+        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/
         }
-        void dehydrate(const QString &) final { /*VfsOff*/
+        void dehydrate(const QString &) override { /*VfsOff*/
         }
-        void hydrate(const QString &) final { /*VfsOff*/
+        void hydrate(const QString &) override { /*VfsOff*/
         }
 
     protected:
-        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) final;
-        void stopImpl(bool /*unregister*/) final { /*VfsOff*/
+        ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
         }
 
         friend class TestWorkers;

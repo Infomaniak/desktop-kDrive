@@ -169,8 +169,6 @@ void VfsMac::hydrate(const QString &path) {
 
 ExitInfo VfsMac::forceStatus(const SyncPath &pathStd, bool isSyncing, int progress, bool isHydrated /*= false*/) {
     const QString path = SyncName2QStr(pathStd.native());
-    bool exists = false;
-    IoError ioError = IoError::Success;
     if (ExitInfo exitInfo = checkIfPathExists(pathStd, true); !exitInfo) {
         return exitInfo;
     }
@@ -194,9 +192,8 @@ void VfsMac::clearFileAttributes(const SyncPath &pathStd) {
 
 ExitInfo VfsMac::updateMetadata(const SyncPath &absoluteFilePathStd, time_t creationTime, time_t modtime, int64_t size,
                                 const NodeId &fileIdStr) {
-    Q_UNUSED(fileId);
+    Q_UNUSED(fileIdStr);
     const QString absoluteFilePath = SyncName2QStr(absoluteFilePathStd.native());
-    const QByteArray fileId(id.c_str());
 
     if (extendedLog()) {
         LOGW_DEBUG(logger(), L"updateMetadata - " << Utility::formatPath(absoluteFilePath).c_str());
@@ -266,7 +263,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
         LOGW_DEBUG(logger(), L"dehydratePlaceholder - file " << Utility::formatSyncPath(path));
     }
 
-    SyncPath fullPath(_vfsSetupParams._localPath / path.native();
+    SyncPath fullPath(_vfsSetupParams._localPath / path.native());
     if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
         return exitInfo;
     }
@@ -517,8 +514,6 @@ ExitInfo VfsMac::setPinState(const SyncPath &fileRelativePathStd, PinState state
     QString fileRelativePath = SyncName2QStr(fileRelativePathStd.native());
     std::filesystem::path fullPath(_vfsSetupParams._localPath / QStr2Path(fileRelativePath));
 
-    bool exists = false;
-    IoError ioError = IoError::Success;
     if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
         return exitInfo;
     }
@@ -551,7 +546,7 @@ PinState VfsMac::pinState(const SyncPath &relativePathStd) {
 }
 
 ExitInfo VfsMac::status(const SyncPath &filePathStd, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
-    if (!_connector->vfsGetStatus(Path2QStr(filePathStd.native()), isPlaceholder, isHydrated, isSyncing, progress)) {
+    if (!_connector->vfsGetStatus(Path2QStr(filePathStd), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return handleVfsError(filePathStd);
     }
@@ -643,14 +638,14 @@ ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
     return ExitCode::Ok;
 }
 
-bool VfsMac::fileStatusChanged(const SyncPath &path, SyncFileStatus status) {
+bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatPath(path).c_str() << L" - status = " << status);
-
-    SyncPath fullPath(path.native());
+    const QString path = SyncName2QStr(pathStd.native());
+    SyncPath fullPath(pathStd.native());
     std::error_code ec;
     if (!std::filesystem::exists(fullPath, ec)) {
         if (ec.value() != 0) {
-            LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatSyncPath(fullPath).c_str() << L": "
+            LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatSyncPath(fullPath) << L": "
                                                                      << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
                                                                      << L")");
             return false;

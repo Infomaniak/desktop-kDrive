@@ -288,7 +288,7 @@ void TestNetworkJobs::testDownload() {
             return tmpdirectory.path();
         };
         std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
-                [](const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec) {
+                []([[maybe_unused]] const SyncPath &srcPath, [[maybe_unused]] const SyncPath &destPath, std::error_code &ec) {
 #ifdef _WIN32
                     ec = std::make_error_code(static_cast<std::errc>(ERROR_NOT_SAME_DEVICE));
 #else

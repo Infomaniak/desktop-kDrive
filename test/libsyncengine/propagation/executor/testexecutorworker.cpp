@@ -86,7 +86,7 @@ void TestExecutorWorker::tearDown() {
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
-    // Setup dummy values. Test inputs are set in the callbacks defined below.
+    //  Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
     opPtr->setTargetSide(ReplicaSide::Remote);
     const auto node = std::make_shared<Node>(1, ReplicaSide::Local, "test_file.txt", NodeType::File, OperationType::None, "1234",
@@ -94,17 +94,31 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
                                              _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
 
+    class MockVfs : public VfsOff {
+        public:
+            void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing) {
+                vfsStatusIsHydrated = isHydrated;
+                vfsStatusIsSyncing = isSyncing;
+                vfsStatusIsPlaceholder = isPlaceholder;
+            }
+            ExitInfo status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+                            int &progress) override {
+                isHydrated = vfsStatusIsHydrated;
+                isSyncing = vfsStatusIsSyncing;
+                isPlaceholder = vfsStatusIsPlaceholder;
+                return ExitCode::Ok;
+            }
+
+        private:
+            bool vfsStatusIsHydrated = false;
+            bool vfsStatusIsSyncing = false;
+            bool vfsStatusIsPlaceholder = false;
+    };
+    auto mockVfs = std::make_shared<MockVfs>(VfsSetupParams());
+    _syncPal->setVfsPtr(mockVfs);
     // A hydrated placeholder.
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> ExitInfo {
-            isPlaceholder = true;
-            isHydrated = true;
-            isSyncing = false;
-            progress = 0;
-            return ExitCode::Ok;
-        });
-
+        mockVfs->setVfsStatusOutput(true, true, false);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -113,15 +127,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A dehydrated placeholder.
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> ExitInfo {
-            isPlaceholder = true;
-            isHydrated = false;
-            isSyncing = false;
-            progress = 0;
-            return ExitCode::Ok;
-        });
-
+        mockVfs->setVfsStatusOutput(true, false, false);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -130,15 +136,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A partially hydrated placeholder (syncing item).
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> ExitInfo {
-            isPlaceholder = true;
-            isHydrated = false;
-            isSyncing = true;
-            progress = 30;
-            return ExitCode::Ok;
-        });
-
+        mockVfs->setVfsStatusOutput(true, false, true);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -147,15 +145,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // Not a placeholder.
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> ExitInfo {
-            isPlaceholder = false;
-            isHydrated = false;
-            isSyncing = false;
-            progress = 0;
-            return ExitCode::Ok;
-        });
-
+        mockVfs->setVfsStatusOutput(false, false, false);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -210,7 +200,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName) {};
+            ExecutorWorker(syncPal, name, shortName){};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };
@@ -261,8 +251,8 @@ void TestExecutorWorker::testIsValidDestination() {
     // False if the item created on the local replica is not at the root of the synchronisation folder and has a
     // corresponding parent node with no id.
     {
-        const auto correspondingParentNode =
-                std::make_shared<Node>(666, ReplicaSide::Remote, Str("parent_dir"), NodeType::Directory, OperationType::None, "fooId",
+        const auto correspondingParentNode = std::make_shared<Node>(
+                666, ReplicaSide::Remote, Str("parent_dir"), NodeType::Directory, OperationType::None, "fooId",
                 testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
         correspondingParentNode->setId(std::nullopt); // It is not possible to create a node with a parent but without an id.
 
