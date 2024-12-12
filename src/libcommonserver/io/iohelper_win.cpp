@@ -15,8 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "common/filesystembase.h"
-
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/iohelper_win.h"
@@ -141,12 +139,11 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     // Get parent folder handle
-    HANDLE hParent;
-    hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING,
-                          FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                                 FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
     if (hParent == INVALID_HANDLE_VALUE) {
-        LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()) << "L, "
+        LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()) << L", "
                                                       << CommonUtility::getLastErrorMessage());
         return false;
     }
@@ -314,10 +311,8 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, Io
 
 void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
     // TODO: move KDC::FileSystem::longWinPath to IoHelper and use it here.
-    DWORD dwAttrs;
-
     const wchar_t *fName = path.c_str();
-    dwAttrs = GetFileAttributesW(fName);
+    DWORD dwAttrs = GetFileAttributesW(fName);
 
     if (dwAttrs != INVALID_FILE_ATTRIBUTES) {
         if (hidden && !(dwAttrs & FILE_ATTRIBUTE_HIDDEN)) {
