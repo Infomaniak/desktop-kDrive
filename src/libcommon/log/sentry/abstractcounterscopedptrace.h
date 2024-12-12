@@ -40,7 +40,7 @@ class AbstractCounterScopedPTrace : public AbstractScopedPTrace {
             AbstractScopedPTrace(info, PTraceStatus::Cancelled, syncDbId), _nbOfCyclesPerTrace(nbOfCyclePerTrace) {}
 
     private:
-        void stop(PTraceStatus status = PTraceStatus::Ok) final {
+        void stop([[maybe_unused]] PTraceStatus status = PTraceStatus::Ok) final {
             assert(false && "stop() should not be called with CounterScopedPTrace.");
         }
         void restart() final {
