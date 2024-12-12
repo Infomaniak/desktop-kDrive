@@ -188,4 +188,21 @@ struct COMMONSERVER_EXPORT Utility {
 
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 };
+
+struct TimeCounter {
+        TimeCounter(std::string name) { _name = name; }
+        void start() { _start = clock(); }
+        void end() {
+            _end = clock();
+            _total += (double) (_end - _start) / CLOCKS_PER_SEC;
+        }
+        void trace() { LOG_DEBUG(Log::instance()->getLogger(), "Time counter " << _name.c_str() << " value:" << _total); }
+
+    private:
+        std::string _name;
+        clock_t _start = 0;
+        clock_t _end = 0;
+        double _total = 0;
+};
+
 } // namespace KDC
