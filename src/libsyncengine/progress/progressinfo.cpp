@@ -119,8 +119,6 @@ bool ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
 
     const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
-        LOGW_INFO(Log::instance()->getLogger(),
-                 L"Item not found in ProgressInfo list (normal for ommited operation): " << Utility::formatSyncPath(path));
         return true;
     }
 
@@ -143,7 +141,7 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
     const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
         LOGW_INFO(Log::instance()->getLogger(),
-                 L"Item not found in ProgressInfo list (normal for ommited operation): " << Utility::formatSyncPath(path));
+                  L"Item not found in ProgressInfo list (normal for ommited operation): " << Utility::formatSyncPath(path));
         return true;
     }
 
@@ -198,7 +196,8 @@ Estimates ProgressInfo::totalProgress() const {
             1.0 - std::max(0.0, std::min((trans - transL * _maxBytesPerSecond) / ((transU - transL) * _maxBytesPerSecond), 1.0));
 
     double beOptimistic = nearMaxFps * slowTransfer;
-    size.setEstimatedEta(static_cast<int64_t>(((1.0 - beOptimistic) * static_cast<double>(size.estimatedEta()) + beOptimistic * static_cast<double>(optimisticEta()))));
+    size.setEstimatedEta(static_cast<int64_t>(((1.0 - beOptimistic) * static_cast<double>(size.estimatedEta()) +
+                                               beOptimistic * static_cast<double>(optimisticEta()))));
 
     return size;
 }

@@ -217,12 +217,19 @@
     // Setup connection with LiteSync extension
     NSLog(@"[KD] Setup connection with LiteSync extension");
 
-    // Read LiteSyncExtMachName from plist
-    NSBundle *appBundle = [NSBundle mainBundle];
-    NSString *liteSyncExtMachName = [appBundle objectForInfoDictionaryKey:@"LiteSyncExtMachName"];
-    if (!liteSyncExtMachName) {
-        NSLog(@"[KD] LiteSyncExtMachName undefined");
-        return FALSE;
+    NSString *liteSyncExtMachName = nil;
+    if (qApp) {
+        // Read LiteSyncExtMachName from plist
+        NSBundle *appBundle = [NSBundle mainBundle];
+        liteSyncExtMachName = [appBundle objectForInfoDictionaryKey:@"LiteSyncExtMachName"];
+        if (!liteSyncExtMachName) {
+            NSLog(@"[KD] LiteSyncExtMachName undefined");
+            return FALSE;
+        }
+    } else {
+        // For testing
+        liteSyncExtMachName = [NSString
+            stringWithUTF8String:KDC::CommonUtility::liteSyncExtBundleId().c_str()];
     }
 
     _connection = [[NSXPCConnection alloc] initWithMachServiceName:liteSyncExtMachName options:0];

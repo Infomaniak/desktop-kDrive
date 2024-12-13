@@ -49,8 +49,6 @@
 #include <fileapi.h>
 #endif
 
-#define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
-
 namespace KDC {
 
 static const QString styleSheetWhiteFile(":/client/resources/styles/stylesheetwhite.qss");

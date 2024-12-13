@@ -20,18 +20,22 @@
 
 #include "libcommon/libcommon.h"
 #include "types.h"
-#include "libcommon/info/nodeinfo.h"
+#include "utility_base.h"
 
 #include <string>
+#include <thread>
+
+#ifdef _WIN32
+#include <strsafe.h>
+#endif
 
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QDataStream>
 #include <QIODevice>
+#include <QThread>
 
-#ifdef _WIN32
-#include <strsafe.h>
-#endif
+#include <log4cplus/log4cplus.h>
 
 namespace KDC {
 struct COMMON_EXPORT CommonUtility {
@@ -104,7 +108,9 @@ struct COMMON_EXPORT CommonUtility {
         static bool dirNameIsValid(const SyncName &name);
         static bool fileNameIsValid(const SyncName &name);
 
-#ifdef Q_OS_MAC
+#ifdef __APPLE__
+        static const std::string loginItemAgentId();
+        static const std::string liteSyncExtBundleId();
         static bool isLiteSyncExtEnabled();
         static bool isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr);
 #endif
@@ -116,8 +122,36 @@ struct COMMON_EXPORT CommonUtility {
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
         static void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
+        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
+            return utility_base::isLikeFileNotFoundError(ec);
+        };
+
+#ifdef _WIN32
+        static std::wstring getErrorMessage(DWORD errorMessageId) { return utility_base::getErrorMessage(errorMessageId); }
+        static std::wstring getLastErrorMessage() { return utility_base::getLastErrorMessage(); };
+        static bool isLikeFileNotFoundError(DWORD dwError) noexcept { return utility_base::isLikeFileNotFoundError(dwError); };
+#endif
+
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
+};
+
+struct COMMON_EXPORT StdLoggingThread : public std::thread {
+        template<class... Args>
+        explicit StdLoggingThread(void (*runFct)(Args...), Args &&...args) :
+            std::thread(
+                    [=]() {
+                        runFct(args...);
+                        log4cplus::threadCleanup();
+                    },
+                    args...) {}
+};
+
+struct COMMON_EXPORT QtLoggingThread : public QThread {
+        void run() override {
+            QThread::run();
+            log4cplus::threadCleanup();
+        }
 };
 
 struct ArgsReader {

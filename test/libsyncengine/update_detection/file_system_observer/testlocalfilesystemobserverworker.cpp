@@ -81,6 +81,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     // Create SyncPal
     _syncPal = std::make_shared<SyncPalTest>(syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
+    _syncPal->createSharedObjects();
     _syncPal->setLocalPath(_rootFolderPath);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 #if defined(_WIN32)
@@ -123,8 +124,9 @@ void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
 
         const NodeId parentId = _syncPal->snapshot(ReplicaSide::Local)->parentId(id);
         SyncPath parentPath;
-        if (!parentId.empty() && _syncPal->snapshot(ReplicaSide::Local)->path(parentId, parentPath) &&
-            parentPath.filename() == _subDirPath.filename()) {
+        if (bool ignore = false; !parentId.empty() &&
+                                 _syncPal->snapshot(ReplicaSide::Local)->path(parentId, parentPath, ignore) &&
+                                 parentPath.filename() == _subDirPath.filename()) {
             fileCounter++;
         }
     }
@@ -149,7 +151,8 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
 
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
         SyncPath testSyncPath;
-        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(itemId, testSyncPath) && testSyncPath == filename);
+        bool ignore = false;
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(itemId, testSyncPath, ignore) && testSyncPath == filename);
     }
 
     {
@@ -233,17 +236,18 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcNamedItemId));
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfdNamedItemId));
         SyncPath testSyncPath;
+        bool ignore = false;
 #ifdef __APPLE__
-        const bool foundNfcItem =
-                _syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath) && testSyncPath == makeNfcSyncName();
-        const bool foundNfdItem =
-                _syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath) && testSyncPath == makeNfdSyncName();
+        const bool foundNfcItem = _syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath, ignore) &&
+                                  testSyncPath == makeNfcSyncName();
+        const bool foundNfdItem = _syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath, ignore) &&
+                                  testSyncPath == makeNfdSyncName();
 
         CPPUNIT_ASSERT(foundNfcItem || foundNfdItem);
 #else
-        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath) &&
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath, ignore) &&
                        testSyncPath == makeNfcSyncName());
-        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath) &&
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath, ignore) &&
                        testSyncPath == makeNfdSyncName());
 #endif
     }
@@ -267,7 +271,8 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         itemId = std::to_string(fileStat.inode);
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
         SyncPath path;
-        _syncPal->snapshot(ReplicaSide::Local)->path(itemId, path);
+        bool ignore = false;
+        _syncPal->snapshot(ReplicaSide::Local)->path(itemId, path, ignore);
         CPPUNIT_ASSERT(path == CommonUtility::relativePath(_rootFolderPath, testAbsolutePath));
     }
 
@@ -282,7 +287,8 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         Utility::msleep(1000); // Wait 1sec
 
         SyncPath path;
-        _syncPal->snapshot(ReplicaSide::Local)->path(itemId, path);
+        bool ignore = false;
+        _syncPal->snapshot(ReplicaSide::Local)->path(itemId, path, ignore);
         CPPUNIT_ASSERT(path == CommonUtility::relativePath(_rootFolderPath, destinationPath));
         testAbsolutePath = destinationPath;
     }
@@ -408,19 +414,54 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(initItemId) == testFilename);
 }
 
-void TestLocalFileSystemObserverWorker::testLFSOFastMoveDelete() {
+void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Office test
     LOGW_DEBUG(_logger, L"***** Test fast move/delete *****");
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
+    _syncPal->_localFSObserverWorker.reset();
+
+    // Create a slow observer
+    auto slowObserver = std::make_shared<MockLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
+    _syncPal->_localFSObserverWorker = slowObserver;
+    _syncPal->_localFSObserverWorker->start();
+
+    int count = 0;
+    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
+        Utility::msleep(100);
+        CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
+    }
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
 
     IoError ioError = IoError::Unknown;
     SyncPath destinationPath = _testFiles[0].second.parent_path() / (_testFiles[0].second.filename().string() + "2");
-    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError));
+    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError)); // test0.txt -> test0.txt2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT(IoHelper::deleteItem(destinationPath, ioError));
+    CPPUNIT_ASSERT(IoHelper::deleteItem(destinationPath, ioError)); // Delete test0.txt2 (before the previous rename is processed)
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[1].second, _testFiles[0].second,
+                                        ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-    Utility::msleep(1000); // Wait 1sec
+    CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
+
+    FileStat fileStat;
+    CPPUNIT_ASSERT(IoHelper::getFileStat(_testFiles[0].second, &fileStat, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(std::to_string(fileStat.inode)));
+}
+
+bool MockLocalFileSystemObserverWorker::waitForUpdate(int64_t timeoutMs) const {
+    using namespace std::chrono;
+    auto start = system_clock::now();
+    while (!_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
+        Utility::msleep(10);
+    }
+    while (_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {
+        Utility::msleep(10);
+    }
+    return duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs;
 }
 
 } // namespace KDC

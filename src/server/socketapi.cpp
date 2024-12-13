@@ -1096,8 +1096,8 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
             }
 
             if (isSingleFile) {
-                canHydrate = !isSyncing && !isHydrated;
-                canDehydrate = !isSyncing && isHydrated;
+                canHydrate = isPlaceholder && !isSyncing && !isHydrated;
+                canDehydrate = isPlaceholder && !isSyncing && isHydrated;
             }
         }
 
@@ -1402,7 +1402,7 @@ FileData FileData::get(const KDC::SyncPath &path) {
         std::error_code ec;
         data.isDirectory = std::filesystem::is_directory(tmpPath, ec);
         if (!data.isDirectory && ec.value() != 0) {
-            const bool exists = IoHelper::fileExists(ec);
+            const bool exists = CommonUtility::isLikeFileNotFoundError(ec);
             if (!exists) {
                 // Item doesn't exist anymore
                 LOGW_DEBUG(KDC::Log::instance()->getLogger(),

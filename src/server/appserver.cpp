@@ -33,7 +33,8 @@
 #include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/sentry/handler.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
@@ -483,11 +484,11 @@ void AppServer::updateSentryUser() const {
     std::string userName = "No user in db";
     std::string userEmail = "No user in db";
     if (found) {
-        userId = std::to_string(user.dbId());
+        userId = std::to_string(user.userId());
         userName = user.name();
         userEmail = user.email();
     }
-    SentryHandler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
+    sentry::Handler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
 }
 
 bool AppServer::clientHasCrashed() const {
@@ -1656,7 +1657,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << toInt(exitCode);
             break;
         }
-        case RequestNum::GET_FETCHING_APP_LIST: {
+        case RequestNum::EXCLAPP_GET_FETCHING_APP_LIST: {
             ExitCode exitCode = ExitCode::Ok;
             QHash<QString, QString> appTable;
             for (const auto &vfsMapElt: _vfsMap) {
@@ -1896,6 +1897,19 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QTimer::singleShot(100, [this]() { cancelLogUpload(); });
             break;
         }
+        case RequestNum::UTILITY_CRASH: {
+            resultStream << ExitCode::Ok;
+            QTimer::singleShot(QUIT_DELAY, []() { CommonUtility::crash(); });
+            break;
+        }
+        case RequestNum::UTILITY_QUIT: {
+            CommServer::instance()->setHasQuittedProperly(true);
+            QTimer::singleShot(QUIT_DELAY, []() { quit(); });
+            break;
+        }
+        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
+            sentry::pTraces::basic::AppStart().stop();
+        }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId = 0;
             bool value = false;
@@ -1975,16 +1989,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> tmp;
             AbstractUpdater::skipVersion(tmp.toStdString());
-            break;
-        }
-        case RequestNum::UTILITY_CRASH: {
-            resultStream << ExitCode::Ok;
-            QTimer::singleShot(QUIT_DELAY, []() { CommonUtility::crash(); });
-            break;
-        }
-        case RequestNum::UTILITY_QUIT: {
-            CommServer::instance()->setHasQuittedProperly(true);
-            QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             break;
         }
         default: {
@@ -2106,7 +2110,7 @@ void AppServer::cancelLogUpload() {
     sendLogUploadStatusUpdated(LogUploadState::CancelRequested, 0);
 }
 
-void AppServer::uploadLog(bool includeArchivedLogs) {
+ExitInfo AppServer::uploadLog(bool includeArchivedLogs) {
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::None, found) ||
                             !found) { // Reset status
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
@@ -2143,12 +2147,13 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
     if (exitCause == ExitCause::OperationCanceled) {
         LOG_DEBUG(_logger, "Log transfert canceled");
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
-        return;
+        return {exitCode, exitCause};
     } else if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: code=" << exitCode << " cause=" << exitCause);
         addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
     }
     sendLogUploadStatusUpdated(exitCode == ExitCode::Ok ? LogUploadState::Success : LogUploadState::Failed, 0);
+    return {exitCode, exitCause};
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {
@@ -3964,7 +3969,7 @@ void AppServer::addError(const Error &error) {
         // Manage sockets defuncted error
         LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", "Sockets defuncted error");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", "Sockets defuncted error");
 
         // Decrease upload session max parallel jobs
         ParametersCache::instance()->decreaseUploadSessionParallelThreads();
@@ -4001,7 +4006,7 @@ void AppServer::addError(const Error &error) {
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString(), sentryUser);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
     }
 }
 
@@ -4354,8 +4359,24 @@ void AppServer::onRestartSyncs() {
                         continue;
                     }
 
-                    // Start sync
-                    syncPalMapElt.second->start();
+                    // Start SyncPal if not paused
+                    Sync sync;
+                    bool found = false;
+                    if (!ParmsDb::instance()->selectSync(syncPalMapElt.first, sync, found)) {
+                        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
+                        continue;
+                    }
+
+                    if (!found) {
+                        LOG_WARN(Log::instance()->getLogger(),
+                                 "Sync not found in sync table for syncDbId=" << syncPalMapElt.first);
+                        continue;
+                    }
+
+                    if (!sync.paused()) {
+                        // Start sync
+                        syncPalMapElt.second->start();
+                    }
                 }
             }
         }

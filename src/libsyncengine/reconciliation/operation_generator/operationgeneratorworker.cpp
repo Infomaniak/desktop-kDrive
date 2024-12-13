@@ -20,6 +20,7 @@
 #include "update_detection/update_detector/updatetree.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "libcommon/log/sentry/ptraces.h"
 
 namespace KDC {
 
@@ -46,7 +47,9 @@ void OperationGeneratorWorker::execute() {
     _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     // Explore both update trees
+    sentry::pTraces::counterScoped::GenerateItemOperations perfMonitor(syncDbId());
     while (!_queuedToExplore.empty()) {
+        perfMonitor.start();
         if (stopAsked()) {
             exitCode = ExitCode::Ok;
             break;
@@ -129,8 +132,8 @@ void OperationGeneratorWorker::execute() {
         }
     }
 
-    setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
 void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> currentNode,

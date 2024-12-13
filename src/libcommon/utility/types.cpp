@@ -70,6 +70,8 @@ std::string toString(const OperationType e) {
             return "Delete";
         case OperationType::Rights:
             return "Rights";
+        case OperationType::MoveOut:
+            return "MoveOut";
         default:
             return noConversionStr;
     }
@@ -197,6 +199,10 @@ std::string toString(const ExitCause e) {
         default:
             return noConversionStr;
     }
+}
+
+std::string toString(const ExitInfo e) {
+    return static_cast<std::string>(e);
 }
 
 std::string toString(const ConflictType e) {
@@ -759,11 +765,11 @@ std::string toString(const Platform e) {
     }
 }
 
-std::string toString(const SentryConfidentialityLevel e) {
+std::string toString(const sentry::ConfidentialityLevel e) {
     switch (e) {
-        case SentryConfidentialityLevel::Authenticated:
+        case sentry::ConfidentialityLevel::Authenticated:
             return "Authenticated";
-        case SentryConfidentialityLevel::Anonymous:
+        case sentry::ConfidentialityLevel::Anonymous:
             return "Anonymous";
         default:
             return noConversionStr;

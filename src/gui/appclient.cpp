@@ -46,9 +46,7 @@
 #include <stdlib.h>
 
 #include <sentry.h>
-#include <log/sentry/sentryhandler.h>
-
-#define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
+#include <log/sentry/handler.h>
 
 #define CONNECTION_TRIALS 3
 #define CHECKCOMMSTATUS_TRIALS 5
@@ -168,6 +166,7 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     // Setup Gui
     _gui = std::shared_ptr<ClientGui>(new ClientGui(this));
     _gui->init();
+    GuiRequests::reportClientDisplayed();
 
     _theme->setSystrayUseMonoIcons(ParametersCache::instance()->parametersInfo().monoIcons());
     connect(_theme, &Theme::systrayUseMonoIconsChanged, this, &AppClient::onUseMonoIconsChanged);
@@ -673,13 +672,13 @@ void AppClient::updateSentryUser() const {
     if (userInfo == _gui->userInfoMap().end()) {
         qCWarning(lcAppClient) << "No user found in updateSentryUser()";
         SentryUser user("No user logged", "No user logged", "No user logged");
-        SentryHandler::instance()->setAuthenticatedUser(user);
+        sentry::Handler::instance()->setAuthenticatedUser(user);
         return;
     }
 
     SentryUser user(userInfo->second.email().toStdString(), userInfo->second.name().toStdString(),
                     std::to_string(userInfo->second.userId()));
-    SentryHandler::instance()->setAuthenticatedUser(user);
+    sentry::Handler::instance()->setAuthenticatedUser(user);
 }
 
 void AppClient::onUseMonoIconsChanged(bool) {

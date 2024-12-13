@@ -92,7 +92,7 @@ enum class RequestNum {
 #ifdef __APPLE__
     EXCLAPP_GETLIST,
     EXCLAPP_SETLIST,
-    GET_FETCHING_APP_LIST,
+    EXCLAPP_GET_FETCHING_APP_LIST,
 #endif
     PARAMETERS_INFO,
     PARAMETERS_UPDATE,
@@ -112,13 +112,14 @@ enum class RequestNum {
     UTILITY_SEND_LOG_TO_SUPPORT,
     UTILITY_CANCEL_LOG_TO_SUPPORT,
     UTILITY_GET_LOG_ESTIMATED_SIZE,
+    UTILITY_CRASH,
+    UTILITY_QUIT,
+    UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
     UPDATER_SKIP_VERSION,
-    UTILITY_CRASH,
-    UTILITY_QUIT,
 };
 
 inline std::string toString(RequestNum e) {
@@ -224,7 +225,7 @@ inline std::string toString(RequestNum e) {
             return "EXCLAPP_GETLIST";
         case RequestNum::EXCLAPP_SETLIST:
             return "EXCLAPP_SETLIST";
-        case RequestNum::GET_FETCHING_APP_LIST:
+        case RequestNum::EXCLAPP_GET_FETCHING_APP_LIST:
             return "GET_FETCHING_APP_LIST";
 #endif
         case RequestNum::PARAMETERS_INFO:
@@ -261,6 +262,12 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
             return "UTILITY_GET_LOG_ESTIMATED_SIZE";
+        case RequestNum::UTILITY_CRASH:
+            return "UTILITY_CRASH";
+        case RequestNum::UTILITY_QUIT:
+            return "UTILITY_QUIT";
+        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT:
+            return "UTILITY_DISPLAY_CLIENT_REPORT";
         case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO";
         case RequestNum::UPDATER_STATE:
@@ -269,10 +276,6 @@ inline std::string toString(RequestNum e) {
             return "UPDATER_START_INSTALLER";
         case RequestNum::UPDATER_SKIP_VERSION:
             return "UPDATER_SKIP_VERSION";
-        case RequestNum::UTILITY_CRASH:
-            return "UTILITY_CRASH";
-        case RequestNum::UTILITY_QUIT:
-            return "UTILITY_QUIT";
         default:
             return "No conversion to string available";
     }

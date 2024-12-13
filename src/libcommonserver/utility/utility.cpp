@@ -287,7 +287,7 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
-    SentryHandler::instance()->captureMessage(SentryLevel::Warning, errorTitle, errorMsg);
+    sentry::Handler::captureMessage(sentry::Level::Warning, errorTitle, errorMsg);
     LOG_WARN(logger, errorTitle.c_str() << ": " << errorMsg.c_str());
 }
 
@@ -400,12 +400,12 @@ bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
 bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame) {
     SyncName aNormalized;
     if (!Utility::normalizedSyncName(a, aNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(a));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(a));
         return false;
     }
     SyncName bNormalized;
     if (!Utility::normalizedSyncName(b, bNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(b));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(b));
         return false;
     }
     areSame = (aNormalized == bNormalized);
@@ -415,12 +415,12 @@ bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, boo
 bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame) {
     SyncPath aNormalized;
     if (!Utility::normalizedSyncPath(a, aNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
         return false;
     }
     SyncPath bNormalized;
     if (!Utility::normalizedSyncPath(b, bNormalized)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
         return false;
     }
     areSame = (aNormalized == bNormalized);
@@ -648,8 +648,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                 // Real error, not buffer error
                 LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
                                                                    << std::to_wstring(dwError));
-                SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
-                                                          "Failed to normalize string");
+                sentry::Handler::captureMessage(sentry::Level::Error, "Utility::normalizedSyncName",
+                                                "Failed to normalize string");
                 return false;
             }
 
@@ -662,8 +662,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
         DWORD dwError = GetLastError();
         LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
                                                            << std::to_wstring(dwError));
-        SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
-                                                  "Failed to normalize string");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::normalizedSyncName", "Failed to normalize string");
         return false;
     }
 
@@ -697,7 +696,7 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath)
     if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
         SyncName normalizedName;
         if (!Utility::normalizedSyncName(segment, normalizedName)) {
-            LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(segment));
+            LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(segment));
             return false;
         }
         segment = normalizedName;
@@ -709,7 +708,7 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath)
         if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
             SyncName normalizedName;
             if (!Utility::normalizedSyncName(*segmentIt, normalizedName)) {
-                LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*segmentIt));
+                LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*segmentIt));
                 return false;
             }
             normalizedPath /= normalizedName;
@@ -778,14 +777,10 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
 }
 
 #ifdef _WIN32
-bool Utility::fileExists(DWORD dwError) noexcept {
-    return (dwError != ERROR_FILE_NOT_FOUND && dwError != ERROR_PATH_NOT_FOUND && dwError != ERROR_INVALID_DRIVE);
-}
-
 bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
     int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
     if (!length) {
-        const bool exists = fileExists(GetLastError());
+        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
@@ -799,7 +794,7 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
     if (!length) {
-        const bool exists = fileExists(GetLastError());
+        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }

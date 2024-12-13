@@ -38,6 +38,16 @@ std::shared_ptr<VfsWin> TestWorkers::_vfsPtr = nullptr;
 std::shared_ptr<VfsOff> TestWorkers::_vfsPtr = nullptr;
 #endif
 
+bool TestWorkers::_vfsInstallationDone = false;
+bool TestWorkers::_vfsActivationDone = false;
+bool TestWorkers::_vfsConnectionDone = false;
+
+#ifdef __APPLE__
+// TODO: On macOS, SIP should be deactivated and LiteSync extension signed to be able to install the Lite Sync extension.
+// Set to true if the Login Item Agent and the Lite Sync extensions are already installed on the test machine.
+constexpr bool connectorsAreAlreadyInstalled = false;
+#endif
+
 bool TestWorkers::createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
     (void) syncDbId;
 
@@ -124,6 +134,7 @@ void TestWorkers::setUp() {
     vfsSetupParams._localPath = _sync.localPath();
     vfsSetupParams._targetPath = _sync.targetPath();
     vfsSetupParams._logger = _logger;
+    vfsSetupParams._executeCommand = [](const char *) {};
 
 #if defined(__APPLE__)
     _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
@@ -133,8 +144,13 @@ void TestWorkers::setUp() {
     _vfsPtr = std::shared_ptr<VfsOff>(new VfsOff(vfsSetupParams));
 #endif
 
+#if defined(__APPLE__)
+    _vfsPtr->setExclusionAppListCallback([](QString &) {});
+#endif
+
     // Setup SyncPal
     _syncPal = std::make_shared<SyncPal>(_sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal->createSharedObjects();
     _syncPal->createWorkers();
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
@@ -154,17 +170,15 @@ void TestWorkers::setUp() {
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 #endif
 
-#if !defined(__APPLE__)
-    // TODO: on macOS, SIP should be deactivated and LiteSync extension signed to be able to start Vfs
-
     // Start Vfs
-    bool installationDone = false;
-    bool activationDone = false;
-    bool connectionDone = false;
-    CPPUNIT_ASSERT(_vfsPtr->startImpl(installationDone, activationDone, connectionDone));
-    CPPUNIT_ASSERT(installationDone);
-    CPPUNIT_ASSERT(activationDone);
-    CPPUNIT_ASSERT(connectionDone);
+#ifdef __APPLE__
+    if (connectorsAreAlreadyInstalled) {
+        _vfsInstallationDone = true;
+        _vfsActivationDone = true;
+        startVfs();
+    }
+#else
+    startVfs();
 #endif
 }
 
@@ -179,6 +193,27 @@ void TestWorkers::tearDown() {
         _vfsPtr->stopImpl(true);
         _vfsPtr = nullptr;
     }
+}
+
+void TestWorkers::testStartVfs() {
+#if defined(__APPLE__)
+    if (connectorsAreAlreadyInstalled) {
+        // Make sure that Vfs is installed/activated/connected
+        CPPUNIT_ASSERT(_vfsInstallationDone);
+        CPPUNIT_ASSERT(_vfsActivationDone);
+        CPPUNIT_ASSERT(_vfsConnectionDone);
+
+        // Try to start Vfs another time
+        CPPUNIT_ASSERT(startVfs());
+        CPPUNIT_ASSERT(_vfsInstallationDone);
+        CPPUNIT_ASSERT(_vfsActivationDone);
+        CPPUNIT_ASSERT(_vfsConnectionDone);
+    }
+#elif defined(_WIN32)
+    // Try to start Vfs another time
+    // => WinRT error caught : hr 8007017a - The cloud sync root is already connected with another cloud sync provider.
+    CPPUNIT_ASSERT(!startVfs());
+#endif
 }
 
 void TestWorkers::testCreatePlaceholder() {
@@ -213,7 +248,7 @@ void TestWorkers::testCreatePlaceholder() {
         // Folder already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
         CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::InvalidSnapshot, exitInfo.cause());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::FileAlreadyExist, exitInfo.cause());
 #endif
     }
 
@@ -268,7 +303,7 @@ void TestWorkers::testCreatePlaceholder() {
         // File already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
         CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, exitInfo.code());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::InvalidSnapshot, exitInfo.cause());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::FileAlreadyExist, exitInfo.cause());
 #endif
     }
 }
@@ -348,4 +383,9 @@ void TestWorkers::testConvertToPlaceholder() {
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, exitInfo.cause());
     }
 }
+
+bool TestWorkers::startVfs() {
+    return _vfsPtr->startImpl(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
+}
+
 } // namespace KDC

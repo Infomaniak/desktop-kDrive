@@ -18,6 +18,7 @@
 
 #include "platforminconsistencycheckerworker.h"
 #include "platforminconsistencycheckerutility.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -41,10 +42,10 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     for (const auto &idItem: _idsToBeRemoved) {
         if (!idItem.remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.remoteId.c_str()));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.remoteId));
         }
         if (!idItem.localId.empty() && !_syncPal->updateTree(ReplicaSide::Local)->deleteNode(idItem.localId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.localId.c_str()));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.localId));
         }
     }
 
@@ -53,8 +54,8 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _syncPal->updateTree(ReplicaSide::Remote)->setInconsistencyCheckDone();
 
-    setDone(ExitCode::Ok);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(ExitCode::Ok);
 }
 
 ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
@@ -64,13 +65,18 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
            side == ReplicaSide::Local && "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
 
     ExitCode exitCode = ExitCode::Unknown;
+    sentry::PTraceUPtr perfmonitor;
     if (side == ReplicaSide::Remote) {
+        perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckLocalTree>(syncDbId());
         exitCode = checkRemoteTree(node, parentPath);
     } else if (side == ReplicaSide::Local) {
+        perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckRemoteTree>(syncDbId());
         exitCode = checkLocalTree(node, parentPath);
     }
 
-    if (exitCode != ExitCode::Ok) {
+    if (exitCode == ExitCode::Ok) {
+        perfmonitor->stop();
+    } else {
         LOG_SYNCPAL_WARN(_logger,
                          "PlatformInconsistencyCheckerWorker::check" << side << "Tree partially failed: code=" << exitCode);
     }
@@ -291,9 +297,9 @@ void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<N
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(absoluteLocalPath));
         }
     } else {
-        LOG_WARN(_logger, localNode
-                                  ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
-                                  : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb");
+        const char *msg = localNode ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
+                                    : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb";
+        LOG_WARN(_logger, msg);
         assert(false);
     }
 }

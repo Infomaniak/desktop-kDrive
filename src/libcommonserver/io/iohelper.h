@@ -62,8 +62,6 @@ struct IoHelper {
         static IoError posixError2ioError(int error) noexcept;
         static std::string ioError2StdString(IoError ioError) noexcept;
 
-        static bool fileExists(const std::error_code &ec) noexcept;
-
         //! Get the item type of the item indicated by `path`.
         /*!
           \param path is the file system path of the inspected item.
@@ -333,6 +331,21 @@ struct IoHelper {
          */
         static bool setXAttrValue(const SyncPath &path, const std::string &attrName, const std::string &value,
                                   IoError &ioError) noexcept;
+        //! Remove the extended attributes with specified names for the item indicated by path.
+        /*!
+         \param path is the file system path of the item.
+         \param attrNames is a vector of the names of the extended attributes to remove.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool removeXAttrs(const SyncPath &path, const std::vector<std::string> &attrNames, IoError &ioError) noexcept;
+        //! Remove the LiteSync extended attributes for the item indicated by path.
+        /*!
+         \param path is the file system path of the item.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept;
 #endif
 
 #ifdef _WIN32
@@ -393,6 +406,9 @@ struct IoHelper {
         // The most common and expected errors during IO operations
         static bool isExpectedError(IoError ioError) noexcept;
 
+        static bool openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut = 10 /*in seconds*/);
+        static ExitInfo openFile(const SyncPath &path, std::ifstream &file, int timeOut = 10 /*in seconds*/);
+
     protected:
         friend class DirectoryIterator;
         friend class TestIo;
@@ -401,10 +417,10 @@ struct IoHelper {
         // They can be modified in tests.
         static std::function<bool(const SyncPath &path, std::error_code &ec)> _isDirectory;
         static std::function<bool(const SyncPath &path, std::error_code &ec)> _isSymlink;
+        static std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> _rename;
         static std::function<SyncPath(const SyncPath &path, std::error_code &ec)> _readSymlink;
         static std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> _fileSize;
         static std::function<SyncPath(std::error_code &ec)> _tempDirectoryPath;
-
 #ifdef __APPLE__
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;

@@ -17,6 +17,7 @@
  */
 
 #include "updatetreeworker.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
@@ -29,13 +30,14 @@ namespace KDC {
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)),
-    _updateTree(syncPal->updateTree(side)), _side(side) {}
+    ISyncWorker(syncPal, name, shortName),
+    _syncDb(syncPal->_syncDb), _operationSet(syncPal->operationSet(side)), _updateTree(syncPal->updateTree(side)), _side(side) {}
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,
                                    std::shared_ptr<UpdateTree> updateTree, const std::string &name, const std::string &shortName,
                                    ReplicaSide side) :
-    ISyncWorker(nullptr, name, shortName), _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
+    ISyncWorker(nullptr, name, shortName),
+    _syncDb(syncDb), _operationSet(operationSet), _updateTree(updateTree), _side(side) {}
 
 UpdateTreeWorker::~UpdateTreeWorker() {
     _operationSet.reset();
@@ -92,15 +94,17 @@ void UpdateTreeWorker::execute() {
     // Clear unexpected operation set once used
     _operationSet->clear();
 
-    setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
 ExitCode UpdateTreeWorker::step1MoveDirectory() {
+    auto perfMonitor = sentry::pTraces::scoped::Step1MoveDirectory(syncDbId());
     return createMoveNodes(NodeType::Directory);
 }
 
 ExitCode UpdateTreeWorker::step2MoveFile() {
+    auto perfMonitor = sentry::pTraces::scoped::Step2MoveFile(syncDbId());
     return createMoveNodes(NodeType::File);
 }
 
@@ -124,6 +128,8 @@ ExitCode UpdateTreeWorker::searchForParentNode(const SyncPath &nodePath, std::sh
 }
 
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
+    auto perfMonitor = sentry::pTraces::scoped::Step3DeleteDirectory(syncDbId());
+
     std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
     for (const auto &deleteOpId: deleteOpsIds) {
         // worker stop or pause
@@ -293,8 +299,8 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
             LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Operation Create already exists on item with "
                                              << Utility::formatSyncPath(createOp->path()).c_str());
 
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "UpdateTreeWorker::step4",
-                                                      "2 Create operations detected on the same item");
+            sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::step4",
+                                            "2 Create operations detected on the same item");
             isSnapshotRebuildRequired = true;
         }
     }
@@ -351,6 +357,8 @@ bool UpdateTreeWorker::updateTmpFileNode(std::shared_ptr<Node> newNode, const FS
 }
 
 ExitCode UpdateTreeWorker::step4DeleteFile() {
+    auto perfMonitor = sentry::pTraces::scoped::Step4DeleteFile(syncDbId());
+
     const ExitCode exitCode = handleCreateOperationsWithSamePath();
     if (exitCode != ExitCode::Ok) return exitCode; // Rebuild the snapshot.
 
@@ -484,6 +492,8 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 }
 
 ExitCode UpdateTreeWorker::step5CreateDirectory() {
+    auto perfMonitor = sentry::pTraces::scoped::Step5CreateDirectory(syncDbId());
+
     std::unordered_set<UniqueId> createOpsIds = _operationSet->getOpsByType(OperationType::Create);
     for (const auto &createOpId: createOpsIds) {
         // worker stop or pause
@@ -508,8 +518,8 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
         if (createOp->path().empty()) {
             LOG_SYNCPAL_WARN(_logger, "Invalid create operation on nodeId=" << createOp->nodeId().c_str());
             assert(false);
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "UpdateTreeWorker::step5CreateDirectory",
-                                                      "Invalid create operation");
+            sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::step5CreateDirectory",
+                                            "Invalid create operation");
             continue;
         }
 
@@ -550,6 +560,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
 }
 
 ExitCode UpdateTreeWorker::step6CreateFile() {
+    auto perfMonitor = sentry::pTraces::scoped::Step6CreateFile(syncDbId());
     for (const auto &op: _createFileOperationSet) {
         // worker stop or pause
         if (stopAsked()) {
@@ -626,6 +637,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 }
 
 ExitCode UpdateTreeWorker::step7EditFile() {
+    auto perfMonitor = sentry::pTraces::scoped::Step7EditFile(syncDbId());
     std::unordered_set<UniqueId> editOpsIds = _operationSet->getOpsByType(OperationType::Edit);
     for (const auto &editOpId: editOpsIds) {
         // worker stop or pause
@@ -715,6 +727,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
 }
 
 ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
+    auto perfMonitor = sentry::pTraces::scoped::Step8CompleteUpdateTree(syncDbId());
     if (stopAsked()) {
         return ExitCode::Ok;
     }

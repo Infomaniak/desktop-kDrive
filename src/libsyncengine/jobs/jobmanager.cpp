@@ -25,7 +25,6 @@
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
 
-#include <thread>
 #include <algorithm> // std::max
 
 #include <log4cplus/loggingmacros.h>
@@ -120,7 +119,7 @@ void JobManager::decreasePoolCapacity() {
         Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
         LOG_DEBUG(Log::instance()->getLogger(), "Job Manager capacity set to " << _maxNbThread);
     } else {
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "JobManager::defaultCallback",
+        sentry::Handler::captureMessage(sentry::Level::Warning, "JobManager::defaultCallback",
                                                   "JobManager capacity cannot be decreased");
     }
 }
@@ -139,7 +138,7 @@ JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
 
     _cpuUsageThreshold = ParametersCache::instance()->parameters().maxAllowedCpu() / 100.0;
 
-    _thread = std::make_unique<std::thread>(run);
+    _thread = std::make_unique<StdLoggingThread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
 }
 
