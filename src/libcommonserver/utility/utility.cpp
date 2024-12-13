@@ -123,9 +123,9 @@ int64_t Utility::freeDiskSpaceLimit() {
 }
 
 bool Utility::enoughSpace(const SyncPath &path) {
-    const int64_t freeBytes = Utility::freeDiskSpace(path);
+    const int64_t freeBytes = freeDiskSpace(path);
     if (freeBytes >= 0) {
-        if (freeBytes < Utility::freeDiskSpaceLimit()) {
+        if (freeBytes < freeDiskSpaceLimit()) {
             return false;
         }
     }
@@ -229,13 +229,13 @@ std::wstring Utility::formatStdError(const std::error_code &ec) {
 #ifdef _WIN32
     std::stringstream ss;
     ss << ec.message() << " (code: " << ec.value() << ")";
-    return Utility::s2ws(ss.str());
+    return s2ws(ss.str());
 #elif defined(__unix__)
     std::stringstream ss;
     ss << ec.message() << ". (code: " << ec.value() << ")";
-    return Utility::s2ws(ss.str());
+    return s2ws(ss.str());
 #elif defined(__APPLE__)
-    return Utility::s2ws(ec.message());
+    return s2ws(ec.message());
 #endif
 }
 
@@ -297,7 +297,7 @@ static std::unordered_map<std::string, bool> rootFsTypeMap;
 bool Utility::isNtfs(const SyncPath &targetPath) {
     auto it = rootFsTypeMap.find(targetPath.root_name().string());
     if (it == rootFsTypeMap.end()) {
-        std::string fsType = Utility::fileSystemName(targetPath);
+        std::string fsType = fileSystemName(targetPath);
         auto val = rootFsTypeMap.insert({targetPath.root_name().string(), fsType == NTFS});
         if (!val.second) {
             // Failed to insert into map
@@ -322,15 +322,15 @@ std::string Utility::fileSystemName(const SyncPath &targetPath) {
 
     if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
                              szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-        return Utility::ws2s(szFileSystemName);
+        return ws2s(szFileSystemName);
     } else {
         // Not all the requested information is retrieved
         DWORD dwError = GetLastError();
-        LOGW_WARN(logger(),
-                  L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()).c_str() << L" (" << dwError << L")");
+        LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
+                                                                  << CommonUtility::getErrorMessage(dwError) << L")");
 
         // !!! File system name can be OK or not !!!
-        return Utility::ws2s(szFileSystemName);
+        return ws2s(szFileSystemName);
     }
 #else
     (void) targetPath;
@@ -399,13 +399,13 @@ bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
 
 bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame) {
     SyncName aNormalized;
-    if (!Utility::normalizedSyncName(a, aNormalized)) {
-        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(a));
+    if (!normalizedSyncName(a, aNormalized)) {
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(a));
         return false;
     }
     SyncName bNormalized;
-    if (!Utility::normalizedSyncName(b, bNormalized)) {
-        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(b));
+    if (!normalizedSyncName(b, bNormalized)) {
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(b));
         return false;
     }
     areSame = (aNormalized == bNormalized);
@@ -414,13 +414,13 @@ bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, boo
 
 bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame) {
     SyncPath aNormalized;
-    if (!Utility::normalizedSyncPath(a, aNormalized)) {
-        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
+    if (!normalizedSyncPath(a, aNormalized)) {
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncPath: " << formatSyncPath(a));
         return false;
     }
     SyncPath bNormalized;
-    if (!Utility::normalizedSyncPath(b, bNormalized)) {
-        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
+    if (!normalizedSyncPath(b, bNormalized)) {
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncPath: " << formatSyncPath(b));
         return false;
     }
     areSame = (aNormalized == bNormalized);
@@ -610,8 +610,7 @@ std::string Utility::toUpper(const std::string &str) {
 }
 
 std::string Utility::_errId(const char *file, int line) {
-    std::string err =
-            Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
+    std::string err = toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
     return err;
 }
 
@@ -646,10 +645,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
             DWORD dwError = GetLastError();
             if (dwError != ERROR_INSUFFICIENT_BUFFER) {
                 // Real error, not buffer error
-                LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
-                                                                   << std::to_wstring(dwError));
-                sentry::Handler::captureMessage(sentry::Level::Error, "Utility::normalizedSyncName",
-                                                "Failed to normalize string");
+                LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" ("
+                                                             << CommonUtility::getErrorMessage(dwError) << L")");
                 return false;
             }
 
@@ -660,9 +657,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
 
     if (iSizeEstimated <= 0) {
         DWORD dwError = GetLastError();
-        LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
-                                                           << std::to_wstring(dwError));
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::normalizedSyncName", "Failed to normalize string");
+        LOGW_DEBUG(logger(),
+                   L"Failed to normalize " << formatSyncName(name) << L" (" << CommonUtility::getErrorMessage(dwError) << L")");
         return false;
     }
 
@@ -679,6 +675,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
 
     if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion
                       // has failed. e.g.: Linux can sometime send filesystem events with strange character in the path
+        LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name));
         return false;
     }
 
@@ -695,8 +692,8 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath)
     auto segment = *segmentIt;
     if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
         SyncName normalizedName;
-        if (!Utility::normalizedSyncName(segment, normalizedName)) {
-            LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(segment));
+        if (!normalizedSyncName(segment, normalizedName)) {
+            LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(segment));
             return false;
         }
         segment = normalizedName;
@@ -707,8 +704,8 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath)
     for (; segmentIt != path.end(); ++segmentIt) {
         if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
             SyncName normalizedName;
-            if (!Utility::normalizedSyncName(*segmentIt, normalizedName)) {
-                LOGW_WARN(logger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*segmentIt));
+            if (!normalizedSyncName(*segmentIt, normalizedName)) {
+                LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(*segmentIt));
                 return false;
             }
             normalizedPath /= normalizedName;
@@ -732,26 +729,26 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     bool result = IoHelper::getItemType(dirEntry.path(), itemType);
     ioError = itemType.ioError;
     if (!result) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
         return false;
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError).c_str());
+        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
         return true;
     }
 
     isLink = itemType.linkType != LinkType::None;
     if (!dirEntry.is_directory() && !dirEntry.is_regular_file() && !isLink) {
-        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path()).c_str()
-                                       << L" because it's not a directory, a regular file or a symlink");
+        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
+                                       << L" because it is not a directory, a regular file or a symlink");
         isManaged = false;
         return true;
     }
 
     if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(),
-                  L"Ignore " << formatSyncPath(dirEntry.path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
+                  L"Ignore " << formatSyncPath(dirEntry.path()) << L" because size > " << CommonUtility::maxPathLength());
         isManaged = false;
         return true;
     }
