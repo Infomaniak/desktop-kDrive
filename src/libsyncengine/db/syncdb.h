@@ -111,7 +111,6 @@ class SyncDb : public Db {
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
 
         // Helpers
-        bool createAndPrepareRequest(const char *requestId, const char *query);
         bool checkNodeIds(const DbNode &node);
 
         // Fixes
