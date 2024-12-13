@@ -1145,7 +1145,7 @@ ExitCode GuiRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo
 
 ExitCode GuiRequests::getFetchingAppList(QHash<QString, QString> &appTable) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::GET_FETCHING_APP_LIST, {}, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST, {}, results, COMM_AVERAGE_TIMEOUT)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
@@ -1249,6 +1249,11 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
     if (!CommClient::instance()->execute(RequestNum::UPDATER_SKIP_VERSION, params)) {
         return ExitCode::SystemError;
     }
+    return ExitCode::Ok;
+}
+
+ExitCode GuiRequests::reportClientDisplayed() {
+    CommClient::instance()->execute(RequestNum::UTILITY_DISPLAY_CLIENT_REPORT);
     return ExitCode::Ok;
 }
 

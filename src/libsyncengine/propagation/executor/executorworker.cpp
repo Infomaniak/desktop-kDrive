@@ -32,6 +32,7 @@
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
 #include "jobs/jobmanager.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -68,12 +69,11 @@ void ExecutorWorker::execute() {
 
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
-
     initProgressManager();
-
     uint64_t changesCounter = 0;
     while (!_opList.empty()) { // Same loop twice because we might reschedule the jobs after a pause TODO : refactor double loop
         // Create all the jobs
+        sentry::pTraces::scoped::JobGeneration perfMonitor(syncDbId());
         while (!_opList.empty()) {
             if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
                 executorExitInfo = exitInfo;
@@ -203,11 +203,13 @@ void ExecutorWorker::execute() {
                 }
             }
         }
-
+        perfMonitor.stop();
+        sentry::pTraces::scoped::waitForAllJobsToFinish perfMonitorwaitForAllJobsToFinish(syncDbId());
         if (ExitInfo exitInfo = waitForAllJobsToFinish(); !exitInfo) {
             executorExitInfo = exitInfo;
             break;
         }
+        perfMonitorwaitForAllJobsToFinish.stop();
     }
 
     _syncPal->_syncOps->clear();
@@ -232,6 +234,8 @@ void ExecutorWorker::execute() {
 }
 
 void ExecutorWorker::initProgressManager() {
+    sentry::pTraces::scoped::InitProgress perfMonitor(syncDbId());
+
     for (const auto syncOpId: _opList) {
         SyncFileItem syncItem;
         SyncOpPtr syncOp = _syncPal->_syncOps->getOp(syncOpId);
@@ -993,7 +997,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             // Should not happen
             LOGW_SYNCPAL_WARN(_logger, L"Edit operation with empty corresponding node id for "
                                                << Utility::formatSyncPath(absoluteLocalFilePath));
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ExecutorWorker::generateEditJob",
+            sentry::Handler::captureMessage(sentry::Level::Warning, "ExecutorWorker::generateEditJob",
                                                       "Edit operation with empty corresponding node id");
             return ExitCode::DataError;
         }

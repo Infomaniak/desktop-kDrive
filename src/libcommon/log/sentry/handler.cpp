@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sentryhandler.h"
+#include "handler.h"
 #include "config.h"
 #include "version.h"
 #include "utility/utility.h"
@@ -27,13 +27,13 @@
 
 #include <asserts.h>
 
-namespace KDC {
+namespace KDC::sentry {
 
-std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
+std::shared_ptr<Handler> Handler::_instance = nullptr;
 
-KDC::AppType SentryHandler::_appType = KDC::AppType::None;
-bool SentryHandler::_debugCrashCallback = false;
-bool SentryHandler::_debugBeforeSendCallback = false;
+AppType Handler::_appType = AppType::None;
+bool Handler::_debugCrashCallback = false;
+bool Handler::_debugBeforeSendCallback = false;
 
 /*
  *  sentry_value_t reader implementation - begin
@@ -148,16 +148,16 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
     (void) uctx;
     (void) closure;
 
-    std::cerr << "Sentry detected a crash in the app " << SentryHandler::appType() << std::endl;
+    std::cerr << "Sentry detected a crash in the app " << Handler::appType() << std::endl;
 
     // As `signum` is unknown, a crash is considered as a kill.
     const int signum{0};
-    KDC::CommonUtility::writeSignalFile(SentryHandler::appType(), KDC::fromInt<KDC::SignalType>(signum));
+    KDC::CommonUtility::writeSignalFile(Handler::appType(), KDC::fromInt<KDC::SignalType>(signum));
 
-    if (SentryHandler::debugCrashCallback()) {
+    if (Handler::debugCrashCallback()) {
         std::stringstream ss;
         readObject(event, ss);
-        SentryHandler::writeEvent(ss.str(), true);
+        Handler::writeEvent(ss.str(), true);
     }
 
     return event;
@@ -167,40 +167,40 @@ sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closur
     (void) hint;
     (void) closure;
 
-    std::cout << "Sentry will send an event for the app " << SentryHandler::appType() << std::endl;
+    std::cout << "Sentry will send an event for the app " << Handler::appType() << std::endl;
 
-    if (SentryHandler::debugBeforeSendCallback()) {
+    if (Handler::debugBeforeSendCallback()) {
         std::stringstream ss;
         readObject(event, ss);
-        SentryHandler::writeEvent(ss.str(), false);
+        Handler::writeEvent(ss.str(), false);
     }
 
     return event;
 }
 
-std::shared_ptr<SentryHandler> SentryHandler::instance() {
+std::shared_ptr<Handler> Handler::instance() {
     if (!_instance) {
-        assert(false && "SentryHandler must be initialized before calling instance");
+        assert(false && "Handler must be initialized before calling instance");
         // TODO: When the logger will be moved to the common library, add a log there.
-        return std::shared_ptr<SentryHandler>(new SentryHandler()); // Create a dummy instance to avoid crash but should never
-                                                                    // happen (the sentry will not be sent)
+        return std::shared_ptr<Handler>(new Handler()); // Create a dummy instance to avoid crash but should never
+                                                        // happen (the sentry will not be sent)
     }
     return _instance;
 }
 
-void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
+void Handler::init(AppType appType, int breadCrumbsSize) {
     if (_instance) {
-        assert(false && "SentryHandler already initialized");
+        assert(false && "Handler already initialized");
         return;
     }
 
-    _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
+    _instance = std::shared_ptr<Handler>(new Handler());
     if (!_instance) {
         assert(false);
         return;
     }
 
-    if (appType == KDC::AppType::None) {
+    if (appType == AppType::None) {
         _instance->_isSentryActivated = false;
         return;
     }
@@ -222,7 +222,7 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
 
     // Sentry init
     sentry_options_t *options = sentry_options_new();
-    sentry_options_set_dsn(options, ((appType == KDC::AppType::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
+    sentry_options_set_dsn(options, ((appType == AppType::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
     const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
 #endif
@@ -265,25 +265,34 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
         sentry_options_set_environment(options, environment.c_str());
     }
 
+#ifdef NDEBUG
+    sentry_options_set_traces_sample_rate(options, 0.001); // 0.1% of traces will be sent to sentry.
+#else
+    sentry_options_set_traces_sample_rate(options, 1);
+#endif
+    sentry_options_set_max_spans(options, 1000); // Maximum number of spans per transaction
+
     // Init sentry
     ASSERT(sentry_init(options) == 0);
     _instance->_isSentryActivated = true;
 }
 
-void SentryHandler::setAuthenticatedUser(const SentryUser &user) {
+void Handler::setAuthenticatedUser(const SentryUser &user) {
     std::scoped_lock lock(_mutex);
     _authenticatedUser = user;
+    updateEffectiveSentryUser();
 }
 
-void SentryHandler::setGlobalConfidentialityLevel(SentryConfidentialityLevel level) {
+void Handler::setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level) {
     std::scoped_lock lock(_mutex);
     _globalConfidentialityLevel = level;
 }
 
-void SentryHandler::captureMessage(SentryLevel level, const std::string &title, std::string message /*Copy needed*/,
-                                   const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
-    std::scoped_lock lock(_mutex);
+void Handler::_captureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
+                              const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
     if (!_isSentryActivated) return;
+
+    std::scoped_lock lock(_mutex);
 
     SentryEvent event(title, message, level, _globalConfidentialityLevel, user);
     bool toUpload = false;
@@ -295,21 +304,21 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
     sendEventToSentry(event.level, event.title, event.message);
 }
 
-void SentryHandler::sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const {
+void Handler::sendEventToSentry(const Level level, const std::string &title, const std::string &message) const {
     sentry_capture_event(sentry_value_new_message_event(static_cast<sentry_level_t>(level), title.c_str(), message.c_str()));
 }
 
-void SentryHandler::setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit) {
+void Handler::setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit) {
     assert(maxCaptureCountBeforeRateLimit > 0 && "Max capture count before rate limit must be greater than 0");
     _sentryMaxCaptureCountBeforeRateLimit = static_cast<unsigned int>(std::max(1, maxCaptureCountBeforeRateLimit));
 }
 
-void SentryHandler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) {
+void Handler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) {
     assert(minUploadIntervalOnRateLimit > 0 && "Min upload interval on rate limit must be greater than 0");
-    _sentryMinUploadIntervaOnRateLimit = std::max(1, minUploadIntervalOnRateLimit);
+    _sentryMinUploadIntervalOnRateLimit = std::max(1, minUploadIntervalOnRateLimit);
 }
 
-sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {
+sentry_value_t Handler::toSentryValue(const SentryUser &user) const {
     sentry_value_t userValue = sentry_value_new_object();
     sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.email().data()));
     sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.username().data()));
@@ -317,7 +326,7 @@ sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {
     return userValue;
 }
 
-void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
+void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     using namespace std::chrono;
     std::scoped_lock lock(_mutex);
 
@@ -348,8 +357,8 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
         return;
     }
 
-    if (storedEvent.captureCount == _sentryMaxCaptureCountBeforeRateLimit) { // Rate limit reached, we send this event and we will
-                                                                             // wait 10 minutes before sending it again
+    if (storedEvent.captureCount == _sentryMaxCaptureCountBeforeRateLimit) { // Rate limit reached, we send this event and we
+                                                                             // will wait 10 minutes before sending it again
         storedEvent.lastUpload = system_clock::now();
         escalateSentryEvent(event);
         return;
@@ -363,56 +372,59 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     escalateSentryEvent(event);
 }
 
-bool SentryHandler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
+bool Handler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastCapture + seconds(_sentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
+    return (event.lastCapture + seconds(_sentryMinUploadIntervalOnRateLimit)) <= system_clock::now();
 }
 
-bool SentryHandler::lastEventUploadIsOutdated(const SentryEvent &event) const {
+bool Handler::lastEventUploadIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastUpload + seconds(_sentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
+    return (event.lastUpload + seconds(_sentryMinUploadIntervalOnRateLimit)) <= system_clock::now();
 }
 
-void SentryHandler::escalateSentryEvent(SentryEvent &event) {
+void Handler::escalateSentryEvent(SentryEvent &event) const {
     event.message += " (Rate limit reached: " + std::to_string(event.captureCount) + " captures.";
-    if (event.level == SentryLevel::Fatal || event.level == SentryLevel::Error) {
+    if (event.level == Level::Fatal || event.level == Level::Error) {
         event.message += ")";
         return;
     }
 
     event.message += " Level escalated from " + toString(event.level) + " to Error)";
-    event.level = SentryLevel::Error;
+    event.level = Level::Error;
 }
 
-void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
+void Handler::updateEffectiveSentryUser(const SentryUser &user) {
     if (_globalConfidentialityLevel == _lastConfidentialityLevel && user.isDefault()) return;
-    _lastConfidentialityLevel = user.isDefault() ? _globalConfidentialityLevel : SentryConfidentialityLevel::Specific;
+    _lastConfidentialityLevel = user.isDefault() ? _globalConfidentialityLevel : sentry::ConfidentialityLevel::Specific;
 
     sentry_value_t userValue;
-    if (!user.isDefault()) {
+    if (_globalConfidentialityLevel == sentry::ConfidentialityLevel::Anonymous) {
+        userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
+        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("0.0.0.0"));
+        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
+    } else if (!user.isDefault()) {
         userValue = toSentryValue(user);
         sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
         sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
-    } else if (_globalConfidentialityLevel == SentryConfidentialityLevel::Authenticated) {
+    } else if (_globalConfidentialityLevel == sentry::ConfidentialityLevel::Authenticated) {
         userValue = toSentryValue(_authenticatedUser);
         sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
         sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
-    } else { // Anonymous
-        userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
-        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("-1.-1.-1.-1"));
-        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
+    } else {
+        assert(false && "Invalid _globalConfidentialityLevel");
+        sentry_remove_user();
+        return;
     }
 
     sentry_remove_user();
     sentry_set_user(userValue);
 }
 
-void SentryHandler::writeEvent(const std::string &eventStr, bool crash) noexcept {
+void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
     using namespace KDC::event_dump_files;
-    auto eventFilePath =
-            std::filesystem::temp_directory_path() / (SentryHandler::appType() == AppType::Server
-                                                              ? (crash ? serverCrashEventFileName : serverSendEventFileName)
-                                                              : (crash ? clientCrashEventFileName : clientSendEventFileName));
+    auto eventFilePath = std::filesystem::temp_directory_path() /
+                         (Handler::appType() == AppType::Server ? (crash ? serverCrashEventFileName : serverSendEventFileName)
+                                                                : (crash ? clientCrashEventFileName : clientSendEventFileName));
 
     std::ofstream eventFile(eventFilePath, std::ios::app);
     if (eventFile) {
@@ -421,7 +433,7 @@ void SentryHandler::writeEvent(const std::string &eventStr, bool crash) noexcept
     }
 }
 
-SentryHandler::~SentryHandler() {
+Handler::~Handler() {
     if (this == _instance.get()) {
         _instance.reset();
 #if !defined(Q_OS_LINUX)
@@ -434,7 +446,168 @@ SentryHandler::~SentryHandler() {
     }
 }
 
-SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
-                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
-    title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
-} // namespace KDC
+Handler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, Level level,
+                                  sentry::ConfidentialityLevel confidentialityLevel, const SentryUser &user) :
+    title(title),
+    message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
+
+void Handler::stopPTrace(const pTraceId &id, PTraceStatus status) {
+    if (id == 0) return;
+
+    std::scoped_lock lock(_mutex);
+    auto performanceTraceIt = _pTraces.find(id);
+    if (performanceTraceIt == _pTraces.end()) {
+        return;
+    }
+    PerformanceTrace &performanceTrace = performanceTraceIt->second;
+
+    // Stop any child PerformanceTrace
+    for (const auto &childPerformanceTraceId: performanceTrace.children()) {
+        stopPTrace(childPerformanceTraceId, status);
+    }
+
+    // Stop the PerformanceTrace
+    if (performanceTrace.isSpan()) {
+        if (!performanceTrace.span()) {
+            assert(false && "Span is not valid");
+            return;
+        }
+        sentry_span_set_status(performanceTrace.span(), static_cast<sentry_span_status_t>(status));
+        sentry_span_finish(performanceTrace.span()); // Automatically stop any child transaction
+    } else {
+        if (!performanceTrace.transaction()) {
+            assert(false && "Transaction is not valid");
+            return;
+        }
+        sentry_transaction_set_status(performanceTrace.transaction(), static_cast<sentry_span_status_t>(status));
+        sentry_transaction_finish(performanceTrace.transaction()); // Automatically stop any child transaction
+    }
+    _pTraces.erase(id);
+}
+
+pTraceId Handler::makeUniquePTraceId() {
+    bool reseted = false;
+    do {
+        _pTraceIdCounter++;
+        if (_pTraceIdCounter >= std::numeric_limits<pTraceId>::max()-1) {
+            if (reseted) {
+                assert(false && "No more unique pTraceId available");
+                return 0;
+            }
+            _pTraceIdCounter = 1;
+            reseted = true;
+        }
+    } while (_pTraces.contains(_pTraceIdCounter)); // Ensure the pTraceId is unique
+    return _pTraceIdCounter;
+}
+
+pTraceId Handler::startTransaction(const std::string &name, const std::string &description) {
+    sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(name.c_str(), description.c_str());
+    sentry_transaction_t *tx = sentry_transaction_start(tx_ctx, sentry_value_new_null());
+    pTraceId traceId = makeUniquePTraceId();
+    auto [it, res] = _pTraces.try_emplace(traceId, traceId);
+    if (!res) {
+        assert(false && "Transaction already exists");
+        return 0;
+    }
+
+    PerformanceTrace &pTrace = it->second;
+    pTrace.setTransaction(tx);
+
+    return _pTraceIdCounter;
+}
+
+pTraceId Handler::startSpan(const std::string &name, const std::string &description, const pTraceId &parentId) {
+    auto parentIt = _pTraces.find(parentId);
+    if (parentIt == _pTraces.end()) {
+        assert(false && "Parent transaction/span does not exist");
+        return 0;
+    }
+
+    PerformanceTrace &parent = parentIt->second;
+    sentry_span_t *span = nullptr;
+    if (parent.isSpan()) {
+        if (!parent.span()) {
+            assert(false && "Parent span is not valid");
+            return 0;
+        }
+        span = sentry_span_start_child(parent.span(), name.c_str(), description.c_str());
+        assert(span);
+    } else {
+        if (!parent.transaction()) {
+            assert(false && "Parent transaction is not valid");
+            return 0;
+        }
+        span = sentry_transaction_start_child(parent.transaction(), name.c_str(), description.c_str());
+        assert(span);
+    }
+
+    pTraceId traceId = makeUniquePTraceId();
+    auto [it, res] = _pTraces.try_emplace(traceId, traceId);
+    if (!res) {
+        assert(false && "Transaction already exists");
+        return 0;
+    }
+
+    PerformanceTrace &pTrace = it->second;
+    pTrace.setSpan(span);
+    parent.addChild(pTrace.id());
+    return traceId;
+}
+
+pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) {
+    if (!_isSentryActivated || pTraceInfo._pTraceName == PTraceName::None) return 0;
+
+    std::scoped_lock lock(_mutex);
+    pTraceId newPTraceId = 0;
+    if (pTraceInfo._parentPTraceName != PTraceName::None) {
+        // Fetch the pTraceMap associated with the provided syncDbId
+        auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
+        if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
+            assert(false && "Parent transaction/span is not running.");
+            return 0;
+        }
+        auto &pTraceMap = pTraceMapIt->second;
+
+        // Find the parent pTrace
+        auto parentPTraceIt = pTraceMap.find(pTraceInfo._parentPTraceName);
+        if (parentPTraceIt == pTraceMap.end() || parentPTraceIt->second == 0) {
+            assert(false && "Parent transaction/span is not running.");
+            return 0;
+        }
+
+        const pTraceId &parentId = parentPTraceIt->second;
+
+        // Start the span
+        newPTraceId = startSpan(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription, parentId);
+        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] = newPTraceId;
+    } else {
+        // Start the transaction
+        newPTraceId = startTransaction(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription);
+        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] = newPTraceId;
+    }
+    return newPTraceId;
+}
+
+void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTraceStatus status) {
+    if (!_isSentryActivated || pTraceInfo._pTraceName == PTraceName::None) return;
+
+    std::scoped_lock lock(_mutex);
+    auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
+    if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
+        assert(false && "Transaction/span is not running.");
+        return;
+    }
+    auto &pTraceMap = pTraceMapIt->second;
+
+    auto pTraceIt = pTraceMap.find(pTraceInfo._pTraceName);
+    if (pTraceIt == pTraceMap.end() || pTraceIt->second == 0) {
+        assert(false && "Transaction is not running");
+        return;
+    }
+
+    stopPTrace(pTraceIt->second, status);
+    pTraceIt->second = 0;
+}
+
+} // namespace KDC::sentry

@@ -63,13 +63,13 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
     if (getAppVersionJobPtr->hasErrorApi(&errorCode, &errorDescr)) {
         std::stringstream ss;
         ss << errorCode.c_str() << " - " << errorDescr;
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
     } else {
         _versionInfo = getAppVersionJobPtr->getProdVersionInfo();
         if (!_versionInfo.isValid()) {
             std::string error = "Invalid version info!";
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
+            sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", error);
             LOG_ERROR(Log::instance()->getLogger(), error.c_str());
         }
     }

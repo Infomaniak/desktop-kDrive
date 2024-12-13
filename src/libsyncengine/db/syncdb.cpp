@@ -627,7 +627,7 @@ bool SyncDb::updateNames(const char *queryId, const SyncName &localName, const S
 
     SyncName remoteNormalizedName;
     if (!Utility::normalizedSyncName(remoteName, remoteNormalizedName)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(remoteName));
+        LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(remoteName));
         return false;
     }
     ASSERT(queryBindValue(queryId, 3, remoteNormalizedName))
@@ -688,7 +688,7 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
 
     SyncName remoteNormalizedName;
     if (!Utility::normalizedSyncName(node.nameRemote(), remoteNormalizedName)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(node.nameRemote()));
+        LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(node.nameRemote()));
         return false;
     }
 
@@ -2339,13 +2339,13 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
 
         SyncName nfcNormalizedName;
         if (!Utility::normalizedSyncName(nameLocal, nfcNormalizedName, Utility::UnicodeNormalization::NFC)) {
-            LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
+            LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
             return false;
         }
 
         SyncName nfdNormalizedName;
         if (!Utility::normalizedSyncName(nameLocal, nfdNormalizedName, Utility::UnicodeNormalization::NFD)) {
-            LOGW_WARN(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
+            LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(nameLocal));
             return false;
         }
 
