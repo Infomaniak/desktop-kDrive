@@ -280,7 +280,7 @@ Bitte wählen Sie einen anderen Ordner aus. Wenn Sie fortfahren, wird Lite Sync 
         <translation>Der kDrive Client läuft bereits!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="719"/>
+        <location filename="../src/gui/appclient.cpp" line="718"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>Der Benutzer %1 ist nicht angemeldet. Bitte melden Sie sich erneut an.</translation>
     </message>
@@ -353,7 +353,7 @@ Bitte wählen Sie einen anderen Ordner aus. Wenn Sie fortfahren, wird Lite Sync 
         <translation>Synchronisierungsaktivität</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4289"/>
+        <location filename="../src/server/appserver.cpp" line="4285"/>
         <source>A new folder larger than %1 MB has been added in the drive %2, you must validate its synchronization: %3.
 </source>
         <translation>Ein neuer Ordner mit einer Grösse von mehr als %1 MB wurde zum Laufwerk %2 hinzugefügt, Sie müssen die Synchronisierung überprüfen: %3.
@@ -1737,41 +1737,6 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Ein anderer Benutzer hat einen übergeordneten Ordner des Ziels verschoben. &lt;br/&gt;Der lokale Vorgang wurde abgebrochen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="673"/>
-        <source>An existing file/directory has an identical name with the same case options (same upper and lower case letters).&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Eine vorhandene Datei/ein vorhandenes Verzeichnis hat einen identischen Namen mit denselben Groß- und Kleinschreibungsoptionen (gleiche Groß- und Kleinbuchstaben).&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="680"/>
-        <source>The file/directory name contains an unsupported character.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Der Datei-/Verzeichnisname enthält ein nicht unterstütztes Zeichen.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="686"/>
-        <source>This file/directory name is reserved by your operating system.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Dieser Datei-/Verzeichnisname ist von Ihrem Betriebssystem reserviert.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="692"/>
-        <source>The file/directory name is too long.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Der Datei-/Verzeichnisname ist zu lang.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="698"/>
-        <source>The file/directory path is too long.&lt;br&gt;The file/directory is ignored.</source>
-        <translation>Der Datei-/Verzeichnispfad ist zu lang.&lt;br&gt;Die Datei/das Verzeichnis wird ignoriert.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="704"/>
-        <source>The file/directory name contains a recent UNICODE character not yet supported by your filesystem.&lt;br&gt;The parent directory has been excluded from synchronization.</source>
-        <translation>Der Datei-/Verzeichnisname enthält ein aktuelles UNICODE-Zeichen, das von Ihrem Dateisystem noch nicht unterstützt wird.&lt;br&gt;Das übergeordnete Verzeichnis wurde von der Synchronisierung ausgeschlossen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="710"/>
-        <source>The file/directory name coincides with the name of another item in the same directory.&lt;br&gt;This item is temporarily blacklisted. Consider removing duplicate items.</source>
-        <translation>Der Datei-/Verzeichnisname stimmt mit dem Namen eines anderen Elements im selben Verzeichnis überein.&lt;br&gt;Dieses Element steht vorübergehend auf der schwarzen Liste. Ziehen Sie in Erwägung, doppelte Elemente zu entfernen.</translation>
-    </message>
-    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="721"/>
         <source>Either you are not allowed to create an item, or another item already exists with the same name.&lt;br&gt;The item has been excluded from synchronization.</source>
         <translation>Entweder ist es Ihnen nicht erlaubt, einen Eintrag zu erstellen, oder es existiert bereits ein anderer Eintrag mit demselben Namen.&lt;br&gt;Der Eintrag wurde von der Synchronisierung ausgeschlossen.</translation>
@@ -1825,6 +1790,41 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <location filename="../src/gui/parametersdialog.cpp" line="796"/>
         <source>The file is too large to be uploaded. It has been temporarily blacklisted.</source>
         <translation>Die Datei ist zu groß, um hochgeladen zu werden. Sie wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="673"/>
+        <source>An existing item has an identical name with the same case options (same upper and lower case letters).&lt;br&gt;It has been temporarily blacklisted.</source>
+        <translation>Ein vorhandenes Element hat einen identischen Namen mit denselben Groß- und Kleinschreibungsoptionen (gleiche Groß- und Kleinbuchstaben).&lt;br&gt;Es wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="680"/>
+        <source>The item name contains an unsupported character.&lt;br&gt;It has been temporarily blacklisted.</source>
+        <translation>Der Elementname enthält ein nicht unterstütztes Zeichen.&lt;br&gt;Es wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="686"/>
+        <source>This item name is reserved by your operating system.&lt;br&gt;It has been temporarily blacklisted.</source>
+        <translation>Dieser Elementname ist von Ihrem Betriebssystem reserviert.&lt;br&gt;Es wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="692"/>
+        <source>The item name is too long.&lt;br&gt;It has been temporarily blacklisted.</source>
+        <translation>Der Elementname ist zu lang.&lt;br&gt;Es wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="698"/>
+        <source>The item path is too long.&lt;br&gt;It has been ignored.</source>
+        <translation>Der Elementpfad ist zu lang.&lt;br&gt;Es wurde ignoriert.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="704"/>
+        <source>The item name contains a recent UNICODE character not yet supported by your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>Der Elementname enthält ein aktuelles UNICODE-Zeichen, das von Ihrem Dateisystem noch nicht unterstützt wird.&lt;br&gt;Es wurde von der Synchronisierung ausgeschlossen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="710"/>
+        <source>The item name coincides with the name of another item in the same directory.&lt;br&gt;It has been temporarily blacklisted. Consider removing duplicate items.</source>
+        <translation>Der Elementname stimmt mit dem Namen eines anderen Elements im selben Verzeichnis überein.&lt;br&gt;Es wurde vorübergehend auf die schwarze Liste gesetzt. Erwägen Sie, doppelte Elemente zu entfernen.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="802"/>

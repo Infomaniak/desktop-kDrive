@@ -280,7 +280,7 @@ Por favor seleccione otro carpeta. Si continúa, Lite Sync será deshabilitado.&
         <translation>¡El cliente de kDrive ya se está ejecutando!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="719"/>
+        <location filename="../src/gui/appclient.cpp" line="718"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>El usuario %1 no está conectado. Inicia sesión de nuevo.</translation>
     </message>
@@ -288,12 +288,12 @@ Por favor seleccione otro carpeta. Si continúa, Lite Sync será deshabilitado.&
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3325"/>
+        <location filename="../src/server/appserver.cpp" line="3321"/>
         <source>kDrive application is already running!</source>
         <translation>¡La aplicación kDrive ya se está ejecutando!</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3368"/>
+        <location filename="../src/server/appserver.cpp" line="3364"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 y otros %n archivo(s) han sido borrados.</numerusform>
@@ -301,13 +301,13 @@ Por favor seleccione otro carpeta. Si continúa, Lite Sync será deshabilitado.&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3370"/>
+        <location filename="../src/server/appserver.cpp" line="3366"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 ha sido eliminado.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3375"/>
+        <location filename="../src/server/appserver.cpp" line="3371"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 y % otros archivo(s) han sido añadidos.</numerusform>
@@ -315,13 +315,13 @@ Por favor seleccione otro carpeta. Si continúa, Lite Sync será deshabilitado.&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3377"/>
+        <location filename="../src/server/appserver.cpp" line="3373"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 ha sido añadido.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3382"/>
+        <location filename="../src/server/appserver.cpp" line="3378"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 y otros %n archivo(s) han sido actualizados.</numerusform>
@@ -329,13 +329,13 @@ Por favor seleccione otro carpeta. Si continúa, Lite Sync será deshabilitado.&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3384"/>
+        <location filename="../src/server/appserver.cpp" line="3380"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 ha sido actualizado.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3389"/>
+        <location filename="../src/server/appserver.cpp" line="3385"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 ha sido movido a %2 y otros %n archivo(s) han sido movidos.</numerusform>
@@ -343,17 +343,17 @@ Por favor seleccione otro carpeta. Si continúa, Lite Sync será deshabilitado.&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3392"/>
+        <location filename="../src/server/appserver.cpp" line="3388"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 ha sido movido a %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3400"/>
+        <location filename="../src/server/appserver.cpp" line="3396"/>
         <source>Sync Activity</source>
         <translation>Actividad de sincronización</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4289"/>
+        <location filename="../src/server/appserver.cpp" line="4285"/>
         <source>A new folder larger than %1 MB has been added in the drive %2, you must validate its synchronization: %3.
 </source>
         <translation>Se ha añadido una nueva carpeta mayor a %1 MB en el drive %2, debes validar su sincronización: %3.
@@ -1735,41 +1735,6 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>Otro usuario ha movido una carpeta principal del destino.&lt;br&gt;La operación local ha sido cancelada.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="673"/>
-        <source>An existing file/directory has an identical name with the same case options (same upper and lower case letters).&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Un archivo/directorio existente tiene un nombre idéntico con las mismas opciones de mayúsculas y minúsculas (mismas letras mayúsculas y minúsculas).&lt;br&gt;El archivo/directorio se ha incluido temporalmente en la lista negra.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="680"/>
-        <source>The file/directory name contains an unsupported character.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>El nombre del archivo/directorio contiene un carácter no admitido.&lt;br&gt;El archivo/directorio se ha incluido temporalmente en la lista negra.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="686"/>
-        <source>This file/directory name is reserved by your operating system.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Este nombre de archivo/directorio está reservado por su sistema operativo.&lt;br&gt;El archivo/directorio se ha incluido temporalmente en la lista negra.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="692"/>
-        <source>The file/directory name is too long.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>El nombre del archivo/directorio es demasiado largo.&lt;br&gt;El archivo/directorio se ha incluido temporalmente en la lista negra.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="698"/>
-        <source>The file/directory path is too long.&lt;br&gt;The file/directory is ignored.</source>
-        <translation>La ruta del archivo/directorio es demasiado larga.&lt;br&gt;El archivo/directorio se ignora.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="704"/>
-        <source>The file/directory name contains a recent UNICODE character not yet supported by your filesystem.&lt;br&gt;The parent directory has been excluded from synchronization.</source>
-        <translation>El nombre del archivo/directorio contiene un carácter UNICODE reciente que aún no es compatible con su sistema de archivos.&lt;br&gt;El directorio principal se ha excluido de la sincronización.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="710"/>
-        <source>The file/directory name coincides with the name of another item in the same directory.&lt;br&gt;This item is temporarily blacklisted. Consider removing duplicate items.</source>
-        <translation>El nombre del archivo/directorio coincide con el nombre de otro elemento en el mismo directorio.&lt;br&gt;Este elemento está temporalmente en la lista negra. Considere eliminar elementos duplicados.</translation>
-    </message>
-    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="721"/>
         <source>Either you are not allowed to create an item, or another item already exists with the same name.&lt;br&gt;The item has been excluded from synchronization.</source>
         <translation>O bien no se le permite crear un elemento, o bien ya existe otro elemento con el mismo nombre.&lt;br&gt;El elemento se ha excluido de la sincronización.</translation>
@@ -1823,6 +1788,41 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <location filename="../src/gui/parametersdialog.cpp" line="796"/>
         <source>The file is too large to be uploaded. It has been temporarily blacklisted.</source>
         <translation>El archivo es demasiado grande para ser cargado. Ha sido temporalmente bloqueado.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="673"/>
+        <source>An existing item has an identical name with the same case options (same upper and lower case letters).&lt;br&gt;It has been temporarily blacklisted.</source>
+        <translation>Un elemento existente tiene un nombre idéntico con las mismas opciones de mayúsculas y minúsculas.&lt;br&gt;Se ha incluido temporalmente en la lista negra.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="680"/>
+        <source>The item name contains an unsupported character.&lt;br&gt;It has been temporarily blacklisted.</source>
+        <translation>El nombre del elemento contiene un carácter no compatible.&lt;br&gt;Se ha incluido temporalmente en la lista negra.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="686"/>
+        <source>This item name is reserved by your operating system.&lt;br&gt;It has been temporarily blacklisted.</source>
+        <translation>El nombre de este elemento está reservado por su sistema operativo.&lt;br&gt;Se ha incluido temporalmente en la lista negra.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="692"/>
+        <source>The item name is too long.&lt;br&gt;It has been temporarily blacklisted.</source>
+        <translation>El nombre del elemento es demasiado largo.&lt;br&gt;Se ha incluido temporalmente en la lista negra.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="698"/>
+        <source>The item path is too long.&lt;br&gt;It has been ignored.</source>
+        <translation>La ruta del elemento es demasiado larga.&lt;br&gt;Se ha ignorado.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="704"/>
+        <source>The item name contains a recent UNICODE character not yet supported by your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>El nombre del elemento contiene un carácter UNICODE reciente que aún no es compatible con su sistema de archivos.&lt;br&gt;Se ha excluido de la sincronización.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="710"/>
+        <source>The item name coincides with the name of another item in the same directory.&lt;br&gt;It has been temporarily blacklisted. Consider removing duplicate items.</source>
+        <translation>El nombre del elemento coincide con el nombre de otro elemento en el mismo directorio.&lt;br&gt;Se ha incluido temporalmente en la lista negra. Considere eliminar los elementos duplicados.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="802"/>
