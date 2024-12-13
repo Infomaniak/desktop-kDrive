@@ -179,6 +179,15 @@
         <translation>ABSCHLIESSEN</translation>
     </message>
     <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="283"/>
+        <source>This folder is not compatible with Lite Sync.&lt;br&gt; 
+Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt; 
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
+        <translation>Dieser Ordner ist nicht mit Lite Sync kompatibel.&lt;br&gt;
+Bitte wählen Sie einen anderen Ordner aus. Wenn Sie fortfahren, wird Lite Sync deaktiviert.&lt;br&gt;
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Mehr erfahren&lt;/a&gt;</translation>
+    </message>
+    <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="296"/>
         <source>Select folder</source>
         <translation>Ordner auswählen</translation>
@@ -192,15 +201,6 @@
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="211"/>
         <source>You will find all your files in this folder when the configuration is complete. You can drop new files there to sync them to your kDrive.</source>
         <translation>Alle Ihre Dateien befinden sich in diesem Ordner, sobald die Einrichtung abgeschlossen ist. Sie können dort neue Dateien ablegen und mit Ihrem kDrive synchronisieren.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="283"/>
-        <source>This folder is not compatible with Lite Sync.&lt;br&gt; 
-Please select another folder or if you continue Lite Sync will be disabled.&lt;br&gt; 
-&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Dieser Ordner ist nicht mit Lite Sync kompatibel.&lt;br&gt;
-Bitte wählen Sie einen anderen Ordner aus, sonst wird Lite Sync deaktiviert, wenn Sie fortfahren.&lt;br&gt;
-&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Weitere Informationen&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="373"/>
@@ -1467,11 +1467,11 @@ Wählen Sie diejenigen aus, die Sie synchronisieren möchten:</translation>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="208"/>
         <source>This folder is not compatible with Lite Sync.&lt;br&gt;
-Please select another folder or if you continue Lite Sync will be disabled.&lt;br&gt;
+Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt;
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
         <translation>Dieser Ordner ist nicht mit Lite Sync kompatibel.&lt;br&gt;
-Bitte wählen Sie einen anderen Ordner aus, sonst wird Lite Sync deaktiviert, wenn Sie fortfahren.&lt;br&gt;
-&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Weitere Informationen&lt;/a&gt;</translation>
+Bitte wählen Sie einen anderen Ordner aus. Wenn Sie fortfahren, wird Lite Sync deaktiviert.&lt;br&gt;
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Mehr erfahren&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="231"/>
