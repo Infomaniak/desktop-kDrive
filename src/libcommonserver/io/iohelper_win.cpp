@@ -117,7 +117,7 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
     return FileTimeToUnixTime(&ft, remainder);
 }
 
-uint64_t computeNodeId(const PFILE_ID_FULL_DIR_INFORMATION pFileInfo) {
+uint64_t computeNodeId(PFILE_ID_FULL_DIR_INFORMATION pFileInfo) {
     // We keep `long long` type cast for legacy reason.
     auto longLongId =
             (static_cast<long long>(pFileInfo->FileId.HighPart) << 32) + static_cast<long long>(pFileInfo->FileId.LowPart);
@@ -139,8 +139,8 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     // Get parent folder handle
-    HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING,
-                                 FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, nullptr,
+                                 OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
     if (hParent == INVALID_HANDLE_VALUE) {
         LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()) << L", "
