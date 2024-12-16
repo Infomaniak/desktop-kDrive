@@ -19,7 +19,6 @@
 #pragma once
 
 #include "syncpal/sharedobject.h"
-#include "snapshotitem.h"
 #include "db/dbnode.h"
 
 #include <unordered_map>
@@ -28,6 +27,8 @@
 #include <mutex>
 
 namespace KDC {
+
+class SnapshotItem;
 
 class Snapshot : public SharedObject {
     public:
@@ -93,6 +94,8 @@ class Snapshot : public SharedObject {
         NodeId _rootFolderId;
         std::unordered_map<NodeId, SnapshotItem> _items; // key: id
         bool _isValid = false;
+        bool _copy = false; // false for a real time snapshot, true for a copy
+
         mutable std::recursive_mutex _mutex;
 };
 

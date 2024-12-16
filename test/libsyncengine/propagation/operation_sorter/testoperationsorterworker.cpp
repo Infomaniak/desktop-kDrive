@@ -17,10 +17,11 @@
  */
 
 #include "testoperationsorterworker.h"
-
 #include "test_utility/testhelpers.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #include <memory>
+
 using namespace CppUnit;
 
 namespace KDC {

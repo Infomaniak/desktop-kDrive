@@ -18,9 +18,9 @@
 
 #include "testsnapshot.h"
 #include "test_utility/testhelpers.h"
-
 #include "db/syncdb.h"
 #include "requests/parameterscache.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 using namespace CppUnit;
 

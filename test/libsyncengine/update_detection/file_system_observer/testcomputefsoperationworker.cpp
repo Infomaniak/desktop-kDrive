@@ -19,6 +19,7 @@
 #include "testcomputefsoperationworker.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"

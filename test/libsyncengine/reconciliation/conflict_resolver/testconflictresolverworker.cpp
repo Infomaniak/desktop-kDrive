@@ -19,6 +19,7 @@
 #include "testconflictresolverworker.h"
 #include "requests/parameterscache.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 #include "test_utility/testhelpers.h"
 
 #include <memory>

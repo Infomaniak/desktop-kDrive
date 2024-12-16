@@ -18,10 +18,10 @@
 
 #include "remotefilesystemobserverworker.h"
 #include "jobs/jobmanager.h"
-#include "../../jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
-#include "../../jobs/network/API_v2/getfileinfojob.h"
-#include "../../jobs/network/API_v2/longpolljob.h"
-#include "../../jobs/network/API_v2/continuefilelistwithcursorjob.h"
+#include "jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/API_v2/getfileinfojob.h"
+#include "jobs/network/API_v2/longpolljob.h"
+#include "jobs/network/API_v2/continuefilelistwithcursorjob.h"
 #ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
