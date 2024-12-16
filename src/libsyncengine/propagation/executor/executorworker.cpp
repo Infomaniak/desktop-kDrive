@@ -2414,7 +2414,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
 void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
     LOG_SYNCPAL_DEBUG(_logger, "Cancelling all queued executor jobs");
 
-    const std::lock_guard<std::recursive_mutex> lock(_opListMutex);
+    const std::scoped_lock lock(_opListMutex);
 
     // First, abort all jobs that are not running yet to avoid starting them for
     // nothing
@@ -2665,7 +2665,7 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
 
 ExitInfo ExecutorWorker::removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode,
                                             OperationType opType) {
-    const std::lock_guard<std::recursive_mutex> lock(_opListMutex);
+    const std::scoped_lock lock(_opListMutex);
 
     std::list<UniqueId> dependentOps;
     for (const auto &opId: _opList) {
