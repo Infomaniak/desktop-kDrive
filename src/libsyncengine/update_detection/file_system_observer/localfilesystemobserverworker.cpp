@@ -25,6 +25,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
+#include "snapshot/snapshotitem.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -94,20 +95,32 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
 #ifdef __APPLE__
         if (opTypeFromOS == OperationType::Create) {
-            // Clear extended attributes of new items
-            if (!IoHelper::removeLiteSyncXAttrs(absolutePath, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in IoHelper::removeLiteSyncXAttrs: " << Utility::formatIoError(absolutePath, ioError));
-                invalidateSnapshot();
+            bool isPlaceholder = false;
+            bool isHydrated = false;
+            bool isSyncing = false;
+            int progress = 0;
+            if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
                 return;
             }
 
-            if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
-                sendAccessDeniedError(absolutePath);
-                continue;
-            } else if (ioError == IoError::NoSuchFileOrDirectory) {
-                exists = false;
+            if (isPlaceholder && isHydrated) {
+                // Clear extended attributes of new items
+                if (!IoHelper::removeLiteSyncXAttrs(absolutePath, ioError)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::removeLiteSyncXAttrs: "
+                                                       << Utility::formatIoError(absolutePath, ioError));
+                    invalidateSnapshot();
+                    return;
+                }
+
+                if (ioError == IoError::AccessDenied) {
+                    LOGW_SYNCPAL_DEBUG(_logger,
+                                       L"Item: " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
+                    sendAccessDeniedError(absolutePath);
+                    continue;
+                } else if (ioError == IoError::NoSuchFileOrDirectory) {
+                    exists = false;
+                }
             }
         }
 #endif
