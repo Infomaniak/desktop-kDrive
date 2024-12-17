@@ -495,7 +495,7 @@ bool DownloadJob::removeTmpFile() {
     if (_tmpPath.empty()) return true;
 
     if (std::error_code ec; !std::filesystem::remove_all(_tmpPath, ec)) {
-        LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatStdError(_tmpPath, ec));
+        LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatStdError(_tmpPath, ec));
         return false;
     }
 
@@ -506,7 +506,6 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
     restartSync = false;
 
     // Move downloaded file from tmp directory to sync directory
-    std::error_code ec;
 #ifdef _WIN32
     bool retry = true;
     int counter = 50;
@@ -515,7 +514,7 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
 #endif
 
         // Copy file content (i.e. doesn't change node id)
-        ec.clear();
+        std::error_code ec;
         std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
         if (ec) {
             LOGW_WARN(_logger,
