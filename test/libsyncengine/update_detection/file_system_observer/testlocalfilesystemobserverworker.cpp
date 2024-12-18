@@ -224,6 +224,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
 #ifndef __APPLE__ // Duplicate file names are not allowed.
     using namespace testhelpers;
     _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
     _syncPal->_localFSObserverWorker.reset();
 
     // Create a slow observer
@@ -468,7 +469,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
 void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingChange() {
     using namespace testhelpers;
 
-    LOGW_DEBUG(_logger, L"***** Test fast move/delete with enconding change*****"); // Behaviour ou MS office apps on macOS
+    LOGW_DEBUG(_logger, L"***** Test fast move/delete with enconding change*****"); // Behaviour of MS office apps on macOS
     _syncPal->_localFSObserverWorker->stop();
     _syncPal->_localFSObserverWorker->waitForExit();
     _syncPal->_localFSObserverWorker.reset();
