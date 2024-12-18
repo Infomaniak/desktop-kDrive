@@ -586,6 +586,8 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
             Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
+        FSOpPtr operation = op.second;
+
         // find parentNode by path
         std::shared_ptr<Node> parentNode = getOrCreateNodeFromExistingPath(operation->path().parent_path());
         std::shared_ptr<Node> newNode = parentNode->findChildrenById(operation->nodeId());

@@ -26,9 +26,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-void TestSnapshot::setUp() {
-    ParametersCache::instance(true);
-}
 
 void TestSnapshot::tearDown() {}
 
@@ -104,7 +101,6 @@ void TestSnapshot::setUp() {
     _snapshot->updateItem(itemAAA);
 }
 
-void TestSnapshot::tearDown() {}
 
 void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT(_snapshot->exists("a"));

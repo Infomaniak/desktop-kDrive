@@ -1465,9 +1465,9 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause
     return handleAccessDeniedItem(relativePath, dummyNodePtr, dummyNodePtr, cause);
 }
 
-ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shared_ptr<Node> &localBlacklistedNode,
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std::shared_ptr<Node> &localBlacklistedNode,
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
-    if (relativePath.empty()) {
+    if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
         return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
     }
@@ -1476,9 +1476,9 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
                 cause);
     addError(error);
 
-    NodeId localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath);
+    NodeId localNodeId = snapshot(ReplicaSide::Local)->itemId(relativeLocalPath);
     if (localNodeId.empty()) {
-        SyncPath absolutePath = localPath() / relativePath;
+        SyncPath absolutePath = localPath() / relativeLocalPath;
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
             bool exists = false;
             IoError ioError = IoError::Success;
@@ -1487,9 +1487,10 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
                 return ExitCode::SystemError;
             }
             if (ioError == IoError::AccessDenied) { // A parent of the file does not have sufficient right
-                LOGW_DEBUG(_logger, L"A parent of " << Utility::formatSyncPath(relativePath)
+                LOGW_DEBUG(_logger, L"A parent of " << Utility::formatSyncPath(relativeLocalPath)
                                                     << L"does not have sufficient right, blacklisting the parent item.");
-                return handleAccessDeniedItem(relativePath.parent_path(), localBlacklistedNode, remoteBlacklistedNode, cause);
+                return handleAccessDeniedItem(relativeLocalPath.parent_path(), localBlacklistedNode, remoteBlacklistedNode,
+                                              cause);
             }
         }
     }
@@ -1498,7 +1499,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
                                          << Utility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
-    NodeId remoteNodeId = snapshot(ReplicaSide::Remote)->itemId(relativePath);
+    NodeId remoteNodeId = snapshot(ReplicaSide::Remote)->itemId(relativeLocalPath);
     if (bool found; remoteNodeId.empty() && !localNodeId.empty() &&
                     !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
@@ -1507,19 +1508,19 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
 
     localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
     remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(remoteNodeId);
-    
+
     // Blacklist the item
     if (!localNodeId.empty()) {
-        _tmpBlacklistManager->blacklistItem(localNodeId, relativePath, ReplicaSide::Local);
+        _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
         if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
         }
     }
 
     if (!remoteNodeId.empty()) {
-        _tmpBlacklistManager->blacklistItem(remoteNodeId, relativePath, ReplicaSide::Remote);
+        _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
         if (!updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
         }
     }
 
