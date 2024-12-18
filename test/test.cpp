@@ -18,7 +18,7 @@
 
 #include "testincludes.h"
 
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -29,7 +29,7 @@ int runTestSuite(const std::string &logFileName) {
     srand(static_cast<unsigned int>(time(NULL)));
 
     // Disable sentry
-    KDC::SentryHandler::init(KDC::AppType::None);
+    KDC::sentry::Handler::init(KDC::AppType::None);
     // Setup log4cplus
     log4cplus::Initializer initializer;
     std::time_t now = std::time(nullptr);

@@ -22,7 +22,7 @@ set(libcommon_SRCS
     comm.h
     utility/types.h
     utility/types.cpp
-    utility/utility.h utility/utility.cpp
+    utility/utility_base.h utility/utility.h utility/utility.cpp
     utility/jsonparserutility.h
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
@@ -38,8 +38,13 @@ set(libcommon_SRCS
     info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp
     info/exclusionappinfo.h info/exclusionappinfo.cpp
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
-    log/sentry/sentryhandler.h log/sentry/sentryhandler.cpp
-    log/sentry/sentryuser.h
+    log/sentry/handler.h log/sentry/handler.cpp
+    log/sentry/abstractptrace.h 
+    log/sentry/abstractcounterscopedptrace.h
+    log/sentry/abstractscopedptrace.h 
+    log/sentry/ptraces.h log/sentry/user.h 
+    log/sentry/ptracedescriptor.h
+    log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h
     theme/theme.h theme/theme.cpp
 )

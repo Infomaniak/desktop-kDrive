@@ -1459,8 +1459,15 @@ void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
 }
 
-ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause) {
-    if (relativeLocalPath.empty()) {
+
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause) {
+    std::shared_ptr<Node> dummyNodePtr;
+    return handleAccessDeniedItem(relativePath, dummyNodePtr, dummyNodePtr, cause);
+}
+
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shared_ptr<Node> &localBlacklistedNode,
+                                         std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
+    if (relativePath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
         return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
     }
@@ -1469,8 +1476,8 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, Exit
                 cause);
     addError(error);
 
-    NodeId localNodeId;
-    if (localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath); localNodeId.empty()) {
+    NodeId localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath);
+    if (localNodeId.empty()) {
         SyncPath absolutePath = localPath() / relativePath;
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
             bool exists = false;
@@ -1482,7 +1489,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, Exit
             if (ioError == IoError::AccessDenied) { // A parent of the file does not have sufficient right
                 LOGW_DEBUG(_logger, L"A parent of " << Utility::formatSyncPath(relativePath)
                                                     << L"does not have sufficient right, blacklisting the parent item.");
-                return handleAccessDeniedItem(relativePath.parent_path(), cause);
+                return handleAccessDeniedItem(relativePath.parent_path(), localBlacklistedNode, remoteBlacklistedNode, cause);
             }
         }
     }
@@ -1498,6 +1505,9 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, Exit
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 
+    localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
+    remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(remoteNodeId);
+    
     // Blacklist the item
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativePath, ReplicaSide::Local);
