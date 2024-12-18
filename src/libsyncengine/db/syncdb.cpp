@@ -1010,7 +1010,7 @@ bool SyncDb::path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, 
         SyncName nameDrive;
         ASSERT(querySyncNameValue(requestId, 1, nameDrive)); // Name on the remote drive.
 
-        names.emplace_back(std::pair<SyncName, SyncName>(nameLocal, nameDrive));
+        names.emplace_back(nameLocal, nameDrive);
     }
 
     ASSERT(queryResetAndClearBindings(requestId));
