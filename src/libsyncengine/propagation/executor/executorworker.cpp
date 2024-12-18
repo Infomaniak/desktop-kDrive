@@ -109,8 +109,16 @@ void ExecutorWorker::execute() {
                 continue;
             }
 
-            UniqueId opId = _opList.front();
-            _opList.pop_front();
+            UniqueId opId = 0;
+            _opListMutex.lock();
+            if (!_opList.empty()) {
+                opId = _opList.front();
+                _opList.pop_front();
+            }
+            _opListMutex.unlock();
+
+            if (!opId) break;
+
             SyncOpPtr syncOp = _syncPal->_syncOps->getOp(opId);
 
             if (!syncOp) {
@@ -2405,6 +2413,8 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
 void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
     LOG_SYNCPAL_DEBUG(_logger, "Cancelling all queued executor jobs");
 
+    const std::scoped_lock lock(_opListMutex);
+
     // First, abort all jobs that are not running yet to avoid starting them for
     // nothing
     std::list<std::shared_ptr<AbstractJob>> remainingJobs;
@@ -2654,6 +2664,8 @@ ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
 
 ExitInfo ExecutorWorker::removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode,
                                             OperationType opType) {
+    const std::scoped_lock lock(_opListMutex);
+
     std::list<UniqueId> dependentOps;
     for (const auto &opId: _opList) {
         SyncOpPtr syncOp2 = _syncPal->_syncOps->getOp(opId);
