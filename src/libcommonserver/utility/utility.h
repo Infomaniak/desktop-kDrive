@@ -190,7 +190,7 @@ struct COMMONSERVER_EXPORT Utility {
 };
 
 struct TimeCounter {
-        explicit TimeCounter(std::string &name) : _name(name) {}
+        explicit TimeCounter(const std::string &name) : _name(name) {}
         void start() { _start = clock(); }
         void end() {
             _end = clock();
