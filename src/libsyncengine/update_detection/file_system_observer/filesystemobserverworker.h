@@ -32,7 +32,7 @@ class FileSystemObserverWorker : public ISyncWorker {
     public:
         FileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                                  ReplicaSide side);
-        ~FileSystemObserverWorker();
+        virtual ~FileSystemObserverWorker();
 
         void invalidateSnapshot();
         virtual void forceUpdate();
