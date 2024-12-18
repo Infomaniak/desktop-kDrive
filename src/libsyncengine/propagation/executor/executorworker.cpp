@@ -998,7 +998,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             LOGW_SYNCPAL_WARN(_logger, L"Edit operation with empty corresponding node id for "
                                                << Utility::formatSyncPath(absoluteLocalFilePath));
             sentry::Handler::captureMessage(sentry::Level::Warning, "ExecutorWorker::generateEditJob",
-                                                      "Edit operation with empty corresponding node id");
+                                            "Edit operation with empty corresponding node id");
             return ExitCode::DataError;
         }
 
@@ -2175,9 +2175,10 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     // that follow-up operations can execute correctly, as they are based on the
     // information in this structure
     if (!syncOp->omit()) {
-        syncOp->correspondingNode()->setId(syncOp->targetSide() == ReplicaSide::Local ? localId
-                                                                                      : remoteId); // ID might have changed in the
-                                                                                                   // case of a delete+create
+        _syncPal->updateTree(syncOp->targetSide())
+                ->updateNodeId(syncOp->affectedNode(),
+                               syncOp->targetSide() == ReplicaSide::Local ? localId : remoteId); // ID might have changed in the
+                                                                                                 // case of a delete+create
         syncOp->correspondingNode()->setLastModified(newLastModTime);
     }
     node = syncOp->correspondingNode();
