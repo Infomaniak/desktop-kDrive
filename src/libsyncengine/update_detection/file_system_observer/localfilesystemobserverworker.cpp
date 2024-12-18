@@ -19,12 +19,12 @@
 #include "localfilesystemobserverworker.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/ptraces.h"
-
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #include <log4cplus/loggingmacros.h>
 
