@@ -180,12 +180,12 @@
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="283"/>
-        <source>This folder is not compatible with Lite Sync.&lt;br&gt;&quot;
-&quot;Please select another folder or if you continue Lite Sync will be disabled.&lt;br&gt;&quot;
-&quot;&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Dieser Ordner ist nicht mit Lite Sync kompatibel.&lt;br&gt;&quot;
-„Bitte wählen Sie einen anderen Ordner aus, sonst wird Lite Sync deaktiviert, wenn Sie fortfahren.&lt;br&gt;“
-„&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Weitere Informationen&lt;/a&gt;</translation>
+        <source>This folder is not compatible with Lite Sync.&lt;br&gt; 
+Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt; 
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
+        <translation>Dieser Ordner ist nicht mit Lite Sync kompatibel.&lt;br&gt;
+Bitte wählen Sie einen anderen Ordner aus. Wenn Sie fortfahren, wird Lite Sync deaktiviert.&lt;br&gt;
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Mehr erfahren&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="296"/>
@@ -288,12 +288,12 @@
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3321"/>
+        <location filename="../src/server/appserver.cpp" line="3325"/>
         <source>kDrive application is already running!</source>
         <translation>Die kDrive-Anwendung läuft bereits!</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3364"/>
+        <location filename="../src/server/appserver.cpp" line="3368"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) gelöscht.</numerusform>
@@ -301,13 +301,13 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3366"/>
+        <location filename="../src/server/appserver.cpp" line="3370"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde gelöscht.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3371"/>
+        <location filename="../src/server/appserver.cpp" line="3375"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) hinzugefügt.</numerusform>
@@ -315,13 +315,13 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3373"/>
+        <location filename="../src/server/appserver.cpp" line="3377"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde hinzugefügt.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3378"/>
+        <location filename="../src/server/appserver.cpp" line="3382"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 und %n andere Datei(en) wurde(n) aktualisiert.</numerusform>
@@ -329,13 +329,13 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3380"/>
+        <location filename="../src/server/appserver.cpp" line="3384"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 wurde aktualisiert.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3385"/>
+        <location filename="../src/server/appserver.cpp" line="3389"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 wurde zu %2 verschoben und %n andere Datei(en) wurde(n) verschoben.</numerusform>
@@ -343,12 +343,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3388"/>
+        <location filename="../src/server/appserver.cpp" line="3392"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 wurde zu %2 verschoben.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3396"/>
+        <location filename="../src/server/appserver.cpp" line="3400"/>
         <source>Sync Activity</source>
         <translation>Synchronisierungsaktivität</translation>
     </message>
@@ -1466,12 +1466,12 @@ Wählen Sie diejenigen aus, die Sie synchronisieren möchten:</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="208"/>
-        <source>This folder is not compatible with Lite Sync.&lt;br&gt;&quot;
-&quot;Please select another folder or if you continue Lite Sync will be disabled.&lt;br&gt;&quot;
-&quot;&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Dieser Ordner ist nicht mit Lite Sync kompatibel.&lt;br&gt;&quot;
-„Bitte wählen Sie einen anderen Ordner aus, sonst wird Lite Sync deaktiviert, wenn Sie fortfahren.&lt;br&gt;“
-„&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Weitere Informationen&lt;/a&gt;</translation>
+        <source>This folder is not compatible with Lite Sync.&lt;br&gt;
+Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt;
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
+        <translation>Dieser Ordner ist nicht mit Lite Sync kompatibel.&lt;br&gt;
+Bitte wählen Sie einen anderen Ordner aus. Wenn Sie fortfahren, wird Lite Sync deaktiviert.&lt;br&gt;
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Mehr erfahren&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="231"/>
@@ -2705,7 +2705,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="98"/>
+        <location filename="../src/server/appserver.cpp" line="99"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>Die kDrive-Anwendung wird aufgrund eines schwerwiegenden Fehlers geschlossen.</translation>
     </message>
