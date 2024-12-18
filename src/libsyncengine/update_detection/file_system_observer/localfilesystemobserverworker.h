@@ -26,7 +26,7 @@ namespace KDC {
 class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
     public:
         LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
-        virtual ~LocalFileSystemObserverWorker();
+        ~LocalFileSystemObserverWorker() override;
 
         void start() override;
         void stop() override;

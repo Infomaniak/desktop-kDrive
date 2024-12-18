@@ -264,11 +264,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          tailored to the context.
          \return The exit info of the function.
          */
-        ExitInfo handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause = ExitCause::FileAccessError);
-        ExitInfo handleAccessDeniedItem(const SyncPath &relativePath, std::shared_ptr<Node> &localBlacklistedNode,
-                                        std::shared_ptr<Node> &remoteBlacklistedNode,
-                                        ExitCause cause);
-  
+        ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause = ExitCause::FileAccessError);
+        ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, std::shared_ptr<Node> &localBlacklistedNode,
+                                        std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause);
+
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
