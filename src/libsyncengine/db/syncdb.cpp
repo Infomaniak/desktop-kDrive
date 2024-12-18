@@ -1010,7 +1010,7 @@ bool SyncDb::path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, 
         SyncName nameDrive;
         ASSERT(querySyncNameValue(requestId, 1, nameDrive)); // Name on the remote drive.
 
-        names.push_back({nameLocal, nameDrive});
+        names.emplace_back(std::pair<SyncName, SyncName>({nameLocal, nameDrive}));
     }
 
     ASSERT(queryResetAndClearBindings(requestId));
@@ -1143,7 +1143,7 @@ bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bo
     std::vector<SyncName> names;
     SyncPath pathTmp(path);
     while (pathTmp != pathTmp.root_path()) {
-        names.push_back(pathTmp.filename().native());
+        names.emplace_back(pathTmp.filename().native());
         pathTmp = pathTmp.parent_path();
     }
 
@@ -1213,7 +1213,7 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
     std::vector<SyncName> names;
     SyncPath pathTmp(path);
     while (pathTmp != pathTmp.root_path()) {
-        names.push_back(pathTmp.filename());
+        names.emplace_back(pathTmp.filename());
         pathTmp = pathTmp.parent_path();
     }
 
@@ -1447,7 +1447,7 @@ bool SyncDb::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &
         SyncName name;
         ASSERT(querySyncNameValue(requestId, side == ReplicaSide::Local ? 0 : 1, name));
 
-        names.push_back(name);
+        names.emplace_back(name);
     }
 
     ASSERT(queryResetAndClearBindings(requestId));
