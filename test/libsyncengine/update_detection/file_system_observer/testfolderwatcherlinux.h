@@ -18,17 +18,17 @@
 
 #pragma once
 
-#include "localfilesystemobserverworker.h"
+#include "testincludes.h"
 
 namespace KDC {
 
-class LocalFileSystemObserverWorker_unix : public LocalFileSystemObserverWorker {
-    public:
-        LocalFileSystemObserverWorker_unix(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                           const std::string &shortName);
+class TestFolderWatcherLinux final : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestFolderWatcherLinux);
+        CPPUNIT_TEST(testMakeSyncPath);
+        CPPUNIT_TEST_SUITE_END();
 
-    protected:
-        virtual bool isFolderWatcherReliable() const override { return (_folderWatcher && _folderWatcher->isReliable()); }
+    private:
+        void testMakeSyncPath();
 };
 
 } // namespace KDC

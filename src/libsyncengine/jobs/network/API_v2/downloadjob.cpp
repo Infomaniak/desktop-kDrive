@@ -43,8 +43,9 @@ namespace KDC {
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
                          SyncTime creationTime, SyncTime modtime, bool isCreate) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
-    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
+    _remoteFileId(remoteFileId), _localpath(localpath), _expectedSize(expectedSize), _creationTime(creationTime),
+    _modtimeIn(modtime), _isCreate(isCreate) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -118,7 +119,7 @@ bool DownloadJob::canRun() {
 
     if (_isCreate && exists) {
         LOGW_DEBUG(_logger,
-                   L"Item: " << Utility::formatSyncPath(_localpath) << L" already exist. Aborting current sync and restart.");
+                   L"Item with " << Utility::formatSyncPath(_localpath) << L" already exists. Aborting current sync and restarting.");
         _exitCode = ExitCode::NeedRestart;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
@@ -435,8 +436,8 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
 
         LOGW_DEBUG(_logger,
-                   L"Create symlink: " << Utility::formatSyncPath(targetPath) << L", " << Utility::formatSyncPath(_localpath));
-
+                   L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", " << Utility::formatSyncPath(_localpath));
+      
         bool isFolder = mimeType == mimeTypeSymlinkFolder;
         IoError ioError = IoError::Success;
         if (!IoHelper::createSymlink(targetPath, _localpath, isFolder, ioError)) {
@@ -492,21 +493,15 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 }
 
 bool DownloadJob::removeTmpFile(const SyncPath &path) {
-    std::error_code ec;
-    if (!std::filesystem::remove_all(path, ec)) {
-        if (ec) {
-            LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatStdError(path, ec));
-            return false;
-        }
-
-        LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatSyncPath(path));
+    if (std::error_code ec; !std::filesystem::remove_all(path, ec)) {
+        LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatStdError(path, ec));
         return false;
     }
 
     return true;
 }
 
-bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
+bool DownloadJob::moveTmpFile(const SyncPath &tmpPath, bool &restartSync) {
     restartSync = false;
 
     // Move downloaded file from tmp directory to sync directory
@@ -517,20 +512,29 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
     while (retry) {
         retry = false;
 #endif
-        std::filesystem::rename(path, _localpath, ec);
-#ifdef _WIN32
-        const bool crossDeviceLink = ec.value() == ERROR_NOT_SAME_DEVICE;
-#else
-    const bool crossDeviceLink = ec.value() == (int) std::errc::cross_device_link;
-#endif
+
+        IoError ioError = IoError::Success;
+        IoHelper::moveItem(tmpPath, _localpath, ioError);
+        const bool crossDeviceLink = ioError == IoError::CrossDeviceLink;
+        if (ioError != IoError::Success && !crossDeviceLink) {
+            LOGW_WARN(_logger, L"Failed to move: " << Utility::formatIoError(tmpPath, ioError) << L" to "
+                                                   << Utility::formatSyncPath(_localpath));
+            return false;
+        }
+
         if (crossDeviceLink) {
             // The sync might be on a different file system than tmp folder.
             // In that case, try to copy the file instead.
             ec.clear();
-            std::filesystem::copy(path, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
+            std::filesystem::copy(tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
+            bool removed = removeTmpFile(tmpPath);
             if (ec) {
                 LOGW_WARN(_logger,
-                          L"Failed to copy: " << Utility::formatSyncPath(_localpath) << L", " << Utility::formatStdError(ec));
+                          L"Failed to copy to " << Utility::formatSyncPath(_localpath) << L", " << Utility::formatStdError(ec));
+                return false;
+            }
+            if (!removed) {
+                LOGW_WARN(_logger, L"Failed to remove " << Utility::formatSyncPath(tmpPath));
                 return false;
             }
         }

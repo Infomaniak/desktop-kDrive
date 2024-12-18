@@ -50,6 +50,7 @@ class UpdateTree : public SharedObject {
         bool isAncestor(const NodeId &nodeId, const NodeId &ancestorNodeId) const;
 
         void markAllNodesUnprocessed();
+        void clear();
         void init();
 
         inline bool inconsistencyCheckDone() const { return _inconsistencyCheckDone; }
@@ -66,8 +67,6 @@ class UpdateTree : public SharedObject {
         std::unordered_map<NodeId, NodeId> _previousIdSet;
 
         bool _inconsistencyCheckDone = false;
-
-        void clear();
 
         friend class TestUpdateTree;
         friend class TestUpdateTreeWorker;

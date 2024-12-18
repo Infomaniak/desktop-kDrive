@@ -77,6 +77,7 @@ void TestComputeFSOperationWorker::setUp() {
 
     _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
+    _syncPal->createSharedObjects();
 
     /// Insert node "AC" in blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {"lac"});
