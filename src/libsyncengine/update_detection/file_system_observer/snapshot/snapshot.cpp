@@ -270,7 +270,9 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
     while (!ancestors.empty()) {
         path /= ancestors.back().second;
         if (_copy) {
-            _items.find(ancestors.back().first)->second.setPath(path);
+            const auto it = _items.find(ancestors.back().first);
+            assert(it != _items.end());
+            it->second.setPath(path);
         }
         ancestors.pop_back();
 
