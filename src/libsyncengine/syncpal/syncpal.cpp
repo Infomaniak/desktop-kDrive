@@ -58,7 +58,7 @@ namespace KDC {
 SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
     _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
-    LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init : " << Utility::formatSyncPath(syncDbPath));
+    LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
 
     if (!createOrOpenDb(syncDbPath, version)) {
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
@@ -275,7 +275,7 @@ ExitCode SyncPal::fileSyncing(ReplicaSide side, const SyncPath &path, bool &sync
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -289,7 +289,7 @@ ExitCode SyncPal::setFileSyncing(ReplicaSide side, const SyncPath &path, bool sy
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -304,7 +304,7 @@ ExitCode SyncPal::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path) {
     }
 
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -429,7 +429,7 @@ bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTi
 bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) {
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"vfsUpdateFetchStatus : " << Utility::formatSyncPath(path) << L" received=" << received);
+        LOGW_SYNCPAL_DEBUG(_logger, L"vfsUpdateFetchStatus: " << Utility::formatSyncPath(path) << L" received=" << received);
     }
 
     if (!_vfsUpdateFetchStatus) {
@@ -653,8 +653,10 @@ bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &vers
     // Create/open sync DB
     try {
         _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), version, targetNodeId));
-    } catch (std::exception const &) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath));
+    } catch (std::exception const &e) {
+        const auto exceptionMsg = Utility::s2ws(std::string(e.what()));
+        LOGW_SYNCPAL_WARN(
+                _logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath) << L", Exception: " << exceptionMsg);
         return false;
     }
 
@@ -708,7 +710,7 @@ bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
             return false;
         }
         if (item.instruction() != SyncFileInstruction::Get && item.instruction() != SyncFileInstruction::Put) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node not found : " << Utility::formatSyncPath(relativePath));
+            LOGW_SYNCPAL_WARN(_logger, L"Node not found: " << Utility::formatSyncPath(relativePath));
             return false;
         }
     }
@@ -730,7 +732,7 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
     }
     if (!found) {
         // Can happen for a dehydrated placeholder
-        LOGW_SYNCPAL_DEBUG(_logger, L"Node not found : " << Utility::formatSyncPath(relativeLocalPath));
+        LOGW_SYNCPAL_DEBUG(_logger, L"Node not found: " << Utility::formatSyncPath(relativeLocalPath));
     }
     return true;
 }
@@ -779,7 +781,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(relativePath));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(relativePath));
         return ExitCode::DataError;
     }
 
@@ -1042,7 +1044,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -1472,24 +1474,26 @@ void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
 }
 
-ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause) {
+
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause) {
     std::shared_ptr<Node> dummyNodePtr;
-    return handleAccessDeniedItem(relativePath, dummyNodePtr, dummyNodePtr, cause);
+    return handleAccessDeniedItem(relativeLocalPath, dummyNodePtr, dummyNodePtr, cause);
 }
 
-ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shared_ptr<Node> &localBlacklistedNode,
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std::shared_ptr<Node> &localBlacklistedNode,
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
-    if (relativePath.empty()) {
+    if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
         return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
     }
-    Error error(syncDbId(), "", "", relativePath.extension() == SyncPath() ? NodeType::Directory : NodeType::File, relativePath,
-                ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
+    Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
+                relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,
+                cause);
     addError(error);
 
-    NodeId localNodeId = snapshot(ReplicaSide::Local)->itemId(relativePath);
+    NodeId localNodeId = snapshot(ReplicaSide::Local)->itemId(relativeLocalPath);
     if (localNodeId.empty()) {
-        SyncPath absolutePath = localPath() / relativePath;
+        SyncPath absolutePath = localPath() / relativeLocalPath;
         if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
             bool exists = false;
             IoError ioError = IoError::Success;
@@ -1498,18 +1502,19 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
                 return ExitCode::SystemError;
             }
             if (ioError == IoError::AccessDenied) { // A parent of the file does not have sufficient right
-                LOGW_DEBUG(_logger, L"A parent of " << Utility::formatSyncPath(relativePath)
+                LOGW_DEBUG(_logger, L"A parent of " << Utility::formatSyncPath(relativeLocalPath)
                                                     << L"does not have sufficient right, blacklisting the parent item.");
-                return handleAccessDeniedItem(relativePath.parent_path(), localBlacklistedNode, remoteBlacklistedNode, cause);
+                return handleAccessDeniedItem(relativeLocalPath.parent_path(), localBlacklistedNode, remoteBlacklistedNode,
+                                              cause);
             }
         }
     }
 
-
-    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" (NodeId: " << Utility::s2ws(localNodeId)
+    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativeLocalPath) << L" (NodeId: "
+                                         << Utility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
-    NodeId remoteNodeId = snapshot(ReplicaSide::Remote)->itemId(relativePath);
+    NodeId remoteNodeId = snapshot(ReplicaSide::Remote)->itemId(relativeLocalPath);
     if (bool found; remoteNodeId.empty() && !localNodeId.empty() &&
                     !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
@@ -1518,19 +1523,19 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativePath, std::shar
 
     localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
     remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(remoteNodeId);
-    
+
     // Blacklist the item
     if (!localNodeId.empty()) {
-        _tmpBlacklistManager->blacklistItem(localNodeId, relativePath, ReplicaSide::Local);
+        _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
         if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
         }
     }
 
     if (!remoteNodeId.empty()) {
-        _tmpBlacklistManager->blacklistItem(remoteNodeId, relativePath, ReplicaSide::Remote);
+        _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
         if (!updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativePath));
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
         }
     }
 
