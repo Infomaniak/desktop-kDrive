@@ -205,9 +205,9 @@ void LocalFolderDialog::updateUI() {
             _folderCompatibleWithLiteSync = ((virtualFileMode == VirtualFileMode::Win && fsName == "NTFS") ||
                                              (virtualFileMode == VirtualFileMode::Mac && fsName == "apfs"));
             if (!_folderCompatibleWithLiteSync) {
-                _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync.<br>"
-"Please select another folder or if you continue Lite Sync will be disabled.<br>"
-"<a style="%1" href="%2">Learn more</a>)")
+                _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync.<br>
+Please select another folder. If you continue Lite Sync will be disabled.<br>
+<a style="%1" href="%2">Learn more</a>)")
                                                .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
                 _warningWidget->setVisible(true);
             } else {

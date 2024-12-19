@@ -180,12 +180,12 @@
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="283"/>
-        <source>This folder is not compatible with Lite Sync.&lt;br&gt;&quot;
-&quot;Please select another folder or if you continue Lite Sync will be disabled.&lt;br&gt;&quot;
-&quot;&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Ce dossier n&apos;est pas compatible avec Lite Sync.&lt;br&gt;&quot;
-&quot;Veuillez sélectionner un autre dossier ou si vous continuez, la Lite Sync sera désactivée.&lt;br&gt;&quot;
-&quot;&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;En savoir plus&lt;/a&gt;</translation>
+        <source>This folder is not compatible with Lite Sync.&lt;br&gt; 
+Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt; 
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
+        <translation>Ce dossier n&apos;est pas compatible avec la Lite Sync.&lt;br&gt;
+Veuillez sélectionner un autre dossier. Si vous continuez, la Lite Sync sera désactivée.&lt;br&gt;
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;En savoir plus&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="296"/>
@@ -1464,12 +1464,12 @@ Sélectionnez ceux que vous souhaitez synchroniser:</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="208"/>
-        <source>This folder is not compatible with Lite Sync.&lt;br&gt;&quot;
-&quot;Please select another folder or if you continue Lite Sync will be disabled.&lt;br&gt;&quot;
-&quot;&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
-        <translation>Ce dossier n&apos;est pas compatible avec Lite Sync.&lt;br&gt;&quot;
-&quot;Veuillez sélectionner un autre dossier ou si vous continuez, la Lite Sync sera désactivée.&lt;br&gt;&quot;
-&quot;&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;En savoir plus&lt;/a&gt;</translation>
+        <source>This folder is not compatible with Lite Sync.&lt;br&gt;
+Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt;
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
+        <translation type="unfinished">Ce dossier n&apos;est pas compatible avec la Lite Sync.&lt;br&gt;
+Veuillez sélectionner un autre dossier. Si vous continuez, la Lite Sync sera désactivée.&lt;br&gt;
+&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;En savoir plus&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/localfolderdialog.cpp" line="231"/>
@@ -2703,7 +2703,7 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="98"/>
+        <location filename="../src/server/appserver.cpp" line="99"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>L&apos;application kDrive se fermera en raison d&apos;une erreur fatale.</translation>
     </message>
