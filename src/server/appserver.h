@@ -142,7 +142,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         ExitCode createAndStartVfs(const Sync &sync, ExitCause &exitCause) noexcept;
         // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
-        ExitCode tryCreateAndStartVfs(Sync &sync) noexcept;
+        [[nodiscard]] ExitCode tryCreateAndStartVfs(Sync &sync) noexcept;
         ExitCode stopVfs(int syncDbId, bool unregister);
 
         ExitCode setSupportsVirtualFiles(int syncDbId, bool value);

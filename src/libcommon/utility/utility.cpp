@@ -872,6 +872,13 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
+#ifdef _WIN32
+std::string CommonUtility::toUnsafeStr(const SyncName &name) {
+    std::string unsafeName(name.begin(), name.end());
+    return unsafeName;
+}
+#endif
+
 #ifdef __APPLE__
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
