@@ -2177,7 +2177,7 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
         NodeId nodeIdLocal;
         ASSERT(queryStringValue(requestId, 3, nodeIdLocal));
 
-        const IntNodeId intNodeId = std::stoll(nodeIdLocal);
+        const IntNodeId intNodeId = std::stoull(nodeIdLocal);
         namedNodeMap.try_emplace(intNodeId, NamedNode{dbNodeId, nameLocal});
     }
 
@@ -2262,6 +2262,8 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
 
     if (!normalizeRemoteNames()) return false;
 
+    LOG_INFO(_logger, "Remote names in SyncDb normalized successfully.");
+
     NamedNodeMap namedNodeMap;
     if (!selectNamesWithDistinctEncodings(namedNodeMap)) return false;
 
@@ -2284,7 +2286,7 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
             continue;
         }
 
-        const IntNodeId intNodeId = std::stoll(nodeId);
+        const IntNodeId intNodeId = std::stoull(nodeId);
         if (!namedNodeMap.contains(intNodeId)) continue;
 
         SyncName actualLocalName(entry.path().filename());
@@ -2292,6 +2294,8 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
             localNames.try_emplace(namedNodeMap[intNodeId].dbNodeId, std::move(actualLocalName));
         }
     }
+
+    LOG_INFO(_logger, "Node ids retrieved successfully from disk.");
 
     if (!updateNamesWithDistinctEncodings(localNames)) return false;
 
