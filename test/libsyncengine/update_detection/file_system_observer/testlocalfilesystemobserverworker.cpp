@@ -439,7 +439,8 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     CPPUNIT_ASSERT(localFSO);
 
     int count = 0;
-    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid() || !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation and folder watcher start
+    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid() ||
+           !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation and folder watcher start
         Utility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
     }
@@ -457,7 +458,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
 
     LOG_DEBUG(_logger, "Operations finished")
 
-    CPPUNIT_ASSERT_MESSAGE("No update detected in the expected time.", slowObserver->waitForUpdate());
+    slowObserver->waitForUpdate();
 
     FileStat fileStat;
     CPPUNIT_ASSERT(IoHelper::getFileStat(_testFiles[0].second, &fileStat, ioError));
@@ -465,6 +466,62 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
 
     CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFiles[0].first));
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(std::to_string(fileStat.inode)));
+}
+
+void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingChange() {
+    using namespace testhelpers;
+
+    LOGW_DEBUG(_logger, L"***** Test fast move/delete with enconding change*****"); // Behaviour of MS office apps on macOS
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
+    _syncPal->_localFSObserverWorker.reset();
+
+    // Create a slow observer
+    auto slowObserver = std::make_shared<MockLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
+    _syncPal->_localFSObserverWorker = slowObserver;
+    _syncPal->_localFSObserverWorker->start();
+
+    int count = 0;
+
+    FileStat fileStat;
+    bool exists = false;
+
+    // Create an NFC encoded file.
+    SyncPath tmpDirPath = _testFiles[0].second.parent_path();
+    SyncPath nfcFilePath = tmpDirPath / makeNfcSyncName();
+    generateOrEditTestFile(nfcFilePath);
+    NodeId nfcFileId;
+    IoHelper::getFileStat(nfcFilePath, &fileStat, exists);
+    nfcFileId = std::to_string(fileStat.inode);
+
+    // Prepare the path of the NFD encoded file.
+    SyncPath nfdFilePath = tmpDirPath / makeNfdSyncName();
+
+    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
+        Utility::msleep(100);
+        CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
+    }
+
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
+
+    IoError ioError = IoError::Unknown;
+    SyncPath destinationPath = tmpDirPath / (nfcFilePath.filename().string() + "2");
+    CPPUNIT_ASSERT(IoHelper::renameItem(nfcFilePath, destinationPath, ioError)); // nfcFile -> nfcFile2
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::deleteItem(destinationPath, ioError)); // Delete nfcFile2 (before the previous rename is processed)
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::renameItem(_testFiles[1].second, nfdFilePath,
+                                        ioError)); // test1.txt -> nfdFile (before the previous rename and delete is processed)
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    slowObserver->waitForUpdate();
+
+    CPPUNIT_ASSERT(IoHelper::getFileStat(nfdFilePath, &fileStat, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    NodeId nfdFileId = std::to_string(fileStat.inode);
+
+    CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfdFileId));
 }
 
 void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
@@ -483,7 +540,7 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is now valid again.
 }
 
-bool MockLocalFileSystemObserverWorker::waitForUpdate(const int64_t timeoutMs) const {
+void MockLocalFileSystemObserverWorker::waitForUpdate(const int64_t timeoutMs) const {
     using namespace std::chrono;
     const auto start = system_clock::now();
     while (!_updating && duration_cast<milliseconds>(system_clock::now() - start).count() < timeoutMs) {

@@ -623,29 +623,6 @@ void SyncPal::freeWorkers() {
     _executorWorker.reset();
     _syncPalWorker.reset();
     _tmpBlacklistManager.reset();
-
-    _localSnapshot.reset();
-    _remoteSnapshot.reset();
-    _localSnapshotCopy.reset();
-    _remoteSnapshotCopy.reset();
-    _localOperationSet.reset();
-    _remoteOperationSet.reset();
-    _localUpdateTree.reset();
-    _remoteUpdateTree.reset();
-    _conflictQueue.reset();
-    _syncOps.reset();
-
-    // Check that there is no memory leak
-    ASSERT(_localSnapshot.use_count() == 0);
-    ASSERT(_remoteSnapshot.use_count() == 0);
-    ASSERT(_localSnapshotCopy.use_count() == 0);
-    ASSERT(_remoteSnapshotCopy.use_count() == 0);
-    ASSERT(_localOperationSet.use_count() == 0);
-    ASSERT(_remoteOperationSet.use_count() == 0);
-    ASSERT(_localUpdateTree.use_count() == 0);
-    ASSERT(_remoteUpdateTree.use_count() == 0);
-    ASSERT(_conflictQueue.use_count() == 0);
-    ASSERT(_syncOps.use_count() == 0);
 }
 
 ExitCode SyncPal::setSyncPaused(bool value) {
