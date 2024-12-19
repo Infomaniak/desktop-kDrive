@@ -202,8 +202,7 @@ bool Db::exists() {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError).c_str());
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError));
             return false;
         }
 
