@@ -435,7 +435,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 
         LOGW_DEBUG(_logger,
                    L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", " << Utility::formatSyncPath(_localpath));
-
+      
         bool isFolder = mimeType == mimeTypeSymlinkFolder;
         IoError ioError = IoError::Success;
         if (!IoHelper::createSymlink(targetPath, _localpath, isFolder, ioError)) {
@@ -477,7 +477,6 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 
         IoError ioError = IoError::Success;
         if (!IoHelper::createAlias(data, _localpath, ioError)) {
-            const std::wstring message = Utility::s2ws(IoHelper::ioError2StdString(ioError));
             LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError));
 
             return false;
