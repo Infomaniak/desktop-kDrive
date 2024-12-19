@@ -88,8 +88,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
                 LOG_WARN(Log::instance()->getLogger(), "Child " << childId.c_str() << " not found in snapshot");
                 continue;
             }
-
-            if (child->second.name() == newItem.name() && child->second.id() != newItem.id()) {
+            if (child->second.normalizedName() == newItem.normalizedName() && child->second.id() != newItem.id()) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
                            L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
                                      << L") already exists in parent: " << Utility::s2ws(newItem.parentId())

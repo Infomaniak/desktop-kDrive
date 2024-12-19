@@ -42,7 +42,14 @@ class SnapshotItem {
         [[nodiscard]] const std::unordered_set<NodeId> &childrenIds() const { return _childrenIds; }
         void setChildrenIds(const std::unordered_set<NodeId> &newChildrenIds) { _childrenIds = newChildrenIds; }
         [[nodiscard]] const SyncName &name() const { return _name; }
-        void setName(const SyncName &newName) { _name = newName; }
+        [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
+        void setName(const SyncName &newName) {
+            _name = newName;
+            if (!Utility::normalizedSyncName(newName, _normalizedName)) {
+                _normalizedName = newName;
+                LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(newName));
+            }
+        }
         [[nodiscard]] SyncTime createdAt() const { return _createdAt; }
         void setCreatedAt(const SyncTime newCreatedAt) { _createdAt = newCreatedAt; }
         [[nodiscard]] SyncTime lastModified() const { return _lastModified; }
@@ -71,6 +78,7 @@ class SnapshotItem {
         NodeId _parentId;
 
         SyncName _name;
+        SyncName _normalizedName;
         SyncTime _createdAt = 0;
         SyncTime _lastModified = 0;
         NodeType _type = NodeType::Unknown;

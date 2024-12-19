@@ -28,7 +28,6 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#include <iostream>
 #include <filesystem>
 
 namespace KDC {

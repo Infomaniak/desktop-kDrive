@@ -47,14 +47,19 @@ static void kdriveLogCatcher(QtMsgType type, const QMessageLogContext &ctx, cons
     if (qtMsgTypeLevel[type] < logger->minLogLevel()) return;
 
     // Create new context
-    const char *fileName = ctx.file;
-    if (fileName) {
-        const char *lastDirSep = strrchr(fileName, '/');
-        if (lastDirSep) {
-            fileName = lastDirSep + 1;
-        }
+    SyncName fileName;
+    if (ctx.file) {
+        const SyncPath filePath(ctx.file);
+        fileName = filePath.filename();
     }
-    QMessageLogContext ctxNew(fileName, ctx.line, ctx.function, ctx.category);
+#ifdef _WIN32
+    // For performance purposes, assume that the file name contains only mono byte chars
+    std::string unsafeFileName(CommonUtility::toUnsafeStr(fileName));
+    const char *fileNamePtr = unsafeFileName.c_str();
+#else
+    const char *fileNamePtr = fileName.c_str();
+#endif
+    QMessageLogContext ctxNew(fileNamePtr, ctx.line, ctx.function, ctx.category);
 
     if (!logger->isNoop()) {
         logger->doLog(qFormatLogMessage(type, ctxNew, message));
