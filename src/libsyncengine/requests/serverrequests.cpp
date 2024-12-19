@@ -1496,7 +1496,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setLocalPath(QStr2Path(localFolderPath));
     sync.setTargetPath(QStr2Path(serverFolderPath));
     sync.setTargetNodeId(serverFolderNodeId.toStdString());
-    sync.setPaused(true);
+    sync.setPaused(false);
 
     // Check vfs support
     QString fsName(KDC::CommonUtility::fileSystemName(SyncName2QStr(sync.localPath().native())));

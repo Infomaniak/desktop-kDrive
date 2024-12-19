@@ -303,18 +303,6 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-    // Update checks
-    _updateManager = std::make_unique<UpdateManager>(this);
-    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
-#ifdef Q_OS_MACOS
-    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    _updateManager->setQuitCallback(quitCallback);
-#endif
-
-    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
-    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
-
     // Init socket api
     _socketApi.reset(new SocketApi(_syncPalMap, _vfsMap));
     _socketApi->setAddErrorCallback(&addError);
@@ -344,6 +332,18 @@ AppServer::AppServer(int &argc, char **argv) :
 
     // Set sentry user
     updateSentryUser();
+
+    // Update checks
+    _updateManager = std::make_unique<UpdateManager>(this);
+    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
+#ifdef Q_OS_MACOS
+    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    _updateManager->setQuitCallback(quitCallback);
+#endif
+
+    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
 
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
@@ -1109,10 +1109,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                tryCreateAndStartVfs(sync);
+                exitCode = tryCreateAndStartVfs(sync);
+                const bool start = exitCode == ExitCode::Ok;
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, start, false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -1197,10 +1198,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                tryCreateAndStartVfs(sync);
+                exitCode = tryCreateAndStartVfs(sync);
+                const bool start = exitCode == ExitCode::Ok;
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, start, false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -2798,17 +2800,6 @@ ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " code=" << exitCode << ", pausing.");
         addError(Error(sync.dbId(), errId(), exitCode, exitCause));
-
-        // Set sync's paused flag
-        sync.setPaused(true);
-
-        bool found = false;
-        if (!ParmsDb::instance()->setSyncPaused(sync.dbId(), true, found)) {
-            LOG_WARN(_logger, "Error in ParmsDb::setSyncPaused");
-        }
-        if (!found) {
-            LOG_WARN(_logger, "Sync not found");
-        }
     }
 
     return exitCode;
@@ -2894,11 +2885,11 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                     continue;
                 }
 
-                tryCreateAndStartVfs(sync);
+                exitCode = tryCreateAndStartVfs(sync);
+                const bool start = exitCode == ExitCode::Ok && !user.keychainKey().empty();
 
                 // Create and start SyncPal
-                exitCode =
-                        initSyncPal(sync, blackList, undecidedList, QSet<QString>(), !user.keychainKey().empty(), false, false);
+                exitCode = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, false, false);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(sync.dbId(), errId(), exitCode, ExitCause::Unknown));
@@ -3873,11 +3864,10 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         // Delete previous vfs
         _vfsMap.erase(syncDbId);
 
-        tryCreateAndStartVfs(sync);
+        exitCode = tryCreateAndStartVfs(sync);
+        const bool start = exitCode == ExitCode::Ok;
 
         QTimer::singleShot(100, this, [=]() {
-            bool ok = true;
-
             if (newMode != VirtualFileMode::Off) {
                 // Clear file system
                 _vfsMap[sync.dbId()]->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
@@ -3891,8 +3881,8 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             // Notify conversion completed
             sendVfsConversionCompleted(sync.dbId());
 
-            if (ok) {
-                // Re-start sync
+            // Re-start sync
+            if (start) {
                 _syncPalMap[syncDbId]->start();
             }
         });
