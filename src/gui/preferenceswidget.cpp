@@ -60,7 +60,7 @@ static constexpr int textHSpacing = 10;
 static constexpr int amountLineEditWidth = 85;
 
 static const QString debuggingFolderLink = "debuggingFolderLink";
-static const QString moveToTrashFAQLink = "https://www.infomaniak.com/fr/support/faq/admin2/kdrive";
+static const QString moveToTrashFAQLink = "https://faq.infomaniak.com/2383#desktop";
 
 static const QString englishCode = "en";
 static const QString frenchCode = "fr";
@@ -596,11 +596,11 @@ void PreferencesWidget::retranslateUi() const {
     _monochromeLabel->setText(tr("Activate monochrome icons"));
     _launchAtStartupLabel->setText(tr("Launch kDrive at startup"));
     _languageSelectorLabel->setText(tr("Language"));
-    _moveToTrashLabel->setText(tr("Move deleted files to trash"));
+    _moveToTrashLabel->setText(tr("Move deleted files to my computer's trash"));
     _moveToTrashDisclaimerLabel->setText(tr("Some files or folders may not be moved to the computer's trash."));
-    _moveToTrashTipsLabel->setText(tr("You can always retrieve already synced files from the kDrive web application."));
+    _moveToTrashTipsLabel->setText(tr("You can always retrieve already synced files from the kDrive web application trash."));
     _moveToTrashKnowMoreLabel->setText(
-            tr(R"(<a style="%1" href="%2">Know more</a>)").arg(CommonUtility::linkStyle, moveToTrashFAQLink));
+            tr(R"(<a style="%1" href="%2">Learn more</a>)").arg(CommonUtility::linkStyle, LEARNMORE_MOVE_TO_TRASH_URL));
     _languageSelectorComboBox->blockSignals(true); // To avoid triggering more LanguageChange events
     _languageSelectorComboBox->clear();
     _languageSelectorComboBox->addItem(tr("Default"), toInt(Language::Default));

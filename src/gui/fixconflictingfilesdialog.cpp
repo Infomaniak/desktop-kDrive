@@ -25,7 +25,7 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "guiutility.h"
-
+#include "config.h"
 #include <algorithm>
 
 #include <QDesktopServices>
@@ -43,7 +43,6 @@ static const int boxHSpacing = 10;
 static const int titleBoxVMargin = 14;
 
 static const QString learnMoreLink = "learnMoreLink";
-static const QString learnMoreMoveToTrashLink = "learnMoreLinkMoveToTrash";
 
 FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *parent /*= nullptr*/) :
     CustomDialog(true, parent), _driveDbId(driveDbId) {
@@ -60,6 +59,12 @@ void FixConflictingFilesDialog::onLinkActivated(const QString &link) {
     if (link == learnMoreLink) {
         if (!QDesktopServices::openUrl(QUrl(Theme::instance()->conflictHelpUrl()))) {
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(Theme::instance()->conflictHelpUrl()),
+                                    QMessageBox::Ok, this);
+            msgBox.exec();
+        }
+    } else {
+        if (!QDesktopServices::openUrl(QUrl(link))) {
+            CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(link),
                                     QMessageBox::Ok, this);
             msgBox.exec();
         }
@@ -152,7 +157,7 @@ void FixConflictingFilesDialog::initUi() {
         keepRemoteDisclaimerLabel->setText(
                 tr("Your changes may be permanently deleted. They cannot be restored from the kDrive web application."));
         keepRemoteDisclaimerLearnMoreLabel->setText(
-                tr("<a style=%1 href=\"%2\">Learn more</a>").arg(CommonUtility::linkStyle, learnMoreMoveToTrashLink));
+                tr("<a style=%1 href=\"%2\">Learn more</a>").arg(CommonUtility::linkStyle, LEARNMORE_MOVE_TO_TRASH_URL));
         keepLocalDisclaimerLayout->addWidget(keepRemoteDisclaimerLearnMoreLabel);
     } else {
         keepRemoteDisclaimerLabel->setText(
