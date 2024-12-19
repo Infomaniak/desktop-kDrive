@@ -174,17 +174,16 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
     node->setId(newId);
 
     if (!node->parentNode()->insertChildren(node)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::insertChildren: node name="
-                                           << SyncName2WStr(node->name()).c_str() << L" parent node name="
-                                           << SyncName2WStr(node->parentNode()->name()).c_str());
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::insertChildren: node "
+                                                        << Utility::formatSyncName(node->name()) << L" parent node "
+                                                        << Utility::formatSyncName(node->parentNode()->name()));
         return false;
     }
 
     if (ParametersCache::isExtendedLogEnabled() && newId != oldId) {
-        LOGW_WARN(Log::instance()->getLogger(), _side << L" update tree: Node ID changed from '" << Utility::s2ws(oldId).c_str()
-                                                      << L"' to '"
-                                          << Utility::s2ws(newId).c_str() << L"' for node '"
-                                          << SyncName2WStr(node->name()).c_str() << L"'.");
+        LOGW_WARN(Log::instance()->getLogger(), _side << L" update tree: Node ID changed from '" << Utility::s2ws(oldId)
+                                                      << L"' to '" << Utility::s2ws(newId) << L"' for node "
+                                                      << Utility::formatSyncName(node->name()) << L"'.");
     }
 
     _nodes.erase(oldId);
