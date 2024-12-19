@@ -427,10 +427,11 @@ void AppServer::stopSyncTask(int syncDbId) {
         addError(Error(errId(), exitCode, ExitCause::Unknown));
     }
 
-    ASSERT(_syncPalMap[syncDbId].use_count() == 1)
+    ASSERT(!_syncPalMap[syncDbId] || _syncPalMap[syncDbId].use_count() == 1)
     _syncPalMap.erase(syncDbId);
 
-    ASSERT(_vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+    ASSERT(!_vfsMap[syncDbId] ||
+           _vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
     _vfsMap.erase(syncDbId);
 }
 
@@ -610,6 +611,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Get syncs do delete
             std::vector<int> syncDbIdList;
             for (const auto &syncPalMapElt: _syncPalMap) {
+                if (!syncPalMapElt.second) continue;
                 if (syncPalMapElt.second->userDbId() == userDbId) {
                     syncDbIdList.push_back(syncPalMapElt.first);
                 }
@@ -906,6 +908,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             int accountDbId = -1;
             std::vector<int> syncDbIdList;
             for (const auto &syncPalMapElt: _syncPalMap) {
+                if (!syncPalMapElt.second) continue;
                 if (syncPalMapElt.second->driveDbId() == driveDbId) {
                     syncDbIdList.push_back(syncPalMapElt.first);
                     accountDbId = syncPalMapElt.second->accountDbId();
@@ -1127,10 +1130,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                         // Do nothing
                     }
 
-                    ASSERT(_syncPalMap[syncInfo.dbId()].use_count() == 1)
+                    ASSERT(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
                     _syncPalMap.erase(syncInfo.dbId());
 
-                    ASSERT(_vfsMap[syncInfo.dbId()].use_count() == 1)
+                    ASSERT(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
                     _vfsMap.erase(syncInfo.dbId());
 
                     // Delete sync from DB
@@ -1484,6 +1487,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Pause all syncs of the drive
             QList<int> pausedSyncs;
             for (auto &syncPalMapElt: _syncPalMap) {
+                if (!syncPalMapElt.second) continue;
                 std::chrono::time_point<std::chrono::system_clock> pauseTime;
                 if (syncPalMapElt.second->driveDbId() == driveDbId && !syncPalMapElt.second->isPaused(pauseTime)) {
                     syncPalMapElt.second->pause();
@@ -1515,6 +1519,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Add first created node to blacklist of all syncs
             for (auto &syncPalMapElt: _syncPalMap) {
+                if (!syncPalMapElt.second) continue;
                 if (syncPalMapElt.second->driveDbId() == driveDbId) {
                     // Get blacklist
                     std::unordered_set<NodeId> nodeIdSet;
@@ -1599,6 +1604,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QTimer::singleShot(100, [=]() {
                 for (auto &syncPalMapElt: _syncPalMap) {
+                    if (!syncPalMapElt.second) continue;
                     if (_socketApi) {
                         _socketApi->unregisterSync(syncPalMapElt.second->syncDbId());
                     }
@@ -4225,6 +4231,7 @@ void AppServer::onUpdateSyncsProgress() {
     int64_t estimatedRemainingTime;
 
     for (const auto &[syncDbId, syncPal]: _syncPalMap) {
+        if (!syncPal) continue;
         // Get progress
         status = syncPal->status();
         step = syncPal->step();
@@ -4374,6 +4381,7 @@ void AppServer::onRestartSyncs() {
 #endif
 
     for (const auto &syncPalMapElt: _syncPalMap) {
+        if (!syncPalMapElt.second) continue;
         std::chrono::time_point<std::chrono::system_clock> pauseTime;
         if (syncPalMapElt.second->isPaused(pauseTime) && pauseTime + std::chrono::minutes(1) < std::chrono::system_clock::now()) {
             LOG_INFO(_logger, "Try to resume SyncPal with syncDbId=" << syncPalMapElt.first);
