@@ -43,7 +43,6 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     sentry::pTraces::scoped::SyncInit perfMonitor(syncDbId());
-    int id = syncDbId();
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
         sentry::pTraces::scoped::ResetStatus perfMonitor1(syncDbId());

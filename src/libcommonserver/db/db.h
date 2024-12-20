@@ -84,10 +84,12 @@ class COMMONSERVER_EXPORT Db {
         bool sqlFail(const std::string &log, const std::string &error);
         bool checkConnect(const std::string &version);
 
-        bool prepareQuery(const std::string &queryId, const std::string &query);
         bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
         bool addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
                                 const std::string &request, bool *columnAdded = nullptr);
+
+        // Helpers
+        bool createAndPrepareRequest(const char *requestId, const char *query);
 
         log4cplus::Logger _logger;
         std::shared_ptr<SqliteDb> _sqliteDb;
