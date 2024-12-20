@@ -2181,9 +2181,10 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     // that follow-up operations can execute correctly, as they are based on the
     // information in this structure
     if (!syncOp->omit()) {
-        syncOp->correspondingNode()->setId(syncOp->targetSide() == ReplicaSide::Local ? localId
-                                                                                      : remoteId); // ID might have changed in the
-                                                                                                   // case of a delete+create
+        _syncPal->updateTree(syncOp->targetSide())
+                ->updateNodeId(syncOp->affectedNode(),
+                               syncOp->targetSide() == ReplicaSide::Local ? localId : remoteId); // ID might have changed in the
+                                                                                                 // case of a delete+create
         syncOp->correspondingNode()->setLastModified(newLastModTime);
     }
     node = syncOp->correspondingNode();
@@ -2315,8 +2316,7 @@ ExitInfo ExecutorWorker::propagateDeleteToDbAndTree(SyncOpPtr syncOp) {
     }
 
     if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                           << Utility::formatSyncName(syncOp->correspondingNode()->name()));
+        logCorrespondingNodeErrorMsg(syncOp);
         return ExitCode::DataError;
     }
 
