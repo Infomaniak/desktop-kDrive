@@ -18,10 +18,10 @@
 
 #include "remotefilesystemobserverworker.h"
 #include "jobs/jobmanager.h"
-#include "../../jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
-#include "../../jobs/network/API_v2/getfileinfojob.h"
-#include "../../jobs/network/API_v2/longpolljob.h"
-#include "../../jobs/network/API_v2/continuefilelistwithcursorjob.h"
+#include "jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/API_v2/getfileinfojob.h"
+#include "jobs/network/API_v2/longpolljob.h"
+#include "jobs/network/API_v2/continuefilelistwithcursorjob.h"
 #ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
@@ -32,6 +32,7 @@
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "utility/jsonparserutility.h"
+
 #ifdef __APPLE__
 #include "utility/utility.h"
 #endif

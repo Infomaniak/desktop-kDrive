@@ -24,7 +24,6 @@
 using namespace CppUnit;
 
 namespace KDC {
-class SnapshotItem;
 
 class TestSnapshotItemHandler : public CppUnit::TestFixture {
     public:

@@ -18,7 +18,6 @@
 
 #include "testsnapshot.h"
 #include "test_utility/testhelpers.h"
-
 #include "db/syncdb.h"
 #include "requests/parameterscache.h"
 

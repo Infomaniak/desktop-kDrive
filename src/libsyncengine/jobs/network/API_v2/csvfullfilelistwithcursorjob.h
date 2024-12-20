@@ -39,7 +39,7 @@ class SnapshotItemHandler {
             CsvIndexEnd
         };
 
-        inline static void incrementCsvIndex(CsvIndex &index) { index = static_cast<CsvIndex>(static_cast<int>(index) + 1); };
+        inline static void incrementCsvIndex(CsvIndex &index) { index = static_cast<CsvIndex>(static_cast<int>(index) + 1); }
 
         struct ParsingState {
                 CsvIndex index{CsvIndexId}; // The index of the column that is currently read.
