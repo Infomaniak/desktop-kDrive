@@ -369,8 +369,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     syncOp->affectedNode()->lastmodified(), node);
             !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                  << Utility::formatSyncName(syncOp->affectedNode()->name())
-                  << L" " << exitInfo);
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
     } else {
@@ -448,8 +447,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                         convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
                 !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
-                      << Utility::formatSyncName(syncOp->affectedNode()->name())
-                      << L" " << exitInfo);
+                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
+                                                   << exitInfo);
                 return exitInfo;
             }
 
@@ -548,11 +547,9 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
 
         if (placeholderCreation) {
             if (ExitInfo exitInfo = createPlaceholder(relativeLocalFilePath); !exitInfo) {
-            LOGW_SYNCPAL_WARN(
-                _logger,
-                L"Failed to create placeholder for: "
-                    << Utility::formatSyncName(syncOp->affectedNode()->name())
-                                                                                 << L" " << exitInfo);
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to create placeholder for: "
+                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
+                                                   << exitInfo);
                 return exitInfo;
             }
 
@@ -577,8 +574,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                                                                syncOp->affectedNode()->lastmodified(), newNode);
                 !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                      << Utility::formatSyncName(syncOp->affectedNode()->name())
-                      << L" " << exitInfo);
+                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
+                                                   << exitInfo);
                 return exitInfo;
             }
 
@@ -647,15 +644,14 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
                 !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
-                      << Utility::formatSyncName(syncOp->affectedNode()->name())
-                      << L" " << exitInfo);
+                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
+                                                   << exitInfo);
                 _syncPal->setRestart(true);
 
                 if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->affectedNode())) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                   << Utility::formatSyncName(
-                                          syncOp->affectedNode()->name())
-                                   << L" " << exitInfo);
+                                                       << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
+                                                       << exitInfo);
                 }
 
                 return exitInfo;
@@ -676,8 +672,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
             // Don't do this on macOS as status and pin state are set at the end of the upload
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, true); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
-                      << Utility::formatSyncName(syncOp->affectedNode()->name())
-                      << L" " << exitInfo);
+                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
+                                                   << exitInfo);
                 return exitInfo;
             }
 #endif
@@ -1126,8 +1122,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
 
         if (ExitInfo exitInfo = propagateMoveToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                  << Utility::formatSyncName(syncOp->affectedNode()->name())
-                  << L" " << exitInfo);
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
     } else {
@@ -1260,8 +1255,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         std::shared_ptr<Node> newNode = nullptr;
         if (ExitInfo exitInfo = propagateChangeToDbAndTree(syncOp, job, newNode); !exitInfo) {
             LOGW_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                  << Utility::formatSyncName(syncOp->affectedNode()->name())
-                  << L" " << exitInfo);
+                                       << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
 
@@ -1329,8 +1323,7 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
 
         if (ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                  << Utility::formatSyncName(syncOp->affectedNode()->name())
-                  << L" " << exitInfo);
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
     } else {
@@ -2362,8 +2355,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     std::shared_ptr<Node> newNode = nullptr;
     if (ExitInfo exitInfo = propagateCreateToDbAndTree(syncOp, newNodeId, newModTime, newNode); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-              << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
-              << exitInfo);
+                                           << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
         return exitInfo;
     }
 
@@ -2610,8 +2602,7 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, const Exit
     _syncPal->setRestart(true);
     if (ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-              << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
-              << exitInfo);
+                                           << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
         return exitInfo;
     }
     return removeDependentOps(syncOp);
