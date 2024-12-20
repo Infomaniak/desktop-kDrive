@@ -2316,8 +2316,7 @@ ExitInfo ExecutorWorker::propagateDeleteToDbAndTree(SyncOpPtr syncOp) {
     }
 
     if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                           << Utility::formatSyncName(syncOp->correspondingNode()->name()));
+        logCorrespondingNodeErrorMsg(syncOp);
         return ExitCode::DataError;
     }
 
