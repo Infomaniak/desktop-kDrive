@@ -47,6 +47,7 @@ Snapshot &Snapshot::operator=(Snapshot &other) {
 
         _items = other._items;
         _isValid = other._isValid;
+        _copy = true;
     }
 
     return *this;
@@ -236,7 +237,7 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
     }
 
     bool ok = true;
-    std::deque<SyncName> names;
+    std::deque<std::pair<NodeId, SyncName>> ancestors;
     bool parentIsRoot = false;
     NodeId id = itemId;
 
@@ -244,7 +245,14 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
         const std::scoped_lock lock(_mutex);
         while (!parentIsRoot) {
             if (const auto it = _items.find(id); it != _items.end()) {
-                names.push_back(it->second.name());
+                if (_copy) {
+                    if (!it->second.path().empty()) {
+                        path = it->second.path();
+                        break;
+                    };
+                }
+
+                ancestors.push_back({it->first, it->second.name()});
                 id = it->second.parentId();
                 parentIsRoot = id == _rootFolderId;
                 continue;
@@ -256,16 +264,25 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
     }
 
     // Construct path
-    SyncPath tmpParentPath;
-    while (!names.empty()) {
-        path /= names.back();
-        names.pop_back();
+    SyncPath tmpParentPath(path);
+    while (!ancestors.empty()) {
+        path /= ancestors.back().second;
+        if (_copy) {
+            const auto it = _items.find(ancestors.back().first);
+            assert(it != _items.end());
+            it->second.setPath(path);
+        }
+        ancestors.pop_back();
+
+        // Trick to ignore items with pattern like "X:" in their name on Windows - Begin
         if (path.parent_path() != tmpParentPath) {
             ignore = true;
             return false;
         }
         tmpParentPath = path;
+        // Trick to ignore items with pattern like "X:" in their name on Windows - End
     }
+
     return ok;
 }
 
