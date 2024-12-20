@@ -18,6 +18,7 @@
 
 #include "log/log.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <sstream>
 #include <string>
@@ -39,7 +40,7 @@ static bool init_private() {
 
 static void makeMessage() {}
 
-bool moveItemToTrash(const SyncPath &itemPath, std::string &errorStr);
+bool moveItemToTrash(const SyncPath &itemPath, std::wstring &errorStr);
 bool preventSleeping(bool enable);
 bool preventSleeping();
 void restartFinderExtension();
@@ -50,9 +51,10 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         return false;
     }
 
-    std::string errorStr;
+    std::wstring errorStr;
     if (!moveItemToTrash(itemPath, errorStr)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in moveItemToTrash - err=" << errorStr.c_str());
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in moveItemToTrash on " << Utility::formatSyncPath(itemPath) << L" - err='" << errorStr << L"'.");
         return false;
     }
 
