@@ -43,17 +43,7 @@ bool OldSyncDb::create(bool &retry) {
 }
 
 bool OldSyncDb::prepare() {
-    int errId = -1;
-    std::string error;
-
-    // Prepare request
-    ASSERT(queryCreate(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_SELECTIVESYNC_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_SELECTIVESYNC_REQUEST_ID);
-        return sqlFail(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, error);
-    }
-
-    return true;
+    return createAndPrepareRequest(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_SELECTIVESYNC_REQUEST);
 }
 
 bool OldSyncDb::upgrade(const std::string &, const std::string &) {

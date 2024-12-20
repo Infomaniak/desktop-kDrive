@@ -27,8 +27,14 @@
 
 namespace KDC {
 
-bool moveItemToTrash(const SyncPath &itemPath, std::string &errorStr) {
+bool moveItemToTrash(const SyncPath &itemPath, std::wstring &errorStr)
+{
     NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
+
+    if (filePath == nullptr) {
+        errorStr = L"Error in stringWithCString. Failed to cast std filepath to NSString.";
+        return false;
+    }
     NSURL *fileURL = [NSURL fileURLWithPath:filePath];
 
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -37,7 +43,9 @@ bool moveItemToTrash(const SyncPath &itemPath, std::string &errorStr) {
     BOOL success = [fileManager trashItemAtURL:fileURL resultingItemURL:nil error:&error];
 
     if (error != nil) {
-        errorStr = std::string([error.localizedDescription UTF8String]);
+        const auto wcharError = reinterpret_cast<const wchar_t *>(
+            [error.localizedDescription cStringUsingEncoding:NSUTF32LittleEndianStringEncoding]);
+        errorStr = std::wstring(wcharError);
     }
 
     return success;

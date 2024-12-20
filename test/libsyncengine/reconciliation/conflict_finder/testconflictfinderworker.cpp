@@ -17,7 +17,6 @@
  */
 
 #include "testconflictfinderworker.h"
-
 #include "test_utility/testhelpers.h"
 
 using namespace CppUnit;

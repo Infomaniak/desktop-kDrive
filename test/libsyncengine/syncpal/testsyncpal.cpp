@@ -198,6 +198,12 @@ void TestSyncPal::testSyncFileItem() {
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->totalFiles());
 }
 
+void TestSyncPal::testCheckIfExistsOnServer() {
+    bool exists = false;
+    auto remoteSnapshot = _syncPal->snapshot(ReplicaSide::Remote, false);
+    CPPUNIT_ASSERT(_syncPal->checkIfExistsOnServer(SyncPath("dummy"), exists) == (remoteSnapshot != nullptr));
+}
+
 void TestSyncPal::testAll() {
     // Start sync
     _syncPal->start();
