@@ -615,7 +615,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
 
         SyncName name;
         if (!Utility::normalizedSyncName(tmp, name)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
             // Ignore the folder
             continue;
         }
@@ -631,8 +631,8 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
                 return ExitCode::BackError;
             }
             if (!Utility::normalizedSyncName(tmp, path)) {
-                LOGW_WARN(Log::instance()->getLogger(),
-                          L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
+                LOGW_DEBUG(Log::instance()->getLogger(),
+                           L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
                 // Ignore the folder
                 continue;
             }
@@ -1496,7 +1496,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setLocalPath(QStr2Path(localFolderPath));
     sync.setTargetPath(QStr2Path(serverFolderPath));
     sync.setTargetNodeId(serverFolderNodeId.toStdString());
-    sync.setPaused(true);
+    sync.setPaused(false);
 
     // Check vfs support
     QString fsName(KDC::CommonUtility::fileSystemName(SyncName2QStr(sync.localPath().native())));

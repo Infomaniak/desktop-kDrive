@@ -65,6 +65,7 @@ if(APPLE)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
         list(APPEND updater_SRCS updater/sparkleupdater.h updater/sparkleupdater.mm)
+        set_property(SOURCE updater/sparkleupdater.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle

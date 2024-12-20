@@ -45,7 +45,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_w
             LocalFileSystemObserverWorker_win::changesDetected(changes);
         }
 
-        bool waitForUpdate(int64_t timeoutMs = 100000) const;
+        void waitForUpdate(long long timeoutMs = 10000) const;
 };
 #else
 class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_unix {
@@ -58,7 +58,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_u
             Utility::msleep(200);
             LocalFileSystemObserverWorker_unix::changesDetected(changes);
         }
-        bool waitForUpdate(int64_t timeoutMs = 100000) const;
+        void waitForUpdate(long long timeoutMs = 10000) const;
 };
 #endif
 
@@ -70,6 +70,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testLFSODeleteDir);
         CPPUNIT_TEST(testLFSOWithDirs);
         CPPUNIT_TEST(testLFSOFastMoveDeleteMove);
+        CPPUNIT_TEST(testLFSOFastMoveDeleteMoveWithEncodingChange);
         CPPUNIT_TEST(testLFSOWithSpecialCases1);
         CPPUNIT_TEST(testLFSOWithSpecialCases2);
         CPPUNIT_TEST_SUITE_END();
@@ -93,8 +94,13 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         void testLFSOWithDirs();
         void testLFSODeleteDir();
         void testLFSOFastMoveDeleteMove();
+        void testLFSOFastMoveDeleteMoveWithEncodingChange();
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
+
+        static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
+        static bool vfsPinState(int, const SyncPath &, PinState &) { return true; };
+        static bool vfsFileStatusChanged(int, const SyncPath &, SyncFileStatus) { return true; };
 };
 
 } // namespace KDC

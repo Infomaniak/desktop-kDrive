@@ -161,7 +161,10 @@ class ExecutorWorker : public OperationProcessor {
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
         std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
+
         std::list<UniqueId> _opList;
+        std::recursive_mutex _opListMutex;
+
         std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
 
         bool _snapshotToInvalidate = false;

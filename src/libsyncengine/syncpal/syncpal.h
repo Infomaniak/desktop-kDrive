@@ -221,14 +221,22 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual void refreshTmpBlacklist();
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         virtual void removeItemFromTmpBlacklist(const SyncPath &relativePath);
-        ExitInfo handleAccessDeniedItem(const SyncPath &relativePath, ExitCause cause = ExitCause::FileAccessError);
-        ExitInfo handleAccessDeniedItem(const SyncPath &relativePath, std::shared_ptr<Node> &localBlacklistedNode,
+        //! Handle an access denied error on an item on the local side.
+        /*!
+         \param relativeLocalPath is the local path of the item.
+         \param cause is an optional exit cause returned by the operation that has failed. Used only to generate an error message
+         tailored to the context.
+         \return The exit info of the function.
+         */
+        ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause = ExitCause::FileAccessError);
+        ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, std::shared_ptr<Node> &localBlacklistedNode,
                                         std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause);
+
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
         // Workers
-        std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; };
+        std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; }
         void setComputeFSOperationsWorker(std::shared_ptr<ComputeFSOperationWorker> worker) {
             _computeFSOperationsWorker = worker;
         }
