@@ -303,18 +303,6 @@ AppServer::AppServer(int &argc, char **argv) :
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-    // Update checks
-    _updateManager = std::make_unique<UpdateManager>(this);
-    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
-#ifdef Q_OS_MACOS
-    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    _updateManager->setQuitCallback(quitCallback);
-#endif
-
-    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
-    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
-
     // Init socket api
     _socketApi.reset(new SocketApi(_syncPalMap, _vfsMap));
     _socketApi->setAddErrorCallback(&addError);
@@ -344,6 +332,18 @@ AppServer::AppServer(int &argc, char **argv) :
 
     // Set sentry user
     updateSentryUser();
+
+    // Update checks
+    _updateManager = std::make_unique<UpdateManager>(this);
+    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
+#ifdef Q_OS_MACOS
+    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    _updateManager->setQuitCallback(quitCallback);
+#endif
+
+    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
 
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
@@ -427,10 +427,11 @@ void AppServer::stopSyncTask(int syncDbId) {
         addError(Error(errId(), exitCode, ExitCause::Unknown));
     }
 
-    ASSERT(_syncPalMap[syncDbId].use_count() == 1)
+    ASSERT(!_syncPalMap[syncDbId] || _syncPalMap[syncDbId].use_count() == 1)
     _syncPalMap.erase(syncDbId);
 
-    ASSERT(_vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+    ASSERT(!_vfsMap[syncDbId] ||
+           _vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
     _vfsMap.erase(syncDbId);
 }
 
@@ -610,6 +611,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Get syncs do delete
             std::vector<int> syncDbIdList;
             for (const auto &syncPalMapElt: _syncPalMap) {
+                if (!syncPalMapElt.second) continue;
                 if (syncPalMapElt.second->userDbId() == userDbId) {
                     syncDbIdList.push_back(syncPalMapElt.first);
                 }
@@ -906,6 +908,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             int accountDbId = -1;
             std::vector<int> syncDbIdList;
             for (const auto &syncPalMapElt: _syncPalMap) {
+                if (!syncPalMapElt.second) continue;
                 if (syncPalMapElt.second->driveDbId() == driveDbId) {
                     syncDbIdList.push_back(syncPalMapElt.first);
                     accountDbId = syncPalMapElt.second->accountDbId();
@@ -1106,10 +1109,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                tryCreateAndStartVfs(sync);
+                exitCode = tryCreateAndStartVfs(sync);
+                const bool start = exitCode == ExitCode::Ok;
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, start, false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -1126,10 +1130,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                         // Do nothing
                     }
 
-                    ASSERT(_syncPalMap[syncInfo.dbId()].use_count() == 1)
+                    ASSERT(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
                     _syncPalMap.erase(syncInfo.dbId());
 
-                    ASSERT(_vfsMap[syncInfo.dbId()].use_count() == 1)
+                    ASSERT(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
                     _vfsMap.erase(syncInfo.dbId());
 
                     // Delete sync from DB
@@ -1194,10 +1198,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                tryCreateAndStartVfs(sync);
+                exitCode = tryCreateAndStartVfs(sync);
+                const bool start = exitCode == ExitCode::Ok;
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, start, false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -1482,6 +1487,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Pause all syncs of the drive
             QList<int> pausedSyncs;
             for (auto &syncPalMapElt: _syncPalMap) {
+                if (!syncPalMapElt.second) continue;
                 std::chrono::time_point<std::chrono::system_clock> pauseTime;
                 if (syncPalMapElt.second->driveDbId() == driveDbId && !syncPalMapElt.second->isPaused(pauseTime)) {
                     syncPalMapElt.second->pause();
@@ -1513,6 +1519,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Add first created node to blacklist of all syncs
             for (auto &syncPalMapElt: _syncPalMap) {
+                if (!syncPalMapElt.second) continue;
                 if (syncPalMapElt.second->driveDbId() == driveDbId) {
                     // Get blacklist
                     std::unordered_set<NodeId> nodeIdSet;
@@ -1597,6 +1604,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QTimer::singleShot(100, [=]() {
                 for (auto &syncPalMapElt: _syncPalMap) {
+                    if (!syncPalMapElt.second) continue;
                     if (_socketApi) {
                         _socketApi->unregisterSync(syncPalMapElt.second->syncDbId());
                     }
@@ -1909,6 +1917,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
             sentry::pTraces::basic::AppStart().stop();
+            break;
         }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId = 0;
@@ -2792,17 +2801,6 @@ ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " code=" << exitCode << ", pausing.");
         addError(Error(sync.dbId(), errId(), exitCode, exitCause));
-
-        // Set sync's paused flag
-        sync.setPaused(true);
-
-        bool found = false;
-        if (!ParmsDb::instance()->setSyncPaused(sync.dbId(), true, found)) {
-            LOG_WARN(_logger, "Error in ParmsDb::setSyncPaused");
-        }
-        if (!found) {
-            LOG_WARN(_logger, "Sync not found");
-        }
     }
 
     return exitCode;
@@ -2888,11 +2886,11 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                     continue;
                 }
 
-                tryCreateAndStartVfs(sync);
+                exitCode = tryCreateAndStartVfs(sync);
+                const bool start = exitCode == ExitCode::Ok && !user.keychainKey().empty();
 
                 // Create and start SyncPal
-                exitCode =
-                        initSyncPal(sync, blackList, undecidedList, QSet<QString>(), !user.keychainKey().empty(), false, false);
+                exitCode = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, false, false);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(sync.dbId(), errId(), exitCode, ExitCause::Unknown));
@@ -3867,11 +3865,10 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         // Delete previous vfs
         _vfsMap.erase(syncDbId);
 
-        tryCreateAndStartVfs(sync);
+        exitCode = tryCreateAndStartVfs(sync);
+        const bool start = exitCode == ExitCode::Ok;
 
         QTimer::singleShot(100, this, [=]() {
-            bool ok = true;
-
             if (newMode != VirtualFileMode::Off) {
                 // Clear file system
                 _vfsMap[sync.dbId()]->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
@@ -3885,8 +3882,8 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             // Notify conversion completed
             sendVfsConversionCompleted(sync.dbId());
 
-            if (ok) {
-                // Re-start sync
+            // Re-start sync
+            if (start) {
                 _syncPalMap[syncDbId]->start();
             }
         });
@@ -4235,6 +4232,7 @@ void AppServer::onUpdateSyncsProgress() {
     int64_t estimatedRemainingTime;
 
     for (const auto &[syncDbId, syncPal]: _syncPalMap) {
+        if (!syncPal) continue;
         // Get progress
         status = syncPal->status();
         step = syncPal->step();
@@ -4384,6 +4382,7 @@ void AppServer::onRestartSyncs() {
 #endif
 
     for (const auto &syncPalMapElt: _syncPalMap) {
+        if (!syncPalMapElt.second) continue;
         std::chrono::time_point<std::chrono::system_clock> pauseTime;
         if (syncPalMapElt.second->isPaused(pauseTime) && pauseTime + std::chrono::minutes(1) < std::chrono::system_clock::now()) {
             LOG_INFO(_logger, "Try to resume SyncPal with syncDbId=" << syncPalMapElt.first);

@@ -49,7 +49,7 @@ namespace KDC {
 
 bool ParmsDb::createAppState() {
     LOG_INFO(_logger, "Creating table app_state");
-    if (!prepareQuery(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE)) return false;
+    if (!createAndPrepareRequest(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE)) return false;
     int errId = 0;
     std::string error;
     if (!queryExec(CREATE_APP_STATE_TABLE_ID, errId, error)) {
@@ -61,9 +61,9 @@ bool ParmsDb::createAppState() {
 }
 
 bool ParmsDb::prepareAppState() {
-    if (!prepareQuery(INSERT_APP_STATE_REQUEST_ID, INSERT_APP_STATE_REQUEST)) return false;
-    if (!prepareQuery(SELECT_APP_STATE_REQUEST_ID, SELECT_APP_STATE_REQUEST)) return false;
-    if (!prepareQuery(UPDATE_APP_STATE_REQUEST_ID, UPDATE_APP_STATE_REQUEST)) return false;
+    if (!createAndPrepareRequest(INSERT_APP_STATE_REQUEST_ID, INSERT_APP_STATE_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_APP_STATE_REQUEST_ID, SELECT_APP_STATE_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_APP_STATE_REQUEST_ID, UPDATE_APP_STATE_REQUEST)) return false;
     return true;
 }
 

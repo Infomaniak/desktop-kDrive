@@ -26,6 +26,8 @@
 
 namespace KDC {
 
+class Snapshot;
+
 class SnapshotItem {
     public:
         SnapshotItem();
@@ -41,7 +43,14 @@ class SnapshotItem {
         [[nodiscard]] const std::unordered_set<NodeId> &childrenIds() const { return _childrenIds; }
         void setChildrenIds(const std::unordered_set<NodeId> &newChildrenIds) { _childrenIds = newChildrenIds; }
         [[nodiscard]] const SyncName &name() const { return _name; }
-        void setName(const SyncName &newName) { _name = newName; }
+        [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
+        void setName(const SyncName &newName) {
+            _name = newName;
+            if (!Utility::normalizedSyncName(newName, _normalizedName)) {
+                _normalizedName = newName;
+                LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(newName));
+            }
+        }
         [[nodiscard]] SyncTime createdAt() const { return _createdAt; }
         void setCreatedAt(const SyncTime newCreatedAt) { _createdAt = newCreatedAt; }
         [[nodiscard]] SyncTime lastModified() const { return _lastModified; }
@@ -58,6 +67,7 @@ class SnapshotItem {
         void setCanWrite(const bool canWrite) { _canWrite = canWrite; }
         [[nodiscard]] bool canShare() const { return _canShare; }
         void setCanShare(bool canShare) { _canShare = canShare; }
+
         SnapshotItem &operator=(const SnapshotItem &other);
 
         void copyExceptChildren(const SnapshotItem &other);
@@ -69,6 +79,7 @@ class SnapshotItem {
         NodeId _parentId;
 
         SyncName _name;
+        SyncName _normalizedName;
         SyncTime _createdAt = 0;
         SyncTime _lastModified = 0;
         NodeType _type = NodeType::Unknown;
@@ -79,6 +90,14 @@ class SnapshotItem {
         bool _canShare = true;
 
         std::unordered_set<NodeId> _childrenIds;
+
+        mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
+
+        [[nodiscard]] SyncPath path() const { return _path; }
+        void setPath(const SyncPath &path) const { _path = path; }
+
+        friend class Snapshot;
+        // friend bool Snapshot::path(const NodeId &, SyncPath &, bool &) const noexcept;
 };
 
 } // namespace KDC

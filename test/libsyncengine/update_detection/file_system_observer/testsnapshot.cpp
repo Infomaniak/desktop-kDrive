@@ -18,13 +18,46 @@
 
 #include "testsnapshot.h"
 #include "test_utility/testhelpers.h"
-
 #include "db/syncdb.h"
 #include "requests/parameterscache.h"
 
 using namespace CppUnit;
 
 namespace KDC {
+
+
+void TestSnapshot::tearDown() {}
+
+void TestSnapshot::testItemId() {
+    const NodeId rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
+
+    const DbNode dummyRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
+                               NodeType::Directory, 0, std::nullopt);
+    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+
+    snapshot.updateItem(
+            SnapshotItem("2", rootNodeId, Str("a"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("3", "2", Str("aa"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("4", "2", Str("ab"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("5", "2", Str("ac"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("6", "4", Str("aba"), 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    snapshot.updateItem(SnapshotItem("7", "6", Str("abaa"), 1640995202, 1640995202, NodeType::File, 10, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab/aba/abaa")));
+
+    SyncName nfcNormalized;
+    Utility::normalizedSyncName(Str("abà"), nfcNormalized);
+
+    SyncName nfdNormalized;
+    Utility::normalizedSyncName(Str("abà"), nfdNormalized, Utility::UnicodeNormalization::NFD);
+
+    snapshot.updateItem(SnapshotItem("6", "4", nfcNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
+
+    snapshot.updateItem(SnapshotItem("6", "4", nfdNormalized, 1640995202, 1640995202, NodeType::Directory, 0, false, true, true));
+    CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
+    CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
+}
 
 /**
  * Tree:
@@ -67,7 +100,6 @@ void TestSnapshot::setUp() {
     _snapshot->updateItem(itemAAA);
 }
 
-void TestSnapshot::tearDown() {}
 
 void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT(_snapshot->exists("a"));

@@ -15,8 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "common/filesystembase.h"
-
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/iohelper_win.h"
@@ -119,6 +117,14 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
     return FileTimeToUnixTime(&ft, remainder);
 }
 
+uint64_t computeNodeId(const _FILE_ID_FULL_DIR_INFORMATION *pFileInfo) {
+    // We keep `long long` type cast for legacy reason.
+    auto longLongId =
+            (static_cast<long long>(pFileInfo->FileId.HighPart) << 32) + static_cast<long long>(pFileInfo->FileId.LowPart);
+
+    return static_cast<uint64_t>(longLongId);
+}
+
 } // namespace
 
 int IoHelper::_getAndSetRightsMethod = -1; // -1: not initialized, 0: Windows API, 1: std::filesystem
@@ -133,12 +139,12 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     // Get parent folder handle
-    HANDLE hParent;
-    hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING,
-                          FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, nullptr,
+                                 OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
     if (hParent == INVALID_HANDLE_VALUE) {
-        LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()).c_str());
+        LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()) << L", "
+                                                      << CommonUtility::getLastErrorMessage());
         return false;
     }
 
@@ -161,7 +167,8 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
             (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
 
     if (zwQueryDirectoryFile == 0) {
-        LOGW_WARN(logger(), L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()).c_str());
+        LOGW_WARN(logger(), L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()) << L", "
+                                                         << CommonUtility::getLastErrorMessage());
         return false;
     }
 
@@ -174,7 +181,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     }
 
     // Get the Windows file id as an inode replacement.
-    nodeId = std::to_string(((long long) pFileInfo->FileId.HighPart << 32) + (long long) pFileInfo->FileId.LowPart);
+    nodeId = std::to_string(computeNodeId(pFileInfo));
 
     CloseHandle(hParent);
     return true;
@@ -260,7 +267,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     }
 
     // Get the Windows file id as an inode replacement.
-    filestat->inode = ((long long) pFileInfo->FileId.HighPart << 32) + (long long) pFileInfo->FileId.LowPart;
+    filestat->inode = computeNodeId(pFileInfo);
     filestat->size = ((long long) pFileInfo->EndOfFile.HighPart << 32) + (long long) pFileInfo->EndOfFile.LowPart;
 
     DWORD rem;
@@ -304,10 +311,8 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, Io
 
 void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
     // TODO: move KDC::FileSystem::longWinPath to IoHelper and use it here.
-    DWORD dwAttrs;
-
     const wchar_t *fName = path.c_str();
-    dwAttrs = GetFileAttributesW(fName);
+    DWORD dwAttrs = GetFileAttributesW(fName);
 
     if (dwAttrs != INVALID_FILE_ATTRIBUTES) {
         if (hidden && !(dwAttrs & FILE_ATTRIBUTE_HIDDEN)) {
@@ -631,7 +636,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         }
         LOGW_WARN(logger(), L"Failed to get rights using Windows API, falling back to std::filesystem.");
         sentry::Handler::captureMessage(sentry::Level::Warning, "IoHelper",
-                                                  "Failed to get rights using Windows API, falling back to std::filesystem.");
+                                        "Failed to get rights using Windows API, falling back to std::filesystem.");
 
         IoHelper::getTrustee().ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
@@ -707,7 +712,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
 
         LOGW_WARN(logger(), L"Failed to set rights using Windows API, falling back to std::filesystem.");
         sentry::Handler::captureMessage(sentry::Level::Warning, "IoHelper",
-                                                  "Failed to set rights using Windows API, falling back to std::filesystem.");
+                                        "Failed to set rights using Windows API, falling back to std::filesystem.");
         IoHelper::getTrustee().ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
     }

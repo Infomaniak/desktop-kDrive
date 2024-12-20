@@ -93,6 +93,8 @@ class Snapshot : public SharedObject {
         NodeId _rootFolderId;
         std::unordered_map<NodeId, SnapshotItem> _items; // key: id
         bool _isValid = false;
+        bool _copy = false; // false for a real time snapshot, true for a copy
+
         mutable std::recursive_mutex _mutex;
 };
 

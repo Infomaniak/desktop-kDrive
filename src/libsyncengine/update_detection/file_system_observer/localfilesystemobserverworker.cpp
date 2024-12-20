@@ -19,7 +19,6 @@
 #include "localfilesystemobserverworker.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/ptraces.h"
-
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -29,7 +28,6 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#include <iostream>
 #include <filesystem>
 
 namespace KDC {

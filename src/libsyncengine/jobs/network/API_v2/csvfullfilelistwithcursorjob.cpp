@@ -18,7 +18,6 @@
 
 #include "csvfullfilelistwithcursorjob.h"
 #include "libcommonserver/utility/utility.h"
-#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
@@ -32,7 +31,7 @@ static const std::string endOfFileDelimiter("#EOF");
 
 namespace KDC {
 
-SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger) {};
+SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger) {}
 
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                                    const std::exception &exc) {

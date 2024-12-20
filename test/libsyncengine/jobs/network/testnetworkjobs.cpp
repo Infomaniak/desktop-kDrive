@@ -40,24 +40,29 @@
 #include "jobs/network/API_v2/getsizejob.h"
 #include "jobs/jobmanager.h"
 #include "network/proxy.h"
+#include "utility/jsonparserutility.h"
+#include "requests/parameterscache.h"
+#include "jobs/network/getappversionjob.h"
+#include "jobs/network/directdownloadjob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
-#include "utility/jsonparserutility.h"
-#include "requests/parameterscache.h"
+
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
-#include <iostream>
-
-#include "jobs/network/getappversionjob.h"
 #include "test_utility/testhelpers.h"
-#include "jobs/network/directdownloadjob.h"
+
+#include <iostream>
 
 using namespace CppUnit;
 
 namespace KDC {
+
+uint64_t TestNetworkJobs::_nbParalleleThreads = 10;
+
+namespace {
 static const NodeId pictureDirRemoteId = "56851"; // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373"; // test_ci/test_pictures/picture-1.jpg
 static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test_download.txt
@@ -67,12 +72,21 @@ static const NodeId testDummyDirRemoteId = "98648"; // test_ci/dummy_dir
 static const NodeId testDummyFileRemoteId = "98649"; // test_ci/dummy_dir/picture.jpg
 
 static const std::string desktopTeamTestDriveName = "kDrive Desktop Team";
-static const std::string bigFileDirName = "big_file_dir";
 static const std::string bigFileName = "big_text_file.txt";
 static const std::string dummyDirName = "dummy_dir";
 static const std::string dummyFileName = "picture.jpg";
 
-uint64_t TestNetworkJobs::_nbParalleleThreads = 10;
+
+void createBigTextFile(const SyncPath &path) {
+    static const size_t sizeInBytes = 97 * 1000000;
+    std::ofstream ofs{path};
+    ofs << std::string(sizeInBytes, 'a');
+};
+
+void createEmptyFile(const SyncPath &path) {
+    std::ofstream{path};
+};
+} // namespace
 
 void TestNetworkJobs::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
@@ -288,7 +302,7 @@ void TestNetworkJobs::testDownload() {
             return tmpdirectory.path();
         };
         std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
-                [](const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec) {
+                [](const SyncPath &, const SyncPath &, std::error_code &ec) {
 #ifdef _WIN32
                     ec = std::make_error_code(static_cast<std::errc>(ERROR_NOT_SAME_DEVICE));
 #else
@@ -316,7 +330,7 @@ void TestNetworkJobs::testDownload() {
 
 void TestNetworkJobs::testDownloadAborted() {
     const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
-    SyncPath localDestFilePath = temporaryDirectory.path() / bigFileName;
+    const SyncPath localDestFilePath = temporaryDirectory.path() / bigFileName;
     std::shared_ptr<DownloadJob> job =
             std::make_shared<DownloadJob>(_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
     JobManager::instance()->queueAsyncJob(job);
@@ -691,7 +705,9 @@ void TestNetworkJobs::testRename() {
 void TestNetworkJobs::testUpload() {
     // Successful upload
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
-    SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
+    const LocalTemporaryDirectory temporaryDirectory("testUpload");
+    const SyncPath localFilePath = temporaryDirectory.path() / "empty_file.txt";
+    createEmptyFile(localFilePath);
 
     UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
     ExitCode exitCode = job.runSynchronously();
@@ -708,13 +724,14 @@ void TestNetworkJobs::testUpload() {
     if (dataObj) {
         name = dataObj->get(nameKey).toString();
     }
-    CPPUNIT_ASSERT(name == bigFileName);
+    CPPUNIT_ASSERT(name == std::string("empty_file.txt"));
 }
 
 void TestNetworkJobs::testUploadAborted() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadAborted");
-
-    SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
+    const LocalTemporaryDirectory temporaryDirectory("testUploadAborted");
+    const SyncPath localFilePath = temporaryDirectory.path() / bigFileName;
+    createBigTextFile(localFilePath);
 
     const std::shared_ptr<UploadJob> job =
             std::make_shared<UploadJob>(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
@@ -749,11 +766,8 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionSynchronous");
     const LocalTemporaryDirectory localTmpDir("testDriveUploadSessionSynchronous");
     const SyncPath localFilePath = localTmpDir.path() / bigFileName;
+    createBigTextFile(localFilePath);
 
-    IoError ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(
-            IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath / bigFileDirName / bigFileName, localFilePath, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     DriveUploadSession driveUploadSessionJobCreate(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
                                                    remoteTmpDir.id(), 12345, false, 1);
@@ -777,6 +791,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     ofs << "test";
     ofs.close();
     uint64_t fileSizeLocal = 0;
+    auto ioError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::getFileSize(localFilePath, fileSizeLocal, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
@@ -799,12 +814,9 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionAsynchronous");
     const LocalTemporaryDirectory localTmpDir("testDriveUploadSessionASynchronous");
     const SyncPath localFilePath = localTmpDir.path() / bigFileName;
+    createBigTextFile(localFilePath);
 
     IoError ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(
-            IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath / bigFileDirName / bigFileName, localFilePath, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-
     ExitCode exitCode = ExitCode::Unknown;
     NodeId newNodeId;
     uint64_t initialNbParalleleThreads = _nbParalleleThreads;
@@ -887,8 +899,9 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronousAborted");
 
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionSynchronousAborted");
-
-    SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
+    const LocalTemporaryDirectory temporaryDirectory("testDriveUploadSessionSynchronousAborted");
+    const SyncPath localFilePath = temporaryDirectory.path() / bigFileName;
+    createBigTextFile(localFilePath);
 
     LOG_DEBUG(Log::instance()->getLogger(),
               "$$$$$ testDriveUploadSessionSynchronousAborted - " << _nbParalleleThreads << " threads");
@@ -910,8 +923,10 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted");
 
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionAsynchronousAborted");
+    const LocalTemporaryDirectory temporaryDirectory("testDriveUploadSessionAsynchronousAborted");
+    const SyncPath localFilePath = temporaryDirectory.path() / bigFileName;
+    createBigTextFile(localFilePath);
 
-    SyncPath localFilePath = testhelpers::localTestDirPath / bigFileDirName / bigFileName;
 
     std::shared_ptr<DriveUploadSession> DriveUploadSessionJob =
             std::make_shared<DriveUploadSession>(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
