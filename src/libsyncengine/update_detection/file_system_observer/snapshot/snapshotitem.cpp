@@ -58,6 +58,7 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _contentChecksum = other.contentChecksum();
     _canWrite = other.canWrite();
     _canShare = other.canShare();
+    _path = other.path();
 }
 
 void SnapshotItem::addChildren(const NodeId &id) {
