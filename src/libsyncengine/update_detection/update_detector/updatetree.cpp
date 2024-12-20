@@ -19,6 +19,7 @@
 #include "updatetree.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
+#include "requests/parameterscache.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -160,6 +161,36 @@ void UpdateTree::init() {
 
     insertNode(_rootNode);
     _inconsistencyCheckDone = false;
+}
+
+bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
+    const NodeId oldId = node->id().has_value() ? *node->id() : "";
+
+    if (!node->parentNode()) {
+        LOG_WARN(Log::instance()->getLogger(), "Bad parameters");
+        assert(false);
+        return false;
+    }
+
+    node->parentNode()->deleteChildren(node);
+    node->setId(newId);
+
+    if (!node->parentNode()->insertChildren(node)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::insertChildren: node "
+                                                        << Utility::formatSyncName(node->name()) << L" parent node "
+                                                        << Utility::formatSyncName(node->parentNode()->name()));
+        return false;
+    }
+
+    if (ParametersCache::isExtendedLogEnabled() && newId != oldId) {
+        LOGW_WARN(Log::instance()->getLogger(), _side << L" update tree: Node ID changed from '" << Utility::s2ws(oldId)
+                                                      << L"' to '" << Utility::s2ws(newId) << L"' for node "
+                                                      << Utility::formatSyncName(node->name()) << L"'.");
+    }
+
+    _nodes.erase(oldId);
+    _nodes[newId] = node;
+    return true;
 }
 
 void UpdateTree::clear() {

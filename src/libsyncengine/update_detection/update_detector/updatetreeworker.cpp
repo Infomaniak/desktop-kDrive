@@ -197,7 +197,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             if (newNode != nullptr) {
                 // Node already exists, update it
                 newNode->setIdb(idb);
-                if (!updateNodeId(newNode, deleteOp->nodeId())) {
+                if (!_updateTree->updateNodeId(newNode, deleteOp->nodeId())) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                     return ExitCode::DataError;
                 }
@@ -335,7 +335,7 @@ bool UpdateTreeWorker::updateTmpFileNode(std::shared_ptr<Node> newNode, const FS
                                          OperationType opType) {
     assert(newNode != nullptr && newNode->isTmp());
 
-    if (!updateNodeId(newNode, op->nodeId())) {
+    if (!_updateTree->updateNodeId(newNode, op->nodeId())) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
         return false;
     }
@@ -408,7 +408,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
         if (auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId()); currentNodeIt != _updateTree->nodes().end()) {
             // Node is already in the update tree, it can be a Delete or an Edit
             std::shared_ptr<Node> currentNode = currentNodeIt->second;
-            if (!updateNodeId(currentNode, op->nodeId())) {
+            if (!_updateTree->updateNodeId(currentNode, op->nodeId())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                 return ExitCode::DataError;
             }
@@ -540,7 +540,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
             // A directory has been deleted and another one has been created with the same name
             currentNode->setPreviousId(currentNode->id());
         }
-        if (!updateNodeId(currentNode, createOp->nodeId())) {
+        if (!_updateTree->updateNodeId(currentNode, createOp->nodeId())) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
             return ExitCode::DataError;
         }
@@ -581,7 +581,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
         if (newNode != nullptr) {
             // Node already exists, update it
             if (newNode->name() == operation->path().filename().native()) {
-                if (!updateNodeId(newNode, operation->nodeId())) {
+                if (!_updateTree->updateNodeId(newNode, operation->nodeId())) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                     return ExitCode::DataError;
                 }
@@ -665,7 +665,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
             newNode->setLastModified(editOp->lastModified());
             newNode->setSize(editOp->size());
             newNode->insertChangeEvent(editOp->operationType());
-            if (!updateNodeId(newNode, editOp->nodeId())) {
+            if (!_updateTree->updateNodeId(newNode, editOp->nodeId())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                 return ExitCode::DataError;
             }
@@ -1000,34 +1000,6 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
     return ExitCode::Ok;
 }
 
-bool UpdateTreeWorker::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
-    const NodeId oldId = node->id().has_value() ? *node->id() : "";
-
-    if (!node->parentNode()) {
-        LOG_SYNCPAL_WARN(_logger, "Bad parameters");
-        assert(false);
-        return false;
-    }
-
-    node->parentNode()->deleteChildren(node);
-    node->setId(newId);
-
-    if (!node->parentNode()->insertChildren(node)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                           << SyncName2WStr(node->name()).c_str() << L" parent node name="
-                                           << SyncName2WStr(node->parentNode()->name()).c_str());
-        return false;
-    }
-
-    if (ParametersCache::isExtendedLogEnabled() && newId != oldId) {
-        LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Node ID changed from '" << Utility::s2ws(oldId).c_str() << L"' to '"
-                                          << Utility::s2ws(newId).c_str() << L"' for node '"
-                                          << SyncName2WStr(node->name()).c_str() << L"'.");
-    }
-
-    return true;
-}
-
 std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool isDeleted) {
     if (path.empty()) {
         return _updateTree->rootNode();
@@ -1084,7 +1056,7 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
     // merging ids
     if (tmpNode->id().has_value() && !realNode->id().has_value()) {
         // TODO: How is this possible?? Tmp node should NEVER have a valid id and real node should ALWAYS have a valid id
-        if (!updateNodeId(realNode, tmpNode->id().value())) {
+        if (!_updateTree->updateNodeId(realNode, tmpNode->id().value())) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
             return false;
         }
@@ -1336,7 +1308,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
         return ExitCode::DataError;
     }
 
-    if (!updateNodeId(tmpNode, id.value())) {
+    if (!_updateTree->updateNodeId(tmpNode, id.value())) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
         return ExitCode::DataError;
     }
