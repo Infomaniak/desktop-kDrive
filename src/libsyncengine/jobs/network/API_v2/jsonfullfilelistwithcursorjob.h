@@ -19,7 +19,6 @@
 #pragma once
 
 #include "abstracttokennetworkjob.h"
-#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 namespace KDC {
 

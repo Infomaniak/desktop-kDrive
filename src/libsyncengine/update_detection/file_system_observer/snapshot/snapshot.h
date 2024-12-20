@@ -20,6 +20,7 @@
 
 #include "syncpal/sharedobject.h"
 #include "db/dbnode.h"
+#include "snapshotitem.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -27,8 +28,6 @@
 #include <mutex>
 
 namespace KDC {
-
-class SnapshotItem;
 
 class Snapshot : public SharedObject {
     public:

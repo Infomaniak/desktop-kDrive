@@ -20,12 +20,13 @@
 
 #include "libcommon/utility/types.h"
 #include "libcommonserver/utility/utility.h"
-#include "snapshot.h"
 
 #include <string>
 #include <unordered_set>
 
 namespace KDC {
+
+class Snapshot;
 
 class SnapshotItem {
     public:
@@ -95,7 +96,8 @@ class SnapshotItem {
         [[nodiscard]] SyncPath path() const { return _path; }
         void setPath(const SyncPath &path) const { _path = path; }
 
-        friend bool Snapshot::path(const NodeId &, SyncPath &, bool &) const noexcept;
+        friend class Snapshot;
+        // friend bool Snapshot::path(const NodeId &, SyncPath &, bool &) const noexcept;
 };
 
 } // namespace KDC

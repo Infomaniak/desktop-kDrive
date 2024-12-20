@@ -40,20 +40,21 @@
 #include "jobs/network/API_v2/getsizejob.h"
 #include "jobs/jobmanager.h"
 #include "network/proxy.h"
+#include "utility/jsonparserutility.h"
+#include "requests/parameterscache.h"
+#include "jobs/network/getappversionjob.h"
+#include "jobs/network/directdownloadjob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
-#include "utility/jsonparserutility.h"
-#include "requests/parameterscache.h"
+
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
-#include <iostream>
-
-#include "jobs/network/getappversionjob.h"
 #include "test_utility/testhelpers.h"
-#include "jobs/network/directdownloadjob.h"
+
+#include <iostream>
 
 using namespace CppUnit;
 

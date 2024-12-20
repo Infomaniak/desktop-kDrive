@@ -18,7 +18,6 @@
 
 #include "testconflictfinderworker.h"
 #include "test_utility/testhelpers.h"
-#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 using namespace CppUnit;
 

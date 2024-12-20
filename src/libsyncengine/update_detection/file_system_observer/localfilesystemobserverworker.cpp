@@ -24,7 +24,6 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
-#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #include <log4cplus/loggingmacros.h>
 
