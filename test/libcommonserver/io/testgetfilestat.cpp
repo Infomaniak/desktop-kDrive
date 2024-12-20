@@ -19,7 +19,6 @@
 #include "testio.h"
 
 #include "libcommonserver/io/filestat.h"
-#include "utility/utility.h"
 #ifdef __APPLE__
 #include "server/vfs/mac/litesyncextconnector.h"
 #endif
@@ -44,6 +43,10 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        NodeId nodeId;
+        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT_EQUAL(nodeId, std::to_string(fileStat.inode));
     }
 
     // A regular directory
@@ -57,12 +60,16 @@ void TestIo::testGetFileStat() {
 #ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
 #else
-        CPPUNIT_ASSERT(fileStat.size > 0u);
+        CPPUNIT_ASSERT(fileStat.size > 0);
 #endif
         CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.creationTime);
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Directory, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        NodeId nodeId;
+        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT_EQUAL(nodeId, std::to_string(fileStat.inode));
     }
 
     // A regular symbolic link on a file
@@ -78,13 +85,17 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
-        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
 #endif
         CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(NodeType::File, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        NodeId nodeId;
+        CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
+        CPPUNIT_ASSERT_EQUAL(nodeId, std::to_string(fileStat.inode));
     }
 
     // A regular symbolic link on a folder
@@ -100,7 +111,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
-        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
 #endif
@@ -115,9 +126,10 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(uint64_t(0), fileStat.inode);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
     }
@@ -130,7 +142,8 @@ void TestIo::testGetFileStat() {
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(uint64_t(0), fileStat.inode);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
@@ -152,7 +165,8 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(uint64_t(0), fileStat.inode);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
@@ -272,7 +286,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
-        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0), fileStat.size);
 
 #else
         CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(targetPath.native().length()), fileStat.size);
