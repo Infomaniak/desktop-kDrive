@@ -17,7 +17,6 @@
  */
 
 #include "snapshot.h"
-#include "snapshotitem.h"
 #include "libcommonserver/log/log.h"
 #include "requests/parameterscache.h"
 

@@ -19,8 +19,8 @@
 #pragma once
 
 #include "syncpal/sharedobject.h"
-#include "db/dbnode.h"
 #include "snapshotitem.h"
+#include "db/dbnode.h"
 
 #include <unordered_map>
 #include <unordered_set>
