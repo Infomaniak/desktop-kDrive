@@ -512,15 +512,46 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
         retry = false;
 #endif
 
-        // Copy file content (i.e. doesn't change node id)
         std::error_code ec;
-        std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
-        if (ec) {
-            LOGW_WARN(_logger,
-                      L"Failed to copy downloaded file to " << Utility::formatSyncPath(_localpath) << L", " << Utility::formatStdError(ec));
-
+        bool error = false;
+        bool accessDeniedError = false;
+        bool crossDeviceLinkError = false;
 #ifdef _WIN32
-            if (ec.value() == ERROR_SHARING_VIOLATION) {
+        bool sharingViolationError = false;
+#endif
+        if (_isCreate) {
+            // Move file
+            IoError ioError = IoError::Success;
+            IoHelper::moveItem(_tmpPath, _localpath, ioError);
+            crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
+            if (ioError != IoError::Success && !crossDeviceLinkError) {
+                LOGW_WARN(_logger, L"Failed to move downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
+                                                                      << Utility::formatSyncPath(_localpath) << L", err='"
+                                                                      << Utility::formatIoError(ioError) << L"'");
+                error = true;
+                accessDeniedError = ioError == IoError::AccessDenied;
+                // NB: On Windows, ec.value() == ERROR_SHARING_VIOLATION is translated as IoError::AccessDenied
+            }
+        }
+
+        if (!_isCreate || crossDeviceLinkError) {
+            // Copy file content (i.e. when the target exists, doesn't change its node id)
+            std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
+            if (ec.value()) {
+                LOGW_WARN(_logger, L"Failed to copy downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
+                                                                      << Utility::formatSyncPath(_localpath) << L", err='"
+                                                                      << Utility::formatStdError(ec) << L"'");
+                error = true;
+                accessDeniedError = IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied;
+#ifdef _WIN32
+                sharingViolationError = ec.value() == ERROR_SHARING_VIOLATION; // In this case, we will try again
+#endif
+            }
+        }
+
+        if (error) {
+#ifdef _WIN32
+            if (sharingViolationError) {
                 if (counter) {
                     // Retry
                     retry = true;
@@ -534,7 +565,7 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
             }
 #endif
 
-            if (IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied) {
+            if (accessDeniedError) {
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::FileAccessError;
                 return false;
