@@ -42,6 +42,7 @@ class FixConflictingFilesDialog : public CustomDialog {
         void onExpandButtonClicked();
         void onScrollBarValueChanged();
         void onValidate();
+        void onKeepRemoteButtonToggled(bool checked);
 
     private:
         void initUi();
@@ -57,6 +58,7 @@ class FixConflictingFilesDialog : public CustomDialog {
         QStackedWidget *_stackedWidget = nullptr;
         CustomRadioButton *_keepLocalButton = nullptr;
         CustomRadioButton *_keepRemoteButton = nullptr;
+        QWidget *_keepRemoteDisclaimerWidget = nullptr;
         CustomToolButton *_expandButton = nullptr;
         QListWidget *_fileListWidget = nullptr;
 };
