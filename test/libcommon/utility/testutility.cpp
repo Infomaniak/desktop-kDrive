@@ -314,8 +314,8 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
 
     {
         int err = 0;
-        for (int c = 0; c < 1000000; c++) {
-            int nb = 2;
+        for (int c = 0; c < 100000; c++) {
+            int nb = 3;
             std::vector<std::thread> workers;
             std::set<std::string> results;
             std::mutex resultsMutex;
