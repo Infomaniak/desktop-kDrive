@@ -2528,8 +2528,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitI
 
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveToTrashFailed)): {
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {
             return handleOpsFileAccessError(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
