@@ -24,6 +24,7 @@
 
 #include <string>
 #include <thread>
+#include <random>
 
 #ifdef _WIN32
 #include <strsafe.h>
