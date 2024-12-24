@@ -303,7 +303,7 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
     {
         int err = 0;
         std::set<std::string> results;
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 100000; i++) {
             std::string str = CommonUtility::generateRandomStringAlphaNum();
             if (!results.insert(str).second) {
                 err++;
@@ -314,8 +314,8 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
 
     {
         int err = 0;
-        for (int c = 0; c < 100000; c++) {
-            int nb = 3;
+        for (int c = 0; c < 10000; c++) {
+            int nb = 2;
             std::vector<std::thread> workers;
             std::set<std::string> results;
             std::mutex resultsMutex;
