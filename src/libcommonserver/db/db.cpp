@@ -347,7 +347,7 @@ bool Db::init(const std::string &version) {
             }
 
             // Update version
-            if (!prepareQuery(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST)) return false;
+            if (!createAndPrepareRequest(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST)) return false;
             if (!updateVersion(version, found)) {
                 LOG_WARN(_logger, "Error in Db::updateVersion");
                 return false;
