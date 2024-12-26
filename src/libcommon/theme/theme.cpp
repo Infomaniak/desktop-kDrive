@@ -141,10 +141,18 @@ QString Theme::helpUrl() const {
 }
 
 QString Theme::feedbackUrl(const Language language) const {
-    if (language == Language::French) return FEEDBACK_FR_URL;
-    if (language == Language::German) return FEEDBACK_DE_URL;
-    if (language == Language::Spanish) return FEEDBACK_ES_URL;
-    if (language == Language::Italian) return FEEDBACK_IT_URL;
+    switch (language) {
+        case Language::French:
+            return FEEDBACK_FR_URL;
+        case Language::German:
+            return FEEDBACK_DE_URL;
+        case Language::Spanish:
+            return FEEDBACK_ES_URL;
+        case Language::Italian:
+            return FEEDBACK_IT_URL;
+        default:
+            break;
+    }
     return FEEDBACK_EN_URL;
 }
 
