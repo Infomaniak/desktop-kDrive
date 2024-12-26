@@ -1138,14 +1138,14 @@ void SynthesisPopover::onOpenWebview() {
 }
 
 void SynthesisPopover::onOpenMiscellaneousMenu() {
-    MenuWidget *menu = new MenuWidget(MenuWidget::Menu, this);
+    auto *menu = new MenuWidget(MenuWidget::Menu, this);
 
     // Open Folder
     std::map<int, SyncInfoClient> syncInfoMap;
     _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
-    if (syncInfoMap.size() >= 1) {
-        QWidgetAction *foldersMenuAction = new QWidgetAction(this);
-        MenuItemWidget *foldersMenuItemWidget = new MenuItemWidget(tr("Open in folder"));
+    if (!syncInfoMap.empty()) {
+        auto *foldersMenuAction = new QWidgetAction(this);
+        auto *foldersMenuItemWidget = new MenuItemWidget(tr("Open in folder"));
         foldersMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
         foldersMenuAction->setDefaultWidget(foldersMenuItemWidget);
 
@@ -1157,16 +1157,15 @@ void SynthesisPopover::onOpenMiscellaneousMenu() {
             foldersMenuItemWidget->setHasSubmenu(true);
 
             // Open folders submenu
-            MenuWidget *submenu = new MenuWidget(MenuWidget::Submenu, menu);
+            auto *submenu = new MenuWidget(MenuWidget::Submenu, menu);
 
-            QActionGroup *openFolderActionGroup = new QActionGroup(this);
+            auto *openFolderActionGroup = new QActionGroup(this);
             openFolderActionGroup->setExclusive(true);
 
-            QWidgetAction *openFolderAction;
-            for (auto const &syncInfoMapElt: syncInfoMap) {
-                openFolderAction = new QWidgetAction(this);
-                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt.first);
-                MenuItemWidget *openFolderMenuItemWidget = new MenuItemWidget(syncInfoMapElt.second.name());
+            for (auto const &[syncId, syncInfo]: syncInfoMap) {
+                auto *openFolderAction = new QWidgetAction(this);
+                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncId);
+                auto *openFolderMenuItemWidget = new MenuItemWidget(syncInfo.name());
                 openFolderMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
                 openFolderAction->setDefaultWidget(openFolderMenuItemWidget);
                 connect(openFolderAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenFolder);
@@ -1181,8 +1180,8 @@ void SynthesisPopover::onOpenMiscellaneousMenu() {
     }
 
     // Open web version
-    QWidgetAction *driveOpenWebViewAction = new QWidgetAction(this);
-    MenuItemWidget *driveOpenWebViewMenuItemWidget = new MenuItemWidget(tr("Open %1 web version").arg(APPLICATION_SHORTNAME));
+    auto *driveOpenWebViewAction = new QWidgetAction(this);
+    auto *driveOpenWebViewMenuItemWidget = new MenuItemWidget(tr("Open %1 web version").arg(APPLICATION_SHORTNAME));
     driveOpenWebViewMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/webview.svg");
     driveOpenWebViewAction->setDefaultWidget(driveOpenWebViewMenuItemWidget);
     driveOpenWebViewAction->setVisible(_gui->currentDriveDbId() != 0);
@@ -1190,9 +1189,9 @@ void SynthesisPopover::onOpenMiscellaneousMenu() {
     menu->addAction(driveOpenWebViewAction);
 
     // Drive parameters
-    if (_gui->driveInfoMap().size()) {
-        QWidgetAction *driveParametersAction = new QWidgetAction(this);
-        MenuItemWidget *driveParametersMenuItemWidget = new MenuItemWidget(tr("Drive parameters"));
+    if (!_gui->driveInfoMap().empty()) {
+        auto *driveParametersAction = new QWidgetAction(this);
+        auto *driveParametersMenuItemWidget = new MenuItemWidget(tr("Drive parameters"));
         driveParametersMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg");
         driveParametersAction->setDefaultWidget(driveParametersMenuItemWidget);
         connect(driveParametersAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenDriveParameters);
@@ -1200,10 +1199,10 @@ void SynthesisPopover::onOpenMiscellaneousMenu() {
     }
 
     // Disable Notifications
-    QWidgetAction *notificationsMenuAction = new QWidgetAction(this);
-    bool notificationAlreadyDisabledForPeriod =
+    auto *notificationsMenuAction = new QWidgetAction(this);
+    const auto notificationAlreadyDisabledForPeriod =
             _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
-    MenuItemWidget *notificationsMenuItemWidget =
+    auto *notificationsMenuItemWidget =
             new MenuItemWidget(notificationAlreadyDisabledForPeriod
                                        ? tr("Notifications disabled until %1").arg(_notificationsDisabledUntilDateTime.toString())
                                        : tr("Disable Notifications"));
@@ -1213,9 +1212,9 @@ void SynthesisPopover::onOpenMiscellaneousMenu() {
     menu->addAction(notificationsMenuAction);
 
     // Disable Notifications submenu
-    MenuWidget *submenu = new MenuWidget(MenuWidget::Submenu, menu);
+    auto *submenu = new MenuWidget(MenuWidget::Submenu, menu);
 
-    QActionGroup *notificationActionGroup = new QActionGroup(this);
+    auto *notificationActionGroup = new QActionGroup(this);
     notificationActionGroup->setExclusive(true);
 
     const std::map<NotificationsDisabled, QString> &notificationMap =
@@ -1223,13 +1222,12 @@ void SynthesisPopover::onOpenMiscellaneousMenu() {
                     ? _notificationsDisabledMap
                     : _notificationsDisabledForPeriodMap;
 
-    QWidgetAction *notificationAction;
-    for (auto const &notificationMapElt: notificationMap) {
-        notificationAction = new QWidgetAction(this);
-        notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), toInt(notificationMapElt.first));
-        QString text = QCoreApplication::translate("KDC::SynthesisPopover", notificationMapElt.second.toStdString().c_str());
-        MenuItemWidget *notificationMenuItemWidget = new MenuItemWidget(text);
-        notificationMenuItemWidget->setChecked(notificationMapElt.first == _notificationsDisabled);
+    for (auto const &[notifDisabled, str]: notificationMap) {
+        auto *notificationAction = new QWidgetAction(this);
+        notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), toInt(notifDisabled));
+        QString text = QCoreApplication::translate("KDC::SynthesisPopover", str.toStdString().c_str());
+        auto *notificationMenuItemWidget = new MenuItemWidget(text);
+        notificationMenuItemWidget->setChecked(notifDisabled == _notificationsDisabled);
         notificationAction->setDefaultWidget(notificationMenuItemWidget);
         connect(notificationAction, &QWidgetAction::triggered, this, &SynthesisPopover::onNotificationActionTriggered);
         notificationActionGroup->addAction(notificationAction);
@@ -1239,32 +1237,32 @@ void SynthesisPopover::onOpenMiscellaneousMenu() {
     notificationsMenuAction->setMenu(submenu);
 
     // Application preferences
-    QWidgetAction *preferencesAction = new QWidgetAction(this);
-    MenuItemWidget *preferencesMenuItemWidget = new MenuItemWidget(tr("Application preferences"));
+    auto *preferencesAction = new QWidgetAction(this);
+    auto *preferencesMenuItemWidget = new MenuItemWidget(tr("Application preferences"));
     preferencesMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/parameters.svg");
     preferencesAction->setDefaultWidget(preferencesMenuItemWidget);
     connect(preferencesAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenPreferences);
     menu->addAction(preferencesAction);
 
     // Help
-    QWidgetAction *helpAction = new QWidgetAction(this);
-    MenuItemWidget *helpMenuItemWidget = new MenuItemWidget(tr("Need help"));
+    auto *helpAction = new QWidgetAction(this);
+    auto *helpMenuItemWidget = new MenuItemWidget(tr("Need help"));
     helpMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/help.svg");
     helpAction->setDefaultWidget(helpMenuItemWidget);
     connect(helpAction, &QWidgetAction::triggered, this, &SynthesisPopover::onDisplayHelp);
     menu->addAction(helpAction);
 
     // Send feedbacks
-    QWidgetAction *feedbacksAction = new QWidgetAction(this);
-    MenuItemWidget *feedbacksMenuItemWidget = new MenuItemWidget(tr("Send feedbacks"));
+    auto *feedbacksAction = new QWidgetAction(this);
+    auto *feedbacksMenuItemWidget = new MenuItemWidget(tr("Send feedbacks"));
     feedbacksMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/messages-bubble-square-typing.svg");
     feedbacksAction->setDefaultWidget(feedbacksMenuItemWidget);
     connect(feedbacksAction, &QWidgetAction::triggered, this, &SynthesisPopover::onSendFeedback);
     menu->addAction(feedbacksAction);
 
     // Quit
-    QWidgetAction *exitAction = new QWidgetAction(this);
-    MenuItemWidget *exitMenuItemWidget = new MenuItemWidget(tr("Quit kDrive"));
+    auto *exitAction = new QWidgetAction(this);
+    auto *exitMenuItemWidget = new MenuItemWidget(tr("Quit kDrive"));
     exitMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/error-sync.svg");
     exitAction->setDefaultWidget(exitMenuItemWidget);
     connect(exitAction, &QWidgetAction::triggered, this, &SynthesisPopover::onExit);
@@ -1272,29 +1270,29 @@ void SynthesisPopover::onOpenMiscellaneousMenu() {
 
     if (_debugCrash) {
         // Emulate a crash
-        QWidgetAction *crashAction = new QWidgetAction(this);
-        MenuItemWidget *crashMenuItemWidget = new MenuItemWidget("Emulate a crash");
+        auto *crashAction = new QWidgetAction(this);
+        auto *crashMenuItemWidget = new MenuItemWidget("Emulate a crash");
         crashAction->setDefaultWidget(crashMenuItemWidget);
         connect(crashAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrash);
         menu->addAction(crashAction);
 
         // Emulate a server crash
-        QWidgetAction *crashServerAction = new QWidgetAction(this);
-        MenuItemWidget *crashServerMenuItemWidget = new MenuItemWidget("Emulate a server crash");
+        auto *crashServerAction = new QWidgetAction(this);
+        auto *crashServerMenuItemWidget = new MenuItemWidget("Emulate a server crash");
         crashServerAction->setDefaultWidget(crashServerMenuItemWidget);
         connect(crashServerAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashServer);
         menu->addAction(crashServerAction);
 
         // Emulate an ENFORCE crash
-        QWidgetAction *crashEnforceAction = new QWidgetAction(this);
-        MenuItemWidget *crashEnforceMenuItemWidget = new MenuItemWidget("Emulate an ENFORCE crash");
+        auto *crashEnforceAction = new QWidgetAction(this);
+        auto *crashEnforceMenuItemWidget = new MenuItemWidget("Emulate an ENFORCE crash");
         crashEnforceAction->setDefaultWidget(crashEnforceMenuItemWidget);
         connect(crashEnforceAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashEnforce);
         menu->addAction(crashEnforceAction);
 
         // Emulate a qFatal crash
-        QWidgetAction *crashFatalAction = new QWidgetAction(this);
-        MenuItemWidget *crashFatalMenuItemWidget = new MenuItemWidget("Emulate a qFatal crash");
+        auto *crashFatalAction = new QWidgetAction(this);
+        auto *crashFatalMenuItemWidget = new MenuItemWidget("Emulate a qFatal crash");
         crashFatalAction->setDefaultWidget(crashFatalMenuItemWidget);
         connect(crashFatalAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashFatal);
         menu->addAction(crashFatalAction);
