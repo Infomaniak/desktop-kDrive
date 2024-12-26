@@ -17,6 +17,7 @@
  */
 
 #include "updatetreeworker.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
@@ -97,10 +98,12 @@ void UpdateTreeWorker::execute() {
 }
 
 ExitCode UpdateTreeWorker::step1MoveDirectory() {
+    auto perfMonitor = sentry::pTraces::scoped::Step1MoveDirectory(syncDbId());
     return createMoveNodes(NodeType::Directory);
 }
 
 ExitCode UpdateTreeWorker::step2MoveFile() {
+    auto perfMonitor = sentry::pTraces::scoped::Step2MoveFile(syncDbId());
     return createMoveNodes(NodeType::File);
 }
 
@@ -124,6 +127,8 @@ ExitCode UpdateTreeWorker::searchForParentNode(const SyncPath &nodePath, std::sh
 }
 
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
+    auto perfMonitor = sentry::pTraces::scoped::Step3DeleteDirectory(syncDbId());
+
     std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
     for (const auto &deleteOpId: deleteOpsIds) {
         // worker stop or pause
@@ -197,7 +202,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             if (newNode != nullptr) {
                 // Node already exists, update it
                 newNode->setIdb(idb);
-                if (!updateNodeId(newNode, deleteOp->nodeId())) {
+                if (!_updateTree->updateNodeId(newNode, deleteOp->nodeId())) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                     return ExitCode::DataError;
                 }
@@ -274,9 +279,15 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
         std::pair<FSOpPtrMap::iterator, bool> insertionResult;
         switch (createOp->objectType()) {
-            case NodeType::File:
-                insertionResult = _createFileOperationSet.try_emplace(createOp->path(), createOp);
+            case NodeType::File: {
+                SyncPath normalizedPath;
+                if (!Utility::normalizedSyncPath(createOp->path(), normalizedPath)) {
+                    normalizedPath = createOp->path();
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(createOp->path()));
+                }
+                insertionResult = _createFileOperationSet.try_emplace(normalizedPath, createOp);
                 break;
+            }
             case NodeType::Directory:
                 insertionResult = createDirectoryOperationSet.try_emplace(createOp->path(), createOp);
                 break;
@@ -293,8 +304,8 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
             LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Operation Create already exists on item with "
                                              << Utility::formatSyncPath(createOp->path()).c_str());
 
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "UpdateTreeWorker::step4",
-                                                      "2 Create operations detected on the same item");
+            sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::step4",
+                                            "2 Create operations detected on the same item");
             isSnapshotRebuildRequired = true;
         }
     }
@@ -329,7 +340,7 @@ bool UpdateTreeWorker::updateTmpFileNode(std::shared_ptr<Node> newNode, const FS
                                          OperationType opType) {
     assert(newNode != nullptr && newNode->isTmp());
 
-    if (!updateNodeId(newNode, op->nodeId())) {
+    if (!_updateTree->updateNodeId(newNode, op->nodeId())) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
         return false;
     }
@@ -351,6 +362,8 @@ bool UpdateTreeWorker::updateTmpFileNode(std::shared_ptr<Node> newNode, const FS
 }
 
 ExitCode UpdateTreeWorker::step4DeleteFile() {
+    auto perfMonitor = sentry::pTraces::scoped::Step4DeleteFile(syncDbId());
+
     const ExitCode exitCode = handleCreateOperationsWithSamePath();
     if (exitCode != ExitCode::Ok) return exitCode; // Rebuild the snapshot.
 
@@ -379,7 +392,12 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             // Transform a Delete and a Create operations into one Edit operation.
             // Some software, such as Excel, keeps the current version into a temporary directory and move it to the destination,
             // replacing the original file. However, this behavior should be applied only on local side.
-            if (auto createFileOpSetIt = _createFileOperationSet.find(deleteOp->path());
+            SyncPath normalizedPath;
+            if (!Utility::normalizedSyncPath(deleteOp->path(), normalizedPath)) {
+                normalizedPath = deleteOp->path();
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(deleteOp->path()));
+            }
+            if (auto createFileOpSetIt = _createFileOperationSet.find(normalizedPath);
                 createFileOpSetIt != _createFileOperationSet.end()) {
                 FSOpPtr tmp = nullptr;
                 if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(),
@@ -389,7 +407,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
                 // op is now the createOperation
                 op = tmp;
-                _createFileOperationSet.erase(deleteOp->path());
+                _createFileOperationSet.erase(normalizedPath);
             }
         }
 
@@ -397,7 +415,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
         if (auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId()); currentNodeIt != _updateTree->nodes().end()) {
             // Node is already in the update tree, it can be a Delete or an Edit
             std::shared_ptr<Node> currentNode = currentNodeIt->second;
-            if (!updateNodeId(currentNode, op->nodeId())) {
+            if (!_updateTree->updateNodeId(currentNode, op->nodeId())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                 return ExitCode::DataError;
             }
@@ -417,6 +435,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 // replace node in _nodes map because id changed
                 auto node = _updateTree->nodes().extract(deleteOp->nodeId());
                 node.key() = op->nodeId();
+                node.mapped()->setName(op->path().filename().native());
                 _updateTree->nodes().insert(std::move(node));
             }
 
@@ -484,6 +503,8 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 }
 
 ExitCode UpdateTreeWorker::step5CreateDirectory() {
+    auto perfMonitor = sentry::pTraces::scoped::Step5CreateDirectory(syncDbId());
+
     std::unordered_set<UniqueId> createOpsIds = _operationSet->getOpsByType(OperationType::Create);
     for (const auto &createOpId: createOpsIds) {
         // worker stop or pause
@@ -508,8 +529,8 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
         if (createOp->path().empty()) {
             LOG_SYNCPAL_WARN(_logger, "Invalid create operation on nodeId=" << createOp->nodeId().c_str());
             assert(false);
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "UpdateTreeWorker::step5CreateDirectory",
-                                                      "Invalid create operation");
+            sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::step5CreateDirectory",
+                                            "Invalid create operation");
             continue;
         }
 
@@ -528,7 +549,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
             // A directory has been deleted and another one has been created with the same name
             currentNode->setPreviousId(currentNode->id());
         }
-        if (!updateNodeId(currentNode, createOp->nodeId())) {
+        if (!_updateTree->updateNodeId(currentNode, createOp->nodeId())) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
             return ExitCode::DataError;
         }
@@ -550,6 +571,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
 }
 
 ExitCode UpdateTreeWorker::step6CreateFile() {
+    auto perfMonitor = sentry::pTraces::scoped::Step6CreateFile(syncDbId());
     for (const auto &op: _createFileOperationSet) {
         // worker stop or pause
         if (stopAsked()) {
@@ -571,7 +593,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
         if (newNode != nullptr) {
             // Node already exists, update it
             if (newNode->name() == operation->path().filename().native()) {
-                if (!updateNodeId(newNode, operation->nodeId())) {
+                if (!_updateTree->updateNodeId(newNode, operation->nodeId())) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                     return ExitCode::DataError;
                 }
@@ -626,6 +648,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 }
 
 ExitCode UpdateTreeWorker::step7EditFile() {
+    auto perfMonitor = sentry::pTraces::scoped::Step7EditFile(syncDbId());
     std::unordered_set<UniqueId> editOpsIds = _operationSet->getOpsByType(OperationType::Edit);
     for (const auto &editOpId: editOpsIds) {
         // worker stop or pause
@@ -655,7 +678,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
             newNode->setLastModified(editOp->lastModified());
             newNode->setSize(editOp->size());
             newNode->insertChangeEvent(editOp->operationType());
-            if (!updateNodeId(newNode, editOp->nodeId())) {
+            if (!_updateTree->updateNodeId(newNode, editOp->nodeId())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                 return ExitCode::DataError;
             }
@@ -715,6 +738,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
 }
 
 ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
+    auto perfMonitor = sentry::pTraces::scoped::Step8CompleteUpdateTree(syncDbId());
     if (stopAsked()) {
         return ExitCode::Ok;
     }
@@ -990,34 +1014,6 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
     return ExitCode::Ok;
 }
 
-bool UpdateTreeWorker::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
-    const NodeId oldId = node->id().has_value() ? *node->id() : "";
-
-    if (!node->parentNode()) {
-        LOG_SYNCPAL_WARN(_logger, "Bad parameters");
-        assert(false);
-        return false;
-    }
-
-    node->parentNode()->deleteChildren(node);
-    node->setId(newId);
-
-    if (!node->parentNode()->insertChildren(node)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                           << SyncName2WStr(node->name()).c_str() << L" parent node name="
-                                           << SyncName2WStr(node->parentNode()->name()).c_str());
-        return false;
-    }
-
-    if (ParametersCache::isExtendedLogEnabled() && newId != oldId) {
-        LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Node ID changed from '" << Utility::s2ws(oldId).c_str() << L"' to '"
-                                          << Utility::s2ws(newId).c_str() << L"' for node '"
-                                          << SyncName2WStr(node->name()).c_str() << L"'.");
-    }
-
-    return true;
-}
-
 std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool isDeleted) {
     if (path.empty()) {
         return _updateTree->rootNode();
@@ -1074,7 +1070,7 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
     // merging ids
     if (tmpNode->id().has_value() && !realNode->id().has_value()) {
         // TODO: How is this possible?? Tmp node should NEVER have a valid id and real node should ALWAYS have a valid id
-        if (!updateNodeId(realNode, tmpNode->id().value())) {
+        if (!_updateTree->updateNodeId(realNode, tmpNode->id().value())) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
             return false;
         }
@@ -1326,7 +1322,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
         return ExitCode::DataError;
     }
 
-    if (!updateNodeId(tmpNode, id.value())) {
+    if (!_updateTree->updateNodeId(tmpNode, id.value())) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
         return ExitCode::DataError;
     }

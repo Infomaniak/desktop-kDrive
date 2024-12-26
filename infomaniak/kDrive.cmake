@@ -68,6 +68,8 @@ set( APPLICATION_LICENSE    "${KDRIVE_THEME_DIR}/license.txt" )
 
 set( DEBUGREPORTER_SUBMIT_URL "https://www.infomaniak.com/report/drive/logs" CACHE STRING "URL for debug reporter" )
 
+set( LEARNMORE_MOVE_TO_TRASH_URL "https://faq.infomaniak.com/2383#desktop" CACHE STRING "URL for move to trash exception FAQ" )
+
 if( APPLE )
     set( LEARNMORE_LITESYNC_URL "https://faq.infomaniak.com/2608" CACHE STRING "URL for Lite Sync FAQ" )
     set( LEARNMORE_LITESYNC_COMPATIBILITY_URL "https://faq.infomaniak.com/2608" CACHE STRING "URL for Lite Sync compatibility FAQ" )
@@ -75,7 +77,6 @@ else()
     set( LEARNMORE_LITESYNC_URL "https://faq.infomaniak.com/2562" CACHE STRING "URL for Lite Sync FAQ" )
     set( LEARNMORE_LITESYNC_COMPATIBILITY_URL "https://faq.infomaniak.com/2523" CACHE STRING "URL for Lite Sync compatibility FAQ" )
 endif()
-
 # Sentry
 set( SENTRY_SERVER_DSN "https://af2cd6793efb2b73683ff24abebed911@sentry-desktop.infomaniak.com/2" )
 set( SENTRY_CLIENT_DSN "https://1435053ba7740a09682093f424dfaf79@sentry-desktop.infomaniak.com/3" )

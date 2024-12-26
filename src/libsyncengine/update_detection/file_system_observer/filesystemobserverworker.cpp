@@ -17,7 +17,6 @@
  */
 
 #include "filesystemobserverworker.h"
-#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 

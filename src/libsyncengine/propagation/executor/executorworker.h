@@ -156,12 +156,16 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
+        ExitInfo removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, OperationType opType);
 
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
         std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
+
         std::list<UniqueId> _opList;
+        std::recursive_mutex _opListMutex;
+
         std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
 
         bool _snapshotToInvalidate = false;

@@ -70,7 +70,7 @@
 }
 
 - (void)setCustomFeedUrl:(std::string)url {
-    _feedUrl = [NSString stringWithUTF8String:url.c_str()];
+    _feedUrl = [[NSString alloc] initWithUTF8String:url.c_str()];
 }
 
 - (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater {
@@ -171,18 +171,18 @@ namespace KDC {
 
 class SparkleUpdater::Private {
     public:
-        SPUUpdater *updater;
-        DelegateUpdaterObject *updaterDelegate;
-        SPUStandardUserDriver *spuStandardUserDriver;
-        DelegateUserDriverObject *delegateUserDriverObject;
+        SPUUpdater *updater = nil;
+        DelegateUpdaterObject *updaterDelegate = nil;
+        SPUStandardUserDriver *spuStandardUserDriver = nil;
+        DelegateUserDriverObject *delegateUserDriverObject = nil;
 };
 
 SparkleUpdater::SparkleUpdater() {
     d = new Private;
+    reset();
 }
 
 SparkleUpdater::~SparkleUpdater() {
-    deleteUpdater();
     delete d;
 }
 
@@ -191,6 +191,12 @@ void SparkleUpdater::onUpdateFound() {
         LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo(_currentChannel).fullVersion().c_str() << " is skipped.");
         return;
     }
+
+    if (!d->updater) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
+
     if ([d->updater sessionInProgress]) {
         LOG_INFO(KDC::Log::instance()->getLogger(), "An update window is already opened or installation is in progress. No need to start a new one.");
         return;
@@ -199,12 +205,20 @@ void SparkleUpdater::onUpdateFound() {
 }
 
 void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) {
+    if (!d->updaterDelegate) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
     [d->updaterDelegate setQuitCallback:quitCallback];
 }
 
 void SparkleUpdater::startInstaller() {
     reset(versionInfo(_currentChannel).downloadUrl);
 
+    if (!d->updater || !d->spuStandardUserDriver) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
+        return;
+    }
     [d->updater checkForUpdatesInBackground];
     [d->spuStandardUserDriver showUpdateInFocus];
 }
@@ -215,17 +229,15 @@ void SparkleUpdater::unskipVersion() {
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-void SparkleUpdater::reset(const std::string &url) {
-    [d->spuStandardUserDriver dismissUpdateInstallation];
-    deleteUpdater();
+void SparkleUpdater::reset(const std::string &url /*= ""*/) {
+    // Dismiss an eventual ongoing update
+    if (d->spuStandardUserDriver) [d->spuStandardUserDriver dismissUpdateInstallation];
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
     const std::function<void()> skipCallback = std::bind_front(&SparkleUpdater::skipVersionCallback, this);
     [d->updaterDelegate setSkipCallback:skipCallback];
-    [d->updaterDelegate retain];
 
     d->delegateUserDriverObject = [[DelegateUserDriverObject alloc] init];
-    [d->delegateUserDriverObject retain];
 
     NSBundle *hostBundle = [NSBundle mainBundle];
     NSBundle *applicationBundle = [NSBundle mainBundle];
@@ -238,7 +250,6 @@ void SparkleUpdater::reset(const std::string &url) {
     [d->updater setAutomaticallyChecksForUpdates:YES];
     [d->updater setAutomaticallyDownloadsUpdates:NO];
     [d->updater setSendsSystemProfile:NO];
-    [d->updater retain];
 
     // Sparkle 1.8 required
     NSString *userAgent = [NSString stringWithUTF8String:KDC::CommonUtility::userAgentString().c_str()];
@@ -247,18 +258,13 @@ void SparkleUpdater::reset(const std::string &url) {
     // Migrate away from using `-[SPUUpdater setFeedURL:]`
     [d->updater clearFeedURLFromUserDefaults];
 
-    [d->updaterDelegate setCustomFeedUrl:url];
+    if (!url.empty()) {
+        [d->updaterDelegate setCustomFeedUrl:url];
 
-    if(startSparkleUpdater()) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
+        if (startSparkleUpdater()) {
+            LOG_INFO(KDC::Log::instance()->getLogger(), "Sparkle updater succesfully started with feed URL: " << url.c_str());
+        }
     }
-}
-
-void SparkleUpdater::deleteUpdater() {
-    [d->updater release];
-    [d->updaterDelegate release];
-    [d->spuStandardUserDriver release];
-    [d->delegateUserDriverObject release];
 }
 
 bool SparkleUpdater::startSparkleUpdater() {

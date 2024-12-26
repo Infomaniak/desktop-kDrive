@@ -18,19 +18,21 @@
 
 #include "remotefilesystemobserverworker.h"
 #include "jobs/jobmanager.h"
-#include "../../jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
-#include "../../jobs/network/API_v2/getfileinfojob.h"
-#include "../../jobs/network/API_v2/longpolljob.h"
-#include "../../jobs/network/API_v2/continuefilelistwithcursorjob.h"
+#include "jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/API_v2/getfileinfojob.h"
+#include "jobs/network/API_v2/longpolljob.h"
+#include "jobs/network/API_v2/continuefilelistwithcursorjob.h"
 #ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "utility/jsonparserutility.h"
+
 #ifdef __APPLE__
 #include "utility/utility.h"
 #endif
@@ -89,6 +91,7 @@ void RemoteFileSystemObserverWorker::execute() {
 ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation");
     auto start = std::chrono::steady_clock::now();
+    sentry::pTraces::scoped::RFSOGenerateInitialSnapshot perfMonitor(syncDbId());
 
     _snapshot->init();
     _updating = true;
@@ -102,6 +105,7 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
         _snapshot->setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for " << _snapshot->nbItems()
                                                                    << " items");
+        perfMonitor.stop();
     } else {
         invalidateSnapshot();
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
@@ -264,6 +268,7 @@ ExitCode RemoteFileSystemObserverWorker::exploreDirectory(const NodeId &nodeId) 
 
 ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, const bool saveCursor) {
     // Send request
+    sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
         std::unordered_set<NodeId> blackList;
@@ -319,15 +324,17 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     bool eof = false;
     std::unordered_set<SyncName> existingFiles;
     uint64_t itemCount = 0;
+    perfMonitorBackRequest.stop();
+    sentry::pTraces::counterScoped::RFSOExploreItem perfMonitorExploreItem(!saveCursor, syncDbId());
     while (job->getItem(item, error, ignore, eof)) {
         if (ignore) {
             continue;
         }
 
         if (eof) break;
+        perfMonitorExploreItem.start();
 
         itemCount++;
-
         if (error) {
             LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");
             setExitCause(ExitCause::FullListParsingError);
@@ -379,7 +386,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     if (!eof) {
         const std::string msg = "Failed to parse CSV reply: missing EOF delimiter";
         LOG_SYNCPAL_WARN(_logger, msg.c_str());
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", "msg");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInDir", msg);
         setExitCause(ExitCause::FullListParsingError);
         return ExitCode::NetworkError;
     }
@@ -481,6 +488,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
     std::set<NodeId, std::less<>> movedItems;
 
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
+        sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -623,11 +631,15 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         case ActionCode::actionCodeMoveIn:
         case ActionCode::actionCodeRestore:
         case ActionCode::actionCodeCreate:
+        case ActionCode::actionCodeRename: {
+            const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
+                                    actionInfo.actionCode != ActionCode::actionCodeCreate &&
+                                    !_snapshot->exists(actionInfo.snapshotItem.id());
+            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
             _snapshot->updateItem(actionInfo.snapshotItem);
-            if (actionInfo.snapshotItem.type() == NodeType::Directory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
+            if (exploreDir) {
                 // Retrieve all children
                 const ExitCode exitCode = exploreDirectory(actionInfo.snapshotItem.id());
-
                 switch (exitCode) {
                     case ExitCode::NetworkError:
                         if (exitCause() == ExitCause::NetworkTimeout) {
@@ -650,13 +662,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
                 movedItems.insert(actionInfo.snapshotItem.id());
             }
             break;
-
-        // Item renamed
-        case ActionCode::actionCodeRename:
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
-            _snapshot->updateItem(actionInfo.snapshotItem);
-            break;
-
+        }
         // Item edited
         case ActionCode::actionCodeEdit:
             _snapshot->updateItem(actionInfo.snapshotItem);
@@ -779,8 +785,8 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     bool resetTimer = elapsedTime.count() > 3600; // 1h
     if (_listingFullCounter > 60) {
         // If there is more then 1 listing/full request per minute for an hour -> send a sentry
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "RemoteFileSystemObserverWorker::generateInitialSnapshot",
-                                                  "Too many listing/full requests, sync is looping");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::generateInitialSnapshot",
+                                        "Too many listing/full requests, sync is looping");
         resetTimer = true;
     }
 

@@ -202,8 +202,7 @@ bool Db::exists() {
         bool exists = false;
         IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError).c_str());
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError));
             return false;
         }
 
@@ -313,8 +312,8 @@ bool Db::init(const std::string &version) {
 #define SQLITE_IOERR_SHMMAP (SQLITE_IOERR | (21 << 8))
 #endif
 
-    if (!prepareQuery(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST)) return false;
-    if (!prepareQuery(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST)) return false;
+    if (!createAndPrepareRequest(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST)) return false;
+    if (!createAndPrepareRequest(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST)) return false;
 
     if (!version.empty()) {
         // Check if DB is already initialized
@@ -326,7 +325,7 @@ bool Db::init(const std::string &version) {
         if (dbExists) {
             // Check version
             LOG_DEBUG(_logger, "Check DB version");
-            if (!prepareQuery(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST)) return false;
+            if (!createAndPrepareRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST)) return false;
 
             bool found = false;
             if (!selectVersion(_fromVersion, found)) {
@@ -362,7 +361,7 @@ bool Db::init(const std::string &version) {
         } else {
             // Create version table
             LOG_DEBUG(_logger, "Create version table");
-            if (!prepareQuery(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE)) return false;
+            if (!createAndPrepareRequest(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE)) return false;
 
             int errId = -1;
             std::string error;
@@ -374,7 +373,7 @@ bool Db::init(const std::string &version) {
 
             // Insert version
             LOG_DEBUG(_logger, "Insert version " << version);
-            if (!prepareQuery(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST)) return false;
+            if (!createAndPrepareRequest(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST)) return false;
             if (!insertVersion(version)) {
                 LOG_WARN(_logger, "Error in Db::insertVersion");
                 return false;
@@ -499,15 +498,7 @@ bool Db::checkConnect(const std::string &version) {
     }
 
     // SELECT_SQLITE_VERSION
-    int errId;
-    std::string error;
-
-    ASSERT(queryCreate(SELECT_SQLITE_VERSION_ID));
-    if (!queryPrepare(SELECT_SQLITE_VERSION_ID, SELECT_SQLITE_VERSION, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << SELECT_SQLITE_VERSION_ID);
-        queryFree(SELECT_SQLITE_VERSION_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(SELECT_SQLITE_VERSION_ID, SELECT_SQLITE_VERSION)) return false;
     bool hasData;
     if (!queryNext(SELECT_SQLITE_VERSION_ID, hasData) || !hasData) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_SQLITE_VERSION_ID);
@@ -520,12 +511,7 @@ bool Db::checkConnect(const std::string &version) {
     LOG_DEBUG(_logger, "sqlite3 version=" << result.c_str());
 
     // PRAGMA_LOCKING_MODE
-    ASSERT(queryCreate(PRAGMA_LOCKING_MODE_ID));
-    if (!queryPrepare(PRAGMA_LOCKING_MODE_ID, PRAGMA_LOCKING_MODE, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_LOCKING_MODE_ID);
-        queryFree(PRAGMA_LOCKING_MODE_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_LOCKING_MODE_ID, PRAGMA_LOCKING_MODE)) return false;
     if (!queryNext(PRAGMA_LOCKING_MODE_ID, hasData) || !hasData) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_LOCKING_MODE_ID);
         queryFree(PRAGMA_LOCKING_MODE_ID);
@@ -537,12 +523,7 @@ bool Db::checkConnect(const std::string &version) {
 
     // PRAGMA_JOURNAL_MODE
     std::string sql(PRAGMA_JOURNAL_MODE + _journalMode + ";");
-    ASSERT(queryCreate(PRAGMA_JOURNAL_MODE_ID));
-    if (!queryPrepare(PRAGMA_JOURNAL_MODE_ID, sql, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_JOURNAL_MODE_ID);
-        queryFree(PRAGMA_JOURNAL_MODE_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_JOURNAL_MODE_ID, sql.c_str())) return false;
     if (!queryNext(PRAGMA_JOURNAL_MODE_ID, hasData) || !hasData) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_JOURNAL_MODE_ID);
         queryFree(PRAGMA_JOURNAL_MODE_ID);
@@ -557,12 +538,7 @@ bool Db::checkConnect(const std::string &version) {
     std::string synchronousMode = "FULL";
     if (_journalMode.compare("WAL") == 0) synchronousMode = "NORMAL";
     sql = PRAGMA_SYNCHRONOUS + synchronousMode + ";";
-    ASSERT(queryCreate(PRAGMA_SYNCHRONOUS_ID));
-    if (!queryPrepare(PRAGMA_SYNCHRONOUS_ID, sql, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_SYNCHRONOUS_ID);
-        queryFree(PRAGMA_SYNCHRONOUS_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_SYNCHRONOUS_ID, sql.c_str())) return false;
     if (!queryNext(PRAGMA_SYNCHRONOUS_ID, hasData)) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_SYNCHRONOUS_ID);
         queryFree(PRAGMA_SYNCHRONOUS_ID);
@@ -572,12 +548,7 @@ bool Db::checkConnect(const std::string &version) {
     LOG_DEBUG(_logger, "sqlite3 synchronous=" << synchronousMode.c_str());
 
     // PRAGMA_CASE_SENSITIVE_LIKE
-    ASSERT(queryCreate(PRAGMA_CASE_SENSITIVE_LIKE_ID));
-    if (!queryPrepare(PRAGMA_CASE_SENSITIVE_LIKE_ID, PRAGMA_CASE_SENSITIVE_LIKE, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_CASE_SENSITIVE_LIKE_ID);
-        queryFree(PRAGMA_CASE_SENSITIVE_LIKE_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_CASE_SENSITIVE_LIKE_ID, PRAGMA_CASE_SENSITIVE_LIKE)) return false;
     if (!queryNext(PRAGMA_CASE_SENSITIVE_LIKE_ID, hasData)) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_CASE_SENSITIVE_LIKE_ID);
         queryFree(PRAGMA_CASE_SENSITIVE_LIKE_ID);
@@ -587,12 +558,7 @@ bool Db::checkConnect(const std::string &version) {
     LOG_DEBUG(_logger, "sqlite3 case_sensitivity=ON");
 
     // PRAGMA_FOREIGN_KEYS
-    ASSERT(queryCreate(PRAGMA_FOREIGN_KEYS_ID));
-    if (!queryPrepare(PRAGMA_FOREIGN_KEYS_ID, PRAGMA_FOREIGN_KEYS, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_FOREIGN_KEYS_ID);
-        queryFree(PRAGMA_FOREIGN_KEYS_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_FOREIGN_KEYS_ID, PRAGMA_FOREIGN_KEYS)) return false;
     if (!queryNext(PRAGMA_FOREIGN_KEYS_ID, hasData)) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_FOREIGN_KEYS_ID);
         queryFree(PRAGMA_FOREIGN_KEYS_ID);
@@ -601,21 +567,6 @@ bool Db::checkConnect(const std::string &version) {
     queryFree(PRAGMA_FOREIGN_KEYS_ID);
     LOG_DEBUG(_logger, "sqlite3 foreign_keys=ON");
 
-    return true;
-}
-
-bool Db::prepareQuery(const std::string &queryId, const std::string &query) {
-    if (!queryCreate(queryId)) {
-        LOG_WARN(_logger, "SQL Error - Fail to create query " << queryId.c_str());
-        return false;
-    }
-
-    int errId = 0;
-    std::string error;
-    if (!queryPrepare(queryId, query, false, errId, error)) {
-        queryFree(queryId);
-        return sqlFail(queryId, error);
-    }
     return true;
 }
 
@@ -631,7 +582,7 @@ bool Db::addColumnIfMissing(const std::string &tableName, const std::string &col
     if (!columnExists(tableName, columnName, exist)) return false;
     if (!exist) {
         LOG_INFO(_logger, "Adding column " << columnName.c_str() << " into table " << tableName.c_str());
-        if (!prepareQuery(requestId, request)) return false;
+        if (!createAndPrepareRequest(requestId.c_str(), request.c_str())) return false;
         int errId = 0;
         std::string error;
         if (!queryExec(requestId, errId, error)) {
@@ -642,6 +593,21 @@ bool Db::addColumnIfMissing(const std::string &tableName, const std::string &col
 
         if (columnAdded) *columnAdded = true;
     }
+    return true;
+}
+
+bool Db::createAndPrepareRequest(const char *requestId, const char *query) {
+    int errId = 0;
+    std::string error;
+
+    if (!queryCreate(requestId)) {
+        LOG_FATAL(_logger, "ENFORCE: \"queryCreate(" << requestId << ")\".");
+    }
+    if (!queryPrepare(requestId, query, false, errId, error)) {
+        queryFree(requestId);
+        return sqlFail(requestId, error);
+    }
+
     return true;
 }
 

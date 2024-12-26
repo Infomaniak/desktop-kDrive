@@ -19,7 +19,6 @@
 #pragma once
 
 #include "filesystemobserverworker.h"
-#include "update_detection/file_system_observer/checksum/contentchecksumworker.h"
 #include "update_detection/file_system_observer/folderwatcher.h"
 
 namespace KDC {
@@ -27,7 +26,7 @@ namespace KDC {
 class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
     public:
         LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
-        ~LocalFileSystemObserverWorker();
+        ~LocalFileSystemObserverWorker() override;
 
         void start() override;
         void stop() override;
@@ -37,7 +36,8 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
 
     protected:
         virtual void execute() override;
-        ExitInfo exploreDir(const SyncPath &absoluteParentDirPath);
+
+        ExitInfo exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected = false);
 
         SyncPath _rootFolder;
         //    std::unique_ptr<ContentChecksumWorker> _checksumWorker = nullptr;

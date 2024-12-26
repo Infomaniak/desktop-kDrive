@@ -160,18 +160,17 @@ bool LocalDeleteJob::canRun() {
 
 void LocalDeleteJob::handleTrashMoveOutcome(bool success) {
     if (!success) {
-        LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" to trash");
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::MoveToTrashFailed;
-        return;
+        LOGW_WARN(_logger,
+                  L"Failed to move item: " << Utility::formatSyncPath(_absolutePath) << L" to trash. Trying hard delete.");
     } else if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str() << L" was moved to trash");
     }
 }
 
-void LocalDeleteJob::moveToTrash() {
+bool LocalDeleteJob::moveToTrash() {
     const bool success = Utility::moveItemToTrash(_absolutePath);
     handleTrashMoveOutcome(success);
+    return success;
 }
 
 void LocalDeleteJob::runJob() {
@@ -181,10 +180,7 @@ void LocalDeleteJob::runJob() {
             (ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash;
 
     _exitCode = ExitCode::Ok;
-    if (tryMoveToTrash) {
-        moveToTrash();
-        return;
-    }
+    if (tryMoveToTrash && moveToTrash()) return;
 
     LOGW_DEBUG(_logger, L"Delete item with " << Utility::formatSyncPath(_absolutePath).c_str());
     std::error_code ec;
@@ -201,7 +197,9 @@ void LocalDeleteJob::runJob() {
         return;
     }
 
-    LOGW_INFO(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" deleted");
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOGW_INFO(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath) << L" deleted");
+    }
 }
 
 } // namespace KDC

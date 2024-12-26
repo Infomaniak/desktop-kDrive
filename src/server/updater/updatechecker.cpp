@@ -123,7 +123,7 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
     if (getAppVersionJobPtr->hasErrorApi(&errorCode, &errorDescr)) {
         std::stringstream ss;
         ss << errorCode.c_str() << " - " << errorDescr;
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
     } else if (getAppVersionJobPtr->exitCode() != ExitCode::Ok) {
         LOG_ERROR(Log::instance()->getLogger(), "Error in UpdateChecker::versionInfoReceived : exit code: "

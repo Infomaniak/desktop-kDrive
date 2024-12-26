@@ -17,7 +17,7 @@
  */
 
 #include "utility.h"
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
 
@@ -288,7 +288,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
 
     if (!res) {
         std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "CommonUtility::stringToAppStateValue", message);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::stringToAppStateValue", message);
     }
 
     return res;
@@ -306,6 +306,7 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     } else {
         return false;
     }
+
     return true;
 }
 
@@ -550,24 +551,15 @@ SyncPath CommonUtility::getAppSupportDir() {
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
     if (!std::filesystem::is_directory(dirPath, ec)) {
-        bool exists;
+        bool exists = false;
 #ifdef _WIN32
-        exists = (ec.value() != ERROR_FILE_NOT_FOUND && ec.value() != ERROR_PATH_NOT_FOUND && ec.value() != ERROR_INVALID_DRIVE);
+        exists = CommonUtility::isLikeFileNotFoundError(ec);
 #else
         exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
 #endif
 
-        if (exists) {
-            return SyncPath();
-        }
-
-        if (!std::filesystem::create_directory(dirPath, ec)) {
-            if (ec.value() != 0) {
-                return SyncPath();
-            }
-
-            return SyncPath();
-        }
+        if (exists) return SyncPath();
+        if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
     }
 
     return dirPath;
@@ -879,6 +871,13 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
         std::filesystem::remove(sigFilePath, ec);
     }
 }
+
+#ifdef _WIN32
+std::string CommonUtility::toUnsafeStr(const SyncName &name) {
+    std::string unsafeName(name.begin(), name.end());
+    return unsafeName;
+}
+#endif
 
 #ifdef __APPLE__
 bool CommonUtility::isLiteSyncExtEnabled() {

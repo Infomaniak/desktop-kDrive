@@ -43,9 +43,8 @@ namespace KDC {
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
                          SyncTime creationTime, SyncTime modtime, bool isCreate) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
-    _remoteFileId(remoteFileId), _localpath(localpath), _expectedSize(expectedSize), _creationTime(creationTime),
-    _modtimeIn(modtime), _isCreate(isCreate) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
+    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -118,8 +117,8 @@ bool DownloadJob::canRun() {
     }
 
     if (_isCreate && exists) {
-        LOGW_DEBUG(_logger,
-                   L"Item with " << Utility::formatSyncPath(_localpath) << L" already exists. Aborting current sync and restarting.");
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_localpath)
+                                          << L" already exists. Aborting current sync and restarting.");
         _exitCode = ExitCode::NeedRestart;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
@@ -384,8 +383,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                                    std::make_optional<KDC::SyncTime>(_modtimeIn), isLink, exists)) {
             LOGW_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(_localpath));
             // Do nothing (remote file will be updated during the next sync)
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "DownloadJob::handleResponse",
-                                                      "Unable to set file dates");
+            sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
         } else if (!exists) {
             LOGW_INFO(_logger, L"Item does not exist anymore. Restarting sync: " << Utility::formatSyncPath(_localpath));
             _exitCode = ExitCode::DataError;
@@ -435,8 +433,8 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
             return false;
         }
 
-        LOGW_DEBUG(_logger,
-                   L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", " << Utility::formatSyncPath(_localpath));
+        LOGW_DEBUG(_logger, L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", "
+                                                           << Utility::formatSyncPath(_localpath));
 
         bool isFolder = mimeType == mimeTypeSymlinkFolder;
         IoError ioError = IoError::Success;
@@ -479,7 +477,6 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 
         IoError ioError = IoError::Success;
         if (!IoHelper::createAlias(data, _localpath, ioError)) {
-            const std::wstring message = Utility::s2ws(IoHelper::ioError2StdString(ioError));
             LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError));
 
             return false;

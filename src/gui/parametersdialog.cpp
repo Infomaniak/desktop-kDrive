@@ -670,45 +670,45 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
     QString text;
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::Case)) {
         text +=
-                tr("An existing file/directory has an identical name with the same case options (same upper and lower case "
+                tr("An existing item has an identical name with the same case options (same upper and lower case "
                    "letters).<br>"
-                   "The file/directory has been temporarily blacklisted.");
+                   "It has been temporarily blacklisted.");
     }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ForbiddenChar)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
-                tr("The file/directory name contains an unsupported character.<br>"
-                   "The file/directory has been temporarily blacklisted.");
+                tr("The item name contains an unsupported character.<br>"
+                   "It has been temporarily blacklisted.");
     }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ReservedName)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
-                tr("This file/directory name is reserved by your operating system.<br>"
-                   "The file/directory has been temporarily blacklisted.");
+                tr("This item name is reserved by your operating system.<br>"
+                   "It has been temporarily blacklisted.");
     }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::NameLength)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
-                tr("The file/directory name is too long.<br>"
-                   "The file/directory has been temporarily blacklisted.");
+                tr("The item name is too long.<br>"
+                   "It has been temporarily blacklisted.");
     }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::PathLength)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
-                tr("The file/directory path is too long.<br>"
-                   "The file/directory is ignored.");
+                tr("The item path is too long.<br>"
+                   "It has been ignored.");
     }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::NotYetSupportedChar)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
-                tr("The file/directory name contains a recent UNICODE character not yet supported by your filesystem.<br>"
-                   "The parent directory has been excluded from synchronization.");
+                tr("The item name contains a recent UNICODE character not yet supported by your filesystem.<br>"
+                   "It has been excluded from synchronization.");
     }
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::DuplicateNames)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
-                tr("The file/directory name coincides with the name of another item in the same directory.<br>"
-                   "This item is temporarily blacklisted. Consider removing duplicate items.");
+                tr("The item name coincides with the name of another item in the same directory.<br>"
+                   "It has been temporarily blacklisted. Consider removing duplicate items.");
     }
 
     return text;
@@ -825,10 +825,6 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
                 return tr(
                         "Can't access item.<br>"
                         "Please fix the read and write permissions.");
-            }
-
-            if (errorInfo.exitCause() == ExitCause::MoveToTrashFailed) {
-                return tr("Move to trash failed.");
             }
             return tr("System error.");
         }

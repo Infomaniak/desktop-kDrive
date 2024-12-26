@@ -81,6 +81,10 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         QLabel *_monochromeLabel{nullptr};
         QLabel *_launchAtStartupLabel{nullptr};
         QLabel *_moveToTrashLabel{nullptr};
+        QLabel *_moveToTrashTipsLabel{nullptr};
+        QWidget *_moveTotrashDisclaimerWidget{nullptr};
+        QLabel *_moveToTrashDisclaimerLabel{nullptr};
+        QLabel *_moveToTrashKnowMoreLabel{nullptr};
         QLabel *_languageSelectorLabel{nullptr};
         QLabel *_shortcutsLabel{nullptr};
         QLabel *_advancedLabel{nullptr};

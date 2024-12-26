@@ -84,7 +84,6 @@ class Node {
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
         inline void setLastModified(const std::optional<SyncTime> &lastmodified) { _lastModified = lastmodified; }
         inline void setSize(int64_t size) { _size = size; }
-        inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
         bool setParentNode(const std::shared_ptr<Node> &parentNode);
         inline void setMoveOrigin(const std::optional<SyncPath> &moveOrigin) { _moveOrigin = moveOrigin; }
@@ -124,6 +123,11 @@ class Node {
         inline void setIsTmp(bool newIsTmp) { _isTmp = newIsTmp; }
 
     private:
+        friend class UpdateTree;
+        // The node id should not be changed without also changing the map in the UpdateTree and the parent/child relationship in
+        // other nodes
+        inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
+
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSide::Unknown;
         SyncName _name; // This name is NFC-normalized by constructors and setters.

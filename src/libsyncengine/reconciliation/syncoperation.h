@@ -43,6 +43,15 @@ class SyncOperation {
         void setOmit(bool newOmit) { _omit = newOmit; }
         [[nodiscard]] const SyncName &newName() const { return _newName; }
         void setNewName(const SyncName &newNewName) { _newName = newNewName; }
+        [[nodiscard]] const SyncPath &localCreationTargetPath() const {
+            assert(_type == OperationType::Create && _targetSide == ReplicaSide::Local);
+            assert(!_localCreationTargetPath.empty());
+            return _localCreationTargetPath;
+        }
+        void setLocalCreationTargetPath(const SyncPath &localCreationTargetPath) {
+            assert(_type == OperationType::Create && _targetSide == ReplicaSide::Local);
+            _localCreationTargetPath = localCreationTargetPath;
+        }
         [[nodiscard]] const std::shared_ptr<Node> &newParentNode() const { return _newParentNode; }
         void setNewParentNode(const std::shared_ptr<Node> &newParentNode) { _newParentNode = newParentNode; }
         [[nodiscard]] bool hasConflict() const { return _conflict.type() != ConflictType::None; }
@@ -67,6 +76,7 @@ class SyncOperation {
         ReplicaSide _targetSide = ReplicaSide::Unknown; // The side on which we will apply the operation
         bool _omit = false; // If true, apply change only in DB
         SyncName _newName; // New name on the replica on which we will apply the operation. Only for create and move operation
+        SyncPath _localCreationTargetPath; // Relative path of the item to create. Only for local create operation.
         std::shared_ptr<Node> _newParentNode =
                 nullptr; // New parent on the replica on which we will apply the operation. Only for move operation
         Conflict _conflict;
