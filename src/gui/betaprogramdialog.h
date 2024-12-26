@@ -40,7 +40,7 @@ class BetaProgramDialog final : public CustomDialog {
         [[nodiscard]] DistributionChannel selectedDistributionChannel() const { return _newChannel; }
 
     private slots:
-        void onAcknowledgement();
+        void onAcknowledgment();
         void onSave();
         void onChannelChange(int index);
 
@@ -52,8 +52,8 @@ class BetaProgramDialog final : public CustomDialog {
         bool _isStaff{false};
         DistributionChannel _newChannel{DistributionChannel::Unknown};
         QCheckBox *_acknowledgmentCheckbox{nullptr};
-        QFrame *_acknowlegmentFrame{nullptr};
-        QLabel *_acknowledmentLabel{nullptr};
+        QFrame *_acknowledgmentFrame{nullptr};
+        QLabel *_acknowledgmentLabel{nullptr};
         CustomComboBox *_staffSelectionBox{nullptr};
         QPushButton *_saveButton{nullptr};
         int _initialIndex{0};

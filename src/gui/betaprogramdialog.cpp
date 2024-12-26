@@ -92,47 +92,54 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
         _staffSelectionBox->insertItem(indexBeta, tr("Public beta version"));
         _staffSelectionBox->insertItem(indexInternal, tr("Internal beta version"));
 
-        if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Prod)
-            _initialIndex = indexNo;
-        else if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Beta)
-            _initialIndex = indexBeta;
-        else if (ParametersCache::instance()->parametersInfo().distributionChannel() == DistributionChannel::Internal)
-            _initialIndex = indexInternal;
+        switch (ParametersCache::instance()->parametersInfo().distributionChannel()) {
+            case DistributionChannel::Prod:
+                _initialIndex = indexNo;
+                break;
+            case DistributionChannel::Beta:
+                _initialIndex = indexBeta;
+                break;
+            case DistributionChannel::Internal:
+                _initialIndex = indexInternal;
+                break;
+            default:
+                break;
+        }
         _staffSelectionBox->setCurrentIndex(_initialIndex);
         layout->addWidget(_staffSelectionBox);
 
         connect(_staffSelectionBox, &CustomComboBox::currentIndexChanged, this, &BetaProgramDialog::onChannelChange);
     }
 
-    // Acknowlegment
-    _acknowlegmentFrame = new QFrame(this);
-    _acknowlegmentFrame->setStyleSheet("QFrame {border-radius: 8px; background-color: #F4F6FC;}");
-    _acknowlegmentFrame->setVisible(!_isStaff);
-    layout->addWidget(_acknowlegmentFrame);
+    // Acknowledgment
+    _acknowledgmentFrame = new QFrame(this);
+    _acknowledgmentFrame->setStyleSheet("QFrame {border-radius: 8px; background-color: #F4F6FC;}");
+    _acknowledgmentFrame->setVisible(!_isStaff);
+    layout->addWidget(_acknowledgmentFrame);
 
-    auto *acknowledmentLayout = new QGridLayout(this);
-    _acknowlegmentFrame->setLayout(acknowledmentLayout);
-    acknowledmentLayout->setSpacing(subLayoutSpacing);
+    auto *acknowledgmentLayout = new QGridLayout(this);
+    _acknowledgmentFrame->setLayout(acknowledgmentLayout);
+    acknowledgmentLayout->setSpacing(subLayoutSpacing);
 
     auto *warningIcon = new QLabel(this);
     warningIcon->setPixmap(GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", iconColor)
                                    .pixmap(QSize(iconSize, iconSize)));
     warningIcon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-    acknowledmentLayout->addWidget(warningIcon, 0, 0);
+    acknowledgmentLayout->addWidget(warningIcon, 0, 0);
 
-    _acknowledmentLabel = new QLabel(this);
-    _acknowledmentLabel->setObjectName("largeNormalTextLabel");
+    _acknowledgmentLabel = new QLabel(this);
+    _acknowledgmentLabel->setObjectName("largeNormalTextLabel");
     if (_isQuit) {
         setTooRecentMessage();
     } else {
         setInstabilityMessage();
     }
-    _acknowledmentLabel->setWordWrap(true);
-    _acknowledmentLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    acknowledmentLayout->addWidget(_acknowledmentLabel, 0, 1);
+    _acknowledgmentLabel->setWordWrap(true);
+    _acknowledgmentLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    acknowledgmentLayout->addWidget(_acknowledgmentLabel, 0, 1);
 
     _acknowledgmentCheckbox = new QCheckBox(tr("I understand"), this);
-    acknowledmentLayout->addWidget(_acknowledgmentCheckbox, 1, 1);
+    acknowledgmentLayout->addWidget(_acknowledgmentCheckbox, 1, 1);
 
     if (_isQuit) {
         auto *bottomTextBox = new QLabel(this);
@@ -164,30 +171,11 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
     connect(_saveButton, &QPushButton::clicked, this, &BetaProgramDialog::onSave);
     connect(cancelButton, &QPushButton::clicked, this, &BetaProgramDialog::reject);
     connect(this, &BetaProgramDialog::exit, this, &BetaProgramDialog::reject);
-    connect(_acknowledgmentCheckbox, &QCheckBox::toggled, this, &BetaProgramDialog::onAcknowledgement);
+    connect(_acknowledgmentCheckbox, &QCheckBox::toggled, this, &BetaProgramDialog::onAcknowledgment);
 }
 
-void BetaProgramDialog::onAcknowledgement() {
+void BetaProgramDialog::onAcknowledgment() {
     _saveButton->setEnabled(_acknowledgmentCheckbox->isChecked());
-}
-
-void BetaProgramDialog::onSave() {
-    if (_isStaff) {
-        if (_staffSelectionBox->currentIndex() == indexNo)
-            _newChannel = DistributionChannel::Prod;
-        else if (_staffSelectionBox->currentIndex() == indexBeta)
-            _newChannel = DistributionChannel::Beta;
-        else if (_staffSelectionBox->currentIndex() == indexInternal)
-            _newChannel = DistributionChannel::Internal;
-    } else {
-        if (_isQuit) {
-            _newChannel = DistributionChannel::Prod;
-        } else {
-            _newChannel = DistributionChannel::Beta;
-        }
-    }
-
-    accept();
 }
 
 DistributionChannel toDistributionChannel(const int index) {
@@ -204,14 +192,28 @@ DistributionChannel toDistributionChannel(const int index) {
     return DistributionChannel::Unknown;
 }
 
+void BetaProgramDialog::onSave() {
+    if (_isStaff) {
+        _newChannel = toDistributionChannel(_staffSelectionBox->currentIndex());
+    } else {
+        if (_isQuit) {
+            _newChannel = DistributionChannel::Prod;
+        } else {
+            _newChannel = DistributionChannel::Beta;
+        }
+    }
+
+    accept();
+}
+
 void BetaProgramDialog::onChannelChange(const int index) {
     _acknowledgmentCheckbox->setChecked(false);
     if (_initialIndex == index) {
-        _acknowlegmentFrame->setVisible(false);
+        _acknowledgmentFrame->setVisible(false);
         return;
     }
 
-    _acknowlegmentFrame->setVisible(true);
+    _acknowledgmentFrame->setVisible(true);
     if (index > _initialIndex)
         setInstabilityMessage();
     else
@@ -219,13 +221,13 @@ void BetaProgramDialog::onChannelChange(const int index) {
 }
 
 void BetaProgramDialog::setTooRecentMessage() const {
-    _acknowledmentLabel->setText(
+    _acknowledgmentLabel->setText(
             tr("Your current version of the application may be too recent, your choice will be effective when the next update is "
                "available."));
 }
 
 void BetaProgramDialog::setInstabilityMessage() const {
-    _acknowledmentLabel->setText(tr("Beta versions may leave unexpectedly or cause instabilities."));
+    _acknowledgmentLabel->setText(tr("Beta versions may leave unexpectedly or cause instabilities."));
 }
 
 } // namespace KDC
