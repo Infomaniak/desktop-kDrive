@@ -99,7 +99,7 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
 
         void clearUndecidedLists();
 
-        bool isStaff();
+        [[nodiscard]] bool isStaff() const;
 
     private slots:
         void onFolderConfirmationSwitchClicked(bool checked = false);
