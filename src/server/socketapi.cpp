@@ -1106,7 +1106,9 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
                 canDehydrate = isPlaceholder && !isSyncing && isHydrated;
             }
 
-            hasAtLeastOneDirectory = QFileInfo(file).isDir();
+            if (!hasAtLeastOneDirectory && QFileInfo(file).isDir()) {
+                hasAtLeastOneDirectory = true;
+            }
         }
 
         // TODO: Should be a submenu, should use icons
