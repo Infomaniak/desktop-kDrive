@@ -1090,6 +1090,7 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
         bool canHydrate = true;
         bool canDehydrate = true;
         bool canCancelHydration = false;
+        bool hasAtLeastOneDirectory = false;
         for (const auto &file: qAsConst(files)) {
             bool isPlaceholder = false;
             bool isHydrated = false;
@@ -1104,34 +1105,31 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
                 canHydrate = isPlaceholder && !isSyncing && !isHydrated;
                 canDehydrate = isPlaceholder && !isSyncing && isHydrated;
             }
+
+            hasAtLeastOneDirectory = QFileInfo(file).isDir();
         }
 
         // TODO: Should be a submenu, should use icons
-        auto makePinContextMenu = [&](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration, bool cancelHydration) {
+        auto makePinContextMenu = [&](const bool makeAvailableLocally, const bool freeSpace, const bool cancelDehydration,
+                                      const bool cancelHydration, const bool isDir) {
             listener->sendMessage(QString("MENU_ITEM%1MAKE_AVAILABLE_LOCALLY_DIRECT%1%2%1%3")
-                                          .arg(MSG_CDE_SEPARATOR)
-                                          .arg(makeAvailableLocally ? QString() : QString("d"))
-                                          .arg(vfsPinActionText()));
+                                          .arg(MSG_CDE_SEPARATOR, makeAvailableLocally ? QString() : QString("d"),
+                                               isDir ? vfsPinDirActionText() : vfsPinFileActionText()));
             if (cancelHydration) {
                 listener->sendMessage(QString("MENU_ITEM%1CANCEL_HYDRATION_DIRECT%1%2%1%3")
-                                              .arg(MSG_CDE_SEPARATOR)
-                                              .arg(QString(""))
-                                              .arg(cancelHydrationText()));
+                                              .arg(MSG_CDE_SEPARATOR, QString(""), cancelHydrationText()));
             }
 
-            listener->sendMessage(QString("MENU_ITEM%1MAKE_ONLINE_ONLY_DIRECT%1%2%1%3")
-                                          .arg(MSG_CDE_SEPARATOR)
-                                          .arg(freeSpace ? QString() : QString("d"))
-                                          .arg(vfsFreeSpaceActionText()));
+            listener->sendMessage(
+                    QString("MENU_ITEM%1MAKE_ONLINE_ONLY_DIRECT%1%2%1%3")
+                            .arg(MSG_CDE_SEPARATOR, freeSpace ? QString() : QString("d"), vfsFreeSpaceActionText()));
             if (cancelDehydration) {
                 listener->sendMessage(QString("MENU_ITEM%1CANCEL_DEHYDRATION_DIRECT%1%2%1%3")
-                                              .arg(MSG_CDE_SEPARATOR)
-                                              .arg(QString(""))
-                                              .arg(cancelDehydrationText()));
+                                              .arg(MSG_CDE_SEPARATOR, "", cancelDehydrationText()));
             }
         };
 
-        makePinContextMenu(canHydrate, canDehydrate, canCancelDehydration, canCancelHydration);
+        makePinContextMenu(canHydrate, canDehydrate, canCancelDehydration, canCancelHydration, hasAtLeastOneDirectory);
     }
 
     listener->sendMessage(QString("GET_MENU_ITEMS%1END").arg(MSG_CDE_SEPARATOR));
@@ -1322,8 +1320,12 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<KDC::Sy
     }
 }
 
-QString SocketApi::vfsPinActionText() {
+QString SocketApi::vfsPinFileActionText() {
     return QCoreApplication::translate("utility", "Always make available locally");
+}
+
+QString SocketApi::vfsPinDirActionText() {
+    return QCoreApplication::translate("utility", "Make available locally");
 }
 
 QString SocketApi::vfsFreeSpaceActionText() {
