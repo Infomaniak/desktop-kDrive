@@ -536,17 +536,20 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
 void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     _syncPal->_localFSObserverWorker->invalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
-    CPPUNIT_ASSERT_EQUAL(1, _syncPal->_localFSObserverWorker->_invalidateCounter);
     _syncPal->_localFSObserverWorker->invalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
-    CPPUNIT_ASSERT_EQUAL(2, _syncPal->_localFSObserverWorker->_invalidateCounter);
     _syncPal->_localFSObserverWorker->invalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot has been invalidated.
-    CPPUNIT_ASSERT_EQUAL(0, _syncPal->_localFSObserverWorker->_invalidateCounter); // Counter has been reset.
 
     Utility::msleep(1000); // Wait for the snapshot to be rebuilt
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is now valid again.
+    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
+    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
+    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot has been invalidated.
 }
 
 void MockLocalFileSystemObserverWorker::waitForUpdate(const long long timeoutMs) const {
