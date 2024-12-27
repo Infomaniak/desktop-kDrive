@@ -232,8 +232,12 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     _syncPal->_localFSObserverWorker = slowObserver;
     _syncPal->_localFSObserverWorker->start();
 
+    auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
+    CPPUNIT_ASSERT(localFSO);
+
     int count = 0;
-    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
+    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid() ||
+           !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation
         Utility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
     }
