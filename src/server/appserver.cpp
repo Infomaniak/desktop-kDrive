@@ -1917,6 +1917,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
             sentry::pTraces::basic::AppStart().stop();
+            break;
         }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId = 0;

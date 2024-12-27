@@ -49,7 +49,7 @@ class LocalDeleteJob : public AbstractJob {
 
         virtual bool canRun() override;
         virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
-        virtual void moveToTrash();
+        virtual bool moveToTrash();
         void handleTrashMoveOutcome(const bool success);
 
     private:

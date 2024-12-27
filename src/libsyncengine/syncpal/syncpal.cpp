@@ -174,12 +174,16 @@ SyncPal::~SyncPal() {
 
 ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
     bool found = false;
+
+    ASSERT(_remoteSnapshot)
+    ASSERT(_remoteUpdateTree)
+
     if (!_syncDb->setTargetNodeId(targetNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setTargetNodeId");
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Root node not found in node table");
+        LOG_SYNCPAL_WARN(_logger, "Root node not found in node table");
         return ExitCode::DataError;
     }
 
@@ -201,6 +205,9 @@ SyncStatus SyncPal::status() const {
         // Has started
         if (_syncPalWorker->isRunning()) {
             // Still running
+            ASSERT(_localSnapshot)
+            ASSERT(_remoteSnapshot)
+
             if (_syncPalWorker->pauseAsked()) {
                 // Auto pausing after a NON fatal error (network, back...)
                 return SyncStatus::PauseAsked;
@@ -757,6 +764,9 @@ bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
 }
 
 bool SyncPal::isSnapshotValid(ReplicaSide side) {
+    ASSERT(_localSnapshot)
+    ASSERT(_remoteSnapshot)
+
     return side == ReplicaSide::Local ? _localSnapshot->isValid() : _remoteSnapshot->isValid();
 }
 
@@ -1055,6 +1065,8 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
 bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
     exists = false;
 
+    if (!_remoteSnapshot) return false;
+
     // Path is normalized on server side
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
@@ -1069,6 +1081,8 @@ bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
 bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
+    if (!_remoteSnapshot) return false;
+
     // Path is normalized on server side
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
@@ -1076,7 +1090,6 @@ bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
         return false;
     }
 
-    const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
     if (const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath); !nodeId.empty()) {
         canShare = _remoteSnapshot->canShare(nodeId);
     }
@@ -1532,6 +1545,9 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
 }
 
 void SyncPal::copySnapshots() {
+    ASSERT(_localSnapshot)
+    ASSERT(_remoteSnapshot)
+
     *_localSnapshotCopy = *_localSnapshot;
     *_remoteSnapshotCopy = *_remoteSnapshot;
     _localSnapshot->startRead();

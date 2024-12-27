@@ -17,10 +17,10 @@
  */
 
 #include "testoperationsorterworker.h"
-
 #include "test_utility/testhelpers.h"
 
 #include <memory>
+
 using namespace CppUnit;
 
 namespace KDC {

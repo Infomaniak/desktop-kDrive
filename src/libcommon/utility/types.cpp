@@ -178,8 +178,6 @@ std::string toString(const ExitCause e) {
             return "NotEnoughtMemory";
         case ExitCause::FileTooBig:
             return "FileTooBig";
-        case ExitCause::MoveToTrashFailed:
-            return "MoveToTrashFailed";
         case ExitCause::InvalidName:
             return "InvalidName";
         case ExitCause::LiteSyncNotAllowed:

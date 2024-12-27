@@ -826,10 +826,6 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
                         "Can't access item.<br>"
                         "Please fix the read and write permissions.");
             }
-
-            if (errorInfo.exitCause() == ExitCause::MoveToTrashFailed) {
-                return tr("Move to trash failed.");
-            }
             return tr("System error.");
         }
         case ExitCode::BackError: {

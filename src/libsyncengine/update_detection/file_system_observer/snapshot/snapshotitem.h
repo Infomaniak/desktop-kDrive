@@ -26,6 +26,8 @@
 
 namespace KDC {
 
+class Snapshot;
+
 class SnapshotItem {
     public:
         SnapshotItem();
@@ -65,6 +67,7 @@ class SnapshotItem {
         void setCanWrite(const bool canWrite) { _canWrite = canWrite; }
         [[nodiscard]] bool canShare() const { return _canShare; }
         void setCanShare(bool canShare) { _canShare = canShare; }
+
         SnapshotItem &operator=(const SnapshotItem &other);
 
         void copyExceptChildren(const SnapshotItem &other);
@@ -87,6 +90,14 @@ class SnapshotItem {
         bool _canShare = true;
 
         std::unordered_set<NodeId> _childrenIds;
+
+        mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
+
+        [[nodiscard]] SyncPath path() const { return _path; }
+        void setPath(const SyncPath &path) const { _path = path; }
+
+        friend class Snapshot;
+        // friend bool Snapshot::path(const NodeId &, SyncPath &, bool &) const noexcept;
 };
 
 } // namespace KDC
