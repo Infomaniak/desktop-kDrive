@@ -486,21 +486,26 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     FileStat fileStat;
     bool exists = false;
 
+    auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
+    CPPUNIT_ASSERT(localFSO);
+
+    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid() ||
+           !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation
+        Utility::msleep(100);
+        CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
+    }
+
     // Create an NFC encoded file.
     SyncPath tmpDirPath = _testFiles[0].second.parent_path();
     SyncPath nfcFilePath = tmpDirPath / makeNfcSyncName();
     generateOrEditTestFile(nfcFilePath);
-    NodeId nfcFileId;
     IoHelper::getFileStat(nfcFilePath, &fileStat, exists);
-    nfcFileId = std::to_string(fileStat.inode);
+    NodeId nfcFileId = std::to_string(fileStat.inode);
 
     // Prepare the path of the NFD encoded file.
     SyncPath nfdFilePath = tmpDirPath / makeNfdSyncName();
 
-    while (!_syncPal->snapshot(ReplicaSide::Local)->isValid()) { // Wait for the snapshot generation
-        Utility::msleep(100);
-        CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
-    }
+    slowObserver->waitForUpdate();
 
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
 
