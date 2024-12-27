@@ -181,7 +181,8 @@ void TestUpdateChecker::testVersionInfo() {
     testObj._prodVersionChannel = DistributionChannel::Prod;
 
     auto testFunc = [&testObj](const VersionValue expectedValue, const DistributionChannel expectedChannel,
-                               const DistributionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber) {
+                               const DistributionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber,
+                               const CPPUNIT_NS::SourceLine &sourceline) {
         testObj._versionsInfo.clear();
         testObj._versionsInfo.try_emplace(DistributionChannel::Prod,
                                           getVersionInfo(DistributionChannel::Prod, versionsNumber[0]));
@@ -189,46 +190,47 @@ void TestUpdateChecker::testVersionInfo() {
                                           getVersionInfo(DistributionChannel::Beta, versionsNumber[1]));
         testObj._versionsInfo.try_emplace(DistributionChannel::Internal,
                                           getVersionInfo(DistributionChannel::Internal, versionsNumber[2]));
-        CPPUNIT_ASSERT_EQUAL(expectedChannel, testObj.versionInfo(selectedChannel).channel);
-        CPPUNIT_ASSERT_EQUAL(tag(expectedValue), testObj.versionInfo(selectedChannel).tag);
-        CPPUNIT_ASSERT_EQUAL(buildVersion(expectedValue), testObj.versionInfo(selectedChannel).buildVersion);
+        const auto &versionInfo = testObj.versionInfo(selectedChannel);
+        CPPUNIT_NS::assertEquals(expectedChannel, versionInfo.channel, sourceline, "");
+        CPPUNIT_NS::assertEquals(tag(expectedValue), versionInfo.tag, sourceline, "");
+        CPPUNIT_NS::assertEquals(buildVersion(expectedValue), versionInfo.buildVersion, sourceline, "");
     };
 
     // selected version: Prod
     /// versions values: Prod > Beta > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Prod, {High, Medium, Low});
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Prod, {High, Medium, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Internal > Beta > Prod
-    testFunc(Low, DistributionChannel::Prod, DistributionChannel::Prod, {Low, Medium, High});
+    testFunc(Low, DistributionChannel::Prod, DistributionChannel::Prod, {Low, Medium, High}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Beta == Internal
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Prod, {Medium, Medium, Medium});
+    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Prod, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
 
     // selected version: Beta
     /// versions values: Prod > Beta > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Beta, {High, Medium, Low});
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Beta, {High, Medium, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Internal > Beta > Prod
-    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Beta, {Low, Medium, High});
+    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Beta, {Low, Medium, High}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Beta == Internal
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Beta, {Medium, Medium, Medium});
+    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Beta, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
 
     // selected version: Internal
     /// versions values: Prod > Beta > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Medium, Low});
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Medium, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Internal > Beta > Prod
-    testFunc(High, DistributionChannel::Internal, DistributionChannel::Internal, {Low, Medium, High});
+    testFunc(High, DistributionChannel::Internal, DistributionChannel::Internal, {Low, Medium, High}, CPPUNIT_SOURCELINE());
     /// versions values: Beta > Prod > Internal
-    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Medium, High, Low});
+    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Medium, High, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Prod > Internal > Beta
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Low, Medium});
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Low, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Beta > Internal > Prod
-    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Low, High, Medium});
+    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Low, High, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Beta == Internal
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Medium, Medium});
+    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
     /// versions values:  Beta == Prod > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, High, Low});
+    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, High, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Beta == Internal > Prod
-    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Internal, {Low, Medium, Medium});
+    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Internal, {Low, Medium, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Internal > Beta
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Low, Medium});
+    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Low, Medium}, CPPUNIT_SOURCELINE());
 }
 
 } // namespace KDC

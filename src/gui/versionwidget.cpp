@@ -48,6 +48,8 @@ static constexpr int statusLayoutSpacing = 8;
 static constexpr auto betaTagColor = QColor(214, 56, 100);
 static constexpr auto internalTagColor = QColor(120, 116, 176);
 
+Q_LOGGING_CATEGORY(lcVersionWidget, "gui.versionwidget", QtInfoMsg)
+
 VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     const auto mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -120,6 +122,10 @@ void VersionWidget::onLinkActivated(const QString &link) {
         showReleaseNotes();
     else if (link == downloadPageLink)
         showDownloadPage();
+    else {
+        qCWarning(lcVersionWidget) << "Unknown link clicked: " << link;
+        Q_ASSERT(false);
+    }
 }
 
 void VersionWidget::onUpdateButtonClicked() {
@@ -238,8 +244,6 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
     statusLayout->setSpacing(statusLayoutSpacing);
     _updateStatusLabel = new QLabel(this);
     _updateStatusLabel->setObjectName("boldTextLabel");
-    // _updateStatusLabel->setWordWrap(true);
-    // TODO : for long string we should activate word wrap but it is not aligned anymore with the tag
     statusLayout->addWidget(_updateStatusLabel);
 
     _betaTag = new TagLabel(betaTagColor, this);

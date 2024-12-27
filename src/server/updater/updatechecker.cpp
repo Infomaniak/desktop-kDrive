@@ -45,61 +45,35 @@ void UpdateChecker::setCallback(const std::function<void()> &callback) {
     _callback = callback;
 }
 
-const VersionInfo &UpdateChecker::versionInfo(const DistributionChannel channel) {
+class VersionInfoCmp {
+    public:
+        bool operator()(const VersionInfo &v1, const VersionInfo &v2) const {
+            if (v1.fullVersion() == v2.fullVersion()) {
+                // Same build version, use the channel to define priority
+                return v1.channel < v2.channel;
+            }
+            return CommonUtility::isVersionLower(v2.fullVersion(), v1.fullVersion());
+        }
+};
+
+const VersionInfo &UpdateChecker::versionInfo(const DistributionChannel choosedChannel) {
     const VersionInfo &prodVersion = prodVersionInfo();
 
     // If the user wants only `Production` versions, just return the current `Production` version.
-    if (channel == DistributionChannel::Prod) return prodVersion;
+    if (choosedChannel == DistributionChannel::Prod) return prodVersion;
 
     // Otherwise, we need to check if there is not a newer version in other channels.
-    /// The use wants `Beta` updates.
     const VersionInfo &betaVersion =
             _versionsInfo.contains(DistributionChannel::Beta) ? _versionsInfo[DistributionChannel::Beta] : _defaultVersionInfo;
-    if (channel == DistributionChannel::Beta) {
-        if (CommonUtility::isVersionLower(prodVersion.fullVersion(), betaVersion.fullVersion())) {
-            // Beta > Prod
-            return betaVersion;
-        }
-
-        // Prod > Beta
-        return prodVersion;
-    }
-
-    /// The user wants `Internal` updates.
     const VersionInfo &internalVersion = _versionsInfo.contains(DistributionChannel::Internal)
                                                  ? _versionsInfo[DistributionChannel::Internal]
                                                  : _defaultVersionInfo;
-    if (channel == DistributionChannel::Internal) {
-        bool betaIsLower = false;
-        if (CommonUtility::isVersionLower(betaVersion.fullVersion(), internalVersion.fullVersion())) {
-            betaIsLower = true;
-        }
-        bool prodIsLower = false;
-        if (CommonUtility::isVersionLower(prodVersion.fullVersion(), internalVersion.fullVersion())) {
-            prodIsLower = true;
-        }
-
-        if (betaIsLower && prodIsLower) {
-            // Internal > Prod && Beta
-            return internalVersion;
-        }
-        if (prodIsLower) {
-            // Beta > Internal > Prod
-            return betaVersion;
-        }
-        if (betaIsLower) {
-            // Prod > Internal > Beta
-            return prodVersion;
-        }
-
-        // Prod && Beta > Internal
-        if (CommonUtility::isVersionLower(prodVersion.fullVersion(), betaVersion.fullVersion())) {
-            // Beta > Prod > Internal
-            return betaVersion;
-        }
-
-        // Prod > Beta > Internal
-        return prodVersion;
+    std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
+    sortedVersionList.insert(prodVersion);
+    sortedVersionList.insert(betaVersion);
+    sortedVersionList.insert(internalVersion);
+    for (const auto &versionInfo: sortedVersionList) {
+        if (versionInfo.get().channel <= choosedChannel) return versionInfo;
     }
 
     return _defaultVersionInfo;
