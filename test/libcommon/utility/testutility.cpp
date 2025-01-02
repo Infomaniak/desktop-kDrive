@@ -322,8 +322,8 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
             bool wait = true;
             for (int i = 0; i < 3; i++) {
                 workers.push_back(std::thread([&]() {
-                    LOG_DEBUG(Log::instance()->getLogger(), "i=" << c << " wait");
                     while (wait) {
+                        LOG_DEBUG(Log::instance()->getLogger(), "i=" << c << " wait");
                     };
                     LOG_DEBUG(Log::instance()->getLogger(), "i=" << c << " start");
                     std::string str = CommonUtility::generateRandomStringAlphaNum();
