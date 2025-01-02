@@ -156,7 +156,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // SyncPalInfo
         [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
-        inline const SyncPalInfo &syncInfo() const { return _syncInfo; };
+        inline const SyncPalInfo &syncInfo() const { return _syncInfo; }
         inline int syncDbId() const { return _syncInfo.syncDbId; }
         inline int driveDbId() const { return _syncInfo.driveDbId; }
         inline int driveId() const { return _syncInfo.driveId; }
@@ -166,13 +166,13 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
         inline SyncPath localPath() const { return _syncInfo.localPath; }
-        inline bool restart() const { return _syncInfo.restart; };
+        inline bool restart() const { return _syncInfo.restart; }
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
 
-        void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; };
-        void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; };
-        void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; };
-        void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; };
+        void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; }
+        void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; }
+        void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; }
+        void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; }
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
         [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
