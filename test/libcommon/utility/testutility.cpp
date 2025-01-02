@@ -315,7 +315,6 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
     {
         int err = 0;
         for (int c = 0; c < 100000; c++) {
-            LOG_DEBUG(Log::instance()->getLogger(), "c=" << c);
             std::vector<std::thread> workers;
             std::set<std::string> results;
             std::mutex resultsMutex;
@@ -323,9 +322,8 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
             for (int i = 0; i < 3; i++) {
                 workers.push_back(std::thread([&]() {
                     while (wait) {
-                        LOG_DEBUG(Log::instance()->getLogger(), "i=" << c << " wait");
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     };
-                    LOG_DEBUG(Log::instance()->getLogger(), "i=" << c << " start");
                     std::string str = CommonUtility::generateRandomStringAlphaNum();
                     const std::lock_guard<std::mutex> lock(resultsMutex);
                     if (!results.insert(str).second) {
