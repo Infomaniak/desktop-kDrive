@@ -315,15 +315,17 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
     {
         int err = 0;
         for (int c = 0; c < 100000; c++) {
-            int nb = 3;
+            LOG_DEBUG(Log::instance()->getLogger(), "c=" << c);
             std::vector<std::thread> workers;
             std::set<std::string> results;
             std::mutex resultsMutex;
             bool wait = true;
-            for (int i = 0; i < nb; i++) {
+            for (int i = 0; i < 3; i++) {
                 workers.push_back(std::thread([&]() {
+                    LOG_DEBUG(Log::instance()->getLogger(), "i=" << c << " wait");
                     while (wait) {
                     };
+                    LOG_DEBUG(Log::instance()->getLogger(), "i=" << c << " start");
                     std::string str = CommonUtility::generateRandomStringAlphaNum();
                     const std::lock_guard<std::mutex> lock(resultsMutex);
                     if (!results.insert(str).second) {
