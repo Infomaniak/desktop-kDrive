@@ -2183,11 +2183,11 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     if (!syncOp->omit()) {
         // ID might have changed in the case of a delete+create
         if (!_syncPal->updateTree(syncOp->targetSide())
-                     ->updateNodeId(syncOp->affectedNode(), syncOp->targetSide() == ReplicaSide::Local ? localId : remoteId)) {
+                     ->updateNodeId(syncOp->correspondingNode(),
+                                    syncOp->targetSide() == ReplicaSide::Local ? localId : remoteId)) {
             LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::updateNodeId");
             return ExitCode::DataError;
         }
-
         syncOp->correspondingNode()->setLastModified(newLastModTime);
     }
     node = syncOp->correspondingNode();
