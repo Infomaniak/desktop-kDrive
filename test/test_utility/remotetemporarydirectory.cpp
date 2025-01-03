@@ -23,28 +23,45 @@
 #include "../../src/libsyncengine/jobs/network/API_v2/deletejob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommon/utility/utility.h"
 
 namespace KDC {
 RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId,
-                                                   const std::string& testType /*= "undef"*/) : _driveDbId(driveDbId) {
-    // Generate directory name
-    const std::time_t now = std::time(nullptr);
-    const std::tm tm = *std::localtime(&now);
-    std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M");
+                                                   const std::string& testType /*= "undef"*/) :
+    _driveDbId(driveDbId) {
+    std::string suffix = CommonUtility::generateRandomStringAlphaNum(5);
+    int retry = 5;
+    do {
+        // Generate directory name
+        const std::time_t now = std::time(nullptr);
+        const std::tm tm = *std::localtime(&now);
+        std::ostringstream woss;
+        woss << std::put_time(&tm, "%Y%m%d_%H%M");
+        _dirName = Str("kdrive_") + Str2SyncName(testType) + Str("_unit_tests_") + Str2SyncName(woss.str() + "___" + suffix);
 
-    _dirName = Str("kdrive_") + Str2SyncName(testType) + Str("_unit_tests_") + Str2SyncName(woss.str());
+        // Create remote test dir
+        CreateDirJob job(_driveDbId, parentId, _dirName);
+        job.runSynchronously();
+        if (job.exitInfo() == ExitInfo::ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist) && retry > 0) {
+            suffix = CommonUtility::generateRandomStringAlphaNum(5);
+            retry--;
+            continue;
+        }
 
-    // Create remote test dir
-    CreateDirJob job(_driveDbId, parentId, _dirName);
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.exitInfo());
 
-    // Extract file ID
-    CPPUNIT_ASSERT(job.jsonRes());
-    Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
-    CPPUNIT_ASSERT(dataObj);
-    _dirId = dataObj->get(idKey).toString();
+        // Extract file ID
+        CPPUNIT_ASSERT(job.jsonRes());
+        Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
+        CPPUNIT_ASSERT(dataObj);
+        _dirId = dataObj->get(idKey).toString();
+        LOGW_INFO(Log::instance()->getLogger(), L"RemoteTemporaryDirectory created: " << Utility::formatSyncName(_dirName)
+                                                                                      << L" with ID: "
+                                                        << Utility::s2ws(_dirId));
+        break;
+    } while (true);
 }
+
 RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     if (_isDeleted) return;
 
