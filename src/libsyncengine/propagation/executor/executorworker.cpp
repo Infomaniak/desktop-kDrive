@@ -572,6 +572,23 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 return exitInfo;
             }
 
+            // Check if we need to hydrate the file
+            PinState parentPinState = PinState::Unspecified;
+            if (!_syncPal->vfsPinState(absoluteLocalFilePath.parent_path(), parentPinState)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error while retrieving parent's pinstate for file: "
+                                                   << Utility::formatSyncPath(absoluteLocalFilePath));
+                return ExitCode::SystemError;
+            }
+            if (parentPinState == PinState::AlwaysLocal) {
+                _syncPal->vfsSetPinState(absoluteLocalFilePath, PinState::AlwaysLocal);
+                if (const auto exitCode = _syncPal->addDlDirectJob(relativeLocalFilePath, absoluteLocalFilePath);
+                    exitCode != ExitCode::Ok) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to create direct download job for file: "
+                                                       << Utility::formatSyncPath(absoluteLocalFilePath));
+                    return exitCode;
+                }
+            }
+
             // Check for inconsistency
             if (syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
                 // Notify user that the file has been renamed
@@ -791,22 +808,6 @@ ExitInfo ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
         return processCreateOrConvertToPlaceholderError(relativeLocalPath, true);
     }
 
-    // Check if we need to hydrate the file
-    PinState parentPinState = PinState::Unspecified;
-    if (!_syncPal->vfsPinState(absoluteLocalPath.parent_path(), parentPinState)) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Error while retrieving parent's pinstate for file: " << Utility::formatSyncPath(absoluteLocalPath));
-        return ExitCode::SystemError;
-    }
-    if (parentPinState == PinState::AlwaysLocal) {
-        // TODO : for file only!!!! For folder, only set the pinstate to "pinned"
-        if (const auto exitCode = _syncPal->addDlDirectJob(relativeLocalPath, absoluteLocalPath); exitCode != ExitCode::Ok) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Failed to create direct download job for file: " << Utility::formatSyncPath(absoluteLocalPath));
-            return exitCode;
-        }
-    }
-
     return ExitCode::Ok;
 }
 
@@ -849,7 +850,13 @@ ExitInfo ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath,
         return processCreateOrConvertToPlaceholderError(relativeLocalPath, false);
     }
 
-    if (!_syncPal->vfsSetPinState(absoluteLocalFilePath, hydrated ? PinState::AlwaysLocal : PinState::OnlineOnly)) {
+    PinState parentPinState = PinState::Unspecified;
+    if (!_syncPal->vfsPinState(absoluteLocalFilePath.parent_path(), parentPinState)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error while retrieving parent's pinstate for file: "
+                                           << Utility::formatSyncPath(absoluteLocalFilePath));
+        return ExitCode::SystemError;
+    }
+    if (!_syncPal->vfsSetPinState(absoluteLocalFilePath, parentPinState)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(absoluteLocalFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
