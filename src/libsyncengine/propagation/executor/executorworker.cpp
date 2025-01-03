@@ -2166,7 +2166,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     // information in this structure
     if (!syncOp->omit()) {
         _syncPal->updateTree(syncOp->targetSide())
-                ->updateNodeId(syncOp->affectedNode(),
+                ->updateNodeId(syncOp->correspondingNode(),
                                syncOp->targetSide() == ReplicaSide::Local ? localId : remoteId); // ID might have changed in the
                                                                                                  // case of a delete+create
         syncOp->correspondingNode()->setLastModified(newLastModTime);
