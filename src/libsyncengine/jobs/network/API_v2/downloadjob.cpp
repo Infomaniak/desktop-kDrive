@@ -205,30 +205,37 @@ bool DownloadJob::handleResponse(std::istream &is) {
             return false;
         }
     } else {
-        // Create/fetch normal file
-#ifdef _WIN32
-        const std::string tmpFileName = tmpnam(nullptr);
-#else
-        const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-#endif
-
+        SyncPath tmpDirectoryPath;
         IoError ioError = IoError::Success;
-        if (!IoHelper::tempDirectoryPath(_tmpPath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(_tmpPath, ioError));
+        if (!IoHelper::tempDirectoryPath(tmpDirectoryPath, ioError)) {
+            LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpDirectoryPath, ioError));
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::Unknown;
             return false;
         }
 
-        _tmpPath /= tmpFileName;
+        SyncPath tmpPath;
+        std::ofstream output;
+        do {
+            // Create/fetch normal file
+#ifdef _WIN32
+            const std::string tmpFileName = tmpnam(nullptr);
+#else
+            const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
+#endif
 
-        std::ofstream output(_tmpPath.native().c_str(), std::ios::binary);
-        if (!output) {
-            LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_tmpPath));
-            _exitCode = ExitCode::SystemError;
-            _exitCause = Utility::enoughSpace(_tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
-            return false;
-        }
+            tmpPath = tmpDirectoryPath / tmpFileName;
+
+            output.open(tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
+            if (!output.is_open()) {
+                LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(tmpPath));
+                _exitCode = ExitCode::SystemError;
+                _exitCause = Utility::enoughSpace(tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
+                return false;
+            }
+
+            output.seekp(0, std::ios_base::end);
+        } while (output.tellp() > 0); // If the file is not empty, generate a new file name
 
         std::chrono::steady_clock::time_point fileProgressTimer = std::chrono::steady_clock::now();
 
@@ -319,6 +326,15 @@ bool DownloadJob::handleResponse(std::istream &is) {
                     }
                 }
             }
+        }
+
+        // Checks that the file has not been corrupted by another process
+        // Unfortunately, the file hash is not available, so we check only its size
+        output.flush();
+        output.seekp(0, std::ios_base::end);
+        if (expectedSize != output.tellp()) {
+            LOG_WARN(_logger, "Request " << jobId() << ": tmp file has been corrupted by another process");
+            writeError = true;
         }
 
         output.close();
