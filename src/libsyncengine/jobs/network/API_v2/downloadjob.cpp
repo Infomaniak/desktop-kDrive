@@ -329,7 +329,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                     if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
                         if (ExitInfo exitInfo =
-                                    _vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
+                                    _vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
                             !exitInfo) {
                             LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath) << L": "
                                                                                   << exitInfo);
@@ -367,7 +367,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         if (!_responseHandlingCanceled) {
             if (_vfsUpdateFetchStatus && !fetchFinished) {
                 // Update fetch status
-                if (ExitInfo exitInfo = _vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
+                if (ExitInfo exitInfo = _vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
                     !exitInfo) {
                     LOGW_WARN(_logger,
                               L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
