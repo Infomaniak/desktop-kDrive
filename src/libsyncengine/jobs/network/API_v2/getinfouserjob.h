@@ -22,14 +22,27 @@
 
 namespace KDC {
 
-class GetInfoUserJob : public AbstractTokenNetworkJob {
+class GetInfoUserJob final : public AbstractTokenNetworkJob {
     public:
-        GetInfoUserJob(int userDbId);
+        explicit GetInfoUserJob(int userDbId);
+
+        [[nodiscard]] const std::string& name() const { return _name; }
+        [[nodiscard]] const std::string& email() const { return _email; }
+        [[nodiscard]] const std::string& avatarUrl() const { return _avatarUrl; }
+        [[nodiscard]] bool isStaff() const { return _isStaff; }
+
+    protected:
+        bool handleJsonResponse(std::istream& is) override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI&, bool& canceled) override { canceled = false; }
+        ExitInfo setData() override { return ExitCode::Ok; }
+
+        std::string _name;
+        std::string _email;
+        std::string _avatarUrl;
+        bool _isStaff{false};
 };
 
 } // namespace KDC

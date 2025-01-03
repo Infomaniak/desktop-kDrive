@@ -54,9 +54,9 @@ if not deepl_key:
 translator = deepl.Translator(deepl_key)
 
 target_lang = [
-    'FR',
     'DE',
     'ES',
+    'FR',
     'IT'
 ]
 

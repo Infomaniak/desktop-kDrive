@@ -20,26 +20,29 @@
 
 namespace KDC {
 
-UserInfo::UserInfo(int dbId, int userId, const QString &name, const QString &email, const QImage &avatar, bool connected) :
+UserInfo::UserInfo(const int dbId, const int userId, const QString &name, const QString &email, const QImage &avatar,
+                   const bool connected) :
     _dbId(dbId), _userId(userId), _name(name), _email(email), _avatar(avatar), _connected(connected) {}
 
 UserInfo::UserInfo() {}
 
 QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {
-    in >> userInfo._dbId >> userInfo._userId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected;
+    in >> userInfo._dbId >> userInfo._userId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected >>
+            userInfo._isStaff;
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo) {
-    out << userInfo._dbId << userInfo._userId << userInfo._name << userInfo._email << userInfo._avatar << userInfo._connected;
+    out << userInfo._dbId << userInfo._userId << userInfo._name << userInfo._email << userInfo._avatar << userInfo._connected
+        << userInfo._isStaff;
     return out;
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<UserInfo> &list) {
-    int count = static_cast<int>(list.size());
+    const auto count = static_cast<int>(list.size());
     out << count;
     for (int i = 0; i < count; i++) {
-        UserInfo userInfo = list[i];
+        const UserInfo &userInfo = list[i];
         out << userInfo;
     }
     return out;
@@ -49,9 +52,9 @@ QDataStream &operator>>(QDataStream &in, QList<UserInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        UserInfo *userInfo = new UserInfo();
-        in >> *userInfo;
-        list.push_back(*userInfo);
+        UserInfo userInfo;
+        in >> userInfo;
+        list.push_back(userInfo);
     }
     return in;
 }

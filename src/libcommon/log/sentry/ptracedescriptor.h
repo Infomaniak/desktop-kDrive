@@ -68,9 +68,8 @@ enum class PTraceName {
 struct PTraceDescriptor {
         PTraceDescriptor() = default;
         PTraceDescriptor(std::string pTraceTitle, std::string pTraceDescription, PTraceName pTraceName,
-                            PTraceName parentPTraceName = PTraceName::None) :
-            _pTraceName{pTraceName},
-            _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
+                         PTraceName parentPTraceName = PTraceName::None) :
+            _pTraceName{pTraceName}, _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
             _pTraceDescription{std::move(pTraceDescription)} {}
 
         const PTraceName _pTraceName = PTraceName::None;

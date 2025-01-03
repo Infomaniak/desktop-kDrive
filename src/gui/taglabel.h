@@ -18,28 +18,28 @@
 
 #pragma once
 
-#include "libcommon/info/parametersinfo.h"
-
-#include <memory>
+#include <QLabel>
 
 namespace KDC {
 
-class ParametersCache {
+class TagLabel final : public QLabel {
+        Q_OBJECT
+
     public:
-        static std::shared_ptr<ParametersCache> instance() noexcept;
-        static bool isExtendedLogEnabled() noexcept { return instance()->_parametersInfo.extendedLog(); };
+        explicit TagLabel(const QColor &color = Qt::transparent, QWidget *parent = nullptr);
 
-        ParametersCache(ParametersCache const &) = delete;
-        void operator=(ParametersCache const &) = delete;
+        [[nodiscard]] QColor backgroundColor() const { return _backgroundColor; }
+        void setBackgroundColor(const QColor &value) { _backgroundColor = value; }
 
-        ParametersInfo &parametersInfo() { return _parametersInfo; }
-        bool saveParametersInfo(bool displayMessageBoxOnError = true);
+        [[nodiscard]] const QFont &setCustomFont() const { return _customFont; }
+        void customFont(const QFont &font) { _customFont = font; }
 
     private:
-        static std::shared_ptr<ParametersCache> _instance;
-        ParametersInfo _parametersInfo;
+        [[nodiscard]] QSize sizeHint() const override;
+        void paintEvent(QPaintEvent *event) override;
 
-        ParametersCache();
+        QColor _backgroundColor{Qt::transparent};
+        QFont _customFont{"Suisse Int'l", 12};
 };
 
 } // namespace KDC
