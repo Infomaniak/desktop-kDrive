@@ -1113,11 +1113,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
                     return;
                 }
-                const bool start = exitInfo;
-
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, start, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -1206,10 +1204,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
                     return;
                 }
-                const bool start = exitInfo;
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, start, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -2629,7 +2626,6 @@ ExitInfo AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
     if (!exitInfo) {
         LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo << ", pausing.");
         addError(Error(sync.dbId(), errId(), exitInfo.code(), exitInfo.cause()));
-
     }
 
     return exitInfo;
@@ -2720,7 +2716,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                     mainExitCode = exitInfo.code();
                     continue;
                 }
-                const bool start = exitInfo && !user.keychainKey().empty();
+                const bool start = !user.keychainKey().empty();
 
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, false, false);
@@ -3683,7 +3679,6 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             LOG_WARN(_logger, "Error in tryCreateAndStartVfs " << exitInfo);
             return exitInfo;
         }
-        const bool start = exitInfo;
 
         QTimer::singleShot(100, this, [=]() {
             if (newMode != VirtualFileMode::Off) {
@@ -3700,9 +3695,7 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             sendVfsConversionCompleted(sync.dbId());
 
             // Re-start sync
-            if (start) {
-                _syncPalMap[syncDbId]->start();
-            }
+            _syncPalMap[syncDbId]->start();
         });
     }
 

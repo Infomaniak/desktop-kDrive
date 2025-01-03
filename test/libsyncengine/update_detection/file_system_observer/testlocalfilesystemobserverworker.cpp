@@ -84,9 +84,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _syncPal->createSharedObjects();
     _syncPal->setLocalPath(_rootFolderPath);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
-    _syncPal->setVfsStatusCallback(&vfsStatus); // Do nothing
-    _syncPal->setVfsPinStateCallback(&vfsPinState); // Do nothing
-    _syncPal->setVfsFileStatusChangedCallback(&vfsFileStatusChanged); // Do nothing
+    _syncPal->setVfsPtr(std::make_shared<VfsOff>());
 
 #if defined(_WIN32)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(

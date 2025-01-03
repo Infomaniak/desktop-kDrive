@@ -201,6 +201,8 @@ void VfsWorker::start() {
     LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " ended");
 }
 
+VfsOff::VfsOff(QObject *parent) : Vfs(VfsSetupParams(), parent) {}
+
 VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
 VfsOff::~VfsOff() {}
