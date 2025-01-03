@@ -42,7 +42,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
         // Create remote test dir
         CreateDirJob job(_driveDbId, parentId, _dirName);
         job.runSynchronously();
-        if (job.exitInfo() == ExitInfo::ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist) && retry > 0) {
+        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist) && retry > 0) {
             suffix = CommonUtility::generateRandomStringAlphaNum(5);
             retry--;
             continue;
