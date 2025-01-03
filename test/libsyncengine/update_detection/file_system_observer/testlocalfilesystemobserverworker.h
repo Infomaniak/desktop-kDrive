@@ -73,6 +73,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testLFSOFastMoveDeleteMoveWithEncodingChange);
         CPPUNIT_TEST(testLFSOWithSpecialCases1);
         CPPUNIT_TEST(testLFSOWithSpecialCases2);
+        CPPUNIT_TEST(testInvalidateCounter);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -97,6 +98,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         void testLFSOFastMoveDeleteMoveWithEncodingChange();
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
+        void testInvalidateCounter();
 
         static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
         static bool vfsPinState(int, const SyncPath &, PinState &) { return true; };
