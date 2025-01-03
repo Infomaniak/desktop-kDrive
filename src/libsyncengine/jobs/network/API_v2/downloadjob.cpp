@@ -214,7 +214,6 @@ bool DownloadJob::handleResponse(std::istream &is) {
             return false;
         }
 
-        SyncPath tmpPath;
         std::ofstream output;
         do {
             // Create/fetch normal file
@@ -224,13 +223,13 @@ bool DownloadJob::handleResponse(std::istream &is) {
             const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
 #endif
 
-            tmpPath = tmpDirectoryPath / tmpFileName;
+            _tmpPath = tmpDirectoryPath / tmpFileName;
 
-            output.open(tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
+            output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
             if (!output.is_open()) {
-                LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(tmpPath));
+                LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath));
                 _exitCode = ExitCode::SystemError;
-                _exitCause = Utility::enoughSpace(tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
+                _exitCause = Utility::enoughSpace(_tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
                 return false;
             }
 
