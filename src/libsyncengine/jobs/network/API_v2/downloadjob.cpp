@@ -62,8 +62,7 @@ DownloadJob::~DownloadJob() {
     // Remove tmp file
     // For a CREATE, it should no longer exists, but if an error occurred in handleResponse, it must be deleted
     if (!removeTmpFile() && !_isCreate) {
-            LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
-        }
+        LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
     }
 
     if (_responseHandlingCanceled) {
