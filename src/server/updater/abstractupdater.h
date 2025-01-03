@@ -30,21 +30,18 @@ class AbstractUpdater {
         AbstractUpdater();
         virtual ~AbstractUpdater() = default;
 
-        [[nodiscard]] const VersionInfo &versionInfo() const { return _updateChecker->versionInfo(); }
+        [[nodiscard]] const VersionInfo &versionInfo(const DistributionChannel channel) const {
+            return _updateChecker->versionInfo(channel);
+        }
         [[nodiscard]] const UpdateState &state() const { return _state; }
 
         /**
-         * @brief Checks if an update is available with the currently set distribution channel.
-         * @return ExitCode::Ok if no errors.
-         */
-        ExitCode checkUpdateAvailable() { return checkUpdateAvailable(_updateChecker->versionInfo().channel); }
-        /**
          * @brief Updates distribution channel and checks if an update is available.
-         * @param channel New distribution channel selected by the user.
+         * @param currentChannel The currently selected distribution channel.
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if no errors.
          */
-        ExitCode checkUpdateAvailable(DistributionChannel channel, UniqueId *id = nullptr);
+        ExitCode checkUpdateAvailable(DistributionChannel currentChannel, UniqueId *id = nullptr);
 
         /**
          * @brief Start the installation.
@@ -68,14 +65,17 @@ class AbstractUpdater {
         static void unskipVersion();
         [[nodiscard]] static bool isVersionSkipped(const std::string &version);
 
+        void setCurrentChannel(const DistributionChannel currentChannel) { _currentChannel = currentChannel; }
+
     protected:
         void setState(UpdateState newState);
+
+        DistributionChannel _currentChannel{DistributionChannel::Unknown};
 
     private:
         void onAppVersionReceived();
 
         std::unique_ptr<UpdateChecker> _updateChecker;
-
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
 };

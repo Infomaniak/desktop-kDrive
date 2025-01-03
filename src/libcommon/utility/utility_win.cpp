@@ -48,7 +48,7 @@ static SyncPath getAppSupportDir_private() {
         return appDataPath;
     }
     sentry::Handler::captureMessage(sentry::Level::Warning, "Utility_win::getAppSupportDir_private",
-                                              "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method");
+                                    "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method");
 
     return std::filesystem::temp_directory_path().parent_path().parent_path().native();
 }

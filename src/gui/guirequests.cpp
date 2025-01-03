@@ -1212,9 +1212,14 @@ ExitCode GuiRequests::changeDistributionChannel(const DistributionChannel channe
     return ExitCode::Ok;
 }
 
-ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo) {
+ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo,
+                                  const DistributionChannel channel /*= DistributionChannel::Unknown*/) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << channel;
+
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSION_INFO, {}, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSION_INFO, params, results)) {
         return ExitCode::SystemError;
     }
 

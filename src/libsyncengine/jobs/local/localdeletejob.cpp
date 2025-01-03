@@ -32,7 +32,7 @@
 
 namespace KDC {
 
-LocalDeleteJob::Path::Path(const SyncPath &path) : _path(path){};
+LocalDeleteJob::Path::Path(const SyncPath &path) : _path(path) {};
 
 bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     if (!_path.empty() && ending.empty()) return false;
@@ -58,9 +58,8 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
 
 LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash /* = false */) :
-    _absolutePath(syncPalInfo.localPath / relativePath),
-    _syncInfo(syncPalInfo), _relativePath(relativePath), _isDehydratedPlaceholder(isDehydratedPlaceholder),
-    _remoteNodeId(remoteId), _forceToTrash(forceToTrash) {}
+    _absolutePath(syncPalInfo.localPath / relativePath), _syncInfo(syncPalInfo), _relativePath(relativePath),
+    _isDehydratedPlaceholder(isDehydratedPlaceholder), _remoteNodeId(remoteId), _forceToTrash(forceToTrash) {}
 
 LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) : _absolutePath(absolutePath) {
     setBypassCheck(true);

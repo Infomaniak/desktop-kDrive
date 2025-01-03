@@ -24,12 +24,11 @@
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
+#include "utility/utility.h"
 
 namespace KDC {
 
-ExitCode UpdateChecker::checkUpdateAvailability(const DistributionChannel channel, UniqueId *id /*= nullptr*/) {
-    _channel = channel;
-
+ExitCode UpdateChecker::checkUpdateAvailability(UniqueId *id /*= nullptr*/) {
     std::shared_ptr<AbstractNetworkJob> job;
     if (const auto exitCode = generateGetAppVersionJob(job); exitCode != ExitCode::Ok) return exitCode;
     if (id) *id = job->jobId();
@@ -46,8 +45,43 @@ void UpdateChecker::setCallback(const std::function<void()> &callback) {
     _callback = callback;
 }
 
+class VersionInfoCmp {
+    public:
+        bool operator()(const VersionInfo &v1, const VersionInfo &v2) const {
+            if (v1.fullVersion() == v2.fullVersion()) {
+                // Same build version, use the channel to define priority
+                return v1.channel < v2.channel;
+            }
+            return CommonUtility::isVersionLower(v2.fullVersion(), v1.fullVersion());
+        }
+};
+
+const VersionInfo &UpdateChecker::versionInfo(const DistributionChannel choosedChannel) {
+    const VersionInfo &prodVersion = prodVersionInfo();
+
+    // If the user wants only `Production` versions, just return the current `Production` version.
+    if (choosedChannel == DistributionChannel::Prod) return prodVersion;
+
+    // Otherwise, we need to check if there is not a newer version in other channels.
+    const VersionInfo &betaVersion =
+            _versionsInfo.contains(DistributionChannel::Beta) ? _versionsInfo[DistributionChannel::Beta] : _defaultVersionInfo;
+    const VersionInfo &internalVersion = _versionsInfo.contains(DistributionChannel::Internal)
+                                                 ? _versionsInfo[DistributionChannel::Internal]
+                                                 : _defaultVersionInfo;
+    std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
+    sortedVersionList.insert(prodVersion);
+    sortedVersionList.insert(betaVersion);
+    sortedVersionList.insert(internalVersion);
+    for (const auto &versionInfo: sortedVersionList) {
+        if (versionInfo.get().channel <= choosedChannel) return versionInfo;
+    }
+
+    return _defaultVersionInfo;
+}
+
 void UpdateChecker::versionInfoReceived(UniqueId jobId) {
-    _versionInfo.clear();
+    _isVersionReceived = false;
+    _versionsInfo.clear();
     LOG_INFO(Log::instance()->getLogger(), "App version info received");
 
     auto job = JobManager::instance()->getJob(jobId);
@@ -65,13 +99,14 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         ss << errorCode.c_str() << " - " << errorDescr;
         sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
+    } else if (getAppVersionJobPtr->exitCode() != ExitCode::Ok) {
+        LOG_ERROR(Log::instance()->getLogger(), "Error in UpdateChecker::versionInfoReceived : exit code: "
+                                                        << getAppVersionJobPtr->exitCode()
+                                                        << ", exit cause: " << getAppVersionJobPtr->exitCause());
     } else {
-        _versionInfo = getAppVersionJobPtr->getProdVersionInfo();
-        if (!_versionInfo.isValid()) {
-            std::string error = "Invalid version info!";
-            sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", error);
-            LOG_ERROR(Log::instance()->getLogger(), error.c_str());
-        }
+        _versionsInfo = getAppVersionJobPtr->versionsInfo();
+        _prodVersionChannel = getAppVersionJobPtr->prodVersionChannel();
+        _isVersionReceived = true;
     }
 
     _callback();

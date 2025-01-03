@@ -456,9 +456,9 @@ void ClientGui::setupSynthesisPopover() {
     _workaroundManualVisibility = true;
 #endif
 
-    qCInfo(lcClientGui) << "Tray menu workarounds:" << "noabouttoshow:" << _workaroundNoAboutToShowUpdate
-                        << "fakedoubleclick:" << _workaroundFakeDoubleClick << "showhide:" << _workaroundShowAndHideTray
-                        << "manualvisibility:" << _workaroundManualVisibility;
+    qCInfo(lcClientGui) << "Tray menu workarounds:"
+                        << "noabouttoshow:" << _workaroundNoAboutToShowUpdate << "fakedoubleclick:" << _workaroundFakeDoubleClick
+                        << "showhide:" << _workaroundShowAndHideTray << "manualvisibility:" << _workaroundManualVisibility;
 
     connect(&_delayedTrayUpdateTimer, &QTimer::timeout, this, &ClientGui::onUpdateSystray);
     _delayedTrayUpdateTimer.setInterval(2 * 1000);
@@ -758,7 +758,7 @@ void ClientGui::onNewDriveWizard() {
 
 void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const {
     static std::mutex mutex;
-    std::unique_lock lock(mutex, std::try_to_lock);
+    const std::unique_lock lock(mutex, std::try_to_lock);
     if (!lock.owns_lock()) return;
     if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
         GuiRequests::startInstaller();
@@ -1016,6 +1016,7 @@ void ClientGui::onUserUpdated(const UserInfo &userInfo) {
         if (userInfo.connected()) {
             userInfoMapIt->second.setCredentialsAsked(false);
         }
+        userInfoMapIt->second.setIsStaff(userInfo.isStaff());
         emit userListRefreshed();
     }
 }
