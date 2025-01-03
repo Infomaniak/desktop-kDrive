@@ -30,10 +30,6 @@ namespace KDC {
 
 FolderWatcher_win::FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path) : FolderWatcher(parent, path) {}
 
-bool FolderWatcher_win::ready() const {
-    return _ready;
-}
-
 void FolderWatcher_win::changesLost() {
     // Current snapshot needs to be invalidated
     _parent->invalidateSnapshot();

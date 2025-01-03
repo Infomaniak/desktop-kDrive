@@ -33,8 +33,6 @@ class FolderWatcher_win : public FolderWatcher {
     public:
         FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path);
 
-        bool ready() const;
-
         void changesLost();
         void changeDetected(const SyncPath &path, OperationType opType);
 
@@ -43,9 +41,6 @@ class FolderWatcher_win : public FolderWatcher {
         void stopWatching() override;
 
     private:
-        /// Set to true once the WatcherThread is capturing events.
-        bool _ready = false; // TODO : mutex???
-
         HANDLE _directoryHandle = nullptr;
         HANDLE _resultEventHandle = nullptr;
         HANDLE _stopEventHandle = nullptr;
