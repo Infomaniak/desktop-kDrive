@@ -158,6 +158,9 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
         ExitInfo removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, OperationType opType);
 
+        ExitInfo manageFilePinState(const SyncPath &relativeLocalPath, const SyncPath &absoluteLocalPath);
+        ExitInfo manageDirectoryPinState(const SyncPath &absoluteLocalPath);
+
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
