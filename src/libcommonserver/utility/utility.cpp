@@ -246,9 +246,16 @@ std::wstring Utility::formatStdError(const SyncPath &path, const std::error_code
     return ss.str();
 }
 
+std::wstring Utility::formatIoError(IoError ioError) {
+    std::wstringstream ss;
+    ss << s2ws(IoHelper::ioError2StdString(ioError));
+
+    return ss.str();
+}
+
 std::wstring Utility::formatIoError(const SyncPath &path, IoError ioError) {
     std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"', err='" << s2ws(IoHelper::ioError2StdString(ioError)) << L"'";
+    ss << L"path='" << Path2WStr(path) << L"', err='" << formatIoError(ioError) << L"'";
 
     return ss.str();
 }
