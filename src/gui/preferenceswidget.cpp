@@ -60,6 +60,7 @@ static constexpr int textHSpacing = 10;
 static constexpr int amountLineEditWidth = 85;
 
 static const QString debuggingFolderLink = "debuggingFolderLink";
+static const QString moveToTrashFAQLink = "https://faq.infomaniak.com/2383#desktop";
 
 static const QString englishCode = "en";
 static const QString frenchCode = "fr";
@@ -115,6 +116,7 @@ void LargeFolderConfirmation::setAmountLineEditEnabled(bool enabled) {
 PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
     LargeWidgetWithCustomToolTip(parent), _gui(gui), _languageSelectorComboBox{new CustomComboBox()}, _generalLabel{new QLabel()},
     _monochromeLabel{new QLabel()}, _launchAtStartupLabel{new QLabel()}, _moveToTrashLabel{new QLabel()},
+    _moveToTrashTipsLabel{new QLabel()}, _moveToTrashDisclaimerLabel{new QLabel()}, _moveToTrashKnowMoreLabel{new QLabel()},
     _languageSelectorLabel{new QLabel()}, _advancedLabel{new QLabel()}, _debuggingLabel{new QLabel()},
     _debuggingFolderLabel{new QLabel()}, _filesToExcludeLabel{new QLabel()}, _proxyServerLabel{new QLabel()},
     _displayErrorsWidget{new ActionWidget(":/client/resources/icons/actions/warning.svg", "")} {
@@ -170,7 +172,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
      *              _versionWidget->_updateButton
      */
 
-    auto *vBox = new QVBoxLayout();
+    const auto vBox = new QVBoxLayout();
     vBox->setContentsMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin);
     vBox->setSpacing(boxSpacing);
     setLayout(vBox);
@@ -188,7 +190,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     _generalLabel->setObjectName("blocLabel");
     vBox->addWidget(_generalLabel);
 
-    auto generalBloc = new PreferencesBlocWidget();
+    const auto generalBloc = new PreferencesBlocWidget();
     vBox->addWidget(generalBloc);
 
     // Synchronization confirmation for large folders
@@ -220,7 +222,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     monochromeIconsBox->addWidget(_monochromeLabel);
     monochromeIconsBox->addStretch();
 
-    auto monochromeSwitch = new CustomSwitch();
+    const auto monochromeSwitch = new CustomSwitch();
     monochromeSwitch->setLayoutDirection(Qt::RightToLeft);
     monochromeSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
     monochromeSwitch->setCheckState(ParametersCache::instance()->parametersInfo().monoIcons() ? Qt::Checked : Qt::Unchecked);
@@ -233,7 +235,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     launchAtStartupBox->addWidget(_launchAtStartupLabel);
     launchAtStartupBox->addStretch();
 
-    auto launchAtStartupSwitch = new CustomSwitch();
+    const auto launchAtStartupSwitch = new CustomSwitch();
     launchAtStartupSwitch->setLayoutDirection(Qt::RightToLeft);
     launchAtStartupSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
     bool hasSystemLauchAtStartup = false;
@@ -257,20 +259,48 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     generalBloc->addSeparator();
 
     // Move file to trash
-    QBoxLayout *moveToTrashBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
-
-    moveToTrashBox->addWidget(_moveToTrashLabel);
-    moveToTrashBox->addStretch();
+    const auto moveToTrashBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight, true);
+    moveToTrashBox->setContentsMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin / 2);
+    const auto moveToTrashTitleBox = new QVBoxLayout();
+    moveToTrashTitleBox->setContentsMargins(0, 0, 0, 0);
+    _moveToTrashTipsLabel->setWordWrap(true);
+    _moveToTrashTipsLabel->setObjectName("description");
+    moveToTrashTitleBox->addWidget(_moveToTrashLabel);
+    moveToTrashTitleBox->addWidget(_moveToTrashTipsLabel);
+    moveToTrashBox->addLayout(moveToTrashTitleBox);
 
     const auto moveToTrashSwitch = new CustomSwitch();
     moveToTrashSwitch->setLayoutDirection(Qt::RightToLeft);
     moveToTrashSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
     moveToTrashSwitch->setCheckState(ParametersCache::instance()->parametersInfo().moveToTrash() ? Qt::Checked : Qt::Unchecked);
+    moveToTrashSwitch->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     moveToTrashBox->addWidget(moveToTrashSwitch);
+
+    // Move file to trash disclaimer
+    _moveTotrashDisclaimerWidget = new QWidget();
+    _moveTotrashDisclaimerWidget->setStyleSheet("background-color: #F4F6FD; border-radius: 5px;");
+    _moveTotrashDisclaimerWidget->setVisible(moveToTrashSwitch->isChecked());
+    const auto moveToTrashDisclaimerHBox = new QHBoxLayout(_moveTotrashDisclaimerWidget);
+    moveToTrashDisclaimerHBox->setContentsMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin);
+
+    const auto warningIconLabel = new QLabel();
+    warningIconLabel->setPixmap(
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", QColor(255, 140, 0))
+                    .pixmap(20, 20));
+    warningIconLabel->setContentsMargins(0, 0, textHSpacing, 0);
+    moveToTrashDisclaimerHBox->addWidget(warningIconLabel);
+    _moveToTrashDisclaimerLabel->setWordWrap(true);
+    moveToTrashDisclaimerHBox->addWidget(_moveToTrashDisclaimerLabel);
+    moveToTrashDisclaimerHBox->addStretch();
+    moveToTrashDisclaimerHBox->addWidget(_moveToTrashKnowMoreLabel);
+    moveToTrashDisclaimerHBox->setStretchFactor(_moveToTrashDisclaimerLabel, 1);
+    const auto moveToTrashDisclaimerBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight, true);
+    moveToTrashDisclaimerBox->setContentsMargins(boxHMargin, 0, boxHMargin, boxVMargin / 2);
+    moveToTrashDisclaimerBox->addWidget(_moveTotrashDisclaimerWidget);
     generalBloc->addSeparator();
 
     // Languages
-    QBoxLayout *languageSelectorBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
+    const auto languageSelectorBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
     languageSelectorBox->addWidget(_languageSelectorLabel);
     languageSelectorBox->addStretch();
@@ -367,6 +397,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     connect(launchAtStartupSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onLaunchAtStartupSwitchClicked);
     connect(_languageSelectorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onLanguageChange()));
     connect(moveToTrashSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onMoveToTrashSwitchClicked);
+    connect(_moveToTrashKnowMoreLabel, &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
 #ifdef Q_OS_WIN
     connect(shortcutsSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onShortcutsSwitchClicked);
 #endif
@@ -478,6 +509,7 @@ void PreferencesWidget::onMoveToTrashSwitchClicked(bool checked) {
     if (!ParametersCache::instance()->saveParametersInfo()) {
         return;
     }
+    _moveTotrashDisclaimerWidget->setVisible(checked);
 }
 
 #ifdef Q_OS_WIN
@@ -564,8 +596,11 @@ void PreferencesWidget::retranslateUi() const {
     _monochromeLabel->setText(tr("Activate monochrome icons"));
     _launchAtStartupLabel->setText(tr("Launch kDrive at startup"));
     _languageSelectorLabel->setText(tr("Language"));
-    _moveToTrashLabel->setText(tr("Move deleted files to trash"));
-
+    _moveToTrashLabel->setText(tr("Move deleted files to my computer's trash"));
+    _moveToTrashDisclaimerLabel->setText(tr("Some files or folders may not be moved to the computer's trash."));
+    _moveToTrashTipsLabel->setText(tr("You can always retrieve already synced files from the kDrive web application trash."));
+    _moveToTrashKnowMoreLabel->setText(
+            tr(R"(<a style="%1" href="%2">Learn more</a>)").arg(CommonUtility::linkStyle, LEARNMORE_MOVE_TO_TRASH_URL));
     _languageSelectorComboBox->blockSignals(true); // To avoid triggering more LanguageChange events
     _languageSelectorComboBox->clear();
     _languageSelectorComboBox->addItem(tr("Default"), toInt(Language::Default));

@@ -2125,10 +2125,13 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     // that follow-up operations can execute correctly, as they are based on the
     // information in this structure
     if (!syncOp->omit()) {
-        _syncPal->updateTree(syncOp->targetSide())
-                ->updateNodeId(syncOp->affectedNode(),
-                               syncOp->targetSide() == ReplicaSide::Local ? localId : remoteId); // ID might have changed in the
-                                                                                                 // case of a delete+create
+        // ID might have changed in the case of a delete+create
+        if (!_syncPal->updateTree(syncOp->targetSide())
+                     ->updateNodeId(syncOp->affectedNode(), syncOp->targetSide() == ReplicaSide::Local ? localId : remoteId)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::updateNodeId");
+            return ExitCode::DataError;
+        }
+
         syncOp->correspondingNode()->setLastModified(newLastModTime);
     }
     node = syncOp->correspondingNode();
@@ -2474,8 +2477,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
 
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveToTrashFailed)): {
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {
             return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {

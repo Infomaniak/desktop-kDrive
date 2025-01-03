@@ -333,6 +333,45 @@ void TestUtility::testSourceLocation() {
 #endif
 }
 
+void TestUtility::testGenerateRandomStringAlphaNum() {
+    {
+        int err = 0;
+        std::set<std::string> results;
+        for (int i = 0; i < 100000; i++) {
+            std::string str = CommonUtility::generateRandomStringAlphaNum();
+            if (!results.insert(str).second) {
+                err++;
+            }
+        }
+        CPPUNIT_ASSERT(err == 0);
+    }
+
+    {
+        int err = 0;
+        for (int c = 0; c < 100000; c++) {
+            std::vector<std::thread> workers;
+            std::set<std::string> results;
+            std::mutex resultsMutex;
+            bool wait = true;
+            for (int i = 0; i < 3; i++) {
+                workers.push_back(std::thread([&]() {
+                    while (wait) {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    };
+                    std::string str = CommonUtility::generateRandomStringAlphaNum();
+                    const std::lock_guard<std::mutex> lock(resultsMutex);
+                    if (!results.insert(str).second) {
+                        err++;
+                    }
+                }));
+            }
+            wait = false;
+            std::for_each(workers.begin(), workers.end(), [](std::thread &t) { t.join(); });
+        }
+        CPPUNIT_ASSERT(err == 0);
+    }
+}
+
 #ifdef _WIN32
 void TestUtility::testGetLastErrorMessage() {
     // No actual error. Display the expected success message.

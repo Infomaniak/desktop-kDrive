@@ -19,8 +19,8 @@
 #pragma once
 
 #include "filesystemobserverworker.h"
-
 #include "jobs/network/networkjobsparams.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #include <Poco/JSON/Object.h>
 

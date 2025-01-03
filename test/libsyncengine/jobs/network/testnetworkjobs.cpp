@@ -40,20 +40,21 @@
 #include "jobs/network/API_v2/getsizejob.h"
 #include "jobs/jobmanager.h"
 #include "network/proxy.h"
+#include "utility/jsonparserutility.h"
+#include "requests/parameterscache.h"
+#include "jobs/network/getappversionjob.h"
+#include "jobs/network/directdownloadjob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
-#include "utility/jsonparserutility.h"
-#include "requests/parameterscache.h"
+
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
-#include <iostream>
-
-#include "jobs/network/getappversionjob.h"
 #include "test_utility/testhelpers.h"
-#include "jobs/network/directdownloadjob.h"
+
+#include <iostream>
 
 using namespace CppUnit;
 
@@ -276,29 +277,65 @@ void TestNetworkJobs::testDelete() {
 
 void TestNetworkJobs::testDownload() {
     {
-        const LocalTemporaryDirectory temporaryDirectory("testDownload");
-        SyncPath localDestFilePath = temporaryDirectory.path() / "test_file.txt";
-        DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
-        const ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_file.txt";
 
+        // Download (CREATE propagation)
+        {
+            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check that the file has been copied
         CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
 
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+
         // Check file content
-        std::ifstream ifs(localDestFilePath.string().c_str());
-        std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-        CPPUNIT_ASSERT(content == "test");
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
+
+        // Get nodeid
+        NodeId nodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId));
+
+        // Download again (EDIT propagation)
+        {
+            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check file content
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
+
+        // Get nodeid
+        NodeId nodeId2;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
+
+        // Check that the node id has not changed
+        CPPUNIT_ASSERT(nodeId == nodeId2);
     }
 
     // Cross Device Link
     {
-        const LocalTemporaryDirectory tmpdirectory("testDownloadCrossDeviceLnk_TMP");
-        const LocalTemporaryDirectory destDirectory("testDownloadCrossDeviceLnk_TMP");
-        SyncPath localDestFilePath = destDirectory.path() / bigFileName;
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / bigFileName;
 
-        std::function<SyncPath(std::error_code & ec)> MockTempDirectoryPath = [&tmpdirectory](std::error_code &ec) {
+        std::function<SyncPath(std::error_code & ec)> MockTempDirectoryPath = [&temporaryDirectory](std::error_code &ec) {
             ec.clear();
-            return tmpdirectory.path();
+            return temporaryDirectory.path();
         };
         std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
                 []([[maybe_unused]] const SyncPath &, [[maybe_unused]] const SyncPath &, std::error_code &ec) {
@@ -311,19 +348,24 @@ void TestNetworkJobs::testDownload() {
         MockIoHelperTestNetworkJobs::setStdRename(MockRename);
         MockIoHelperTestNetworkJobs::setStdTempDirectoryPath(MockTempDirectoryPath);
 
-        DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
-        const ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        {
+            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
 
+        // Check that the file has been copied
         CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
 
         // Check that the tmp file has been deleted
-        CPPUNIT_ASSERT(std::filesystem::is_empty(tmpdirectory.path()));
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
 
         // Check file content
-        std::ifstream ifs(localDestFilePath.string().c_str());
-        std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-        CPPUNIT_ASSERT(content == "test");
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
     }
 }
 
