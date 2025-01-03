@@ -177,8 +177,7 @@ class SocketApi : public QObject {
         bool addDownloadJob(const FileData &fileData);
         bool cancelDownloadJobs(int syncDbId, const QStringList &fileList);
 
-        QString vfsPinFileActionText();
-        QString vfsPinDirActionText();
+        QString vfsPinActionText();
         QString vfsFreeSpaceActionText();
         QString cancelDehydrationText();
         QString cancelHydrationText();
