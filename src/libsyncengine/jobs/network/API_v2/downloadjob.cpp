@@ -61,9 +61,7 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 DownloadJob::~DownloadJob() {
     // Remove tmp file
     // For a CREATE, it should no longer exists, but if an error occurred in handleResponse, it must be deleted
-    if (!removeTmpFile()) {
-        LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
-        if (!_isCreate) {
+    if (!removeTmpFile() && !_isCreate) {
             LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
         }
     }
