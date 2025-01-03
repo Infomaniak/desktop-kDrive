@@ -59,11 +59,6 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 }
 
 DownloadJob::~DownloadJob() {
-    // Remove tmp file
-    if (!removeTmpFile()) {
-        LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
-    }
-
     if (_responseHandlingCanceled) {
         if (_vfsSetPinState) {
             if (!_vfsSetPinState(_localpath, PinState::OnlineOnly)) {
@@ -213,6 +208,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
             return false;
         }
 
+        SyncPath tmpPath;
         std::ofstream output;
         do {
             // Create/fetch normal file
@@ -222,13 +218,13 @@ bool DownloadJob::handleResponse(std::istream &is) {
             const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
 #endif
 
-            _tmpPath = tmpDirectoryPath / tmpFileName;
+            tmpPath = tmpDirectoryPath / tmpFileName;
 
-            output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
+            output.open(tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
             if (!output.is_open()) {
-                LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath));
+                LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(tmpPath));
                 _exitCode = ExitCode::SystemError;
-                _exitCause = Utility::enoughSpace(_tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
+                _exitCause = Utility::enoughSpace(tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
                 return false;
             }
 
@@ -312,7 +308,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
                     if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
-                        if (!_vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
+                        if (!_vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
                             LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath));
                             fetchError = true;
                             break;
@@ -348,7 +344,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         if (!_responseHandlingCanceled) {
             if (_vfsUpdateFetchStatus && !fetchFinished) {
                 // Update fetch status
-                if (!_vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
+                if (!_vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
                     LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath));
                     fetchError = true;
                 } else if (fetchCanceled) {
@@ -361,8 +357,8 @@ bool DownloadJob::handleResponse(std::istream &is) {
             } else if (!_vfsUpdateFetchStatus) {
                 // Replace file by tmp one
                 bool replaceError = false;
-                if (!moveTmpFile(restartSync)) {
-                    LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
+                if (!moveTmpFile(tmpPath, restartSync)) {
+                    LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(tmpPath));
                     replaceError = true;
                 }
 
@@ -372,6 +368,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
         if (_responseHandlingCanceled) {
             // NB: VFS reset is done in the destructor
+
+            // Remove tmp file
+            if (!removeTmpFile(tmpPath)) {
+                LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(tmpPath));
+            }
+
             if (isAborted() || fetchCanceled) {
                 // Download aborted or canceled by the user
                 _exitCode = ExitCode::Ok;
@@ -503,21 +505,20 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
     return true;
 }
 
-bool DownloadJob::removeTmpFile() {
-    if (_tmpPath.empty()) return true;
-
-    if (std::error_code ec; !std::filesystem::remove_all(_tmpPath, ec)) {
-        LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatStdError(_tmpPath, ec));
+bool DownloadJob::removeTmpFile(const SyncPath &path) {
+    if (std::error_code ec; !std::filesystem::remove_all(path, ec)) {
+        LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatStdError(path, ec));
         return false;
     }
 
     return true;
 }
 
-bool DownloadJob::moveTmpFile(bool &restartSync) {
+bool DownloadJob::moveTmpFile(const SyncPath &tmpPath, bool &restartSync) {
     restartSync = false;
 
     // Move downloaded file from tmp directory to sync directory
+    std::error_code ec;
 #ifdef _WIN32
     bool retry = true;
     int counter = 50;
@@ -525,88 +526,74 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
         retry = false;
 #endif
 
-        std::error_code ec;
-        bool error = false;
-        bool accessDeniedError = false;
-        bool crossDeviceLinkError = false;
+        IoError ioError = IoError::Success;
+        IoHelper::moveItem(tmpPath, _localpath, ioError);
+        const bool crossDeviceLink = ioError == IoError::CrossDeviceLink;
+        if (ioError != IoError::Success && !crossDeviceLink) {
+            LOGW_WARN(_logger, L"Failed to move: " << Utility::formatIoError(tmpPath, ioError) << L" to "
+                                                   << Utility::formatSyncPath(_localpath));
+            return false;
+        }
+
+        if (crossDeviceLink) {
+            // The sync might be on a different file system than tmp folder.
+            // In that case, try to copy the file instead.
+            ec.clear();
+            std::filesystem::copy(tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
+            bool removed = removeTmpFile(tmpPath);
+            if (ec) {
+                LOGW_WARN(_logger,
+                          L"Failed to copy to " << Utility::formatSyncPath(_localpath) << L", " << Utility::formatStdError(ec));
+                return false;
+            }
+            if (!removed) {
+                LOGW_WARN(_logger, L"Failed to remove " << Utility::formatSyncPath(tmpPath));
+                return false;
+            }
+        }
 #ifdef _WIN32
-        bool sharingViolationError = false;
+        else if (ec.value() == ERROR_SHARING_VIOLATION) {
+            if (counter) {
+                // Retry
+                retry = true;
+                Utility::msleep(10);
+                LOGW_DEBUG(_logger, L"Retrying to move downloaded file: " << Utility::formatSyncPath(_localpath));
+                counter--;
+            } else {
+                LOGW_WARN(_logger, L"Failed to rename: " << Utility::formatStdError(_localpath, ec));
+                return false;
+            }
+        }
 #endif
-        if (_isCreate) {
-            // Move file
+        else if (IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied) {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
+            return false;
+        } else if (ec) {
+            bool exists = false;
             IoError ioError = IoError::Success;
-            IoHelper::moveItem(_tmpPath, _localpath, ioError);
-            crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
-            if (ioError != IoError::Success && !crossDeviceLinkError) {
-                LOGW_WARN(_logger, L"Failed to move downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
-                                                                      << Utility::formatSyncPath(_localpath) << L", err='"
-                                                                      << Utility::formatIoError(ioError) << L"'");
-                error = true;
-                accessDeniedError = ioError == IoError::AccessDenied;
-                // NB: On Windows, ec.value() == ERROR_SHARING_VIOLATION is translated as IoError::AccessDenied
+            if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
+                LOGW_WARN(_logger,
+                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath.parent_path(), ioError));
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::Unknown;
+                return false;
             }
-        }
-
-        if (!_isCreate || crossDeviceLinkError) {
-            // Copy file content (i.e. when the target exists, doesn't change its node id)
-            std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
-            if (ec.value()) {
-                LOGW_WARN(_logger, L"Failed to copy downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
-                                                                      << Utility::formatSyncPath(_localpath) << L", err='"
-                                                                      << Utility::formatStdError(ec) << L"'");
-                error = true;
-                accessDeniedError = IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied;
-#ifdef _WIN32
-                sharingViolationError = ec.value() == ERROR_SHARING_VIOLATION; // In this case, we will try again
-#endif
-            }
-        }
-
-        if (error) {
-#ifdef _WIN32
-            if (sharingViolationError) {
-                if (counter) {
-                    // Retry
-                    retry = true;
-                    Utility::msleep(10);
-                    LOGW_DEBUG(_logger, L"Retrying to copy downloaded file: " << Utility::formatSyncPath(_localpath));
-                    counter--;
-                    continue;
-                } else {
-                    return false;
-                }
-            }
-#endif
-
-            if (accessDeniedError) {
+            if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_localpath.parent_path()));
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::FileAccessError;
                 return false;
-            } else {
-                bool exists = false;
-                IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
-                    LOGW_WARN(_logger,
-                              L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath.parent_path(), ioError));
-                    _exitCode = ExitCode::SystemError;
-                    _exitCause = ExitCause::Unknown;
-                    return false;
-                }
-                if (ioError == IoError::AccessDenied) {
-                    LOGW_WARN(_logger, L"Access denied to item " << Utility::formatSyncPath(_localpath.parent_path()));
-                    _exitCode = ExitCode::SystemError;
-                    _exitCause = ExitCause::FileAccessError;
-                    return false;
-                }
-
-                if (!exists) {
-                    LOGW_INFO(_logger, L"Parent of item does not exist anymore " << Utility::formatStdError(_localpath, ec));
-                    restartSync = true;
-                    return true;
-                }
-
-                return false;
             }
+
+            if (!exists) {
+                LOGW_INFO(_logger, L"Parent of item does not exist anymore: " << Utility::formatStdError(_localpath, ec));
+                restartSync = true;
+                return true;
+            }
+
+            LOGW_WARN(_logger, L"Failed to rename: " << Utility::formatStdError(_localpath, ec));
+            return false;
         }
 #ifdef _WIN32
     }
