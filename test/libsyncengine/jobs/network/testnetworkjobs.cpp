@@ -350,8 +350,7 @@ void TestNetworkJobs::testGetAvatar() {
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
     CPPUNIT_ASSERT(job.jsonRes());
-    Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
-    std::string avatarUrl = data->get(avatarKey);
+    const std::string avatarUrl = job.avatarUrl();
 
     GetAvatarJob avatarJob(avatarUrl);
     exitCode = avatarJob.runSynchronously();
@@ -627,8 +626,9 @@ void TestNetworkJobs::testGetInfoUser() {
     const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
-    //    CPPUNIT_ASSERT(data->get(emailKey).toString() == _email);
+    CPPUNIT_ASSERT_EQUAL(std::string("John Doe"), job.name());
+    CPPUNIT_ASSERT_EQUAL(std::string("john.doe@nogafam.ch"), job.email());
+    CPPUNIT_ASSERT_EQUAL(false, job.isStaff());
 }
 
 void TestNetworkJobs::testGetInfoDrive() {
@@ -959,11 +959,11 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         GetAppVersionJob job(CommonUtility::platform(), appUid);
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
-        CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
+        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Internal).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Next).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Prod).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
     }
     // With 1 user ID
     {
@@ -974,11 +974,11 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         GetAppVersionJob job(CommonUtility::platform(), appUid, {user.userId()});
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
-        CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
+        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Internal).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Next).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Prod).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
     }
     // // With several user IDs
     // TODO : commented out because we need valid user IDs but we have only one available in tests for now

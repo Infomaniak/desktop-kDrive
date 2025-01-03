@@ -120,7 +120,7 @@ void JobManager::decreasePoolCapacity() {
         LOG_DEBUG(Log::instance()->getLogger(), "Job Manager capacity set to " << _maxNbThread);
     } else {
         sentry::Handler::captureMessage(sentry::Level::Warning, "JobManager::defaultCallback",
-                                                  "JobManager capacity cannot be decreased");
+                                        "JobManager capacity cannot be decreased");
     }
 }
 

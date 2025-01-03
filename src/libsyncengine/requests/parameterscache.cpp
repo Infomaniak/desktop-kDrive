@@ -112,7 +112,7 @@ void ParametersCache::decreaseUploadSessionParallelThreads() {
                   "Upload session max parallel threads parameters set to " << newUploadSessionParallelJobs);
     } else {
         sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError",
-                                                  "Upload session max parallel threads parameters cannot be decreased");
+                                        "Upload session max parallel threads parameters cannot be decreased");
     }
 }
 

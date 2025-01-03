@@ -126,9 +126,7 @@ class Node {
         friend class UpdateTree;
         // The node id should not be changed without also changing the map in the UpdateTree and the parent/child relationship in
         // other nodes
-        inline void setId(const std::optional<NodeId> &nodeId) {
-            _id = nodeId;
-        }
+        inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
 
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSide::Unknown;

@@ -27,12 +27,12 @@ namespace KDC {
 class ParametersCache {
     public:
         static std::shared_ptr<ParametersCache> instance() noexcept;
-        inline static bool isExtendedLogEnabled() noexcept { return instance()->_parametersInfo.extendedLog(); };
+        static bool isExtendedLogEnabled() noexcept { return instance()->_parametersInfo.extendedLog(); };
 
         ParametersCache(ParametersCache const &) = delete;
         void operator=(ParametersCache const &) = delete;
 
-        inline ParametersInfo &parametersInfo() { return _parametersInfo; }
+        ParametersInfo &parametersInfo() { return _parametersInfo; }
         bool saveParametersInfo(bool displayMessageBoxOnError = true);
 
     private:

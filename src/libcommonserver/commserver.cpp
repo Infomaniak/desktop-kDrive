@@ -90,6 +90,11 @@ void CommServer::sendReply(int id, const QByteArray &result) {
     }
 }
 
+bool CommServer::sendSignal(const SignalNum num, const QByteArray &params) {
+    int id = 0;
+    return sendSignal(num, params, id);
+}
+
 bool CommServer::sendSignal(SignalNum num, const QByteArray &params, int &id) {
     if (_tcpSocket && _tcpSocket->isOpen()) {
         _requestWorker->addSignal(num, params, id);
