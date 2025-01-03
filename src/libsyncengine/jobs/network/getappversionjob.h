@@ -30,14 +30,18 @@ class GetAppVersionJob : public AbstractNetworkJob {
         GetAppVersionJob(Platform platform, const std::string &appID, const std::vector<int> &userIdList);
         ~GetAppVersionJob() override = default;
 
-        const VersionInfo &getVersionInfo(const DistributionChannel channel) {
-            return _versionInfo.contains(channel) ? _versionInfo[channel] : _defaultVersionInfo;
-        }
-        const VersionInfo &getProdVersionInfo() {
-            return _versionInfo.contains(_prodVersionChannel) ? _versionInfo[_prodVersionChannel] : _defaultVersionInfo;
-        }
+        /**
+         * @brief Return the adequat version info between Production or Production-Next.
+         * @return `DistributionChannel` enum value.
+         */
+        [[nodiscard]] DistributionChannel prodVersionChannel() const { return _prodVersionChannel; }
+        [[nodiscard]] const VersionInfo &versionInfo(const DistributionChannel channel) { return _versionsInfo[channel]; }
+        [[nodiscard]] const AllVersionsInfo &versionsInfo() const { return _versionsInfo; }
 
         std::string getUrl() override { return INFOMANIAK_API_URL + getSpecificUrl(); }
+
+        static std::string toStr(Platform platform);
+        static std::string toStr(DistributionChannel channel);
 
     protected:
         bool handleResponse(std::istream &is) override;
@@ -54,10 +58,8 @@ class GetAppVersionJob : public AbstractNetworkJob {
         const Platform _platform{Platform::Unknown};
         const std::string _appId;
         const std::vector<int> _userIdList;
-
-        const VersionInfo _defaultVersionInfo;
         DistributionChannel _prodVersionChannel{DistributionChannel::Unknown};
-        std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;
+        AllVersionsInfo _versionsInfo;
 };
 
 } // namespace KDC

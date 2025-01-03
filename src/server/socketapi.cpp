@@ -1323,7 +1323,7 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<KDC::Sy
 }
 
 QString SocketApi::vfsPinActionText() {
-    return QCoreApplication::translate("utility", "Always make available locally");
+    return QCoreApplication::translate("utility", "Make available locally");
 }
 
 QString SocketApi::vfsFreeSpaceActionText() {

@@ -80,6 +80,7 @@ set(client_SRCS
     customtreewidgetitem.h customtreewidgetitem.cpp
     customsystembar.h customsystembar.cpp
     customwordwraplabel.h customwordwraplabel.cpp
+    taglabel.h taglabel.cpp
     debuggingdialog.h debuggingdialog.cpp
     disabledoverlay.h disabledoverlay.cpp
     drivepreferenceswidget.h drivepreferenceswidget.cpp
@@ -116,6 +117,7 @@ set(client_SRCS
     preferencesmenubarwidget.h preferencesmenubarwidget.cpp
     preferenceswidget.h preferenceswidget.cpp
     versionwidget.h versionwidget.cpp
+    betaprogramdialog.h betaprogramdialog.cpp
     progressbarwidget.h progressbarwidget.cpp
     proxyserverdialog.h proxyserverdialog.cpp
     guirequests.h guirequests.cpp

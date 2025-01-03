@@ -20,8 +20,6 @@
 #include "utility/jsonparserutility.h"
 #include "utility/utility.h"
 
-#include <config.h>
-
 namespace KDC {
 
 static const std::string prodVersionKey = "prod_version";
@@ -47,7 +45,7 @@ GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &a
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-std::string toStr(const Platform platform) {
+std::string GetAppVersionJob::toStr(const Platform platform) {
     switch (platform) {
         case Platform::MacOS:
             return platformMacOsKey;
@@ -68,6 +66,21 @@ DistributionChannel toDistributionChannel(const std::string &str) {
     if (str == versionTypeBetaKey) return DistributionChannel::Beta;
     if (str == versionTypeInternalKey) return DistributionChannel::Internal;
     return DistributionChannel::Unknown;
+}
+
+std::string GetAppVersionJob::toStr(const DistributionChannel channel) {
+    switch (channel) {
+        case DistributionChannel::Prod:
+            return versionTypeProdKey;
+        case DistributionChannel::Next:
+            return versionTypeNextKey;
+        case DistributionChannel::Beta:
+            return versionTypeBetaKey;
+        case DistributionChannel::Internal:
+            return versionTypeInternalKey;
+        default:
+            return "unknown";
+    }
 }
 
 std::string GetAppVersionJob::getSpecificUrl() {
@@ -123,15 +136,15 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
         if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) return false;
 
         const DistributionChannel channel = toDistributionChannel(versionType);
-        _versionInfo[channel].channel = channel;
+        _versionsInfo[channel].channel = channel;
 
-        if (!JsonParserUtility::extractValue(obj, tagKey, _versionInfo[channel].tag)) return false;
-        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionInfo[channel].buildVersion)) return false;
-        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionInfo[channel].buildMinOsVersion, false))
+        if (!JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag)) return false;
+        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionsInfo[channel].buildVersion)) return false;
+        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionsInfo[channel].buildMinOsVersion, false))
             return false;
-        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionInfo[channel].downloadUrl)) return false;
+        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionsInfo[channel].downloadUrl)) return false;
 
-        if (!_versionInfo[channel].isValid()) {
+        if (!_versionsInfo[channel].isValid()) {
             LOG_WARN(_logger, "Missing mandatory value.");
             return false;
         }

@@ -61,7 +61,7 @@ void WindowsUpdater::downloadUpdate() noexcept {
         return;
     }
 
-    auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo().downloadUrl);
+    auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
     JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
     setState(UpdateState::Downloading);
@@ -110,12 +110,13 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
 }
 
 bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
-    const auto pos = versionInfo().downloadUrl.find_last_of('/');
-    const auto installerName = versionInfo().downloadUrl.substr(pos + 1);
+    const auto url = versionInfo(_currentChannel).downloadUrl;
+    const auto pos = url.find_last_of('/');
+    const auto installerName = url.substr(pos + 1);
     SyncPath tmpDirPath;
     if (IoError ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
         sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::getInstallerPath",
-                                                  "Impossible to retrieve installer destination directory.");
+                                        "Impossible to retrieve installer destination directory.");
         return false;
     }
     path = tmpDirPath / installerName;

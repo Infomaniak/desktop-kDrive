@@ -62,7 +62,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
             insertInBlacklist(nodeId, side);
 
             sentry::Handler::captureMessage(sentry::Level::Warning, "TmpBlacklistManager::increaseErrorCount",
-                                                      "Blacklisting item temporarily to avoid infinite loop");
+                                            "Blacklisting item temporarily to avoid infinite loop");
             Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyType::None,
                       CancelType::TmpBlacklisted);
             _syncPal->addError(err);
