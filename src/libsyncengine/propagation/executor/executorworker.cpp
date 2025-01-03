@@ -791,6 +791,22 @@ ExitInfo ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
         return processCreateOrConvertToPlaceholderError(relativeLocalPath, true);
     }
 
+    // Check if we need to hydrate the file
+    PinState parentPinState = PinState::Unspecified;
+    if (!_syncPal->vfsPinState(absoluteLocalPath.parent_path(), parentPinState)) {
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error while retrieving parent's pinstate for file: " << Utility::formatSyncPath(absoluteLocalPath));
+        return ExitCode::SystemError;
+    }
+    if (parentPinState == PinState::AlwaysLocal) {
+        // TODO : for file only!!!! For folder, only set the pinstate to "pinned"
+        if (const auto exitCode = _syncPal->addDlDirectJob(relativeLocalPath, absoluteLocalPath); exitCode != ExitCode::Ok) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Failed to create direct download job for file: " << Utility::formatSyncPath(absoluteLocalPath));
+            return exitCode;
+        }
+    }
+
     return ExitCode::Ok;
 }
 
