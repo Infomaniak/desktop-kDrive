@@ -72,6 +72,9 @@ constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopc
 #endif
 
 namespace KDC {
+
+std::mutex CommonUtility::_generateRandomStringMutex;
+
 const int CommonUtility::logsPurgeRate = 7; // days
 const int CommonUtility::logMaxSize = 500 * 1024 * 1024; // MB
 
@@ -86,7 +89,10 @@ static const QString italianCode = "it";
 static std::random_device rd;
 static std::default_random_engine gen(rd());
 
-std::string generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib, const int length /*= 10*/) {
+std::string CommonUtility::generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib,
+                                                const int length /*= 10*/) {
+    const std::lock_guard<std::mutex> lock(_generateRandomStringMutex);
+
     std::string tmp;
     tmp.reserve(static_cast<size_t>(length));
     for (int i = 0; i < length; ++i) {

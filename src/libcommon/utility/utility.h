@@ -124,6 +124,11 @@ struct COMMON_EXPORT CommonUtility {
 #endif
 
     private:
+        static std::mutex _generateRandomStringMutex;
+
+        static std::string generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib,
+                                                const int length = 10);
+
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
 };
 
