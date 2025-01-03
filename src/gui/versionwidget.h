@@ -35,13 +35,16 @@ class QLabel;
 class QBoxLayout;
 
 namespace KDC {
+class TagLabel;
+
+class PreferencesBlocWidget;
 
 class VersionWidget final : public QWidget {
         Q_OBJECT
 
     public:
         explicit VersionWidget(QWidget *parent = nullptr);
-        void refresh(UpdateState state = UpdateState::Unknown) const;
+        void refresh(bool isStaff);
 
         void showAboutDialog();
         void showReleaseNotes() const;
@@ -54,22 +57,29 @@ class VersionWidget final : public QWidget {
         void onUpdateStateChanged(UpdateState state) const;
 
     private slots:
-        void onChannelButtonClicked() const;
         void onLinkActivated(const QString &link);
         void onUpdateButtonClicked();
+        void onJoinBetaButtonClicked();
 
     private:
-        void refreshChannelButtons(DistributionChannel channel) const;
+        void refresh(UpdateState state = UpdateState::Unknown) const;
+        void initVersionInfoBloc(PreferencesBlocWidget *prefBloc);
+        void initBetaBloc(PreferencesBlocWidget *prefBloc);
+        void saveDistributionChannel(DistributionChannel channel) const;
 
-        QRadioButton *_prodButton{nullptr};
-        QRadioButton *_betaButton{nullptr};
-        QRadioButton *_internalButton{nullptr};
+        bool _isStaff{false};
 
         QLabel *_versionLabel{nullptr};
+
         QLabel *_updateStatusLabel{nullptr};
+        TagLabel *_betaTag{nullptr};
         QLabel *_showReleaseNotesLabel{nullptr};
         QLabel *_versionNumberLabel{nullptr};
         QPushButton *_updateButton{nullptr};
+
+        QLabel *_betaVersionLabel{nullptr};
+        QLabel *_betaVersionDescription{nullptr};
+        QPushButton *_joinBetaButton{nullptr};
 };
 
 } // namespace KDC

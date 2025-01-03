@@ -40,7 +40,7 @@ namespace KDC {
 class JobPriorityCmp {
     public:
         bool operator()(const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j1,
-                        const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j2) {
+                        const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j2) const {
             if (j1.second == j2.second) {
                 // Same thread priority, use the job ID to define priority
                 return j1.first->jobId() > j2.first->jobId();

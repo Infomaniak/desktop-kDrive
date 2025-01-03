@@ -64,8 +64,7 @@ void FixConflictingFilesDialog::onLinkActivated(const QString &link) {
         }
     } else {
         if (!QDesktopServices::openUrl(QUrl(link))) {
-            CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(link),
-                                    QMessageBox::Ok, this);
+            CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(link), QMessageBox::Ok, this);
             msgBox.exec();
         }
     }

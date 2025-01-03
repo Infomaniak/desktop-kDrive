@@ -1980,7 +1980,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UPDATER_VERSION_INFO: {
-            VersionInfo versionInfo = _updateManager->versionInfo();
+            auto channel = DistributionChannel::Unknown;
+            QDataStream paramsStream(params);
+            paramsStream >> channel;
+            VersionInfo versionInfo = _updateManager->versionInfo(channel);
             resultStream << versionInfo;
             break;
         }
@@ -2196,20 +2199,17 @@ void AppServer::onScheduleAppRestart() {
 }
 
 void AppServer::onShowWindowsUpdateDialog() {
-    int id = 0;
-
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << _updateManager->versionInfo();
-    CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
+    CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
 }
 
 void AppServer::onUpdateStateChanged(const UpdateState state) {
-    int id = 0;
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << state;
-    CommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params);
 }
 
 void AppServer::onRestartClientReceived() {
