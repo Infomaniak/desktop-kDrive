@@ -60,8 +60,12 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 
 DownloadJob::~DownloadJob() {
     // Remove tmp file
+    // For a CREATE, it should no longer exists, but if an error occurred in handleResponse, it must be deleted
     if (!removeTmpFile()) {
         LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
+        if (!_isCreate) {
+            LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
+        }
     }
 
     if (_responseHandlingCanceled) {
@@ -525,7 +529,6 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
         retry = false;
 #endif
 
-        std::error_code ec;
         bool error = false;
         bool accessDeniedError = false;
         bool crossDeviceLinkError = false;
@@ -549,6 +552,7 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
 
         if (!_isCreate || crossDeviceLinkError) {
             // Copy file content (i.e. when the target exists, doesn't change its node id)
+            std::error_code ec;
             std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
             if (ec.value()) {
                 LOGW_WARN(_logger, L"Failed to copy downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
@@ -600,7 +604,7 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
                 }
 
                 if (!exists) {
-                    LOGW_INFO(_logger, L"Parent of item does not exist anymore " << Utility::formatStdError(_localpath, ec));
+                    LOGW_INFO(_logger, L"Parent of item does not exist anymore " << Utility::formatSyncPath(_localpath));
                     restartSync = true;
                     return true;
                 }
