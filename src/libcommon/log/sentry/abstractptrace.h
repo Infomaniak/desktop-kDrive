@@ -34,8 +34,8 @@ class AbstractPTrace {
         virtual void restart() { _restart(); }
 
     protected:
-        explicit AbstractPTrace(const PTraceDescriptor &info) : _pTraceInfo(info){};
-        explicit AbstractPTrace(const PTraceDescriptor &info, int dbId) : _pTraceInfo(info), _syncDbId(dbId){};
+        explicit AbstractPTrace(const PTraceDescriptor &info) : _pTraceInfo(info) {};
+        explicit AbstractPTrace(const PTraceDescriptor &info, int dbId) : _pTraceInfo(info), _syncDbId(dbId) {};
 
         // Start a new performance trace.
         inline AbstractPTrace &_start() {

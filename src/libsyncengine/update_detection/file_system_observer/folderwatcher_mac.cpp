@@ -90,6 +90,7 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
 void FolderWatcher_mac::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder: " << Utility::formatSyncPath(_folder));
     LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
+    _ready = true;
 
     CFStringRef path = CFStringCreateWithCString(nullptr, _folder.c_str(), kCFStringEncodingUTF8);
     CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **) &path, 1, nullptr);

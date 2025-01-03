@@ -46,6 +46,7 @@ class Theme : public QObject {
         virtual QString version() const;
 
         virtual QString helpUrl() const;
+        QString feedbackUrl(Language language) const;
 
         virtual QString conflictHelpUrl() const;
 

@@ -423,7 +423,7 @@ void PreferencesWidget::showErrorBanner(const bool unresolvedErrors) const {
 void PreferencesWidget::showEvent(QShowEvent *event) {
     Q_UNUSED(event)
     retranslateUi();
-    _versionWidget->refresh();
+    _versionWidget->refresh(isStaff());
 }
 
 void PreferencesWidget::clearUndecidedLists() {
@@ -439,6 +439,11 @@ void PreferencesWidget::clearUndecidedLists() {
         emit undecidedListsCleared();
         emit restartSync(syncInfoMapElt.first);
     }
+}
+
+bool PreferencesWidget::isStaff() const {
+    constexpr auto isStaffCallback = [](std::pair<int, UserInfoClient> const &item) { return item.second.isStaff(); };
+    return std::ranges::find_if(_gui->userInfoMap(), isStaffCallback) != _gui->userInfoMap().end();
 }
 
 void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
@@ -501,7 +506,7 @@ void PreferencesWidget::onLanguageChange() {
     CommonUtility::setupTranslations(QApplication::instance(), language);
 
     retranslateUi();
-    _versionWidget->refresh();
+    _versionWidget->refresh(isStaff());
 }
 
 void PreferencesWidget::onMoveToTrashSwitchClicked(bool checked) {
