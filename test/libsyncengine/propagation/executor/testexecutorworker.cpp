@@ -258,6 +258,20 @@ void TestExecutorWorker::testIsValidDestination() {
 
     const auto root = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
 
+    // False if the item created on the local replica is not at the root of the synchronisation folder and has a
+    // corresponding parent node with no id.
+    {
+        const auto correspondingParentNode = std::make_shared<Node>(
+                666, ReplicaSide::Remote, Str("parent_dir"), NodeType::Directory, OperationType::None, std::nullopt,
+                testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
+
+
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), correspondingParentNode}});
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+
     const auto correspondingParentCommonDocsNode = std::make_shared<Node>(
             666, ReplicaSide::Remote, Utility::commonDocumentsFolderName(), NodeType::Directory, OperationType::None,
             "common_docs_id", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
