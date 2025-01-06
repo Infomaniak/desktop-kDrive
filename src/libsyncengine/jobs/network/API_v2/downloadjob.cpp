@@ -60,7 +60,8 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 
 DownloadJob::~DownloadJob() {
     // Remove tmp file
-    // For a CREATE, it should no longer exists, but if an error occurred in handleResponse, it must be deleted
+    // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must be
+    // deleted
     if (!removeTmpFile() && !_isCreate) {
         LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
     }
@@ -331,8 +332,9 @@ bool DownloadJob::handleResponse(std::istream &is) {
         // Unfortunately, the file hash is not available, so we check only its size
         output.flush();
         output.seekp(0, std::ios_base::end);
-        if (expectedSize != output.tellp()) {
+        if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && output.tellp() != expectedSize) {
             LOG_WARN(_logger, "Request " << jobId() << ": tmp file has been corrupted by another process");
+            sentry::Handler::captureMessage(sentry::Level::Error, "DownloadJob::handleResponse", "Tmp file is corrupted");
             writeError = true;
         }
 
@@ -548,10 +550,10 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
         }
 
         if (!_isCreate || crossDeviceLinkError) {
-            // Copy file content (i.e. when the target exists, doesn't change its node id)
+            // Copy file content (i.e. when the target exists, do not change its node id).
             std::error_code ec;
             std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
-            if (ec.value()) {
+            if (ec) {
                 LOGW_WARN(_logger, L"Failed to copy downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
                                                                       << Utility::formatSyncPath(_localpath) << L", err='"
                                                                       << Utility::formatStdError(ec) << L"'");

@@ -348,14 +348,32 @@ void TestNetworkJobs::testDownload() {
         MockIoHelperTestNetworkJobs::setStdRename(MockRename);
         MockIoHelperTestNetworkJobs::setStdTempDirectoryPath(MockTempDirectoryPath);
 
+        // CREATE
         {
-            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
 
         // Check that the file has been copied
         CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+
+        // Check file content
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
+
+        // EDIT
+        {
+            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
 
         // Check that the tmp file has been deleted
         CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
