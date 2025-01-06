@@ -29,9 +29,9 @@ namespace KDC {
 RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId,
                                                    const std::string& testType /*= "undef"*/) :
     _driveDbId(driveDbId) {
-    std::string suffix = CommonUtility::generateRandomStringAlphaNum(5);
     int retry = 5;
     do {
+        std::string suffix = CommonUtility::generateRandomStringAlphaNum(5);
         // Generate directory name
         const std::time_t now = std::time(nullptr);
         const std::tm tm = *std::localtime(&now);
@@ -43,7 +43,6 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
         CreateDirJob job(_driveDbId, parentId, _dirName);
         job.runSynchronously();
         if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist) && retry > 0) {
-            suffix = CommonUtility::generateRandomStringAlphaNum(5);
             retry--;
             continue;
         }
@@ -56,8 +55,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
         CPPUNIT_ASSERT(dataObj);
         _dirId = dataObj->get(idKey).toString();
         LOGW_INFO(Log::instance()->getLogger(), L"RemoteTemporaryDirectory created: " << Utility::formatSyncName(_dirName)
-                                                                                      << L" with ID: "
-                                                        << Utility::s2ws(_dirId));
+                                                                                      << L" with ID: " << Utility::s2ws(_dirId));
         break;
     } while (true);
 }

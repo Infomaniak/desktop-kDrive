@@ -196,11 +196,11 @@ void TestJobManager::testCancelJobs() {
 
     cancelAllOngoingJobs();
 
-    int rerty = 1000; // Wait max 10sec
+    int retry = 1000; // Wait max 10sec
     while ((!JobManager::_managedJobs.empty() || !JobManager::_queuedJobs.empty() || !JobManager::_runningJobs.empty() ||
             !JobManager::_pendingJobs.empty()) &&
-           (rerty > 0)) {
-        rerty--;
+           (retry > 0)) {
+        retry--;
         Utility::msleep(10);
     }
 
@@ -216,7 +216,7 @@ void TestJobManager::testCancelJobs() {
     CPPUNIT_ASSERT(resObj);
 
     Poco::JSON::Array::Ptr data = resObj->getArray(dataKey);
-    size_t uploadedFileCounter = data->size();
+    const size_t uploadedFileCounter = data->size();
     CPPUNIT_ASSERT(localFileCounter != uploadedFileCounter);
     CPPUNIT_ASSERT(uploadedFileCounter > 0);
     CPPUNIT_ASSERT(ongoingJobsCount() == 0);
