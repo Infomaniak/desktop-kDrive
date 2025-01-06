@@ -260,18 +260,115 @@ void TestNetworkJobs::testDelete() {
 }
 
 void TestNetworkJobs::testDownload() {
-    const LocalTemporaryDirectory temporaryDirectory("testDownload");
-    SyncPath localDestFilePath = temporaryDirectory.path() / "test_file.txt";
-    DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_file.txt";
 
-    CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+        // Download (CREATE propagation)
+        {
+            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
 
-    // Check file content
-    std::ifstream ifs(localDestFilePath.string().c_str());
-    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-    CPPUNIT_ASSERT(content == "test");
+        // Check that the file has been copied
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+
+        // Check file content
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
+
+        // Get nodeid
+        NodeId nodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId));
+
+        // Download again (EDIT propagation)
+        {
+            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check file content
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
+
+        // Get nodeid
+        NodeId nodeId2;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
+
+        // Check that the node id has not changed
+        CPPUNIT_ASSERT(nodeId == nodeId2);
+    }
+
+    // Cross Device Link
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / bigFileName;
+
+        std::function<SyncPath(std::error_code & ec)> MockTempDirectoryPath = [&temporaryDirectory](std::error_code &ec) {
+            ec.clear();
+            return temporaryDirectory.path();
+        };
+        std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
+                [](const SyncPath &, const SyncPath &, std::error_code &ec) {
+#ifdef _WIN32
+                    ec = std::make_error_code(static_cast<std::errc>(ERROR_NOT_SAME_DEVICE));
+#else
+                    ec = std::make_error_code(std::errc::cross_device_link);
+#endif
+                };
+        MockIoHelperTestNetworkJobs::setStdRename(MockRename);
+        MockIoHelperTestNetworkJobs::setStdTempDirectoryPath(MockTempDirectoryPath);
+
+        // CREATE
+        {
+            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check that the file has been copied
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+
+        // Check file content
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
+
+        // EDIT
+        {
+            DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+
+        // Check file content
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
+    }
 }
 
 void TestNetworkJobs::testDownloadAborted() {
