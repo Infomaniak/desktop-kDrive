@@ -63,11 +63,14 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
             return IoError::InvalidArgument;
         case ERROR_FILENAME_EXCED_RANGE:
             return IoError::FileNameTooLong;
+        case ERROR_BAD_NETPATH:
         case ERROR_FILE_NOT_FOUND:
         case ERROR_INVALID_DRIVE:
-        case ERROR_PATH_NOT_FOUND:
         case ERROR_INVALID_NAME:
+        case ERROR_PATH_NOT_FOUND:
             return IoError::NoSuchFileOrDirectory;
+        case ERROR_NOT_SAME_DEVICE:
+            return IoError::CrossDeviceLink;
         default:
             if (Log::isSet()) {
                 LOG_WARN(logger, "Unhandled DWORD error - error=" << error);
