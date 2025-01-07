@@ -23,6 +23,7 @@
 #include "libcommon/info/nodeinfo.h"
 
 #include <string>
+#include <mutex>
 
 #include <QByteArray>
 #include <QCoreApplication>

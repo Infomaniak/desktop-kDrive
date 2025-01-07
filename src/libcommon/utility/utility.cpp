@@ -17,7 +17,7 @@
  */
 
 #include "utility.h"
-#include "libcommon/log/sentry/sentryhandler.h"
+#include "log/sentry/sentryhandler.h"
 #include "config.h"
 #include "version.h"
 
