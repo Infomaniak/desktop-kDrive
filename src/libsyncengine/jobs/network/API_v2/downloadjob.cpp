@@ -334,7 +334,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         output.seekp(0, std::ios_base::end);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && output.tellp() != expectedSize) {
             LOG_WARN(_logger, "Request " << jobId() << ": tmp file has been corrupted by another process");
-            sentry::Handler::captureMessage(sentry::Level::Error, "DownloadJob::handleResponse", "Tmp file is corrupted");
+            SentryHandler::instance()->captureMessage(SentryLevel::Error, "DownloadJob::handleResponse", "Tmp file is corrupted");
             writeError = true;
         }
 
@@ -512,11 +512,11 @@ bool DownloadJob::removeTmpFile() {
 
     if (std::error_code ec; !std::filesystem::remove_all(_tmpPath, ec)) {
         if (ec) {
-            LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatStdError(path, ec));
+            LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatStdError(_tmpPath, ec));
             return false;
         }
 
-        LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatSyncPath(path));
+        LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatSyncPath(_tmpPath));
         return false;
     }
 

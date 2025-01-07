@@ -73,6 +73,8 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
             return IoError::DiskFull;
         case static_cast<int>(std::errc::permission_denied):
             return IoError::AccessDenied;
+        case static_cast<int>(std::errc::cross_device_link):
+            return IoError::CrossDeviceLink;
         default:
             return IoError::Unknown;
     }
