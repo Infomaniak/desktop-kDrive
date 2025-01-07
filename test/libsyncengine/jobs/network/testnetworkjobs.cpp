@@ -130,6 +130,7 @@ void TestNetworkJobs::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    MockIoHelperTestNetworkJobs::resetStdFunctions();
 }
 
 void TestNetworkJobs::testCreateDir() {

@@ -39,6 +39,8 @@ std::function<bool(const SyncPath &path, std::error_code &ec)> IoHelper::_isDire
         static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory);
 std::function<bool(const SyncPath &path, std::error_code &ec)> IoHelper::_isSymlink =
         static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink);
+std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> IoHelper::_rename =
+        static_cast<void (*)(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ecc)>(std::filesystem::rename);
 std::function<SyncPath(const SyncPath &path, std::error_code &ec)> IoHelper::_readSymlink =
         static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink);
 std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> IoHelper::_fileSize =
@@ -845,7 +847,7 @@ bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationP
 
 bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
     std::error_code ec;
-    std::filesystem::rename(sourcePath, destinationPath, ec);
+    _rename(sourcePath, destinationPath, ec);
     ioError = stdError2ioError(ec);
     return ioError == IoError::Success;
 }

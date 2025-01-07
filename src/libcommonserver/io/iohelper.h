@@ -404,6 +404,7 @@ struct IoHelper {
         // They can be modified in tests.
         static std::function<bool(const SyncPath &path, std::error_code &ec)> _isDirectory;
         static std::function<bool(const SyncPath &path, std::error_code &ec)> _isSymlink;
+        static std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> _rename;
         static std::function<SyncPath(const SyncPath &path, std::error_code &ec)> _readSymlink;
         static std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> _fileSize;
         static std::function<SyncPath(std::error_code &ec)> _tempDirectoryPath;
