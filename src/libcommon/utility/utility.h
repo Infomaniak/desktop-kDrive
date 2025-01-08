@@ -29,6 +29,8 @@
 #include <QCoreApplication>
 #include <QDataStream>
 #include <QIODevice>
+#include <mutex>
+#include <random>
 
 #ifdef _WIN32
 #include <strsafe.h>
