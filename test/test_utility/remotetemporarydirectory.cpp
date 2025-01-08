@@ -47,12 +47,13 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
             continue;
         }
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.exitInfo());
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("RemoteTemporaryDirectory() failed to create the directory on remote side.",
+                                     ExitInfo(ExitCode::Ok), job.exitInfo());
 
         // Extract file ID
-        CPPUNIT_ASSERT(job.jsonRes());
+        CPPUNIT_ASSERT_MESSAGE("RemoteTemporaryDirectory() Failed to extract the file id.", job.jsonRes());
         Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
-        CPPUNIT_ASSERT(dataObj);
+        CPPUNIT_ASSERT_MESSAGE("RemoteTemporaryDirectory() Failed to extract the file id (2).", dataObj);
         _dirId = dataObj->get(idKey).toString();
         LOGW_INFO(Log::instance()->getLogger(), L"RemoteTemporaryDirectory created: " << Utility::formatSyncName(_dirName)
                                                                                       << L" with ID: " << Utility::s2ws(_dirId));
