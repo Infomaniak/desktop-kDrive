@@ -183,13 +183,16 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
     }
 
     if (ParametersCache::isExtendedLogEnabled() && newId != oldId) {
-        LOGW_WARN(Log::instance()->getLogger(), _side << L" update tree: Node ID changed from '" << Utility::s2ws(oldId)
-                                                      << L"' to '" << Utility::s2ws(newId) << L"' for node "
-                                                      << Utility::formatSyncName(node->name()) << L"'.");
+        LOGW_DEBUG(Log::instance()->getLogger(), _side << L" update tree: Node ID changed from '" << Utility::s2ws(oldId)
+                                                       << L"' to '" << Utility::s2ws(newId) << L"' for node "
+                                                       << Utility::formatSyncName(node->name()) << L"'.");
     }
 
-    _nodes.erase(oldId);
-    _nodes[newId] = node;
+    if (!oldId.empty()  && _nodes.contains(oldId)) {
+        auto nodeRef = _nodes.extract(oldId);
+        nodeRef.key() = newId;
+        _nodes.insert(std::move(nodeRef));
+    }
     return true;
 }
 
