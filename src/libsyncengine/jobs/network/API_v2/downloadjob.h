@@ -46,11 +46,12 @@ class DownloadJob : public AbstractTokenNetworkJob {
         virtual bool handleResponse(std::istream &is) override;
 
         bool createLink(const std::string &mimeType, const std::string &data);
-        bool removeTmpFile(const SyncPath &path);
-        bool moveTmpFile(const SyncPath &path, bool &restartSync);
+        bool removeTmpFile();
+        bool moveTmpFile(bool &restartSync);
 
         NodeId _remoteFileId;
         SyncPath _localpath;
+        SyncPath _tmpPath;
         int64_t _expectedSize = -1;
         SyncTime _creationTime = 0;
         SyncTime _modtimeIn = 0;
