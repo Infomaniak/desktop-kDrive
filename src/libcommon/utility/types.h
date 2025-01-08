@@ -547,6 +547,8 @@ struct VersionInfo {
             return out;
         }
 };
+using AllVersionsInfo = std::unordered_map<DistributionChannel, VersionInfo>;
+
 namespace sentry {
 enum class ConfidentialityLevel {
     Anonymous, // The sentry will not be able to identify the user (no ip, no email, no username, ...)

@@ -30,21 +30,32 @@ class UpdateChecker {
         virtual ~UpdateChecker() = default;
 
         /**
-         * @brief Asynchronously check for new version informations.
-         * @param channel Distribution channel (i.e. Production, Beta or Internal).
+         * @brief Asynchronously check for new version information.
          * @param id Optional. ID of the created asynchronous job. Useful in tests.
-         * @return ExitCode::Ok if the job has been succesfully created.
+         * @return ExitCode::Ok if the job has been successfully created.
          */
-        ExitCode checkUpdateAvailability(DistributionChannel channel, UniqueId *id = nullptr);
+        ExitCode checkUpdateAvailability(UniqueId *id = nullptr);
 
         void setCallback(const std::function<void()> &callback);
 
-        [[nodiscard]] const VersionInfo &versionInfo() const { return _versionInfo; }
+        /**
+         * @brief Return the version information. Implements some logic to always return the highest available versions according
+         * to the selected distribution channel. That means if the `Beta` version is newer than the `Internal` version, the the
+         * `Beta` version wins over the `Internal` one and must be proposed even if the user has selected the `Internal` channel.
+         * The rule is the `Production` version wins over all others, the `Beta` verison wins over the `Internal` version.
+         * @param choosedChannel The selected distribution channel.
+         * @return A reference to the found `VersionInfo` object. If not found, return a reference to default constructed, invalid
+         * `VersionInfo`object.
+         */
+        const VersionInfo &versionInfo(DistributionChannel choosedChannel);
+
+        [[nodiscard]] const std::unordered_map<DistributionChannel, VersionInfo> &versionsInfo() const { return _versionsInfo; }
+        [[nodiscard]] bool isVersionReceived() const { return _isVersionReceived; }
 
     private:
         /**
          * @brief Callback used to extract the version info.
-         * @param jobId ID of
+         * @param jobId ID of the terminated job.
          */
         void versionInfoReceived(UniqueId jobId);
 
@@ -52,13 +63,26 @@ class UpdateChecker {
          * @brief Create a shared pointer to the `GetAppVersionJob`. Override this method in test class to test different
          * scenarios.
          * @param job The `GetAppVersionJob` we want to use in `checkUpdateAvailable()`.
-         * @return ExitCode::Ok if the job has been succesfully created.
+         * @return ExitCode::Ok if the job has been successfully created.
          */
         virtual ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job);
 
+        /**
+         * @brief Return the adequate version info, according to whether the current app has been selected in the progressive
+         * update distribution process.
+         * @return const reference on a VersionInfo
+         */
+        const VersionInfo &prodVersionInfo() {
+            return _versionsInfo.contains(_prodVersionChannel) ? _versionsInfo[_prodVersionChannel] : _defaultVersionInfo;
+        }
+
         std::function<void()> _callback = nullptr;
-        DistributionChannel _channel = DistributionChannel::Unknown;
-        VersionInfo _versionInfo; // A struct keeping all the informations about the currently available version.
+        DistributionChannel _prodVersionChannel{DistributionChannel::Unknown};
+        const VersionInfo _defaultVersionInfo;
+        AllVersionsInfo _versionsInfo;
+        bool _isVersionReceived{false};
+
+        friend class TestUpdateChecker;
 };
 
 } // namespace KDC

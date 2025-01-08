@@ -50,4 +50,4 @@ static inline std::unique_ptr<AbstractPTrace> syncStepToPTrace(SyncStep step, in
     }
     return std::make_unique<sentry::pTraces::None>(syncDbId);
 }
-} // namespace KDC
+} // namespace KDC::sentry

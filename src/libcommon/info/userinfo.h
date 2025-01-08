@@ -44,6 +44,8 @@ class UserInfo {
         inline bool connected() const { return _connected; }
         inline bool credentialsAsked() const { return _credentialsAsked; }
         inline void setCredentialsAsked(bool newCredentialsAsked) { _credentialsAsked = newCredentialsAsked; }
+        [[nodiscard]] bool isStaff() const { return _isStaff; }
+        void setIsStaff(const bool is_staff) { _isStaff = is_staff; }
 
         friend QDataStream &operator>>(QDataStream &in, UserInfo &userInfo);
         friend QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo);
@@ -52,13 +54,16 @@ class UserInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<UserInfo> &list);
 
     private:
-        int _dbId = -1;
-        int _userId = -1;
+        int _dbId{-1};
+        int _userId{-1};
         QString _name;
         QString _email;
         QImage _avatar;
-        bool _connected = false;
-        bool _credentialsAsked = false;
+        bool _connected{false};
+
+        // Non DB attributes
+        bool _credentialsAsked{false};
+        bool _isStaff{false};
 };
 
 } // namespace KDC

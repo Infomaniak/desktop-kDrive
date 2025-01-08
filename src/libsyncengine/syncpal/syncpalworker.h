@@ -42,7 +42,6 @@ class SyncPalWorker : public ISyncWorker {
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
                            bool reset);
-        bool interruptCondition() const;
         SyncStep nextStep() const;
         void stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> worker);
         void stopWorkers(std::shared_ptr<ISyncWorker> workers[2]);

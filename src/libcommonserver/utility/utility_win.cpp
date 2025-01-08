@@ -110,8 +110,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstring errorStr = errorStream.str();
         LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash",
-                                                  "SHCreateItemFromParsingName failed");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed");
         fileOperation->Release();
         CoUninitialize();
         return false;

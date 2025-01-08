@@ -57,6 +57,7 @@ void FolderWatcher_linux::startWatching() {
     }
 
     while (!_stop) {
+        _ready = true;
         unsigned int avail;
         ioctl(_fileDescriptor, FIONREAD,
               &avail); // Since read() is blocking until something has changed, we use ioctl to check if there is changes

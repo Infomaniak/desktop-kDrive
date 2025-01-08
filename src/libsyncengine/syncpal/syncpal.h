@@ -200,6 +200,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
         bool isSnapshotValid(ReplicaSide side);
+        void resetSnapshotInvalidationCounters();
 
         ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath);
         ExitCode cancelDlDirectJobs(const std::list<SyncPath> &fileList);
@@ -263,7 +264,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<SyncDb> _syncDb{nullptr};
 
         // Shared objects
-        std::shared_ptr<bool> _interruptSync{nullptr};
         std::shared_ptr<Snapshot> _localSnapshot{nullptr}; // Real time local snapshot
         std::shared_ptr<Snapshot> _remoteSnapshot{nullptr}; // Real time remote snapshot
         std::shared_ptr<Snapshot> _localSnapshotCopy{
@@ -304,7 +304,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
                             const std::string &targetNodeId = std::string());
         void setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted);
-        inline bool interruptSync() const { return *_interruptSync; }
         ExitCode setListingCursor(const std::string &value, int64_t timestamp);
         ExitCode listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);

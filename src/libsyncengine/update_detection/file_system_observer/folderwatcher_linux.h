@@ -35,9 +35,6 @@ class FolderWatcher_linux : public FolderWatcher {
         void startWatching() override;
         void stopWatching() override;
 
-        /// On linux the watcher is ready when the ctor finished.
-        bool _ready = true;
-
     private:
         int _fileDescriptor = -1;
 

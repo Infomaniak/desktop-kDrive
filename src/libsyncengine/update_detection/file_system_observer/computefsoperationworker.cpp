@@ -30,13 +30,11 @@ namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName),
-    _syncDb(syncPal->syncDb()) {}
+    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->syncDb()) {}
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(nullptr, name, shortName, true),
-    _syncDb(testSyncDb) {}
+    ISyncWorker(nullptr, name, shortName, true), _syncDb(testSyncDb) {}
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);

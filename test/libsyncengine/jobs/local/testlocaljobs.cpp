@@ -33,7 +33,7 @@ namespace KDC {
 
 class LocalDeleteJobMockingTrash : public LocalDeleteJob {
     public:
-        explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath) : LocalDeleteJob(absolutePath){};
+        explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath) : LocalDeleteJob(absolutePath) {};
         void setMoveToTrashFailed(bool failed) { _moveToTrashFailed = failed; };
 
     protected:

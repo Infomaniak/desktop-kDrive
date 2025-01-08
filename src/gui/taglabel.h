@@ -18,37 +18,28 @@
 
 #pragma once
 
-#include "folderwatcher.h"
-
-#include <windows.h>
-
-#include <thread>
-#include <mutex>
+#include <QLabel>
 
 namespace KDC {
 
-class LocalFileSystemObserverWorker;
+class TagLabel final : public QLabel {
+        Q_OBJECT
 
-class FolderWatcher_win : public FolderWatcher {
     public:
-        FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path);
+        explicit TagLabel(const QColor &color = Qt::transparent, QWidget *parent = nullptr);
 
-        void changesLost();
-        void changeDetected(const SyncPath &path, OperationType opType);
+        [[nodiscard]] QColor backgroundColor() const { return _backgroundColor; }
+        void setBackgroundColor(const QColor &value) { _backgroundColor = value; }
 
-    protected:
-        void startWatching() override;
-        void stopWatching() override;
+        [[nodiscard]] const QFont &setCustomFont() const { return _customFont; }
+        void customFont(const QFont &font) { _customFont = font; }
 
     private:
-        HANDLE _directoryHandle = nullptr;
-        HANDLE _resultEventHandle = nullptr;
-        HANDLE _stopEventHandle = nullptr;
+        [[nodiscard]] QSize sizeHint() const override;
+        void paintEvent(QPaintEvent *event) override;
 
-        void watchChanges();
-        void closeHandle();
-
-        OperationType operationFromAction(DWORD action);
+        QColor _backgroundColor{Qt::transparent};
+        QFont _customFont{"Suisse Int'l", 12};
 };
 
 } // namespace KDC

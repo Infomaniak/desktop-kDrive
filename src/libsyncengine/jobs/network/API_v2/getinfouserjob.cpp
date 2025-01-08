@@ -18,10 +18,43 @@
 
 #include "getinfouserjob.h"
 
+#include "utility/jsonparserutility.h"
+
 namespace KDC {
 
-GetInfoUserJob::GetInfoUserJob(int userDbId) : AbstractTokenNetworkJob(ApiType::Profile, userDbId, 0, 0, 0) {
+static const std::string displayNameKey = "display_name";
+static const std::string emailKey = "email";
+static const std::string avatarKey = "avatar";
+static const std::string isStaffKey = "is_staff";
+
+GetInfoUserJob::GetInfoUserJob(const int userDbId) : AbstractTokenNetworkJob(ApiType::Profile, userDbId, 0, 0, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+}
+
+bool GetInfoUserJob::handleJsonResponse(std::istream& is) {
+    if (!AbstractTokenNetworkJob::handleJsonResponse(is)) return false;
+
+    Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
+    if (!dataObj || dataObj->size() == 0) return false;
+
+
+    if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
+        _exitCode = ExitCode::BackError;
+        return false;
+    }
+
+    if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) {
+        _exitCode = ExitCode::BackError;
+        return false;
+    }
+
+    if (!JsonParserUtility::extractValue(dataObj, avatarKey, _avatarUrl)) {
+        _exitCode = ExitCode::BackError;
+        return false;
+    }
+
+    JsonParserUtility::extractValue(dataObj, isStaffKey, _isStaff, false);
+    return true;
 }
 
 std::string GetInfoUserJob::getSpecificUrl() {

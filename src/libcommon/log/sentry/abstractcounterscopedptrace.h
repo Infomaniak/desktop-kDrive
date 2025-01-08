@@ -43,9 +43,7 @@ class AbstractCounterScopedPTrace : public AbstractScopedPTrace {
         void stop([[maybe_unused]] PTraceStatus status = PTraceStatus::Ok) final {
             assert(false && "stop() should not be called with CounterScopedPTrace.");
         }
-        void restart() final {
-            assert(false && "restart() should not be called with CounterScopedPTrace.");
-        }
+        void restart() final { assert(false && "restart() should not be called with CounterScopedPTrace."); }
         unsigned int _nbOfCyclesPerTrace = 0; // The number of time start() should be called before stopping the trace.
         unsigned int _counter = 0;
 };

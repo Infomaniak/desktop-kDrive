@@ -42,7 +42,7 @@ QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
             parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._syncHiddenFiles >>
             parametersInfo._useBigFolderSizeLimit >> parametersInfo._bigFolderSizeLimit >> parametersInfo._darkTheme >>
             parametersInfo._showShortcuts >> parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >>
-            parametersInfo._proxyConfigInfo;
+            parametersInfo._proxyConfigInfo >> parametersInfo._distributionChannel;
     return in;
 }
 
@@ -52,7 +52,7 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
         << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._syncHiddenFiles
         << parametersInfo._useBigFolderSizeLimit << parametersInfo._bigFolderSizeLimit << parametersInfo._darkTheme
         << parametersInfo._showShortcuts << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu
-        << parametersInfo._proxyConfigInfo;
+        << parametersInfo._proxyConfigInfo << parametersInfo._distributionChannel;
     return out;
 }
 
