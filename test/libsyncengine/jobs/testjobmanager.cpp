@@ -90,21 +90,39 @@ void KDC::TestJobManager::tearDown() {
 void TestJobManager::testWithoutCallback() {
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testWithoutCallback");
+    const LocalTemporaryDirectory localTmpDir("TestJobManager testWithoutCallback");
+    for (int i = 0; i < 100; i++) {
+        testhelpers::generateOrEditTestFile(localTmpDir.path() / ("file_" + std::to_string(i) + ".txt"));
+    }
 
     // Upload all files in testDir
     size_t counter = 0;
-    for (auto &dirEntry: std::filesystem::directory_iterator(localTestDirPath_manyFiles)) {
+    std::queue<UniqueId> jobIds;
+    for (auto &dirEntry: std::filesystem::directory_iterator(localTmpDir.path())) {
         if (dirEntry.path().filename() == ".DS_Store") {
             continue;
         }
 
-        std::shared_ptr<UploadJob> job = std::make_shared<UploadJob>(driveDbId, dirEntry.path(),
+        auto job = std::make_shared<UploadJob>(driveDbId, dirEntry.path(),
                                                                      dirEntry.path().filename().native(), remoteTmpDir.id(), 0);
         JobManager::instance()->queueAsyncJob(job);
+        jobIds.push(job->jobId());
         counter++;
     }
 
-    Utility::msleep(10000); // Wait 10sec
+    // Wait for all uploads to finish
+    const auto start = std::chrono::steady_clock::now();
+    while (!jobIds.empty()) {
+        const auto now = std::chrono::steady_clock::now();
+        CPPUNIT_ASSERT_MESSAGE("All uploads have not finished in 30 seconds",
+                               std::chrono::duration_cast<std::chrono::seconds>(now - start).count() < 30);
+        Utility::msleep(100); // Wait 100ms
+        UniqueId jobId = jobIds.front();
+        while (jobId != -1 && JobManager::instance()->isJobFinished(jobId)) {
+            jobIds.pop();
+            jobId = jobIds.empty() ? -1 : jobIds.front();
+        }
+    }
 
     GetFileListJob fileListJob(driveDbId, remoteTmpDir.id());
     fileListJob.runSynchronously();
@@ -139,7 +157,7 @@ void TestJobManager::testWithCallback() {
         _ongoingJobs.insert({job->jobId(), job});
     }
 
-    int waitCountMax = 100; // Wait max 10sec
+    int waitCountMax = 300; // Wait max 30sec
     while (ongoingJobsCount() > 0 && waitCountMax-- > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
         Utility::msleep(100); // Wait 100ms
     }
