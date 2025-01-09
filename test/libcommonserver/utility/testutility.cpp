@@ -179,6 +179,7 @@ void TestUtility::testIsEqualInsensitive(void) {
 }
 
 void TestUtility::testMoveItemToTrash(void) {
+    // !!! Linux - Move to trash fails on tmpfs
     LocalTemporaryDirectory tempDir;
     SyncPath path = tempDir.path() / "test.txt";
     std::ofstream file(path);
