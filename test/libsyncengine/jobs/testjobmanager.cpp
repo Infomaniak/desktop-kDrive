@@ -116,11 +116,10 @@ void TestJobManager::testWithoutCallback() {
         const auto now = std::chrono::steady_clock::now();
         CPPUNIT_ASSERT_MESSAGE("All uploads have not finished in 30 seconds",
                                std::chrono::duration_cast<std::chrono::seconds>(now - start).count() < 30);
+        
         Utility::msleep(100); // Wait 100ms
-        UniqueId jobId = jobIds.front();
-        while (jobId != -1 && JobManager::instance()->isJobFinished(jobId)) {
+        while (!jobIds.empty() && JobManager::instance()->isJobFinished(jobIds.front())) {
             jobIds.pop();
-            jobId = jobIds.empty() ? -1 : jobIds.front();
         }
     }
 
