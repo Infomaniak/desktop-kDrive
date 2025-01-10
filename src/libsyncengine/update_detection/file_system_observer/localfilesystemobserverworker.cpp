@@ -90,60 +90,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         IoError ioError = IoError::Success;
         bool exists = true;
 
-#ifdef __APPLE__
-        if (opTypeFromOS == OperationType::Create) {
-            // Detect the creation of an hydrated placeholder
-            bool isPlaceholder = false;
-            bool isHydrated = false;
-            bool isSyncing = false;
-            int progress = 0;
-            if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
-                invalidateSnapshot();
-                return;
-            }
-
-            if (isPlaceholder && isHydrated) {
-                // Dectect the creation of a link
-                ItemType itemType;
-                if (!KDC::IoHelper::getItemType(absolutePath, itemType)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::getItemType: "
-                                                       << Utility::formatIoError(absolutePath, itemType.ioError));
-                    invalidateSnapshot();
-                    return;
-                }
-
-                if (itemType.ioError == IoError::AccessDenied) {
-                    LOGW_SYNCPAL_DEBUG(_logger,
-                                       L"Item: " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
-                    sendAccessDeniedError(absolutePath);
-                    continue;
-                } else if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-                    exists = false;
-                }
-
-                if (exists && itemType.linkType == KDC::LinkType::None) {
-                    // Clear extended attributes
-                    if (!IoHelper::removeLiteSyncXAttrs(absolutePath, ioError)) {
-                        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::removeLiteSyncXAttrs: "
-                                                           << Utility::formatIoError(absolutePath, ioError));
-                        invalidateSnapshot();
-                        return;
-                    }
-
-                    if (ioError == IoError::AccessDenied) {
-                        LOGW_SYNCPAL_DEBUG(_logger,
-                                           L"Item: " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
-                        sendAccessDeniedError(absolutePath);
-                        continue;
-                    } else if (ioError == IoError::NoSuchFileOrDirectory) {
-                        exists = false;
-                    }
-                }
-            }
-        }
-#endif
-
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
             NodeId prevNodeId = _snapshot->itemId(relativePath);
