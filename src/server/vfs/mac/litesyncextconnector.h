@@ -29,12 +29,12 @@
 #include <QPixmap>
 #include <QString>
 
-// EXT_ATTR_STATUS clone
+// libcommonext's extAttrsStatus clone
 #define VFS_STATUS_ONLINE "O"
 #define VFS_STATUS_OFFLINE "F"
 #define VFS_STATUS_HYDRATING "H"
 
-// EXT_ATTR_PIN_STATE clone
+// libcommonext's extAttrsPinState clone
 #define VFS_PIN_STATE_UNPINNED "U"
 #define VFS_PIN_STATE_PINNED "P"
 #define VFS_PIN_STATE_EXCLUDED "E"
