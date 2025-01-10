@@ -1,3 +1,21 @@
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2025 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M4.1111 5.66853C4.27555 5.55865 4.46889 5.5 4.66667 5.5C4.93188 5.5 5.18624 5.60536 5.37377 5.79289C5.56131 5.98043 5.66667 6.23478 5.66667 6.5C5.66667 6.69778 5.60802 6.89112 5.49814 7.05557C5.38826 7.22002 5.23208 7.34819 5.04935 7.42388C4.86662 7.49957 4.66556 7.51937 4.47158 7.48078C4.2776 7.4422 4.09941 7.34696 3.95956 7.20711C3.81971 7.06726 3.72447 6.88907 3.68588 6.69509C3.6473 6.50111 3.6671 6.30004 3.74279 6.11732C3.81848 5.93459 3.94665 5.77841 4.1111 5.66853Z" fill="#666666"/>
 <path d="M8 5.5C7.80222 5.5 7.60888 5.55865 7.44443 5.66853C7.27998 5.77841 7.15181 5.93459 7.07612 6.11732C7.00043 6.30004 6.98063 6.50111 7.01922 6.69509C7.0578 6.88907 7.15304 7.06726 7.29289 7.20711C7.43274 7.34696 7.61093 7.4422 7.80491 7.48078C7.99889 7.51937 8.19996 7.49957 8.38268 7.42388C8.56541 7.34819 8.72159 7.22002 8.83147 7.05557C8.94135 6.89112 9 6.69778 9 6.5C9 6.23478 8.89464 5.98043 8.70711 5.79289C8.51957 5.60536 8.26522 5.5 8 5.5Z" fill="#666666"/>
