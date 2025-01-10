@@ -23,15 +23,14 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
+#include "commonext.h"
+
 #include <log4cplus/loggingmacros.h>
 
 #include <sys/xattr.h>
 #include <sys/stat.h>
 
 namespace KDC {
-
-static constexpr std::string_view EXT_ATTR_STATUS("com.infomaniak.drive.desktopclient.litesync.status");
-static constexpr std::string_view EXT_ATTR_PIN_STATE("com.infomaniak.drive.desktopclient.litesync.pinstate");
 
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
@@ -122,7 +121,7 @@ bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string>
 }
 
 bool IoHelper::removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept {
-    const std::vector<std::string> liteSyncAttrName = {std::string(EXT_ATTR_STATUS), std::string(EXT_ATTR_PIN_STATE)};
+    const std::vector<std::string> liteSyncAttrName = {std::string(extAttrsStatus), std::string(extAttrsPinState)};
     return removeXAttrs(path, liteSyncAttrName, ioError);
 }
 
@@ -131,7 +130,7 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     ioError = IoError::Success;
 
     std::string value;
-    const bool result = IoHelper::getXAttrValue(itemPath.native(), std::string(EXT_ATTR_STATUS), value, ioError);
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), std::string(extAttrsStatus), value, ioError);
     if (!result) {
         return false;
     }

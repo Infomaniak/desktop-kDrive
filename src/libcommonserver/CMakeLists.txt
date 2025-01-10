@@ -72,6 +72,7 @@ if (WIN32)
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_SOURCE_DIR}/libcommonext
         "C:/Program Files (x86)/libzip/include"
         "C:/Program Files (x86)/xxHash/include"
     )
@@ -79,6 +80,7 @@ else()
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_SOURCE_DIR}/libcommonext
         "/usr/local/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/utf8proc)
 endif()
@@ -93,6 +95,7 @@ endif()
 # Link
 target_link_libraries(${libcommonserver_NAME}
     ${libcommon_NAME}
+    ${libcommonext_NAME}
     ${SQLITE3_LIBRARIES}
     Poco::Foundation Poco::Net Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
