@@ -29,7 +29,7 @@
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="124"/>
         <source>Copyright 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</source>
-        <translation>Copyright 2019-2023 Infomaniak Network SA&lt;br&gt;&lt;br&gt; {2019-%1 ?}</translation>
+        <translation>Copyright 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="125"/>
