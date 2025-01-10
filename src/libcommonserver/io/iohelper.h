@@ -28,8 +28,24 @@
 
 namespace KDC {
 
-struct FileStat;
+#ifdef __APPLE__
+namespace litesync_attrs {
 
+static constexpr std::string_view EXT_ATTR_STATUS("com.infomaniak.drive.desktopclient.litesync.status");
+static constexpr std::string_view EXT_ATTR_PIN_STATE("com.infomaniak.drive.desktopclient.litesync.pinstate");
+
+static constexpr std::string_view EXT_ATTR_STATUS_ONLINE("O");
+static constexpr std::string_view EXT_ATTR_STATUS_OFFLINE("F");
+static constexpr std::string_view EXT_ATTR_STATUS_HYDRATING("H");
+
+static constexpr std::string_view EXT_ATTR_PIN_STATE_UNPINNED("U");
+static constexpr std::string_view EXT_ATTR_PIN_STATE_PINNED("P");
+static constexpr std::string_view EXT_ATTR_PIN_STATE_EXCLUDED("E");
+
+} // namespace litesync_attrs
+#endif
+
+struct FileStat;
 
 struct IoHelper {
     public:
@@ -319,7 +335,7 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getXAttrValue(const SyncPath &path, const std::string &attrName, std::string &value,
+        static bool getXAttrValue(const SyncPath &path, const std::string_view &attrName, std::string &value,
                                   IoError &ioError) noexcept;
         //! Sets the value of the extended attribute with specified name for the item indicated by path.
         /*!
@@ -329,7 +345,7 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool setXAttrValue(const SyncPath &path, const std::string &attrName, const std::string &value,
+        static bool setXAttrValue(const SyncPath &path, const std::string_view &attrName, const std::string_view &value,
                                   IoError &ioError) noexcept;
         //! Remove the extended attributes with specified names for the item indicated by path.
         /*!
@@ -338,7 +354,7 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool removeXAttrs(const SyncPath &path, const std::vector<std::string> &attrNames, IoError &ioError) noexcept;
+        static bool removeXAttrs(const SyncPath &path, const std::vector<std::string_view> &attrNames, IoError &ioError) noexcept;
         //! Remove the LiteSync extended attributes for the item indicated by path.
         /*!
          \param path is the file system path of the item.

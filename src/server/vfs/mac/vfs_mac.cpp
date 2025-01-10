@@ -587,7 +587,8 @@ bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
 
     const QString strPath = Path2QStr(fullPath);
     if (!_connector->vfsSetPinState(strPath, _localSyncPath,
-                                    (state == PinState::AlwaysLocal ? VFS_PIN_STATE_PINNED : VFS_PIN_STATE_UNPINNED))) {
+                                    (state == PinState::AlwaysLocal ? litesync_attrs::EXT_ATTR_PIN_STATE_PINNED
+                                                                    : litesync_attrs::EXT_ATTR_PIN_STATE_UNPINNED))) {
         LOG_WARN(logger(), "Error in vfsSetPinState!");
         return false;
     }
@@ -598,14 +599,14 @@ bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
 PinState VfsMac::pinState(const QString &relativePath) {
     // Read pin state from file attributes
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
-    QString pinState;
+    std::string pinState;
     if (!_connector->vfsGetPinState(Path2QStr(fullPath), pinState)) {
         return PinState::Unspecified;
     }
 
-    if (pinState == VFS_PIN_STATE_PINNED) {
+    if (pinState == litesync_attrs::EXT_ATTR_PIN_STATE_PINNED) {
         return PinState::AlwaysLocal;
-    } else if (pinState == VFS_PIN_STATE_UNPINNED) {
+    } else if (pinState == litesync_attrs::EXT_ATTR_PIN_STATE_UNPINNED) {
         return PinState::OnlineOnly;
     }
 
@@ -642,14 +643,15 @@ void VfsMac::exclude(const QString &path) {
     }
 
     if (isPlaceholder) {
-        QString pinState;
+        std::string pinState;
         if (!_connector->vfsGetPinState(QDir::toNativeSeparators(path), pinState)) {
             LOG_WARN(logger(), "Error in vfsGetPinState!");
             return;
         }
 
-        if (pinState != VFS_PIN_STATE_EXCLUDED) {
-            if (!_connector->vfsSetPinState(QDir::toNativeSeparators(path), _localSyncPath, VFS_PIN_STATE_EXCLUDED)) {
+        if (pinState != litesync_attrs::EXT_ATTR_PIN_STATE_EXCLUDED) {
+            if (!_connector->vfsSetPinState(QDir::toNativeSeparators(path), _localSyncPath,
+                                            litesync_attrs::EXT_ATTR_PIN_STATE_EXCLUDED)) {
                 LOG_WARN(logger(), "Error in vfsSetPinState!");
                 return;
             }
