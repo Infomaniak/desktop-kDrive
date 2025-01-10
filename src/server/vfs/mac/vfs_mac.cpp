@@ -324,6 +324,15 @@ bool VfsMac::dehydratePlaceholder(const QString &path) {
         return false;
     }
 
+    // Check file status
+    SyncFileStatus status;
+    _syncFileStatus(_vfsSetupParams._syncDbId, QStr2Path(path), status);
+    if (status == SyncFileStatus::Unknown) {
+        // The file is not synchronized, do nothing
+        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatPath(path).c_str());
+        return true;
+    }
+
     // Check if the file is a placeholder
     bool isPlaceholder;
     bool isHydrated;
