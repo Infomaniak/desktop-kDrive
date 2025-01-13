@@ -224,9 +224,9 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
                 }
             }
 
-            std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(moveNode);
-            if (correspondingNode) {
-                if (correspondingNode->name() == createOp->affectedNode()->name()) {
+            std::shared_ptr<Node> correspondingMoveNode = correspondingNodeInOtherTree(moveNode);
+            if (correspondingMoveNode) {
+                if (correspondingMoveNode->name() == createOp->affectedNode()->name()) {
                     moveFirstAfterSecond(createOp, moveOp);
                     continue;
                 }
@@ -719,20 +719,18 @@ std::list<SyncOperationList> OperationSorterWorker::findCompleteCycles() {
 bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renameResolutionOp) {
     bool matchFound = false;
     SyncOpPtr matchOp;
-    // look for delete op in the cycle
-    const std::unordered_set<UniqueId> deleteOps = cycle.opListIdByType(OperationType::Delete);
-    for (const auto &opId: deleteOps) {
+    // Look for delete opearation in the cycle
+    for (const std::unordered_set<UniqueId> deleteOps = cycle.opListIdByType(OperationType::Delete);
+         const auto &opId: deleteOps) {
         SyncOpPtr op = cycle.getOp(opId);
         matchFound = true;
         matchOp = op;
         break;
     }
 
-    // if there is no delete
-    // look for move op in the cycle
+    // If there is no delete, look for move op in the cycle
     if (!matchFound) {
-        const std::unordered_set<UniqueId> moveOps = cycle.opListIdByType(OperationType::Move);
-        for (const auto &opId: moveOps) {
+        for (const std::unordered_set<UniqueId> moveOps = cycle.opListIdByType(OperationType::Move); const auto &opId: moveOps) {
             SyncOpPtr op = cycle.getOp(opId);
             matchFound = true;
             matchOp = op;
@@ -740,24 +738,24 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renam
         }
     }
 
-    // A cycle must contain a Delete or a Move Op
-    // we generate Or a rename resolution operation
+    // A cycle must contain a Delete or a Move operation
+    // Generate a rename resolution operation
     renameResolutionOp->setType(OperationType::Move);
     renameResolutionOp->setOmit(matchOp->omit());
-    // we find corresponding node nY of the matchOp's node
+    // Find the corresponding node of `matchOp`
     std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(matchOp->affectedNode());
-    if (correspondingNode == nullptr) {
+    if (!correspondingNode) {
         LOG_SYNCPAL_WARN(_logger, "Error in correspondingNode with id = " << matchOp->affectedNode()->id()->c_str()
                                                                           << " - idDb = " << *matchOp->affectedNode()->idb());
         return false;
     }
-    renameResolutionOp->setAffectedNode(correspondingNode);
+    renameResolutionOp->setAffectedNode(matchOp->affectedNode());
+    renameResolutionOp->setCorrespondingNode(correspondingNode);
+    renameResolutionOp->setNewParentNode(correspondingNode->parentNode()); // Parent not changed but needed in Executor
+    renameResolutionOp->setIsBreakingCycleOp(true);
 
-    // if omit == true side is db
-    // else it's db and filesystem
-    // renameResolutionOp.setTarget(renameResolutionOp.omit() ? Db : Both);
     renameResolutionOp->setTargetSide(correspondingNode->side());
-    // we append random suffix to nY to break the cycle
+    // Append random suffix to name in order to break the cycle
     renameResolutionOp->setNewName(correspondingNode->name() + Str("-") +
                                    Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
     // and we only execute Opr follow by restart sync

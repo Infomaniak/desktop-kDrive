@@ -69,6 +69,10 @@ class SyncOperation {
         void setParentId(UniqueId newParentId) { _parentId = newParentId; }
         [[nodiscard]] bool hasParentOp() const { return _parentId > -1; }
 
+
+        [[nodiscard]] bool isBreakingCycleOp() const { return _isBreakingCycleOp; }
+        void setIsBreakingCycleOp(const bool isBreakingCycleOp) { _isBreakingCycleOp = isBreakingCycleOp; }
+
     private:
         OperationType _type = OperationType::None;
         std::shared_ptr<Node> _affectedNode = nullptr;
@@ -80,6 +84,7 @@ class SyncOperation {
         std::shared_ptr<Node> _newParentNode =
                 nullptr; // New parent on the replica on which we will apply the operation. Only for move operation
         Conflict _conflict;
+        bool _isBreakingCycleOp{false};
 
         UniqueId _id = -1;
         UniqueId _parentId = -1; // ID of that parent operation i.e. the operation that must be completed before starting this one
