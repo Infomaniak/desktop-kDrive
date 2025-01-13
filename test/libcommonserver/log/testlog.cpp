@@ -91,28 +91,37 @@ void TestLog::testExpiredLogFiles(void) {
     // This test checks that old archived log files are deleted after a certain time
     clearLogDirectory();
 
-    // Generate a fake log file
+    // Generate a fake old log file
     std::ofstream fakeLogFile(_logDir / APPLICATION_NAME "_fake.log.gz");
     fakeLogFile << "Fake old log file" << std::endl;
     fakeLogFile.close();
-    LOG_INFO(_logger, "Test log file expiration"); // Ensure the log file is created.
 
-    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); // The current log file and the fake archived log file.
+    // Ensure that a new log file is created
+    LOG_INFO(_logger, "Test log file expiration"); 
 
+    // Check that we got 2 log files (the current one and the fake old one)
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); 
+
+    // Set the expiration time to 2 seconds
     auto *appender = static_cast<CustomRollingFileAppender *>(_logger.getAppender(Log::rfName).get());
     appender->setExpire(2); // 2 seconds
-    Utility::msleep(1000);
-    appender->checkForExpiredFiles();
 
-    const auto now = std::chrono::system_clock::now();
-    KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(), now);
+    const auto start = std::chrono::system_clock::now();
+    auto now = std::chrono::system_clock::now();
+    while (now - start < std::chrono::seconds(3)) {
+        now = std::chrono::system_clock::now();
+        KDC::testhelpers::setModificationDate(Log::instance()->getLogFilePath(),
+                                              now); // Prevent the current log file from being deleted.
+        appender->checkForExpiredFiles();
+        if (now - start < std::chrono::milliseconds(1500)) { // The fake log file should not be deleted yet.
+            CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
+        } else if (countFilesInDirectory(_logDir) == 1) { // The fake log file MIGHT be deleted now.
+            break;        
+        }
+        Utility::msleep(500);
+    }
 
-    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir)); // The fake log file should not be deleted yet (< 2 seconds).
-
-    Utility::msleep(1000);
-    appender->checkForExpiredFiles();
-
-    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file should be deleted now.
+    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file SHOULD be deleted now.
     appender->setExpire(CommonUtility::logsPurgeRate * 24 * 3600);
 }
 
@@ -145,6 +154,8 @@ void TestLog::clearLogDirectory(void) const {
             continue;
         }
         IoHelper::deleteItem(entry.path(), ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
     }
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(endOfDirectory);
