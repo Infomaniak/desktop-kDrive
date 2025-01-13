@@ -119,8 +119,7 @@ bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string_
 }
 
 bool IoHelper::removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept {
-    static const std::vector<std::string_view> liteSyncAttrName = {litesync_attrs::EXT_ATTR_STATUS,
-                                                                   litesync_attrs::EXT_ATTR_PIN_STATE};
+    static const std::vector<std::string_view> liteSyncAttrName = {litesync_attrs::status, litesync_attrs::pinState};
     return removeXAttrs(path, liteSyncAttrName, ioError);
 }
 
@@ -129,13 +128,13 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     ioError = IoError::Success;
 
     std::string value;
-    const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::EXT_ATTR_STATUS, value, ioError);
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::status, value, ioError);
     if (!result) {
         return false;
     }
 
     if (!value.empty()) {
-        isDehydrated = (value != litesync_attrs::EXT_ATTR_STATUS_OFFLINE);
+        isDehydrated = (value != litesync_attrs::statusOffline);
     }
 
     return true;

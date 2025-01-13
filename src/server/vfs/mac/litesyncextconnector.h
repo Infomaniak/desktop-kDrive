@@ -64,7 +64,7 @@ class LiteSyncExtConnector {
         bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                           int &progress) noexcept {
             return vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress, _logger);
-        };
+        }
         bool vfsSetAppExcludeList(const QString &appList);
         bool vfsGetFetchingAppList(QHash<QString, QString> &appTable);
         bool vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error);

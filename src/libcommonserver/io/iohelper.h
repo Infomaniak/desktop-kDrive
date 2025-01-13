@@ -31,16 +31,24 @@ namespace KDC {
 #ifdef __APPLE__
 namespace litesync_attrs {
 
-static constexpr std::string_view EXT_ATTR_STATUS("com.infomaniak.drive.desktopclient.litesync.status");
-static constexpr std::string_view EXT_ATTR_PIN_STATE("com.infomaniak.drive.desktopclient.litesync.pinstate");
+//! Item status
+static constexpr std::string_view status("com.infomaniak.drive.desktopclient.litesync.status");
+//! Request
+static constexpr std::string_view pinState("com.infomaniak.drive.desktopclient.litesync.pinstate");
 
-static constexpr std::string_view EXT_ATTR_STATUS_ONLINE("O");
-static constexpr std::string_view EXT_ATTR_STATUS_OFFLINE("F");
-static constexpr std::string_view EXT_ATTR_STATUS_HYDRATING("H");
+//! The status of a dehydrated item
+static constexpr std::string_view statusOnline("O");
+//! The status of an hydrated item
+static constexpr std::string_view statusOffline("F");
+//! The status of a file during hydration is Hxx where xx is the % of progress
+static constexpr std::string_view statusHydrating("H");
 
-static constexpr std::string_view EXT_ATTR_PIN_STATE_UNPINNED("U");
-static constexpr std::string_view EXT_ATTR_PIN_STATE_PINNED("P");
-static constexpr std::string_view EXT_ATTR_PIN_STATE_EXCLUDED("E");
+//! The placeholder’s content must be dehydrated
+static constexpr std::string_view pinStateUnpinned("U");
+//! The placeholder’s content must be hydrated
+static constexpr std::string_view pinStatePinned("P");
+//! The placeholder will not be synced
+static constexpr std::string_view pinStateExcluded("E");
 
 } // namespace litesync_attrs
 #endif
@@ -362,6 +370,18 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept;
+        //! Build the 'status' extended attribute value.
+        /*!
+         \param isSyncing true if the file is hydrating.
+         \param progress is the % of progress of the hydration.
+         \param isHydrated true if the file is hydrated.
+         \return the 'status' extended attribute value.
+         */
+        inline static std::string statusXAttr(bool isSyncing, int progress, bool isHydrated) {
+            return (isSyncing ? std::string(litesync_attrs::statusHydrating) + std::to_string(progress)
+                              : (isHydrated ? std::string(litesync_attrs::statusOffline)
+                                            : std::string(litesync_attrs::statusOnline)));
+        }
 #endif
 
 #ifdef _WIN32
