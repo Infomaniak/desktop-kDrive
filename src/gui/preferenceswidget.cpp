@@ -278,7 +278,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     // Move file to trash disclaimer
     _moveTotrashDisclaimerWidget = new QWidget();
-    _moveTotrashDisclaimerWidget->setStyleSheet("background-color: #F4F6FD; border-radius: 5px;");
+    _moveTotrashDisclaimerWidget->setObjectName("disclaimerWidget");
     _moveTotrashDisclaimerWidget->setVisible(moveToTrashSwitch->isChecked());
     const auto moveToTrashDisclaimerHBox = new QHBoxLayout(_moveTotrashDisclaimerWidget);
     moveToTrashDisclaimerHBox->setContentsMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin);

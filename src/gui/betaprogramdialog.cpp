@@ -113,7 +113,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
 
     // Acknowledgment
     _acknowledgmentFrame = new QFrame(this);
-    _acknowledgmentFrame->setStyleSheet("QFrame {border-radius: 8px; background-color: #F4F6FC;}");
+    _acknowledgmentFrame->setObjectName("disclaimerWidget");
     _acknowledgmentFrame->setVisible(!_isStaff);
     layout->addWidget(_acknowledgmentFrame);
 
