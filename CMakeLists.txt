@@ -229,7 +229,7 @@ if (BUILD_KDRIVE_OSX_BUNDLE)
 
     # Crashpad_handler
     find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
-    message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
+    message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
 elseif(BUILD_CLIENT)
     if (WIN32)
@@ -254,7 +254,7 @@ elseif(BUILD_CLIENT)
 
         # Crashpad_handler
         find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
-        message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
+        message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # xxHash
@@ -274,6 +274,11 @@ elseif(BUILD_CLIENT)
         find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
+
+        # Crashpad_handler
+        find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+        message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
+        install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # xxHash
         find_library(XXHASH_SHARED_LIBRARY NAMES xxhash NO_CACHE)
