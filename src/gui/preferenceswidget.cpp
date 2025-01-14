@@ -442,8 +442,13 @@ void PreferencesWidget::clearUndecidedLists() {
 }
 
 bool PreferencesWidget::isStaff() const {
-    constexpr auto isStaffCallback = [](std::pair<int, UserInfoClient> const &item) { return item.second.isStaff(); };
-    return std::ranges::find_if(_gui->userInfoMap(), isStaffCallback) != _gui->userInfoMap().end();
+    // To be used with an later gcc version
+    // constexpr auto isStaffCallback = [](std::pair<int, UserInfoClient> const &item) { return item.second.isStaff(); };
+    // return std::ranges::find_if(_gui->userInfoMap(), isStaffCallback) != _gui->userInfoMap().end();
+    for (const auto &[_, userInfo]: _gui->userInfoMap()) {
+        if (userInfo.isStaff()) return true;
+    }
+    return false;
 }
 
 void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
