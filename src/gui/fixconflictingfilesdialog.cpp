@@ -136,7 +136,7 @@ void FixConflictingFilesDialog::initUi() {
     connect(_keepRemoteButton, &CustomRadioButton::toggled, this, &FixConflictingFilesDialog::onKeepRemoteButtonToggled);
 
     _keepRemoteDisclaimerWidget = new QWidget();
-    _keepRemoteDisclaimerWidget->setStyleSheet("background-color: #F4F6FD; border-radius: 5px;");
+    _keepRemoteDisclaimerWidget->setObjectName("disclaimerWidget");
     const auto keepLocalDisclaimerLayout = new QHBoxLayout(_keepRemoteDisclaimerWidget);
     const auto warningIconLabel = new QLabel();
     warningIconLabel->setPixmap(
