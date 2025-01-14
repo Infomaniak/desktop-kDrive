@@ -148,7 +148,7 @@ class Vfs : public QObject {
                                        bool &finished) = 0;
 
         virtual bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
-        virtual bool cleanUpStatuses() { return true; };
+        virtual bool cleanUpStatuses() { return true; }
 
         /// Determine whether the file at the given absolute path is a dehydrated placeholder.
         virtual bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) = 0;
