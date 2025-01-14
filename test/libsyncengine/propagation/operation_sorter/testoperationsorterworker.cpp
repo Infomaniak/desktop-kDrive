@@ -132,8 +132,6 @@ void TestOperationSorterWorker::testMoveFirstAfterSecond() {
 }
 
 void TestOperationSorterWorker::testFixDeleteBeforeMove() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDir1;
     DbNodeId dbNodeIdDir11;
     DbNodeId dbNodeIdDir111;
@@ -144,29 +142,29 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     DbNodeId dbnodeIdDir5;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "id drive 1.1", tLoc, tLoc, tDrive,
-                     NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "id drive 1.1", testhelpers::defaultTime,
+                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "id drive 111", tLoc, tLoc, tDrive,
-                      NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "id drive 111", testhelpers::defaultTime,
+                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
-    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
-                        NodeType::File, 0, "cs 1.1.1");
+    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", testhelpers::defaultTime,
+                        testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.1.1");
     _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
-    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
@@ -254,8 +252,6 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
 }
 
 void TestOperationSorterWorker::testFixMoveBeforeCreate() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDir1;
     DbNodeId dbNodeIdDir11;
     DbNodeId dbNodeIdDir111;
@@ -266,29 +262,29 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     DbNodeId dbnodeIdDir5;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "id drive 1.1", tLoc, tLoc, tDrive,
-                     NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "id drive 1.1", testhelpers::defaultTime,
+                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "id drive 111", tLoc, tLoc, tDrive,
-                      NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "id drive 111", testhelpers::defaultTime,
+                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
-    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
-                        NodeType::File, 0, "cs 1.1.1");
+    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", testhelpers::defaultTime,
+                        testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.1.1");
     _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
-    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
@@ -379,8 +375,6 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
 }
 
 void TestOperationSorterWorker::testFixMoveBeforeDelete() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDir1;
     DbNodeId dbNodeIdDir11;
     DbNodeId dbNodeIdDir111;
@@ -391,29 +385,29 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     DbNodeId dbnodeIdDir5;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", tLoc, tLoc, tDrive, NodeType::Directory, 0,
-                     std::nullopt);
+    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", testhelpers::defaultTime,
+                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "r111", tLoc, tLoc, tDrive,
-                      NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "r111", testhelpers::defaultTime,
+                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
-    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
-                        NodeType::File, 0, "cs 1.1.1");
+    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", testhelpers::defaultTime,
+                        testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.1.1");
     _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
-    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
@@ -503,8 +497,6 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
 }
 
 void TestOperationSorterWorker::testFixCreateBeforeMove() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDir1;
     DbNodeId dbNodeIdDir11;
     DbNodeId dbNodeIdDir111;
@@ -515,29 +507,29 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     DbNodeId dbnodeIdDir5;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "id drive 1.1", tLoc, tLoc, tDrive,
-                     NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "id drive 1.1", testhelpers::defaultTime,
+                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "id drive 111", tLoc, tLoc, tDrive,
-                      NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "id drive 111", testhelpers::defaultTime,
+                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
-    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
-                        NodeType::File, 0, "cs 1.1.1");
+    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", testhelpers::defaultTime,
+                        testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.1.1");
     _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
-    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
@@ -627,13 +619,11 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
 }
 
 void TestOperationSorterWorker::testFixCreateBeforeMoveBis() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDirA;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir A"), Str("Dir A"), "dA", "rdA", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir A"), Str("Dir A"), "dA", "rdA", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDirA, constraintError);
 
     SyncTime createdAt = 1654788079;
@@ -687,8 +677,6 @@ void TestOperationSorterWorker::testFixCreateBeforeMoveBis() {
 }
 
 void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDir1;
     DbNodeId dbNodeIdDir11;
     DbNodeId dbNodeIdDir111;
@@ -697,23 +685,23 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     DbNodeId dbNodeIdDir3;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", tLoc, tLoc, tDrive, NodeType::Directory, 0,
-                     std::nullopt);
+    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", testhelpers::defaultTime,
+                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "r111", tLoc, tLoc, tDrive,
-                      NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "r111", testhelpers::defaultTime,
+                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
-    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
-                        NodeType::File, 0, "cs 1.1.1");
+    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", testhelpers::defaultTime,
+                        testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.1.1");
     _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
@@ -819,25 +807,23 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
 }
 
 void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDir1;
     DbNodeId dbNodeIdDir11;
     DbNodeId dbNodeIdDir2;
     DbNodeId dbNodeIdDir3;
 
     bool constraintError = true;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", tLoc, tLoc, tDrive, NodeType::Directory, 0,
-                     std::nullopt);
+    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", testhelpers::defaultTime,
+                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
@@ -930,8 +916,6 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
      *         AAA        AAB
      */
 
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDirA;
     DbNodeId dbNodeIdDirB;
     DbNodeId dbNodeIdDirAA;
@@ -940,23 +924,23 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
     DbNodeId dbNodeIdDirAAB;
 
     bool constraintError = false;
-    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
-    DbNode nodeDirB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
-    DbNode nodeDirAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", tLoc, tLoc, tDrive, NodeType::Directory, 0,
-                     std::nullopt);
+    DbNode nodeDirAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", testhelpers::defaultTime, testhelpers::defaultTime,
+                     testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirAA, dbNodeIdDirAA, constraintError);
-    DbNode nodeDirAB(0, dbNodeIdDirA, Str("AB"), Str("AB"), "lab", "rab", tLoc, tLoc, tDrive, NodeType::Directory, 0,
-                     std::nullopt);
+    DbNode nodeDirAB(0, dbNodeIdDirA, Str("AB"), Str("AB"), "lab", "rab", testhelpers::defaultTime, testhelpers::defaultTime,
+                     testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirAB, dbNodeIdDirAB, constraintError);
-    DbNode nodeDirAAA(0, dbNodeIdDirAA, Str("AAA"), Str("AAA"), "laaa", "raaa", tLoc, tLoc, tDrive, NodeType::File, 0,
-                      std::nullopt);
+    DbNode nodeDirAAA(0, dbNodeIdDirAA, Str("AAA"), Str("AAA"), "laaa", "raaa", testhelpers::defaultTime,
+                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirAAA, dbNodeIdDirAAA, constraintError);
-    DbNode nodeDirAAB(0, dbNodeIdDirAA, Str("AAB"), Str("AAB"), "laab", "raab", tLoc, tLoc, tDrive, NodeType::File, 0,
-                      std::nullopt);
+    DbNode nodeDirAAB(0, dbNodeIdDirAA, Str("AAB"), Str("AAB"), "laab", "raab", testhelpers::defaultTime,
+                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirAAB, dbNodeIdDirAAB, constraintError);
 
     SyncTime createdAt = 1654788079;
@@ -1121,25 +1105,23 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
 }
 
 void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFilp() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDir1;
     DbNodeId dbNodeIdDir11;
     DbNodeId dbNodeIdDir2;
     DbNodeId dbNodeIdDir3;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", tLoc, tLoc, tDrive, NodeType::Directory, 0,
-                     std::nullopt);
+    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", testhelpers::defaultTime,
+                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
@@ -1177,9 +1159,9 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFilp() {
                                           rrootNode));
 
     rootNode->deleteChildren(node1);
-    CPPUNIT_ASSERT(node11->insertChildren(node1));
-    CPPUNIT_ASSERT(node1->setParentNode(node11));
     node1->deleteChildren(node11);
+    CPPUNIT_ASSERT(node1->setParentNode(node11));
+    CPPUNIT_ASSERT(node11->insertChildren(node1));
     node1->insertChangeEvent(OperationType::Move);
     node1->setMoveOrigin("Dir 1");
     node1->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
@@ -1228,22 +1210,23 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     //               E
     */
 
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDirn;
     DbNodeId dbNodeIdDirt;
     DbNodeId dbNodeIdDirq;
     DbNodeId dbNodeIdDire;
 
     bool constraintError = false;
-    DbNode nodeDirn(0, _syncPal->syncDb()->rootNode().nodeId(), Str("n"), Str("n"), "n", "re", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirn(0, _syncPal->syncDb()->rootNode().nodeId(), Str("n"), Str("n"), "n", "re", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirn, dbNodeIdDirn, constraintError);
-    DbNode nodeDirt(0, dbNodeIdDirn, Str("t"), Str("t"), "t", "rq", tLoc, tLoc, tDrive, NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirt(0, dbNodeIdDirn, Str("t"), Str("t"), "t", "rq", testhelpers::defaultTime, testhelpers::defaultTime,
+                    testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirt, dbNodeIdDirt, constraintError);
-    DbNode nodeDirq(0, dbNodeIdDirt, Str("q"), Str("q"), "q", "rt", tLoc, tLoc, tDrive, NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirq(0, dbNodeIdDirt, Str("q"), Str("q"), "q", "rt", testhelpers::defaultTime, testhelpers::defaultTime,
+                    testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirq, dbNodeIdDirq, constraintError);
-    DbNode nodeDire(0, dbNodeIdDirq, Str("e"), Str("e"), "e", "rn", tLoc, tLoc, tDrive, NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDire(0, dbNodeIdDirq, Str("e"), Str("e"), "e", "rn", testhelpers::defaultTime, testhelpers::defaultTime,
+                    testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDire, dbNodeIdDire, constraintError);
 
     SyncTime createdAt = 1654788079;
@@ -1328,25 +1311,23 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
 }
 
 void TestOperationSorterWorker::testFindCompleteCycles() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdA;
     DbNodeId dbNodeIdB;
     DbNodeId dbNodeIdC;
     DbNodeId dbNodeIdD;
 
     bool constraintError = false;
-    DbNode nodeDirn(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirn(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirn, dbNodeIdA, constraintError);
-    DbNode nodeDirt(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirt(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirt, dbNodeIdB, constraintError);
-    DbNode nodeDirq(0, _syncPal->syncDb()->rootNode().nodeId(), Str("C"), Str("C"), "lc", "rc", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirq(0, _syncPal->syncDb()->rootNode().nodeId(), Str("C"), Str("C"), "lc", "rc", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirq, dbNodeIdC, constraintError);
-    DbNode nodeDire(0, _syncPal->syncDb()->rootNode().nodeId(), Str("D"), Str("D"), "ld", "rd", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDire(0, _syncPal->syncDb()->rootNode().nodeId(), Str("D"), Str("D"), "ld", "rd", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDire, dbNodeIdD, constraintError);
 
     SyncTime createdAt = 1654788079;
@@ -1399,13 +1380,11 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
 }
 
 void TestOperationSorterWorker::testBreakCycleEx1() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDirA;
 
     bool constraintError = false;
-    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive, NodeType::File,
-                    0, std::nullopt);
+    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
 
     // initial situation
@@ -1458,16 +1437,15 @@ void TestOperationSorterWorker::testBreakCycleEx1() {
 }
 
 void TestOperationSorterWorker::testBreakCycleEx2() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
     DbNodeId dbNodeIdDirA;
     DbNodeId dbNodeIdDirB;
 
     bool constraintError = false;
-    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
-                    NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", testhelpers::defaultTime,
+                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
-    DbNode nodeDirB(0, dbNodeIdDirA, Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive, NodeType::Directory, 0, std::nullopt);
+    DbNode nodeDirB(0, dbNodeIdDirA, Str("B"), Str("B"), "B", "rB", testhelpers::defaultTime, testhelpers::defaultTime,
+                    testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     _syncPal->syncDb()->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
 
     // initial situation
@@ -1477,20 +1455,20 @@ void TestOperationSorterWorker::testBreakCycleEx2() {
     //        A
     //        |
     //        B
-
-    SyncTime createdAt = 1654788079;
-    SyncTime lastmodified = 1654788079;
-    int64_t size = 12345;
     std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"),
-                                         NodeType::Directory, OperationType::None, "A", createdAt, lastmodified, size,
+                                         NodeType::Directory, OperationType::None, "A", testhelpers::defaultTime,
+                                         testhelpers::defaultTime, testhelpers::defaultFileSize,
                                          _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
     std::shared_ptr<Node> nodeB(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("B"),
-                                         NodeType::Directory, OperationType::None, "B", createdAt, lastmodified, size, nodeA));
+                                         NodeType::Directory, OperationType::None, "B", testhelpers::defaultTime,
+                                         testhelpers::defaultTime, testhelpers::defaultFileSize, nodeA));
     std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"),
-                                          NodeType::Directory, OperationType::None, "rA", createdAt, lastmodified, size,
+                                          NodeType::Directory, OperationType::None, "rA", testhelpers::defaultTime,
+                                          testhelpers::defaultTime, testhelpers::defaultFileSize,
                                           _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
     std::shared_ptr<Node> rNodeB(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"),
-                                          NodeType::Directory, OperationType::None, "rB", createdAt, lastmodified, size, rNodeA));
+                                          NodeType::Directory, OperationType::None, "rB", testhelpers::defaultTime,
+                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rNodeA));
 
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
     CPPUNIT_ASSERT(nodeA->insertChildren(nodeB));
@@ -1531,5 +1509,74 @@ void TestOperationSorterWorker::testBreakCycleEx2() {
     CPPUNIT_ASSERT(resolutionOp->affectedNode()->idb() == op1->affectedNode()->idb());
 }
 
+void TestOperationSorterWorker::testBreakCycle() {
+    DbNodeId dbNodeIdDirA;
+    DbNodeId dbNodeIdDirB;
+    bool constraintError = false;
+    const DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", testhelpers::defaultTime,
+                          testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
+    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
+
+    // Initial situation
+    //
+    //       Root
+    //        |
+    //        A (la)
+    const std::shared_ptr<Node> nodeLA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"),
+                                                NodeType::Directory, OperationType::None, "la", testhelpers::defaultTime,
+                                                testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                                _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    const std::shared_ptr<Node> nodeRA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"),
+                                                NodeType::Directory, OperationType::None, "ra", testhelpers::defaultTime,
+                                                testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                                _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
+    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeLA);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeRA);
+
+
+    // Final situation
+    //
+    //       Root
+    //        |
+    //        A (la_new)
+    //        |
+    //        A* (la)
+    const std::shared_ptr<Node> nodeLA_new(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"),
+                                                    NodeType::Directory, OperationType::None, "la_new", testhelpers::defaultTime,
+                                                    testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                                    _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeLA_new);
+    CPPUNIT_ASSERT(nodeLA_new->insertChildren(nodeLA));
+    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(*nodeLA->id());
+
+    nodeLA->setName(Str("A*"));
+    nodeLA->setParentNode(nodeLA_new);
+    CPPUNIT_ASSERT(nodeLA_new->insertChildren(nodeLA));
+
+    const auto moveOp = std::make_shared<SyncOperation>();
+    moveOp->setType(OperationType::Move);
+    moveOp->setAffectedNode(nodeLA);
+    moveOp->setCorrespondingNode(nodeRA);
+    moveOp->setNewName("A*");
+    moveOp->setTargetSide(ReplicaSide::Remote);
+    const auto createOp = std::make_shared<SyncOperation>();
+    createOp->setType(OperationType::Create);
+    createOp->setAffectedNode(nodeLA_new);
+    createOp->setTargetSide(ReplicaSide::Remote);
+
+    SyncOperationList cycle;
+    cycle.pushOp(moveOp);
+    cycle.pushOp(createOp);
+
+    const auto breakCycleOp = std::make_shared<SyncOperation>();
+    _syncPal->_operationsSorterWorker->breakCycle(cycle, breakCycleOp);
+
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, breakCycleOp->targetSide());
+    CPPUNIT_ASSERT_EQUAL(nodeLA, breakCycleOp->affectedNode());
+    CPPUNIT_ASSERT_EQUAL(nodeRA, breakCycleOp->correspondingNode());
+    CPPUNIT_ASSERT_EQUAL(true, breakCycleOp->isBreakingCycleOp());
+    CPPUNIT_ASSERT(!breakCycleOp->newName().empty());
+    CPPUNIT_ASSERT(breakCycleOp->newParentNode());
+}
 
 } // namespace KDC
