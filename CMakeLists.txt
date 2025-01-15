@@ -276,9 +276,12 @@ elseif(BUILD_CLIENT)
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
 
         # Crashpad_handler
-        find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
-        message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
-        install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
+        message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
+        if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+            find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+            message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
+            install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
+        endif ()
 
         # xxHash
         find_library(XXHASH_SHARED_LIBRARY NAMES xxhash NO_CACHE)

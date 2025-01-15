@@ -223,7 +223,9 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     // Sentry init
     sentry_options_t *options = sentry_options_new();
     sentry_options_set_dsn(options, ((appType == AppType::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(__x86_64__)
+    // TODO: On Linux arm64, Sentry is built with breakpad instead of crashpad_handler until support of Ubuntu 20.04 is
+    // discontinued
     const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
 #endif
 
@@ -232,7 +234,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 #if defined(Q_OS_WIN)
     sentry_options_set_handler_pathw(options, appWorkingPath.c_str());
     sentry_options_set_database_pathw(options, appSupportPath.c_str());
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_MAC) || defined(__x86_64__)
     sentry_options_set_handler_path(options, appWorkingPath.c_str());
     sentry_options_set_database_path(options, appSupportPath.c_str());
 #endif
