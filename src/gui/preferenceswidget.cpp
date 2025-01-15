@@ -443,7 +443,9 @@ void PreferencesWidget::clearUndecidedLists() {
 
 bool PreferencesWidget::isStaff() const {
     constexpr auto isStaffCallback = [](std::pair<int, UserInfoClient> const &item) { return item.second.isStaff(); };
-    return std::ranges::find_if(_gui->userInfoMap(), isStaffCallback) != _gui->userInfoMap().end();
+    // To be used with an later gcc version
+    // return std::ranges::any_of(_gui->userInfoMap(), isStaffCallback);
+    return std::any_of(_gui->userInfoMap().cbegin(), _gui->userInfoMap().cend(), isStaffCallback);
 }
 
 void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
