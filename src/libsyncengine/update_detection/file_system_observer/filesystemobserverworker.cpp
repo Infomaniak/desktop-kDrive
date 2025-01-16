@@ -35,6 +35,7 @@ void FileSystemObserverWorker::invalidateSnapshot() {
     if (_invalidateCounter < maxRetryBeforeInvalidation) {
         LOG_SYNCPAL_DEBUG(_logger, _snapshot->side()
                                            << " snapshot is not invalidated. Invalidation count: " << _invalidateCounter);
+        _syncPal->setRestart(true);
         return;
     }
 
