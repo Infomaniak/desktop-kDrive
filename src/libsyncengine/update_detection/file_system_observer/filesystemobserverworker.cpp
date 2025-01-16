@@ -30,12 +30,13 @@ FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> sync
 
 void FileSystemObserverWorker::invalidateSnapshot() {
     if (!_snapshot->isValid()) return;
+    // The synchronisation will restart, even if there is no change in the file system and if the snapshot is not invalidated.
+    _syncPal->setRestart(true);
 
     _invalidateCounter++;
     if (_invalidateCounter < maxRetryBeforeInvalidation) {
         LOG_SYNCPAL_DEBUG(_logger, _snapshot->side()
                                            << " snapshot is not invalidated. Invalidation count: " << _invalidateCounter);
-        _syncPal->setRestart(true);
         return;
     }
 
