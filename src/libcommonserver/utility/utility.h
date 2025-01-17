@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,6 +77,8 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatIoError(IoError ioError);
         static std::wstring formatIoError(const SyncPath &path, IoError ioError);
         static std::wstring formatIoError(const QString &path, IoError ioError);
+        static std::wstring formatErrno(const SyncPath &path, long cError);
+        static std::wstring formatErrno(const QString &path, long cError);
         static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
         static std::wstring formatPath(const QString &path);

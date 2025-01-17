@@ -1,3 +1,21 @@
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2025 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <svg width="122" height="97" viewBox="0 0 122 97" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M52.4444 63.342C52.3885 63.2994 52.3328 63.2566 52.2773 63.2135C52.2508 63.2565 52.2242 63.2993 52.1973 63.342H52.4444ZM83.4791 85.5569C84.2103 85.6295 84.9519 85.6667 85.7022 85.6667C97.9852 85.6667 107.942 75.6961 107.942 63.3966C107.942 52.7465 100.477 43.8425 90.4997 41.646C89.2552 29.5528 79.1183 20.1235 66.7976 20.1235C56.0767 20.1235 47.0093 27.2631 44.0154 37.0849C41.8295 36.145 39.4213 35.6245 36.8916 35.6245C26.9117 35.6245 18.8214 43.7257 18.8214 53.719C18.8214 53.7677 18.8216 53.8163 18.822 53.8649C17.9611 53.7213 17.0769 53.6465 16.1753 53.6465C7.34695 53.6465 0.19014 60.8129 0.19014 69.6532C0.19014 78.4934 7.34695 85.6598 16.1753 85.6598C16.7918 85.6598 17.4001 85.6249 17.9983 85.5569H83.4791Z" fill="#F5F5F5"/>
 <path d="M25.7118 55.0372C25.6354 53.2332 27.0773 51.729 28.8829 51.729H46.9171C47.977 51.729 48.9669 52.258 49.5558 53.1391L52.9266 58.1816C53.5755 59.1524 54.6662 59.7353 55.834 59.7353H82.3359C84.1531 59.7353 85.5993 61.2581 85.5057 63.0728L83.9611 93.0019C83.874 94.689 82.4807 96.0122 80.7913 96.0122H30.4893C28.7886 96.0122 27.3902 94.6717 27.3182 92.9726L25.7118 55.0372Z" fill="#FAFAFA" stroke="#9F9F9F" stroke-width="0.323235"/>

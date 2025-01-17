@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,16 +30,14 @@
 
 namespace KDC {
 
-static constexpr std::string_view EXT_ATTR_STATUS("com.infomaniak.drive.desktopclient.litesync.status");
-static constexpr std::string_view EXT_ATTR_PIN_STATE("com.infomaniak.drive.desktopclient.litesync.pinstate");
-
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
     return (error == IoError::NoSuchFileOrDirectory) || (error == IoError::AttrNotFound) || (error == IoError::AccessDenied);
 }
 } // namespace
 
-bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, std::string &value, IoError &ioError) noexcept {
+bool IoHelper::getXAttrValue(const SyncPath &path, const std::string_view &attrName, std::string &value,
+                             IoError &ioError) noexcept {
     value = "";
     ItemType itemType;
     if (!getItemType(path, itemType)) {
@@ -57,15 +55,14 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
 
     for (;;) {
-        const ssize_t bufferLength =
-                getxattr(path.native().c_str(), attrName.c_str(), NULL, 0, 0, isSymlink ? XATTR_NOFOLLOW : 0);
+        const ssize_t bufferLength = getxattr(path.native().c_str(), attrName.data(), NULL, 0, 0, isSymlink ? XATTR_NOFOLLOW : 0);
         if (bufferLength == -1) {
             ioError = posixError2ioError(errno);
             return _isXAttrValueExpectedError(ioError);
         }
 
         value.resize(static_cast<size_t>(bufferLength));
-        if (getxattr(path.native().c_str(), attrName.c_str(), value.data(), static_cast<size_t>(bufferLength), 0,
+        if (getxattr(path.native().c_str(), attrName.data(), value.data(), static_cast<size_t>(bufferLength), 0,
                      isSymlink ? XATTR_NOFOLLOW : 0) != bufferLength) {
             ioError = posixError2ioError(errno);
             if (ioError == IoError::ResultOutOfRange) {
@@ -81,7 +78,7 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
     }
 }
 
-bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, const std::string &value,
+bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrName, const std::string_view &value,
                              IoError &ioError) noexcept {
     ItemType itemType;
     if (!getItemType(path, itemType)) {
@@ -98,7 +95,7 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
 
-    if (setxattr(path.native().c_str(), attrName.c_str(), value.data(), value.size(), 0, isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
+    if (setxattr(path.native().c_str(), attrName.data(), value.data(), value.size(), 0, isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
         ioError = posixError2ioError(errno);
         return _isXAttrValueExpectedError(ioError);
     }
@@ -108,9 +105,9 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
     return true;
 }
 
-bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string> &attrNames, IoError &ioError) noexcept {
+bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string_view> &attrNames, IoError &ioError) noexcept {
     for (const auto &attrName: attrNames) {
-        if (removexattr(path.native().c_str(), attrName.c_str(), XATTR_NOFOLLOW) == -1) {
+        if (removexattr(path.native().c_str(), attrName.data(), XATTR_NOFOLLOW) == -1) {
             ioError = posixError2ioError(errno);
             return _isXAttrValueExpectedError(ioError);
         }
@@ -122,7 +119,7 @@ bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string>
 }
 
 bool IoHelper::removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept {
-    const std::vector<std::string> liteSyncAttrName = {std::string(EXT_ATTR_STATUS), std::string(EXT_ATTR_PIN_STATE)};
+    static const std::vector<std::string_view> liteSyncAttrName = {litesync_attrs::status, litesync_attrs::pinState};
     return removeXAttrs(path, liteSyncAttrName, ioError);
 }
 
@@ -131,13 +128,13 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     ioError = IoError::Success;
 
     std::string value;
-    const bool result = IoHelper::getXAttrValue(itemPath.native(), std::string(EXT_ATTR_STATUS), value, ioError);
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::status, value, ioError);
     if (!result) {
         return false;
     }
 
     if (!value.empty()) {
-        isDehydrated = (value != "F");
+        isDehydrated = (value != litesync_attrs::statusOffline);
     }
 
     return true;

@@ -29,7 +29,7 @@
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="124"/>
         <source>Copyright 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</source>
-        <translation>Copyright 2019-2023 Infomaniak Network SA&lt;br&gt;&lt;br&gt; {2019-%1 ?}</translation>
+        <translation>Copyright 2019-%1 Infomaniak Network SA&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="125"/>
@@ -406,32 +406,32 @@ Bitte wählen Sie einen anderen Ordner. Wenn Sie fortfahren, wird Lite Sync deak
         <translation>Interne Betaversion</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="134"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="141"/>
         <source>I understand</source>
         <translation>Ich verstehe</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="140"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="147"/>
         <source>Are you sure you want to leave the beta program?</source>
         <translation>Sind Sie sicher, dass Sie das Beta-Programm verlassen wollen?</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="154"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="161"/>
         <source>Save</source>
         <translation>Speichern</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="160"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="167"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="223"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="225"/>
         <source>Your current version of the application may be too recent, your choice will be effective when the next update is available.</source>
         <translation>Ihre aktuelle Version der Anwendung ist möglicherweise zu aktuell. Ihre Auswahl wird ab dem nächsten verfügbaren Update wirksam.</translation>
     </message>
     <message>
-        <location filename="../src/gui/betaprogramdialog.cpp" line="228"/>
+        <location filename="../src/gui/betaprogramdialog.cpp" line="230"/>
         <source>Beta versions may leave unexpectedly or cause instabilities.</source>
         <translation>Beta-Versionen können unerwartet verlassen werden oder Instabilitäten verursachen.</translation>
     </message>
@@ -1981,137 +1981,137 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>KDC::PreferencesWidget</name>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="602"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="596"/>
         <source>General</source>
         <translation>Allgemein</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="605"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="599"/>
         <source>Activate dark theme</source>
         <translation>Dunkles Thema aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="607"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="601"/>
         <source>Activate monochrome icons</source>
         <translation>Einfarbige Schaltflächen aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="608"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="602"/>
         <source>Launch kDrive at startup</source>
         <translation>kDrive beim Start öffnen</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="631"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="625"/>
         <source>Advanced</source>
         <translation>Erweitert</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="632"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="626"/>
         <source>Debugging information</source>
         <translation>Debugging-Informationen</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="634"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="628"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Debugging-Ordner öffnen&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="635"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="629"/>
         <source>Files to exclude</source>
         <translation>Auszuschliessende Dateien</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="636"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="630"/>
         <source>Proxy server</source>
         <translation>Proxy-Server</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="578"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="572"/>
         <source>Unable to open folder %1.</source>
         <translation>Ordner %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="589"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="583"/>
         <source>Unable to open link %1.</source>
         <translation>Link %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="594"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="588"/>
         <source>Invalid link %1.</source>
         <translation>Ungültiger Link %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="629"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="623"/>
         <source>Show synchronized folders in File Explorer navigation pane</source>
         <translation>Synchronisierte Ordner im Navigationsbereich des Datei-Explorers anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="535"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="529"/>
         <source>You must restart your opened File Explorers for this change to take effect.</source>
         <translation>Sie müssen Ihre geöffneten Datei-Explorer neu starten, damit diese Änderung wirksam wird.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="638"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="632"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="609"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="603"/>
         <source>Language</source>
         <translation>Sprache</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="601"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="595"/>
         <source>Some process failed to run.</source>
         <translation>Ein Prozess ist fehlgeschlagen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="610"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="604"/>
         <source>Move deleted files to my computer&apos;s trash</source>
         <translation>Gelöschte Dateien in den Papierkorb meines Computers verschieben</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="611"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="605"/>
         <source>Some files or folders may not be moved to the computer&apos;s trash.</source>
         <translation>Einige Dateien oder Ordner werden möglicherweise nicht in den Papierkorb des Computers verschoben.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="612"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="606"/>
         <source>You can always retrieve already synced files from the kDrive web application trash.</source>
         <translation>Sie können bereits synchronisierte Dateien jederzeit aus dem Papierkorb der kDrive-Webanwendung abrufen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="614"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="608"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
         <translation>&lt;a style=%1 href=&quot;%2&quot;&gt;Mehr erfahren&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="618"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="612"/>
         <source>English</source>
         <translation>Englisch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="619"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="613"/>
         <source>French</source>
         <translation>Französisch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="620"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="614"/>
         <source>German</source>
         <translation>Deutsch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="621"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="615"/>
         <source>Spanish</source>
         <translation>Spanisch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="622"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="616"/>
         <source>Italian</source>
         <translation>Italienisch</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="617"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="611"/>
         <source>Default</source>
         <translation>Standard</translation>
     </message>
@@ -2449,28 +2449,28 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Für 1 weitere Woche</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1259"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1257"/>
         <source>Send feedbacks</source>
         <translation>Senden Sie Feedback</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1530"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1528"/>
         <source>Update kDrive App</source>
         <translation>Aktualisieren Sie die kDrive-App</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1531"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1529"/>
         <source>This kDrive app version is not supported anymore. To access the latest features and enhancements, please update.</source>
         <translation>Diese kDrive-App-Version wird nicht mehr unterstützt. Um auf die neuesten Funktionen und Verbesserungen zuzugreifen, aktualisieren Sie bitte.</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1067"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1533"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1531"/>
         <source>Update</source>
         <translation>Aktualisieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1535"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1533"/>
         <source>Please download the latest version on the website.</source>
         <translation>Bitte laden Sie die neueste Version auf der Website herunter.</translation>
     </message>
@@ -2495,22 +2495,22 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1267"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1265"/>
         <source>Quit kDrive</source>
         <translation>kDrive beenden</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1526"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1524"/>
         <source>Show errors and informations</source>
         <translation>Fehler und Informationen anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1527"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1525"/>
         <source>Show informations</source>
         <translation>Informationen anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1548"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1546"/>
         <source>You can synchronize files &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;from your computer&lt;/a&gt; or on &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</source>
         <translation>Sie können Dateien &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;von Ihrem Computer&lt;/a&gt; oder von &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt; synchronisieren.</translation>
     </message>
@@ -2520,7 +2520,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Im Ordner öffnen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1528"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1526"/>
         <source>More actions</source>
         <translation>Weitere Aktionen</translation>
     </message>
@@ -2540,18 +2540,18 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Aktivität</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1481"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1529"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1479"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1527"/>
         <source>Not implemented!</source>
         <translation>Nicht implementiert!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1541"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1539"/>
         <source>No synchronized folder for this Drive!</source>
         <translation>Kein synchronisierter Ordner für diesen kDrive!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1544"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1542"/>
         <source>No kDrive configured!</source>
         <translation>Kein kDrive eingerichtet!</translation>
     </message>
@@ -2561,32 +2561,32 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Zugang zu Website %1 nicht möglich.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1185"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
         <source>Open %1 web version</source>
         <translation>Webversion %1 öffnen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1208"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1207"/>
         <source>Notifications disabled until %1</source>
         <translation>Benachrichtigungen deaktiviert bis %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1209"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1208"/>
         <source>Disable Notifications</source>
         <translation>Benachrichtigungen deaktivieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1251"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1249"/>
         <source>Need help</source>
         <translation>Hilfe benötigt</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1514"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1512"/>
         <source>Unable to open link %1.</source>
         <translation>Link %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1519"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1517"/>
         <source>Invalid link %1.</source>
         <translation>Ungültiger Link %1.</translation>
     </message>
@@ -2596,12 +2596,12 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Ordner-URL %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1195"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1194"/>
         <source>Drive parameters</source>
         <translation>Drive-Einstellungen</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1243"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1241"/>
         <source>Application preferences</source>
         <translation>Anwendungseinstellungen</translation>
     </message>
@@ -2658,87 +2658,87 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>KDC::VersionWidget</name>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="259"/>
+        <location filename="../src/gui/versionwidget.cpp" line="263"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="147"/>
+        <location filename="../src/gui/versionwidget.cpp" line="153"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Show release note&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Versionshinweis anzeigen&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="150"/>
+        <location filename="../src/gui/versionwidget.cpp" line="156"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="151"/>
+        <location filename="../src/gui/versionwidget.cpp" line="157"/>
         <source>UPDATE</source>
         <translation>AKTUALISIEREN</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="166"/>
+        <location filename="../src/gui/versionwidget.cpp" line="172"/>
         <source>%1 is up to date!</source>
         <translation>%1 ist auf dem neuesten Stand!</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="170"/>
+        <location filename="../src/gui/versionwidget.cpp" line="176"/>
         <source>Checking update on server...</source>
         <translation>Überprüfe Update auf dem Server...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="174"/>
+        <location filename="../src/gui/versionwidget.cpp" line="180"/>
         <source>An update is available: %1.&lt;br&gt;Please download it from &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;here&lt;/a&gt;.</source>
         <translation>Ein Update ist verfügbar: %1.&lt;br&gt;Bitte laden Sie es &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;hier&lt;/a&gt; herunter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="181"/>
+        <location filename="../src/gui/versionwidget.cpp" line="187"/>
         <source>An update is available: %1</source>
         <translation>Ein Update ist verfügbar: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="187"/>
+        <location filename="../src/gui/versionwidget.cpp" line="193"/>
         <source>Downloading %1. Please wait...</source>
         <translation>Herunterladen von %1. Bitte warten…</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="192"/>
+        <location filename="../src/gui/versionwidget.cpp" line="198"/>
         <source>Could not check for new updates.</source>
         <translation>Es konnte nicht nach neuen Updates gesucht werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="196"/>
+        <location filename="../src/gui/versionwidget.cpp" line="202"/>
         <source>An error occurred during update.</source>
         <translation>Während der Aktualisierung ist ein Fehler aufgetreten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="200"/>
+        <location filename="../src/gui/versionwidget.cpp" line="206"/>
         <source>Could not download update.</source>
         <translation>Das Update konnte nicht heruntergeladen werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="213"/>
+        <location filename="../src/gui/versionwidget.cpp" line="219"/>
         <source>Beta program</source>
         <translation>Beta-Programm</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="214"/>
+        <location filename="../src/gui/versionwidget.cpp" line="220"/>
         <source>Get early access to new versions of the application</source>
         <translation>Frühzeitiger Zugang zu neuen Versionen der Anwendung</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="218"/>
+        <location filename="../src/gui/versionwidget.cpp" line="224"/>
         <source>Join</source>
         <translation>Beitreten</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="221"/>
+        <location filename="../src/gui/versionwidget.cpp" line="227"/>
         <source>Modify</source>
         <translation>Ändern Sie</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="221"/>
+        <location filename="../src/gui/versionwidget.cpp" line="227"/>
         <source>Quit</source>
         <translation>Beenden</translation>
     </message>
@@ -2916,6 +2916,11 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>utility</name>
     <message>
+        <location filename="../src/server/socketapi.cpp" line="1326"/>
+        <source>Make available locally</source>
+        <translation>Lokal verfügbar machen</translation>
+    </message>
+    <message>
         <location filename="../src/server/socketapi.cpp" line="1334"/>
         <source>Cancel free up local space</source>
         <translation>Lokalen Speicherplatz freigeben abbrechen</translation>
@@ -2930,11 +2935,6 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <location filename="../src/server/socketapi.cpp" line="1330"/>
         <source>Free up local space</source>
         <translation>Lokalen Speicherplatz freigeben</translation>
-    </message>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="1326"/>
-        <source>Always make available locally</source>
-        <translation>Immer lokal verfügbar machen</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="80"/>

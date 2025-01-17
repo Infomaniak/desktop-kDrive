@@ -2,7 +2,7 @@
 
 #
 # Infomaniak kDrive - Desktop
-# Copyright (C) 2023-2024 Infomaniak Network SA
+# Copyright (C) 2023-2025 Infomaniak Network SA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,11 +40,10 @@ codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/QtWebEngineProcess.entitlements "$src_app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncLoginItemAgent.entitlements "$src_app/Contents/Library/LoginItems/$team_identifier.$app_domain.LoginItemAgent.app"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/FinderSyncExtension.entitlements "$src_app/Contents/PlugIns/Extension.appex"
-codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/LiteSyncExtensionDebug.entitlements "$src_app/Contents/Library/SystemExtensions/$app_domain.LiteSyncExt.systemextension"
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --entitlements $(dirname $0)/kDriveUninstaller.entitlements "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app"
 codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDriveDebug.entitlements "$src_app"
-codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDriveUninstaller.entitlements "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
 
 # Verify the signature
 codesign -dv $src_app

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@ FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> sync
 
 void FileSystemObserverWorker::invalidateSnapshot() {
     if (!_snapshot->isValid()) return;
+    // The synchronisation will restart, even if there is no change in the file system and if the snapshot is not actually invalidated.
+    _syncPal->setRestart(true);
 
     _invalidateCounter++;
     if (_invalidateCounter < maxRetryBeforeInvalidation) {

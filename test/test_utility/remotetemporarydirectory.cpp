@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,28 +23,44 @@
 #include "../../src/libsyncengine/jobs/network/API_v2/deletejob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommon/utility/utility.h"
 
 namespace KDC {
 RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId,
-                                                   const std::string& testType /*= "undef"*/) : _driveDbId(driveDbId) {
-    // Generate directory name
-    const std::time_t now = std::time(nullptr);
-    const std::tm tm = *std::localtime(&now);
-    std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M");
+                                                   const std::string& testType /*= "undef"*/) :
+    _driveDbId(driveDbId) {
+    int retry = 5;
+    do {
+        std::string suffix = CommonUtility::generateRandomStringAlphaNum(5);
+        // Generate directory name
+        const std::time_t now = std::time(nullptr);
+        const std::tm tm = *std::localtime(&now);
+        std::ostringstream woss;
+        woss << std::put_time(&tm, "%Y%m%d_%H%M");
+        _dirName = Str("kdrive_") + Str2SyncName(testType) + Str("_unit_tests_") + Str2SyncName(woss.str() + "___" + suffix);
 
-    _dirName = Str("kdrive_") + Str2SyncName(testType) + Str("_unit_tests_") + Str2SyncName(woss.str());
+        // Create remote test dir
+        CreateDirJob job(_driveDbId, parentId, _dirName);
+        job.runSynchronously();
+        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist) && retry > 0) {
+            retry--;
+            continue;
+        }
 
-    // Create remote test dir
-    CreateDirJob job(_driveDbId, parentId, _dirName);
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously());
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("RemoteTemporaryDirectory() failed to create the directory on remote side.",
+                                     ExitInfo(ExitCode::Ok), job.exitInfo());
 
-    // Extract file ID
-    CPPUNIT_ASSERT(job.jsonRes());
-    Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
-    CPPUNIT_ASSERT(dataObj);
-    _dirId = dataObj->get(idKey).toString();
+        // Extract file ID
+        CPPUNIT_ASSERT_MESSAGE("RemoteTemporaryDirectory() Failed to extract the file id.", job.jsonRes());
+        Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
+        CPPUNIT_ASSERT_MESSAGE("RemoteTemporaryDirectory() Failed to extract the file id (2).", dataObj);
+        _dirId = dataObj->get(idKey).toString();
+        LOGW_INFO(Log::instance()->getLogger(), L"RemoteTemporaryDirectory created: " << Utility::formatSyncName(_dirName)
+                                                                                      << L" with ID: " << Utility::s2ws(_dirId));
+        break;
+    } while (true);
 }
+
 RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     if (_isDeleted) return;
 
