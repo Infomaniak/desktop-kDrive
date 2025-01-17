@@ -1152,6 +1152,11 @@ void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
         }
     }
 
+    if (!errorTabWidget) {
+        qCDebug(lcParametersDialog()) << "Error widget not found for driveDbId=" << driveDbId;
+        return;
+    }
+
     listWidgetToClear =
             autoResolved ? errorTabWidget->autoResolvedErrorsListWidget() : errorTabWidget->unresolvedErrorsListWidget();
     while (listWidgetToClear->count()) {
