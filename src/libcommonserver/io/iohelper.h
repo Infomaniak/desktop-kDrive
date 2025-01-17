@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,32 @@
 
 namespace KDC {
 
-struct FileStat;
+#ifdef __APPLE__
+namespace litesync_attrs {
 
+//! Item status
+static constexpr std::string_view status("com.infomaniak.drive.desktopclient.litesync.status");
+//! Request
+static constexpr std::string_view pinState("com.infomaniak.drive.desktopclient.litesync.pinstate");
+
+//! The status of a dehydrated item
+static constexpr std::string_view statusOnline("O");
+//! The status of an hydrated item
+static constexpr std::string_view statusOffline("F");
+//! The status of a file during hydration is Hxx where xx is the % of progress
+static constexpr std::string_view statusHydrating("H");
+
+//! The placeholder’s content must be dehydrated
+static constexpr std::string_view pinStateUnpinned("U");
+//! The placeholder’s content must be hydrated
+static constexpr std::string_view pinStatePinned("P");
+//! The placeholder will not be synced
+static constexpr std::string_view pinStateExcluded("E");
+
+} // namespace litesync_attrs
+#endif
+
+struct FileStat;
 
 struct IoHelper {
     public:
@@ -319,7 +343,7 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getXAttrValue(const SyncPath &path, const std::string &attrName, std::string &value,
+        static bool getXAttrValue(const SyncPath &path, const std::string_view &attrName, std::string &value,
                                   IoError &ioError) noexcept;
         //! Sets the value of the extended attribute with specified name for the item indicated by path.
         /*!
@@ -329,7 +353,7 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool setXAttrValue(const SyncPath &path, const std::string &attrName, const std::string &value,
+        static bool setXAttrValue(const SyncPath &path, const std::string_view &attrName, const std::string_view &value,
                                   IoError &ioError) noexcept;
         //! Remove the extended attributes with specified names for the item indicated by path.
         /*!
@@ -338,7 +362,7 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool removeXAttrs(const SyncPath &path, const std::vector<std::string> &attrNames, IoError &ioError) noexcept;
+        static bool removeXAttrs(const SyncPath &path, const std::vector<std::string_view> &attrNames, IoError &ioError) noexcept;
         //! Remove the LiteSync extended attributes for the item indicated by path.
         /*!
          \param path is the file system path of the item.
@@ -346,6 +370,18 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept;
+        //! Build the 'status' extended attribute value.
+        /*!
+         \param isSyncing true if the file is hydrating.
+         \param progress is the % of progress of the hydration.
+         \param isHydrated true if the file is hydrated.
+         \return the 'status' extended attribute value.
+         */
+        inline static std::string statusXAttr(bool isSyncing, int progress, bool isHydrated) {
+            return (isSyncing ? std::string(litesync_attrs::statusHydrating) + std::to_string(progress)
+                              : (isHydrated ? std::string(litesync_attrs::statusOffline)
+                                            : std::string(litesync_attrs::statusOnline)));
+        }
 #endif
 
 #ifdef _WIN32

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -262,6 +262,17 @@ std::wstring Utility::formatIoError(const SyncPath &path, const IoError ioError)
 
 std::wstring Utility::formatIoError(const QString &path, const IoError ioError) {
     return formatIoError(QStr2Path(path), ioError);
+}
+
+std::wstring Utility::formatErrno(const SyncPath &path, long cError) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', errno=" << cError;
+
+    return ss.str();
+}
+
+std::wstring Utility::formatErrno(const QString &path, long cError) {
+    return formatErrno(QStr2Path(path), cError);
 }
 
 std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description) {
