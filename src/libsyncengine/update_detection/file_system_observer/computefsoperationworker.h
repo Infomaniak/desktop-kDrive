@@ -83,9 +83,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
         NodeIdSet _localTmpUnsyncedList;
 
         std::unordered_set<SyncPath, hashPathFunction> _dirPathToDeleteSet;
-
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
+        std::unordered_set<SyncName> _ignoredDirectoryNames;
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);
