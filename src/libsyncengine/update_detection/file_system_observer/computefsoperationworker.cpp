@@ -968,9 +968,16 @@ bool ComputeFSOperationWorker::checkIfPathIsInDeletedFolder(const SyncPath &path
 }
 
 void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const SyncPath &path, const NodeType nodeType) {
-    LOGW_SYNCPAL_INFO(_logger, L"Item (or one of its descendants) has been ignored: " << Utility::formatSyncPath(path));
-    const Error err(_syncPal->syncDbId(), "", nodeId, nodeType, path, ConflictType::None, InconsistencyType::ReservedName);
-    _syncPal->addError(err);
+    if (!path.root_name().empty()) {
+        // Display the error only once per broken path
+        const auto [_, inserted] = _ignoredDirectoryNames.insert(path.root_name());
+        if (inserted) {
+            LOGW_SYNCPAL_INFO(_logger, L"Item (or one of its descendants) has been ignored: " << Utility::formatSyncPath(path));
+            const Error err(_syncPal->syncDbId(), "", nodeId, nodeType, path, ConflictType::None,
+                            InconsistencyType::ReservedName);
+            _syncPal->addError(err);
+        }
+    }
 }
 
 } // namespace KDC
