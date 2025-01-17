@@ -105,9 +105,9 @@ int main(int argc, char **argv) {
 
     std::unique_ptr<KDC::AppClient> appPtr = nullptr;
     try {
-        appPtr = std::unique_ptr<KDC::AppClient>(new KDC::AppClient(argc, argv));
+        appPtr = std::make_unique<KDC::AppClient>(argc, argv);
     } catch (const std::exception &e) {
-        std::cerr << "kDrive client initialization error: error=" << e.what() << std::endl;
+        std::cerr << "kDrive client initialization error: " << e.what() << std::endl;
         return -1;
     }
 
