@@ -48,6 +48,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         bool createLink(const std::string &mimeType, const std::string &data);
         bool removeTmpFile();
         bool moveTmpFile(bool &restartSync);
+        bool enoughtPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace);
 
         NodeId _remoteFileId;
         SyncPath _localpath;

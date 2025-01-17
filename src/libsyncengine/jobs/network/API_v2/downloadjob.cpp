@@ -246,7 +246,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
         bool fetchFinished = false;
         bool fetchError = false;
         setProgress(0);
-        if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || expectedSize > 0) {
+        if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
+            writeError = !enoughtPlace(tmpDirectoryPath, _localpath.parent_path(), expectedSize);
+            readError = expectedSize <= 0;
+        }
+
+        if (!writeError && !readError) {
             std::unique_ptr<char[]> buffer(new char[BUF_SIZE]);
             bool done = false;
             int retryCount = 0;
@@ -384,12 +389,21 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _exitCode = ExitCode::BackError;
                 _exitCause = ExitCause::InvalidSize;
                 return false;
-            } else {
-                // Fetch issue
-                _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::FileAccessError;
-                return false;
+            } else if (writeError) {
+                std::streamsize neededPlace = expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
+                                                      ? BUF_SIZE
+                                                      : (expectedSize - getProgress());
+                if (!enoughtPlace(tmpDirectoryPath, _localpath.parent_path(), neededPlace)) {
+                    _exitCode = ExitCode::SystemError;
+                    _exitCause = ExitCause::NotEnoughDiskSpace;
+                    return false;
+                }
             }
+
+            // Fetch issue
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
+            return false;
         }
     }
 
@@ -615,6 +629,22 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
     }
 #endif
 
+    return true;
+}
+
+bool DownloadJob::enoughtPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace) {
+    const SyncPath &smallerDir =
+            Utility::freeDiskSpace(tmpDirPath) < Utility::freeDiskSpace(destDirPath) ? tmpDirPath : destDirPath;
+    const int64_t freeBytes = Utility::freeDiskSpace(smallerDir);
+    if (freeBytes >= 0) {
+        if (freeBytes < neededPlace + Utility::freeDiskSpaceLimit()) {
+            LOGW_WARN(_logger, L"Disk almost full, only " << freeBytes << L"B available at "
+                                                          << Utility::formatSyncPath(smallerDir) << L" - >Download canceled.");
+            return false;
+        }
+    } else {
+        LOGW_WARN(_logger, L"Could not determine free space available at " << Utility::formatSyncPath(smallerDir));
+    }
     return true;
 }
 
