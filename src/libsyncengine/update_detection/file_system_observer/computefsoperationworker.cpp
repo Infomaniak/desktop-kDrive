@@ -969,7 +969,9 @@ bool ComputeFSOperationWorker::checkIfPathIsInDeletedFolder(const SyncPath &path
 
 void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const SyncPath &path, const NodeType nodeType) {
     if (!path.root_name().empty()) {
-        // Display the error only once per broken path
+        // Display the error only once per broken path.
+        // We used root name here because the path is a relative path here. Therefor, root name should always be empty.
+        // Only broken path (ex: a directory named "E:S") will have a non empty root name.
         const auto [_, inserted] = _ignoredDirectoryNames.insert(path.root_name());
         if (inserted) {
             LOGW_SYNCPAL_INFO(_logger, L"Item (or one of its descendants) has been ignored: " << Utility::formatSyncPath(path));
