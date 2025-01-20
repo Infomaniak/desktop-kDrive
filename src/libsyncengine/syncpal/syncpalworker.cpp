@@ -599,16 +599,18 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                     isHydrated = false;
                 }
 
-                // Fix pinstate if needed
-                if (isHydrated && pinState != PinState::AlwaysLocal) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::AlwaysLocal)) {
-                        LOGW_SYNCPAL_WARN(_logger,
-                                          L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
-                        ok = false;
-                        continue;
-                    }
-                } else if (!isHydrated && pinState != PinState::OnlineOnly) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::OnlineOnly)) {
+                bool hydrationOrDehydrationInProgress = false;
+                const SyncPath relativePath =
+                        CommonUtility::relativePath(_syncPal->localPath(), dirIt->path()); // Get the relative path of the file
+                _syncPal->fileSyncing(ReplicaSide::Local, relativePath, hydrationOrDehydrationInProgress);
+                if (hydrationOrDehydrationInProgress) {
+                    _syncPal->vfsCancelHydrate(
+                            dirIt->path()); // Cancel any (de)hydration that could still be in progress on the OS side.
+                }
+
+                // Fix hydration state if needed.
+                if (isHydrated && pinState == PinState::OnlineOnly || !isHydrated && pinState == PinState::AlwaysLocal) {
+                    if (!_syncPal->vfsFileStatusChanged(dirIt->path(), SyncFileStatus::Syncing)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;
