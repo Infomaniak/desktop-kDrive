@@ -264,7 +264,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     return;
                 }
 
-                PinState pinstate = PinState::Unspecified;
+                PinState pinstate = PinState::Unknown;
                 if (!_syncPal->vfsPinState(absolutePath, pinstate)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState: " << Utility::formatSyncPath(absolutePath));
                     invalidateSnapshot();

@@ -2337,7 +2337,7 @@ bool AppServer::vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState
 
     SyncPath relativePath = CommonUtility::relativePath(_syncPalMap[syncDbId]->localPath(), absolutePath);
     PinState tmpPinState = _vfsMap[syncDbId]->pinState(SyncName2QStr(relativePath.native()));
-    pinState = (tmpPinState != PinState::Inherited) ? tmpPinState : PinState::Unspecified;
+    pinState = (tmpPinState != PinState::Inherited) ? tmpPinState : PinState::Unknown;
     return true;
 }
 

@@ -603,7 +603,7 @@ PinState VfsMac::pinState(const QString &relativePath) {
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     std::string pinState;
     if (!_connector->vfsGetPinState(Path2QStr(fullPath), pinState)) {
-        return PinState::Unspecified;
+        return PinState::Unknown;
     }
 
     if (pinState == litesync_attrs::pinStatePinned) {
@@ -612,7 +612,7 @@ PinState VfsMac::pinState(const QString &relativePath) {
         return PinState::OnlineOnly;
     }
 
-    return PinState::Unspecified;
+    return PinState::Unknown;
 }
 
 bool VfsMac::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {

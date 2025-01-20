@@ -613,6 +613,11 @@ bool VfsWin::setPinState(const QString &relativePath, PinState state) {
         case PinState::Unspecified:
             vfsState = VFS_PIN_STATE_UNSPECIFIED;
             break;
+        default:
+            assert(false && "Invalid pin state");
+            LOGW_WARN(logger(), L"Invalid pinState: " << state << L"in setPinState for: " << Utility::formatSyncPath(fullPath));
+            vfsState = VFS_PIN_STATE_UNSPECIFIED;
+            break;
     }
 
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), vfsState) != S_OK) {
@@ -640,7 +645,7 @@ PinState VfsWin::pinState(const QString &relativePath) {
         }
     }
 
-    return PinState::Unspecified;
+    return PinState::Unknown;
 }
 
 bool VfsWin::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &) {

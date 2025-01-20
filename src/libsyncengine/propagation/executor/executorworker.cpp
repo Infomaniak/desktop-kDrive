@@ -1093,7 +1093,7 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
         }
     } else {
         if (isPlaceholder) {
-            PinState pinState = PinState::Unspecified;
+            PinState pinState = PinState::Unknown;
             if (!_syncPal->vfsPinState(absolutePath, pinState)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Utility::formatSyncPath(absolutePath));
                 return {ExitCode::SystemError, ExitCause::InconsistentPinState};
@@ -1130,7 +1130,7 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                     }
                     break;
                 }
-                case PinState::Unspecified:
+                case PinState::Unknown:
                 default: {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignore EDIT for file: " << Path2WStr(absolutePath));
                     ignoreItem = true;
