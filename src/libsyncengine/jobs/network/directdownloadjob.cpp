@@ -38,7 +38,7 @@ bool DirectDownloadJob::handleResponse(std::istream& is) {
     if (!output) {
         LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile).c_str());
         _exitCode = ExitCode::SystemError;
-        _exitCause = Utility::hasEnoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
+        _exitCause = Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
         return false;
     }
 
