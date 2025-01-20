@@ -293,7 +293,7 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
 
     // !!! Creating a placeholder DOESN'T triggers any file system event !!!
     // Setting the pin state triggers an EDIT event and then the insertion into the local snapshot
-    if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_UNPINNED) != S_OK) {
+    if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_INHERIT) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
         return false;
     }
@@ -590,6 +590,9 @@ bool VfsWin::isDehydratedPlaceholder(const QString &initFilePath, bool isAbsolut
 }
 
 bool VfsWin::setPinState(const QString &relativePath, PinState state) {
+    // We currently don't have any features that require pinning/unpinning files manually on windows.
+    return true;
+
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
