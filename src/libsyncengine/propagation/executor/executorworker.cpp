@@ -1099,56 +1099,34 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
             ignoreItem = true;
             return fixModificationDate(syncOp, absolutePath);
         }
-    } else {
-        if (isPlaceholder) {
-            PinState pinState = PinState::Unknown;
-            if (!_syncPal->vfsPinState(absolutePath, pinState)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Utility::formatSyncPath(absolutePath));
-                return {ExitCode::SystemError, ExitCause::InconsistentPinState};
-            }
-
-            switch (pinState) {
-                case PinState::Inherited: {
-                    // TODO : what do we do in that case??
-                    LOG_SYNCPAL_WARN(_logger, "Inherited pin state not implemented yet");
-                    return ExitCode::LogicError;
-                }
-                case PinState::AlwaysLocal: {
-                    if (isSyncingTmp) {
-                        // Ignore this item until it is synchronized
-                        isSyncing = true;
-                    } else if (isHydrated) {
-                        // Download
-                    }
-                    break;
-                }
-                case PinState::OnlineOnly: {
-                    // Update metadata
-                    std::string error;
-                    _syncPal->vfsUpdateMetadata(
-                            absolutePath,
-                            syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
-                            syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
-                            syncOp->affectedNode()->size(),
-                            syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
-                    // TODO: Vfs functions should return an ExitInfo struct
-                    syncOp->setOmit(true); // Do not propagate change in file system, only in DB
-                    if (!error.empty()) {
-                        return {ExitCode::SystemError, ExitCause::FileAccessError};
-                    }
-                    break;
-                }
-                case PinState::Unknown:
-                default: {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Ignore EDIT for file: " << Path2WStr(absolutePath));
-                    ignoreItem = true;
-                    return ExitCode::Ok;
-                }
-            }
-        }
+        return ExitCode::Ok;
     }
 
-    return ExitCode::Ok;
+    if (syncOp->targetSide() == ReplicaSide::Local) {
+        if (isPlaceholder) {
+            if (isSyncingTmp) {
+                // Ignore this item until it is synchronized
+                isSyncing = true;
+            } else if (!isHydrated) {
+                // Update metadata
+                std::string error;
+                _syncPal->vfsUpdateMetadata(
+                        absolutePath, syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
+                        syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
+                        syncOp->affectedNode()->size(),
+                        syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
+                // TODO: Vfs functions should return an ExitInfo struct
+                syncOp->setOmit(true); // Do not propagate change in file system, only in DB
+                if (!error.empty()) {
+                    return {ExitCode::SystemError, ExitCause::FileAccessError};
+                }
+            } // else: the file is hydrated, we can proceed with download
+        }
+        return ExitCode::Ok;
+    }
+
+    LOGW_WARN(_logger, L"Invalid target side: " << syncOp->targetSide());
+    return ExitCode::LogicError;
 }
 
 ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
