@@ -247,7 +247,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         bool fetchError = false;
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
-            writeError = !enoughtPlace(tmpDirectoryPath, _localpath.parent_path(), expectedSize);
+            writeError = !hasEnoughPlace(tmpDirectoryPath, _localpath.parent_path(), expectedSize);
             readError = expectedSize <= 0;
         }
 
@@ -390,10 +390,10 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _exitCause = ExitCause::InvalidSize;
                 return false;
             } else if (writeError) {
-                std::streamsize neededPlace = expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
+                const std::streamsize neededPlace = expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
                                                       ? BUF_SIZE
                                                       : (expectedSize - getProgress());
-                if (!enoughtPlace(tmpDirectoryPath, _localpath.parent_path(), neededPlace)) {
+                if (!hasEnoughPlace(tmpDirectoryPath, _localpath.parent_path(), neededPlace)) {
                     _exitCode = ExitCode::SystemError;
                     _exitCause = ExitCause::NotEnoughDiskSpace;
                     return false;
@@ -632,14 +632,14 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
     return true;
 }
 
-bool DownloadJob::enoughtPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace) {
+bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace) {
     const SyncPath &smallerDir =
             Utility::freeDiskSpace(tmpDirPath) < Utility::freeDiskSpace(destDirPath) ? tmpDirPath : destDirPath;
     const int64_t freeBytes = Utility::freeDiskSpace(smallerDir);
     if (freeBytes >= 0) {
         if (freeBytes < neededPlace + Utility::freeDiskSpaceLimit()) {
-            LOGW_WARN(_logger, L"Disk almost full, only " << freeBytes << L"B available at "
-                                                          << Utility::formatSyncPath(smallerDir) << L" - >Download canceled.");
+            LOGW_WARN(_logger, L"Request " << jobId() <<  L": Disk almost full, only " << freeBytes << L"B available at "
+                                                          << Utility::formatSyncPath(smallerDir) << L". Download job cancelled.");
             return false;
         }
     } else {
