@@ -632,7 +632,6 @@ bool VfsWin::setPinState(const QString &relativePath, PinState state) {
 }
 
 PinState VfsWin::pinState(const QString &relativePath) {
-    //  Read pin state from file attributes
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     VfsPinState vfsPinState;
     vfsGetPinState(fullPath.lexically_normal().native().c_str(), &vfsPinState);
