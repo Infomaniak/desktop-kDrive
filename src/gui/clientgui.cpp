@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -217,6 +217,11 @@ void ClientGui::onActionPreferencesTriggered(bool) {
 }
 
 void ClientGui::computeOverallSyncStatus() {
+    if (!_tray) {
+        qCDebug(lcClientGui) << "Tray not ready";
+        return;
+    }
+
     bool allDisconnected = true;
     bool allPaused = true;
 
@@ -290,6 +295,11 @@ void ClientGui::computeOverallSyncStatus() {
 }
 
 void ClientGui::hideAndShowTray() {
+    if (!_tray) {
+        qCDebug(lcClientGui) << "Tray not ready";
+        return;
+    }
+
     _tray->hide();
     _tray->show();
 }
@@ -299,6 +309,11 @@ void ClientGui::showSynthesisDialog() {
         if (_synthesisPopover->isVisible()) {
             _synthesisPopover->done(QDialog::Accepted);
         } else {
+            if (!_tray) {
+                qCDebug(lcClientGui) << "Tray not ready";
+                return;
+            }
+
             QRect trayIconRect = _tray->geometry();
             if (!trayIconRect.isValid()) {
                 trayIconRect = QRect(QCursor::pos(), QSize(0, 0));
@@ -489,6 +504,11 @@ void ClientGui::setupParametersDialog() {
 }
 
 void ClientGui::onUpdateSystray() {
+    if (!_tray) {
+        qCDebug(lcClientGui) << "Tray not ready";
+        return;
+    }
+
     if (_workaroundShowAndHideTray) {
         // To make tray menu updates work with these bugs (see setupPopover)
         // we need to hide and show the tray icon. We don't want to do that

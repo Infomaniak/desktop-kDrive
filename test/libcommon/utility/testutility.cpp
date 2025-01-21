@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -370,6 +370,16 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
         }
         CPPUNIT_ASSERT(err == 0);
     }
+}
+void TestUtility::testLanguageCode() {
+    CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(Language::English).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("fr"), CommonUtility::languageCode(Language::French).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("de"), CommonUtility::languageCode(Language::German).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
+    // English is the default language and is always returned of the provided language code is unknown.
+    CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(Language::Default).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(static_cast<Language>(18)).toStdString());
 }
 
 #ifdef _WIN32

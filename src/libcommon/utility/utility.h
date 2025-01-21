@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,9 +80,14 @@ struct COMMON_EXPORT CommonUtility {
         static bool compressFile(const QString &originalName, const QString &targetName,
                                  const std::function<bool(int)> &progressCallback = nullptr);
 
-        static QString languageCode(::KDC::Language enforcedLocale);
-        static QStringList languageCodeList(::KDC::Language enforcedLocale);
-        static void setupTranslations(QCoreApplication *app, ::KDC::Language enforcedLocale);
+        static const QString englishCode;
+        static const QString frenchCode;
+        static const QString germanCode;
+        static const QString spanishCode;
+        static const QString italianCode;
+        static QString languageCode(Language language);
+        static QStringList languageCodeList(Language enforcedLocale);
+        static void setupTranslations(QCoreApplication *app, Language enforcedLocale);
         static bool languageCodeIsEnglish(const QString &languageCode);
 
         // Color threshold check

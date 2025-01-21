@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -431,12 +431,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             if (opType == OperationType::Edit) {
                 currentNode->setPreviousId(deleteOp->nodeId());
                 _updateTree->previousIdSet()[deleteOp->nodeId()] = op->nodeId();
-
-                // replace node in _nodes map because id changed
-                auto node = _updateTree->nodes().extract(deleteOp->nodeId());
-                node.key() = op->nodeId();
-                node.mapped()->setName(op->path().filename().native());
-                _updateTree->nodes().insert(std::move(node));
+                currentNode->setName(op->path().filename().native());
             }
 
             logUpdate(currentNode, opType);

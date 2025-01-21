@@ -1,6 +1,6 @@
 <!--
   ~ Infomaniak kDrive - Desktop
-  ~ Copyright (C) 2023-2024 Infomaniak Network SA
+  ~ Copyright (C) 2023-2025 Infomaniak Network SA
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -19,27 +19,30 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Release notes - kDrive 3.6.7</h1>
+<h1>Release notes - kDrive 3.6.8</h1>
 <h2><b>New features</b></h2>
   <ul>
-    <li>Change the update mechanism to allow progressive delivery of a new version</li>
+    <li>Allow the user to receive Beta versions of the app.</li>
+  </ul>
+<h2><b>Optimizations</b></h2>
+  <ul>
+    <li>Fine tune some database requests.</li>
+    <li>Keep items path in cache to reduce the number of database requests.</li>
   </ul>
 <h2><b>Bug fixes</b></h2>
   <ul>
-    <li>Resolution of a file synchronization problem affecting the Office suite in particular</li>
-    <li>Fixed new file wrongly downloaded in LiteSync mode</li>
-    <li>Fixed missing share links entries in contextual menu</li>
-    <li>Consolidation of error management during the propagation step</li>
-    <li>Do not block application startup if local sync folder is missing</li>
-    <li>Fixed wrongly blacklisted files</li>
-    <li>Fixed broken sync on FAT systems</li>
-    <li>Fixed startup issue in case of unknown proxy type</li>
-    <li>Fixed migration issues</li>
-    <li>Fixed status in case of abort during upload</li>
-    <li>Exclude files and folders with name length above 255 characters</li>
-    <li>Win - Fixed issue on symkinks and junctions</li>
-    <li>Fixed CSV parsing error leading to incomplete remote snapshot</li>
-    <li>Improved handling of access denied errors</li>
+    <li>Fixed synchronization issues with items whose name contains `:`.</li>
+    <li>Fixed memory leaks.</li>
+    <li>Enhance handling of file access errors.</li>
+    <li>Fixed a bug where a folder could be synchronized locally but not its content.</li>
+    <li>Fixed updater behavior in case of error.</li>
+    <li>Fixed a crash due to concurrent access.</li>
+    <li>Fixed a bug causing the blacklisting of items.</li>
+    <li>Fixed a migration issue.</li>
+    <li>Fixed a crash when removing a sync before it has started.</li>
+    <li>Linux - Fixed synchronization issues with big files.</li>
+    <li>Win - Handle errors when trashing an item.</li>
+    <li>macOS - Fixed a bug where a file's status could be set to "online only" before it was fully synced.</li>
   </ul>
 </body>
 </html>

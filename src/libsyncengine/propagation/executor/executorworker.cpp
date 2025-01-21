@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -299,11 +299,10 @@ void ExecutorWorker::logCorrespondingNodeErrorMsg(const SyncOpPtr syncOp) {
     const std::wstring mainMsg = L"Error in UpdateTree::deleteNode: ";
     if (syncOp->correspondingNode()) {
         const auto nodeName = Utility::formatSyncName(syncOp->correspondingNode()->name());
-        LOGW_SYNCPAL_WARN(_logger, mainMsg << L"correspondingNode name=" << L"'" << nodeName << L"'.");
+        LOGW_SYNCPAL_WARN(_logger, mainMsg << L"correspondingNode " << nodeName);
     } else {
         const auto nodeName = Utility::formatSyncName(syncOp->affectedNode()->name());
-        LOGW_SYNCPAL_WARN(_logger,
-                          mainMsg << L"correspondingNode is nullptr, former affectedNode name=" << L"'" << nodeName << L"'.");
+        LOGW_SYNCPAL_WARN(_logger, mainMsg << L"correspondingNode is nullptr, former affectedNode " << nodeName);
     }
 }
 
@@ -1801,12 +1800,12 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
             }
             // Remove node from update tree
             if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->conflict().localNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
                                                    << Utility::formatSyncName(syncOp->conflict().localNode()->name()));
             }
 
             if (!_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(syncOp->conflict().remoteNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
                                                    << Utility::formatSyncName(syncOp->conflict().remoteNode()->name()));
             }
 
@@ -2127,11 +2126,11 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     if (!syncOp->omit()) {
         // ID might have changed in the case of a delete+create
         if (!_syncPal->updateTree(syncOp->targetSide())
-                     ->updateNodeId(syncOp->affectedNode(), syncOp->targetSide() == ReplicaSide::Local ? localId : remoteId)) {
+                     ->updateNodeId(syncOp->correspondingNode(),
+                                    syncOp->targetSide() == ReplicaSide::Local ? localId : remoteId)) {
             LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::updateNodeId");
             return ExitCode::DataError;
         }
-
         syncOp->correspondingNode()->setLastModified(newLastModTime);
     }
     node = syncOp->correspondingNode();

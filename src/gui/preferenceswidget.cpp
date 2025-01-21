@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -278,7 +278,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     // Move file to trash disclaimer
     _moveTotrashDisclaimerWidget = new QWidget();
-    _moveTotrashDisclaimerWidget->setStyleSheet("background-color: #F4F6FD; border-radius: 5px;");
+    _moveTotrashDisclaimerWidget->setObjectName("disclaimerWidget");
     _moveTotrashDisclaimerWidget->setVisible(moveToTrashSwitch->isChecked());
     const auto moveToTrashDisclaimerHBox = new QHBoxLayout(_moveTotrashDisclaimerWidget);
     moveToTrashDisclaimerHBox->setContentsMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin);
@@ -443,7 +443,9 @@ void PreferencesWidget::clearUndecidedLists() {
 
 bool PreferencesWidget::isStaff() const {
     constexpr auto isStaffCallback = [](std::pair<int, UserInfoClient> const &item) { return item.second.isStaff(); };
-    return std::ranges::find_if(_gui->userInfoMap(), isStaffCallback) != _gui->userInfoMap().end();
+    // To be used with an later gcc version
+    // return std::ranges::any_of(_gui->userInfoMap(), isStaffCallback);
+    return std::any_of(_gui->userInfoMap().cbegin(), _gui->userInfoMap().cend(), isStaffCallback);
 }
 
 void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
