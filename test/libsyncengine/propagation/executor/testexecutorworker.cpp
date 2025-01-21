@@ -210,7 +210,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName) {};
+            ExecutorWorker(syncPal, name, shortName){};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };
@@ -369,7 +369,7 @@ void TestExecutorWorker::testTerminatedJobsQueue() {
 
 void TestExecutorWorker::propagateConflictToDbAndTree() {
     bool propagateChange = false;
-    const auto syncOp = generateSyncOperation(1, "test");
+    const auto syncOp = generateSyncOperation(1, Str("test"));
 
     // Conflict types involving no special treatment, just propagate changes to DB.
     syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::CreateParentDelete));
