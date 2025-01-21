@@ -1849,7 +1849,9 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
                                           L"Node `" << Utility::formatSyncName(syncOp->conflict().localNode()->name())
                                                     << L" not found in DB. This is ok since we wanted to remove to anyway.");
                     } else {
-                        // Remove local node from DB
+                        // Remove local node from DB failed!
+                        LOGW_SYNCPAL_WARN(_logger, L"deleteFromDb failed for "
+                                                           << Utility::formatSyncName(syncOp->conflict().localNode()->name()));
                         propagateChange = false;
                         return exitInfo;
                     }

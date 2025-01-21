@@ -166,14 +166,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
 SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
                                                     const OperationType opType) {
-    auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
-                                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                       _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    auto correspondingNode = std::make_shared<Node>(
+    const auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
+                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                             _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    const auto correspondingNode = std::make_shared<Node>(
             dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
             testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    SyncOpPtr op = std::make_shared<SyncOperation>();
+    auto op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
     op->setCorrespondingNode(correspondingNode);
     op->setType(opType);
@@ -365,6 +365,65 @@ void TestExecutorWorker::testTerminatedJobsQueue() {
     t2.join();
     t3.join();
     t4.join(); // Wait for all threads to finish.
+}
+
+void TestExecutorWorker::propagateConflictToDbAndTree() {
+    bool propagateChange = false;
+    const auto syncOp = generateSyncOperation(1, "test");
+
+    // Conflict types involving no special treatment, just propagate changes to DB.
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::CreateParentDelete));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveDelete));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveParentDelete));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveMoveCycle));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::None));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    /// EditDelete conflict : apply normal behavior only if the operation type is Delete.
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::EditDelete));
+    syncOp->setType(OperationType::Delete);
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    // EditDelete conflict : Do nothing if operation type is different from Delete.
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::EditDelete));
+    syncOp->setType(OperationType::Move);
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    // Conflict types involving special treatment
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::EditEdit));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::CreateCreate));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveCreate));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveMoveDest));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveMoveSource));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
 }
 
 void TestExecutorWorker::testLogCorrespondingNodeErrorMsg() {
