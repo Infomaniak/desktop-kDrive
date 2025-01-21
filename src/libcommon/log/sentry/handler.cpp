@@ -275,7 +275,9 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     sentry_options_set_max_spans(options, 1000); // Maximum number of spans per transaction
 
     // Init sentry
-    ASSERT(sentry_init(options) == 0);
+    int res = sentry_init(options);
+    std::cerr << "sentry_init returned " << res << std::endl;
+    ASSERT(res == 0);
     _instance->_isSentryActivated = true;
 }
 

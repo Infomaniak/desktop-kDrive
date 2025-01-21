@@ -280,7 +280,11 @@ elseif(BUILD_CLIENT)
         if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
             find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
             message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
-            install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
+            if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+                file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+            else()
+                install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
+            endif ()
         endif ()
 
         # xxHash

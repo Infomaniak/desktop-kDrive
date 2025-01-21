@@ -596,14 +596,6 @@ SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
 
 SyncPath Utility::binRelativePath() {
     SyncPath path(resourcesPath);
-
-#ifdef __unix__
-    const std::string value = CommonUtility::envVarValue("APPIMAGE");
-    if (!value.empty()) {
-        path = path / "usr/bin";
-    }
-#endif
-
     return path;
 }
 
