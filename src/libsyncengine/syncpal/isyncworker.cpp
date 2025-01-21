@@ -24,13 +24,14 @@ namespace KDC {
 
 ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                          bool testing /*= false*/) :
-    _logger(Log::instance()->getLogger()), _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName) {}
+    _logger(Log::instance()->getLogger()),
+    _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName) {}
 
 ISyncWorker::~ISyncWorker() {
     if (_isRunning) {
         ISyncWorker::stop();
     }
-
+    waitForExit();
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " destroyed");
     log4cplus::threadCleanup();
 }
