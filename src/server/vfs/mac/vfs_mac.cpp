@@ -274,7 +274,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
     _syncFileStatus(_vfsSetupParams._syncDbId, path, status);
     if (status == SyncFileStatus::Unknown) {
         // The file is not synchronized, do nothing
-        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatPath(fullPath));
+        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatSyncPath(fullPath));
         return true;
     }
 
