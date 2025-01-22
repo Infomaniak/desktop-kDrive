@@ -43,8 +43,9 @@ namespace KDC {
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
                          SyncTime creationTime, SyncTime modtime, bool isCreate) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
-    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
+    _remoteFileId(remoteFileId), _localpath(localpath), _expectedSize(expectedSize), _creationTime(creationTime),
+    _modtimeIn(modtime), _isCreate(isCreate) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -247,7 +248,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         bool fetchError = false;
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
-            writeError = !hasEnoughPlace(tmpDirectoryPath, _localpath.parent_path(), expectedSize);
+            writeError = !hasEnoughPlace(_tmpPath.parent_path(), _localpath.parent_path(), expectedSize);
             readError = expectedSize <= 0;
         }
 
@@ -368,13 +369,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
             } else if (!_vfsUpdateFetchStatus) {
                 // Replace file by tmp one
-                bool replaceError = false;
                 if (!moveTmpFile(restartSync)) {
                     LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
-                    replaceError = true;
+                    writeError = true;
                 }
 
-                _responseHandlingCanceled = replaceError || restartSync;
+                _responseHandlingCanceled = writeError || restartSync;
             }
         }
 
@@ -389,11 +389,15 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _exitCode = ExitCode::BackError;
                 _exitCause = ExitCause::InvalidSize;
                 return false;
-            } else if (writeError) {
+            } else if (writeError || fetchError) {
                 const std::streamsize neededPlace = expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
-                                                      ? BUF_SIZE
-                                                      : (expectedSize - getProgress());
-                if (!hasEnoughPlace(tmpDirectoryPath, _localpath.parent_path(), neededPlace)) {
+                                                            ? BUF_SIZE
+                                                            : (expectedSize - getProgress());
+                if (!hasEnoughPlace(_tmpPath.parent_path(), _localpath.parent_path(), neededPlace)) {
+                    LOGW_WARN(_logger, L"Request " << jobId() << L": Disk almost full, not enough place at "
+                                                   << Utility::formatSyncPath(_tmpPath) << L" or "
+                                                   << Utility::formatSyncPath(_localpath.parent_path())
+                                                   << L". Download job cancelled.");
                     _exitCode = ExitCode::SystemError;
                     _exitCause = ExitCause::NotEnoughDiskSpace;
                     return false;
@@ -635,11 +639,9 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
 bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace) {
     const SyncPath &smallerDir =
             Utility::freeDiskSpace(tmpDirPath) < Utility::freeDiskSpace(destDirPath) ? tmpDirPath : destDirPath;
-    const int64_t freeBytes = Utility::freeDiskSpace(smallerDir);
-    if (freeBytes >= 0) {
+
+    if (const int64_t freeBytes = Utility::freeDiskSpace(smallerDir); freeBytes >= 0) {
         if (freeBytes < neededPlace + Utility::freeDiskSpaceLimit()) {
-            LOGW_WARN(_logger, L"Request " << jobId() <<  L": Disk almost full, only " << freeBytes << L"B available at "
-                                                          << Utility::formatSyncPath(smallerDir) << L". Download job cancelled.");
             return false;
         }
     } else {

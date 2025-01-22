@@ -385,6 +385,35 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(content == "test");
         }
     }
+
+    // Not Enought disk space
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
+        std::ofstream ofs(local9MoFilePath, std::ios::binary);
+        ofs << std::string(9 * 1000000, 'a');
+        ofs.close();
+
+        // Upload file
+        UploadJob uploadJob(_driveDbId, local9MoFilePath, Str2SyncName("9Mo.txt"), remoteTmpDir.id(), 0);
+        uploadJob.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
+
+        SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
+        CPPUNIT_ASSERT(!smallPartitionPath.empty());
+        IoError ioError = IoError::Unknown;
+        bool exist = false;
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(exist);
+
+        // Try to download file (9Mo) in a 8Mo disk should fail with SystemError, NotEnoughDiskSpace.
+        const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
+        DownloadJob job(_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
+        const ExitInfo exitInfo = {job.runSynchronously(), job.exitCause()};
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), exitInfo);
+    }
 }
 
 void TestNetworkJobs::testDownloadAborted() {
