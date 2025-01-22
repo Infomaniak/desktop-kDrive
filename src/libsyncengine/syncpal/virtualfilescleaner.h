@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "vfs.h"
 #include "utility/types.h"
 
 #include <log4cplus/logger.h>
@@ -29,7 +30,7 @@ class SyncDb;
 class VirtualFilesCleaner {
     public:
         VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
-                            bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
+                            bool (*vfsStatus)(int, const SyncPath &, VfsStatus &),
                             bool (*vfsClearFileAttributes)(int, const SyncPath &));
 
         VirtualFilesCleaner(const SyncPath &path, int syncDbId);
@@ -37,8 +38,8 @@ class VirtualFilesCleaner {
         bool run();
         bool removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders);
 
-        inline ExitCode exitCode() const { return _exitCode; }
-        inline ExitCause exitCause() const { return _exitCause; }
+        [[nodiscard]] ExitCode exitCode() const { return _exitCode; }
+        [[nodiscard]] ExitCause exitCause() const { return _exitCause; }
 
     private:
         bool removePlaceholdersRecursively(const SyncPath &parentPath);
@@ -50,8 +51,7 @@ class VirtualFilesCleaner {
         SyncPath _rootPath;
         int _syncDbId{-1};
         std::shared_ptr<SyncDb> _syncDb = nullptr;
-        bool (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                           int &progress) = nullptr;
+        bool (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, VfsStatus &vfsStatus) = nullptr;
         bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &itemPath) = nullptr;
 
         ExitCode _exitCode = ExitCode::Unknown;

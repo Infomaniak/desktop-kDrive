@@ -37,7 +37,10 @@ CreateDirJob::~CreateDirJob() {
         if (!_vfsSetPinState(_filePath, PinState::AlwaysLocal)) {
             LOGW_WARN(_logger, L"Error in CreateDirJob::vfsSetPinState for " << Utility::formatSyncPath(_filePath).c_str());
         }
-        if (!_vfsForceStatus(_filePath, false, 0, true)) {
+
+        VfsStatus vfsStatus;
+        vfsStatus._isHydrated = true;
+        if (!_vfsForceStatus(_filePath, vfsStatus)) {
             LOGW_WARN(_logger, L"Error in CreateDirJob::vfsForceStatus for " << Utility::formatSyncPath(_filePath).c_str());
         }
     }
@@ -79,7 +82,8 @@ bool CreateDirJob::handleResponse(std::istream &is) {
             }
         }
 
-        if (!_filePath.empty() && _vfsForceStatus && !_vfsForceStatus(_filePath, false, 100, true)) {
+        VfsStatus vfsStatus(true, true, false, 100);
+        if (!_filePath.empty() && _vfsForceStatus && !_vfsForceStatus(_filePath, vfsStatus)) {
             LOGW_WARN(_logger, L"Error in CreateDirJob::_vfsForceStatus for " << Utility::formatSyncPath(_filePath).c_str());
         }
     }
