@@ -264,7 +264,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
         LOGW_DEBUG(logger(), L"dehydratePlaceholder - file " << Utility::formatSyncPath(path));
     }
 
-    SyncPath fullPath(_vfsSetupParams._localPath / path.native());
+    SyncPath fullPath(_vfsSetupParams._localPath / path);
     if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
         return exitInfo;
     }
@@ -505,7 +505,7 @@ void VfsMac::cancelHydrate(const SyncPath &filePathStd) {
 }
 
 ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated, bool isAbsolutePath /*= false*/) {
-    SyncPath filePath(isAbsolutePath ? initFilePathStd.native() : _vfsSetupParams._localPath / initFilePathStd.native());
+    SyncPath filePath(isAbsolutePath ? initFilePathStd : _vfsSetupParams._localPath / initFilePathStd);
 
     bool isPlaceholder = false;
     bool isHydrated = false;
@@ -521,7 +521,7 @@ ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &
 }
 
 ExitInfo VfsMac::setPinState(const SyncPath &fileRelativePathStd, PinState state) {
-    SyncPath fullPath(_vfsSetupParams._localPath / fileRelativePathStd.native());
+    SyncPath fullPath(_vfsSetupParams._localPath / fileRelativePathStd);
 
     if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
         return exitInfo;
@@ -540,7 +540,7 @@ ExitInfo VfsMac::setPinState(const SyncPath &fileRelativePathStd, PinState state
 
 PinState VfsMac::pinState(const SyncPath &relativePathStd) {
     // Read pin state from file attributes
-    SyncPath fullPath(_vfsSetupParams._localPath / relativePathStd.native());
+    SyncPath fullPath(_vfsSetupParams._localPath / relativePathStd);
     std::string pinState;
     if (!_connector->vfsGetPinState(Path2QStr(fullPath), pinState)) {
         return PinState::Unspecified;
@@ -651,7 +651,7 @@ ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
 bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatSyncPath(pathStd) << L" - status = " << status);
     const QString path = SyncName2QStr(pathStd.native());
-    SyncPath fullPath(pathStd.native());
+    SyncPath fullPath(pathStd);
     std::error_code ec;
     if (!std::filesystem::exists(fullPath, ec)) {
         if (ec.value() != 0) {
