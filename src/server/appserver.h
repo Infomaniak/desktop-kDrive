@@ -199,23 +199,22 @@ class AppServer : public SharedTools::QtSingleApplication {
         static bool vfsExclude(int syncDbId, const SyncPath &itemPath);
         static bool vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState &pinState);
         static bool vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState);
-        static bool vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                              int &progress);
+        static bool vfsStatus(int syncDbId, const SyncPath &itemPath, VfsStatus &vfsStatus);
         static bool vfsCreatePlaceholder(int syncDbIdconst, const SyncPath &relativeLocalPath, const SyncFileItem &item);
         static bool vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item);
         static bool vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                      const int64_t size, const NodeId &id, std::string &error);
+                                      int64_t size, const NodeId &id, std::string &error);
         static bool vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
                                          bool &canceled, bool &finished);
         static bool vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFileStatus status);
-        static bool vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false);
+        static bool vfsForceStatus(int syncDbId, const SyncPath &path, const VfsStatus &vfsStatus);
         static bool vfsCleanUpStatuses(int syncDbId);
         static bool vfsClearFileAttributes(int syncDbId, const SyncPath &path);
         static bool vfsCancelHydrate(int syncDbId, const SyncPath &path);
 
-        static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
-        static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
-        static void setSyncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool syncing);
+        static void syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatus &status);
+        static void syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncing);
+        static void setSyncFileSyncing(int syncDbId, const SyncPath &path, bool syncing);
 #ifdef Q_OS_MAC
         static void exclusionAppList(QString &appList);
 #endif

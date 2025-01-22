@@ -85,13 +85,10 @@ void Vfs::stop(bool unregister) {
 
 VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
-VfsOff::~VfsOff() {}
-
-bool VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
-    KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
+bool VfsOff::forceStatus(const QString &path, const VfsStatus vfsStatus) {
+    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     bool exists = false;
-    KDC::IoError ioError = KDC::IoError::Success;
-    if (!KDC::IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
+    if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << KDC::Utility::formatIoError(fullPath, ioError).c_str());
         return false;
     }
@@ -103,7 +100,7 @@ bool VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, 
 
     // Update Finder
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
-    QString status = isSyncing ? "SYNC" : "OK";
+    QString status = vfsStatus._isSyncing ? "SYNC" : "OK";
     _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
 
     return true;
@@ -117,7 +114,7 @@ static QString modeToPluginName(KDC::VirtualFileMode virtualFileMode) {
     if (virtualFileMode == KDC::VirtualFileMode::Suffix) return "suffix";
     if (virtualFileMode == KDC::VirtualFileMode::Win) return "win";
     if (virtualFileMode == KDC::VirtualFileMode::Mac) return "mac";
-    return QString();
+    return {};
 }
 
 bool KDC::isVfsPluginAvailable(KDC::VirtualFileMode virtualFileMode, QString &error) {

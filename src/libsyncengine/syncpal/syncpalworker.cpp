@@ -570,11 +570,8 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                 continue;
             }
 
-            bool isPlaceholder = false;
-            bool isHydrated = false;
-            bool isSyncing = false;
-            int progress = 0;
-            if (!_syncPal->vfsStatus(dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress)) {
+            VfsStatus vfsStatus;
+            if (!_syncPal->vfsStatus(dirIt->path(), vfsStatus)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus : " << Utility::formatSyncPath(dirIt->path()).c_str());
                 ok = false;
                 continue;
@@ -587,27 +584,27 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                 continue;
             }
 
-            if (isPlaceholder) {
-                if (isSyncing) {
+            if (vfsStatus._isPlaceholder) {
+                if (vfsStatus._isSyncing) {
                     // Force status to dehydrated
-                    if (!_syncPal->vfsForceStatus(dirIt->path(), false, 0, false)) {
+                    vfsStatus._isHydrated = false;
+                    if (!_syncPal->vfsForceStatus(dirIt->path(), vfsStatus)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;
                         continue;
                     }
-                    isHydrated = false;
                 }
 
                 // Fix pinstate if needed
-                if (isHydrated && pinState != PinState::AlwaysLocal) {
+                if (vfsStatus._isHydrated && pinState != PinState::AlwaysLocal) {
                     if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::AlwaysLocal)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;
                         continue;
                     }
-                } else if (!isHydrated && pinState != PinState::OnlineOnly) {
+                } else if (!vfsStatus._isHydrated && pinState != PinState::OnlineOnly) {
                     if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::OnlineOnly)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
