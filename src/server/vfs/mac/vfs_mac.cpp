@@ -274,7 +274,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
     _syncFileStatus(_vfsSetupParams._syncDbId, path, status);
     if (status == SyncFileStatus::Unknown) {
         // The file is not synchronized, do nothing
-        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatPath(path));
+        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatPath(fullPath));
         return true;
     }
 
@@ -290,7 +290,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
 
     if (!isPlaceholder) {
         // Not a placeholder
-        LOGW_WARN(logger(), L"Not a placeholder: " << Utility::formatSyncPath(fullPath).c_str());
+        LOGW_WARN(logger(), L"Not a placeholder: " << Utility::formatSyncPath(fullPath);
         return {ExitCode::SystemError, ExitCause::NotPlaceHolder};
     }
 
