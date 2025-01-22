@@ -80,11 +80,11 @@ const int CommonUtility::logMaxSize = 500 * 1024 * 1024; // MB
 
 SyncPath CommonUtility::_workingDirPath = "";
 
-static const QString englishCode = "en";
-static const QString frenchCode = "fr";
-static const QString germanCode = "de";
-static const QString spanishCode = "es";
-static const QString italianCode = "it";
+const QString CommonUtility::englishCode = "en";
+const QString CommonUtility::frenchCode = "fr";
+const QString CommonUtility::germanCode = "de";
+const QString CommonUtility::spanishCode = "es";
+const QString CommonUtility::italianCode = "it";
 
 static std::random_device rd;
 static std::default_random_engine gen(rd());
@@ -505,7 +505,7 @@ SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &p
     return relativePath;
 }
 
-QStringList CommonUtility::languageCodeList(const KDC::Language enforcedLocale) {
+QStringList CommonUtility::languageCodeList(const Language enforcedLocale) {
     QStringList uiLanguages = QLocale::system().uiLanguages();
     uiLanguages.prepend(languageCode(enforcedLocale));
 
@@ -516,30 +516,21 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
     return languageCode.compare(englishCode) == 0;
 }
 
-QString CommonUtility::languageCode(const KDC::Language enforcedLocale) {
-    switch (enforcedLocale) {
-        case KDC::Language::Default: {
-            return QLocale::system().uiLanguages().isEmpty() ? QString() : QLocale::system().uiLanguages().first().left(2);
-            break;
-        }
-        case KDC::Language::English:
-            return englishCode;
-            break;
-        case KDC::Language::French:
+QString CommonUtility::languageCode(const Language language) {
+    switch (language) {
+        case Language::French:
             return frenchCode;
-            break;
-        case KDC::Language::German:
+        case Language::German:
             return germanCode;
-            break;
-        case KDC::Language::Italian:
+        case Language::Italian:
             return italianCode;
-            break;
-        case KDC::Language::Spanish:
+        case Language::Spanish:
             return spanishCode;
+        case Language::English:
+        case Language::Default:
             break;
     }
-
-    return {};
+    return englishCode; // Return english by default.
 }
 
 SyncPath CommonUtility::getAppDir() {
