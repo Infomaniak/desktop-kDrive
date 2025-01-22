@@ -50,7 +50,7 @@ class SourceLocation {
         // This is a workaround for the lack of support for std::source_location.
         // It is not as accurate as std::source_location but it is better than nothing.
         // void foo(SourceLocation loc = currentLoc()) -> loc will be evaluated at the definition site instead of the call site.
-#define currentLoc() currentLocCompatibility(__LINE__, __FILE__, "")
+#define currentLoc() currentLocCompatibility(__LINE__, __FILE__)
         [[nodiscard]] static consteval SourceLocation currentLocCompatibility(uint32_t line, const char* file) {
             SourceLocation result;
             result._line = line;
