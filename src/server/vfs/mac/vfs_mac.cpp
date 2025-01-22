@@ -48,7 +48,7 @@ VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
 }
 
 VirtualFileMode VfsMac::mode() const {
-    return VirtualFileMode::Mac;
+   return VirtualFileMode::Mac;
 }
 
 ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
@@ -253,7 +253,7 @@ ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     if (!_connector->vfsCreatePlaceHolder(QString::fromStdString(relativeLocalPath.native()), _localSyncPath, &fileStat)) {
         LOG_WARN(logger(), "Error in vfsCreatePlaceHolder!");
         return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
-                                  // NotFound as this make no sense in the context of a create
+                                  // NotFound as it make no sense in the context of a create
     }
 
     return ExitCode::Ok;
@@ -310,10 +310,13 @@ ExitInfo VfsMac::convertToPlaceholder(const SyncPath &pathStd, const SyncFileIte
 
     if (path.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
-        return {ExitCode::SystemError, ExitCause::NotFound};
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
     SyncPath fullPath(QStr2Path(path));
+    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+        return exitInfo;
+    }
 
     // Check if the file is already a placeholder
     bool isPlaceholder;
@@ -464,7 +467,7 @@ ExitInfo VfsMac::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
     }
     if (tmpPath.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
-        return ExitCode::SystemError;
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
     std::filesystem::path fullPath(QStr2Path(path));
@@ -502,8 +505,7 @@ void VfsMac::cancelHydrate(const SyncPath &filePathStd) {
 }
 
 ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated, bool isAbsolutePath /*= false*/) {
-    const QString initFilePath = SyncName2QStr(initFilePathStd.native());
-    SyncPath filePath(isAbsolutePath ? QStr2Path(initFilePath) : _vfsSetupParams._localPath / QStr2Path(initFilePath));
+    SyncPath filePath(isAbsolutePath ? initFilePathStd.native() : _vfsSetupParams._localPath / initFilePathStd.native());
 
     bool isPlaceholder = false;
     bool isHydrated = false;
@@ -519,8 +521,7 @@ ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &
 }
 
 ExitInfo VfsMac::setPinState(const SyncPath &fileRelativePathStd, PinState state) {
-    QString fileRelativePath = SyncName2QStr(fileRelativePathStd.native());
-    std::filesystem::path fullPath(_vfsSetupParams._localPath / QStr2Path(fileRelativePath));
+    SyncPath fullPath(_vfsSetupParams._localPath / fileRelativePathStd.native());
 
     if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
         return exitInfo;
@@ -565,7 +566,7 @@ ExitInfo VfsMac::status(const SyncPath &filePathStd, bool &isPlaceholder, bool &
 
 void VfsMac::exclude(const SyncPath &pathStd) {
     const QString path = SyncName2QStr(pathStd.native());
-    LOGW_DEBUG(logger(), L"exclude - " << Utility::formatPath(path).c_str());
+    LOGW_DEBUG(logger(), L"exclude - " << Utility::formatPath(pathStd).c_str());
 
     bool isPlaceholder = false;
     bool isHydrated = false;
@@ -621,7 +622,7 @@ ExitInfo VfsMac::setThumbnail(const SyncPath &absoluteFilePathStd, const QPixmap
     const QString absoluteFilePath = SyncName2QStr(absoluteFilePathStd.native());
     if (!_connector->vfsSetThumbnail(absoluteFilePath, pixmap)) {
         LOG_WARN(logger(), "Error in vfsSetThumbnail!");
-        return handleVfsError(QStr2Path(absoluteFilePath));
+        return handleVfsError(absoluteFilePathStd);
     }
 
     return ExitCode::Ok;

@@ -482,7 +482,7 @@ ExitInfo SocketApi::setPinState(const FileData &fileData, KDC::PinState pinState
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _vfsMap.cend()) return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+    if (vfsMapIt == _vfsMap.cend()) return {ExitCode::LogicError};
 
     return vfsMapIt->second->setPinState(QStr2Path(fileData.relativePath), pinState);
 }
@@ -491,7 +491,7 @@ ExitInfo SocketApi::dehydratePlaceholder(const FileData &fileData) {
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _vfsMap.cend()) return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+    if (vfsMapIt == _vfsMap.cend()) return {ExitCode::LogicError};
 
     return vfsMapIt->second->dehydratePlaceholder(QStr2Path(fileData.relativePath));
 }
@@ -1094,8 +1094,8 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
             bool isHydrated = false;
             bool isSyncing = false;
             int progress = 0;
-            if (!canCancelHydration && vfsMapIt->second->status(QStr2Path(file), isPlaceholder, isHydrated, isSyncing, progress) &&
-                isSyncing) {
+            if (!canCancelHydration &&
+                vfsMapIt->second->status(QStr2Path(file), isPlaceholder, isHydrated, isSyncing, progress) && isSyncing) {
                 canCancelHydration = syncPalMapIt->second->isDownloadOngoing(QStr2Path(file));
             }
 

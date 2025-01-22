@@ -127,8 +127,9 @@ class Vfs : public QObject {
          * - ExitCode::Ok: Everything went fine, the metadata was updated.
          * - ExitCode::LogicError, ExitCause::Unknown: The liteSync connector is not initialized.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
-         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
+         * - ExitCode::SystemError, ExitCause::NotFoud: The item(filePath) could not be found on the local filesystem.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item(filePath) or the item(filePath) is
+         * locked.
          */
         virtual ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modtime, int64_t size,
                                         const NodeId &fileId) = 0;
@@ -140,18 +141,13 @@ class Vfs : public QObject {
          * - ExitCode::LogicError, ExitCause::InvalidArgument: relativeLocalPath is empty or item.remoteNodeId is not set.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
          * - ExitCode::SystemError, ExitCause::NotFoud: The parent folder does not exist.
-         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the destination folder or it is
-         * locked.
+         * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the destination folder.
          * - ExitCode::SystemError, ExitCause::FileAlreadyExist: An item with the same name already exists in the destination
          * folder.
          */
         virtual ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) = 0;
 
-        /** Convert a hydrated placeholder to a dehydrated one. Called from PropagateDownlaod.
-         *
-         * This is different from delete+create because preserving some file metadata
-         * (like pin states) may be essential for some vfs plugins.
-         *
+        /** Convert a hydrated placeholder to a dehydrated one.
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the placeholder is dehydrating (async).
          * - ExitCode::LogicError, ExitCause::InvalidArgument: The provided path is empty.
@@ -336,10 +332,34 @@ class Vfs : public QObject {
 
         inline log4cplus::Logger logger() const { return _vfsSetupParams._logger; }
 
+
+        /* Handle a VFS error by logging it and returning an ExitInfo with the appropriate error code.
+         *  As the reason behind the error is not (yet) provided by some of the OS specific VFS implementations,
+         *  the error provided to the application will only be based on the existence/permission of the file/directory.
+         *  If there is no issue with the file/directory, the error will be Vfs::defaultVfsError().         *
+         */
         ExitInfo handleVfsError(const SyncPath &itemPath, const SourceLocation location = SourceLocation::currentLoc()) const;
+
+        /* Check if a path exists and return an ExitInfo with the appropriate error code.
+         *
+         * @param itemPath The path to check.
+         * @param shouldExist Whether the path should exist or not.
+         * @param location The location of the call.
+         *
+         * @return ExitInfo with the appropriate error code:
+         *   - ExitCode::Ok if the path exists and shouldExist is true.
+         *   - ExitCode::Ok if the path does not exist and shouldExist is false.
+         *   - ExitCode::SystemError, ExitCause::NotFoud if the path does not exist and shouldExist is true.
+         *   - ExitCode::SystemError, ExitCause::FileAlreadyExist if the path exist and shouldExist is false.
+         *   - ExitCode::SystemError, ExitCause::FileAccessError if the path is not accessible.
+         *   - ExitCode::SystemError, ExitCause::InvalidArguments if the path is empty.
+         */
         ExitInfo checkIfPathExists(const SyncPath &itemPath, bool shouldExist,
                                    const SourceLocation location = SourceLocation::currentLoc()) const;
-        // By default we will return file access error.
+
+        /* By default we will return file access error.
+         *  The file will be blacklisted for 1h or until the user edit, move or delete it (or the sync is restarted).
+         */
         inline ExitInfo defaultVfsError(const SourceLocation location = SourceLocation::currentLoc()) const {
             return {ExitCode::SystemError, ExitCause::FileAccessError, location};
         }

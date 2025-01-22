@@ -133,15 +133,16 @@ ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation loca
 
 ExitInfo Vfs::checkIfPathExists(const SyncPath &itemPath, bool shouldExist, const SourceLocation location) const {
     if (itemPath.empty()) {
-        LOGW_WARN(logger(), L"Empty path");
+        LOGW_WARN(logger(), L"Empty path provided in Vfs::checkIfPathExists");
         assert(false && "Empty path in a VFS call");
-        return {ExitCode::SystemError, ExitCause::NotFound, location};
+        return {ExitCode::SystemError, ExitCause::InvalidArgument, location};
     }
+
     bool exists = false;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(itemPath, ioError));
-        return {ExitCode::SystemError, location};
+        return {ExitCode::SystemError};
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(itemPath, ioError));

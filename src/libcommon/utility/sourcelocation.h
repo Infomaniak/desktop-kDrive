@@ -21,6 +21,7 @@
 #if defined(_WIN32)
 // || defined(__APPLE__) still buggy on macOS
 // https://www.reddit.com/r/cpp/comments/1b1pjii/comment/ksg8efc/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+
 #define SRC_LOC_AVALAIBALE
 #endif
 
@@ -46,15 +47,14 @@ class SourceLocation {
             return result;
         }
 #else
-#define currentLoc()                            \
-    currentLocCompatibility(__LINE__, __FILE__, \
-                            "") // Cannot be used as a default argument as it will be evaluated at the definition site.
-        [[nodiscard]] static consteval SourceLocation currentLocCompatibility(uint32_t line, const char* file,
-                                                                              const char* function) {
+        // This is a workaround for the lack of support for std::source_location.
+        // It is not as accurate as std::source_location but it is better than nothing.
+        // void foo(SourceLocation loc = currentLoc()) -> loc will be evaluated at the definition site instead of the call site.
+#define currentLoc() currentLocCompatibility(__LINE__, __FILE__, "")
+        [[nodiscard]] static consteval SourceLocation currentLocCompatibility(uint32_t line, const char* file) {
             SourceLocation result;
             result._line = line;
             result._fileName = file;
-            result._functionName = function;
             return result;
         }
 #endif // SRC_LOC_AVALAIBALE
@@ -70,6 +70,11 @@ class SourceLocation {
             auto lastColon = str.find_last_of(':');
             return lastColon != std::string::npos ? str.substr(lastColon + 1) : str; // "namespace::class::function" -> "function"
         }
+        [[nodiscard]] std::string toString() const {
+            return fileName() + ":" + std::to_string(line()) +
+                   (functionName().empty() ? "" : "[" + functionName() + "]");
+        }
+
 
     private:
         uint32_t _line = 0;

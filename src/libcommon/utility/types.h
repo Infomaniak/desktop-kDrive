@@ -258,6 +258,7 @@ struct ExitInfo {
         operator ExitCause() const { return _cause; }
         explicit operator std::string() const {
             // Example: "ExitInfo{SystemError-NotFound from (file.cpp:42[functionName])}"
+            // Example: "ExitInfo{Ok-Unknown}"
             return "ExitInfo{" + toString(code()) + "-" + toString(cause()) + srcLocStr() + "}";
         }
         constexpr operator bool() const { return _code == ExitCode::Ok; }
@@ -271,8 +272,7 @@ struct ExitInfo {
 
         std::string srcLocStr() const {
             if (_code == ExitCode::Ok) return "";
-            return " from (" + _srcLoc.fileName() + ":" + std::to_string(_srcLoc.line()) +
-                   (!_srcLoc.functionName().empty() ? "[" + _srcLoc.functionName() + "]" : "");
+            return " from (" + _srcLoc.toString() + ")";
         }
 };
 std::string toString(ExitInfo e);

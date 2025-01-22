@@ -88,7 +88,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         log4cplus::Logger _logger;
 
         void exclude(const SyncPath &path) final;
-        ExitInfo setPlaceholderStatus(const QString &path, bool syncOngoing);
+        ExitInfo setPlaceholderStatus(const SyncPath &path, bool syncOngoing);
 };
 
 class WinVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsWin> {

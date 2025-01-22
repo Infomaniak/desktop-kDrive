@@ -230,8 +230,8 @@ void ExecutorWorker::execute() {
     _syncPal->vfsCleanUpStatuses();
 
     setExitCause(executorExitInfo.cause());
-    setDone(executorExitInfo.code());
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name() << " " << executorExitInfo);
+    setDone(executorExitInfo.code());
 }
 
 void ExecutorWorker::initProgressManager() {
@@ -367,7 +367,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     syncOp, syncOp->correspondingNode()->id().has_value() ? *syncOp->correspondingNode()->id() : std::string(),
                     syncOp->affectedNode()->lastmodified(), node);
             !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
