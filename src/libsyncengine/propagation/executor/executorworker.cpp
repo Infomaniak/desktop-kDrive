@@ -299,11 +299,10 @@ void ExecutorWorker::logCorrespondingNodeErrorMsg(const SyncOpPtr syncOp) {
     const std::wstring mainMsg = L"Error in UpdateTree::deleteNode: ";
     if (syncOp->correspondingNode()) {
         const auto nodeName = Utility::formatSyncName(syncOp->correspondingNode()->name());
-        LOGW_SYNCPAL_WARN(_logger, mainMsg << L"correspondingNode name=" << L"'" << nodeName << L"'.");
+        LOGW_SYNCPAL_WARN(_logger, mainMsg << L"correspondingNode " << nodeName);
     } else {
         const auto nodeName = Utility::formatSyncName(syncOp->affectedNode()->name());
-        LOGW_SYNCPAL_WARN(_logger,
-                          mainMsg << L"correspondingNode is nullptr, former affectedNode name=" << L"'" << nodeName << L"'.");
+        LOGW_SYNCPAL_WARN(_logger, mainMsg << L"correspondingNode is nullptr, former affectedNode " << nodeName);
     }
 }
 
@@ -1857,12 +1856,12 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
             }
             // Remove node from update tree
             if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->conflict().localNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
                                                    << Utility::formatSyncName(syncOp->conflict().localNode()->name()));
             }
 
             if (!_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(syncOp->conflict().remoteNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
                                                    << Utility::formatSyncName(syncOp->conflict().remoteNode()->name()));
             }
 
