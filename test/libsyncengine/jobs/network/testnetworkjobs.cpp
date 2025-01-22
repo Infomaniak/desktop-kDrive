@@ -385,7 +385,7 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(content == "test");
         }
     }
-
+    MockIoHelperTestNetworkJobs::resetStdFunctions();
     // Not Enought disk space
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
