@@ -21,7 +21,6 @@
 #include "abstractupdater.h"
 #include "utility/types.h"
 
-#include <QObject>
 #include <QTimer>
 
 /**
