@@ -54,6 +54,7 @@ struct VfsSetupParams {
 };
 
 struct WorkerInfo {
+        ~WorkerInfo();
         QMutex _mutex;
         std::deque<QString> _queue;
         QWaitCondition _queueWC;

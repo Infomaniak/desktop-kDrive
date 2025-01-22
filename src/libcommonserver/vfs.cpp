@@ -63,19 +63,6 @@ Vfs::~Vfs() {
         worker._mutex.unlock();
         worker._queueWC.wakeAll();
     }
-
-    // Force threads to stop if needed
-    for (auto &worker: _workerInfo) {
-        for (QThread *thread: qAsConst(worker._threadList)) {
-            if (thread) {
-                thread->quit();
-                if (!thread->wait(1000)) {
-                    thread->terminate();
-                    thread->wait();
-                }
-            }
-        }
-    }
 }
 
 QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
@@ -163,6 +150,18 @@ ExitInfo Vfs::checkIfPathExists(const SyncPath &itemPath, bool shouldExist, cons
 VfsWorker::VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger) :
     _vfs(vfs), _type(type), _num(num), _logger(logger) {}
 
+WorkerInfo::~WorkerInfo() {
+    // Force threads to stop if needed
+    for (QThread *thread: qAsConst(_threadList)) {
+        if (thread) {
+            thread->quit();
+            if (!thread->wait(1000)) {
+                thread->terminate();
+                thread->wait();
+            }
+        }
+    }
+}
 void VfsWorker::start() {
     LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " started");
 
