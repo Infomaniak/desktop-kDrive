@@ -53,13 +53,7 @@ struct TestVariables {
             remoteDirId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID");
             remotePath = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH");
             apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
-#ifdef _WIN32
-            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN");
-#elif __APPLE__
-            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS");
-#else
-            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX");
-#endif
+            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH");
         }
 };
 
