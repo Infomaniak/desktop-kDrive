@@ -97,6 +97,15 @@ struct VariantPrinter {
 log4cplus::Logger Utility::_logger;
 
 int64_t Utility::freeDiskSpace(const SyncPath &path) {
+    bool isDirectory = false;
+    IoError ioError = IoError::Unknown;
+
+    IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
+    if (ioError != IoError::Success) {
+        return -1;
+    }
+    SyncPath tmpDirPath = isDirectory ? path : path.parent_path();
+
 #if defined(__APPLE__)
     struct statvfs stat;
     if (statvfs(path.c_str(), &stat) == 0) {

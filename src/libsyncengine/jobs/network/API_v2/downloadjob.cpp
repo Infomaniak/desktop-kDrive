@@ -248,7 +248,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         bool fetchError = false;
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
-            writeError = !hasEnoughPlace(_tmpPath.parent_path(), _localpath.parent_path(), expectedSize);
+            writeError = !hasEnoughPlace(_tmpPath, _localpath, expectedSize);
             readError = expectedSize <= 0;
         }
 
@@ -393,7 +393,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 const std::streamsize neededPlace = expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
                                                             ? BUF_SIZE
                                                             : (expectedSize - getProgress());
-                if (!hasEnoughPlace(_tmpPath.parent_path(), _localpath.parent_path(), neededPlace)) {
+                if (!hasEnoughPlace(_tmpPath, _localpath, neededPlace)) {
                     LOGW_WARN(_logger, L"Request " << jobId() << L": Disk almost full, not enough place at "
                                                    << Utility::formatSyncPath(_tmpPath) << L" or "
                                                    << Utility::formatSyncPath(_localpath.parent_path())
