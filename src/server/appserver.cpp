@@ -2357,13 +2357,14 @@ bool AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState 
     return true;
 }
 
-bool AppServer::vfsStatus(int syncDbId, const SyncPath &itemPath, VfsStatus &vfsStatus) {
+bool AppServer::vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+                          int &progress) {
     if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
 
-    return _vfsMap[syncDbId]->status(SyncName2QStr(itemPath.native()), vfsStatus);
+    return _vfsMap[syncDbId]->status(SyncName2QStr(itemPath.native()), isPlaceholder, isHydrated, isSyncing, progress);
 }
 
 bool AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item) {
@@ -2447,13 +2448,13 @@ bool AppServer::vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFil
     return true;
 }
 
-bool AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, const VfsStatus &vfsStatus) {
-    if (!_vfsMap.contains(syncDbId)) {
+bool AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
+    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
 
-    if (!_vfsMap[syncDbId]->forceStatus(SyncName2QStr(path.native()), vfsStatus)) {
+    if (!_vfsMap[syncDbId]->forceStatus(SyncName2QStr(path.native()), isSyncing, progress, isHydrated)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Vfs::forceStatus for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
         return false;

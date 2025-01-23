@@ -75,7 +75,7 @@ DownloadJob::~DownloadJob() {
 
         // TODO: usefull ?
         if (_vfsForceStatus) {
-            if (const VfsStatus vfsStatus(true, false, false, 0); !_vfsForceStatus(_localpath, vfsStatus)) {
+            if (!_vfsForceStatus(_localpath, false, 0, false)) {
                 LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath));
             }
         }
@@ -93,7 +93,7 @@ DownloadJob::~DownloadJob() {
         }
 
         if (_vfsForceStatus) {
-            if (const VfsStatus vfsStatus(true, _exitCode == ExitCode::Ok, false, 0); !_vfsForceStatus(_localpath, vfsStatus)) {
+            if (!_vfsForceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok)) {
                 LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath));
             }
         }
@@ -162,7 +162,7 @@ void DownloadJob::runJob() noexcept {
         }
 
         if (_vfsForceStatus) {
-            if (const VfsStatus vfsStatus(true, false, true, 0); !_vfsForceStatus(_localpath, vfsStatus)) {
+            if (!_vfsForceStatus(_localpath, true, 0, false)) {
                 LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath));
                 return;
             }

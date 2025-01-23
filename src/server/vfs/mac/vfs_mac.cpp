@@ -131,16 +131,17 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
         LOG_WARN(logger(), "Error in setAppExcludeList!");
     }
 
-    VfsStatus vfsStatus;
+    bool isPlaceholder = false;
+    bool isSyncing = false;
     QString folderPath = QString::fromStdString(_vfsSetupParams._localPath.native());
-    if (!_connector->vfsStart(_vfsSetupParams._syncDbId, folderPath, vfsStatus)) {
+    if (!_connector->vfsStart(_vfsSetupParams._syncDbId, folderPath, isPlaceholder, isSyncing)) {
         LOG_WARN(logger(), "Error in vfsStart!");
         resetLiteSyncConnector();
         return false;
     }
 
-    if (QStringList filesToFix;
-        vfsStatus._isPlaceholder && vfsStatus._isSyncing &&
+    QStringList filesToFix;
+    if (isPlaceholder && isSyncing &&
         _connector->checkFilesAttributes(folderPath, _localSyncPath,
                                          filesToFix)) { // Verify that all files/folders are in the correct state
         // Get the directories to fix
@@ -209,11 +210,12 @@ void VfsMac::hydrate(const QString &path) {
     _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
-bool VfsMac::forceStatus(const QString &path, VfsStatus vfsStatus) {
-    const auto stdPath = QStr2Path(path);
+bool VfsMac::forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated /*= false*/) {
+    SyncPath stdPath = QStr2Path(path);
 
     bool exists = false;
-    if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
+    IoError ioError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError));
         return false;
     }
@@ -223,7 +225,7 @@ bool VfsMac::forceStatus(const QString &path, VfsStatus vfsStatus) {
         return true;
     }
 
-    return _connector->vfsSetStatus(path, _localSyncPath, vfsStatus);
+    return _connector->vfsSetStatus(path, _localSyncPath, isSyncing, progress, isHydrated);
 }
 
 bool VfsMac::cleanUpStatuses() {
@@ -330,13 +332,16 @@ bool VfsMac::dehydratePlaceholder(const QString &path) {
     }
 
     // Check if the file is a placeholder
-    VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(QString::fromStdString(fullPath.native()), vfsStatus)) {
+    bool isPlaceholder;
+    bool isHydrated;
+    bool isSyncing;
+    int progress;
+    if (!_connector->vfsGetStatus(QString::fromStdString(fullPath.native()), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return false;
     }
 
-    if (vfsStatus._isHydrated) {
+    if (isHydrated) {
         LOGW_DEBUG(logger(), L"Dehydrate file with " << Utility::formatPath(path));
         dehydrate(QString::fromStdString(fullPath.string()));
     }
@@ -354,16 +359,19 @@ bool VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item)
         return false;
     }
 
-    auto fullPath(QStr2Path(path));
+    SyncPath fullPath(QStr2Path(path));
 
     // Check if the file is already a placeholder
-    VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(path, vfsStatus)) {
+    bool isPlaceholder;
+    bool isHydrated;
+    bool isSyncing;
+    int progress;
+    if (!_connector->vfsGetStatus(path, isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return false;
     }
 
-    if (!vfsStatus._isPlaceholder) {
+    if (!isPlaceholder) {
         // Convert to placeholder
         if (!_connector->vfsConvertToPlaceHolder(QDir::toNativeSeparators(path), !item.dehydrated())) {
             LOG_WARN(logger(), "Error in vfsConvertToPlaceHolder!");
@@ -460,13 +468,16 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             }
 
             // Check if the file is already a placeholder
-            VfsStatus vfsStatus;
-            if (!_connector->vfsGetStatus(Path2QStr(absolutePath), vfsStatus)) {
+            bool isPlaceholder;
+            bool isHydrated;
+            bool isSyncing;
+            int progress;
+            if (!_connector->vfsGetStatus(Path2QStr(absolutePath), isPlaceholder, isHydrated, isSyncing, progress)) {
                 LOG_WARN(logger(), "Error in vfsGetStatus!");
                 continue;
             }
 
-            if (!vfsStatus._isPlaceholder) {
+            if (!isPlaceholder) {
                 // Convert to placeholder
                 if (!_connector->vfsConvertToPlaceHolder(Path2QStr(absolutePath), isHydratedIn)) {
                     LOG_WARN(logger(), "Error in vfsConvertToPlaceHolder!");
@@ -498,8 +509,9 @@ bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint
         return false;
     }
 
-    auto fullPath(QStr2Path(path));
-    if (std::error_code ec; !std::filesystem::exists(fullPath, ec)) {
+    std::filesystem::path fullPath(QStr2Path(path));
+    std::error_code ec;
+    if (!std::filesystem::exists(fullPath, ec)) {
         if (ec.value() != 0) {
             LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatStdError(fullPath, ec));
             return false;
@@ -508,13 +520,12 @@ bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     }
 
     // Check if the file is a placeholder
-    VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(Path2QStr(fullPath), vfsStatus)) {
+    bool isPlaceholder = false;
+    bool isHydrated = false;
+    bool isSyncing = false;
+    int progress = 0;
+    if (!_connector->vfsGetStatus(Path2QStr(fullPath), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
-        return false;
-    }
-    if (!vfsStatus._isPlaceholder) {
-        LOGW_WARN(logger(), L"VfsMac::updateFetchStatus - Item is not a placeholder. " << Utility::formatSyncPath(fullPath));
         return false;
     }
 
@@ -546,22 +557,26 @@ void VfsMac::cancelHydrate(const QString &filePath) {
 }
 
 bool VfsMac::isDehydratedPlaceholder(const QString &initFilePath, bool isAbsolutePath /*= false*/) {
-    const SyncPath filePath(isAbsolutePath ? QStr2Path(initFilePath) : _vfsSetupParams._localPath / QStr2Path(initFilePath));
+    SyncPath filePath(isAbsolutePath ? QStr2Path(initFilePath) : _vfsSetupParams._localPath / QStr2Path(initFilePath));
 
-    VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(Path2QStr(filePath), vfsStatus)) {
+    bool isPlaceholder = false;
+    bool isHydrated = false;
+    bool isSyncing = false;
+    int progress = 0;
+    if (!_connector->vfsGetStatus(Path2QStr(filePath), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return false;
     }
 
-    return !vfsStatus._isHydrated;
+    return !isHydrated;
 }
 
 bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
     std::filesystem::path fullPath(_vfsSetupParams._localPath / QStr2Path(fileRelativePath));
 
     bool exists = false;
-    if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
+    IoError ioError = IoError::Success;
+    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError));
         return false;
     }
@@ -572,7 +587,8 @@ bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
         return true;
     }
 
-    if (const QString strPath = Path2QStr(fullPath); !_connector->vfsSetPinState(
+    const QString strPath = Path2QStr(fullPath);
+    if (!_connector->vfsSetPinState(
                 strPath, _localSyncPath,
                 (state == PinState::AlwaysLocal ? litesync_attrs::pinStatePinned : litesync_attrs::pinStateUnpinned))) {
         LOG_WARN(logger(), "Error in vfsSetPinState!");
@@ -584,7 +600,7 @@ bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
 
 PinState VfsMac::pinState(const QString &relativePath) {
     // Read pin state from file attributes
-    const SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
+    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     std::string pinState;
     if (!_connector->vfsGetPinState(Path2QStr(fullPath), pinState)) {
         return PinState::Unspecified;
@@ -599,8 +615,9 @@ PinState VfsMac::pinState(const QString &relativePath) {
     return PinState::Unspecified;
 }
 
-bool VfsMac::status(const QString &filePath, VfsStatus &vfsStatus) {
-    if (!_connector->vfsGetStatus(filePath, vfsStatus)) {
+bool VfsMac::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
+    SyncPath fullPath(QStr2Path(filePath));
+    if (!_connector->vfsGetStatus(Path2QStr(fullPath), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return false;
     }
@@ -611,23 +628,23 @@ bool VfsMac::status(const QString &filePath, VfsStatus &vfsStatus) {
 void VfsMac::exclude(const QString &path) {
     LOGW_DEBUG(logger(), L"exclude - " << Utility::formatPath(path));
 
-    VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(QDir::toNativeSeparators(path), vfsStatus)) {
+    bool isPlaceholder = false;
+    bool isHydrated = false;
+    bool isSyncing = false;
+    int progress = 0;
+    if (!_connector->vfsGetStatus(QDir::toNativeSeparators(path), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return;
     }
 
-    if (vfsStatus._isSyncing || vfsStatus._isHydrated) {
-        vfsStatus._isSyncing = false;
-        vfsStatus._progress = 0;
-        vfsStatus._isHydrated = true;
-        if (!_connector->vfsSetStatus(QDir::toNativeSeparators(path), _localSyncPath, vfsStatus)) {
+    if (isSyncing || isHydrated) {
+        if (!_connector->vfsSetStatus(QDir::toNativeSeparators(path), _localSyncPath, false, 0, true)) {
             LOG_WARN(logger(), "Error in vfsSetStatus!");
             return;
         }
     }
 
-    if (vfsStatus._isPlaceholder) {
+    if (isPlaceholder) {
         std::string pinState;
         if (!_connector->vfsGetPinState(QDir::toNativeSeparators(path), pinState)) {
             LOG_WARN(logger(), "Error in vfsGetPinState!");
@@ -637,19 +654,23 @@ void VfsMac::exclude(const QString &path) {
         if (pinState != litesync_attrs::pinStateExcluded) {
             if (!_connector->vfsSetPinState(QDir::toNativeSeparators(path), _localSyncPath, litesync_attrs::pinStateExcluded)) {
                 LOG_WARN(logger(), "Error in vfsSetPinState!");
+                return;
             }
         }
     }
 }
 
 bool VfsMac::isExcluded(const QString &filePath) {
-    VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(QDir::toNativeSeparators(filePath), vfsStatus)) {
+    bool isPlaceholder;
+    bool isHydrated;
+    bool isSyncing;
+    int progress;
+    if (!_connector->vfsGetStatus(QDir::toNativeSeparators(filePath), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return false;
     }
 
-    if (vfsStatus._isPlaceholder) {
+    if (isPlaceholder) {
         return _connector->vfsIsExcluded(filePath);
     }
 
@@ -699,78 +720,66 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
         return true;
     }
 
-    switch (status) {
-        case SyncFileStatus::Ignored:
-            exclude(QString::fromStdString(fullPath.native()));
-            break;
-        case SyncFileStatus::Syncing: {
-            ItemType itemType;
-            if (!IoHelper::getItemType(fullPath, itemType)) {
-                LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(fullPath));
-                return false;
-            }
-
-            if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath));
-                return true;
-            }
-
-            if (itemType.ioError == IoError::AccessDenied) {
-                LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(fullPath));
-                return true;
-            }
-
-            bool isLink = itemType.linkType != LinkType::None;
-            bool isDirectory = true;
-            if (isLink) {
-                isDirectory = false;
-            } else {
-                isDirectory = itemType.nodeType == NodeType::Directory;
-                if (!isDirectory && itemType.ioError != IoError::Success) {
-                    LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
-                                                << Utility::formatIoError(fullPath, itemType.ioError));
-                    return false;
-                }
-            }
-
-            if (!isLink && !isDirectory) {
-                QString fileRelativePath =
-                        QStringView(path).mid(static_cast<qsizetype>(_vfsSetupParams._localPath.string().size())).toUtf8();
-                auto localPinState = pinState(fileRelativePath);
-                bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
-                if (localPinState == PinState::OnlineOnly && !isDehydrated) {
-                    // Add file path to dehydration queue
-                    _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
-                    _workerInfo[WORKER_DEHYDRATION]._queue.push_front(path);
-                    _workerInfo[WORKER_DEHYDRATION]._mutex.unlock();
-                    _workerInfo[WORKER_DEHYDRATION]._queueWC.wakeOne();
-                } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
-                    bool syncing;
-                    _syncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), syncing);
-                    if (!syncing) {
-                        // Set hydrating indicator (avoid double hydration)
-                        _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), true);
-
-                        // Add file path to hydration queue
-                        _workerInfo[WORKER_HYDRATION]._mutex.lock();
-                        _workerInfo[WORKER_HYDRATION]._queue.push_front(path);
-                        _workerInfo[WORKER_HYDRATION]._mutex.unlock();
-                        _workerInfo[WORKER_HYDRATION]._queueWC.wakeOne();
-                    }
-                }
-            }
-        }
-        case SyncFileStatus::Success:
-        case SyncFileStatus::Error:
-        default:
-            break;
-    }
-
     if (status == SyncFileStatus::Ignored) {
         exclude(QString::fromStdString(fullPath.native()));
     } else if (status == SyncFileStatus::Success) {
         // Do nothing
     } else if (status == SyncFileStatus::Syncing) {
+        ItemType itemType;
+        if (!IoHelper::getItemType(fullPath, itemType)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(fullPath));
+            return false;
+        }
+
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
+            LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath));
+            return true;
+        }
+
+        if (itemType.ioError == IoError::AccessDenied) {
+            LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(fullPath));
+            return true;
+        }
+
+        bool isLink = itemType.linkType != LinkType::None;
+        bool isDirectory = true;
+        if (isLink) {
+            isDirectory = false;
+        } else {
+            isDirectory = itemType.nodeType == NodeType::Directory;
+            if (!isDirectory && itemType.ioError != IoError::Success) {
+                LOGW_WARN(logger(),
+                          L"Failed to check if the path is a directory: " << Utility::formatIoError(fullPath, itemType.ioError));
+                return false;
+            }
+        }
+
+        if (!isLink && !isDirectory) {
+            QString fileRelativePath =
+                    QStringView(path).mid(static_cast<qsizetype>(_vfsSetupParams._localPath.string().size())).toUtf8();
+            auto localPinState = pinState(fileRelativePath);
+            bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
+            if (localPinState == PinState::OnlineOnly && !isDehydrated) {
+                // Add file path to dehydration queue
+                _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
+                _workerInfo[WORKER_DEHYDRATION]._queue.push_front(path);
+                _workerInfo[WORKER_DEHYDRATION]._mutex.unlock();
+                _workerInfo[WORKER_DEHYDRATION]._queueWC.wakeOne();
+            } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
+                bool syncing;
+                _syncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), syncing);
+                if (!syncing) {
+                    // Set hydrating indicator (avoid double hydration)
+                    _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), true);
+
+                    // Add file path to hydration queue
+                    _workerInfo[WORKER_HYDRATION]._mutex.lock();
+                    _workerInfo[WORKER_HYDRATION]._queue.push_front(path);
+                    _workerInfo[WORKER_HYDRATION]._mutex.unlock();
+                    _workerInfo[WORKER_HYDRATION]._queueWC.wakeOne();
+                }
+            }
+        }
     } else if (status == SyncFileStatus::Error) {
         // Nothing to do
     }
@@ -815,4 +824,5 @@ void Worker::start() {
 
     LOG_DEBUG(logger(), "Worker " << _type << " - " << _num << " ended");
 }
+
 } // namespace KDC
