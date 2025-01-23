@@ -64,14 +64,6 @@ struct VfsStatus {
             _progress = other._progress;
             return *this;
         }
-        VfsStatus &operator=(VfsStatus &&other) noexcept {
-            if (this == &other) return *this;
-            _isPlaceholder = other._isPlaceholder;
-            _isHydrated = other._isHydrated;
-            _isSyncing = other._isSyncing;
-            _progress = other._progress;
-            return *this;
-        }
 };
 
 /** Interface describing how to deal with virtual/placeholder files.
