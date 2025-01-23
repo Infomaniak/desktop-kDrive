@@ -254,11 +254,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
             if (!changed) {
 #ifdef _WIN32
-                bool isPlaceholder = false;
-                bool isHydrated = false;
-                bool isSyncing = false;
-                int progress = 0;
-                if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
+                VfsStatus vfsStatus;
+                if (!_syncPal->vfsStatus(absolutePath, vfsStatus)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
                     invalidateSnapshot();
                     return;
@@ -271,8 +268,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     return;
                 }
 
-                if (isPlaceholder) {
-                    if ((isHydrated && pinstate == PinState::OnlineOnly) || (!isHydrated && pinstate == PinState::AlwaysLocal)) {
+                if (vfsStatus._isPlaceholder) {
+                    if ((vfsStatus._isHydrated && pinstate == PinState::OnlineOnly) || (!vfsStatus._isHydrated && pinstate == PinState::AlwaysLocal)) {
                         // Change status in order to start hydration/dehydration
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
                         if (!_syncPal->vfsFileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {

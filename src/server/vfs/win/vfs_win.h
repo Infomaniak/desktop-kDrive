@@ -81,14 +81,14 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
-        bool forceStatus(const QString &absolutePath, bool isSyncing, int progress, bool isHydrated = false) override;
+        bool forceStatus(const QString &absolutePath, VfsStatus vfsStatus) override;
 
         bool needsMetadataUpdate(const SyncFileItem &) override { return false; }
         bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) override;
 
         bool setPinState(const QString &fileRelativePath, PinState state) override;
         PinState pinState(const QString &relativePath) override;
-        bool status(const QString &, bool &, bool &, bool &, int &) override;
+        bool status(const QString &, VfsStatus &) override;
         virtual bool setThumbnail(const QString &, const QPixmap &) override { return true; };
         virtual bool setAppExcludeList() override { return true; }
         virtual bool getFetchingAppList(QHash<QString, QString> &) override { return true; }
