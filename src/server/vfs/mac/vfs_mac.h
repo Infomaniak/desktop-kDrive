@@ -52,10 +52,9 @@ class VfsMac : public Vfs {
         ExitInfo convertToPlaceholder(const SyncPath &path, const SyncFileItem &item) override;
         ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                bool &finished) override;
-        void cancelHydrate(const SyncPath &filePath) override;
         ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) override;
         bool cleanUpStatuses() override;
-        virtual void clearFileAttributes(const SyncPath &path) override;
+        void clearFileAttributes(const SyncPath &path) override;
 
         ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated, bool isAbsolutePath = false) override;
 
@@ -71,8 +70,9 @@ class VfsMac : public Vfs {
 
         void dehydrate(const QString &path) final;
         void hydrate(const QString &path) final;
+        void cancelHydrate(const SyncPath &path) final;
 
-        virtual void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
+        void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;

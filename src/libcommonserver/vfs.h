@@ -283,7 +283,6 @@ class Vfs : public QObject {
         virtual void exclude(const SyncPath &) = 0;
         virtual bool isExcluded(const SyncPath &filePath) = 0;
 
-        virtual void cancelHydrate(const SyncPath &) {}
 
         virtual bool fileStatusChanged(const SyncPath &systemFileName, KDC::SyncFileStatus fileStatus) = 0;
 
@@ -298,6 +297,7 @@ class Vfs : public QObject {
 
         virtual void dehydrate(const QString &path) = 0;
         virtual void hydrate(const QString &path) = 0;
+        virtual void cancelHydrate(const SyncPath &) = 0;
 
     signals:
         /// Emitted when a user-initiated hydration starts
@@ -428,22 +428,18 @@ class VfsOff : public Vfs {
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const SyncPath &) override { /*VfsOff*/
-        }
+        void exclude(const SyncPath &) override { /*VfsOff*/ }
         bool isExcluded(const SyncPath &) override { return false; }
         bool fileStatusChanged(const SyncPath &, KDC::SyncFileStatus) final { return true; }
 
-        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/
-        }
-        void dehydrate(const QString &) override { /*VfsOff*/
-        }
-        void hydrate(const QString &) override { /*VfsOff*/
-        }
+        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
+        void dehydrate(const QString &) override { /*VfsOff*/ }
+        void hydrate(const QString &) override { /*VfsOff*/ }
+        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
-        }
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/ }
 
         friend class TestWorkers;
 };
