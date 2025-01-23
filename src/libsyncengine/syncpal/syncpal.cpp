@@ -393,12 +393,12 @@ bool SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
     return _vfsSetPinState(syncDbId(), itemPath, pinState);
 }
 
-bool SyncPal::vfsStatus(const SyncPath &itemPath, VfsStatus &vfsStatus) {
+bool SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
     if (!_vfsStatus) {
         return false;
     }
 
-    return _vfsStatus(syncDbId(), itemPath, vfsStatus);
+    return _vfsStatus(syncDbId(), itemPath, isPlaceholder, isHydrated, isSyncing, progress);
 }
 
 bool SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
@@ -447,12 +447,12 @@ bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) 
     return _vfsFileStatusChanged(syncDbId(), path, status);
 }
 
-bool SyncPal::vfsForceStatus(const SyncPath &path, const VfsStatus &vfsStatus) {
+bool SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
     if (!_vfsForceStatus) {
         return false;
     }
 
-    return _vfsForceStatus(syncDbId(), path, vfsStatus);
+    return _vfsForceStatus(syncDbId(), path, isSyncing, progress, isHydrated);
 }
 
 bool SyncPal::vfsCleanUpStatuses() {
@@ -836,8 +836,9 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
                 std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);
         job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
 
-        std::function<bool(const SyncPath &, const VfsStatus &vfsStatus)> vfsForceStatusCallback =
-                std::bind(&SyncPal::vfsForceStatus, this, std::placeholders::_1, std::placeholders::_2);
+        std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+                std::bind(&SyncPal::vfsForceStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+                          std::placeholders::_4);
         job->setVfsForceStatusCallback(vfsForceStatusCallback);
 #endif
 

@@ -515,13 +515,16 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
 }
 
 bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absolutePath) {
-    VfsStatus vfsStatus;
-    if (!_syncPal->vfsStatus(absolutePath, vfsStatus)) {
+    bool isPlaceholder = false;
+    bool isHydrated = false;
+    bool isSyncing = false;
+    int progress = 0;
+    if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
         LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
         return false;
     }
 
-    return !vfsStatus._isPlaceholder || (vfsStatus._isHydrated && !vfsStatus._isSyncing);
+    return !isPlaceholder || (isHydrated && !isSyncing);
 }
 
 #ifdef __APPLE__
@@ -529,13 +532,17 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
 ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal,
                                                     bool &valid) const {
     // If the item is a dehydrated placeholder, only metadata update are possible
-    VfsStatus vfsStatus;
-    if (!_syncPal->vfsStatus(path.native(), vfsStatus)) {
+
+    bool isPlaceholder = false;
+    bool isHydrated = false;
+    bool isSyncing = false;
+    int progress = 0;
+    if (!_syncPal->vfsStatus(path.native(), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::vfsStatus");
         return ExitCode::SystemError;
     }
 
-    if (vfsStatus._isPlaceholder && !vfsStatus._isHydrated) {
+    if (isPlaceholder && !isHydrated) {
         // Check if it is a metadata update
         DbNodeId dbNodeId;
         bool found;

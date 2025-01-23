@@ -37,8 +37,7 @@ DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> sy
 }
 
 DriveUploadSession::~DriveUploadSession() {
-    const VfsStatus vfsStatus(true, true, false, 100);
-    if (_vfsForceStatus && !_vfsForceStatus(getFilePath(), vfsStatus)) {
+    if (_vfsForceStatus && !_vfsForceStatus(getFilePath(), false, 100, true)) {
         LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
     }
 }

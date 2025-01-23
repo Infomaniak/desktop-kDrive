@@ -722,8 +722,9 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
             job->setVfsCancelHydrateCallback(vfsCancelHydrateCallback);
         }
 
-        std::function<bool(const SyncPath &, const VfsStatus &)> vfsForceStatusCallback =
-                std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2);
+        std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+                std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+                          std::placeholders::_4);
         job->setVfsForceStatusCallback(vfsForceStatusCallback);
     }
 
@@ -738,13 +739,16 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const Sync
             return ExitCode::Ok;
         }
 
-        VfsStatus vfsStatus;
-        if (!_syncPal->vfsStatus(path, vfsStatus)) {
+        bool isPlaceholder = false;
+        bool isHydrated = false;
+        bool isSyncing = false;
+        int progress = 0;
+        if (!_syncPal->vfsStatus(path, isPlaceholder, isHydrated, isSyncing, progress)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(path));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
-        if (vfsStatus._isPlaceholder && !vfsStatus._isHydrated && !vfsStatus._isSyncing) {
+        if (isPlaceholder && !isHydrated && !isSyncing) {
             LOGW_SYNCPAL_INFO(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(path));
             isDehydratedPlaceholder = true;
         }
@@ -968,8 +972,9 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
                     std::bind(&SyncPal::vfsSetPinState, _syncPal, std::placeholders::_1, std::placeholders::_2);
             downloadJob->setVfsSetPinStateCallback(vfsSetPinStateCallback);
 
-            std::function<bool(const SyncPath &, const VfsStatus &)> vfsForceStatusCallback =
-                    std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2);
+            std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+                    std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
+                              std::placeholders::_3, std::placeholders::_4);
             downloadJob->setVfsForceStatusCallback(vfsForceStatusCallback);
 
             std::function<bool(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &,
@@ -1025,8 +1030,9 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             // Set callbacks
             std::shared_ptr<UploadJob> uploadJob = std::dynamic_pointer_cast<UploadJob>(job);
             if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-                std::function<bool(const SyncPath &, const VfsStatus &)> vfsForceStatusCallback =
-                        std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2);
+                std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+                        std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
+                                  std::placeholders::_3, std::placeholders::_4);
                 uploadJob->setVfsForceStatusCallback(vfsForceStatusCallback);
             }
         }
@@ -1070,20 +1076,23 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                                                   bool &isSyncing) {
     ignoreItem = false;
 
-    VfsStatus vfsStatus;
-    if (!_syncPal->vfsStatus(absolutePath, vfsStatus)) {
+    bool isPlaceholder = false;
+    bool isHydrated = false;
+    bool isSyncingTmp = false;
+    int progress = 0;
+    if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncingTmp, progress)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (syncOp->targetSide() == ReplicaSide::Remote) {
-        if (vfsStatus._isPlaceholder && !vfsStatus._isHydrated) {
+        if (isPlaceholder && !isHydrated) {
             ignoreItem = true;
             return fixModificationDate(syncOp, absolutePath);
         }
     } else {
-        if (vfsStatus._isPlaceholder) {
-            auto pinState = PinState::Unspecified;
+        if (isPlaceholder) {
+            PinState pinState = PinState::Unspecified;
             if (!_syncPal->vfsPinState(absolutePath, pinState)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Utility::formatSyncPath(absolutePath));
                 return {ExitCode::SystemError, ExitCause::InconsistentPinState};
@@ -1096,10 +1105,10 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                     return ExitCode::LogicError;
                 }
                 case PinState::AlwaysLocal: {
-                    if (vfsStatus._isSyncing) {
+                    if (isSyncingTmp) {
                         // Ignore this item until it is synchronized
                         isSyncing = true;
-                    } else if (vfsStatus._isHydrated) {
+                    } else if (isHydrated) {
                         // Download
                     }
                     break;
@@ -1192,7 +1201,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
     SyncPath relativeDestLocalFilePath;
     SyncPath absoluteDestLocalFilePath;
     SyncPath relativeOriginLocalFilePath;
-    VfsStatus vfsStatus;
+    bool isHydrated = false;
 
     if (syncOp->targetSide() == ReplicaSide::Local) {
         // Target side is local, so corresponding node is on local side.
@@ -1217,7 +1226,10 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
         SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
 
-        _syncPal->vfsStatus(absoluteOriginLocalFilePath, vfsStatus);
+        bool isPlaceholder = false;
+        bool isSyncing = false;
+        int progress = 0;
+        _syncPal->vfsStatus(absoluteOriginLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress);
 
         job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
     } else {
@@ -1243,7 +1255,10 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
         SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
 
-        _syncPal->vfsStatus(absoluteOriginLocalFilePath, vfsStatus);
+        bool isPlaceholder = false;
+        bool isSyncing = false;
+        int progress = 0;
+        _syncPal->vfsStatus(absoluteOriginLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress);
 
         if (relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
             // This is just a rename
@@ -1286,12 +1301,14 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
 
         // Set callbacks
         if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-            std::function<bool(const SyncPath &, const VfsStatus &)> vfsForceStatusCallback =
-                    std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2);
+            std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+                    std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
+                              std::placeholders::_3, std::placeholders::_4);
             job->setVfsForceStatusCallback(vfsForceStatusCallback);
 
-            std::function<bool(const SyncPath &, VfsStatus &)> vfsStatusCallback =
-                    std::bind(&SyncPal::vfsStatus, _syncPal, std::placeholders::_1, std::placeholders::_2);
+            std::function<bool(const SyncPath &, bool &, bool &, bool &, int &)> vfsStatusCallback =
+                    std::bind(&SyncPal::vfsStatus, _syncPal, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+                              std::placeholders::_4, std::placeholders::_5);
             job->setVfsStatusCallback(vfsStatusCallback);
         }
     }
@@ -1299,9 +1316,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
     job->setAffectedFilePath(relativeDestLocalFilePath);
     job->runSynchronously();
 
-    vfsStatus._isSyncing = false;
-    vfsStatus._progress = 100;
-    _syncPal->vfsForceStatus(absoluteDestLocalFilePath, vfsStatus);
+    _syncPal->vfsForceStatus(absoluteDestLocalFilePath, false, 100, isHydrated);
 
     if (job->exitCode() == ExitCode::Ok && syncOp->conflict().type() != ConflictType::None) {
         // Conflict fixing job finished successfully
@@ -1398,12 +1413,15 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
     if (syncOp->targetSide() == ReplicaSide::Local) {
         bool isDehydratedPlaceholder = false;
         if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-            VfsStatus vfsStatus;
-            if (!_syncPal->vfsStatus(absoluteLocalFilePath, vfsStatus)) {
+            bool isPlaceholder = false;
+            bool isHydrated = false;
+            bool isSyncing = false;
+            int progress = 0;
+            if (!_syncPal->vfsStatus(absoluteLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absoluteLocalFilePath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
             }
-            isDehydratedPlaceholder = vfsStatus._isPlaceholder && !vfsStatus._isHydrated;
+            isDehydratedPlaceholder = isPlaceholder && !isHydrated;
         }
 
         NodeId remoteNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";

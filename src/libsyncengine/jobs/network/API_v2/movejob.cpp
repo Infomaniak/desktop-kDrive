@@ -32,14 +32,16 @@ MoveJob::MoveJob(int driveDbId, const SyncPath &destFilepath, const NodeId &file
 
 MoveJob::~MoveJob() {
     if (_vfsForceStatus && _vfsStatus) {
-        VfsStatus vfsStatus;
-        if (!_vfsStatus(_destFilepath, vfsStatus)) {
+        bool isPlaceholder = false;
+        bool isHydrated = false;
+        bool isSyncing = false;
+        int progress = 0;
+        if (!_vfsStatus(_destFilepath, isPlaceholder, isHydrated, isSyncing, progress)) {
             LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_destFilepath).c_str());
         }
 
-        vfsStatus._isSyncing = false;
-        vfsStatus._progress = 100;
-        if (!_vfsForceStatus(_destFilepath, vfsStatus)) { // TODO : to be refactored, some parameters are used on macOS only
+        if (!_vfsForceStatus(_destFilepath, false, 100,
+                             isHydrated)) { // TODO : to be refactored, some parameters are used on macOS only
             LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_destFilepath).c_str());
         }
     }

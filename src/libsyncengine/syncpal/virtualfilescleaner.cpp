@@ -31,7 +31,7 @@
 namespace KDC {
 
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
-                                         bool (*vfsStatus)(int, const SyncPath &, VfsStatus &),
+                                         bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
                                          bool (*vfsClearFileAttributes)(int, const SyncPath &)) :
     _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
     _vfsClearFileAttributes(vfsClearFileAttributes) {}
@@ -87,16 +87,19 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             }
 
             // Check file system
+            bool isPlaceholder = false;
+            bool isHydrated = false;
+            bool isSyncing = false;
+            int progress = 0;
             assert(_vfsStatus);
-            VfsStatus vfsStatus;
-            if (!_vfsStatus(_syncDbId, dirIt->path(), vfsStatus)) {
+            if (!_vfsStatus(_syncDbId, dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress)) {
                 LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(dirIt->path()).c_str());
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::Unknown;
                 return false;
             }
 
-            if (!dirIt->is_directory() && vfsStatus._isPlaceholder && vfsStatus._isHydrated) {
+            if (!dirIt->is_directory() && isPlaceholder && isHydrated) {
                 // Keep this file in file system
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << SyncName2WStr(entryPathStr).c_str()

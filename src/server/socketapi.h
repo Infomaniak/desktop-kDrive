@@ -169,9 +169,10 @@ class SocketApi : public QObject {
 #endif
 
         QString buildRegisterPathMessage(const QString &path);
-        void processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList);
-        bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
-        bool setPinState(const FileData &fileData, PinState pinState);
+        void processFileList(const QStringList &inFileList, std::list<KDC::SyncPath> &outFileList);
+        bool syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &status, bool &isPlaceholder, bool &isHydrated,
+                            int &progress);
+        bool setPinState(const FileData &fileData, KDC::PinState pinState);
         bool dehydratePlaceholder(const FileData &fileData);
         bool addDownloadJob(const FileData &fileData);
         bool cancelDownloadJobs(int syncDbId, const QStringList &fileList);

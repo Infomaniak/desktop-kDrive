@@ -19,7 +19,7 @@
 #pragma once
 
 #include "libcommon/utility/types.h"
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/log/log.h"
 
 #include <sys/stat.h>
 
@@ -38,14 +38,15 @@ class LiteSyncExtConnector {
         LiteSyncExtConnector(LiteSyncExtConnector &other) = delete;
         void operator=(const LiteSyncExtConnector &) = delete;
         static LiteSyncExtConnector *instance(log4cplus::Logger logger, ExecuteCommand executeCommand);
-        static bool vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus, log4cplus::Logger &logger) noexcept;
+        static bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+                                 int &progress, log4cplus::Logger &logger) noexcept;
 
         ~LiteSyncExtConnector();
 
         bool install(bool &activationDone);
         bool connect();
 
-        bool vfsStart(int syncDbId, const QString &folderPath, VfsStatus &vfsStatus);
+        bool vfsStart(int syncDbId, const QString &folderPath, bool &isPlaceholder, bool &isSyncing);
         bool vfsStop(int syncDbId);
         bool vfsDehydratePlaceHolder(const QString &absoluteFilepath, const QString &localSyncPath);
         bool vfsHydratePlaceHolder(const QString &filePath);
@@ -57,10 +58,12 @@ class LiteSyncExtConnector {
                                   unsigned long long completed, bool &canceled, bool &finished);
         bool vfsCancelHydrate(const QString &filePath);
         bool vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap);
-        bool vfsSetStatus(const QString &path, const QString &localSyncPath, const VfsStatus &vfsStatus);
+        bool vfsSetStatus(const QString &path, const QString &localSyncPath, bool isSyncing, int progress,
+                          bool isHydrated = false);
         bool vfsCleanUpStatuses(const QString &localSyncPath);
-        bool vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus) noexcept {
-            return vfsGetStatus(absoluteFilePath, vfsStatus, _logger);
+        bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+                          int &progress) noexcept {
+            return vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress, _logger);
         }
         bool vfsSetAppExcludeList(const QString &appList);
         bool vfsGetFetchingAppList(QHash<QString, QString> &appTable);
@@ -90,7 +93,7 @@ class LiteSyncExtConnector {
         QHash<QString, QSet<QString>> _syncingFolders;
         std::mutex _mutex;
 
-        bool sendStatusToFinder(const QString &path, const VfsStatus &vfsStatus);
+        bool sendStatusToFinder(const QString &path, bool isSyncing, int progress, bool isHydrated);
 };
 
 } // namespace KDC

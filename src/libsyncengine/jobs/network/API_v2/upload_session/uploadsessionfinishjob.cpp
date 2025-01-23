@@ -37,7 +37,7 @@ UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, con
 
 UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (_vfsForceStatus) {
-        if (const VfsStatus vfsStatus(true, true, false, 0); !_vfsForceStatus(_filePath, vfsStatus)) {
+        if (!_vfsForceStatus(_filePath, false, 0, true)) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
         }
     }

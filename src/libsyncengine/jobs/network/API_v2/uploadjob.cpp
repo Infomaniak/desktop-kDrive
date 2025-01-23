@@ -45,8 +45,7 @@ UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const NodeId &file
 
 UploadJob::~UploadJob() {
     if (_vfsForceStatus) {
-        const VfsStatus vfsStatus(true, true, false, 100);
-        if (!_vfsForceStatus(_filePath, vfsStatus)) {
+        if (!_vfsForceStatus(_filePath, false, 100, true)) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath).c_str());
         }
     }
