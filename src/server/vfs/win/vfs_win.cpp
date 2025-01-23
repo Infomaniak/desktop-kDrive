@@ -508,7 +508,7 @@ bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     return !error;
 }
 
-bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool) {
+bool VfsWin::forceStatus(const QString &absolutePath, VfsStatus vfsStatus) {
     SyncPath stdPath = QStr2Path(absolutePath);
 
     bool exists = false;
@@ -570,9 +570,9 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
     }
 
     // Set status
-    LOGW_DEBUG(logger(), L"Setting syncing status to: " << isSyncing << L" for file: "
+    LOGW_DEBUG(logger(), L"Setting syncing status to: " << vfsStatus._isSyncing << L" for file: "
                                                         << Utility::formatSyncPath(QStr2Path(absolutePath)).c_str());
-    setPlaceholderStatus(absolutePath, isSyncing);
+    setPlaceholderStatus(absolutePath, vfsStatus._isSyncing);
 
     return true;
 }
@@ -643,17 +643,18 @@ PinState VfsWin::pinState(const QString &relativePath) {
     return PinState::Unspecified;
 }
 
-bool VfsWin::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &) {
+bool VfsWin::status(const QString &filePath, VfsStatus &vfsStatus) {
     // Check if the file is a placeholder
-    SyncPath fullPath(QStr2Path(filePath));
+    auto fullPath(QStr2Path(filePath));
     bool isDehydrated = false;
-    if (vfsGetPlaceHolderStatus(fullPath.lexically_normal().native().c_str(), &isPlaceholder, &isDehydrated, nullptr) != S_OK) {
+    if (vfsGetPlaceHolderStatus(fullPath.lexically_normal().native().c_str(), &vfsStatus._isPlaceholder, &isDehydrated,
+                                nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(fullPath).c_str());
         return false;
     }
 
-    isHydrated = !isDehydrated;
-    isSyncing = false;
+    vfsStatus._isHydrated = !isDehydrated;
+    vfsStatus._isSyncing = false;
 
     return true;
 }
@@ -688,7 +689,8 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
             // File
             QString fileRelativePath = QStringView{path}.mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
             bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
-            forceStatus(path, false, 100, !isDehydrated);
+            VfsStatus vfsStatus(true, !isDehydrated, false, 100);
+            forceStatus(path, vfsStatus);
         }
     } else if (status == SyncFileStatus::Syncing) {
         bool isDirectory = false;
