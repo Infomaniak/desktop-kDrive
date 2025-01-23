@@ -414,7 +414,7 @@ void TestNetworkJobs::testDownload() {
         const ExitInfo exitInfo = {job.runSynchronously(), job.exitCause()};
         CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
                                                  std::to_string(Utility::freeDiskSpace(smallPartitionPath))),
-                                     ExitInfo(ExitCode::LogicError, ExitCause::NotEnoughDiskSpace), exitInfo);
+                                     ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), exitInfo);
     }
 }
 
