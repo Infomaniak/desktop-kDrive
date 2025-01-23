@@ -300,7 +300,6 @@ void TestUtility::testCurrentVersion() {
 }
 
 void TestUtility::testGenerateRandomStringAlphaNum() {
-    return; // TODO: remove befor merge
     {
         int err = 0;
         std::set<std::string> results;
