@@ -89,8 +89,10 @@ void createEmptyFile(const SyncPath &path) {
 } // namespace
 
 void TestNetworkJobs::setUp() {
+    std::cout << "TestNetworkJobs::setUp" << std::endl;
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
+    std::cout << "TestNetworkJobs::setUp:Loading variables" << std::endl;
     const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
@@ -130,9 +132,11 @@ void TestNetworkJobs::setUp() {
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
+    std::cout << "TestNetworkJobs::setUp::End" << std::endl;
 }
 
 void TestNetworkJobs::tearDown() {
+    std::cout << "TestNetworkJobs::tearDown" << std::endl;
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Tear Down");
 
     if (!_dummyRemoteFileId.empty()) {
@@ -145,6 +149,7 @@ void TestNetworkJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     MockIoHelperTestNetworkJobs::resetStdFunctions();
+    std::cout << "TestNetworkJobs::tearDown::End" << std::endl;
 }
 
 
@@ -277,6 +282,7 @@ void TestNetworkJobs::testDelete() {
 
 void TestNetworkJobs::testDownload() {
     {
+        std::cout << "TestNetworkJobs::testDownload::1" << std::endl;
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_file.txt";
@@ -329,6 +335,7 @@ void TestNetworkJobs::testDownload() {
 
     // Cross Device Link
     {
+        std::cout << "TestNetworkJobs::testDownload::2" << std::endl;
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
         SyncPath localDestFilePath = temporaryDirectorySync.path() / bigFileName;
@@ -388,6 +395,7 @@ void TestNetworkJobs::testDownload() {
     MockIoHelperTestNetworkJobs::resetStdFunctions();
     // Not Enought disk space
     {
+        std::cout << "TestNetworkJobs::testDownload::3" << std::endl;
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
@@ -407,7 +415,7 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(exist);
-
+        std::cout << "TestNetworkJobs::testDownload::3::2" << std::endl;
         // Try to download file (9Mo) in a 8Mo disk should fail with SystemError, NotEnoughDiskSpace.
         const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
         DownloadJob job(_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
