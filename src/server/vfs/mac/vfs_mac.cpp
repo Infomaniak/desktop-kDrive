@@ -566,7 +566,7 @@ ExitInfo VfsMac::status(const SyncPath &filePathStd, bool &isPlaceholder, bool &
 
 void VfsMac::exclude(const SyncPath &pathStd) {
     const QString path = SyncName2QStr(pathStd.native());
-    LOGW_DEBUG(logger(), L"exclude - " << Utility::formatPath(pathStd).c_str());
+    LOGW_DEBUG(logger(), L"exclude - " << Utility::formatSyncPath(pathStd));
 
     bool isPlaceholder = false;
     bool isHydrated = false;
