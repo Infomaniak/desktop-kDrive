@@ -254,7 +254,6 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _exitCause = ExitCause::InvalidSize;
                 return false;
             } else {
-                // Fetch issue
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::FileAccessError;
                 return false;
@@ -388,13 +387,11 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
                 }
 
                 if (_responseHandlingCanceled) {
-                    // NB: VFS reset is done in the destructor
                     if (isAborted()) {
                         // Download aborted or canceled by the user
                         _exitCode = ExitCode::Ok;
                         return true;
                     } else {
-                        // Fetch issue
                         _exitCode = ExitCode::SystemError;
                         _exitCause = ExitCause::FileAccessError;
                         return false;
@@ -525,10 +522,10 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
     return true;
 }
 
-bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istream>> is,
+bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
                                 std::optional<std::reference_wrapper<const std::string>> data, bool &readError,
                                 bool &fetchCanceled, bool &fetchFinished, bool &fetchError) {
-    assert(is || data);
+    assert(istr || data);
 
     readError = false;
     fetchCanceled = false;
@@ -567,7 +564,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     } while (output.tellp() > 0); // If the file is not empty, generate a new file name
 
     std::streamsize expectedSize = 0;
-    if (is) {
+    if (istr) {
         expectedSize = _resHttp.getContentLength();
         setProgress(0);
         if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || expectedSize > 0) {
@@ -581,15 +578,15 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                     break;
                 }
 
-                is->get().read(buffer.get(), BUF_SIZE);
-                if (is->get().bad() && !is->get().fail()) {
+                istr->get().read(buffer.get(), BUF_SIZE);
+                if (istr->get().bad() && !istr->get().fail()) {
                     // Read/writing error and not logical error
                     LOG_WARN(_logger,
                              "Request " << jobId() << ": error after reading " << getProgress() << " bytes from input stream");
                     readError = true;
                     break;
                 } else {
-                    std::streamsize readSize = is->get().gcount();
+                    std::streamsize readSize = istr->get().gcount();
                     addProgress(readSize);
 
                     if (readSize > 0) {
@@ -612,7 +609,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                         retryCount = 0;
                     }
 
-                    if (is->get().eof()) {
+                    if (istr->get().eof()) {
                         // End of stream
                         if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || getProgress() == expectedSize) {
                             done = true;
