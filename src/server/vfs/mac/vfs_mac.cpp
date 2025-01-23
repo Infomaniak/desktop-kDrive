@@ -290,7 +290,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
 
     if (!isPlaceholder) {
         // Not a placeholder
-        LOGW_WARN(logger(), L"Not a placeholder: " << Utility::formatSyncPath(fullPath);
+        LOGW_WARN(logger(), L"Not a placeholder: " << Utility::formatSyncPath(fullPath));
         return {ExitCode::SystemError, ExitCause::NotPlaceHolder};
     }
 
