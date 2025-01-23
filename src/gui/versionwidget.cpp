@@ -101,7 +101,7 @@ void VersionWidget::showReleaseNotes() const {
 
     const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
     QString languageCode = CommonUtility::languageCode(appLanguage);
-    if (languageCode.isEmpty()) languageCode = "en";
+    if (languageCode.isEmpty()) languageCode = CommonUtility::englishCode;
     QDesktopServices::openUrl(
             QUrl(QString("%1-%2-%3-%4.html")
                          .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), os, languageCode.left(2))));
