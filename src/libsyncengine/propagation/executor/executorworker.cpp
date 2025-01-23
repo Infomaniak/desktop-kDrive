@@ -131,9 +131,10 @@ void ExecutorWorker::execute() {
             std::shared_ptr<AbstractJob> job = nullptr;
             bool ignored = false;
             bool bypassProgressComplete = false;
+            bool hydrating = false;
             switch (syncOp->type()) {
                 case OperationType::Create: {
-                    executorExitInfo = handleCreateOp(syncOp, job, ignored);
+                    executorExitInfo = handleCreateOp(syncOp, job, ignored, hydrating);
                     break;
                 }
                 case OperationType::Edit: {
@@ -189,7 +190,7 @@ void ExecutorWorker::execute() {
                     } else if (syncOp->affectedNode() && syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
                         setProgressComplete(syncOp, SyncFileStatus::Inconsistency);
                     } else {
-                        setProgressComplete(syncOp, SyncFileStatus::Success);
+                        setProgressComplete(syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
                     }
                 }
 
@@ -319,7 +320,7 @@ void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus 
     }
 }
 
-ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored) {
+ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored, bool &hydrating) {
     // The execution of the create operation consists of three steps:
     // 1. If omit-flag is False, propagate the file or directory to target replica, because the object is missing there.
     // 2. Insert a new entry into the database, to avoid that the object is detected again by compute_ops() on the next sync
@@ -411,7 +412,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
             return ExitCode::Ok;
         }
 
-        if (ExitInfo exitInfo = generateCreateJob(syncOp, job); !exitInfo) {
+        if (ExitInfo exitInfo = generateCreateJob(syncOp, job, hydrating); !exitInfo) {
             return exitInfo;
         }
 
@@ -508,7 +509,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     return {ExitCode::DataError, ExitCause::FileAlreadyExist};
 }
 
-ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept {
+ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hydrating) noexcept {
     // 1. If omit-flag is False, propagate the file or directory to replica Y, because the object is missing there.
     std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
     if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
@@ -582,6 +583,13 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                               syncItem.inconsistency());
                     _syncPal->addError(err);
                 }
+            }
+
+            PinState pinState = PinState::Unknown;
+            if (_syncPal->vfsPinState(absoluteLocalFilePath, pinState)) {
+                hydrating = pinState == PinState::AlwaysLocal;
+            } else {
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to get pin state for " << Utility::formatSyncPath(absoluteLocalFilePath));
             }
         } else {
             if (syncOp->affectedNode()->type() == NodeType::Directory) {
@@ -1092,7 +1100,7 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
         }
     } else {
         if (isPlaceholder) {
-            PinState pinState = PinState::Unspecified;
+            PinState pinState = PinState::Unknown;
             if (!_syncPal->vfsPinState(absolutePath, pinState)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Utility::formatSyncPath(absolutePath));
                 return {ExitCode::SystemError, ExitCause::InconsistentPinState};
@@ -1129,7 +1137,7 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                     }
                     break;
                 }
-                case PinState::Unspecified:
+                case PinState::Unknown:
                 default: {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignore EDIT for file: " << Path2WStr(absolutePath));
                     ignoreItem = true;
