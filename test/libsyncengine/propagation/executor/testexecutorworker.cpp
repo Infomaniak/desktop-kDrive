@@ -96,14 +96,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A hydrated placeholder.
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
-            isPlaceholder = true;
-            isHydrated = true;
-            isSyncing = false;
-            progress = 0;
-            return true;
-        });
+        _syncPal->setVfsStatusCallback(
+                []([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath, VfsStatus &vfsStatus) -> bool {
+                    vfsStatus._isPlaceholder = true;
+                    vfsStatus._isHydrated = true;
+                    vfsStatus._isSyncing = false;
+                    vfsStatus._progress = 0;
+                    return true;
+                });
 
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
@@ -113,14 +113,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A dehydrated placeholder.
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
-            isPlaceholder = true;
-            isHydrated = false;
-            isSyncing = false;
-            progress = 0;
-            return true;
-        });
+        _syncPal->setVfsStatusCallback(
+                []([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath, VfsStatus &vfsStatus) -> bool {
+                    vfsStatus._isPlaceholder = true;
+                    vfsStatus._isHydrated = false;
+                    vfsStatus._isSyncing = false;
+                    vfsStatus._progress = 0;
+                    return true;
+                });
 
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
@@ -130,14 +130,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A partially hydrated placeholder (syncing item).
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
-            isPlaceholder = true;
-            isHydrated = false;
-            isSyncing = true;
-            progress = 30;
-            return true;
-        });
+        _syncPal->setVfsStatusCallback(
+                []([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath, VfsStatus &vfsStatus) -> bool {
+                    vfsStatus._isPlaceholder = true;
+                    vfsStatus._isHydrated = false;
+                    vfsStatus._isSyncing = true;
+                    vfsStatus._progress = 30;
+                    return true;
+                });
 
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
@@ -147,14 +147,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // Not a placeholder.
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
-            isPlaceholder = false;
-            isHydrated = false;
-            isSyncing = false;
-            progress = 0;
-            return true;
-        });
+        _syncPal->setVfsStatusCallback(
+                []([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath, VfsStatus &vfsStatus) -> bool {
+                    vfsStatus._isPlaceholder = false;
+                    vfsStatus._isHydrated = false;
+                    vfsStatus._isSyncing = false;
+                    vfsStatus._progress = 0;
+                    return true;
+                });
 
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);

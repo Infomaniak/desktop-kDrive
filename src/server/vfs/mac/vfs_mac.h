@@ -28,7 +28,6 @@
 #include <QList>
 #include <QMutex>
 #include <QObject>
-#include <QScopedPointer>
 #include <QWaitCondition>
 
 #define WORKER_HYDRATION 0
@@ -71,7 +70,7 @@ class VfsMac : public Vfs {
         bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
         void cancelHydrate(const QString &filePath) override;
-        bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
+        bool forceStatus(const QString &path, VfsStatus vfsStatus) override;
         bool cleanUpStatuses() override;
         virtual void clearFileAttributes(const QString &path) override;
 
@@ -80,13 +79,13 @@ class VfsMac : public Vfs {
 
         bool setPinState(const QString &fileRelativePath, PinState state) override;
         PinState pinState(const QString &relativePath) override;
-        bool status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) override;
-        virtual void exclude(const QString &path) override;
-        virtual bool isExcluded(const QString &filePath) override;
-        virtual bool setThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) override;
-        virtual bool setAppExcludeList() override;
-        virtual bool getFetchingAppList(QHash<QString, QString> &appTable) override;
-        virtual bool fileStatusChanged(const QString &path, SyncFileStatus status) override;
+        bool status(const QString &filePath, VfsStatus &vfsStatus) override;
+        void exclude(const QString &path) override;
+        bool isExcluded(const QString &filePath) override;
+        bool setThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap) override;
+        bool setAppExcludeList() override;
+        bool getFetchingAppList(QHash<QString, QString> &appTable) override;
+        bool fileStatusChanged(const QString &path, SyncFileStatus status) override;
 
         void dehydrate(const QString &path);
         void hydrate(const QString &path);
