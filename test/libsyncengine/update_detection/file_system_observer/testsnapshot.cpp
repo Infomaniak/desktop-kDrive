@@ -254,7 +254,7 @@ void TestSnapshot::testPath() {
         snapshotCopy.updateItem(item);
         SyncPath path;
         bool ignore = false;
-        // On Windows, if the file name starts with "X:" pattern, the previous element of the path are overrode
+        // On Windows, if the file name starts with the "X:" pattern, the previous elements of the path are overrode
         // (https://en.cppreference.com/w/cpp/filesystem/path/append)
 #ifdef _WIN32
         CPPUNIT_ASSERT(!snapshotCopy.path(id, path, ignore));

@@ -274,8 +274,8 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
         ancestors.pop_back();
     }
 
-    // Trick to ignore items with pattern like "X:" in their name on Windows.
-    // Since only relative path are stored in the snapshot, the root name shoudl always be empty.
+    // Trick to ignore items with a pattern like "X:" in their names on Windows.
+    // Since only relative path are stored in the snapshot, the root name should always be empty.
     // If it is not empty, that means that the item name is invalid.
     if (!path.root_name().empty()) {
         ignore = true;
