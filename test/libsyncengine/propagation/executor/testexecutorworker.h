@@ -21,11 +21,12 @@
 #include "testincludes.h"
 #include "propagation/executor/executorworker.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
 
 class MockVfs : public VfsOff {
-        Q_OBJECT
+    Q_OBJECT
     public:
         explicit MockVfs() : VfsOff(vfsSetupParams) {}
         void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing, int progress) {
