@@ -17,6 +17,7 @@
  */
 
 #include "vfs.h"
+#include "vfsworker.h"
 #include "plugin.h"
 #include "version.h"
 #include "utility/types.h"

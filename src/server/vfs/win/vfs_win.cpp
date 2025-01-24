@@ -269,7 +269,7 @@ ExitInfo VfsWin::dehydratePlaceholder(const SyncPath &path) {
     }
 
     LOGW_DEBUG(logger(), L"Dehydrate file: " << Utility::formatSyncPath(fullPath).c_str());
-    auto dehydrateFct = [=]() { dehydrate(QString::fromStdWString(fullPath.lexically_normal().native())); };
+    auto dehydrateFct = [=]() { dehydrate(fullPath.lexically_normal().native()); };
     std::thread dehydrateTask(dehydrateFct);
     dehydrateTask.detach();
 

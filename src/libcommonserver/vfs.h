@@ -22,6 +22,7 @@
 #include "libcommon/utility/types.h"
 #include "libsyncengine/progress/syncfileitem.h"
 #include "libcommon/utility/sourcelocation.h"
+#include "libcommonserver/workerinfo.h"
 
 #include <memory>
 #include <deque>
@@ -51,27 +52,6 @@ struct VfsSetupParams {
         std::string _namespaceCLSID;
         KDC::ExecuteCommand _executeCommand;
         log4cplus::Logger _logger;
-};
-
-struct WorkerInfo {
-        ~WorkerInfo() {
-            // Force threads to stop if needed
-            for (QThread *thread: qAsConst(_threadList)) {
-                if (thread) {
-                    thread->quit();
-                    if (!thread->wait(1000)) {
-                        thread->terminate();
-                        thread->wait();
-                    }
-                }
-            }
-        }
-
-        QMutex _mutex;
-        std::deque<SyncPath> _queue;
-        QWaitCondition _queueWC;
-        bool _stop = false;
-        QList<QtLoggingThread *> _threadList;
 };
 
 /** Interface describing how to deal with virtual/placeholder files.
@@ -380,22 +360,6 @@ class Vfs : public QObject {
     private:
         bool _extendedLog;
         bool _started;
-};
-
-class VfsWorker : public QObject {
-        Q_OBJECT
-
-    public:
-        VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger);
-        void start();
-
-    private:
-        Vfs *_vfs;
-        int _type;
-        int _num;
-        log4cplus::Logger _logger;
-
-        inline log4cplus::Logger logger() { return _logger; }
 };
 } // namespace KDC
 

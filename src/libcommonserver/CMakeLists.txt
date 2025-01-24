@@ -1,5 +1,6 @@
 project(libcommonserver)
 
+find_package(Qt6 REQUIRED Core Concurrent WebEngineCore Core5Compat)
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
@@ -38,6 +39,7 @@ set(libcommonserver_SRCS
     io/iohelper.h io/iohelper.cpp
     # Vfs
     vfs.h vfs.cpp
+    workerinfo.h vfsworker.h
     plugin.h plugin.cpp
 )
 
