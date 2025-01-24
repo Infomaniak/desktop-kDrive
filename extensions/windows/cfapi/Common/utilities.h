@@ -49,10 +49,10 @@
         swprintf(msg, sz, MESSAGE, __VA_ARGS__);                                   \
         Utilities::trace(TRACE_LEVEL, location.file_name(), location.line(), msg); \
     }
-#define TRACE_INFO(MESSAGE, ...) TRACE(TraceLevel::INFO, MESSAGE, __VA_ARGS__)
-#define TRACE_DEBUG(MESSAGE, ...) TRACE(TraceLevel::DEBUG, MESSAGE, __VA_ARGS__)
-#define TRACE_WARNING(MESSAGE, ...) TRACE(TraceLevel::WARNING, MESSAGE, __VA_ARGS__)
-#define TRACE_ERROR(MESSAGE, ...) TRACE(TraceLevel::_ERROR, MESSAGE, __VA_ARGS__)
+#define TRACE_INFO(MESSAGE, ...) TRACE(TraceLevel::Info, MESSAGE, __VA_ARGS__)
+#define TRACE_DEBUG(MESSAGE, ...) TRACE(TraceLevel::Debug, MESSAGE, __VA_ARGS__)
+#define TRACE_WARNING(MESSAGE, ...) TRACE(TraceLevel::Warning, MESSAGE, __VA_ARGS__)
+#define TRACE_ERROR(MESSAGE, ...) TRACE(TraceLevel::Error, MESSAGE, __VA_ARGS__)
 
 class Utilities {
     public:
