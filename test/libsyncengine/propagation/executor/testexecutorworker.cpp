@@ -116,7 +116,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A partially hydrated placeholder (syncing item).
     {
-        mockVfs->setVfsStatusOutput(true, false, true, 0);
+        mockVfs->setVfsStatusOutput(true, false, true, 30);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
