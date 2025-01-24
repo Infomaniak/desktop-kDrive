@@ -120,7 +120,7 @@ class Vfs : public QObject {
          * - ExitCode::Ok: Everything went fine, the metadata was updated.
          * - ExitCode::LogicError, ExitCause::Unknown: The liteSync connector is not initialized.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item(filePath) could not be found on the local filesystem.
+         * - ExitCode::SystemError, ExitCause::NotFound: The item(filePath) could not be found on the local filesystem.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item(filePath) or the item(filePath) is
          * locked.
          */
@@ -133,7 +133,7 @@ class Vfs : public QObject {
          * - ExitCode::Ok: Everything went fine, the placeholder was created.
          * - ExitCode::LogicError, ExitCause::InvalidArgument: relativeLocalPath is empty or item.remoteNodeId is not set.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The parent folder does not exist.
+         * - ExitCode::SystemError, ExitCause::NotFound: The parent folder does not exist.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the destination folder.
          * - ExitCode::SystemError, ExitCause::FileAlreadyExist: An item with the same name already exists in the destination
          * folder.
@@ -145,7 +145,7 @@ class Vfs : public QObject {
          * - ExitCode::Ok: Everything went fine, the placeholder is dehydrating (async).
          * - ExitCode::LogicError, ExitCause::InvalidArgument: The provided path is empty.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          * - ExitCode::SystemError, ExitCause::NotPlaceHolder: The item is not a placeholder.
          * folder.
@@ -164,7 +164,7 @@ class Vfs : public QObject {
          * - ExitCode::Ok: Everything went fine, the file is now a placeholder.
          * - ExitCode::LogicError, ExitCause::InvalidArgument: item.localNodeId is not set.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
         virtual ExitInfo convertToPlaceholder(const SyncPath &path, const KDC::SyncFileItem &item) = 0;
@@ -176,7 +176,7 @@ class Vfs : public QObject {
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the fetch status was updated.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked (The item is
          * the file in the sync folder, any error on the tmpItem will lead to SystemError, Unknown).
          */
@@ -190,7 +190,7 @@ class Vfs : public QObject {
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the status was updated.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
         virtual ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
@@ -202,7 +202,7 @@ class Vfs : public QObject {
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, isDehydrated is set to true if the file is a dehydrated placeholder.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
         virtual ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated, bool isAbsolutePath = false) = 0;
@@ -219,7 +219,7 @@ class Vfs : public QObject {
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the pin state was updated.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
         virtual ExitInfo setPinState(const SyncPath &fileRelativePath, KDC::PinState state) = 0;
@@ -240,7 +240,7 @@ class Vfs : public QObject {
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the status was retrieved.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
         virtual ExitInfo status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
@@ -251,7 +251,7 @@ class Vfs : public QObject {
          * * Possible return values are:
          * - ExitCode::Ok: Everything went fine, the status was retrieved.
          * - ExitCode::SystemError, ExitCause::Unknown: An unknown error occurred.
-         * - ExitCode::SystemError, ExitCause::NotFoud: The item could not be found.
+         * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
         virtual ExitInfo setThumbnail(const SyncPath &filePath, const QPixmap &pixmap) = 0;
@@ -342,7 +342,7 @@ class Vfs : public QObject {
          * @return ExitInfo with the appropriate error code:
          *   - ExitCode::Ok if the path exists and shouldExist is true.
          *   - ExitCode::Ok if the path does not exist and shouldExist is false.
-         *   - ExitCode::SystemError, ExitCause::NotFoud if the path does not exist and shouldExist is true.
+         *   - ExitCode::SystemError, ExitCause::NotFound if the path does not exist and shouldExist is true.
          *   - ExitCode::SystemError, ExitCause::FileAlreadyExist if the path exist and shouldExist is false.
          *   - ExitCode::SystemError, ExitCause::FileAccessError if the path is not accessible.
          *   - ExitCode::SystemError, ExitCause::InvalidArguments if the path is empty.
