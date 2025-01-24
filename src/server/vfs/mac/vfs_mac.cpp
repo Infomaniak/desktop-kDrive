@@ -506,8 +506,8 @@ void VfsMac::cancelHydrate(const SyncPath &filePathStd) {
     _connector->vfsCancelHydrate(filePath);
 }
 
-ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated, bool isAbsolutePath /*= false*/) {
-    SyncPath filePath(isAbsolutePath ? initFilePathStd : _vfsSetupParams._localPath / initFilePathStd);
+ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated) {
+    SyncPath filePath(_vfsSetupParams._localPath / initFilePathStd);
 
     bool isPlaceholder = false;
     bool isHydrated = false;

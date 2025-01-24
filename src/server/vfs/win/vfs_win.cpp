@@ -484,9 +484,9 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, bool isSyncing, in
     return ExitCode::Ok;
 }
 
-ExitInfo VfsWin::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated, bool isAbsolutePath /*= false*/) {
+ExitInfo VfsWin::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated) {
     QString initFilePath = SyncName2QStr(initFilePathStd.native());
-    SyncPath filePath(isAbsolutePath ? QStr2Path(initFilePath) : _vfsSetupParams._localPath / QStr2Path(initFilePath));
+    SyncPath filePath(_vfsSetupParams._localPath / initFilePathStd.native());
 
     if (vfsGetPlaceHolderStatus(filePath.lexically_normal().native().c_str(), nullptr, &isDehydrated, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(filePath).c_str());

@@ -205,7 +205,7 @@ class Vfs : public QObject {
          * - ExitCode::SystemError, ExitCause::NotFound: The item could not be found.
          * - ExitCode::SystemError, ExitCause::FileAccessError: Missing permissions on the item ot the item is locked.
          */
-        virtual ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated, bool isAbsolutePath = false) = 0;
+        virtual ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated) = 0;
 
         /** Sets the pin state for the item at a path.
          *
@@ -393,7 +393,7 @@ class VfsOff : public Vfs {
         ExitInfo updateFetchStatus(const SyncPath &, const SyncPath &, int64_t, bool &, bool &) override { return ExitCode::Ok; }
         ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) override;
 
-        ExitInfo isDehydratedPlaceholder(const SyncPath &, bool &isDehydrated, bool) override {
+        ExitInfo isDehydratedPlaceholder(const SyncPath &, bool &isDehydrated) override {
             isDehydrated = false;
             return ExitCode::Ok;
         }

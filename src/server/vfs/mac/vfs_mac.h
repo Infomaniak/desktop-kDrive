@@ -56,7 +56,7 @@ class VfsMac : public Vfs {
         bool cleanUpStatuses() override;
         void clearFileAttributes(const SyncPath &path) override;
 
-        ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated, bool isAbsolutePath = false) override;
+        ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated) override;
 
         ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) override;
         PinState pinState(const SyncPath &relativePath) override;

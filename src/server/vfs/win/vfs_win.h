@@ -58,7 +58,7 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
                                    bool &finished) final;
         ExitInfo forceStatus(const SyncPath &absolutePath, bool isSyncing, int progress, bool isHydrated = false) final;
 
-        ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated, bool isAbsolutePath = false) final;
+        ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated) final;
 
         ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) final;
         PinState pinState(const SyncPath &relativePath) final;
