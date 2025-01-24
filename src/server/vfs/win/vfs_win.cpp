@@ -623,7 +623,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
                 return false;
             }
 
-            bool syncing;
+            bool syncing = false;
             _syncFileSyncing(_vfsSetupParams._syncDbId, fileRelativePath, syncing);
 
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
