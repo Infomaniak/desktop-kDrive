@@ -21,7 +21,7 @@
 #include "qtsingleapplication.h"
 #include "libcommonserver/commserver.h"
 #include "syncpal/syncpal.h"
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 #include "navigationpanehelper.h"
 #include "socketapi.h"
 #include "libparms/db/user.h"

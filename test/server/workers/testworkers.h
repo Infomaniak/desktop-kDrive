@@ -20,11 +20,11 @@
 #include "socketapi.h"
 
 #if defined(__APPLE__)
-#include "server/vfs/mac/vfs_mac.h"
+#include "libcommonserver/vfs/mac/vfs_mac.h"
 #elif defined(_WIN32)
-#include "server/vfs/win/vfs_win.h"
+#include "libcommonserver/vfs/win/vfs_win.h"
 #else
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 #endif
 
 #include "libsyncengine/propagation/executor/executorworker.h"

@@ -17,6 +17,8 @@ set(CMAKE_AUTOMOC TRUE)
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
+add_subdirectory(vfs)
+
 # Sources
 set(libcommonserver_SRCS
     # Utility
@@ -37,10 +39,9 @@ set(libcommonserver_SRCS
     # Io
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
-    # Vfs
-    vfs.h vfs.cpp
-    workerinfo.h vfsworker.h
-    plugin.h plugin.cpp
+    vfs/vfs.h vfs/vfs.cpp
+    vfs/workerinfo.h vfs/vfsworker.h
+    vfs/plugin.h vfs/plugin.cpp
 )
 
 if(APPLE)

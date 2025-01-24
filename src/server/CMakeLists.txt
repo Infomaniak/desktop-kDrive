@@ -24,8 +24,6 @@ if(WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
 endif()
 
-add_subdirectory(vfs)
-
 # Sources
 set(KDRIVE_RC_SRC ../../client.qrc)
 if (EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")

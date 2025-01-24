@@ -96,11 +96,11 @@ endif()
 
 if (APPLE)
     target_link_libraries(${testserver_NAME}
-        "${libsyncengine_NAME}_vfs_mac"
+        "${libcommonserver_NAME}_vfs_mac"
         "${updater_DEPS}")
 elseif (WIN32)
     target_link_libraries(${testserver_NAME}
-        "${libsyncengine_NAME}_vfs_win")
+        "${libcommonserver_NAME}_vfs_win")
 endif()
 
 # Install

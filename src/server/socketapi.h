@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 #include "socketlistener.h"
 #include "libcommon/utility/types.h"
 #include "libsyncengine/syncpal/syncpal.h"

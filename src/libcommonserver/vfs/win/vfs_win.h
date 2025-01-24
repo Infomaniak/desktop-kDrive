@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include "server/vfs/win/syncenginevfslib.h"
-#include "libcommonserver/vfs.h"
-#include "libcommonserver/plugin.h"
+#include "libcommonserver/vfs/win/syncenginevfslib.h"
+#include "libcommonserver/vfs/vfs.h"
+#include "libcommonserver/vfs/plugin.h"
 
 #include <deque>
 

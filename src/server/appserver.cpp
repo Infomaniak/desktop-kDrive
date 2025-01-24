@@ -19,7 +19,7 @@
 #include "appserver.h"
 #include "libcommon/asserts.h"
 #include "common/utility.h"
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
 #include "logarchiver/logarchiverhelper.h"

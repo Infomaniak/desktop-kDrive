@@ -29,7 +29,7 @@
 #include "reconciliation/syncoperation.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/types.h"
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 #include "libparms/db/parmsdb.h"
 
 #include <memory>

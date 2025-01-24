@@ -19,7 +19,7 @@
 #pragma once
 
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/plugin.h"
 #include "litesyncextconnector.h"
 

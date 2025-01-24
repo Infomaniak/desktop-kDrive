@@ -22,7 +22,7 @@
 #include "libcommon/utility/types.h"
 #include "libsyncengine/progress/syncfileitem.h"
 #include "libcommon/utility/sourcelocation.h"
-#include "libcommonserver/workerinfo.h"
+#include "libcommonserver/vfs/workerinfo.h"
 
 #include <memory>
 #include <deque>
