@@ -443,7 +443,7 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
             }
 
             SyncPath sourcePath = *moveOp2->affectedNode()->moveOrigin();
-            bool found;
+            bool found = false;
             std::optional<NodeId> sourceParentId;
             if (!_syncPal->_syncDb->id(moveNode->side(), sourcePath.parent_path(), sourceParentId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
@@ -454,11 +454,11 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
                 break;
             }
 
-            std::shared_ptr<Node> otherMoveNode = moveOp->affectedNode();
-            if (otherMoveNode->parentNode() != nullptr) {
-                std::optional<NodeId> moveDestParentId = otherMoveNode->parentNode()->id();
-                if (sourceParentId == moveDestParentId) {
-                    if (moveNode->name() == otherMoveNode->name()) {
+            if (std::shared_ptr<Node> otherMoveNode = moveOp->affectedNode(); otherMoveNode->parentNode() != nullptr) {
+                if (std::optional<NodeId> moveDestParentId = otherMoveNode->parentNode()->id();
+                    sourceParentId == moveDestParentId) {
+                    if (moveNode->name() == otherMoveNode->moveOrigin()->filename() ||
+                        moveNode->moveOrigin()->filename() == otherMoveNode->name()) {
                         // move only if moveOp is before op
                         moveFirstAfterSecond(moveOp2, moveOp);
                     }

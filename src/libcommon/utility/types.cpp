@@ -66,6 +66,8 @@ std::string toString(const OperationType e) {
             return "Move";
         case OperationType::Edit:
             return "Edit";
+        case OperationType::MoveEdit:
+            return "MoveEdit";
         case OperationType::Delete:
             return "Delete";
         case OperationType::Rights:
