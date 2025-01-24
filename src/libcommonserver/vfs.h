@@ -54,7 +54,19 @@ struct VfsSetupParams {
 };
 
 struct WorkerInfo {
-        ~WorkerInfo();
+        ~WorkerInfo() {
+            // Force threads to stop if needed
+            for (QThread *thread: qAsConst(_threadList)) {
+                if (thread) {
+                    thread->quit();
+                    if (!thread->wait(1000)) {
+                        thread->terminate();
+                        thread->wait();
+                    }
+                }
+            }
+        }
+
         QMutex _mutex;
         std::deque<QString> _queue;
         QWaitCondition _queueWC;
@@ -339,7 +351,7 @@ class Vfs : public QObject {
          *  the error provided to the application will only be based on the existence/permission of the file/directory.
          *  If there is no issue with the file/directory, the error will be Vfs::defaultVfsError().         *
          */
-        ExitInfo handleVfsError(const SyncPath &itemPath, const SourceLocation& location = SourceLocation::currentLoc()) const;
+        ExitInfo handleVfsError(const SyncPath &itemPath, const SourceLocation &location = SourceLocation::currentLoc()) const;
 
         /* Check if a path exists and return an ExitInfo with the appropriate error code.
          *
@@ -356,12 +368,12 @@ class Vfs : public QObject {
          *   - ExitCode::SystemError, ExitCause::InvalidArguments if the path is empty.
          */
         ExitInfo checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist,
-                                   const SourceLocation& location = SourceLocation::currentLoc()) const;
+                                    const SourceLocation &location = SourceLocation::currentLoc()) const;
 
         /* By default we will return file access error.
          *  The file will be blacklisted for 1h or until the user edit, move or delete it (or the sync is restarted).
          */
-        inline ExitInfo defaultVfsError(const SourceLocation& location = SourceLocation::currentLoc()) const {
+        inline ExitInfo defaultVfsError(const SourceLocation &location = SourceLocation::currentLoc()) const {
             return {ExitCode::SystemError, ExitCause::FileAccessError, location};
         }
 
