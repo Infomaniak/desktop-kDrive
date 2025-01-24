@@ -1067,7 +1067,7 @@ void ParametersDialog::onDebugReporterDone(bool retCode, const QString &debugId)
     EnableStateHolder _(this);
 
     Language language = ParametersCache::instance()->parametersInfo().language();
-    QString languageCode = KDC::CommonUtility::languageCodeList(language).first();
+    QString languageCode = CommonUtility::languageCode(language);
     QString swistranferUrl = QString(MANUALTRANSFER_URL).arg(languageCode.left(2));
 
     CustomMessageBox msgBox(
