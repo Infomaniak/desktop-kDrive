@@ -1916,7 +1916,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
-            sentry::pTraces::basic::AppStart().stop();
+            if (static bool appStartPTraceStopped = false; !appStartPTraceStopped) {
+                appStartPTraceStopped = true;
+                sentry::pTraces::basic::AppStart().stop();
+            }
             break;
         }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
