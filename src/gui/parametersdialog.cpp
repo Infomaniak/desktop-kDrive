@@ -287,19 +287,6 @@ void ParametersDialog::initUI() {
     connect(this, &ParametersDialog::newBigFolder, _drivePreferencesWidget, &DrivePreferencesWidget::newBigFolderDiscovered);
 }
 
-void ParametersDialog::createErrorTabWidgetIfNeeded(int driveDbId) {
-    const auto &driveInfoMapIt = _gui->driveInfoMap().find(driveDbId);
-    if (driveInfoMapIt == _gui->driveInfoMap().end()) {
-        qCDebug(lcParametersDialog()) << "Drive not found in drive map for driveDbId=" << driveDbId;
-        return;
-    }
-
-    if (driveInfoMapIt->second.errorTabWidgetStackPosition() == 0) {
-        driveInfoMapIt->second.setErrorTabWidgetStackPosition(
-                _errorsStackedWidget->addWidget(new ErrorTabWidget(driveDbId, false, this)));
-    }
-}
-
 QByteArray ParametersDialog::contents(const QString &path) {
     QFile file(path);
     if (file.open(QFile::ReadOnly)) {
@@ -896,36 +883,41 @@ void ParametersDialog::onConfigRefreshed() {
         bool driveHasSyncs = false;
 
         for (const auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
-            ErrorTabWidget *errorTabWidget = static_cast<ErrorTabWidget *>(
-                    _errorsStackedWidget->widget(driveInfo.errorTabWidgetStackPosition())); // position changed
+            ErrorTabWidget *errorTabWidget =
+                    static_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(driveInfo.errorTabWidgetStackPosition()));
 
             if (errorTabWidget == widget) {
                 driveIsFound = true;
-                std::map<int, SyncInfoClient> syncInfoMap;
-                _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
-                driveHasSyncs = !syncInfoMap.empty();
-
-                ++widgetIndex;
+                driveHasSyncs = this->driveHasSyncs(driveInfo.dbId());
                 break;
             }
         }
 
-        if (driveIsFound && driveHasSyncs) continue;
+        if (driveIsFound && driveHasSyncs) {
+            ++widgetIndex;
+            continue;
+        }
 
+        // Remove widget
         _errorsStackedWidget->removeWidget(widget);
         delete widget;
 
         for (auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
             const auto position = driveInfo.errorTabWidgetStackPosition();
-            if (position > widgetIndex) driveInfo.setErrorTabWidgetStackPosition(position - 1);
+            if (position == widgetIndex)
+                // Reset position of the removed widget
+                driveInfo.setErrorTabWidgetStackPosition(0);
+            else if (position > widgetIndex)
+                // Update position of the next widgets
+                driveInfo.setErrorTabWidgetStackPosition(position - 1);
         }
     }
 
     // Create missing Drive level (SyncPal or Node) errors list
     for (auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
-        createErrorTabWidgetIfNeeded(driveInfo.dbId());
-        if (driveInfo.errorTabWidgetStackPosition() == 0) {
-            driveInfo.setErrorTabWidgetStackPosition(_errorsStackedWidget->addWidget(new ErrorTabWidget(driveId, false)));
+        if (driveInfo.errorTabWidgetStackPosition() == 0 && driveHasSyncs(driveInfo.dbId())) {
+            driveInfo.setErrorTabWidgetStackPosition(
+                    _errorsStackedWidget->addWidget(new ErrorTabWidget(driveInfo.dbId(), false, this)));
         }
         refreshErrorList(driveId);
     }
@@ -1153,6 +1145,8 @@ void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
     }
 
     if (!errorTabWidget) {
+        // Should never happen
+        assert(false);
         qCDebug(lcParametersDialog()) << "Error widget not found for driveDbId=" << driveDbId;
         return;
     }
@@ -1264,4 +1258,11 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
         _drivePreferencesWidget->showErrorBanner(unresolvedErrorCount > 0);
     }
 }
+
+bool ParametersDialog::driveHasSyncs(int driveDbId) const {
+    std::map<int, SyncInfoClient> syncInfoMap;
+    _gui->loadSyncInfoMap(driveDbId, syncInfoMap);
+    return !syncInfoMap.empty();
+}
+
 } // namespace KDC
