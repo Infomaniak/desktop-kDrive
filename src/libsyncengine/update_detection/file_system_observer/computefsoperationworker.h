@@ -73,7 +73,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
 
-        void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &path, NodeType nodeType);
+        void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
 
         const std::shared_ptr<SyncDb> _syncDb;
         Sync _sync;
