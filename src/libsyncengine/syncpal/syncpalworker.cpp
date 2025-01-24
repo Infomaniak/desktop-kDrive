@@ -169,9 +169,7 @@ void SyncPalWorker::execute() {
 
                 // Stop the step workers and restart a full sync
                 stopAndWaitForExitOfWorkers(stepWorkers);
-                _syncPal->_localFSObserverWorker->invalidateSnapshot();
-                _syncPal->_remoteFSObserverWorker->forceUpdate();
-                _syncPal->_remoteFSObserverWorker->invalidateSnapshot();
+                _syncPal->invalideSnapshots();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
             } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DbError) ||

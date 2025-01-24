@@ -235,6 +235,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
+        void invalideSnapshots();
 
         // Workers
         std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; }
