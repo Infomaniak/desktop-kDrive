@@ -70,8 +70,8 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         bool isExcluded(const SyncPath &) final { return false; }
         virtual bool setCreationDate(const QString &, time_t) { return false; }
 
-        void dehydrate(const QString &path) final;
-        void hydrate(const QString &path) final;
+        void dehydrate(const SyncPath &path) final;
+        void hydrate(const SyncPath &path) final;
         void cancelHydrate(const SyncPath &path) final;
 
 

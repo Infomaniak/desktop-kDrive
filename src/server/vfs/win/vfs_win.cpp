@@ -106,19 +106,20 @@ void VfsWin::stopImpl(bool unregister) {
     LOG_DEBUG(logger(), "stop done: syncDbId=" << _vfsSetupParams._syncDbId);
 }
 
-void VfsWin::dehydrate(const QString &path) {
-    LOGW_DEBUG(logger(), L"dehydrate: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
+void VfsWin::dehydrate(const SyncPath &path) {
+    LOGW_DEBUG(logger(), L"dehydrate: " << Utility::formatSyncPath(path));
 
     // Dehydrate file
-    if (vfsDehydratePlaceHolder(QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsDehydratePlaceHolder: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
+    if (vfsDehydratePlaceHolder(path.native().c_str()) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsDehydratePlaceHolder: " << Utility::formatSyncPath(path));
     }
 
-    QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
-    _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
+    SyncPath relativePath = CommonUtility::relativePath(_vfsSetupParams._localPath, path);
+    _setSyncFileSyncing(_vfsSetupParams._syncDbId, relativePath, false);
 }
 
-void VfsWin::hydrate(const QString &path) {
+void VfsWin::hydrate(const SyncPath &pathStd) {
+    QString path = SyncName2QStr(pathStd.native());
     LOGW_DEBUG(logger(), L"hydrate: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
     if (vfsHydratePlaceHolder(std::to_wstring(_vfsSetupParams._driveId).c_str(),
@@ -628,7 +629,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
                 _workerInfo[workerDehydration]._mutex.lock();
-                _workerInfo[workerDehydration]._queue.push_front(path);
+                _workerInfo[workerDehydration]._queue.push_front(fullPath);
                 _workerInfo[workerDehydration]._mutex.unlock();
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated && !syncing) {
@@ -637,7 +638,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
 
                 // Add file path to hydration queue
                 _workerInfo[workerHydration]._mutex.lock();
-                _workerInfo[workerHydration]._queue.push_front(path);
+                _workerInfo[workerHydration]._queue.push_front(fullPath);
                 _workerInfo[workerHydration]._mutex.unlock();
                 _workerInfo[workerHydration]._queueWC.wakeOne();
             }

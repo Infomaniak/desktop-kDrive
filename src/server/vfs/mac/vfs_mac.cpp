@@ -48,7 +48,7 @@ VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
 }
 
 VirtualFileMode VfsMac::mode() const {
-   return VirtualFileMode::Mac;
+    return VirtualFileMode::Mac;
 }
 
 ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
@@ -142,7 +142,8 @@ void VfsMac::stopImpl(bool unregister) {
     }
 }
 
-void VfsMac::dehydrate(const QString &absoluteFilepath) {
+void VfsMac::dehydrate(const SyncPath &absoluteFilepathStd) {
+    QString absoluteFilepath = SyncName2QStr(absoluteFilepathStd.native());
     LOGW_DEBUG(logger(), L"dehydrate - " << Utility::formatPath(absoluteFilepath).c_str());
 
     // Dehydrate file
@@ -156,7 +157,8 @@ void VfsMac::dehydrate(const QString &absoluteFilepath) {
     _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
-void VfsMac::hydrate(const QString &path) {
+void VfsMac::hydrate(const SyncPath &pathStd) {
+    QString path = SyncName2QStr(pathStd.native());
     LOGW_DEBUG(logger(), L"hydrate - " << Utility::formatPath(path));
 
     if (!_connector->vfsHydratePlaceHolder(QDir::toNativeSeparators(path))) {
@@ -170,8 +172,8 @@ void VfsMac::hydrate(const QString &path) {
 ExitInfo VfsMac::forceStatus(const SyncPath &pathStd, bool isSyncing, int progress, bool isHydrated /*= false*/) {
     const QString path = SyncName2QStr(pathStd.native());
     if (ExitInfo exitInfo = checkIfPathExists(pathStd, true); !exitInfo) {
-      LOGW_WARN(logger(), L"Error in VfsMac::forceStatus: " << exitInfo);
-      return exitInfo;
+        LOGW_WARN(logger(), L"Error in VfsMac::forceStatus: " << exitInfo);
+        return exitInfo;
     }
 
     if (!_connector->vfsSetStatus(path, _localSyncPath, isSyncing, progress, isHydrated)) {
@@ -296,7 +298,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
 
     if (isHydrated) {
         LOGW_DEBUG(logger(), L"Dehydrate file with " << Utility::formatSyncPath(fullPath));
-        dehydrate(QString::fromStdString(fullPath.string()));
+        dehydrate(fullPath);
     }
 
     return ExitCode::Ok;
@@ -708,7 +710,7 @@ bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
                 _workerInfo[workerDehydration]._mutex.lock();
-                _workerInfo[workerDehydration]._queue.push_front(path);
+                _workerInfo[workerDehydration]._queue.push_front(fullPath);
                 _workerInfo[workerDehydration]._mutex.unlock();
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
@@ -720,7 +722,7 @@ bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
 
                     // Add file path to hydration queue
                     _workerInfo[workerHydration]._mutex.lock();
-                    _workerInfo[workerHydration]._queue.push_front(path);
+                    _workerInfo[workerHydration]._queue.push_front(fullPath);
                     _workerInfo[workerHydration]._mutex.unlock();
                     _workerInfo[workerHydration]._queueWC.wakeOne();
                 }

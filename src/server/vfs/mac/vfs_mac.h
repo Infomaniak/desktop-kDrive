@@ -68,8 +68,8 @@ class VfsMac : public Vfs {
         ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) override;
         bool fileStatusChanged(const SyncPath &path, SyncFileStatus status) override;
 
-        void dehydrate(const QString &path) final;
-        void hydrate(const QString &path) final;
+        void dehydrate(const SyncPath &path) final;
+        void hydrate(const SyncPath &path) final;
         void cancelHydrate(const SyncPath &path) final;
 
         void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;

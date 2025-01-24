@@ -68,7 +68,7 @@ struct WorkerInfo {
         }
 
         QMutex _mutex;
-        std::deque<QString> _queue;
+        std::deque<SyncPath> _queue;
         QWaitCondition _queueWC;
         bool _stop = false;
         QList<QtLoggingThread *> _threadList;
@@ -307,8 +307,8 @@ class Vfs : public QObject {
         inline const std::string &namespaceCLSID() { return _vfsSetupParams._namespaceCLSID; }
         inline void setNamespaceCLSID(const std::string &CLSID) { _vfsSetupParams._namespaceCLSID = CLSID; }
 
-        virtual void dehydrate(const QString &path) = 0;
-        virtual void hydrate(const QString &path) = 0;
+        virtual void dehydrate(const SyncPath &path) = 0;
+        virtual void hydrate(const SyncPath &path) = 0;
         virtual void cancelHydrate(const SyncPath &) = 0;
 
     signals:
@@ -445,8 +445,8 @@ class VfsOff : public Vfs {
         bool fileStatusChanged(const SyncPath &, KDC::SyncFileStatus) final { return true; }
 
         void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
-        void dehydrate(const QString &) override { /*VfsOff*/ }
-        void hydrate(const QString &) override { /*VfsOff*/ }
+        void dehydrate(const SyncPath &) override { /*VfsOff*/ }
+        void hydrate(const SyncPath &) override { /*VfsOff*/ }
         void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
 
     protected:

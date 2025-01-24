@@ -167,7 +167,7 @@ void VfsWorker::start() {
             break;
         }
 
-        QString path = workerInfo._queue.back();
+        SyncPath path = workerInfo._queue.back().native();
         workerInfo._queue.pop_back();
         workerInfo._mutex.unlock();
 
