@@ -208,13 +208,16 @@ bool DownloadJob::handleResponse(std::istream &is) {
     } else {
         // Create file
         bool readError = false;
+        bool writeError = false;
         bool fetchCanceled = false;
         bool fetchFinished = false;
         bool fetchError = false;
-        if (!createTmpFile(is, readError, fetchCanceled, fetchFinished, fetchError)) {
+        if (!createTmpFile(is, readError, writeError, fetchCanceled, fetchFinished, fetchError)) {
             LOGW_WARN(_logger, L"Error in createTmpFile");
             return false;
         }
+
+        _responseHandlingCanceled = isAborted() || readError || writeError || fetchCanceled || fetchError;
 
         bool restartSync = false;
         if (!_responseHandlingCanceled) {
@@ -365,10 +368,13 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 
             if (ioError == IoError::Unknown) {
                 // Could be an alias imported into the drive by dragndrop in the webapp
-                if (!createTmpFile(data)) {
+                bool writeError = false;
+                if (!createTmpFile(data, writeError)) {
                     LOGW_WARN(_logger, L"Error in createTmpFile");
                     return false;
                 }
+
+                _responseHandlingCanceled = isAborted() || writeError;
 
                 if (!_responseHandlingCanceled) {
                     std::string data2;
@@ -523,11 +529,12 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
 }
 
 bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
-                                std::optional<std::reference_wrapper<const std::string>> data, bool &readError,
+                                std::optional<std::reference_wrapper<const std::string>> data, bool &readError, bool &writeError,
                                 bool &fetchCanceled, bool &fetchFinished, bool &fetchError) {
     assert(istr || data);
 
     readError = false;
+    writeError = false;
     fetchCanceled = false;
     fetchFinished = false;
     fetchError = false;
@@ -542,7 +549,6 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     }
 
     std::ofstream output;
-    bool writeError = false;
     do {
 #ifdef _WIN32
         const std::string tmpFileName = tmpnam(nullptr);
@@ -671,22 +677,21 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
         writeError = true;
     }
 
-    _responseHandlingCanceled = isAborted() || readError || writeError || fetchCanceled || fetchError;
-
     return true;
 }
 
-bool DownloadJob::createTmpFile(std::istream &is, bool &readError, bool &fetchCanceled, bool &fetchFinished, bool &fetchError) {
-    return createTmpFile(std::make_optional<std::reference_wrapper<std::istream>>(is), std::nullopt, readError, fetchCanceled,
-                         fetchFinished, fetchError);
+bool DownloadJob::createTmpFile(std::istream &is, bool &readError, bool &writeError, bool &fetchCanceled, bool &fetchFinished,
+                                bool &fetchError) {
+    return createTmpFile(std::make_optional<std::reference_wrapper<std::istream>>(is), std::nullopt, readError, writeError,
+                         fetchCanceled, fetchFinished, fetchError);
 }
 
-bool DownloadJob::createTmpFile(const std::string &data) {
+bool DownloadJob::createTmpFile(const std::string &data, bool &writeError) {
     bool readError = false;
     bool fetchCanceled = false;
     bool fetchFinished = false;
     bool fetchError = false;
-    return createTmpFile(std::nullopt, std::make_optional<std::reference_wrapper<const std::string>>(data), readError,
+    return createTmpFile(std::nullopt, std::make_optional<std::reference_wrapper<const std::string>>(data), readError, writeError,
                          fetchCanceled, fetchFinished, fetchError);
 }
 

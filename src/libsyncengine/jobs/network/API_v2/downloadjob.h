@@ -59,12 +59,13 @@ class DownloadJob : public AbstractTokenNetworkJob {
           \return true if no unexpected error occurred, false otherwise.
         */
         bool createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
-                           std::optional<std::reference_wrapper<const std::string>> data, bool &readError, bool &fetchCanceled,
-                           bool &fetchFinished, bool &fetchError);
+                           std::optional<std::reference_wrapper<const std::string>> data, bool &readError, bool &writeError,
+                           bool &fetchCanceled, bool &fetchFinished, bool &fetchError);
         //! Create a tmp file from an std::istream
-        bool createTmpFile(std::istream &is, bool &readError, bool &fetchCanceled, bool &fetchFinished, bool &fetchError);
+        bool createTmpFile(std::istream &is, bool &readError, bool &writeError, bool &fetchCanceled, bool &fetchFinished,
+                           bool &fetchError);
         //! Create a tmp file from a std::string
-        bool createTmpFile(const std::string &data);
+        bool createTmpFile(const std::string &data, bool &writeError);
 
         NodeId _remoteFileId;
         SyncPath _localpath;
