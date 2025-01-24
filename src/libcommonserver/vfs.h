@@ -355,7 +355,7 @@ class Vfs : public QObject {
          *   - ExitCode::SystemError, ExitCause::FileAccessError if the path is not accessible.
          *   - ExitCode::SystemError, ExitCause::InvalidArguments if the path is empty.
          */
-        ExitInfo checkIfPathExists(const SyncPath &itemPath, bool shouldExist,
+        ExitInfo checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist,
                                    const SourceLocation& location = SourceLocation::currentLoc()) const;
 
         /* By default we will return file access error.

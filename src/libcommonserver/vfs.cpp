@@ -112,15 +112,15 @@ void Vfs::stop(bool unregister) {
 }
 
 ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation& location) const {
-    if (ExitInfo exitInfo = checkIfPathExists(itemPath, true, location); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(itemPath, true, location); !exitInfo) {
         return exitInfo;
     }
     return defaultVfsError(location);
 }
 
-ExitInfo Vfs::checkIfPathExists(const SyncPath &itemPath, bool shouldExist, const SourceLocation& location) const {
+ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation& location) const {
     if (itemPath.empty()) {
-        LOGW_WARN(logger(), L"Empty path provided in Vfs::checkIfPathExists");
+        LOGW_WARN(logger(), L"Empty path provided in Vfs::checkIfPathIsValid");
         assert(false && "Empty path in a VFS call");
         return {ExitCode::SystemError, ExitCause::InvalidArgument, location};
     }
@@ -210,7 +210,7 @@ VfsOff::~VfsOff() {}
 ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
     QString path = SyncName2QStr(pathStd.native());
     KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
     // Update Finder

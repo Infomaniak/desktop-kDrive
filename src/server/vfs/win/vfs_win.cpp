@@ -176,7 +176,7 @@ ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime
                                              << creationTime << L" modtime=" << modtime);
 
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(filePath));
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
 
@@ -211,10 +211,10 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, false); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, false); !exitInfo) {
         return exitInfo;
     }
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath.parent_path(), true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath.parent_path(), true); !exitInfo) {
         return exitInfo;
     }
 
@@ -250,7 +250,7 @@ ExitInfo VfsWin::dehydratePlaceholder(const SyncPath &path) {
     LOGW_DEBUG(logger(), L"dehydratePlaceholder: " << Utility::formatSyncPath(path));
     SyncPath fullPath(_vfsSetupParams._localPath / path);
 
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
 
@@ -329,13 +329,13 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
 
         SyncPath fullPath(QStr2Path(tmpPath));
 
-        if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+        if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
             if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
                 // File creation and rename
                 LOGW_DEBUG(logger(), L"File doesn't exist: " << Utility::formatSyncPath(fullPath));
                 continue;
             }
-            LOGW_WARN(logger(), L"Error in checkIfPathExists: " << Utility::formatSyncPath(fullPath) << L" " << exitInfo);
+            LOGW_WARN(logger(), L"Error in checkIfPathIsValid: " << Utility::formatSyncPath(fullPath) << L" " << exitInfo);
             return;
         }
 
@@ -399,7 +399,7 @@ ExitInfo VfsWin::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
     SyncPath fullTmpPath(QStr2Path(tmpPath));
     SyncPath fullPath(QStr2Path(path));
 
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
             return ExitCode::Ok;
         }
@@ -423,7 +423,7 @@ ExitInfo VfsWin::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
 
 ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, bool isSyncing, int, bool) {
     QString absolutePath = SyncName2QStr(absolutePathStd.native());
-    if (ExitInfo exitInfo = checkIfPathExists(absolutePathStd, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(absolutePathStd, true); !exitInfo) {
         return exitInfo;
     }
 
@@ -568,7 +568,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged: " << Utility::formatSyncPath(pathStd) << L" status = " << status);
     const QString path = SyncName2QStr(pathStd.native());
     SyncPath fullPath(pathStd.native());
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
             return true;
         }
