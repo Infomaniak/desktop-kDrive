@@ -171,7 +171,7 @@ void VfsMac::hydrate(const SyncPath &pathStd) {
 
 ExitInfo VfsMac::forceStatus(const SyncPath &pathStd, bool isSyncing, int progress, bool isHydrated /*= false*/) {
     const QString path = SyncName2QStr(pathStd.native());
-    if (ExitInfo exitInfo = checkIfPathExists(pathStd, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(pathStd, true); !exitInfo) {
         LOGW_WARN(logger(), L"Error in VfsMac::forceStatus: " << exitInfo);
         return exitInfo;
     }
@@ -233,10 +233,10 @@ ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, false); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, false); !exitInfo) {
         return exitInfo;
     }
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath.parent_path(), true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath.parent_path(), true); !exitInfo) {
         return exitInfo;
     }
 
@@ -267,7 +267,7 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / path);
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
 
@@ -316,7 +316,7 @@ ExitInfo VfsMac::convertToPlaceholder(const SyncPath &pathStd, const SyncFileIte
     }
 
     SyncPath fullPath(QStr2Path(path));
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
 
@@ -473,7 +473,7 @@ ExitInfo VfsMac::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
     }
 
     std::filesystem::path fullPath(QStr2Path(path));
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
             return ExitCode::Ok;
         }
@@ -525,7 +525,7 @@ ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &
 ExitInfo VfsMac::setPinState(const SyncPath &fileRelativePathStd, PinState state) {
     SyncPath fullPath(_vfsSetupParams._localPath / fileRelativePathStd);
 
-    if (ExitInfo exitInfo = checkIfPathExists(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
 
