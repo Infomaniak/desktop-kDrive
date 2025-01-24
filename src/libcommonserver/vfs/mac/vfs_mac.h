@@ -20,7 +20,7 @@
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/vfs/vfs.h"
-#include "libcommonserver/plugin.h"
+#include "libcommonserver/vfs/plugin.h"
 #include "litesyncextconnector.h"
 
 #include <deque>
