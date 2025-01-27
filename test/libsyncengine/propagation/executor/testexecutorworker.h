@@ -26,16 +26,15 @@
 namespace KDC {
 
 class MockVfs : public VfsOff {
-    Q_OBJECT
     public:
         explicit MockVfs() : VfsOff(vfsSetupParams) {}
-        void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing, int progress) {
+        inline void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing, int progress) {
             vfsStatusIsHydrated = isHydrated;
             vfsStatusIsSyncing = isSyncing;
             vfsStatusIsPlaceholder = isPlaceholder;
             vfsStatusProgress = progress;
         }
-        ExitInfo status([[maybe_unused]] const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+        inline ExitInfo status([[maybe_unused]] const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                         int &progress) override {
             isHydrated = vfsStatusIsHydrated;
             isSyncing = vfsStatusIsSyncing;
