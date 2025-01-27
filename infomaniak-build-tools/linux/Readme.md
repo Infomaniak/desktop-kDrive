@@ -169,6 +169,8 @@ make
 sudo make install
 ```
 
+If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
+
 ## Sentry
 
 You will need to install the dev libcurl package to build sentry-native
