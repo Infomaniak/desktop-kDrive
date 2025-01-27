@@ -43,9 +43,8 @@ namespace KDC {
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
                          SyncTime creationTime, SyncTime modtime, bool isCreate) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
-    _remoteFileId(remoteFileId), _localpath(localpath), _expectedSize(expectedSize), _creationTime(creationTime),
-    _modtimeIn(modtime), _isCreate(isCreate) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
+    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -60,48 +59,48 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 }
 
 DownloadJob::~DownloadJob() {
-    try{
-    // Remove tmp file
-    // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must be
-    // deleted
-    if (!removeTmpFile() && !_isCreate) {
-        LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
-    }
-      
-    if (_responseHandlingCanceled) {
-        if (_vfsSetPinState) {
-            if (ExitInfo exitInfo = _vfsSetPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
-            }
+    try {
+        // Remove tmp file
+        // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must
+        // be deleted
+        if (!removeTmpFile() && !_isCreate) {
+            LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
         }
 
-        // TODO: usefull ?
-        if (_vfsForceStatus) {
-            if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, false); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+        if (_responseHandlingCanceled) {
+            if (_vfsSetPinState) {
+                if (ExitInfo exitInfo = _vfsSetPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
+                    LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+                }
             }
-        }
 
-        if (_vfsCancelHydrate) {
-            if (!_vfsCancelHydrate(_localpath)) {
-                LOGW_WARN(_logger, L"Error in vfsCancelHydrate: " << Utility::formatSyncPath(_localpath));
+            // TODO: usefull ?
+            if (_vfsForceStatus) {
+                if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, false); !exitInfo) {
+                    LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+                }
             }
-        }
-    } else {
-        if (_vfsSetPinState) {
-            if (ExitInfo exitInfo =
-                        _vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
-                !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
-            }
-        }
 
-        if (_vfsForceStatus) {
-            if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+            if (_vfsCancelHydrate) {
+                if (!_vfsCancelHydrate(_localpath)) {
+                    LOGW_WARN(_logger, L"Error in vfsCancelHydrate: " << Utility::formatSyncPath(_localpath));
+                }
+            }
+        } else {
+            if (_vfsSetPinState) {
+                if (ExitInfo exitInfo =
+                            _vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
+                    !exitInfo) {
+                    LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+                }
+            }
+
+            if (_vfsForceStatus) {
+                if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok); !exitInfo) {
+                    LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+                }
             }
         }
-    }
     } catch (const std::bad_function_call &e) {
         LOG_ERROR(_logger, "Error in DownloadJob::~DownloadJob: " << e.what());
     }
@@ -273,19 +272,18 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _exitCode = ExitCode::BackError;
                 _exitCause = ExitCause::InvalidSize;
                 return false;
+            } else if (const std::streamsize neededPlace = _expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
+                                                                   ? BUF_SIZE
+                                                                   : (_expectedSize - getProgress());
+                       !hasEnoughPlace(_tmpPath, _localpath, neededPlace)) {
+                LOGW_WARN(_logger, L"Request " << jobId() << L": Disk almost full, not enough place at "
+                                               << Utility::formatSyncPath(_tmpPath) << L" or "
+                                               << Utility::formatSyncPath(_localpath.parent_path())
+                                               << L". Download job cancelled.");
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::NotEnoughDiskSpace;
+                return false;
             } else {
-                const std::streamsize neededPlace = _expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
-                                                            ? BUF_SIZE
-                                                            : (_expectedSize - getProgress());
-                if (!hasEnoughPlace(_tmpPath, _localpath, neededPlace)) {
-                    LOGW_WARN(_logger, L"Request " << jobId() << L": Disk almost full, not enough place at "
-                                                   << Utility::formatSyncPath(_tmpPath) << L" or "
-                                                   << Utility::formatSyncPath(_localpath.parent_path())
-                                                   << L". Download job cancelled.");
-                    _exitCode = ExitCode::SystemError;
-                    _exitCause = ExitCause::NotEnoughDiskSpace;
-                    return false;
-                }
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::FileAccessError;
                 return false;
@@ -713,7 +711,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     output.flush();
     output.seekp(0, std::ios_base::end);
     if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && output.tellp() != expectedSize && !readError &&
-        !writeError && !fetchError && isAborted()){ 
+        !writeError && !fetchError && isAborted()) {
         LOG_WARN(_logger, "Request " << jobId() << ": tmp file has been corrupted by another process");
         sentry::Handler::captureMessage(sentry::Level::Error, "DownloadJob::handleResponse", "Tmp file is corrupted");
         writeError = true;
