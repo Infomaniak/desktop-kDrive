@@ -15,15 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
-#include "plugin.h"
+#include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
+#include "vfs.h"
+#include <deque>
+#include <QObject>
+#include <QList>
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
 
-#include "config.h"
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
 
 namespace KDC {
+class VfsWorker : public QObject {
+        Q_OBJECT
 
-QString pluginFileName(const QString &type, const QString &name) {
-    return QString(QLatin1String("%1syncengine_%2_%3")).arg(APPLICATION_NAME, type, name);
-}
+    public:
+        VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger);
+        void start();
 
+    private:
+        Vfs *_vfs;
+        int _type;
+        int _num;
+        log4cplus::Logger _logger;
+
+        inline log4cplus::Logger logger() { return _logger; }
+};
 } // namespace KDC

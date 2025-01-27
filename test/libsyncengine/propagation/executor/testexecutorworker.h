@@ -21,8 +21,35 @@
 #include "testincludes.h"
 #include "propagation/executor/executorworker.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
+
+class MockVfs : public VfsOff {
+    public:
+        explicit MockVfs() : VfsOff(vfsSetupParams) {}
+        inline void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing, int progress) {
+            vfsStatusIsHydrated = isHydrated;
+            vfsStatusIsSyncing = isSyncing;
+            vfsStatusIsPlaceholder = isPlaceholder;
+            vfsStatusProgress = progress;
+        }
+        inline ExitInfo status([[maybe_unused]] const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+                        int &progress) override {
+            isHydrated = vfsStatusIsHydrated;
+            isSyncing = vfsStatusIsSyncing;
+            isPlaceholder = vfsStatusIsPlaceholder;
+            progress = vfsStatusProgress;
+            return ExitCode::Ok;
+        }
+
+    private:
+        bool vfsStatusIsHydrated = false;
+        bool vfsStatusIsSyncing = false;
+        bool vfsStatusIsPlaceholder = false;
+        int vfsStatusProgress = 0;
+        VfsSetupParams vfsSetupParams;
+};
 
 class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
