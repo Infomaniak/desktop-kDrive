@@ -20,7 +20,7 @@
 
 #include "libcommonserver/io/filestat.h"
 #ifdef __APPLE__
-#include "server/vfs/mac/litesyncextconnector.h"
+#include "libcommonserver/vfs/mac/litesyncextconnector.h"
 #endif
 
 #include <filesystem>

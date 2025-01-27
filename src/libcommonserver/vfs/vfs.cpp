@@ -17,6 +17,7 @@
  */
 
 #include "vfs.h"
+#include "vfsworker.h"
 #include "plugin.h"
 #include "version.h"
 #include "utility/types.h"
@@ -32,10 +33,38 @@
 
 using namespace KDC;
 
-Vfs::Vfs(VfsSetupParams &vfsSetupParams, QObject *parent) :
+Vfs::Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     QObject(parent), _vfsSetupParams(vfsSetupParams), _extendedLog(false), _started(false) {}
 
-Vfs::~Vfs() {}
+void Vfs::starVfsWorkers() {
+    // Start hydration/dehydration workers
+    // !!! Disabled for testing because no QEventLoop !!!
+    if (qApp) {
+        // Start worker threads
+        for (int i = 0; i < nbWorkers; i++) {
+            for (int j = 0; j < s_nb_threads[i]; j++) {
+                auto *workerThread = new QtLoggingThread();
+                _workerInfo[i]._threadList.append(workerThread);
+                auto *worker = new VfsWorker(this, i, j, logger());
+                worker->moveToThread(workerThread);
+                connect(workerThread, &QThread::started, worker, &VfsWorker::start);
+                connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
+                connect(workerThread, &QThread::finished, workerThread, &QObject::deleteLater);
+                workerThread->start();
+            }
+        }
+    }
+}
+
+Vfs::~Vfs() {
+    // Ask worker threads to stop
+    for (auto &worker: _workerInfo) {
+        worker._mutex.lock();
+        worker._stop = true;
+        worker._mutex.unlock();
+        worker._queueWC.wakeAll();
+    }
+}
 
 QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     // Note: Strings are used for config and must be stable
@@ -67,13 +96,13 @@ KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {
     return {};
 }
 
-bool Vfs::start(bool &installationDone, bool &activationDone, bool &connectionDone) {
+ExitInfo Vfs::start(bool &installationDone, bool &activationDone, bool &connectionDone) {
     if (!_started) {
-        _started = startImpl(installationDone, activationDone, connectionDone);
-        return _started;
+        ExitInfo exitInfo = startImpl(installationDone, activationDone, connectionDone);
+        _started = exitInfo.code() == ExitCode::Ok;
+        return exitInfo;
     }
-
-    return true;
+    return ExitCode::Ok;
 }
 
 void Vfs::stop(bool unregister) {
@@ -83,34 +112,106 @@ void Vfs::stop(bool unregister) {
     }
 }
 
+ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation& location) const {
+    if (ExitInfo exitInfo = checkIfPathIsValid(itemPath, true, location); !exitInfo) {
+        return exitInfo;
+    }
+    return defaultVfsError(location);
+}
+
+ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation& location) const {
+    if (itemPath.empty()) {
+        LOGW_WARN(logger(), L"Empty path provided in Vfs::checkIfPathIsValid");
+        assert(false && "Empty path in a VFS call");
+        return {ExitCode::SystemError, ExitCause::InvalidArgument, location};
+    }
+
+    bool exists = false;
+    IoError ioError = IoError::Unknown;
+    if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(itemPath, ioError));
+        return {ExitCode::SystemError};
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(itemPath, ioError));
+        return {ExitCode::SystemError, ExitCause::FileAccessError, location};
+    }
+    if (exists != shouldExist) {
+        if (shouldExist) {
+            LOGW_DEBUG(logger(), L"File doesn't exist: " << Utility::formatSyncPath(itemPath));
+            return {ExitCode::SystemError, ExitCause::NotFound, location};
+        } else {
+            LOGW_DEBUG(logger(), L"File already exists: " << Utility::formatSyncPath(itemPath));
+            return {ExitCode::SystemError, ExitCause::FileAlreadyExist, location};
+        }
+    }
+    return ExitCode::Ok;
+}
+
+VfsWorker::VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger) :
+    _vfs(vfs), _type(type), _num(num), _logger(logger) {}
+
+void VfsWorker::start() {
+    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " started");
+
+    WorkerInfo &workerInfo = _vfs->_workerInfo[_type];
+
+    forever {
+        workerInfo._mutex.lock();
+        while (workerInfo._queue.empty() && !workerInfo._stop) {
+            LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " waiting");
+            workerInfo._queueWC.wait(&workerInfo._mutex);
+        }
+
+        if (workerInfo._stop) {
+            workerInfo._mutex.unlock();
+            break;
+        }
+
+        SyncPath path = workerInfo._queue.back().native();
+        workerInfo._queue.pop_back();
+        workerInfo._mutex.unlock();
+
+        LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " working");
+
+        switch (_type) {
+            case workerHydration:
+                _vfs->hydrate(path);
+                break;
+            case workerDehydration:
+                _vfs->dehydrate(path);
+                break;
+            default:
+                LOG_ERROR(logger(), "Unknown vfs worker type=" << _type);
+                break;
+        }
+    }
+
+    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " ended");
+}
+
+VfsOff::VfsOff(QObject *parent) : Vfs(VfsSetupParams(), parent) {}
+
 VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
 VfsOff::~VfsOff() {}
 
-bool VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
+ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
+    QString path = SyncName2QStr(pathStd.native());
     KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
-    bool exists = false;
-    KDC::IoError ioError = KDC::IoError::Success;
-    if (!KDC::IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << KDC::Utility::formatIoError(fullPath, ioError).c_str());
-        return false;
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
+        return exitInfo;
     }
-
-    if (!exists) {
-        LOGW_DEBUG(logger(), L"Item does not exist anymore - path=" << Path2WStr(fullPath).c_str());
-        return true;
-    }
-
     // Update Finder
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
     QString status = isSyncing ? "SYNC" : "OK";
     _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool VfsOff::startImpl(bool &, bool &, bool &) {
-    return true;
+ExitInfo VfsOff::startImpl(bool &, bool &, bool &) {
+    return ExitCode::Ok;
 }
 
 static QString modeToPluginName(KDC::VirtualFileMode virtualFileMode) {
