@@ -60,24 +60,25 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 }
 
 DownloadJob::~DownloadJob() {
+    try{
     // Remove tmp file
     // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must be
     // deleted
     if (!removeTmpFile() && !_isCreate) {
         LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
     }
-
+      
     if (_responseHandlingCanceled) {
         if (_vfsSetPinState) {
-            if (!_vfsSetPinState(_localpath, PinState::OnlineOnly)) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath));
+            if (ExitInfo exitInfo = _vfsSetPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
             }
         }
 
         // TODO: usefull ?
         if (_vfsForceStatus) {
-            if (!_vfsForceStatus(_localpath, false, 0, false)) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath));
+            if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, false); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
             }
         }
 
@@ -88,16 +89,21 @@ DownloadJob::~DownloadJob() {
         }
     } else {
         if (_vfsSetPinState) {
-            if (!_vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly)) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath));
+            if (ExitInfo exitInfo =
+                        _vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
+                !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
             }
         }
 
         if (_vfsForceStatus) {
-            if (!_vfsForceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok)) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath));
+            if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
             }
         }
+    }
+    } catch (const std::bad_function_call &e) {
+        LOG_ERROR(_logger, "Error in DownloadJob::~DownloadJob: " << e.what());
     }
 }
 
@@ -143,28 +149,37 @@ void DownloadJob::runJob() noexcept {
             IoError ioError = IoError::Success;
             if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError));
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::Unknown;
                 return;
             }
-
             if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath));
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::NotFound;
                 return;
             } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath));
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::FileAccessError;
                 return;
             }
 
-            std::string error;
-            if (!_vfsUpdateMetadata(_localpath, filestat.creationTime, filestat.modtime, _expectedSize,
-                                    std::to_string(filestat.inode), error)) {
-                LOGW_WARN(_logger, L"Update metadata failed: " << Utility::formatSyncPath(_localpath));
+            if (ExitInfo exitInfo = _vfsUpdateMetadata(_localpath, filestat.creationTime, filestat.modtime, _expectedSize,
+                                                       std::to_string(filestat.inode));
+                !exitInfo) {
+                LOGW_WARN(_logger, L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_localpath));
+                _exitCode = exitInfo.code();
+                _exitCause = exitInfo.cause();
                 return;
             }
         }
 
         if (_vfsForceStatus) {
-            if (!_vfsForceStatus(_localpath, true, 0, false)) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath));
+            if (ExitInfo exitInfo = _vfsForceStatus(_localpath, true, 0, false); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+                _exitCode = exitInfo.code();
+                _exitCause = exitInfo.cause();
                 return;
             }
         }
@@ -224,8 +239,10 @@ bool DownloadJob::handleResponse(std::istream &is) {
         if (!_responseHandlingCanceled) {
             if (_vfsUpdateFetchStatus && !fetchFinished) {
                 // Update fetch status
-                if (!_vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
-                    LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath));
+                if (ExitInfo exitInfo = _vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
+                    !exitInfo) {
+                    LOGW_WARN(_logger,
+                              L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
                     fetchError = true;
                 } else if (fetchCanceled) {
                     LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_localpath));

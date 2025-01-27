@@ -703,7 +703,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     }
 
     if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the
-                      // conversion has failed. e.g.: Linux can sometime send filesystem events with strange character in the
+                      // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in the
                       // path
         LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name));
         return false;

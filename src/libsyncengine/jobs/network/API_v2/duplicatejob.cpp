@@ -34,12 +34,12 @@ DuplicateJob::~DuplicateJob() {
         bool isHydrated = false;
         bool isSyncing = false;
         int progress = 0;
-        if (!_vfsStatus(_absoluteFinalPath, isPlaceholder, isHydrated, isSyncing, progress)) {
-            LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_absoluteFinalPath).c_str());
+        if (ExitInfo exitInfo = _vfsStatus(_absoluteFinalPath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
 
-        if (!_vfsForceStatus(_absoluteFinalPath, false, 0, false)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath).c_str());
+        if (ExitInfo exitInfo = _vfsForceStatus(_absoluteFinalPath, false, 0, false); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
     }
 }
