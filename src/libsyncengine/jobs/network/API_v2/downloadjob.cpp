@@ -221,146 +221,15 @@ bool DownloadJob::handleResponse(std::istream &is) {
             return false;
         }
     } else {
-        SyncPath tmpDirectoryPath;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::tempDirectoryPath(tmpDirectoryPath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpDirectoryPath, ioError));
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::Unknown;
-            return false;
-        }
-
-        std::ofstream output;
-        do {
-            // Create/fetch normal file
-#ifdef _WIN32
-            const std::string tmpFileName = tmpnam(nullptr);
-#else
-            const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-#endif
-
-            _tmpPath = tmpDirectoryPath / tmpFileName;
-
-            output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
-            if (!output.is_open()) {
-                LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath));
-                _exitCode = ExitCode::SystemError;
-                _exitCause = Utility::enoughSpace(_tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
-                return false;
-            }
-
-            output.seekp(0, std::ios_base::end);
-        } while (output.tellp() > 0); // If the file is not empty, generate a new file name
-
-        std::chrono::steady_clock::time_point fileProgressTimer = std::chrono::steady_clock::now();
-
-        std::streamsize expectedSize = _resHttp.getContentLength();
+        // Create file
         bool readError = false;
         bool writeError = false;
         bool fetchCanceled = false;
         bool fetchFinished = false;
         bool fetchError = false;
-        setProgress(0);
-        if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || expectedSize > 0) {
-            std::unique_ptr<char[]> buffer(new char[BUF_SIZE]);
-            bool done = false;
-            int retryCount = 0;
-            while (!done) {
-                if (isAborted()) {
-                    LOG_DEBUG(_logger, "Request " << jobId() << ": aborted");
-                    break;
-                }
-
-                is.read(buffer.get(), BUF_SIZE);
-                if (is.bad() && !is.fail()) {
-                    // Read/writing error and not logical error
-                    LOG_WARN(_logger,
-                             "Request " << jobId() << ": error after reading " << getProgress() << " bytes from input stream");
-                    readError = true;
-                    break;
-                } else {
-                    std::streamsize readSize = is.gcount();
-                    addProgress(readSize);
-
-                    if (readSize > 0) {
-                        output.write(buffer.get(), readSize);
-                        if (output.bad()) {
-                            // Read/writing error or logical error
-                            LOG_WARN(_logger,
-                                     "Request " << jobId() << ": error after writing " << getProgress() << " bytes to tmp file");
-                            writeError = true;
-                            break;
-                        }
-                        output.flush();
-                        if (output.bad()) {
-                            // Read/writing error or logical error
-                            LOG_WARN(_logger,
-                                     "Request " << jobId() << ": error after flushing " << getProgress() << " bytes to tmp file");
-                            writeError = true;
-                            break;
-                        }
-                        retryCount = 0;
-                    }
-
-                    if (is.eof()) {
-                        // End of stream
-                        if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || getProgress() == expectedSize) {
-                            done = true;
-                        } else {
-                            // Expected size hasn't be read
-                            if (retryCount < READ_RETRIES) {
-                                // Try to read again later
-                                LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << getProgress()
-                                                             << " bytes from input stream, retrying");
-                                retryCount++;
-                                Utility::msleep(READ_PAUSE_SLEEP_PERIOD);
-                                continue;
-                            } else {
-                                LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << getProgress()
-                                                             << " bytes from input stream");
-                                readError = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (_vfsUpdateFetchStatus) {
-                    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
-                    if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
-                        // Update fetch status
-                        if (ExitInfo exitInfo =
-                                    _vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
-                            !exitInfo) {
-                            LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath) << L": "
-                                                                                  << exitInfo);
-                            fetchError = true;
-                            break;
-                        } else if (fetchCanceled) {
-                            LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_localpath));
-                            break;
-                        }
-                        fileProgressTimer = std::chrono::steady_clock::now();
-                    }
-                }
-            }
-        }
-
-        // Checks that the file has not been corrupted by another process
-        // Unfortunately, the file hash is not available, so we check only its size
-        output.flush();
-        output.seekp(0, std::ios_base::end);
-        if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && output.tellp() != expectedSize) {
-            LOG_WARN(_logger, "Request " << jobId() << ": tmp file has been corrupted by another process");
-            sentry::Handler::captureMessage(sentry::Level::Error, "DownloadJob::handleResponse", "Tmp file is corrupted");
-            writeError = true;
-        }
-
-        output.close();
-        if (output.bad()) {
-            // Read/writing error or logical error
-            LOG_WARN(_logger, "Request " << jobId() << ": error after closing tmp file");
-            writeError = true;
+        if (!createTmpFile(is, readError, writeError, fetchCanceled, fetchFinished, fetchError)) {
+            LOGW_WARN(_logger, L"Error in createTmpFile");
+            return false;
         }
 
         _responseHandlingCanceled = isAborted() || readError || writeError || fetchCanceled || fetchError;
@@ -405,7 +274,6 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _exitCause = ExitCause::InvalidSize;
                 return false;
             } else {
-                // Fetch issue
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::FileAccessError;
                 return false;
@@ -514,6 +382,45 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         IoError ioError = IoError::Success;
         if (!IoHelper::createAlias(data, _localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError));
+
+            if (ioError == IoError::Unknown) {
+                // Could be an alias imported into the drive by dragndrop in the webapp
+                bool writeError = false;
+                if (!createTmpFile(data, writeError)) {
+                    LOGW_WARN(_logger, L"Error in createTmpFile");
+                    return false;
+                }
+
+                _responseHandlingCanceled = isAborted() || writeError;
+
+                if (!_responseHandlingCanceled) {
+                    std::string data2;
+                    SyncPath targetPath;
+                    if (!IoHelper::readAlias(_tmpPath, data2, targetPath, ioError)) {
+                        LOGW_WARN(_logger, L"Error in IoHelper::readAlias: " << Utility::formatIoError(_tmpPath, ioError));
+                        return false;
+                    }
+
+                    if (!IoHelper::createAlias(data2, _localpath, ioError)) {
+                        LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError));
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                if (_responseHandlingCanceled) {
+                    if (isAborted()) {
+                        // Download aborted or canceled by the user
+                        _exitCode = ExitCode::Ok;
+                        return true;
+                    } else {
+                        _exitCode = ExitCode::SystemError;
+                        _exitCause = ExitCause::FileAccessError;
+                        return false;
+                    }
+                }
+            }
 
             return false;
         }
@@ -636,6 +543,173 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
 #endif
 
     return true;
+}
+
+bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
+                                std::optional<std::reference_wrapper<const std::string>> data, bool &readError, bool &writeError,
+                                bool &fetchCanceled, bool &fetchFinished, bool &fetchError) {
+    assert(istr || data);
+
+    readError = false;
+    writeError = false;
+    fetchCanceled = false;
+    fetchFinished = false;
+    fetchError = false;
+
+    SyncPath tmpDirectoryPath;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::tempDirectoryPath(tmpDirectoryPath, ioError)) {
+        LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpDirectoryPath, ioError));
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+
+    std::ofstream output;
+    do {
+#ifdef _WIN32
+        const std::string tmpFileName = tmpnam(nullptr);
+#else
+        const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
+#endif
+
+        _tmpPath = tmpDirectoryPath / tmpFileName;
+
+        output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
+        if (!output.is_open()) {
+            LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath));
+            _exitCode = ExitCode::SystemError;
+            _exitCause = Utility::enoughSpace(_tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
+            return false;
+        }
+
+        output.seekp(0, std::ios_base::end);
+    } while (output.tellp() > 0); // If the file is not empty, generate a new file name
+
+    std::streamsize expectedSize = 0;
+    if (istr) {
+        expectedSize = _resHttp.getContentLength();
+        setProgress(0);
+        if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || expectedSize > 0) {
+            std::chrono::steady_clock::time_point fileProgressTimer = std::chrono::steady_clock::now();
+            std::unique_ptr<char[]> buffer(new char[BUF_SIZE]);
+            bool done = false;
+            int retryCount = 0;
+            while (!done) {
+                if (isAborted()) {
+                    LOG_DEBUG(_logger, "Request " << jobId() << ": aborted");
+                    break;
+                }
+
+                istr->get().read(buffer.get(), BUF_SIZE);
+                if (istr->get().bad() && !istr->get().fail()) {
+                    // Read/writing error and not logical error
+                    LOG_WARN(_logger,
+                             "Request " << jobId() << ": error after reading " << getProgress() << " bytes from input stream");
+                    readError = true;
+                    break;
+                } else {
+                    std::streamsize readSize = istr->get().gcount();
+                    addProgress(readSize);
+
+                    if (readSize > 0) {
+                        output.write(buffer.get(), readSize);
+                        if (output.bad()) {
+                            // Read/writing error or logical error
+                            LOG_WARN(_logger,
+                                     "Request " << jobId() << ": error after writing " << getProgress() << " bytes to tmp file");
+                            writeError = true;
+                            break;
+                        }
+                        output.flush();
+                        if (output.bad()) {
+                            // Read/writing error or logical error
+                            LOG_WARN(_logger,
+                                     "Request " << jobId() << ": error after flushing " << getProgress() << " bytes to tmp file");
+                            writeError = true;
+                            break;
+                        }
+                        retryCount = 0;
+                    }
+
+                    if (istr->get().eof()) {
+                        // End of stream
+                        if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || getProgress() == expectedSize) {
+                            done = true;
+                        } else {
+                            // Expected size hasn't be read
+                            if (retryCount < READ_RETRIES) {
+                                // Try to read again later
+                                LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << getProgress()
+                                                             << " bytes from input stream, retrying");
+                                retryCount++;
+                                Utility::msleep(READ_PAUSE_SLEEP_PERIOD);
+                                continue;
+                            } else {
+                                LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << getProgress()
+                                                             << " bytes from input stream");
+                                readError = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (_vfsUpdateFetchStatus) {
+                    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
+                    if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
+                        // Update fetch status
+                        if (!_vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
+                            LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath));
+                            fetchError = true;
+                            break;
+                        } else if (fetchCanceled) {
+                            LOGW_WARN(_logger, L"Update fetch status canceled: " << Utility::formatSyncPath(_localpath));
+                            break;
+                        }
+                        fileProgressTimer = std::chrono::steady_clock::now();
+                    }
+                }
+            }
+        }
+    } else if (data) {
+        expectedSize = static_cast<std::streamsize>(data->get().length());
+        output.write(data->get().c_str(), expectedSize);
+    }
+
+    // Checks that the file has not been corrupted by another process
+    // Unfortunately, the file hash is not available, so we check only its size
+    output.flush();
+    output.seekp(0, std::ios_base::end);
+    if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && output.tellp() != expectedSize) {
+        LOG_WARN(_logger, "Request " << jobId() << ": tmp file has been corrupted by another process");
+        sentry::Handler::captureMessage(sentry::Level::Error, "DownloadJob::handleResponse", "Tmp file is corrupted");
+        writeError = true;
+    }
+
+    output.close();
+    if (output.bad()) {
+        // Read/writing error or logical error
+        LOG_WARN(_logger, "Request " << jobId() << ": error after closing tmp file");
+        writeError = true;
+    }
+
+    return true;
+}
+
+bool DownloadJob::createTmpFile(std::istream &is, bool &readError, bool &writeError, bool &fetchCanceled, bool &fetchFinished,
+                                bool &fetchError) {
+    return createTmpFile(std::make_optional<std::reference_wrapper<std::istream>>(is), std::nullopt, readError, writeError,
+                         fetchCanceled, fetchFinished, fetchError);
+}
+
+bool DownloadJob::createTmpFile(const std::string &data, bool &writeError) {
+    bool readError = false;
+    bool fetchCanceled = false;
+    bool fetchFinished = false;
+    bool fetchError = false;
+    return createTmpFile(std::nullopt, std::make_optional<std::reference_wrapper<const std::string>>(data), readError, writeError,
+                         fetchCanceled, fetchFinished, fetchError);
 }
 
 } // namespace KDC
