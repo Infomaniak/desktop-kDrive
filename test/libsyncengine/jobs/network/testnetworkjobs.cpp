@@ -418,7 +418,7 @@ void TestNetworkJobs::testDownload() {
       CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
       CPPUNIT_ASSERT(exist);
 
-      // Try to download file (9Mo) in a 8Mo disk should fail with SystemError,
+      // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
       // NotEnoughDiskSpace.
       const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
       DownloadJob job(_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0,
