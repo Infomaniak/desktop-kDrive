@@ -413,10 +413,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
         }
 
         if (ExitInfo exitInfo = generateCreateJob(syncOp, job, hydrating); !exitInfo) {
-           LOGW_SYNCPAL_WARN(_logger,
-                            L"Failed to generate create job for: "
-                                << SyncName2WStr(syncOp->affectedNode()->name())
-                                << L" " << exitInfo);
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate create job for: " << SyncName2WStr(syncOp->affectedNode()->name())
+                                                                              << L" " << exitInfo);
             return exitInfo;
         }
 
@@ -1053,15 +1051,14 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
             } else if (!isHydrated) {
                 // Update metadata
                 std::string error;
-                _syncPal->vfsUpdateMetadata(
-                        absolutePath, syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
-                        syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
-                        syncOp->affectedNode()->size(),
-                        syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
-                // TODO: Vfs functions should return an ExitInfo struct
-                syncOp->setOmit(true); // Do not propagate change in file system, only in DB
-                if (!error.empty()) {
-                    return {ExitCode::SystemError, ExitCause::FileAccessError};
+                if (ExitInfo exitInfo = _syncPal->vfsUpdateMetadata(
+                            absolutePath,
+                            syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
+                            syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
+                            syncOp->affectedNode()->size(),
+                            syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string());
+                    !exitInfo) {
+                    return exitInfo;
                 }
             } // else: the file is hydrated, we can proceed with download
         }
