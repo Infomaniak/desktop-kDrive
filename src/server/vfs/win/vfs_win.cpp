@@ -153,7 +153,7 @@ void VfsWin::stopImpl(bool unregister) {
 void VfsWin::dehydrate(const QString &path) {
     LOGW_DEBUG(logger(), L"dehydrate: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
-    QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
+    const QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
 
     // Check file status
     SyncFileStatus status;
