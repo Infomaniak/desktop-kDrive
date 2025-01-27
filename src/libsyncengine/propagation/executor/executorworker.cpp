@@ -535,7 +535,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
 
         bool placeholderCreation = isLiteSyncActivated() && syncOp->affectedNode()->type() == NodeType::File;
         if (placeholderCreation && syncOp->affectedNode()->id().has_value()) {
-            const bool isLink = _syncPal->_remoteSnapshot->isLink(*syncOp->affectedNode()->id());
+            const bool isLink = _syncPal->snapshotCopy(ReplicaSide::Remote)->isLink(*syncOp->affectedNode()->id());
             placeholderCreation = !isLink;
         }
 
