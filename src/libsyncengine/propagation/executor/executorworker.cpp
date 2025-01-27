@@ -1801,7 +1801,9 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
                                           L"Node `" << Utility::formatSyncName(syncOp->conflict().localNode()->name())
                                                     << L" not found in DB. This is ok since we wanted to remove to anyway.");
                     } else {
-                        // Remove local node from DB
+                        // Remove local node from DB failed!
+                        LOGW_SYNCPAL_WARN(_logger, L"deleteFromDb failed for "
+                                                           << Utility::formatSyncName(syncOp->conflict().localNode()->name()));
                         propagateChange = false;
                         return exitInfo;
                     }
@@ -1834,20 +1836,6 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
             break;
         }
         case ConflictType::CreateParentDelete: // Indirect conflict pattern
-        {
-            // Remove node from update tree
-            std::shared_ptr<UpdateTree> updateTree = affectedUpdateTree(syncOp);
-            if (!updateTree->deleteNode(syncOp->affectedNode())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
-                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()));
-            }
-
-            // Do not propagate changes to the DB
-            // The created node has been moved and will be discovered as new
-            // on next sync
-            propagateChange = false;
-            break;
-        }
         case ConflictType::MoveDelete: // Delete conflict pattern
         case ConflictType::MoveParentDelete: // Indirect conflict pattern
         case ConflictType::MoveMoveCycle: // Name clash conflict pattern
