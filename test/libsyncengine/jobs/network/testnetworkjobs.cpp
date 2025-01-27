@@ -427,7 +427,7 @@ void TestNetworkJobs::testDownload() {
       CPPUNIT_ASSERT_EQUAL_MESSAGE(
           std::string(
               "Space available at " + smallPartitionPath.string() + " -> " +
-              std::to_string(Utility::freeDiskSpace(smallPartitionPath))),
+              std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
           ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace),
           exitInfo);
     }

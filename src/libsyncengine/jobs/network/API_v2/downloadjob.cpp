@@ -557,9 +557,9 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
 
 bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace) {
     const SyncPath &smallerDir =
-            Utility::freeDiskSpace(tmpDirPath) < Utility::freeDiskSpace(destDirPath) ? tmpDirPath : destDirPath;
+            Utility::getFreeDiskSpace(tmpDirPath) < Utility::getFreeDiskSpace(destDirPath) ? tmpDirPath : destDirPath;
 
-    if (const int64_t freeBytes = Utility::freeDiskSpace(smallerDir); freeBytes >= 0) {
+    if (const int64_t freeBytes = Utility::getFreeDiskSpace(smallerDir); freeBytes >= 0) {
         if (freeBytes < neededPlace + Utility::freeDiskSpaceLimit()) {
             return false;
         }
