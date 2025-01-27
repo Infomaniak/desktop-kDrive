@@ -15,12 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
 
-#include <functional>
+#include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
+#include "vfs.h"
+#include <deque>
+#include <QObject>
+#include <QList>
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
 
-enum class TraceLevel { INFO = 0, DEBUG, WARNING, _ERROR };
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
 
-// Type definition for the debug callback function.
-using TraceCbk = std::function<void(TraceLevel, const wchar_t *)>;
+namespace KDC {
+class VfsWorker : public QObject {
+        Q_OBJECT
+
+    public:
+        VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger);
+        void start();
+
+    private:
+        Vfs *_vfs;
+        int _type;
+        int _num;
+        log4cplus::Logger _logger;
+
+        inline log4cplus::Logger logger() { return _logger; }
+};
+} // namespace KDC

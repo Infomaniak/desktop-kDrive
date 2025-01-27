@@ -30,7 +30,7 @@ class Snapshot;
 
 class SnapshotItem {
     public:
-        SnapshotItem();
+        SnapshotItem() = default;
         explicit SnapshotItem(const NodeId &id);
         SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt, SyncTime lastModified,
                      NodeType type, int64_t size, bool isLink, bool canWrite, bool canShare);
