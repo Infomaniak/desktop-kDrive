@@ -48,13 +48,13 @@ void TestOperationSorterWorker::tearDown() {
 
 void TestOperationSorterWorker::testMoveFirstAfterSecond() {
     const auto nodeA =
-            std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, std::nullopt,
+            std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, Str("a"),
                                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr);
     const auto nodeB =
-            std::make_shared<Node>(ReplicaSide::Local, Str("B"), NodeType::Directory, OperationType::None, std::nullopt,
+            std::make_shared<Node>(ReplicaSide::Local, Str("B"), NodeType::Directory, OperationType::None, Str("b"),
                                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr);
     const auto nodeC =
-            std::make_shared<Node>(ReplicaSide::Local, Str("C"), NodeType::Directory, OperationType::None, std::nullopt,
+            std::make_shared<Node>(ReplicaSide::Local, Str("C"), NodeType::Directory, OperationType::None, Str("c"),
                                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr);
     const auto op1 = std::make_shared<SyncOperation>();
     const auto op2 = std::make_shared<SyncOperation>();
