@@ -20,6 +20,7 @@
 
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/log/sentry/handler.h"
 #include "libsyncengine/progress/syncfileitem.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/vfs/workerinfo.h"
@@ -52,6 +53,7 @@ struct VfsSetupParams {
         std::string _namespaceCLSID;
         KDC::ExecuteCommand _executeCommand;
         log4cplus::Logger _logger;
+        std::shared_ptr<sentry::Handler> _sentryHandler;
 };
 
 /** Interface describing how to deal with virtual/placeholder files.

@@ -3505,6 +3505,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         connect(this, &AppServer::socketApiExecuteCommandDirect, _socketApi.data(), &SocketApi::executeCommandDirect);
         vfsSetupParams._executeCommand = [this](const char *command) { emit socketApiExecuteCommandDirect(QString(command)); };
         vfsSetupParams._logger = _logger;
+        vfsSetupParams._sentryHandler = sentry::Handler::instance();
         QString error;
         std::shared_ptr vfsPtr = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
         if (!vfsPtr) {
