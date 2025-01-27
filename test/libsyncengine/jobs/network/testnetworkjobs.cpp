@@ -67,6 +67,10 @@ static const NodeId pictureDirRemoteId = "56851"; // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373"; // test_ci/test_pictures/picture-1.jpg
 static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test_download.txt
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
+static const NodeId testAliasRemoteId = "2016113"; // test_ci/test_networkjobs/test_alias.log
+static const NodeId testAliasDnDRemoteId = "2023013"; // test_ci/test_networkjobs/test_alias_dnd
+static const NodeId testAliasGoodRemoteId = "2017813"; // test_ci/test_networkjobs/test_alias_good.log
+static const NodeId testAliasCorruptedRemoteId = "2017817"; // test_ci/test_networkjobs/test_alias_corrupted.log
 static const NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
 static const NodeId testDummyDirRemoteId = "98648"; // test_ci/dummy_dir
 static const NodeId testDummyFileRemoteId = "98649"; // test_ci/dummy_dir/picture.jpg
@@ -81,11 +85,11 @@ void createBigTextFile(const SyncPath &path) {
     static const size_t sizeInBytes = 97 * 1000000;
     std::ofstream ofs{path};
     ofs << std::string(sizeInBytes, 'a');
-};
+}
 
 void createEmptyFile(const SyncPath &path) {
     std::ofstream{path};
-};
+}
 } // namespace
 
 void TestNetworkJobs::setUp() {
@@ -384,38 +388,108 @@ void TestNetworkJobs::testDownload() {
             std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
             CPPUNIT_ASSERT(content == "test");
         }
+
+        MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
-    MockIoHelperTestNetworkJobs::resetStdFunctions();
+
     // Not Enought disk space
     {
-        const LocalTemporaryDirectory temporaryDirectory("tmp");
-        const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
-        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
-        std::ofstream ofs(local9MoFilePath, std::ios::binary);
-        ofs << std::string(9 * 1000000, 'a');
-        ofs.close();
+      const LocalTemporaryDirectory temporaryDirectory("tmp");
+      const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
+      const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId,
+                                                  "testDownload");
+      std::ofstream ofs(local9MoFilePath, std::ios::binary);
+      ofs << std::string(9 * 1000000, 'a');
+      ofs.close();
 
-        // Upload file
-        UploadJob uploadJob(_driveDbId, local9MoFilePath, Str2SyncName("9Mo.txt"), remoteTmpDir.id(), 0);
-        uploadJob.runSynchronously();
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
+      // Upload file
+      UploadJob uploadJob(_driveDbId, local9MoFilePath, Str2SyncName("9Mo.txt"),
+                          remoteTmpDir.id(), 0);
+      uploadJob.runSynchronously();
+      CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
 
-        SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
-        CPPUNIT_ASSERT(!smallPartitionPath.empty());
-        IoError ioError = IoError::Unknown;
-        bool exist = false;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT(exist);
+      SyncPath smallPartitionPath =
+          testhelpers::TestVariables().local8MoPartitionPath;
+      CPPUNIT_ASSERT(!smallPartitionPath.empty());
+      IoError ioError = IoError::Unknown;
+      bool exist = false;
+      CPPUNIT_ASSERT(
+          IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
+      CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+      CPPUNIT_ASSERT(exist);
 
-        // Try to download file (9Mo) in a 8Mo disk should fail with SystemError, NotEnoughDiskSpace.
-        const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
-        DownloadJob job(_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
-        const ExitInfo exitInfo = {job.runSynchronously(), job.exitCause()};
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
-                                                 std::to_string(Utility::freeDiskSpace(smallPartitionPath))),
-                                     ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), exitInfo);
+      // Try to download file (9Mo) in a 8Mo disk should fail with SystemError,
+      // NotEnoughDiskSpace.
+      const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
+      DownloadJob job(_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0,
+                      false);
+      const ExitInfo exitInfo = {job.runSynchronously(), job.exitCause()};
+      CPPUNIT_ASSERT_EQUAL_MESSAGE(
+          std::string(
+              "Space available at " + smallPartitionPath.string() + " -> " +
+              std::to_string(Utility::freeDiskSpace(smallPartitionPath))),
+          ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace),
+          exitInfo);
     }
+
+#ifdef __APPLE__
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_alias_good";
+
+        // Download a valid alias
+        {
+            DownloadJob job(_driveDbId, testAliasGoodRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check that the file has been copied
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+    }
+
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_alias_dnd";
+
+        // Download an invalid alias (not imported by the desktop app)
+        {
+            DownloadJob job(_driveDbId, testAliasDnDRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check that the file has been copied
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+    }
+
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_alias_corrupted";
+
+        // Download an invalid alias (corrupted)
+        {
+            DownloadJob job(_driveDbId, testAliasCorruptedRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::SystemError);
+        }
+
+        // Check that the file has NOT been copied
+        CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+    }
+#endif
 }
 
 void TestNetworkJobs::testDownloadAborted() {
