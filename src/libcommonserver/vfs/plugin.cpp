@@ -16,25 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "plugin.h"
 
-#include "testincludes.h"
-#include "libcommonserver/vfs/mac/vfs_mac.h"
+#include "config.h"
 
 namespace KDC {
 
-class TestVfsMac : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestVfsMac);
-        CPPUNIT_TEST(testStatus);
-        CPPUNIT_TEST_SUITE_END();
-
-    public:
-        void setUp() override;
-
-    private:
-        void testStatus();
-
-        std::unique_ptr<VfsMac> _vfs;
-};
+QString pluginFileName(const QString &type, const QString &name) {
+    return QString(QLatin1String("%1commonserver_%2_%3")).arg(APPLICATION_NAME, type, name);
+}
 
 } // namespace KDC
