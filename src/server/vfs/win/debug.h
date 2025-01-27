@@ -20,7 +20,7 @@
 
 #include <functional>
 
-enum class TraceLevel { INFO = 0, DEBUG, WARNING, _ERROR };
+enum class TraceLevel { Info = 0, Debug, Warning, Error };
 
 // Type definition for the debug callback function.
 using TraceCbk = std::function<void(TraceLevel, const wchar_t *)>;

@@ -26,7 +26,6 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
-#include <iostream>
 #include <unordered_map>
 #include <shobjidl_core.h>
 
@@ -103,17 +102,18 @@ VfsWin::~VfsWin() {
 
 void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
     switch (level) {
-        case TraceLevel::INFO:
+        case TraceLevel::Info:
             LOGW_INFO(logger(), msg);
             break;
-        case TraceLevel::DEBUG:
+        case TraceLevel::Debug:
             LOGW_DEBUG(logger(), msg);
             break;
-        case TraceLevel::WARNING:
+        case TraceLevel::Warning:
             LOGW_WARN(logger(), msg);
             break;
-        case TraceLevel::_ERROR:
-            LOGW_WARN(logger(), msg);
+        case TraceLevel::Error:
+            LOGW_ERROR(logger(), msg);
+            sentry::Handler::captureMessage(sentry::Level::Error, "VfsWin::debugCbk", Utility::ws2s(msg));
             break;
     }
 }

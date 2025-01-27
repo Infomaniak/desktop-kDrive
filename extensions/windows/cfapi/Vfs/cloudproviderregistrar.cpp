@@ -48,6 +48,10 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
 
     try {
         syncRootID = getSyncRootId(providerInfo);
+        if (syncRootID.empty()) {
+            TRACE_ERROR(L"Error in getSyncRootId");
+            return std::wstring();
+        }
 
         // Find if the provider is already registered
         bool found(false);
@@ -84,6 +88,21 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 TRACE_ERROR(L"Could not open key %s", subKey.c_str());
             }
         } else {
+            if (!providerInfo->folderPath()) {
+                TRACE_ERROR(L"Folder path is empty");
+                return std::wstring();
+            }
+
+            if (!providerInfo->folderName()) {
+                TRACE_ERROR(L"Folder name is empty");
+                return std::wstring();
+            }
+
+            if (!providerInfo->id()) {
+                TRACE_ERROR(L"Sync root id is empty");
+                return std::wstring();
+            }
+
             winrt::StorageProviderSyncRootInfo info;
             info.Id(syncRootID);
 
@@ -102,7 +121,10 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             info.DisplayNameResource(providerInfo->folderName());
 
             WCHAR exePath[MAX_FULL_PATH];
-            GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH);
+            if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
+                TRACE_ERROR(L"Error in GetModuleFileNameW");
+                return std::wstring();
+            }
             info.IconResource(exePath); // App icon
 
             info.HydrationPolicy(winrt::StorageProviderHydrationPolicy::Full);
@@ -124,6 +146,11 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             winrt::IBuffer contextBuffer =
                     winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
             info.Context(contextBuffer);
+
+            if (!info.Path() || info.DisplayNameResource().empty() || info.Id().empty()) {
+                TRACE_ERROR(L"Invalid StorageProviderSyncRootInfo");
+                return std::wstring();
+            }
 
             winrt::StorageProviderSyncRootManager::Register(info);
 
