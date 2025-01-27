@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
 
-        void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &path, NodeType nodeType);
+        void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
 
         const std::shared_ptr<SyncDb> _syncDb;
         Sync _sync;
@@ -83,9 +83,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
         NodeIdSet _localTmpUnsyncedList;
 
         std::unordered_set<SyncPath, hashPathFunction> _dirPathToDeleteSet;
-
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
+        std::unordered_set<SyncName> _ignoredDirectoryNames;
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);

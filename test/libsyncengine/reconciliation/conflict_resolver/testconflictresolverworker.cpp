@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,10 +138,9 @@ void TestConflictResolverWorker::testCreateCreate() {
                                                       testhelpers::defaultTime, NodeType::File, 123, false, true, true));
 
     std::shared_ptr<Node> rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
-    std::shared_ptr<Node> rNodeAAB =
-            std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAB.txt"),
-                                   NodeType::File, OperationType::Create, "rAAB", testhelpers::defaultTime,
-                                   testhelpers::defaultTime, testhelpers::defaultFileSize, rNodeAA);
+    std::shared_ptr<Node> rNodeAAB = std::make_shared<Node>(
+            _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAB.txt"), NodeType::File, OperationType::Create, "rAAB",
+            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, rNodeAA);
     CPPUNIT_ASSERT(rNodeAA->insertChildren(rNodeAAB));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeAAB);
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rAAB", "rAA", Str("AAB.txt"), testhelpers::defaultTime,

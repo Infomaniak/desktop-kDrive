@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ void VersionWidget::showReleaseNotes() const {
 
     const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
     QString languageCode = CommonUtility::languageCode(appLanguage);
-    if (languageCode.isEmpty()) languageCode = "en";
+    if (languageCode.isEmpty()) languageCode = CommonUtility::englishCode;
     QDesktopServices::openUrl(
             QUrl(QString("%1-%2-%3-%4.html")
                          .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), os, languageCode.left(2))));

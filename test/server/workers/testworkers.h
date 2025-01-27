@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
 #include "socketapi.h"
 
 #if defined(__APPLE__)
-#include "server/vfs/mac/vfs_mac.h"
+#include "libcommonserver/vfs/mac/vfs_mac.h"
 #elif defined(_WIN32)
-#include "server/vfs/win/vfs_win.h"
+#include "libcommonserver/vfs/win/vfs_win.h"
 #else
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 #endif
 
 #include "libsyncengine/propagation/executor/executorworker.h"
@@ -48,9 +48,6 @@ class TestWorkers : public CppUnit::TestFixture {
 
     protected:
         static bool startVfs();
-        static bool createPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        static bool convertToPlaceholder(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        static bool setPinState(int syncDbId, const SyncPath &relativeLocalPath, PinState pinState);
 
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal;

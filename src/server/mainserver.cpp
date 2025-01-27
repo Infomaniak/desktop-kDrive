@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,9 +78,9 @@ int main(int argc, char **argv) {
 
     std::unique_ptr<KDC::AppServer> appPtr = nullptr;
     try {
-        appPtr = std::unique_ptr<KDC::AppServer>(new KDC::AppServer(argc, argv));
+        appPtr = std::make_unique<KDC::AppServer>(argc, argv);
     } catch (const std::exception &e) {
-        std::cerr << "kDrive server initialization error: error=" << e.what() << std::endl;
+        std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
         return -1;
     }
 

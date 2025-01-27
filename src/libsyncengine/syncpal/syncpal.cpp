@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -362,126 +362,120 @@ void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
 }
 
 bool SyncPal::vfsIsExcluded(const SyncPath &itemPath, bool &isExcluded) {
-    if (!_vfsIsExcluded) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsIsExcluded(syncDbId(), itemPath, isExcluded);
+    isExcluded = _vfs->isExcluded(itemPath.native());
+    return true;
 }
 
 bool SyncPal::vfsExclude(const SyncPath &itemPath) {
-    if (!_vfsExclude) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsExclude(syncDbId(), itemPath);
+    _vfs->exclude(itemPath);
+    return true;
 }
 
 bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
-    if (!_vfsPinState) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsPinState(syncDbId(), itemPath, pinState);
+    pinState = _vfs->pinState(itemPath);
+    return true;
 }
 
-bool SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
-    if (!_vfsSetPinState) {
-        return false;
+ExitInfo SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
+    if (!_vfs) {
+        return ExitCode::LogicError;
     }
-
-    return _vfsSetPinState(syncDbId(), itemPath, pinState);
+    return _vfs->setPinState(itemPath, pinState);
 }
 
-bool SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
-    if (!_vfsStatus) {
-        return false;
+ExitInfo SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
+    if (!_vfs) {
+        return ExitCode::LogicError;
     }
-
-    return _vfsStatus(syncDbId(), itemPath, isPlaceholder, isHydrated, isSyncing, progress);
+    return _vfs->status(itemPath, isPlaceholder, isHydrated, isSyncing, progress);
 }
 
-bool SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
-    if (!_vfsCreatePlaceholder) {
-        return false;
+ExitInfo SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
+    if (!_vfs) {
+        return ExitCode::LogicError;
     }
-
-    return _vfsCreatePlaceholder(syncDbId(), relativeLocalPath, item);
+    return _vfs->createPlaceholder(relativeLocalPath, item);
 }
 
-bool SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
-    if (!_vfsConvertToPlaceholder) {
-        return false;
+ExitInfo SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
+    if (!_vfs) {
+        return ExitCode::LogicError;
     }
-
-    return _vfsConvertToPlaceholder(syncDbId(), path, item);
+    return _vfs->convertToPlaceholder(path, item);
 }
 
-bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
-                                const NodeId &id, std::string &error) {
-    if (!_vfsUpdateMetadata) {
-        return false;
+ExitInfo SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
+                                    const int64_t size, const NodeId &id) {
+    if (!_vfs) {
+        return ExitCode::LogicError;
     }
-
-    return _vfsUpdateMetadata(syncDbId(), path, creationTime, modtime, size, id, error);
+    return _vfs->updateMetadata(path, creationTime, modtime, size, id);
 }
 
-bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
-                                   bool &finished) {
+ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
+                                       bool &finished) {
     if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger, L"vfsUpdateFetchStatus: " << Utility::formatSyncPath(path) << L" received=" << received);
     }
-
-    if (!_vfsUpdateFetchStatus) {
-        return false;
+    if (!_vfs) {
+        return ExitCode::LogicError;
     }
-
-    return _vfsUpdateFetchStatus(syncDbId(), tmpPath, path, received, canceled, finished);
+    return _vfs->updateFetchStatus(tmpPath.native(), path.native(), received, canceled, finished);
 }
 
 bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) {
-    if (!_vfsFileStatusChanged) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsFileStatusChanged(syncDbId(), path, status);
+    return _vfs->fileStatusChanged(path, status);
 }
 
-bool SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
-    if (!_vfsForceStatus) {
-        return false;
+ExitInfo SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
+    if (!_vfs) {
+        return ExitCode::LogicError;
     }
-
-    return _vfsForceStatus(syncDbId(), path, isSyncing, progress, isHydrated);
+    return _vfs->forceStatus(path, isSyncing, progress, isHydrated);
 }
 
 bool SyncPal::vfsCleanUpStatuses() {
-    if (!_vfsCleanUpStatuses) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsCleanUpStatuses(syncDbId());
+    return _vfs->cleanUpStatuses();
 }
 
 bool SyncPal::vfsClearFileAttributes(const SyncPath &path) {
-    if (!_vfsClearFileAttributes) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsClearFileAttributes(syncDbId(), path);
+    _vfs->clearFileAttributes(path);
+    return true;
 }
 
 bool SyncPal::vfsCancelHydrate(const SyncPath &path) {
-    if (!_vfsCancelHydrate) {
+    if (!_vfs) {
         return false;
     }
-
-    return _vfsCancelHydrate(syncDbId(), path);
+    _vfs->cancelHydrate(path);
+    return true;
 }
 
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");
-    VirtualFilesCleaner virtualFileCleaner(localPath(), syncDbId(), _syncDb, _vfsStatus, _vfsClearFileAttributes);
+    if (!_vfs) {
+        addError(Error(syncDbId(), errId(), ExitCode::LogicError, ExitCause::Unknown));
+        return false;
+    }
+    VirtualFilesCleaner virtualFileCleaner(localPath(), _syncDb, _vfs);
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
         addError(Error(syncDbId(), errId(), virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
@@ -492,7 +486,7 @@ bool SyncPal::wipeVirtualFiles() {
 
 bool SyncPal::wipeOldPlaceholders() {
     LOG_SYNCPAL_INFO(_logger, "Wiping old placeholders files");
-    VirtualFilesCleaner virtualFileCleaner(localPath(), syncDbId());
+    VirtualFilesCleaner virtualFileCleaner(localPath());
     std::vector<SyncPath> failedToRemovePlaceholders;
     if (!virtualFileCleaner.removeDehydratedPlaceholders(failedToRemovePlaceholders)) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
@@ -824,7 +818,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
 
     if (vfsMode() == VirtualFileMode::Mac || vfsMode() == VirtualFileMode::Win) {
         // Set callbacks
-        std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
+        std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
                 std::bind(&SyncPal::vfsUpdateFetchStatus, this, std::placeholders::_1, std::placeholders::_2,
                           std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
         job->setVfsUpdateFetchStatusCallback(vfsUpdateFetchStatusCallback);
@@ -832,20 +826,20 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
 #ifdef __APPLE__
         // Not done in Windows case: the pin state and the status must not be set by the download job because hydration could be
         // asked for a move and so, the file place will change just after the dl.
-        std::function<bool(const SyncPath &, PinState)> vfsSetPinStateCallback =
+        std::function<ExitInfo(const SyncPath &, PinState)> vfsSetPinStateCallback =
                 std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);
         job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
 
-        std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
+        std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
                 std::bind(&SyncPal::vfsForceStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
                           std::placeholders::_4);
         job->setVfsForceStatusCallback(vfsForceStatusCallback);
 #endif
 
-        std::function<bool(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &, std::string &)>
+        std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
                 vfsUpdateMetadataCallback =
                         std::bind(&SyncPal::vfsUpdateMetadata, this, std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
+                                  std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
         job->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
 
         std::function<bool(const SyncPath &)> vfsCancelHydrateCallback =
@@ -1552,6 +1546,12 @@ void SyncPal::copySnapshots() {
     *_remoteSnapshotCopy = *_remoteSnapshot;
     _localSnapshot->startRead();
     _remoteSnapshot->startRead();
+}
+
+void SyncPal::invalideSnapshots() {
+    _localFSObserverWorker->invalidateSnapshot();
+    _remoteFSObserverWorker->forceUpdate();
+    _remoteFSObserverWorker->invalidateSnapshot();
 }
 
 } // namespace KDC

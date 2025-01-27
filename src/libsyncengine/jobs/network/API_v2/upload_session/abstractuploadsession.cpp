@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -272,7 +272,7 @@ bool AbstractUploadSession::sendChunks() {
     // "file not found" errors.
     std::ifstream file;
     if (ExitInfo exitInfo = IoHelper::openFile(_filePath, file, 10); !exitInfo) {
-        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath));
+        LOGW_WARN(_logger, L"Failed to open file " << Utility::formatSyncPath(_filePath) << L" " << exitInfo);
         return exitInfo;
     }
 

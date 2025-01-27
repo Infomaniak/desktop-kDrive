@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1075,7 +1075,7 @@ void ParametersDialog::onDebugReporterDone(bool retCode, const QString &debugId)
     EnableStateHolder _(this);
 
     Language language = ParametersCache::instance()->parametersInfo().language();
-    QString languageCode = KDC::CommonUtility::languageCodeList(language).first();
+    QString languageCode = CommonUtility::languageCode(language);
     QString swistranferUrl = QString(MANUALTRANSFER_URL).arg(languageCode.left(2));
 
     CustomMessageBox msgBox(

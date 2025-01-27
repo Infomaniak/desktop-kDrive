@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,7 +113,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
 
     // Acknowledgment
     _acknowledgmentFrame = new QFrame(this);
-    _acknowledgmentFrame->setStyleSheet("QFrame {border-radius: 8px; background-color: #F4F6FC;}");
+    _acknowledgmentFrame->setObjectName("disclaimerWidget");
     _acknowledgmentFrame->setVisible(!_isStaff);
     layout->addWidget(_acknowledgmentFrame);
 

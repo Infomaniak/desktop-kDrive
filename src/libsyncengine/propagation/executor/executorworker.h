@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,7 +81,6 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath);
         ExitInfo convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated);
-        ExitInfo processCreateOrConvertToPlaceholderError(const SyncPath &relativeLocalPath, bool create);
         ExitInfo handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored);
         ExitInfo generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
 
@@ -150,10 +149,10 @@ class ExecutorWorker : public OperationProcessor {
 
         // This methode will return ExitCode::Ok if the error is safely managed and the executor can continue. Else, it will
         // return opsExitInfo.
-        ExitInfo handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
-        ExitInfo handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
-        ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo);
-        ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+        ExitInfo handleExecutorError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsLocalFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
         ExitInfo removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, OperationType opType);

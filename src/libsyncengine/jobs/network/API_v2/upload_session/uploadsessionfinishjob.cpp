@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,8 +37,8 @@ UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, con
 
 UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (_vfsForceStatus) {
-        if (!_vfsForceStatus(_filePath, false, 0, true)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
+        if (ExitInfo exitInfo = _vfsForceStatus(_filePath, false, 0, true); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath) << L" : " << exitInfo);
         }
     }
 }

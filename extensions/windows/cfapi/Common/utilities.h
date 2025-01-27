@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,10 +49,10 @@
         swprintf(msg, sz, MESSAGE, __VA_ARGS__);                                   \
         Utilities::trace(TRACE_LEVEL, location.file_name(), location.line(), msg); \
     }
-#define TRACE_INFO(MESSAGE, ...) TRACE(TraceLevel::INFO, MESSAGE, __VA_ARGS__)
-#define TRACE_DEBUG(MESSAGE, ...) TRACE(TraceLevel::DEBUG, MESSAGE, __VA_ARGS__)
-#define TRACE_WARNING(MESSAGE, ...) TRACE(TraceLevel::WARNING, MESSAGE, __VA_ARGS__)
-#define TRACE_ERROR(MESSAGE, ...) TRACE(TraceLevel::_ERROR, MESSAGE, __VA_ARGS__)
+#define TRACE_INFO(MESSAGE, ...) TRACE(TraceLevel::Info, MESSAGE, __VA_ARGS__)
+#define TRACE_DEBUG(MESSAGE, ...) TRACE(TraceLevel::Debug, MESSAGE, __VA_ARGS__)
+#define TRACE_WARNING(MESSAGE, ...) TRACE(TraceLevel::Warning, MESSAGE, __VA_ARGS__)
+#define TRACE_ERROR(MESSAGE, ...) TRACE(TraceLevel::Error, MESSAGE, __VA_ARGS__)
 
 class Utilities {
     public:

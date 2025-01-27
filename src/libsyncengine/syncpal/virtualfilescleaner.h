@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #pragma once
 
 #include "utility/types.h"
+#include "libcommonserver/vfs/vfs.h"
 
 #include <log4cplus/logger.h>
 
@@ -28,11 +29,9 @@ class SyncDb;
 
 class VirtualFilesCleaner {
     public:
-        VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
-                            bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
-                            bool (*vfsClearFileAttributes)(int, const SyncPath &));
+        VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> &vfs);
 
-        VirtualFilesCleaner(const SyncPath &path, int syncDbId);
+        explicit VirtualFilesCleaner(const SyncPath &path);
 
         bool run();
         bool removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders);
@@ -48,11 +47,8 @@ class VirtualFilesCleaner {
         log4cplus::Logger _logger;
 
         SyncPath _rootPath;
-        int _syncDbId{-1};
         std::shared_ptr<SyncDb> _syncDb = nullptr;
-        bool (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                           int &progress) = nullptr;
-        bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &itemPath) = nullptr;
+        std::shared_ptr<Vfs> _vfs;
 
         ExitCode _exitCode = ExitCode::Unknown;
         ExitCause _exitCause = ExitCause::Unknown;

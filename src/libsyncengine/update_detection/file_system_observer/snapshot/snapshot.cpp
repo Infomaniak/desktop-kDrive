@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -238,10 +238,9 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
 
     bool ok = true;
     std::deque<std::pair<NodeId, SyncName>> ancestors;
-    bool parentIsRoot = false;
-    NodeId id = itemId;
-
     {
+        bool parentIsRoot = false;
+        NodeId id = itemId;
         const std::scoped_lock lock(_mutex);
         while (!parentIsRoot) {
             if (const auto it = _items.find(id); it != _items.end()) {
@@ -249,7 +248,7 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
                     if (!it->second.path().empty()) {
                         path = it->second.path();
                         break;
-                    };
+                    }
                 }
 
                 ancestors.push_back({it->first, it->second.name()});
@@ -273,14 +272,14 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
             it->second.setPath(path);
         }
         ancestors.pop_back();
+    }
 
-        // Trick to ignore items with pattern like "X:" in their name on Windows - Begin
-        if (path.parent_path() != tmpParentPath) {
-            ignore = true;
-            return false;
-        }
-        tmpParentPath = path;
-        // Trick to ignore items with pattern like "X:" in their name on Windows - End
+    // Trick to ignore items with a pattern like "X:" in their names on Windows.
+    // Since only relative path are stored in the snapshot, the root name should always be empty.
+    // If it is not empty, that means that the item name is invalid.
+    if (!path.root_name().empty()) {
+        ignore = true;
+        return false;
     }
 
     return ok;

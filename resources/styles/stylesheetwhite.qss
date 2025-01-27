@@ -3,6 +3,16 @@ QInputDialog QLabel
     qproperty-wordWrap:1;
 }
 
+QWidget#disclaimerWidget {
+    background-color: #F4F6FD;
+    border-radius: 5px;
+}
+
+QFrame#disclaimerWidget {
+    background-color: #F4F6FD;
+    border-radius: 5px;
+}
+
 /*******************/
 /* QProgressDialog */
 /*******************/

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "plugin.h"
 
-#include <functional>
+#include "config.h"
 
-enum class TraceLevel { INFO = 0, DEBUG, WARNING, _ERROR };
+namespace KDC {
 
-// Type definition for the debug callback function.
-using TraceCbk = std::function<void(TraceLevel, const wchar_t *)>;
+QString pluginFileName(const QString &type, const QString &name) {
+    return QString(QLatin1String("%1commonserver_%2_%3")).arg(APPLICATION_NAME, type, name);
+}
+
+} // namespace KDC

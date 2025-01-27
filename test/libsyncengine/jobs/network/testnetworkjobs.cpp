@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,6 +67,10 @@ static const NodeId pictureDirRemoteId = "56851"; // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373"; // test_ci/test_pictures/picture-1.jpg
 static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test_download.txt
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
+static const NodeId testAliasRemoteId = "2016113"; // test_ci/test_networkjobs/test_alias.log
+static const NodeId testAliasDnDRemoteId = "2023013"; // test_ci/test_networkjobs/test_alias_dnd
+static const NodeId testAliasGoodRemoteId = "2017813"; // test_ci/test_networkjobs/test_alias_good.log
+static const NodeId testAliasCorruptedRemoteId = "2017817"; // test_ci/test_networkjobs/test_alias_corrupted.log
 static const NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
 static const NodeId testDummyDirRemoteId = "98648"; // test_ci/dummy_dir
 static const NodeId testDummyFileRemoteId = "98649"; // test_ci/dummy_dir/picture.jpg
@@ -81,11 +85,11 @@ void createBigTextFile(const SyncPath &path) {
     static const size_t sizeInBytes = 97 * 1000000;
     std::ofstream ofs{path};
     ofs << std::string(sizeInBytes, 'a');
-};
+}
 
 void createEmptyFile(const SyncPath &path) {
     std::ofstream{path};
-};
+}
 } // namespace
 
 void TestNetworkJobs::setUp() {
@@ -338,7 +342,7 @@ void TestNetworkJobs::testDownload() {
             return temporaryDirectory.path();
         };
         std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
-                [](const SyncPath &, const SyncPath &, std::error_code &ec) {
+                []([[maybe_unused]] const SyncPath &, [[maybe_unused]] const SyncPath &, std::error_code &ec) {
 #ifdef _WIN32
                     ec = std::make_error_code(static_cast<std::errc>(ERROR_NOT_SAME_DEVICE));
 #else
@@ -384,7 +388,68 @@ void TestNetworkJobs::testDownload() {
             std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
             CPPUNIT_ASSERT(content == "test");
         }
+
+        MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
+
+#ifdef __APPLE__
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_alias_good";
+
+        // Download a valid alias
+        {
+            DownloadJob job(_driveDbId, testAliasGoodRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check that the file has been copied
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+    }
+
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_alias_dnd";
+
+        // Download an invalid alias (not imported by the desktop app)
+        {
+            DownloadJob job(_driveDbId, testAliasDnDRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        }
+
+        // Check that the file has been copied
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+    }
+
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_alias_corrupted";
+
+        // Download an invalid alias (corrupted)
+        {
+            DownloadJob job(_driveDbId, testAliasCorruptedRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT(exitCode == ExitCode::SystemError);
+        }
+
+        // Check that the file has NOT been copied
+        CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
+
+        // Check that the tmp file has been deleted
+        CPPUNIT_ASSERT(std::filesystem::is_empty(temporaryDirectory.path()));
+    }
+#endif
 }
 
 void TestNetworkJobs::testDownloadAborted() {

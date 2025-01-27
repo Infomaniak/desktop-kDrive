@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,7 +73,11 @@ class UpdateChecker {
          * @return const reference on a VersionInfo
          */
         const VersionInfo &prodVersionInfo() {
+#if defined(__APPLE__) || defined(_WIN32)
             return _versionsInfo.contains(_prodVersionChannel) ? _versionsInfo[_prodVersionChannel] : _defaultVersionInfo;
+#else
+            return _versionsInfo.contains(DistributionChannel::Prod) ? _versionsInfo[DistributionChannel::Prod] : _defaultVersionInfo;
+#endif
         }
 
         std::function<void()> _callback = nullptr;

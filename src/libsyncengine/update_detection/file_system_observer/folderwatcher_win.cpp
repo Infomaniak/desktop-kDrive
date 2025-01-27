@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -190,7 +190,7 @@ void FolderWatcher_win::watchChanges() {
     CancelIo(_directoryHandle);
     closeHandle();
 
-    LOG_DEBUG(_logger, "Watching changes stoped");
+    LOG_DEBUG(_logger, "Watching changes stopped");
 }
 
 void FolderWatcher_win::closeHandle() {

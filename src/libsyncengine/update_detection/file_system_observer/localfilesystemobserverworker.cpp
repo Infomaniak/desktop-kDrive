@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
+#include "snapshot/snapshotitem.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -88,26 +89,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
         IoError ioError = IoError::Success;
         bool exists = true;
-
-#ifdef __APPLE__
-        if (opTypeFromOS == OperationType::Create) {
-            // Clear extended attributes of new items
-            if (!IoHelper::removeLiteSyncXAttrs(absolutePath, ioError)) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in IoHelper::removeLiteSyncXAttrs: " << Utility::formatIoError(absolutePath, ioError));
-                invalidateSnapshot();
-                return;
-            }
-
-            if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath) << L" misses search permissions!");
-                sendAccessDeniedError(absolutePath);
-                continue;
-            } else if (ioError == IoError::NoSuchFileOrDirectory) {
-                exists = false;
-            }
-        }
-#endif
 
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
@@ -277,8 +258,10 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 bool isHydrated = false;
                 bool isSyncing = false;
                 int progress = 0;
-                if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
+                if (ExitInfo exitInfo = _syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress);
+                    !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger,
+                                      L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
                     invalidateSnapshot();
                     return;
                 }
@@ -454,6 +437,7 @@ void LocalFileSystemObserverWorker::execute() {
             break;
         }
         if (!_folderWatcher->exitInfo()) {
+            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
             exitCode = _folderWatcher->exitInfo().code();
             setExitCause(_folderWatcher->exitInfo().cause());
             invalidateSnapshot();
@@ -538,9 +522,9 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
-    if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
-        LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
-        return false;
+    if (ExitInfo exitInfo = _syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
+        return exitInfo;
     }
 
     return !isPlaceholder || (isHydrated && !isSyncing);
