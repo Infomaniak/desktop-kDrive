@@ -106,8 +106,10 @@ void TestIntegration::setUp() {
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
-
+ 
+    auto vfs = std::make_shared<VfsOff>();
     _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal->setVfsPtr(vfs);
     _syncPal->createSharedObjects();
 
     // Insert items to blacklist
@@ -319,7 +321,7 @@ void TestIntegration::testCreateRemote() {
 
     // Simulate a create by duplicating an existing file
     _newTestFilePath = Str("testRemote_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
-    DuplicateJob job(_driveDbId, testExecutorFileRemoteId, _newTestFilePath.native());
+    DuplicateJob job(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, _newTestFilePath.native());
     job.runSynchronously();
     _newTestFileRemoteId = job.nodeId();
 
@@ -345,7 +347,8 @@ void TestIntegration::testEditRemote() {
                            Str(R"(" >> ")") + tmpFile.make_preferred().native() + Str(R"(")");
     std::system(SyncName2Str(testCallStr).c_str());
 
-    UploadJob setupUploadJob(_driveDbId, tmpFile, _newTestFilePath.filename().native(), testExecutorFolderRemoteId, 0);
+    UploadJob setupUploadJob(_syncPal->vfs(), _driveDbId, tmpFile, _newTestFilePath.filename().native(),
+                             testExecutorFolderRemoteId, 0);
     setupUploadJob.runSynchronously();
 
     waitForSyncToFinish();
@@ -368,7 +371,7 @@ void TestIntegration::testMoveRemote() {
     SyncName parentName = _syncPal->_localSnapshot->name(parentId);
     CPPUNIT_ASSERT(parentName == testExecutorFolderName);
 
-    MoveJob job(_driveDbId, "", _newTestFileRemoteId, testExecutorSubFolderRemoteId);
+    MoveJob job(_syncPal->vfs(), _driveDbId, "", _newTestFileRemoteId, testExecutorSubFolderRemoteId);
     job.runSynchronously();
 
     waitForSyncToFinish();
@@ -386,7 +389,7 @@ void TestIntegration::testRenameRemote() {
 
     std::string newName = _newTestFilePath.stem().string() + "_renamed" + _newTestFilePath.extension().string();
 
-    RenameJob job(_driveDbId, _newTestFileRemoteId, Str2SyncName(newName));
+    RenameJob job(_syncPal->vfs(), _driveDbId, _newTestFileRemoteId, Str2SyncName(newName));
     job.runSynchronously();
 
     waitForSyncToFinish();
@@ -428,7 +431,7 @@ void TestIntegration::testSimultaneousChanges() {
     // Simulate a remote file creation by duplicating an existing file
     SyncName newTestFileName =
             Str("testSimultaneousChanges_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
-    DuplicateJob job(_driveDbId, testExecutorFileRemoteId, newTestFileName);
+    DuplicateJob job(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, newTestFileName);
     job.runSynchronously();
     NodeId remoteId = job.nodeId();
 
@@ -462,34 +465,34 @@ void TestIntegration::testInconsistency() {
 
     // Check path length
     _newTestFilePath = Str("test_inconsistency") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(220)) + Str(".txt");
-    DuplicateJob job(_driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
+    DuplicateJob job(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
     job.runSynchronously();
     NodeId testSizeRemoteId = job.nodeId();
 
     // Check forbidden characters
     _newTestFilePath = Str("test_:inco/nsiste::ncy.txt");
-    DuplicateJob job2(_driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
+    DuplicateJob job2(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
     job2.runSynchronously();
     NodeId testSpecialCharsRemoteId = job2.nodeId();
 
     // Check name clash
     _newTestFilePath = L"test_caseSensitive.txt";
-    DuplicateJob job3(_driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
+    DuplicateJob job3(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
     job3.runSynchronously();
     NodeId testCaseSensitiveRemoteId1 = job3.nodeId();
 
     _newTestFilePath = L"test_Casesensitive.txt";
-    DuplicateJob job4(_driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
+    DuplicateJob job4(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
     job4.runSynchronously();
     NodeId testCaseSensitiveRemoteId2 = job4.nodeId();
 
     _newTestFilePath = L"TEST_casesensitive.txt";
-    DuplicateJob job5(_driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
+    DuplicateJob job5(_syncPal->vfs(), _driveDbId, testInconsistencyFileRemoteId, _newTestFilePath.native());
     job5.runSynchronously();
     NodeId testCaseSensitiveRemoteId3 = job5.nodeId();
 
     _newTestFilePath = Str("test_long_file") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(20)) + Str(".txt");
-    DuplicateJob job6(_driveDbId, testLongFileRemoteId, _newTestFilePath.native());
+    DuplicateJob job6(_syncPal->vfs(), _driveDbId, testLongFileRemoteId, _newTestFilePath.native());
     job6.runSynchronously();
     NodeId testLongFilePathRemoteId = job6.nodeId();
 
@@ -572,7 +575,7 @@ void TestIntegration::testCreateCreatePseudoConflict() {
                                Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str2SyncName(".txt");
 
     // Simulate a remote file creation by duplicating an existing file
-    DuplicateJob job(_driveDbId, testExecutorFileRemoteId, newTestFileName);
+    DuplicateJob job(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, newTestFileName);
     job.runSynchronously();
     NodeId remoteId = job.nodeId();
 
@@ -617,7 +620,7 @@ void TestIntegration::testCreateCreateConflict() {
             Str("test_createCreateConflict_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
 
     // Simulate a remote file creation by duplicating an existing file
-    DuplicateJob job(_driveDbId, testExecutorFileRemoteId, newTestFileName.native());
+    DuplicateJob job(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, newTestFileName.native());
     job.runSynchronously();
     NodeId remoteId = job.nodeId();
 
@@ -686,7 +689,8 @@ void TestIntegration::testEditEditPseudoConflict() {
     NodeId prevLocalId = std::to_string(fileStat.inode);
 
     // Upload this file manually so it simulate a remote edit
-    UploadJob job(_driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId, fileStat.modtime);
+    UploadJob job(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId,
+                  fileStat.modtime);
     job.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -723,7 +727,8 @@ void TestIntegration::testEditEditConflict() {
     NodeId prevLocalId = std::to_string(fileStat.inode);
 
     // Upload this file manually so it simulate a remote edit
-    UploadJob job(_driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId, fileStat.modtime);
+    UploadJob job(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorFolderRemoteId,
+                  fileStat.modtime);
     job.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -771,7 +776,7 @@ void TestIntegration::testMoveCreateConflict() {
     std::filesystem::path newTestFileName =
             Str("test_moveCreateConflict_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
 
-    DuplicateJob initJob(_driveDbId, testExecutorFileRemoteId, newTestFileName.native());
+    DuplicateJob initJob(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, newTestFileName.native());
     initJob.runSynchronously();
     NodeId initRemoteId = initJob.nodeId();
 
@@ -787,7 +792,8 @@ void TestIntegration::testMoveCreateConflict() {
     IoHelper::getFileStat(sourceFile.make_preferred(), &fileStat, exists);
 
     // Simulate a remote create by uploading the file in "test_executor_sub" folder
-    UploadJob createJob(_driveDbId, sourceFile, sourceFile.filename().native(), testExecutorSubFolderRemoteId, fileStat.modtime);
+    UploadJob createJob(_syncPal->vfs(), _driveDbId, sourceFile, sourceFile.filename().native(), testExecutorSubFolderRemoteId,
+                        fileStat.modtime);
     createJob.runSynchronously();
     NodeId remoteId = createJob.nodeId();
 
@@ -865,7 +871,7 @@ void TestIntegration::testEditDeleteConflict1() {
     std::filesystem::path newTestFileName =
             Str("test_editDeleteConflict1_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
 
-    DuplicateJob initJob(_driveDbId, testExecutorFileRemoteId, newTestFileName.native());
+    DuplicateJob initJob(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, newTestFileName.native());
     initJob.runSynchronously();
     NodeId initRemoteId = initJob.nodeId();
     waitForSyncToFinish();
@@ -942,7 +948,7 @@ void TestIntegration::testEditDeleteConflict2() {
 
     // Init: create a folder and duplicate an existing file inside it
     SyncName dirName = Str("test_dir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
-    CreateDirJob initCreateDirJob(_driveDbId, dirName, testExecutorFolderRemoteId, dirName);
+    CreateDirJob initCreateDirJob(nullptr, _driveDbId, dirName, testExecutorFolderRemoteId, dirName);
     initCreateDirJob.runSynchronously();
 
     // Extract dir ID
@@ -1008,7 +1014,7 @@ const std::string aRefFolderId = "451591";
 
 void testMoveDeleteConflict_initPhase(int driveDbId, NodeId &aRemoteId, NodeId &rRemoteId, NodeId &sRemoteId, NodeId &qRemoteId) {
     // Duplicate the test folder
-    DuplicateJob initDuplicateJob(driveDbId, aRefFolderId, Str("A"));
+    DuplicateJob initDuplicateJob(nullptr, driveDbId, aRefFolderId, Str("A"));
     initDuplicateJob.runSynchronously();
     aRemoteId = initDuplicateJob.nodeId();
     CPPUNIT_ASSERT(!aRemoteId.empty());
@@ -1216,7 +1222,7 @@ void TestIntegration::testMoveDeleteConflict2() {
 
     // On remote replica
     // Rename A
-    RenameJob setupRenameJob1(_driveDbId, aRemoteId, Str("B"));
+    RenameJob setupRenameJob1(_syncPal->vfs(), _driveDbId, aRemoteId, Str("B"));
     setupRenameJob1.runSynchronously();
 
     // Edit Q
@@ -1225,12 +1231,12 @@ void TestIntegration::testMoveDeleteConflict2() {
                            Str(R"(" >> ")") + tmpFile.make_preferred().native() + Str(R"(")");
     std::system(SyncName2Str(testCallStr).c_str());
 
-    UploadJob setupUploadJob(_driveDbId, tmpFile, Str("Q"), rRemoteId, 0);
+    UploadJob setupUploadJob(_syncPal->vfs(), _driveDbId, tmpFile, Str("Q"), rRemoteId, 0);
     setupUploadJob.runSynchronously();
 
     // Create A/S/X
     NodeId xRemoteId;
-    CreateDirJob setupCreateDirJob(_driveDbId, Str("X"), sRemoteId, Str("X"));
+    CreateDirJob setupCreateDirJob(_syncPal->vfs(), _driveDbId, Str("X"), sRemoteId, Str("X"));
     setupCreateDirJob.runSynchronously();
     xRemoteId = setupCreateDirJob.nodeId();
 
@@ -1501,7 +1507,7 @@ void TestIntegration::testMoveDeleteConflict4() {
 
     // On remote replica
     // Rename A into B
-    RenameJob setupRenameJob(_driveDbId, aRemoteId, Str("B"));
+    RenameJob setupRenameJob(_syncPal->vfs(), _driveDbId, aRemoteId, Str("B"));
     setupRenameJob.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -1694,7 +1700,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
 
     // On remote replica
     // Move S into R
-    MoveJob setupMoveJob(_driveDbId, "", sRemoteId, rRemoteId);
+    MoveJob setupMoveJob(_syncPal->vfs(), _driveDbId, "", sRemoteId, rRemoteId);
     setupMoveJob.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -1868,7 +1874,7 @@ void TestIntegration::testMoveMoveSourcePseudoConflict() {
     // Duplicate the test file
     SyncName testFileName = Str("testMoveMoveSourcePseudoConflict_") +
                             Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
-    DuplicateJob initJob(_driveDbId, testExecutorFileRemoteId, testFileName);
+    DuplicateJob initJob(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, testFileName);
     initJob.runSynchronously();
     NodeId testFileRemoteId = initJob.nodeId();
 
@@ -1892,7 +1898,7 @@ void TestIntegration::testMoveMoveSourcePseudoConflict() {
 
     // On remote replica
     // Move test file into executor sub folder
-    MoveJob setupRemoteMoveJob(_driveDbId, "", testFileRemoteId, testExecutorSubFolderRemoteId);
+    MoveJob setupRemoteMoveJob(_syncPal->vfs(), _driveDbId, "", testFileRemoteId, testExecutorSubFolderRemoteId);
     setupRemoteMoveJob.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -1933,7 +1939,7 @@ void TestIntegration::testMoveMoveSourceConflict() {
     // Duplicate the test file
     SyncName testFileName = Str("testMoveMoveSourcePseudoConflict_") +
                             Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
-    DuplicateJob initJob(_driveDbId, testExecutorFileRemoteId, testFileName);
+    DuplicateJob initJob(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, testFileName);
     initJob.runSynchronously();
     NodeId testFileRemoteId = initJob.nodeId();
 
@@ -1957,7 +1963,7 @@ void TestIntegration::testMoveMoveSourceConflict() {
 
     // On remote replica
     // Move test file into executor sub folder
-    MoveJob setupRemoteMoveJob(_driveDbId, "", testFileRemoteId, testExecutorSubFolderRemoteId);
+    MoveJob setupRemoteMoveJob(_syncPal->vfs(), _driveDbId, "", testFileRemoteId, testExecutorSubFolderRemoteId);
     setupRemoteMoveJob.runSynchronously();
 
     Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
@@ -2000,7 +2006,7 @@ void TestIntegration::testMoveMoveDestConflict() {
             Str("testMoveMoveDestConflict_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
 
     // Duplicate the remote test file
-    DuplicateJob initDuplicateJob(_driveDbId, testExecutorFileRemoteId, testFileName);
+    DuplicateJob initDuplicateJob(_syncPal->vfs(), _driveDbId, testExecutorFileRemoteId, testFileName);
     initDuplicateJob.runSynchronously();
     NodeId testFileRemoteId = initDuplicateJob.nodeId();
 
@@ -2018,7 +2024,7 @@ void TestIntegration::testMoveMoveDestConflict() {
 
     // On remote replica
     // Move the remote test file under folder "test_executor_sub"
-    MoveJob setupMoveJob(_driveDbId, "", testFileRemoteId, testExecutorSubFolderRemoteId);
+    MoveJob setupMoveJob(_syncPal->vfs(), _driveDbId, "", testFileRemoteId, testExecutorSubFolderRemoteId);
     setupMoveJob.runSynchronously();
 
     // On local replica
@@ -2084,11 +2090,11 @@ void TestIntegration::testMoveMoveCycleConflict() {
     SyncName testDirB = Str("testMoveMoveDestConflictB_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
 
     // Create folders
-    CreateDirJob initCreateDirJobA(_driveDbId, testDirA, testExecutorFolderRemoteId, testDirA);
+    CreateDirJob initCreateDirJobA(nullptr, _driveDbId, testDirA, testExecutorFolderRemoteId, testDirA);
     initCreateDirJobA.runSynchronously();
     NodeId testDirRemoteIdA = initCreateDirJobA.nodeId();
 
-    CreateDirJob initCreateDirJobB(_driveDbId, testDirB, testExecutorFolderRemoteId, testDirB);
+    CreateDirJob initCreateDirJobB(nullptr, _driveDbId, testDirB, testExecutorFolderRemoteId, testDirB);
     initCreateDirJobB.runSynchronously();
     NodeId testDirRemoteIdB = initCreateDirJobB.nodeId();
 
@@ -2100,7 +2106,7 @@ void TestIntegration::testMoveMoveCycleConflict() {
 
     // On remote replica
     // Move A into B
-    MoveJob setupMoveJob(_driveDbId, "", testDirRemoteIdA, testDirRemoteIdB);
+    MoveJob setupMoveJob(nullptr, _driveDbId, "", testDirRemoteIdA, testDirRemoteIdB);
     setupMoveJob.runSynchronously();
 
     // On local replica

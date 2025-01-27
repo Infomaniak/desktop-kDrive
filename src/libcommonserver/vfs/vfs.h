@@ -402,7 +402,11 @@ class VfsOff : public Vfs {
 
         ExitInfo setPinState(const SyncPath &, KDC::PinState) override { return ExitCode::Ok; }
         KDC::PinState pinState(const SyncPath &) override { return KDC::PinState::AlwaysLocal; }
-        ExitInfo status(const SyncPath &, bool &, bool &, bool &, int &) override { return ExitCode::Ok; }
+        ExitInfo status(const SyncPath &, bool &isPlaceHolder, bool &isHydrated, bool &, int &) override {
+            isPlaceHolder = false;
+            isHydrated = true;
+            return ExitCode::Ok;
+        }
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }

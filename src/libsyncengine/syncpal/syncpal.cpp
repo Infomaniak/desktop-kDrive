@@ -696,7 +696,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     // Hydration job
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
-        job = std::make_shared<DownloadJob>(driveDbId(), remoteNodeId, localPath, expectedSize);
+        job = std::make_shared<DownloadJob>(vfs(), driveDbId(), remoteNodeId, localPath, expectedSize);
         if (!job) {
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;
@@ -706,37 +706,6 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
         return ExitCode::Unknown;
-    }
-
-    if (vfsMode() == VirtualFileMode::Mac || vfsMode() == VirtualFileMode::Win) {
-        // Set callbacks
-        std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
-                std::bind(&Vfs::updateFetchStatus, this->vfs(), std::placeholders::_1, std::placeholders::_2,
-                          std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-        job->setVfsUpdateFetchStatusCallback(vfsUpdateFetchStatusCallback);
-
-#ifdef __APPLE__
-        // Not done in Windows case: the pin state and the status must not be set by the download job because hydration could be
-        // asked for a move and so, the file place will change just after the dl.
-        std::function<ExitInfo(const SyncPath &, PinState)> vfsSetPinStateCallback =
-                std::bind(&Vfs::setPinState, this->vfs(), std::placeholders::_1, std::placeholders::_2);
-        job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
-
-        std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-                std::bind(&Vfs::forceStatus, this->vfs(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-                          std::placeholders::_4);
-        job->setVfsForceStatusCallback(vfsForceStatusCallback);
-#endif
-
-        std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
-                vfsUpdateMetadataCallback =
-                        std::bind(&Vfs::updateMetadata, this->vfs(), std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-        job->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
-
-        std::function<void(const SyncPath &)> vfsCancelHydrateCallback =
-                std::bind(&Vfs::cancelHydrate, this->vfs(), std::placeholders::_1);
-        job->setVfsCancelHydrateCallback(vfsCancelHydrateCallback);
     }
 
     // Queue job
@@ -775,12 +744,6 @@ ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
     for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
         if (quit) {
-            // Reset callbacks
-            directDownloadJobsMapElt.second->setVfsUpdateFetchStatusCallback(nullptr);
-            directDownloadJobsMapElt.second->setVfsSetPinStateCallback(nullptr);
-            directDownloadJobsMapElt.second->setVfsForceStatusCallback(nullptr);
-            directDownloadJobsMapElt.second->setVfsUpdateMetadataCallback(nullptr);
-            directDownloadJobsMapElt.second->setVfsCancelHydrateCallback(nullptr);
             directDownloadJobsMapElt.second->setAdditionalCallback(nullptr);
         }
         directDownloadJobsMapElt.second->abort();

@@ -28,32 +28,28 @@
 
 namespace KDC {
 
-UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
-                     SyncTime modtime) :
+UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &filepath, const SyncName &filename,
+                     const NodeId &remoteParentDirId, SyncTime modtime) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _filePath(filepath), _filename(filename),
-    _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime) {
+    _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
     setProgress(0);
 }
 
-UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const NodeId &fileId, SyncTime modtime) :
-    UploadJob(driveDbId, filepath, SyncName(), "", modtime) {
+UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &filepath, const NodeId &fileId,
+                     SyncTime modtime) : UploadJob(vfs, driveDbId, filepath, SyncName(), "", modtime) {
     _fileId = fileId;
 }
 
 UploadJob::~UploadJob() {
-    if (_vfsForceStatus) {
-        if (ExitInfo exitInfo = _vfsForceStatus(_filePath, false, 100, true); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath) << L" : " << exitInfo);
-        }
+    if (ExitInfo exitInfo = _vfs->forceStatus(_filePath, false, 100, true); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath) << L" : " << exitInfo);
     }
 
-    if (_vfsSetPinState) {
-        if (ExitInfo exitInfo = _vfsSetPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsSetPinState - path=" << Path2WStr(_filePath) << L": " << exitInfo);
-        }
+    if (ExitInfo exitInfo = _vfs->setPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsSetPinState - path=" << Path2WStr(_filePath) << L": " << exitInfo);
     }
 }
 

@@ -619,7 +619,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 } else {
                     try {
                         job = std::make_shared<DownloadJob>(
-                                _syncPal->driveDbId(),
+                                _syncPal->vfs(), _syncPal->driveDbId(),
                                 syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(),
                                 absoluteLocalFilePath, syncOp->affectedNode()->size(),
                                 syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
@@ -657,7 +657,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
 
             try {
                 job = std::make_shared<CreateDirJob>(
-                        _syncPal->driveDbId(), absoluteLocalFilePath,
+                        _syncPal->vfs(), _syncPal->driveDbId(), absoluteLocalFilePath,
                         newCorrespondingParentNode->id().has_value() ? *newCorrespondingParentNode->id() : std::string(),
                         syncOp->newName());
             } catch (std::exception const &e) {
@@ -687,7 +687,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 try {
                     int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                     job = std::make_shared<DriveUploadSession>(
-                            _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath, syncOp->affectedNode()->name(),
+                            _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath,
+                            syncOp->affectedNode()->name(),
                             newCorrespondingParentNode->id().has_value() ? *newCorrespondingParentNode->id() : std::string(),
                             syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
                             isLiteSyncActivated(), uploadSessionParallelJobs);
@@ -698,7 +699,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
             } else {
                 try {
                     job = std::make_shared<UploadJob>(
-                            _syncPal->driveDbId(), absoluteLocalFilePath, syncOp->affectedNode()->name(),
+                            _syncPal->vfs(), _syncPal->driveDbId(), absoluteLocalFilePath, syncOp->affectedNode()->name(),
                             newCorrespondingParentNode->id().has_value() ? *newCorrespondingParentNode->id() : std::string(),
                             syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0);
                 } catch (std::exception const &e) {
@@ -710,30 +711,6 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
 
             job->setAffectedFilePath(relativeLocalFilePath);
         }
-    }
-
-    if (job) {
-        if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-            // Set VFS callbacks
-            std::function<ExitInfo(const SyncPath &, PinState)> vfsSetPinStateCallback =
-                    std::bind(&Vfs::setPinState, _syncPal->vfs(), std::placeholders::_1, std::placeholders::_2);
-            job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
-
-            std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
-                    vfsUpdateMetadataCallback =
-                            std::bind(&Vfs::updateMetadata, _syncPal->vfs(), std::placeholders::_1, std::placeholders::_2,
-                                      std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-            job->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
-
-            std::function<void(const SyncPath &)> vfsCancelHydrateCallback =
-                    std::bind(&Vfs::cancelHydrate, _syncPal->vfs(), std::placeholders::_1);
-            job->setVfsCancelHydrateCallback(vfsCancelHydrateCallback);
-        }
-
-        std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-                std::bind(&Vfs::forceStatus, _syncPal->vfs(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-                          std::placeholders::_4);
-        job->setVfsForceStatusCallback(vfsForceStatusCallback);
     }
 
     return ExitCode::Ok;
@@ -894,8 +871,9 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
 
         try {
             job = std::make_shared<DownloadJob>(
-                    _syncPal->driveDbId(), syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(),
-                    absoluteLocalFilePath, syncOp->affectedNode()->size(),
+                    _syncPal->vfs(), _syncPal->driveDbId(),
+                    syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(), absoluteLocalFilePath,
+                    syncOp->affectedNode()->size(),
                     syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
                     syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0, false);
         } catch (std::exception const &e) {
@@ -905,26 +883,6 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
         }
 
         job->setAffectedFilePath(relativeLocalFilePath);
-
-        // Set callbacks
-        std::shared_ptr<DownloadJob> downloadJob = std::dynamic_pointer_cast<DownloadJob>(job);
-
-        if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-            std::function<ExitInfo(const SyncPath &, PinState)> vfsSetPinStateCallback =
-                    std::bind(&Vfs::setPinState, _syncPal->vfs(), std::placeholders::_1, std::placeholders::_2);
-            downloadJob->setVfsSetPinStateCallback(vfsSetPinStateCallback);
-
-            std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-                    std::bind(&Vfs::forceStatus, _syncPal->vfs(), std::placeholders::_1, std::placeholders::_2,
-                              std::placeholders::_3, std::placeholders::_4);
-            downloadJob->setVfsForceStatusCallback(vfsForceStatusCallback);
-
-            std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
-                    vfsUpdateMetadataCallback =
-                            std::bind(&Vfs::updateMetadata, _syncPal->vfs(), std::placeholders::_1, std::placeholders::_2,
-                                      std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-            downloadJob->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
-        }
     } else {
         SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
         SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
@@ -949,7 +907,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
             try {
                 int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                 job = std::make_shared<DriveUploadSession>(
-                        _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath,
+                        _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->_syncDb, absoluteLocalFilePath,
                         syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
                         isLiteSyncActivated(), uploadSessionParallelJobs);
@@ -960,22 +918,13 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
         } else {
             try {
                 job = std::make_shared<UploadJob>(
-                        _syncPal->driveDbId(), absoluteLocalFilePath,
+                        _syncPal->vfs(), _syncPal->driveDbId(), absoluteLocalFilePath,
                         syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0);
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                            << Utility::s2ws(e.what()));
                 return ExitCode::DataError;
-            }
-
-            // Set callbacks
-            std::shared_ptr<UploadJob> uploadJob = std::dynamic_pointer_cast<UploadJob>(job);
-            if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-                std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-                        std::bind(&Vfs::forceStatus, _syncPal->vfs(), std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4);
-                uploadJob->setVfsForceStatusCallback(vfsForceStatusCallback);
             }
         }
 
@@ -1188,7 +1137,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         if (relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
             // This is just a rename
             try {
-                job = std::make_shared<RenameJob>(_syncPal->driveDbId(),
+                job = std::make_shared<RenameJob>(_syncPal->vfs(), _syncPal->driveDbId(),
                                                   correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
                                                   absoluteDestLocalFilePath);
             } catch (std::exception const &e) {
@@ -1210,7 +1159,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
                 return ExitCode::DataError;
             }
             try {
-                job = std::make_shared<MoveJob>(_syncPal->driveDbId(), absoluteDestLocalFilePath,
+                job = std::make_shared<MoveJob>(_syncPal->vfs(), _syncPal->driveDbId(), absoluteDestLocalFilePath,
                                                 correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
                                                 remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string(),
                                                 syncOp->newName());
@@ -1222,19 +1171,6 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
 
         if (syncOp->hasConflict()) {
             job->setBypassCheck(true);
-        }
-
-        // Set callbacks
-        if (_syncPal->vfsMode() == VirtualFileMode::Mac || _syncPal->vfsMode() == VirtualFileMode::Win) {
-            std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-                    std::bind(&Vfs::forceStatus, _syncPal->vfs(), std::placeholders::_1, std::placeholders::_2,
-                              std::placeholders::_3, std::placeholders::_4);
-            job->setVfsForceStatusCallback(vfsForceStatusCallback);
-
-            std::function<ExitInfo(const SyncPath &, bool &, bool &, bool &, int &)> vfsStatusCallback =
-                    std::bind(&Vfs::status, _syncPal->vfs(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-                              std::placeholders::_4, std::placeholders::_5);
-            job->setVfsStatusCallback(vfsStatusCallback);
         }
     }
 

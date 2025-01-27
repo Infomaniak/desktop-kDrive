@@ -25,7 +25,8 @@ namespace KDC {
 
 class MoveJob : public AbstractTokenNetworkJob {
     public:
-        MoveJob(int driveDbId, const SyncPath &destFilepath, const NodeId &fileId, const NodeId &destDirId,
+        MoveJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
+                const NodeId &destDirId,
                 const SyncName &name = Str(""));
         ~MoveJob();
 
@@ -40,6 +41,7 @@ class MoveJob : public AbstractTokenNetworkJob {
         std::string _fileId;
         std::string _destDirId;
         SyncName _name;
+        const std::shared_ptr<Vfs> _vfs;
 };
 
 } // namespace KDC

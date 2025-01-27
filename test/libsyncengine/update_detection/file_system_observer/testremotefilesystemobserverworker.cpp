@@ -83,7 +83,9 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     Sync sync(1, drive.dbId(), "/", "/");
     ParmsDb::instance()->insertSync(sync);
 
+    auto vfs = std::make_shared<VfsOff>();
     _syncPal = std::make_shared<SyncPalTest>(sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal->setVfsPtr(vfs);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
 
@@ -142,7 +144,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         {
             using namespace std::chrono;
             const auto time = system_clock::to_time_t(system_clock::now());
-            UploadJob job(_driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
+            UploadJob job(_syncPal->vfs(), _driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
             job.runSynchronously();
 
             // Extract file ID
@@ -171,7 +173,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         Utility::msleep(1000);
 
         const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        UploadJob job(_driveDbId, testFilePath, _testFileId, time);
+        UploadJob job(_syncPal->vfs(), _driveDbId, testFilePath, _testFileId, time);
         job.runSynchronously();
 
         // Get activity from the server
@@ -183,7 +185,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test move file *****");
 
-        MoveJob job(_driveDbId, testhelpers::localTestDirPath, _testFileId, nestedRemoteTmpDir.id());
+        MoveJob job(_syncPal->vfs(), _driveDbId, testhelpers::localTestDirPath, _testFileId, nestedRemoteTmpDir.id());
         job.runSynchronously();
 
         // Get activity from the server
@@ -198,7 +200,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         const SyncName newFileName =
                 Str("test_file_renamed_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
 
-        RenameJob job(_driveDbId, _testFileId, newFileName);
+        RenameJob job(_syncPal->vfs(), _driveDbId, _testFileId, newFileName);
         job.runSynchronously();
 
         // Get activity from the server

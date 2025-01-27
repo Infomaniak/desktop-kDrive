@@ -24,9 +24,9 @@ namespace KDC {
 
 class CreateDirJob : public AbstractTokenNetworkJob {
     public:
-        CreateDirJob(int driveDbId, const SyncPath &filepath, const NodeId &parentId, const SyncName &name,
-                     const std::string &color = "");
-        CreateDirJob(int driveDbId, const NodeId &parentId, const SyncName &name);
+        CreateDirJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &filepath, const NodeId &parentId,
+                     const SyncName &name, const std::string &color = "");
+        CreateDirJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &parentId, const SyncName &name);
         ~CreateDirJob() override;
 
         [[nodiscard]] inline const NodeId &parentDirId() const { return _parentDirId; }
@@ -49,6 +49,7 @@ class CreateDirJob : public AbstractTokenNetworkJob {
 
         NodeId _nodeId;
         SyncTime _modtime = 0;
+        const std::shared_ptr<Vfs> _vfs;
 };
 
 } // namespace KDC

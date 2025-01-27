@@ -22,24 +22,23 @@
 
 namespace KDC {
 
-UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
-                                               const std::string &sessionToken, const std::string &totalChunkHash,
-                                               uint64_t totalChunks, SyncTime modtime) :
+UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, UploadSessionType uploadType, int driveDbId,
+                                               const SyncPath &filepath, const std::string &sessionToken,
+                                               const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime) :
     AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken), _totalChunkHash(totalChunkHash),
-    _totalChunks(totalChunks), _modtimeIn(modtime) {
+    _totalChunks(totalChunks), _modtimeIn(modtime), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
 UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, const SyncPath &filepath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                uint64_t totalChunks, SyncTime modtime) :
-    UploadSessionFinishJob(uploadType, 0, filepath, sessionToken, totalChunkHash, totalChunks, modtime) {}
+    UploadSessionFinishJob(nullptr, uploadType, 0, filepath, sessionToken, totalChunkHash, totalChunks, modtime) {}
 
 UploadSessionFinishJob::~UploadSessionFinishJob() {
-    if (_vfsForceStatus) {
-        if (ExitInfo exitInfo = _vfsForceStatus(_filePath, false, 0, true); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath) << L" : " << exitInfo);
-        }
+    if (!_vfs) return;
+    if (const ExitInfo exitInfo = _vfs->forceStatus(_filePath, false, 0, true); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath) << L" : " << exitInfo);
     }
 }
 

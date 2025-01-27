@@ -31,10 +31,11 @@ namespace KDC {
 class UploadJob : public AbstractTokenNetworkJob {
     public:
         // Using file name and parent ID, for file creation only.
-        UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
-                  SyncTime modtime);
+        UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &filepath, const SyncName &filename,
+                  const NodeId &remoteParentDirId, SyncTime modtime);
         // Using file ID, for file edition only.
-        UploadJob(int driveDbId, const SyncPath &filepath, const NodeId &fileId, SyncTime modtime);
+        UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &filepath, const NodeId &fileId,
+                  SyncTime modtime);
         ~UploadJob();
 
         inline const NodeId &nodeId() const { return _nodeIdOut; }
@@ -66,6 +67,8 @@ class UploadJob : public AbstractTokenNetworkJob {
         LinkType _linkType = LinkType::None;
         SyncPath _linkTarget;
         NodeType _targetType = NodeType::File;
+
+        const std::shared_ptr<Vfs> _vfs;
 };
 
 } // namespace KDC
