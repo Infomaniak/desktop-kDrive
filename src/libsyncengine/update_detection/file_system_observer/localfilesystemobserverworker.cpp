@@ -258,8 +258,10 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 bool isHydrated = false;
                 bool isSyncing = false;
                 int progress = 0;
-                if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
+                if (ExitInfo exitInfo = _syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress);
+                    !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger,
+                                      L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
                     invalidateSnapshot();
                     return;
                 }
@@ -435,6 +437,7 @@ void LocalFileSystemObserverWorker::execute() {
             break;
         }
         if (!_folderWatcher->exitInfo()) {
+            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
             exitCode = _folderWatcher->exitInfo().code();
             setExitCause(_folderWatcher->exitInfo().cause());
             invalidateSnapshot();
@@ -519,9 +522,9 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
-    if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
-        LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
-        return false;
+    if (ExitInfo exitInfo = _syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
+        return exitInfo;
     }
 
     return !isPlaceholder || (isHydrated && !isSyncing);
