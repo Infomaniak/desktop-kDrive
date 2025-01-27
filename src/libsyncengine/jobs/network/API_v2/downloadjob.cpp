@@ -59,48 +59,46 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 }
 
 DownloadJob::~DownloadJob() {
-    try{
-    // Remove tmp file
-    // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must be
-    // deleted
-    if (!removeTmpFile() && !_isCreate) {
-        LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
-    }
-      
-    if (_responseHandlingCanceled) {
-        if (_vfsSetPinState) {
-            if (ExitInfo exitInfo = _vfsSetPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
-            }
+    try {
+        // Remove tmp file
+        // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must
+        // be deleted
+        if (!removeTmpFile() && !_isCreate) {
+            LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
         }
 
-        // TODO: usefull ?
-        if (_vfsForceStatus) {
-            if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, false); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+        if (_responseHandlingCanceled) {
+            if (_vfsSetPinState) {
+                if (ExitInfo exitInfo = _vfsSetPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
+                    LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+                }
             }
-        }
 
-        if (_vfsCancelHydrate) {
-            if (!_vfsCancelHydrate(_localpath)) {
-                LOGW_WARN(_logger, L"Error in vfsCancelHydrate: " << Utility::formatSyncPath(_localpath));
+            // TODO: usefull ?
+            if (_vfsForceStatus) {
+                if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, false); !exitInfo) {
+                    LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+                }
             }
-        }
-    } else {
-        if (_vfsSetPinState) {
-            if (ExitInfo exitInfo =
-                        _vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
-                !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
-            }
-        }
 
-        if (_vfsForceStatus) {
-            if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+            if (_vfsCancelHydrate) {
+                _vfsCancelHydrate(_localpath);
+            }
+        } else {
+            if (_vfsSetPinState) {
+                if (ExitInfo exitInfo =
+                            _vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
+                    !exitInfo) {
+                    LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+                }
+            }
+
+            if (_vfsForceStatus) {
+                if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok); !exitInfo) {
+                    LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+                }
             }
         }
-    }
     } catch (const std::bad_function_call &e) {
         LOG_ERROR(_logger, "Error in DownloadJob::~DownloadJob: " << e.what());
     }

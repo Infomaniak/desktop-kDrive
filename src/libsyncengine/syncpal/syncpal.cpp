@@ -361,114 +361,6 @@ void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
     }
 }
 
-bool SyncPal::vfsIsExcluded(const SyncPath &itemPath, bool &isExcluded) {
-    if (!_vfs) {
-        return false;
-    }
-    isExcluded = _vfs->isExcluded(itemPath.native());
-    return true;
-}
-
-bool SyncPal::vfsExclude(const SyncPath &itemPath) {
-    if (!_vfs) {
-        return false;
-    }
-    _vfs->exclude(itemPath);
-    return true;
-}
-
-bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
-    if (!_vfs) {
-        return false;
-    }
-    pinState = _vfs->pinState(itemPath);
-    return true;
-}
-
-ExitInfo SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
-    if (!_vfs) {
-        return ExitCode::LogicError;
-    }
-    return _vfs->setPinState(itemPath, pinState);
-}
-
-ExitInfo SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
-    if (!_vfs) {
-        return ExitCode::LogicError;
-    }
-    return _vfs->status(itemPath, isPlaceholder, isHydrated, isSyncing, progress);
-}
-
-ExitInfo SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
-    if (!_vfs) {
-        return ExitCode::LogicError;
-    }
-    return _vfs->createPlaceholder(relativeLocalPath, item);
-}
-
-ExitInfo SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
-    if (!_vfs) {
-        return ExitCode::LogicError;
-    }
-    return _vfs->convertToPlaceholder(path, item);
-}
-
-ExitInfo SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                    const int64_t size, const NodeId &id) {
-    if (!_vfs) {
-        return ExitCode::LogicError;
-    }
-    return _vfs->updateMetadata(path, creationTime, modtime, size, id);
-}
-
-ExitInfo SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
-                                       bool &finished) {
-    if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"vfsUpdateFetchStatus: " << Utility::formatSyncPath(path) << L" received=" << received);
-    }
-    if (!_vfs) {
-        return ExitCode::LogicError;
-    }
-    return _vfs->updateFetchStatus(tmpPath.native(), path.native(), received, canceled, finished);
-}
-
-bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) {
-    if (!_vfs) {
-        return false;
-    }
-    return _vfs->fileStatusChanged(path, status);
-}
-
-ExitInfo SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
-    if (!_vfs) {
-        return ExitCode::LogicError;
-    }
-    return _vfs->forceStatus(path, isSyncing, progress, isHydrated);
-}
-
-bool SyncPal::vfsCleanUpStatuses() {
-    if (!_vfs) {
-        return false;
-    }
-    return _vfs->cleanUpStatuses();
-}
-
-bool SyncPal::vfsClearFileAttributes(const SyncPath &path) {
-    if (!_vfs) {
-        return false;
-    }
-    _vfs->clearFileAttributes(path);
-    return true;
-}
-
-bool SyncPal::vfsCancelHydrate(const SyncPath &path) {
-    if (!_vfs) {
-        return false;
-    }
-    _vfs->cancelHydrate(path);
-    return true;
-}
-
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");
     if (!_vfs) {
@@ -714,7 +606,7 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
         return false;
     }
 
-    vfsFileStatusChanged(localPath() / relativeLocalPath, status);
+    vfs()->fileStatusChanged(localPath() / relativeLocalPath, status);
 
     bool found = false;
     if (!_syncDb->setStatus(ReplicaSide::Local, relativeLocalPath, status, found)) {
@@ -746,7 +638,7 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         error.setExitCause(ExitCause::NotFound);
         addError(error);
 
-        vfsCancelHydrate(directDownloadJobsMapIt->second->localPath());
+        vfs()->cancelHydrate(directDownloadJobsMapIt->second->localPath());
     }
 
     _syncPathToDownloadJobMap.erase(directDownloadJobsMapIt->second->affectedFilePath());
@@ -819,7 +711,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     if (vfsMode() == VirtualFileMode::Mac || vfsMode() == VirtualFileMode::Win) {
         // Set callbacks
         std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
-                std::bind(&SyncPal::vfsUpdateFetchStatus, this, std::placeholders::_1, std::placeholders::_2,
+                std::bind(&Vfs::updateFetchStatus, this->vfs(), std::placeholders::_1, std::placeholders::_2,
                           std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
         job->setVfsUpdateFetchStatusCallback(vfsUpdateFetchStatusCallback);
 
@@ -827,23 +719,23 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         // Not done in Windows case: the pin state and the status must not be set by the download job because hydration could be
         // asked for a move and so, the file place will change just after the dl.
         std::function<ExitInfo(const SyncPath &, PinState)> vfsSetPinStateCallback =
-                std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);
+                std::bind(&Vfs::setPinState, this->vfs(), std::placeholders::_1, std::placeholders::_2);
         job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
 
         std::function<ExitInfo(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-                std::bind(&SyncPal::vfsForceStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+                std::bind(&Vfs::forceStatus, this->vfs(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
                           std::placeholders::_4);
         job->setVfsForceStatusCallback(vfsForceStatusCallback);
 #endif
 
         std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
                 vfsUpdateMetadataCallback =
-                        std::bind(&SyncPal::vfsUpdateMetadata, this, std::placeholders::_1, std::placeholders::_2,
+                        std::bind(&Vfs::updateMetadata, this->vfs(), std::placeholders::_1, std::placeholders::_2,
                                   std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
         job->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
 
-        std::function<bool(const SyncPath &)> vfsCancelHydrateCallback =
-                std::bind(&SyncPal::vfsCancelHydrate, this, std::placeholders::_1);
+        std::function<void(const SyncPath &)> vfsCancelHydrateCallback =
+                std::bind(&Vfs::cancelHydrate, this->vfs(), std::placeholders::_1);
         job->setVfsCancelHydrateCallback(vfsCancelHydrateCallback);
     }
 

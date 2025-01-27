@@ -293,7 +293,7 @@ void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<N
             LOGW_WARN(_logger, L"Failed to delete node from DB: " << Utility::formatSyncPath(absoluteLocalPath));
         }
 
-        if (!_syncPal->vfsFileStatusChanged(absoluteLocalPath, SyncFileStatus::Error)) {
+        if (!_syncPal->vfs()->fileStatusChanged(absoluteLocalPath, SyncFileStatus::Error)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(absoluteLocalPath));
         }
     } else {

@@ -192,11 +192,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                                        L"Item not processed because it is excluded: " << Utility::formatSyncPath(absolutePath));
                 }
 
-                if (!_syncPal->vfsExclude(
-                            absolutePath)) { // TODO : This class should never set any attribute or change anything on a file
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsExclude: " << Utility::formatSyncPath(absolutePath));
-                }
-
+                _syncPal->vfs()->exclude(absolutePath);
                 continue;
             }
         }
@@ -258,7 +254,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 bool isHydrated = false;
                 bool isSyncing = false;
                 int progress = 0;
-                if (ExitInfo exitInfo = _syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress);
+                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress);
                     !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
@@ -266,18 +262,13 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     return;
                 }
 
-                PinState pinstate = PinState::Unspecified;
-                if (!_syncPal->vfsPinState(absolutePath, pinstate)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState: " << Utility::formatSyncPath(absolutePath));
-                    invalidateSnapshot();
-                    return;
-                }
+                PinState pinState = _syncPal->vfs()->pinState(absolutePath);
 
                 if (isPlaceholder) {
-                    if ((isHydrated && pinstate == PinState::OnlineOnly) || (!isHydrated && pinstate == PinState::AlwaysLocal)) {
+                    if ((isHydrated && pinState == PinState::OnlineOnly) || (!isHydrated && pinState == PinState::AlwaysLocal)) {
                         // Change status in order to start hydration/dehydration
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
-                        if (!_syncPal->vfsFileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
+                        if (!_syncPal->vfs()->fileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
                             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: "
                                                                << Utility::formatSyncPath(absolutePath));
                             invalidateSnapshot();
@@ -522,7 +513,7 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
-    if (ExitInfo exitInfo = _syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
         LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
         return exitInfo;
     }
@@ -742,10 +733,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             if (toExclude) {
                 if (!denyFullControl) {
-                    if (!_syncPal->vfsExclude(
-                                absolutePath)) { // TODO : This class should never set any attribute or change anything on a file
-                        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsExclude : " << Utility::formatSyncPath(absolutePath));
-                    }
+                    _syncPal->vfs()->exclude(absolutePath);
                 }
 
                 dirIt.disableRecursionPending();
