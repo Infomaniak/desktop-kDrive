@@ -31,6 +31,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testArgsWriter);
         CPPUNIT_TEST(testCompressFile);
         CPPUNIT_TEST(testCurrentVersion);
+        CPPUNIT_TEST(testSourceLocation);
         CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
         CPPUNIT_TEST(testLanguageCode);
 #ifdef _WIN32
@@ -45,6 +46,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testArgsWriter();
         void testCompressFile();
         void testCurrentVersion();
+        void testSourceLocation();
         void testGenerateRandomStringAlphaNum();
         void testLanguageCode();
 #ifdef _WIN32

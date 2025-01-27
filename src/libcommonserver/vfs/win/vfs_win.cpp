@@ -36,12 +36,7 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-
-const int s_nb_threads[NB_WORKERS] = {5, 5};
-
-std::unordered_map<QString, SyncFileStatus> s_fetchMap;
-
-VfsWin::VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {
+VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
 
@@ -58,46 +53,7 @@ VfsWin::VfsWin(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupPa
         return;
     }
 
-    // Start hydration/dehydration workers
-    // !!! Disabled for testing because no QEventLoop !!!
-    if (qApp) {
-        // Start worker threads
-        for (int i = 0; i < NB_WORKERS; i++) {
-            for (int j = 0; j < s_nb_threads[i]; j++) {
-                QThread *workerThread = new QThread();
-                _workerInfo[i]._threadList.append(workerThread);
-                Worker *worker = new Worker(this, i, j, logger());
-                worker->moveToThread(workerThread);
-                connect(workerThread, &QThread::started, worker, &Worker::start);
-                connect(workerThread, &QThread::finished, worker, &QObject::deleteLater);
-                connect(workerThread, &QThread::finished, workerThread, &QObject::deleteLater);
-                workerThread->start();
-            }
-        }
-    }
-}
-
-VfsWin::~VfsWin() {
-    // Ask worker threads to stop
-    for (int i = 0; i < NB_WORKERS; i++) {
-        _workerInfo[i]._mutex.lock();
-        _workerInfo[i]._stop = true;
-        _workerInfo[i]._mutex.unlock();
-        _workerInfo[i]._queueWC.wakeAll();
-    }
-
-    // Force threads to stop if needed
-    for (int i = 0; i < NB_WORKERS; i++) {
-        for (QThread *thread: qAsConst(_workerInfo[i]._threadList)) {
-            if (thread) {
-                thread->quit();
-                if (!thread->wait(1000)) {
-                    thread->terminate();
-                    thread->wait();
-                }
-            }
-        }
-    }
+    starVfsWorkers();
 }
 
 void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
@@ -122,7 +78,7 @@ VirtualFileMode VfsWin::mode() const {
     return VirtualFileMode::Win;
 }
 
-bool VfsWin::startImpl(bool &, bool &, bool &) {
+ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
     LOG_DEBUG(logger(), "startImpl: syncDbId=" << _vfsSetupParams._syncDbId);
 
     wchar_t clsid[39] = L"";
@@ -131,12 +87,12 @@ bool VfsWin::startImpl(bool &, bool &, bool &) {
                  std::to_wstring(_vfsSetupParams._syncDbId).c_str(), _vfsSetupParams._localPath.filename().native().c_str(),
                  _vfsSetupParams._localPath.lexically_normal().native().c_str(), clsid, &clsidSize) != S_OK) {
         LOG_WARN(logger(), "Error in vfsStart: syncDbId=" << _vfsSetupParams._syncDbId);
-        return false;
+        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
     }
 
     _vfsSetupParams._namespaceCLSID = Utility::ws2s(std::wstring(clsid));
 
-    return true;
+    return ExitCode::Ok;
 }
 
 void VfsWin::stopImpl(bool unregister) {
@@ -150,19 +106,20 @@ void VfsWin::stopImpl(bool unregister) {
     LOG_DEBUG(logger(), "stop done: syncDbId=" << _vfsSetupParams._syncDbId);
 }
 
-void VfsWin::dehydrate(const QString &path) {
-    LOGW_DEBUG(logger(), L"dehydrate: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
+void VfsWin::dehydrate(const SyncPath &path) {
+    LOGW_DEBUG(logger(), L"dehydrate: " << Utility::formatSyncPath(path));
 
     // Dehydrate file
-    if (vfsDehydratePlaceHolder(QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsDehydratePlaceHolder: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
+    if (vfsDehydratePlaceHolder(path.native().c_str()) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsDehydratePlaceHolder: " << Utility::formatSyncPath(path));
     }
 
-    QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
-    _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
+    SyncPath relativePath = CommonUtility::relativePath(_vfsSetupParams._localPath, path);
+    _setSyncFileSyncing(_vfsSetupParams._syncDbId, relativePath, false);
 }
 
-void VfsWin::hydrate(const QString &path) {
+void VfsWin::hydrate(const SyncPath &pathStd) {
+    QString path = SyncName2QStr(pathStd.native());
     LOGW_DEBUG(logger(), L"hydrate: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
     if (vfsHydratePlaceHolder(std::to_wstring(_vfsSetupParams._driveId).c_str(),
@@ -175,9 +132,9 @@ void VfsWin::hydrate(const QString &path) {
     _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
-void VfsWin::cancelHydrate(const QString &path) {
-    LOGW_DEBUG(logger(), L"cancelHydrate: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
-
+void VfsWin::cancelHydrate(const SyncPath &pathStd) {
+    LOGW_DEBUG(logger(), L"cancelHydrate: " << Utility::formatSyncPath(pathStd));
+    const QString path = SyncName2QStr(pathStd.native());
     if (vfsCancelFetch(std::to_wstring(_vfsSetupParams._driveId).c_str(), std::to_wstring(_vfsSetupParams._syncDbId).c_str(),
                        QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCancelFetch: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
@@ -188,7 +145,8 @@ void VfsWin::cancelHydrate(const QString &path) {
     _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
-void VfsWin::exclude(const QString &path) {
+void VfsWin::exclude(const SyncPath &pathStd) {
+    const QString path = SyncName2QStr(pathStd.native());
     LOGW_DEBUG(logger(), L"exclude: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
     DWORD dwAttrs = GetFileAttributesW(QStr2Path(QDir::toNativeSeparators(path)).c_str());
@@ -205,33 +163,22 @@ void VfsWin::exclude(const QString &path) {
     }
 }
 
-void VfsWin::setPlaceholderStatus(const QString &path, bool syncOngoing) {
-    if (vfsSetPlaceHolderStatus(QStr2Path(QDir::toNativeSeparators(path)).c_str(), syncOngoing) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsSetPlaceHolderStatus: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
-        return;
+ExitInfo VfsWin::setPlaceholderStatus(const SyncPath &path, bool syncOngoing) {
+    if (vfsSetPlaceHolderStatus(path.native().c_str(), syncOngoing) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsSetPlaceHolderStatus: " << Utility::formatSyncPath(path));
+        return handleVfsError(path);
     }
+    return ExitCode::Ok;
 }
 
-bool VfsWin::isHydrating() const {
-    return false;
-}
-
-bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size, const QByteArray &,
-                            QString *) {
+ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime, time_t modtime, int64_t size, const NodeId &) {
+    const QString filePath = SyncName2QStr(filePathStd.native());
     LOGW_DEBUG(logger(), L"updateMetadata: " << Utility::formatSyncPath(QStr2Path(filePath)).c_str() << L" creationTime="
                                              << creationTime << L" modtime=" << modtime);
 
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(filePath));
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return false;
-    }
-
-    if (!exists) {
-        LOGW_WARN(logger(), L"File/directory doesn't exists: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
+        return exitInfo;
     }
 
     // Update placeholder
@@ -244,36 +191,32 @@ bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t
     findData.dwFileAttributes = GetFileAttributesW(QStr2Path(filePath).c_str());
 
     if (vfsUpdatePlaceHolder(QStr2Path(QDir::toNativeSeparators(filePath)).c_str(), &findData) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsUpdatePlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
+        LOGW_WARN(logger(), L"Error in vfsUpdatePlaceHolder: " << Utility::formatSyncPath(fullPath));
+        return handleVfsError(fullPath);
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
-    LOGW_DEBUG(logger(), L"createPlaceholder: " << Utility::formatSyncPath(relativeLocalPath).c_str());
+ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
+    LOGW_DEBUG(logger(), L"createPlaceholder: " << Utility::formatSyncPath(relativeLocalPath));
 
     if (relativeLocalPath.empty()) {
-        LOG_WARN(logger(), "Empty file!");
-        return false;
+        LOG_WARN(logger(), "VfsWin::createPlaceholder - relativeLocalPath cannot be empty.");
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
     if (!item.remoteNodeId().has_value()) {
-        LOGW_WARN(logger(), L"Empty remote nodeId: " << Utility::formatSyncPath(relativeLocalPath).c_str());
-        return false;
+        LOGW_WARN(logger(), L"VfsWin::createPlaceholder - Item has no remote ID: " << Utility::formatSyncPath(relativeLocalPath));
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
     SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return false;
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, false); !exitInfo) {
+        return exitInfo;
     }
-
-    if (exists) {
-        LOGW_WARN(logger(), L"Item already exists: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath.parent_path(), true); !exitInfo) {
+        return exitInfo;
     }
 
     // Create placeholder
@@ -289,67 +232,57 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
                              relativeLocalPath.lexically_normal().native().c_str(),
                              _vfsSetupParams._localPath.lexically_normal().native().c_str(), &findData) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCreatePlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
+        return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
+                                  // NotFound as this make no sense in the context of a create
     }
 
     // !!! Creating a placeholder DOESN'T triggers any file system event !!!
     // Setting the pin state triggers an EDIT event and then the insertion into the local snapshot
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_INHERIT) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
+                                  // NotFound as this make no sense in the context of a create
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool VfsWin::dehydratePlaceholder(const QString &path) {
-    LOGW_DEBUG(logger(), L"dehydratePlaceholder: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
+ExitInfo VfsWin::dehydratePlaceholder(const SyncPath &path) {
+    LOGW_DEBUG(logger(), L"dehydratePlaceholder: " << Utility::formatSyncPath(path));
+    SyncPath fullPath(_vfsSetupParams._localPath / path);
 
-    if (path.isEmpty()) {
-        LOG_WARN(logger(), "Empty file!");
-        return false;
-    }
-
-    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return false;
-    }
-
-    if (!exists) {
-        // File doesn't exist
-        LOGW_WARN(logger(), L"File doesn't exist: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
+        return exitInfo;
     }
 
     // Check if the file is a placeholder
     bool isPlaceholder;
     if (vfsGetPlaceHolderStatus(fullPath.lexically_normal().native().c_str(), &isPlaceholder, nullptr, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return handleVfsError(fullPath);
     }
 
     if (!isPlaceholder) {
         // Not a placeholder
         LOGW_WARN(logger(), L"Not a placeholder: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return {ExitCode::SystemError, ExitCause::NotPlaceHolder};
     }
 
     LOGW_DEBUG(logger(), L"Dehydrate file: " << Utility::formatSyncPath(fullPath).c_str());
-    auto dehydrateFct = [=]() { dehydrate(QString::fromStdWString(fullPath.lexically_normal().native())); };
+    auto dehydrateFct = [=]() { dehydrate(fullPath.lexically_normal().native()); };
     std::thread dehydrateTask(dehydrateFct);
     dehydrateTask.detach();
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool VfsWin::convertToPlaceholder(const QString &path, const SyncFileItem &item) {
+ExitInfo VfsWin::convertToPlaceholder(const SyncPath &pathStd, const SyncFileItem &item) {
+    const QString path = SyncName2QStr(pathStd.native());
     LOGW_DEBUG(logger(), L"convertToPlaceholder: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
     if (path.isEmpty()) {
-        LOG_WARN(logger(), "Invalid parameters");
-        return false;
+        LOG_WARN(logger(), "Empty path!");
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     SyncPath fullPath(QStr2Path(path));
@@ -358,36 +291,32 @@ bool VfsWin::convertToPlaceholder(const QString &path, const SyncFileItem &item)
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
                   L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath).c_str() << L" code=" << errorCode);
-        return false;
+        return handleVfsError(fullPath);
     }
 
     if (dwAttrs & FILE_ATTRIBUTE_DEVICE) {
         LOGW_DEBUG(logger(), L"Not a valid file or directory: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return handleVfsError(fullPath);
     }
 
     // Check if the file is already a placeholder
     bool isPlaceholder;
     if (vfsGetPlaceHolderStatus(fullPath.lexically_normal().native().c_str(), &isPlaceholder, nullptr, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return handleVfsError(fullPath);
     }
 
     if (!item.localNodeId().has_value()) {
         LOGW_WARN(logger(), L"Item has no local ID: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
-    if (!isPlaceholder) {
-        // Convert to placeholder
-        if (vfsConvertToPlaceHolder(Utility::s2ws(item.localNodeId().value()).c_str(),
-                                    fullPath.lexically_normal().native().c_str()) != S_OK) {
-            LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
-            return false;
-        }
+    if (!isPlaceholder && (vfsConvertToPlaceHolder(Utility::s2ws(item.localNodeId().value()).c_str(),
+                                                   fullPath.lexically_normal().native().c_str()) != S_OK)) {
+        LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
+        return handleVfsError(fullPath);
     }
-
-    return true;
+    return ExitCode::Ok;
 }
 
 void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) {
@@ -400,17 +329,15 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
         }
 
         SyncPath fullPath(QStr2Path(tmpPath));
-        bool exists = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-            return;
-        }
 
-        if (!exists) {
-            // File creation and rename
-            LOGW_DEBUG(logger(), L"File doesn't exist: " << Utility::formatSyncPath(fullPath).c_str());
-            continue;
+        if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
+            if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
+                // File creation and rename
+                LOGW_DEBUG(logger(), L"File doesn't exist: " << Utility::formatSyncPath(fullPath));
+                continue;
+            }
+            LOGW_WARN(logger(), L"Error in checkIfPathIsValid: " << Utility::formatSyncPath(fullPath) << L" " << exitInfo);
+            return;
         }
 
         // Check if the file is already a placeholder
@@ -451,95 +378,73 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
     }
 }
 
-void VfsWin::clearFileAttributes(const QString &path) {
-    std::filesystem::path fullPath(QStr2Path(path));
+void VfsWin::clearFileAttributes(const SyncPath &fullPath) {
     if (vfsRevertPlaceHolder(fullPath.lexically_normal().native().c_str()) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsRevertPlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
     }
 }
 
-bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled, bool &finished) {
+ExitInfo VfsWin::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &pathStd, int64_t received, bool &canceled,
+                                   bool &finished) {
     Q_UNUSED(finished)
+    const QString tmpPath = SyncName2QStr(tmpPathStd.native());
+    const QString path = SyncName2QStr(pathStd.native());
 
     LOGW_DEBUG(logger(), L"updateFetchStatus: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
-    if (tmpPath.isEmpty() || path.isEmpty()) {
+    if (tmpPath.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
-        return false;
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
     SyncPath fullTmpPath(QStr2Path(tmpPath));
     SyncPath fullPath(QStr2Path(path));
 
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
-        return false;
-    }
-
-    if (!exists) {
-        return true;
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
+        if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
+            return ExitCode::Ok;
+        }
     }
 
     // Check if the file is a placeholder
     bool isPlaceholder;
     if (vfsGetPlaceHolderStatus(fullPath.lexically_normal().native().c_str(), &isPlaceholder, nullptr, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return handleVfsError(fullPath);
     }
 
-    auto updateFct = [=](bool &canceled, bool &finished, bool &error) {
-        // Update download progress
-        if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams._driveId).c_str(),
-                                 std::to_wstring(_vfsSetupParams._syncDbId).c_str(), fullPath.lexically_normal().native().c_str(),
-                                 fullTmpPath.lexically_normal().native().c_str(), received, &canceled, &finished) != S_OK) {
-            LOGW_WARN(logger(), L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(fullPath).c_str());
-            error = true;
-            return;
-        }
-    };
-
-    // Launch update in a separate thread
-    bool error = false;
-    std::thread updateTask(updateFct, std::ref(canceled), std::ref(finished), std::ref(error));
-    updateTask.join();
-
-    return !error;
+    if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams._driveId).c_str(),
+                             std::to_wstring(_vfsSetupParams._syncDbId).c_str(), fullPath.lexically_normal().native().c_str(),
+                             fullTmpPath.lexically_normal().native().c_str(), received, &canceled, &finished) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(fullPath).c_str());
+        return handleVfsError(fullPath);
+    }
+    return ExitCode::Ok;
 }
 
-bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool) {
-    SyncPath stdPath = QStr2Path(absolutePath);
-
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError).c_str());
-        return false;
+ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, bool isSyncing, int, bool) {
+    QString absolutePath = SyncName2QStr(absolutePathStd.native());
+    if (ExitInfo exitInfo = checkIfPathIsValid(absolutePathStd, true); !exitInfo) {
+        return exitInfo;
     }
 
-    if (!exists) {
-        // New file
-        return true;
-    }
-
-    DWORD dwAttrs = GetFileAttributesW(stdPath.native().c_str());
+    DWORD dwAttrs = GetFileAttributesW(absolutePathStd.native().c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
-                  L"Error in GetFileAttributesW: " << Utility::formatSyncPath(stdPath).c_str() << L" code=" << errorCode);
-        return false;
+                  L"Error in GetFileAttributesW: " << Utility::formatSyncPath(absolutePathStd).c_str() << L" code=" << errorCode);
+        return handleVfsError(absolutePathStd);
     }
 
     if (dwAttrs & FILE_ATTRIBUTE_DEVICE) {
-        LOGW_WARN(logger(), L"Not a valid file or directory: " << Utility::formatSyncPath(stdPath).c_str());
-        return false;
+        LOGW_WARN(logger(), L"Not a valid file or directory: " << Utility::formatSyncPath(absolutePathStd).c_str());
+        return handleVfsError(absolutePathStd);
     }
 
     bool isPlaceholder = false;
-    if (vfsGetPlaceHolderStatus(stdPath.native().c_str(), &isPlaceholder, nullptr, nullptr) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(stdPath).c_str());
-        return false;
+    if (vfsGetPlaceHolderStatus(absolutePathStd.native().c_str(), &isPlaceholder, nullptr, nullptr) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(absolutePathStd).c_str());
+        return handleVfsError(absolutePathStd);
     }
 
     // Some editors (notepad++) seems to remove the file attributes, therfore we need to verify that the file is still a
@@ -547,59 +452,62 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
     if (!isPlaceholder) {
         FileStat filestat;
         IoError ioError = IoError::Success;
-        if (!IoHelper::getFileStat(stdPath, &filestat, ioError)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(stdPath, ioError).c_str());
-            return false;
+        if (!IoHelper::getFileStat(absolutePathStd, &filestat, ioError)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePathStd, ioError).c_str());
+            return ExitCode::SystemError;
         }
-
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(stdPath).c_str());
-            return true;
+            LOGW_DEBUG(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(absolutePathStd).c_str());
+            return {ExitCode::SystemError, ExitCause::NotFound};
         } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(logger(), L"Item: " << Utility::formatSyncPath(stdPath).c_str() << L" rejected because access is denied");
-            return true;
+            LOGW_WARN(logger(), L"Access is denied for item: " << Utility::formatSyncPath(absolutePathStd));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
         NodeId localNodeId = std::to_string(filestat.inode);
 
         // Convert to placeholder
-        if (vfsConvertToPlaceHolder(Utility::s2ws(localNodeId).c_str(), stdPath.native().c_str()) != S_OK) {
-            LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(stdPath).c_str());
-            return false;
+        if (vfsConvertToPlaceHolder(Utility::s2ws(localNodeId).c_str(), absolutePathStd.native().c_str()) != S_OK) {
+            LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(absolutePathStd).c_str());
+            return handleVfsError(absolutePathStd);
         }
     }
 
     // Set status
-    LOGW_DEBUG(logger(), L"Setting syncing status to: " << isSyncing << L" for file: "
-                                                        << Utility::formatSyncPath(QStr2Path(absolutePath)).c_str());
-    setPlaceholderStatus(absolutePath, isSyncing);
+    LOGW_DEBUG(logger(),
+               L"Setting syncing status to: " << isSyncing << L" for file: " << Utility::formatSyncPath(absolutePathStd));
+    if (ExitInfo exitInfo = setPlaceholderStatus(absolutePathStd.native(), isSyncing); !exitInfo) {
+        LOGW_WARN(logger(), L"Error in setPlaceholderStatus: " << Utility::formatSyncPath(absolutePathStd) << L" " << exitInfo);
+        return exitInfo;
+    }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool VfsWin::isDehydratedPlaceholder(const QString &initFilePath, bool isAbsolutePath /*= false*/) {
-    bool isDehydrated;
-    SyncPath filePath(isAbsolutePath ? QStr2Path(initFilePath) : _vfsSetupParams._localPath / QStr2Path(initFilePath));
+ExitInfo VfsWin::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated) {
+    QString initFilePath = SyncName2QStr(initFilePathStd.native());
+    SyncPath filePath(_vfsSetupParams._localPath / initFilePathStd.native());
 
     if (vfsGetPlaceHolderStatus(filePath.lexically_normal().native().c_str(), nullptr, &isDehydrated, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(filePath).c_str());
-        return false;
+        return handleVfsError(filePath);
     }
 
-    return isDehydrated;
+    return ExitCode::Ok;
 }
 
-bool VfsWin::setPinState(const QString &relativePath, PinState state) {
+ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
     // We currently don't have any features that require pinning/unpinning files manually on windows.
-    return true;
+    return ExitCode::Ok;
 
+    QString relativePath = SyncName2QStr(relativePathStd.native());
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
                   L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath).c_str() << L" code=" << errorCode);
-        return false;
+        return handleVfsError(fullPath);
     }
 
     VfsPinState vfsState;
@@ -625,14 +533,17 @@ bool VfsWin::setPinState(const QString &relativePath, PinState state) {
 
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), vfsState) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+        return handleVfsError(fullPath);
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-PinState VfsWin::pinState(const QString &relativePath) {
-    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
+PinState VfsWin::pinState(const SyncPath &relativePathStd) {
+    // TODO: Use vfsGetPinState instead of reading attributes (GetFileAttributesW). In this case return unspecified in case of
+    // VFS_PIN_STATE_INHERIT.
+    //  Read pin state from file attributes
+    SyncPath fullPath(_vfsSetupParams._localPath / relativePathStd.native());
     VfsPinState vfsPinState;
     vfsGetPinState(fullPath.lexically_normal().native().c_str(), &vfsPinState);
     PinState state;
@@ -656,131 +567,103 @@ PinState VfsWin::pinState(const QString &relativePath) {
     return state;
 }
 
-bool VfsWin::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &) {
+ExitInfo VfsWin::status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &) {
     // Check if the file is a placeholder
-    SyncPath fullPath(QStr2Path(filePath));
     bool isDehydrated = false;
-    if (vfsGetPlaceHolderStatus(fullPath.lexically_normal().native().c_str(), &isPlaceholder, &isDehydrated, nullptr) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(fullPath).c_str());
-        return false;
+    if (vfsGetPlaceHolderStatus(filePath.lexically_normal().native().c_str(), &isPlaceholder, &isDehydrated, nullptr) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(filePath).c_str());
+        return handleVfsError(filePath);
     }
 
     isHydrated = !isDehydrated;
     isSyncing = false;
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
-    LOGW_DEBUG(logger(), L"fileStatusChanged: " << Utility::formatSyncPath(QStr2Path(path)).c_str() << L" status = " << status);
-
-    SyncPath fullPath(QStr2Path(path));
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
+bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
+    LOGW_DEBUG(logger(), L"fileStatusChanged: " << Utility::formatSyncPath(pathStd) << L" status = " << status);
+    const QString path = SyncName2QStr(pathStd.native());
+    SyncPath fullPath(pathStd.native());
+    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
+        if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
+            return true;
+        }
         return false;
     }
+    SyncPath fileRelativePath = CommonUtility::relativePath(_vfsSetupParams._localPath, fullPath);
 
-    if (!exists) {
-        // New file
-        return true;
-    }
+    switch (status) {
+        case SyncFileStatus::Conflict:
+        case SyncFileStatus::Ignored:
+            exclude(fullPath);
+            break;
+        case SyncFileStatus::Success: {
+            bool isDirectory = false;
 
-    if (status == SyncFileStatus::Conflict || status == SyncFileStatus::Ignored) {
-        exclude(path);
-    } else if (status == SyncFileStatus::Success) {
-        bool isDirectory = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
-            LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
-            return false;
-        }
-
-        if (!isDirectory) {
-            // File
-            QString fileRelativePath = QStringView{path}.mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
-            bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
-            forceStatus(path, false, 100, !isDehydrated);
-        }
-    } else if (status == SyncFileStatus::Syncing) {
-        bool isDirectory = false;
-        IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
-            LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
-            return false;
-        }
-        if (!isDirectory) {
-            // File
-            QString fileRelativePath = QStringView{path}.mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
-            auto localPinState = pinState(fileRelativePath);
-            if (localPinState == PinState::OnlineOnly || localPinState == PinState::AlwaysLocal) {
-                bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
-                if (localPinState == PinState::OnlineOnly && !isDehydrated) {
-                    // Add file path to dehydration queue
-                    _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
-                    _workerInfo[WORKER_DEHYDRATION]._queue.push_front(path);
-                    _workerInfo[WORKER_DEHYDRATION]._mutex.unlock();
-                    _workerInfo[WORKER_DEHYDRATION]._queueWC.wakeOne();
-                } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
-                    bool syncing;
-                    _syncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), syncing);
-                    if (!syncing) {
-                        // Set hydrating indicator (avoid double hydration)
-                        _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), true);
-
-                        // Add file path to hydration queue
-                        _workerInfo[WORKER_HYDRATION]._mutex.lock();
-                        _workerInfo[WORKER_HYDRATION]._queue.push_front(path);
-                        _workerInfo[WORKER_HYDRATION]._mutex.unlock();
-                        _workerInfo[WORKER_HYDRATION]._queueWC.wakeOne();
-                    }
-                }
+            if (IoError ioError = IoError::Success; !IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
+                LOGW_WARN(logger(),
+                          L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
+                return false;
             }
-        }
-    } else if (status == SyncFileStatus::Error) {
-        // Nothing to do
-    }
 
+            if (!isDirectory) {
+                // File
+                bool isDehydrated = false;
+                if (ExitInfo exitInfo = isDehydratedPlaceholder(fileRelativePath, isDehydrated); !exitInfo) {
+                    LOGW_WARN(logger(),
+                              L"Error in isDehydratedPlaceholder: " << Utility::formatSyncPath(fullPath) << L" - " << exitInfo);
+                    return false;
+                }
+                forceStatus(fullPath, false, 100, !isDehydrated);
+            }
+        } break;
+        case SyncFileStatus::Syncing: {
+            bool isDirectory = false;
+
+            if (IoError ioError = IoError::Success; !IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
+                LOGW_WARN(logger(),
+                          L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
+                return false;
+            }
+            if (isDirectory) break;
+            // File
+            auto localPinState = pinState(fileRelativePath);
+
+            if (localPinState != PinState::OnlineOnly && localPinState != PinState::AlwaysLocal) break;
+
+            bool isDehydrated = false;
+            if (ExitInfo exitInfo = isDehydratedPlaceholder(fileRelativePath, isDehydrated); !exitInfo) {
+                LOGW_WARN(logger(),
+                          L"Error in isDehydratedPlaceholder: " << Utility::formatSyncPath(fullPath) << L" - " << exitInfo);
+                return false;
+            }
+
+            bool syncing = false;
+            _syncFileSyncing(_vfsSetupParams._syncDbId, fileRelativePath, syncing);
+
+            if (localPinState == PinState::OnlineOnly && !isDehydrated) {
+                // Add file path to dehydration queue
+                _workerInfo[workerDehydration]._mutex.lock();
+                _workerInfo[workerDehydration]._queue.push_front(fullPath);
+                _workerInfo[workerDehydration]._mutex.unlock();
+                _workerInfo[workerDehydration]._queueWC.wakeOne();
+            } else if (localPinState == PinState::AlwaysLocal && isDehydrated && !syncing) {
+                // Set hydrating indicator (avoid double hydration)
+                _setSyncFileSyncing(_vfsSetupParams._syncDbId, fileRelativePath, true);
+
+                // Add file path to hydration queue
+                _workerInfo[workerHydration]._mutex.lock();
+                _workerInfo[workerHydration]._queue.push_front(fullPath);
+                _workerInfo[workerHydration]._mutex.unlock();
+                _workerInfo[workerHydration]._queueWC.wakeOne();
+            }
+
+        } break;
+        default:
+            // Nothing to do
+            break;
+    }
     return true;
 }
-
-Worker::Worker(VfsWin *vfs, int type, int num, log4cplus::Logger logger) : _vfs(vfs), _type(type), _num(num), _logger(logger) {}
-
-void Worker::start() {
-    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " started");
-
-    WorkerInfo &workerInfo = _vfs->_workerInfo[_type];
-
-    forever {
-        workerInfo._mutex.lock();
-        while (workerInfo._queue.empty() && !workerInfo._stop) {
-            LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " waiting");
-            workerInfo._queueWC.wait(&workerInfo._mutex);
-        }
-
-        if (workerInfo._stop) {
-            workerInfo._mutex.unlock();
-            break;
-        }
-
-        QString path = workerInfo._queue.back();
-        workerInfo._queue.pop_back();
-        workerInfo._mutex.unlock();
-
-        LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " working");
-
-        switch (_type) {
-            case WORKER_HYDRATION:
-                _vfs->hydrate(path);
-                break;
-            case WORKER_DEHYDRATION:
-                _vfs->dehydrate(path);
-                break;
-        }
-    }
-
-    LOG_DEBUG(logger(), "Worker with type=" << _type << " and num=" << _num << " ended");
-}
-
 } // namespace KDC

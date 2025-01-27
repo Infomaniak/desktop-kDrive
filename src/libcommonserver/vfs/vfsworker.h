@@ -15,26 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
 
-#include "testincludes.h"
-#include "libcommonserver/vfs/mac/vfs_mac.h"
+#include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
+#include "vfs.h"
+#include <deque>
+#include <QObject>
+#include <QList>
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
+
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-
-class TestVfsMac : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestVfsMac);
-        CPPUNIT_TEST(testStatus);
-        CPPUNIT_TEST_SUITE_END();
+class VfsWorker : public QObject {
+        Q_OBJECT
 
     public:
-        void setUp() override;
+        VfsWorker(Vfs *vfs, int type, int num, log4cplus::Logger logger);
+        void start();
 
     private:
-        void testStatus();
+        Vfs *_vfs;
+        int _type;
+        int _num;
+        log4cplus::Logger _logger;
 
-        std::unique_ptr<VfsMac> _vfs;
+        inline log4cplus::Logger logger() { return _logger; }
 };
-
 } // namespace KDC
