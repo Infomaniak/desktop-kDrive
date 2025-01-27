@@ -112,8 +112,8 @@ class SyncOperationList : public SharedObject {
         void pushOp(SyncOpPtr op);
         void insertOp(std::list<UniqueId>::const_iterator pos, SyncOpPtr op);
         void deleteOp(std::list<UniqueId>::const_iterator it);
-        [[nodiscard]] inline size_t size() const { return _allOps.size(); }
-        [[nodiscard]] inline int isEmpty() const { return _allOps.empty(); }
+        [[nodiscard]] size_t size() const { return _allOps.size(); }
+        [[nodiscard]] int isEmpty() const { return _allOps.empty(); }
         void clear();
         void operator=(SyncOperationList const &other);
 
