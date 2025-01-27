@@ -96,7 +96,7 @@ struct VariantPrinter {
 
 log4cplus::Logger Utility::_logger;
 
-int64_t Utility::freeDiskSpace(const SyncPath &path) {
+int64_t Utility::getFreeDiskSpace(const SyncPath &path) {
     bool isDirectory = false;
     IoError ioError = IoError::Unknown;
 
@@ -134,7 +134,7 @@ int64_t Utility::freeDiskSpaceLimit() {
 }
 
 bool Utility::enoughSpace(const SyncPath &path) {
-    const int64_t freeBytes = freeDiskSpace(path);
+    const int64_t freeBytes = getFreeDiskSpace(path);
     if (freeBytes >= 0) {
         if (freeBytes < freeDiskSpaceLimit()) {
             return false;
