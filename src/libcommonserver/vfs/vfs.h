@@ -45,6 +45,9 @@ constexpr short workerDehydration = 1;
 
 namespace KDC {
 struct VfsSetupParams {
+        VfsSetupParams() = default;
+        VfsSetupParams(const log4cplus::Logger &logger, const std::shared_ptr<sentry::Handler> &_sentryHandler) :
+            _logger(logger), _sentryHandler(_sentryHandler) {}
         int _syncDbId;
         int _driveId;
         int _userId;
@@ -380,7 +383,7 @@ class VfsOff : public Vfs {
 
     public:
         explicit VfsOff(QObject *parent = nullptr);
-        VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
+        VfsOff(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
         ~VfsOff() override;
 

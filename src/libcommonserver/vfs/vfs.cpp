@@ -112,14 +112,14 @@ void Vfs::stop(bool unregister) {
     }
 }
 
-ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation& location) const {
+ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation &location) const {
     if (ExitInfo exitInfo = checkIfPathIsValid(itemPath, true, location); !exitInfo) {
         return exitInfo;
     }
     return defaultVfsError(location);
 }
 
-ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation& location) const {
+ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation &location) const {
     if (itemPath.empty()) {
         LOGW_WARN(logger(), L"Empty path provided in Vfs::checkIfPathIsValid");
         assert(false && "Empty path in a VFS call");
@@ -192,7 +192,7 @@ void VfsWorker::start() {
 
 VfsOff::VfsOff(QObject *parent) : Vfs(VfsSetupParams(), parent) {}
 
-VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
+VfsOff::VfsOff(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
 VfsOff::~VfsOff() {}
 
@@ -205,7 +205,8 @@ ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, bool isSyncing, int /*prog
     // Update Finder
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
     QString status = isSyncing ? "SYNC" : "OK";
-    _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
+    if (_vfsSetupParams._executeCommand)
+        _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
 
     return ExitCode::Ok;
 }

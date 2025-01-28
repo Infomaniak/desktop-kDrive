@@ -26,8 +26,10 @@ class SyncPalTest final : public SyncPal {
     public:
         SyncPalTest() = delete;
         SyncPalTest(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted) :
-            SyncPal(std::make_shared<VfsOff>(), syncDbPath, version, hasFullyCompleted) {}
-        SyncPalTest(int syncDbId, const std::string &version) : SyncPal(std::make_shared<VfsOff>(), syncDbId, version) {}
+            SyncPal(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger(), sentry::Handler::instance())), syncDbPath, version, hasFullyCompleted) {}
+        SyncPalTest(int syncDbId, const std::string &version) :
+            SyncPal(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger(), sentry::Handler::instance())), syncDbId,
+                    version) {}
 
     private:
         // No implementation of the following methods in tests because `_tmpBlacklistManager` is not defined.

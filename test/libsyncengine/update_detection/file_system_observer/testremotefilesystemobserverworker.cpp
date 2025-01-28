@@ -86,7 +86,6 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     _syncPal = std::make_shared<SyncPalTest>(sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
-
     /// Insert node in blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {testBlackListedDirId});
 
