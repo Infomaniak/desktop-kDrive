@@ -1185,8 +1185,7 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
     }
 
     for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
-        FSOpPtr op = nullptr;
-        if (_operationSet->findOp(nameIt->second, OperationType::Move, op)) {
+        if (FSOpPtr op = nullptr; _operationSet->findOp(nameIt->second, OperationType::Move, op)) {
             newPath = op->destinationPath();
         } else {
             newPath.append(nameIt->first);
