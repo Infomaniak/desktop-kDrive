@@ -394,42 +394,40 @@ void TestNetworkJobs::testDownload() {
 
     // Not Enough disk space
     {
-      const LocalTemporaryDirectory temporaryDirectory("tmp");
-      const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
       const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId,
                                                   "testDownload");
-      std::ofstream ofs(local9MoFilePath, std::ios::binary);
-      ofs << std::string(9 * 1000000, 'a');
-      ofs.close();
+        std::ofstream ofs(local9MoFilePath, std::ios::binary);
+        ofs << std::string(9 * 1000000, 'a');
+        ofs.close();
 
-      // Upload file
+        // Upload file
       UploadJob uploadJob(_driveDbId, local9MoFilePath, Str2SyncName("9Mo.txt"),
                           remoteTmpDir.id(), 0);
-      uploadJob.runSynchronously();
-      CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
+        uploadJob.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
 
       SyncPath smallPartitionPath =
           testhelpers::TestVariables().local8MoPartitionPath;
-      CPPUNIT_ASSERT(!smallPartitionPath.empty());
-      IoError ioError = IoError::Unknown;
-      bool exist = false;
+        CPPUNIT_ASSERT(!smallPartitionPath.empty());
+        IoError ioError = IoError::Unknown;
+        bool exist = false;
       CPPUNIT_ASSERT(
           IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
-      CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-      CPPUNIT_ASSERT(exist);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(exist);
 
-      // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
-      // NotEnoughDiskSpace.
-      const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
-      DownloadJob job(_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0,
-                      false);
-      const ExitInfo exitInfo = {job.runSynchronously(), job.exitCause()};
-      CPPUNIT_ASSERT_EQUAL_MESSAGE(
-          std::string(
-              "Space available at " + smallPartitionPath.string() + " -> " +
-              std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
-          ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace),
-          exitInfo);
+        // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
+        // NotEnoughDiskSpace.
+        const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
+        DownloadJob downloadJob(_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
+
+        downloadJob.runSynchronously();
+        const ExitInfo exitInfo = {downloadJob.exitCode(), downloadJob.exitCause()};
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
+                                                 std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
+                                     ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), exitInfo);
     }
 
 #ifdef __APPLE__

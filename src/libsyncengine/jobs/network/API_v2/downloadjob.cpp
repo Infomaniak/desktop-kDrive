@@ -272,9 +272,10 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _exitCode = ExitCode::BackError;
                 _exitCause = ExitCause::InvalidSize;
                 return false;
-            } else if (const std::streamsize neededPlace = _expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
-                                                                   ? BUF_SIZE
-                                                                   : (_expectedSize - getProgress());
+            } else if (const std::streamsize neededPlace =
+                               _resHttp.getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
+                                       ? BUF_SIZE
+                                       : (_resHttp.getContentLength() - getProgress());
                        !hasEnoughPlace(_tmpPath, _localpath, neededPlace)) {
                 LOGW_WARN(_logger, L"Request " << jobId() << L": Disk almost full, not enough place at "
                                                << Utility::formatSyncPath(_tmpPath) << L" or "
