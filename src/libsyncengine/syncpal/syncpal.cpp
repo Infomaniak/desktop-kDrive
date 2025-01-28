@@ -363,11 +363,11 @@ void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
 
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");
-    if (!_vfs) {
+    if (!vfs()) {
         addError(Error(syncDbId(), errId(), ExitCode::LogicError, ExitCause::Unknown));
         return false;
     }
-    VirtualFilesCleaner virtualFileCleaner(localPath(), _syncDb, _vfs);
+    VirtualFilesCleaner virtualFileCleaner(localPath(), _syncDb, vfs());
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
         addError(Error(syncDbId(), errId(), virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));

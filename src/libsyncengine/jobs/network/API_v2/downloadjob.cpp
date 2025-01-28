@@ -127,7 +127,7 @@ bool DownloadJob::canRun() {
 }
 
 void DownloadJob::runJob() noexcept {
-    if (!_isCreate) {
+    if (!_isCreate && _vfs) {
         // Update size on file system
         FileStat filestat;
         IoError ioError = IoError::Success;
@@ -222,7 +222,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
         bool restartSync = false;
         if (!_responseHandlingCanceled) {
-            if (!_isHydrated && !fetchFinished) {
+            if (!_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
                 // Update fetch status
                 if (ExitInfo exitInfo =
                             _vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
@@ -642,7 +642,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                     }
                 }
 
-                if (!_isHydrated) {
+                if (!_isHydrated) { // updateFetchStatus is used only for hydration.
                     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
                     if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status

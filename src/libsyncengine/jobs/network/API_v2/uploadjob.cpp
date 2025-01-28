@@ -44,6 +44,7 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncP
 }
 
 UploadJob::~UploadJob() {
+    if (!_vfs) return;
     if (ExitInfo exitInfo = _vfs->forceStatus(_filePath, false, 100, true); !exitInfo) {
         LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath) << L" : " << exitInfo);
     }

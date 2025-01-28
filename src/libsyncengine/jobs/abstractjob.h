@@ -19,7 +19,6 @@
 #pragma once
 
 #include "utility/types.h"
-#include <libcommonserver/vfs/vfs.h>
 #include <Poco/Runnable.h>
 
 #include <log4cplus/logger.h>
