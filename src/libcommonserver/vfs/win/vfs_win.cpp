@@ -540,8 +540,6 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
 }
 
 PinState VfsWin::pinState(const SyncPath &relativePathStd) {
-    // TODO: Use vfsGetPinState instead of reading attributes (GetFileAttributesW). In this case return unspecified in case of
-    // VFS_PIN_STATE_INHERIT.
     //  Read pin state from file attributes
     SyncPath fullPath(_vfsSetupParams._localPath / relativePathStd.native());
     VfsPinState vfsPinState;
