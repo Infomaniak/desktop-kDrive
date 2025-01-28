@@ -86,6 +86,17 @@ void TestExecutorWorker::tearDown() {
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
+    // Setup a syncpal using MockVfs
+    _syncPal->stop();
+    std::shared_ptr<MockVfs> mockVfs = std::make_shared<MockVfs>();
+    _syncPal = std::make_shared<SyncPal>(mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
+    _syncPal->syncDb()->setAutoDelete(true);
+
+    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
+
+
     //   Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
     opPtr->setTargetSide(ReplicaSide::Remote);
@@ -93,9 +104,6 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
                                              OperationType::None, "1234", testhelpers::defaultTime, testhelpers::defaultTime,
                                              testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
-
-    std::shared_ptr<MockVfs> mockVfs = std::make_shared<MockVfs>();
-    _syncPal->setVfsPtr(mockVfs);
     // A hydrated placeholder.
     {
         mockVfs->setVfsStatusOutput(true, true, false, 0);
@@ -180,7 +188,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName){};
+            ExecutorWorker(syncPal, name, shortName) {};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };
