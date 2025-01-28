@@ -68,7 +68,7 @@ void TestExecutorWorker::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger(), sentry::Handler::instance())), _sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers();
     _syncPal->syncDb()->setAutoDelete(true);

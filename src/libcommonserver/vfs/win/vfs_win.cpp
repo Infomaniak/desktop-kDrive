@@ -69,7 +69,8 @@ void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
             break;
         case TraceLevel::Error:
             LOGW_ERROR(logger(), msg);
-            _vfsSetupParams._sentryHandler->captureMessage(sentry::Level::Error, "VfsWin::debugCbk", Utility::ws2s(msg));
+            if (_vfsSetupParams._sentryHandler)
+                _vfsSetupParams._sentryHandler->_captureMessage(sentry::Level::Error, "VfsWin::debugCbk", Utility::ws2s(msg));
             break;
     };
 }

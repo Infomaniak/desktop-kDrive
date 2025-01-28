@@ -46,8 +46,7 @@ constexpr short workerDehydration = 1;
 namespace KDC {
 struct VfsSetupParams {
         VfsSetupParams() = default;
-        VfsSetupParams(const log4cplus::Logger &logger, const std::shared_ptr<sentry::Handler> &_sentryHandler) :
-            _logger(logger), _sentryHandler(_sentryHandler) {}
+        VfsSetupParams(const log4cplus::Logger &logger) : _logger(logger) {}
         int _syncDbId;
         int _driveId;
         int _userId;

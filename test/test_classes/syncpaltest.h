@@ -26,9 +26,9 @@ class SyncPalTest final : public SyncPal {
     public:
         SyncPalTest() = delete;
         SyncPalTest(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted) :
-            SyncPal(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger(), sentry::Handler::instance())), syncDbPath, version, hasFullyCompleted) {}
+            SyncPal(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath, version, hasFullyCompleted) {}
         SyncPalTest(int syncDbId, const std::string &version) :
-            SyncPal(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger(), sentry::Handler::instance())), syncDbId,
+            SyncPal(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbId,
                     version) {}
 
     private:

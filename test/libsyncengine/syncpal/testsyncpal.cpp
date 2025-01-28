@@ -72,7 +72,7 @@ void TestSyncPal::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger(), sentry::Handler::instance())), sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
 }
 

@@ -33,7 +33,7 @@ void TestConflictResolverWorker::setUp() {
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger(), sentry::Handler::instance())), syncDbPath, KDRIVE_VERSION_STRING, true);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
 
