@@ -238,7 +238,7 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
 
     // !!! Creating a placeholder DOESN'T triggers any file system event !!!
     // Setting the pin state triggers an EDIT event and then the insertion into the local snapshot
-    if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_UNPINNED) != S_OK) {
+    if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_INHERIT) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
         return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
                                   // NotFound as this make no sense in the context of a create
@@ -497,6 +497,9 @@ ExitInfo VfsWin::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &
 }
 
 ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
+    // We currently don't have any features that require pinning/unpinning files manually on windows.
+    return ExitCode::Ok;
+
     QString relativePath = SyncName2QStr(relativePathStd.native());
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
@@ -521,6 +524,11 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
         case PinState::Unspecified:
             vfsState = VFS_PIN_STATE_UNSPECIFIED;
             break;
+        default:
+            assert(false && "Invalid pin state");
+            LOGW_WARN(logger(), L"Invalid pinState: " << state << L"in setPinState for: " << Utility::formatSyncPath(fullPath));
+            vfsState = VFS_PIN_STATE_UNSPECIFIED;
+            break;
     }
 
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), vfsState) != S_OK) {
@@ -532,23 +540,29 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
 }
 
 PinState VfsWin::pinState(const SyncPath &relativePathStd) {
-    // TODO: Use vfsGetPinState instead of reading attributes (GetFileAttributesW). In this case return unspecified in case of
-    // VFS_PIN_STATE_INHERIT.
     //  Read pin state from file attributes
     SyncPath fullPath(_vfsSetupParams._localPath / relativePathStd.native());
-    DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
-
-    if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
-        LOGW_WARN(logger(), L"Invalid attributes for item: " << Utility::formatSyncPath(fullPath).c_str());
-    } else {
-        if (dwAttrs & FILE_ATTRIBUTE_PINNED) {
-            return PinState::AlwaysLocal;
-        } else if (dwAttrs & FILE_ATTRIBUTE_UNPINNED) {
-            return PinState::OnlineOnly;
-        }
+    VfsPinState vfsPinState;
+    vfsGetPinState(fullPath.lexically_normal().native().c_str(), &vfsPinState);
+    PinState state;
+    switch (vfsPinState) {
+        case VFS_PIN_STATE_PINNED:
+            state = PinState::AlwaysLocal;
+            break;
+        case VFS_PIN_STATE_UNPINNED:
+            state = PinState::OnlineOnly;
+            break;
+        case VFS_PIN_STATE_UNSPECIFIED:
+            state = PinState::Unspecified;
+            break;
+        default:
+            assert(false && "Invalid pin state");
+            LOGW_WARN(logger(),
+                      L"Invalid pinState: " << vfsPinState << L" in getPinState for: " << Utility::formatSyncPath(fullPath));
+            state = PinState::Unknown;
+            break;
     }
-
-    return PinState::Unspecified;
+    return state;
 }
 
 ExitInfo VfsWin::status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &) {
