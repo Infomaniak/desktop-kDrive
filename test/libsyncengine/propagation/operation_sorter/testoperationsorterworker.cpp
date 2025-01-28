@@ -48,13 +48,13 @@ void TestOperationSorterWorker::tearDown() {
 
 void TestOperationSorterWorker::testMoveFirstAfterSecond() {
     const auto nodeA =
-            std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, Str("a"),
+            std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, "a",
                                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr);
     const auto nodeB =
-            std::make_shared<Node>(ReplicaSide::Local, Str("B"), NodeType::Directory, OperationType::None, Str("b"),
+            std::make_shared<Node>(ReplicaSide::Local, Str("B"), NodeType::Directory, OperationType::None, "b",
                                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr);
     const auto nodeC =
-            std::make_shared<Node>(ReplicaSide::Local, Str("C"), NodeType::Directory, OperationType::None, Str("c"),
+            std::make_shared<Node>(ReplicaSide::Local, Str("C"), NodeType::Directory, OperationType::None, "c",
                                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr);
     const auto op1 = std::make_shared<SyncOperation>();
     const auto op2 = std::make_shared<SyncOperation>();
@@ -89,13 +89,13 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
 
     const auto rootNode = _syncPal->updateTree(ReplicaSide::Local)->rootNode();
     const auto nodeA =
-            std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, Str("la"),
+            std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, "la",
                                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
     (void) rootNode->insertChildren(nodeA);
 
     const auto nodeB =
-            std::make_shared<Node>(ReplicaSide::Local, Str("B"), NodeType::Directory, OperationType::None, Str("lb"),
+            std::make_shared<Node>(ReplicaSide::Local, Str("B"), NodeType::Directory, OperationType::None, "lb",
                                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeB);
     (void) rootNode->insertChildren(nodeB);
@@ -1442,7 +1442,7 @@ void TestOperationSorterWorker::testBreakCycle() {
     moveOp->setType(OperationType::Move);
     moveOp->setAffectedNode(nodeLA);
     moveOp->setCorrespondingNode(nodeRA);
-    moveOp->setNewName("A*");
+    moveOp->setNewName(Str("A*"));
     moveOp->setTargetSide(ReplicaSide::Remote);
     const auto createOp = std::make_shared<SyncOperation>();
     createOp->setType(OperationType::Create);
