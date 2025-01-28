@@ -1199,9 +1199,8 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         relativeOriginLocalFilePath = correspondingNode->getPath();
         absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
         SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
-        job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
 
-        if (relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
+        if (syncOp->isBreakingCycleOp() || relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
             // This is just a rename
             try {
                 job = std::make_shared<RenameJob>(_syncPal->driveDbId(),
@@ -1225,10 +1224,11 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
                 LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item " << Path2WStr(parentNode->getPath()));
                 return ExitCode::DataError;
             }
+
+            const NodeId fileId = correspondingNode->id().has_value() ? *correspondingNode->id() : std::string();
+            const NodeId destDirId = remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string();
             try {
-                job = std::make_shared<MoveJob>(_syncPal->driveDbId(), absoluteDestLocalFilePath,
-                                                correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
-                                                remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string(),
+                job = std::make_shared<MoveJob>(_syncPal->driveDbId(), absoluteDestLocalFilePath, fileId, destDirId,
                                                 syncOp->newName());
             } catch (std::exception &e) {
                 LOG_SYNCPAL_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
@@ -1236,7 +1236,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             }
         }
 
-        if (syncOp->hasConflict()) {
+        if (syncOp->hasConflict() || syncOp->isBreakingCycleOp()) {
             job->setBypassCheck(true);
         }
 
@@ -2175,9 +2175,6 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                                    ? syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string()
                            : correspondingNode->id().has_value() ? *correspondingNode->id()
                                                                  : std::string();
-    SyncName localName = syncOp->targetSide() == ReplicaSide::Local ? syncOp->newName() : syncOp->nodeName(ReplicaSide::Local);
-    SyncName remoteName = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->nodeName(ReplicaSide::Remote);
-
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
                                              << Utility::formatSyncName(syncOp->affectedNode()->name()));
@@ -2185,8 +2182,8 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     }
 
     dbNode.setParentNodeId(parentNode->idb());
-    dbNode.setNameLocal(localName);
-    dbNode.setNameRemote(remoteName);
+    dbNode.setNameLocal(syncOp->newName());
+    dbNode.setNameRemote(syncOp->newName());
     if (syncOp->omit()) {
         dbNode.setStatus(SyncFileStatus::Success);
     }
@@ -2194,8 +2191,8 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(
                 _logger,
-                L"Updating DB: " << L" localName=" << Utility::formatSyncName(localName) << L" / remoteName="
-                                 << Utility::formatSyncName(remoteName) << L" / localId=" << Utility::s2ws(localId)
+                L"Updating DB: " << L" localName=" << Utility::formatSyncName(syncOp->newName()) << L" / remoteName="
+                                 << Utility::formatSyncName(syncOp->newName()) << L" / localId=" << Utility::s2ws(localId)
                                  << L" / remoteId=" << Utility::s2ws(remoteId) << L" / parent DB ID="
                                  << (dbNode.parentNodeId().has_value() ? dbNode.parentNodeId().value() : -1) << L" / createdAt="
                                  << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
@@ -2208,8 +2205,9 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     if (!_syncPal->_syncDb->updateNode(dbNode, found)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to update node into DB: "
                                            << L"local ID: " << Utility::s2ws(localId) << L", remote ID: "
-                                           << Utility::s2ws(remoteId) << L", local name: " << Utility::formatSyncName(localName)
-                                           << L", remote name: " << Utility::formatSyncName(remoteName) << L", parent DB ID: "
+                                           << Utility::s2ws(remoteId) << L", local name: "
+                                           << Utility::formatSyncName(syncOp->newName()) << L", remote name: "
+                                           << Utility::formatSyncName(syncOp->newName()) << L", parent DB ID: "
                                            << (dbNode.parentNodeId().has_value() ? dbNode.parentNodeId().value() : -1));
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
@@ -2224,7 +2222,7 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
         auto prevParent = correspondingNode->parentNode();
         prevParent->deleteChildren(correspondingNode);
 
-        correspondingNode->setName(remoteName);
+        correspondingNode->setName(syncOp->newName());
 
         if (!correspondingNode->setParentNode(parentNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
