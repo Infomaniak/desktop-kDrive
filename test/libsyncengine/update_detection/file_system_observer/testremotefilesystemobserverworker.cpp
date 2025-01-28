@@ -83,9 +83,7 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     Sync sync(1, drive.dbId(), "/", "/");
     ParmsDb::instance()->insertSync(sync);
 
-    auto vfs = std::make_shared<VfsOff>();
     _syncPal = std::make_shared<SyncPalTest>(sync.dbId(), KDRIVE_VERSION_STRING);
-    _syncPal->setVfsPtr(vfs);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
 

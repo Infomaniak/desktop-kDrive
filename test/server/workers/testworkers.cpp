@@ -122,12 +122,11 @@ void TestWorkers::setUp() {
 #endif
 
     // Setup SyncPal
-    _syncPal = std::make_shared<SyncPal>(_sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(_vfsPtr, _sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers();
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
-    _syncPal->setVfsPtr(_vfsPtr);
 
     // Setup SocketApi
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;

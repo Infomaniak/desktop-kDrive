@@ -107,9 +107,7 @@ void TestIntegration::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
  
-    auto vfs = std::make_shared<VfsOff>();
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
-    _syncPal->setVfsPtr(vfs);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(), sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
 
     // Insert items to blacklist

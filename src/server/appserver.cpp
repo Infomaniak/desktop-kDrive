@@ -3320,9 +3320,15 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
     _lastSyncPalStart = std::chrono::steady_clock::now();
 
     if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
+        std::shared_ptr<Vfs> vfsPtr;
+        if (ExitInfo exitInfo = getVfsPtr(sync.dbId(), vfsPtr); !exitInfo) {
+            LOG_WARN(_logger, "Error in getVfsPtr for syncDbId=" << sync.dbId() << " " << exitInfo);
+            return exitInfo.code();
+        }
+
         // Create SyncPal
         try {
-            _syncPalMap[sync.dbId()] = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), _theme->version().toStdString()));
+            _syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfsPtr, sync.dbId(), _theme->version().toStdString());
         } catch (std::exception const &) {
             LOG_WARN(_logger, "Error in SyncPal::SyncPal for syncDbId=" << sync.dbId());
             return ExitCode::DbError;
@@ -3332,14 +3338,6 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
         _syncPalMap[sync.dbId()]->setAddErrorCallback(&addError);
         _syncPalMap[sync.dbId()]->setAddCompletedItemCallback(&addCompletedItem);
         _syncPalMap[sync.dbId()]->setSendSignalCallback(&sendSignal);
-
-        std::shared_ptr<Vfs> vfsPtr;
-        if (ExitInfo exitInfo = getVfsPtr(sync.dbId(), vfsPtr); !exitInfo) {
-            LOG_WARN(_logger, "Error in getVfsPtr for syncDbId=" << sync.dbId() << " " << exitInfo);
-            return exitInfo.code();
-        }
-
-        _syncPalMap[sync.dbId()]->setVfsPtr(vfsPtr);
 
         if (blackList != std::unordered_set<NodeId>()) {
             // Set blackList (create or overwrite the possible existing list in DB)

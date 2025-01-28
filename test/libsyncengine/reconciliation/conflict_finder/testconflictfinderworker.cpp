@@ -31,7 +31,7 @@ void TestConflictFinderWorker::setUp() {
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(syncDbPath, KDRIVE_VERSION_STRING, true);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(), syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
 
