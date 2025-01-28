@@ -41,8 +41,8 @@ void Vfs::starVfsWorkers() {
     // !!! Disabled for testing because no QEventLoop !!!
     if (qApp) {
         // Start worker threads
-        for (int i = 0; i < nbWorkers; i++) {
-            for (int j = 0; j < s_nb_threads[i]; j++) {
+        for (size_t i = 0; i < nbWorkers; i++) {
+            for (size_t j = 0; j < s_nb_threads[i]; j++) {
                 auto *workerThread = new QtLoggingThread();
                 _workerInfo[i]._threadList.append(workerThread);
                 auto *worker = new VfsWorker(this, i, j, logger());

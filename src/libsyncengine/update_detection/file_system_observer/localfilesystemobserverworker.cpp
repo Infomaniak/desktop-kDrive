@@ -531,7 +531,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
-    if (!_syncPal->vfsStatus(path.native(), isPlaceholder, isHydrated, isSyncing, progress)) {
+    if (!_syncPal->vfs->status(path.native(), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::vfsStatus");
         return ExitCode::SystemError;
     }
