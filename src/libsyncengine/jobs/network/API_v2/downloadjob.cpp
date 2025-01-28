@@ -195,7 +195,11 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
     bool dummy1, dummy2 = false;
     int dummy3 = 0;
-    _vfs->status(_localpath, dummy1, _isHydrated, dummy2, dummy3);
+    if (_vfs) {
+        _vfs->status(_localpath, dummy1, _isHydrated, dummy2, dummy3);
+    } else {
+        _isHydrated = true;
+    }
 
     // Process download
     if (isLink) {
@@ -222,7 +226,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
         bool restartSync = false;
         if (!_responseHandlingCanceled) {
-            if (!_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
+            if (_vfs && !_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
                 // Update fetch status
                 if (ExitInfo exitInfo =
                             _vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
@@ -642,7 +646,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                     }
                 }
 
-                if (!_isHydrated) { // updateFetchStatus is used only for hydration.
+                if (_vfs && !_isHydrated) { // updateFetchStatus is used only for hydration.
                     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
                     if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
