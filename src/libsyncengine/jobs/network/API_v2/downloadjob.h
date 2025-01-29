@@ -30,7 +30,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
                     int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate);
         DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
                     int64_t expectedSize);
-        ~DownloadJob();
+        ~DownloadJob() override;
 
         inline const NodeId &remoteNodeId() const { return _remoteFileId; }
         inline const SyncPath &localPath() const { return _localpath; }
@@ -68,11 +68,12 @@ class DownloadJob : public AbstractTokenNetworkJob {
                            bool &fetchError);
         //! Create a tmp file from a std::string
         bool createTmpFile(const std::string &data, bool &writeError);
+        bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace);
 
         NodeId _remoteFileId;
         SyncPath _localpath;
         SyncPath _tmpPath;
-        int64_t _expectedSize = -1;
+        int64_t _expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
         SyncTime _creationTime = 0;
         SyncTime _modtimeIn = 0;
         bool _isCreate = false;

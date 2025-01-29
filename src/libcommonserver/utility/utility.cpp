@@ -96,21 +96,32 @@ struct VariantPrinter {
 
 log4cplus::Logger Utility::_logger;
 
-int64_t Utility::freeDiskSpace(const SyncPath &path) {
+int64_t Utility::getFreeDiskSpace(const SyncPath &path) {
+    bool isDirectory = false;
+    IoError ioError = IoError::Unknown;
+
+    IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        isDirectory = false;
+    } else if (ioError != IoError::Success) {
+        return -1;
+    }
+    SyncPath tmpDirPath = isDirectory ? path : path.parent_path();
+
 #if defined(__APPLE__)
     struct statvfs stat;
-    if (statvfs(path.c_str(), &stat) == 0) {
+    if (statvfs(tmpDirPath.c_str(), &stat) == 0) {
         return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
 #elif defined(__unix__)
     struct statvfs64 stat;
-    if (statvfs64(path.c_str(), &stat) == 0) {
+    if (statvfs64(tmpDirPath.c_str(), &stat) == 0) {
         return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
 #elif defined(_WIN32)
     ULARGE_INTEGER freeBytes;
     freeBytes.QuadPart = 0L;
-    if (GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(Path2WStr(path).c_str()), &freeBytes, NULL, NULL)) {
+    if (GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(Path2WStr(tmpDirPath).c_str()), &freeBytes, NULL, NULL)) {
         return freeBytes.QuadPart;
     }
 #endif
@@ -123,7 +134,7 @@ int64_t Utility::freeDiskSpaceLimit() {
 }
 
 bool Utility::enoughSpace(const SyncPath &path) {
-    const int64_t freeBytes = freeDiskSpace(path);
+    const int64_t freeBytes = getFreeDiskSpace(path);
     if (freeBytes >= 0) {
         if (freeBytes < freeDiskSpaceLimit()) {
             return false;
@@ -683,8 +694,9 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
         strResult = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
     }
 
-    if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion
-                      // has failed. e.g.: Linux can sometime send filesystem events with strange character in the path
+    if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the
+                      // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in the
+                      // path
         LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name));
         return false;
     }

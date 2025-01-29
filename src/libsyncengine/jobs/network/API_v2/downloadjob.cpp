@@ -243,13 +243,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
             } else if (_isHydrated) {
                 // Replace file by tmp one
-                bool replaceError = false;
                 if (!moveTmpFile(restartSync)) {
                     LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
-                    replaceError = true;
+                    writeError = true;
                 }
 
-                _responseHandlingCanceled = replaceError || restartSync;
+                _responseHandlingCanceled = writeError || restartSync;
             }
         }
 
@@ -263,6 +262,18 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 // Download issue
                 _exitCode = ExitCode::BackError;
                 _exitCause = ExitCause::InvalidSize;
+                return false;
+            } else if (const std::streamsize neededPlace =
+                               _resHttp.getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
+                                       ? BUF_SIZE
+                                       : (_resHttp.getContentLength() - getProgress());
+                       !hasEnoughPlace(_tmpPath, _localpath, neededPlace)) {
+                LOGW_WARN(_logger, L"Request " << jobId() << L": Disk almost full, not enough place at "
+                                               << Utility::formatSyncPath(_tmpPath) << L" or "
+                                               << Utility::formatSyncPath(_localpath.parent_path())
+                                               << L". Download job cancelled.");
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::NotEnoughDiskSpace;
                 return false;
             } else {
                 _exitCode = ExitCode::SystemError;
@@ -536,6 +547,21 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
     return true;
 }
 
+bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace) {
+    auto tmpDirSize = Utility::Utility::getFreeDiskSpace(tmpDirPath);
+    auto destDirSize = Utility::Utility::getFreeDiskSpace(destDirPath);
+
+    if (const auto &freeBytes = std::min(tmpDirSize, destDirSize); freeBytes >= 0) {
+        if (freeBytes < neededPlace + Utility::freeDiskSpaceLimit()) {
+            return false;
+        }
+    } else {
+        const SyncPath &smallerDir = tmpDirSize < destDirSize ? tmpDirPath : destDirPath;
+        LOGW_WARN(_logger, L"Could not determine free space available at " << Utility::formatSyncPath(smallerDir));
+    }
+    return true;
+}
+
 bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
                                 std::optional<std::reference_wrapper<const std::string>> data, bool &readError, bool &writeError,
                                 bool &fetchCanceled, bool &fetchFinished, bool &fetchError) {
@@ -581,7 +607,12 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     if (istr) {
         expectedSize = _resHttp.getContentLength();
         setProgress(0);
-        if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || expectedSize > 0) {
+        if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
+            writeError = !hasEnoughPlace(_tmpPath, _localpath, expectedSize);
+            readError = expectedSize <= 0;
+        }
+
+        if (!writeError && !readError) {
             std::chrono::steady_clock::time_point fileProgressTimer = std::chrono::steady_clock::now();
             std::unique_ptr<char[]> buffer(new char[BUF_SIZE]);
             bool done = false;
@@ -672,7 +703,8 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     // Unfortunately, the file hash is not available, so we check only its size
     output.flush();
     output.seekp(0, std::ios_base::end);
-    if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && output.tellp() != expectedSize) {
+    if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && output.tellp() != expectedSize && !readError &&
+        !writeError && !fetchError && isAborted()) {
         LOG_WARN(_logger, "Request " << jobId() << ": tmp file has been corrupted by another process");
         sentry::Handler::captureMessage(sentry::Level::Error, "DownloadJob::handleResponse", "Tmp file is corrupted");
         writeError = true;
