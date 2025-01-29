@@ -183,6 +183,8 @@ cd "C:\Program Files (x86)"
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 ```
 
+If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
+
 Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure as follows:
 - Select all projects then right click to access `Properties`.
 - Select `All configurations` and `All plateforms`,  then add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH` in `C/C++ > Preprocessor > Preprocessor Definitions`.

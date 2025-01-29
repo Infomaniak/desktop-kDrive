@@ -86,25 +86,19 @@ void TestExecutorWorker::tearDown() {
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
-    // Setup dummy values. Test inputs are set in the callbacks defined below.
+    //   Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
     opPtr->setTargetSide(ReplicaSide::Remote);
-    const auto node = std::make_shared<Node>(1, ReplicaSide::Local, "test_file.txt", NodeType::File, OperationType::None, "1234",
-                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                             _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    const auto node = std::make_shared<Node>(1, ReplicaSide::Local, Str2SyncName("test_file.txt"), NodeType::File,
+                                             OperationType::None, "1234", testhelpers::defaultTime, testhelpers::defaultTime,
+                                             testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
 
+    std::shared_ptr<MockVfs> mockVfs = std::make_shared<MockVfs>();
+    _syncPal->setVfsPtr(mockVfs);
     // A hydrated placeholder.
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
-            isPlaceholder = true;
-            isHydrated = true;
-            isSyncing = false;
-            progress = 0;
-            return true;
-        });
-
+        mockVfs->setVfsStatusOutput(true, true, false, 0);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -113,15 +107,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A dehydrated placeholder.
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
-            isPlaceholder = true;
-            isHydrated = false;
-            isSyncing = false;
-            progress = 0;
-            return true;
-        });
-
+        mockVfs->setVfsStatusOutput(true, false, false, 0);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -130,15 +116,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A partially hydrated placeholder (syncing item).
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
-            isPlaceholder = true;
-            isHydrated = false;
-            isSyncing = true;
-            progress = 30;
-            return true;
-        });
-
+        mockVfs->setVfsStatusOutput(true, false, true, 30);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -147,15 +125,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // Not a placeholder.
     {
-        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
-                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
-            isPlaceholder = false;
-            isHydrated = false;
-            isSyncing = false;
-            progress = 0;
-            return true;
-        });
-
+        mockVfs->setVfsStatusOutput(false, false, false, 0);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -166,14 +136,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
 SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
                                                     const OperationType opType) {
-    auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
-                                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                       _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    auto correspondingNode = std::make_shared<Node>(
+    const auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
+                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                             _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    const auto correspondingNode = std::make_shared<Node>(
             dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
             testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    SyncOpPtr op = std::make_shared<SyncOperation>();
+    auto op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
     op->setCorrespondingNode(correspondingNode);
     op->setType(opType);
@@ -210,7 +180,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName) {};
+            ExecutorWorker(syncPal, name, shortName){};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };
@@ -257,20 +227,6 @@ void TestExecutorWorker::testIsValidDestination() {
     }
 
     const auto root = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
-
-    // False if the item created on the local replica is not at the root of the synchronisation folder and has a
-    // corresponding parent node with no id.
-    {
-        const auto correspondingParentNode = std::make_shared<Node>(
-                666, ReplicaSide::Remote, Str("parent_dir"), NodeType::Directory, OperationType::None, std::nullopt,
-                testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
-
-
-        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
-        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), correspondingParentNode}});
-        op->setTargetSide(ReplicaSide::Remote);
-        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
-    }
 
     const auto correspondingParentCommonDocsNode = std::make_shared<Node>(
             666, ReplicaSide::Remote, Utility::commonDocumentsFolderName(), NodeType::Directory, OperationType::None,
@@ -365,6 +321,65 @@ void TestExecutorWorker::testTerminatedJobsQueue() {
     t2.join();
     t3.join();
     t4.join(); // Wait for all threads to finish.
+}
+
+void TestExecutorWorker::propagateConflictToDbAndTree() {
+    bool propagateChange = false;
+    const auto syncOp = generateSyncOperation(1, Str("test"));
+
+    // Conflict types involving no special treatment, just propagate changes to DB.
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::CreateParentDelete));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveDelete));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveParentDelete));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveMoveCycle));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::None));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    /// EditDelete conflict : apply normal behavior only if the operation type is Delete.
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::EditDelete));
+    syncOp->setType(OperationType::Delete);
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(true, propagateChange);
+
+    // EditDelete conflict : Do nothing if operation type is different from Delete.
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::EditDelete));
+    syncOp->setType(OperationType::Move);
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    // Conflict types involving special treatment
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::EditEdit));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::CreateCreate));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveCreate));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveMoveDest));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+
+    syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveMoveSource));
+    _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
+    CPPUNIT_ASSERT_EQUAL(false, propagateChange);
 }
 
 void TestExecutorWorker::testLogCorrespondingNodeErrorMsg() {

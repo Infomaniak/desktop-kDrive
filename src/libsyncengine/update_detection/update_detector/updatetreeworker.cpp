@@ -439,10 +439,16 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             std::shared_ptr<Node> parentNode;
             if (const auto exitCode = searchForParentNode(op->path(), parentNode); exitCode != ExitCode::Ok) {
                 return exitCode;
-            };
+            }
 
             if (!parentNode) {
-                parentNode = getOrCreateNodeFromDeletedPath(op->path().parent_path());
+                SyncPath newPath;
+                if (const auto newPathExitCode = getNewPathAfterMove(deleteOp->path(), newPath);
+                    newPathExitCode != ExitCode::Ok) {
+                    LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getNewPathAfterMove");
+                    return newPathExitCode;
+                }
+                parentNode = getOrCreateNodeFromDeletedPath(newPath.parent_path());
             }
 
             // find child node
@@ -1179,8 +1185,7 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
     }
 
     for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
-        FSOpPtr op = nullptr;
-        if (_operationSet->findOp(nameIt->second, OperationType::Move, op)) {
+        if (FSOpPtr op = nullptr; _operationSet->findOp(nameIt->second, OperationType::Move, op)) {
             newPath = op->destinationPath();
         } else {
             newPath.append(nameIt->first);

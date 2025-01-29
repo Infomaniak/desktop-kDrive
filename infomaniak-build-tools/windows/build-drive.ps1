@@ -378,7 +378,7 @@ $dependencies = @(
 "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
 "${env:ProgramFiles(x86)}/xxHash/bin/xxhash",
 "$vfsDir/Vfs",
-"$buildPath/bin/kDrivesyncengine_vfs_win"
+"$buildPath/bin/kDrivecommonserver_vfs_win"
 )
 
 Write-Host "Copying dependencies to the folder $archivePath"
