@@ -1074,6 +1074,8 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
     Utility::msleep(1000); // Wait 1sec
 
     DriveUploadSessionJob->abort();
+    CPPUNIT_ASSERT(!DriveUploadSessionJob->hasVfsForceStatusCallback());
+
 
     Utility::msleep(1000); // Wait 1sec
 
