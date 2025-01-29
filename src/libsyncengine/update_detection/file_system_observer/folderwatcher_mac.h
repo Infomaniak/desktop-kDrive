@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,15 +29,16 @@ class LocalFileSystemObserverWorker;
 class FolderWatcher_mac : public FolderWatcher {
     public:
         FolderWatcher_mac(LocalFileSystemObserverWorker *parent, const SyncPath &path);
-        ~FolderWatcher_mac();
 
         void startWatching() override;
         void stopWatching() override;
 
         void doNotifyParent(const std::list<std::pair<SyncPath, OperationType>> &changes);
 
+        static OperationType getOpType(FSEventStreamEventFlags eventFlags);
+
     private:
         FSEventStreamRef _stream;
 };
 
-}  // namespace KDC
+} // namespace KDC

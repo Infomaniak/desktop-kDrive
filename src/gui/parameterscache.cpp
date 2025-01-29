@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,21 +43,21 @@ std::shared_ptr<ParametersCache> ParametersCache::instance() noexcept {
 ParametersCache::ParametersCache() {
     // Load parameters
     const ExitCode exitCode = GuiRequests::getParameters(_parametersInfo);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcAppParameters()) << "Error in Requests::getParameters : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcAppParameters()) << "Error in Requests::getParameters: code=" << exitCode;
         throw std::runtime_error("Failed to create ParametersCache instance!");
     }
 }
 
 bool ParametersCache::saveParametersInfo(bool displayMessageBoxOnError) {
     const ExitCode exitCode = GuiRequests::updateParameters(_parametersInfo);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcAppParameters()) << "Error in Requests::updateParameters";
         if (displayMessageBoxOnError) {
             CustomMessageBox msgBox(QMessageBox::Warning,
-                                    exitCode == ExitCodeSystemError
-                                        ? QObject::tr("Unable to save parameters, please retry later.")
-                                        : QObject::tr("Unable to save parameters!"),
+                                    exitCode == ExitCode::SystemError
+                                            ? QObject::tr("Unable to save parameters, please retry later.")
+                                            : QObject::tr("Unable to save parameters!"),
                                     QMessageBox::Ok);
             msgBox.exec();
         }
@@ -67,4 +67,4 @@ bool ParametersCache::saveParametersInfo(bool displayMessageBoxOnError) {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

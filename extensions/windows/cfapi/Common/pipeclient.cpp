@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ bool PipeClient::sendMessageWithAnswer(const std::wstring &verb, const std::wstr
 
 bool PipeClient::readMessage(LONGLONG msgId, std::wstring &response) {
     std::unique_lock<std::mutex> lck(_responseMapMutex);
-    if (_responseMap.find(msgId) != _responseMap.end()) {
+    if (_responseMap.contains(msgId)) {
         do {
             response = _responseMap[msgId];
             if (response.empty()) {
@@ -121,7 +121,7 @@ void PipeClient::pipeListener(PipeClient *pipeClient) {
         }
 
         std::unique_lock<std::mutex> lck(pipeClient->_responseMapMutex);
-        if (pipeClient->_responseMap.find(msgId) != pipeClient->_responseMap.end()) {
+        if (pipeClient->_responseMap.contains(msgId)) {
             pipeClient->_responseMap[msgId] = response.substr(sep + 1);
             pipeClient->_responseMapCV.notify_all();
         } else {

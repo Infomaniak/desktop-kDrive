@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,8 +68,8 @@ void MenuWidget::paintEvent(QPaintEvent *event) {
                 offset = QPoint(menuOffsetX, menuOffsetY);
                 break;
             case Submenu:
-                offset = QPoint(pos().x() < parentWidget()->pos().x() ? contentMargin - 1  // Sub menu is on left
-                                                                      : -contentMargin     // Sub menu is on right
+                offset = QPoint(pos().x() < parentWidget()->pos().x() ? contentMargin - 1 // Sub menu is on left
+                                                                      : -contentMargin // Sub menu is on right
                                 ,
                                 0);
                 break;
@@ -109,4 +109,4 @@ void MenuWidget::onAboutToShow() {
     _moved = false;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #pragma once
 
 #include "filesystemobserverworker.h"
-#include "update_detection/file_system_observer/checksum/contentchecksumworker.h"
 #include "update_detection/file_system_observer/folderwatcher.h"
 
 namespace KDC {
@@ -27,18 +26,18 @@ namespace KDC {
 class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
     public:
         LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
-        ~LocalFileSystemObserverWorker();
+        ~LocalFileSystemObserverWorker() override;
 
         void start() override;
         void stop() override;
 
-        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
-
+        virtual void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
         virtual void forceUpdate() override;
 
     protected:
         virtual void execute() override;
-        ExitCode exploreDir(const SyncPath &absoluteParentDirPath);
+
+        ExitInfo exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected = false);
 
         SyncPath _rootFolder;
         //    std::unique_ptr<ContentChecksumWorker> _checksumWorker = nullptr;
@@ -46,7 +45,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
 
     private:
         virtual ExitCode generateInitialSnapshot() override;
-        virtual ReplicaSide getSnapshotType() const override { return ReplicaSide::ReplicaSideLocal; }
+        virtual ReplicaSide getSnapshotType() const override { return ReplicaSide::Local; }
 
         bool canComputeChecksum(const SyncPath &absolutePath);
 
@@ -63,4 +62,4 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         friend class TestLocalFileSystemObserverWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

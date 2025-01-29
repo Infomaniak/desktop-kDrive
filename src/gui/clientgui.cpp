@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "parameterscache.h"
 #include "libcommongui/utility/utility.h"
 #include "libcommon/theme/theme.h"
+#include "gui/updater/updatedialog.h"
 
 #include <QClipboard>
 #include <QDesktopServices>
@@ -79,6 +80,8 @@ ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(_app, &AppClient::errorsCleared, this, &ClientGui::onErrorsCleared);
     connect(_app, &AppClient::folderSizeCompleted, this, &ClientGui::folderSizeCompleted);
     connect(_app, &AppClient::fixConflictingFilesCompleted, this, &ClientGui::onFixConflictingFilesCompleted);
+    connect(_app, &AppClient::updateStateChanged, this, &ClientGui::updateStateChanged);
+    connect(_app, &AppClient::showWindowsUpdateDialog, this, &ClientGui::onShowWindowsUpdateDialog, Qt::QueuedConnection);
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
     connect(this, &ClientGui::appVersionLocked, this, &ClientGui::onAppVersionLocked);
@@ -102,7 +105,7 @@ void ClientGui::init() {
             qCWarning(lcClientGui()) << "loadInfoMaps failed for trial=" << trial;
             error = true;
             if (trial < INIT_TRIALS) {
-                KDC::CommonGuiUtility::sleep(2 ^ trial);
+                KDC::CommonGuiUtility::sleep(static_cast<unsigned long>(std::pow(2, trial)));
             }
         }
     }
@@ -120,13 +123,13 @@ void ClientGui::init() {
 
     // Refresh errors
     refreshErrorList(0);
-    for (const auto &driveInfo : _driveInfoMap) {
+    for (const auto &driveInfo: _driveInfoMap) {
         refreshErrorList(driveInfo.first);
     }
 
     // Refresh status
     ExitCode exitCode = GuiRequests::askForStatus();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::askForStatus";
     }
 
@@ -138,7 +141,7 @@ bool ClientGui::isConnected() {
 }
 
 void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) {
-    if (exitCode == ExitCodeInvalidToken) {
+    if (exitCode == ExitCode::InvalidToken) {
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
             userIt->second.setCredentialsAsked(true);
@@ -179,8 +182,8 @@ void ClientGui::onFixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors) 
         if (syncInfoMapIt != _syncInfoMap.end()) {
             KDC::CustomMessageBox msgBox(QMessageBox::Warning,
                                          tr("Failed to fix conflict(s) on %1 item(s) in sync folder: %2")
-                                             .arg(nbErrors)
-                                             .arg(syncInfoMapIt->second.localPath()),
+                                                 .arg(nbErrors)
+                                                 .arg(syncInfoMapIt->second.localPath()),
                                          QMessageBox::Ok);
             msgBox.exec();
         }
@@ -217,7 +220,7 @@ void ClientGui::computeOverallSyncStatus() {
     bool allDisconnected = true;
     bool allPaused = true;
 
-    for (const auto &userInfoMapElt : _userInfoMap) {
+    for (const auto &userInfoMapElt: _userInfoMap) {
         if (userInfoMapElt.second.connected()) {
             allDisconnected = false;
             break;
@@ -230,7 +233,7 @@ void ClientGui::computeOverallSyncStatus() {
         return;
     }
 
-    for (const auto &syncInfoMapIt : _syncInfoMap) {
+    for (const auto &syncInfoMapIt: _syncInfoMap) {
         if (!syncInfoMapIt.second.paused()) {
             allPaused = false;
             break;
@@ -238,7 +241,7 @@ void ClientGui::computeOverallSyncStatus() {
     }
 
     if (allPaused) {
-        _tray->setIcon(Theme::instance()->syncStateIcon(KDC::SyncStatus::SyncStatusPaused, true, true));
+        _tray->setIcon(Theme::instance()->syncStateIcon(KDC::SyncStatus::Paused, true, true));
         _tray->setToolTip(tr("Synchronization is paused"));
         return;
     }
@@ -250,13 +253,13 @@ void ClientGui::computeOverallSyncStatus() {
 
     // If the sync succeeded but there are unresolved conflicts, show the problem icon!
     auto iconStatus = overallStatus;
-    if (iconStatus == SyncStatus::SyncStatusIdle && hasUnresolvedConflicts) {
-        iconStatus = SyncStatus::SyncStatusError;
+    if (iconStatus == SyncStatus::Idle && hasUnresolvedConflicts) {
+        iconStatus = SyncStatus::Error;
     }
 
     // If we don't get a status for whatever reason, that's a Problem
-    if (iconStatus == SyncStatus::SyncStatusUndefined) {
-        iconStatus = SyncStatus::SyncStatusError;
+    if (iconStatus == SyncStatus::Undefined) {
+        iconStatus = SyncStatus::Error;
     }
 
     // Set sytray icon
@@ -271,9 +274,9 @@ void ClientGui::computeOverallSyncStatus() {
         trayMessage = trayTooltipStatusString(overallStatus, hasUnresolvedConflicts, false);
 #else
         QStringList allStatusStrings;
-        for (const auto &syncInfoMapIt : _syncInfoMap) {
+        for (const auto &syncInfoMapIt: _syncInfoMap) {
             QString syncMessage = trayTooltipStatusString(
-                syncInfoMapIt.second.status(), syncInfoMapIt.second.unresolvedConflicts(), syncInfoMapIt.second.paused());
+                    syncInfoMapIt.second.status(), syncInfoMapIt.second.unresolvedConflicts(), syncInfoMapIt.second.paused());
 
             QString shortLocalPath = shortGuiLocalPath(syncInfoMapIt.second.localPath());
             allStatusStrings += tr("Folder %1: %2").arg(shortLocalPath, syncMessage);
@@ -303,7 +306,7 @@ void ClientGui::showSynthesisDialog() {
             _synthesisPopover->setPosition(trayIconRect);
             raiseDialog(_synthesisPopover.get());
         }
-        _synthesisPopover->onUpdateAvailabalityChange();
+        _synthesisPopover->refreshLockedStatus();
     }
 }
 
@@ -318,8 +321,7 @@ int ClientGui::driveErrorsCount(int driveDbId, bool unresolved) const {
 }
 
 const QString ClientGui::folderPath(int syncDbId, const QString &filePath) const {
-    QString fullFilePath = QString();
-
+    QString fullFilePath;
     const auto syncInfoIt = _syncInfoMap.find(syncDbId);
     if (syncInfoIt != _syncInfoMap.end()) {
         fullFilePath = syncInfoIt->second.localPath() + dirSeparator + filePath;
@@ -338,7 +340,7 @@ bool ClientGui::setCurrentUserDbId(int userDbId) {
 
     // Set 1st account linked to user as current
     _currentAccountDbId = 0;
-    for (const auto &accountInfoMapElt : _accountInfoMap) {
+    for (const auto &accountInfoMapElt: _accountInfoMap) {
         if (accountInfoMapElt.second.userDbId() == userDbId) {
             _currentAccountDbId = accountInfoMapElt.first;
             break;
@@ -348,7 +350,7 @@ bool ClientGui::setCurrentUserDbId(int userDbId) {
     if (_currentAccountDbId) {
         // Set 1st drive linked to account as current
         _currentDriveDbId = 0;
-        for (const auto &driveInfoMapElt : _driveInfoMap) {
+        for (const auto &driveInfoMapElt: _driveInfoMap) {
             if (driveInfoMapElt.second.accountDbId() == _currentAccountDbId) {
                 _currentAccountDbId = driveInfoMapElt.first;
                 break;
@@ -375,7 +377,7 @@ bool ClientGui::setCurrentAccountDbId(int accountDbId) {
 
     // Set 1st drive linked to account as current
     _currentDriveDbId = 0;
-    for (const auto &driveInfoMapElt : _driveInfoMap) {
+    for (const auto &driveInfoMapElt: _driveInfoMap) {
         if (driveInfoMapElt.second.accountDbId() == accountDbId) {
             _currentDriveDbId = driveInfoMapElt.first;
             break;
@@ -404,7 +406,7 @@ bool ClientGui::setCurrentDriveDbId(int driveDbId) {
 
 void ClientGui::loadSyncInfoMap(int driveDbId, std::map<int, SyncInfoClient> &syncInfoMap) {
     syncInfoMap.clear();
-    for (const auto &syncInfoMapElt : _syncInfoMap) {
+    for (const auto &syncInfoMapElt: _syncInfoMap) {
         if (syncInfoMapElt.second.driveDbId() == driveDbId) {
             syncInfoMap.insert({syncInfoMapElt.first, syncInfoMapElt.second});
         }
@@ -416,13 +418,14 @@ void ClientGui::setupSynthesisPopover() {
         return;
     }
 
-    _synthesisPopover.reset(new SynthesisPopover(shared_from_this(), _app->debugMode()));
+    _synthesisPopover.reset(new SynthesisPopover(shared_from_this(), _app->debugCrash()));
     connect(_synthesisPopover.get(), &SynthesisPopover::showParametersDialog, this, &ClientGui::onShowParametersDialog);
     connect(_synthesisPopover.get(), &SynthesisPopover::exit, _app, &AppClient::onQuit);
     connect(_synthesisPopover.get(), &SynthesisPopover::addDrive, this, &ClientGui::onNewDriveWizard);
     connect(_synthesisPopover.get(), &SynthesisPopover::disableNotifications, this, &ClientGui::onDisableNotifications);
     connect(_synthesisPopover.get(), &SynthesisPopover::applyStyle, this, &ClientGui::onApplyStyle);
     connect(_synthesisPopover.get(), &SynthesisPopover::crash, _app, &AppClient::onCrash);
+    connect(_synthesisPopover.get(), &SynthesisPopover::crashServer, _app, &AppClient::onCrashServer);
     connect(_synthesisPopover.get(), &SynthesisPopover::crashEnforce, _app, &AppClient::onCrashEnforce);
     connect(_synthesisPopover.get(), &SynthesisPopover::crashFatal, _app, &AppClient::onCrashFatal);
     connect(_synthesisPopover.get(), &SynthesisPopover::executeSyncAction, this, &ClientGui::onExecuteSyncAction);
@@ -508,6 +511,7 @@ void ClientGui::updateSystrayNeeded() {
 }
 
 void ClientGui::resetSystray(bool currentVersionLocked) {
+    (void) currentVersionLocked;
     _tray.reset(new Systray());
     _tray->setParent(this);
 
@@ -520,10 +524,10 @@ void ClientGui::resetSystray(bool currentVersionLocked) {
 #ifdef Q_OS_LINUX
         if (osRequireMenuTray()) {
             _actionSynthesis =
-                _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
+                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
             if (!currentVersionLocked) {
                 _actionPreferences =
-                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
+                        _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
             }
             _tray->contextMenu()->addSeparator();
             _actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
@@ -565,7 +569,7 @@ QString ClientGui::shortGuiLocalPath(const QString &path) {
 }
 
 void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedConflicts) {
-    status = SyncStatusUndefined;
+    status = SyncStatus::Undefined;
     unresolvedConflicts = false;
 
     // if one folder: show the state of the one folder.
@@ -576,11 +580,11 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
     if (cnt == 1) {
         const auto &syncInfoMapIt = _syncInfoMap.begin();
         if (syncInfoMapIt->second.paused()) {
-            status = SyncStatusPaused;
+            status = SyncStatus::Paused;
         } else {
             status = syncInfoMapIt->second.status();
-            if (status == SyncStatusUndefined) {
-                status = SyncStatusError;
+            if (status == SyncStatus::Undefined) {
+                status = SyncStatus::Error;
             }
         }
         unresolvedConflicts = syncInfoMapIt->second.unresolvedConflicts();
@@ -589,31 +593,28 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
         unsigned int idleSeen = 0;
         unsigned int abortOrPausedSeen = 0;
         unsigned int runSeen = 0;
-        unsigned int various = 0;  // TODO: not used ?
 
-
-        for (const auto &syncInfoMapIt : _syncInfoMap) {
+        for (const auto &syncInfoMapIt: _syncInfoMap) {
             if (syncInfoMapIt.second.paused()) {
                 abortOrPausedSeen++;
             } else {
                 switch (syncInfoMapIt.second.status()) {
-                    case SyncStatusUndefined:
-                    case SyncStatusStarting:
-                        various++;
+                    case SyncStatus::Undefined:
+                    case SyncStatus::Starting:
                         break;
-                    case SyncStatusRunning:
+                    case SyncStatus::Running:
                         runSeen++;
                         break;
-                    case SyncStatusIdle:
+                    case SyncStatus::Idle:
                         idleSeen++;
                         break;
-                    case SyncStatusError:
+                    case SyncStatus::Error:
                         errorsSeen++;
                         break;
-                    case SyncStatusPauseAsked:
-                    case SyncStatusPaused:
-                    case SyncStatusStopAsked:
-                    case SyncStatusStoped:
+                    case SyncStatus::PauseAsked:
+                    case SyncStatus::Paused:
+                    case SyncStatus::StopAsked:
+                    case SyncStatus::Stopped:
                         abortOrPausedSeen++;
                 }
             }
@@ -622,48 +623,48 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
             }
         }
         if (errorsSeen > 0) {
-            status = SyncStatusError;
+            status = SyncStatus::Error;
         } else if (abortOrPausedSeen > 0 && abortOrPausedSeen == cnt) {
             // only if all folders are paused
-            status = SyncStatusPaused;
+            status = SyncStatus::Paused;
         } else if (runSeen > 0) {
-            status = SyncStatusRunning;
+            status = SyncStatus::Running;
         } else if (idleSeen > 0) {
-            status = SyncStatusIdle;
+            status = SyncStatus::Idle;
         }
     }
     if (_generalErrorsCounter) {
-        status = SyncStatusError;
+        status = SyncStatus::Error;
     }
 }
 
 QString ClientGui::trayTooltipStatusString(SyncStatus status, bool unresolvedConflicts, bool paused) {
     QString statusString;
     switch (status) {
-        case SyncStatusUndefined:
+        case SyncStatus::Undefined:
             statusString = tr("Undefined State.");
             break;
-        case SyncStatusStarting:
+        case SyncStatus::Starting:
             statusString = tr("Waiting to start syncing.");
             break;
-        case SyncStatusRunning:
+        case SyncStatus::Running:
             statusString = tr("Sync is running.");
             break;
-        case SyncStatusIdle:
+        case SyncStatus::Idle:
             if (unresolvedConflicts) {
                 statusString = tr("Sync was successful, unresolved conflicts.");
             } else {
                 statusString = tr("Last Sync was successful.");
             }
             break;
-        case SyncStatusError:
+        case SyncStatus::Error:
             break;
-        case SyncStatusStopAsked:
-        case SyncStatusStoped:
+        case SyncStatus::StopAsked:
+        case SyncStatus::Stopped:
             statusString = tr("User Abort.");
             break;
-        case SyncStatusPauseAsked:
-        case SyncStatusPaused:
+        case SyncStatus::PauseAsked:
+        case SyncStatus::Paused:
             statusString = tr("Sync is paused.");
             break;
             // no default case on purpose, check compiler warnings
@@ -685,30 +686,30 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
     auto currentStatus = syncInfoMapIt->second.status();
     ExitCode exitCode;
     switch (type) {
-        case ActionTypeStop:
-            if (currentStatus == SyncStatusUndefined || currentStatus == SyncStatusPauseAsked ||
-                currentStatus == SyncStatusPaused || currentStatus == SyncStatusStopAsked || currentStatus == SyncStatusStoped ||
-                currentStatus == SyncStatusError) {
+        case ActionType::Stop:
+            if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::PauseAsked ||
+                currentStatus == SyncStatus::Paused || currentStatus == SyncStatus::StopAsked ||
+                currentStatus == SyncStatus::Stopped || currentStatus == SyncStatus::Error) {
                 return;
             }
             exitCode = GuiRequests::syncStop(syncDbId);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : " << exitCode;
+            if (exitCode != ExitCode::Ok) {
+                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " code=" << exitCode;
                 return;
             }
-            syncInfoMapIt->second.setStatus(SyncStatusPauseAsked);
+            syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
             break;
-        case ActionTypeStart:
-            if (currentStatus == SyncStatusUndefined || currentStatus == SyncStatusIdle || currentStatus == SyncStatusRunning ||
-                currentStatus == SyncStatusStarting) {
+        case ActionType::Start:
+            if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::Idle ||
+                currentStatus == SyncStatus::Running || currentStatus == SyncStatus::Starting) {
                 return;
             }
             exitCode = GuiRequests::syncStart(syncDbId);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : " << exitCode;
+            if (exitCode != ExitCode::Ok) {
+                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " code=" << exitCode;
                 return;
             }
-            syncInfoMapIt->second.setStatus(SyncStatusStarting);
+            syncInfoMapIt->second.setStatus(SyncStatus::Starting);
             break;
     }
 
@@ -730,7 +731,7 @@ void ClientGui::onShowTrayMessage(const QString &title, const QString &msg) {
 }
 
 void ClientGui::onShowOptionalTrayMessage(const QString &title, const QString &msg) {
-    if (ParametersCache::instance()->parametersInfo().notificationsDisabled() != NotificationsDisabledNever) {
+    if (ParametersCache::instance()->parametersInfo().notificationsDisabled() != NotificationsDisabled::Never) {
         if (_notificationEnableDate != QDateTime() && _notificationEnableDate > QDateTime::currentDateTime()) {
             return;
         }
@@ -754,13 +755,25 @@ void ClientGui::onNewDriveWizard() {
     raiseDialog(_addDriveWizard.get());
 }
 
+
+void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const {
+    static std::mutex mutex;
+    const std::unique_lock lock(mutex, std::try_to_lock);
+    if (!lock.owns_lock()) return;
+    if (UpdateDialog dialog(versionInfo); dialog.exec() == QDialog::Accepted) {
+        GuiRequests::startInstaller();
+    } else if (dialog.skip()) {
+        GuiRequests::skipUpdate(versionInfo.fullVersion());
+    }
+}
+
 void ClientGui::onDisableNotifications(NotificationsDisabled type, QDateTime value) {
     ParametersCache::instance()->parametersInfo().setNotificationsDisabled(type);
     ParametersCache::instance()->saveParametersInfo();
 
-    if (type == NotificationsDisabledNever) {
+    if (type == NotificationsDisabled::Never) {
         _notificationEnableDate = QDateTime();
-    } else if (type == NotificationsDisabledAlways) {
+    } else if (type == NotificationsDisabled::Always) {
         _notificationEnableDate = QDateTime();
     } else {
         _notificationEnableDate = value;
@@ -798,7 +811,7 @@ void ClientGui::onAddDriveAccepted() {
             onShowParametersDialog(_addDriveWizard->syncDbId());
             break;
         case KDC::GuiUtility::WizardAction::AddDrive:
-            QTimer::singleShot(100, [=]() { onNewDriveWizard(); });
+            QTimer::singleShot(100, [this]() { onNewDriveWizard(); });
             break;
     }
 }
@@ -815,7 +828,7 @@ void ClientGui::onAddDriveFinished() {
 void ClientGui::onCopyLinkItem(int driveDbId, const QString &nodeId) {
     QString linkUrl;
     ExitCode exitCode = GuiRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPublicLinkUrl";
         return;
     }
@@ -829,7 +842,7 @@ void ClientGui::onCopyLinkItem(int driveDbId, const QString &nodeId) {
 void ClientGui::onOpenWebviewItem(int driveDbId, const QString &nodeId) {
     QString linkUrl;
     ExitCode exitCode = GuiRequests::getPrivateLinkUrl(driveDbId, nodeId, linkUrl);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPrivateLinkUrl";
         return;
     }
@@ -839,7 +852,7 @@ void ClientGui::onOpenWebviewItem(int driveDbId, const QString &nodeId) {
 
 void ClientGui::getWebviewDriveLink(int driveDbId, QString &driveLink) {
     ExitCode exitCode = GuiRequests::getPrivateLinkUrl(driveDbId, "", driveLink);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPrivateLinkUrl";
         return;
     }
@@ -853,7 +866,7 @@ void ClientGui::errorInfoList(int driveDbId, QList<ErrorInfo> &errorInfoList) {
 
 void ClientGui::resolveConflictErrors(int driveDbId, bool keepLocalVersion) {
     ExitCode exitCode = GuiRequests::resolveConflictErrors(driveDbId, keepLocalVersion);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::resolveConflictErrors";
         return;
     }
@@ -861,7 +874,7 @@ void ClientGui::resolveConflictErrors(int driveDbId, bool keepLocalVersion) {
 
 void ClientGui::resolveUnsupportedCharErrors(int driveDbId) {
     ExitCode exitCode = GuiRequests::resolveUnsupportedCharErrors(driveDbId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::resolveUnsupportedCharErrors";
         return;
     }
@@ -883,7 +896,7 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
 
 ExitCode ClientGui::loadError(int driveDbId, int syncDbId, ErrorLevel level) {
     const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
     }
 
@@ -900,14 +913,14 @@ void ClientGui::onRefreshErrorList() {
     // Server level errors.
     if (_driveWithNewErrorSet.contains(0)) {
         _errorInfoMap[0].clear();
-        if (ExitCodeOk != ClientGui::loadError(0, 0, ErrorLevelServer)) {
+        if (ExitCode::Ok != ClientGui::loadError(0, 0, ErrorLevel::Server)) {
             return;
         }
 
-        _generalErrorsCounter = (int)_errorInfoMap[0].count();
+        _generalErrorsCounter = (int) _errorInfoMap[0].count();
         emit errorAdded(0);
-        for (const auto &errorInfo : _errorInfoMap[0]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCodeUpdateRequired;
+        for (const auto &errorInfo: _errorInfoMap[0]) {
+            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
         }
 
         _driveWithNewErrorSet.remove(0);
@@ -924,17 +937,17 @@ void ClientGui::onRefreshErrorList() {
             return;
         }
 
-        for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
+        for (const auto &[syncDbId, syncInfo]: _syncInfoMap) {
             if (syncInfo.driveDbId() != driveDbId) continue;
-            for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
-                if (ExitCodeOk != loadError(driveDbId, syncDbId, level)) return;
+            for (auto level: std::vector<ErrorLevel>{ErrorLevel::SyncPal, ErrorLevel::Node}) {
+                if (ExitCode::Ok != loadError(driveDbId, syncDbId, level)) return;
             }
         }
 
         int unresolvedErrorsCount = 0;
         int autoresolvedErrorsCount = 0;
-        for (const auto &errorInfo : _errorInfoMap[driveDbId]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCodeUpdateRequired;
+        for (const auto &errorInfo: _errorInfoMap[driveDbId]) {
+            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
 
             if (errorInfo.autoResolved()) {
                 ++autoresolvedErrorsCount;
@@ -959,7 +972,7 @@ void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
     dialogs.push_back(_addDriveWizard.get());
     dialogs.push_back(_loginDialog.get());
 
-    for (auto &dialog : dialogs) {
+    for (auto &dialog: dialogs) {
         if (dialog && exceptWidget != dialog) {
             dialog->hide();
         }
@@ -969,6 +982,8 @@ void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
 void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
 #ifdef Q_OS_LINUX
     resetSystray(currentVersionLocked);
+#else
+    (void) currentVersionLocked;
 #endif
 }
 
@@ -985,7 +1000,7 @@ void ClientGui::onUserAdded(const UserInfo &userInfo) {
 
 void ClientGui::onRemoveUser(int userDbId) {
     ExitCode exitCode = GuiRequests::deleteUser(userDbId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteUser for userDbId=" << userDbId;
         return;
     }
@@ -1001,6 +1016,7 @@ void ClientGui::onUserUpdated(const UserInfo &userInfo) {
         if (userInfo.connected()) {
             userInfoMapIt->second.setCredentialsAsked(false);
         }
+        userInfoMapIt->second.setIsStaff(userInfo.isStaff());
         emit userListRefreshed();
     }
 }
@@ -1190,17 +1206,17 @@ void ClientGui::onRemoveDrive(int driveDbId) {
     CustomMessageBox msgBox(QMessageBox::Question,
                             tr("Do you really want to remove the synchronizations of the account <i>%1</i> ?<br>"
                                "<b>Note:</b> This will <b>not</b> delete any files.")
-                                .arg(driveInfoMapIt->second.name()),
+                                    .arg(driveInfoMapIt->second.name()),
                             QMessageBox::NoButton);
     msgBox.addButton(tr("REMOVE ALL SYNCHRONIZATIONS"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
 
     if (msgBox.exec() == QMessageBox::Yes) {
-        emit driveBeingRemoved();  // Lock drive-related GUI actions.
+        emit driveBeingRemoved(); // Lock drive-related GUI actions.
         try {
             ExitCode exitCode = GuiRequests::deleteDrive(driveDbId);
-            if (exitCode != ExitCodeOk) {
+            if (exitCode != ExitCode::Ok) {
                 qCWarning(lcClientGui()) << "Error in Requests::deleteDrive for driveDbId=" << driveDbId;
                 onDriveDeletionFailed(driveDbId);
             }
@@ -1275,7 +1291,7 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
 
 void ClientGui::onRemoveSync(int syncDbId) {
     const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteSync for syncDbId=" << syncDbId;
     }
 }
@@ -1320,23 +1336,23 @@ void ClientGui::onProgressInfo(int syncDbId, SyncStatus status, SyncStep step, i
 
         emit refreshStatusNeeded();
         emit updateProgress(syncDbId);
-        if (status == SyncStatusIdle || status == SyncStatusPaused || status == SyncStatusStoped) {
+        if (status == SyncStatus::Idle || status == SyncStatus::Paused || status == SyncStatus::Stopped) {
             emit syncFinished(syncDbId);
         }
     }
 }
 
 void ClientGui::onExecuteSyncAction(ActionType type, ActionTarget target, int dbId) {
-    if (target == ActionTargetSync) {
+    if (target == ActionTarget::Sync) {
         executeSyncAction(type, dbId);
-    } else if (target == ActionTargetDrive) {
-        for (const auto &syncInfoMapElt : _syncInfoMap) {
+    } else if (target == ActionTarget::Drive) {
+        for (const auto &syncInfoMapElt: _syncInfoMap) {
             if (syncInfoMapElt.second.driveDbId() == dbId) {
                 executeSyncAction(type, syncInfoMapElt.first);
             }
         }
     } else {
-        for (const auto &syncInfoMapElt : _syncInfoMap) {
+        for (const auto &syncInfoMapElt: _syncInfoMap) {
             executeSyncAction(type, syncInfoMapElt.first);
         }
     }
@@ -1357,7 +1373,7 @@ void ClientGui::retranslateUi() {
 
 void ClientGui::activateLoadInfo(bool value) {
     ExitCode exitCode = GuiRequests::activateLoadInfo(value);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::activateLoadInfo";
         return;
     }
@@ -1413,10 +1429,10 @@ void ClientGui::raiseDialog(QWidget *raiseWidget) {
         // Open the widget on the current desktop
         WId windowObject = raiseWidget->winId();
         objc_object *nsviewObject = reinterpret_cast<objc_object *>(windowObject);
-        objc_object *nsWindowObject = ((id(*)(id, SEL))objc_msgSend)(nsviewObject, sel_registerName("window"));
+        objc_object *nsWindowObject = ((id(*)(id, SEL)) objc_msgSend)(nsviewObject, sel_registerName("window"));
         int NSWindowCollectionBehaviorCanJoinAllSpaces = 1 << 0;
-        ((id(*)(id, SEL, int))objc_msgSend)(nsWindowObject, sel_registerName("setCollectionBehavior:"),
-                                            NSWindowCollectionBehaviorCanJoinAllSpaces);
+        ((id(*)(id, SEL, int)) objc_msgSend)(nsWindowObject, sel_registerName("setCollectionBehavior:"),
+                                             NSWindowCollectionBehaviorCanJoinAllSpaces);
 #endif
 
         // Qt has a bug which causes parent-less dialogs to pop-under.
@@ -1441,7 +1457,7 @@ void ClientGui::raiseDialog(QWidget *raiseWidget) {
         e.xclient.data.l[4] = 0l;
         Display *display = QX11Info::display();
         XSendEvent(display, RootWindow(display, DefaultScreen(display)),
-                   False,  // propagate
+                   False, // propagate
                    SubstructureRedirectMask | SubstructureNotifyMask, &e);
 #endif
     }
@@ -1457,36 +1473,36 @@ bool ClientGui::loadInfoMaps() {
     ExitCode exitCode;
     QList<UserInfo> userInfoList;
     exitCode = GuiRequests::getUserInfoList(userInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getUserInfoList";
         return false;
     }
 
-    for (const UserInfo &userInfo : userInfoList) {
+    for (const UserInfo &userInfo: userInfoList) {
         _userInfoMap.insert({userInfo.dbId(), UserInfoClient(userInfo)});
     }
 
     // Load account list
     QList<AccountInfo> accountInfoList;
     exitCode = GuiRequests::getAccountInfoList(accountInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getAccountInfoList";
         return false;
     }
 
-    for (const AccountInfo &accountInfo : accountInfoList) {
+    for (const AccountInfo &accountInfo: accountInfoList) {
         _accountInfoMap.insert({accountInfo.dbId(), accountInfo});
     }
 
     // Load drive list
     QList<DriveInfo> driveInfoList;
     exitCode = GuiRequests::getDriveInfoList(driveInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getDriveInfoList";
         return false;
     }
 
-    for (const DriveInfo &driveInfo : driveInfoList) {
+    for (const DriveInfo &driveInfo: driveInfoList) {
         _driveInfoMap.insert({driveInfo.dbId(), DriveInfoClient(driveInfo)});
         if (!_currentDriveDbId) {
             setCurrentDriveDbId(driveInfo.dbId());
@@ -1496,12 +1512,12 @@ bool ClientGui::loadInfoMaps() {
     // Load sync list
     QList<SyncInfo> syncInfoList;
     exitCode = GuiRequests::getSyncInfoList(syncInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getSyncInfoList";
         return false;
     }
 
-    for (const SyncInfo &syncInfo : syncInfoList) {
+    for (const SyncInfo &syncInfo: syncInfoList) {
         _syncInfoMap.insert({syncInfo.dbId(), SyncInfoClient(syncInfo)});
     }
 
@@ -1537,7 +1553,7 @@ void ClientGui::openLoginDialog(int userDbId, bool invalidTokenError) {
 
         qCDebug(lcClientGui()) << "startSyncs for userDbId=" << userDbId;
         ExitCode exitCode = GuiRequests::startSyncs(userDbId);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcClientGui()) << "Error in GuiRequests::startSyncs for userDbId=" << userDbId;
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to start synchronizations!"), QMessageBox::Ok);
             msgBox.exec();
@@ -1554,4 +1570,4 @@ void ClientGui::restoreGeometry(QWidget *w) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

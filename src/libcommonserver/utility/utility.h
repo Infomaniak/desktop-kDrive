@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,12 +39,18 @@
 #include <Accctrl.h>
 #endif
 
+class QString;
+
 namespace Poco {
 class URI;
 }
 
-namespace KDC {
+/* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
+ *  static std::string errId(std::source_location location = std::source_location::current());
+ */
+#define errId() Utility::_errId(__FILE__, __LINE__)
 
+namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
         inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
 
@@ -56,7 +62,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
         static bool setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
-        static bool isCreationDateValid(uint64_t creationDate);
+        static bool isCreationDateValid(int64_t creationDate);
 
         static std::wstring s2ws(const std::string &str);
         static std::string ws2s(const std::wstring &wstr);
@@ -68,8 +74,14 @@ struct COMMONSERVER_EXPORT Utility {
 
         static std::wstring formatStdError(const std::error_code &ec);
         static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
+        static std::wstring formatIoError(IoError ioError);
         static std::wstring formatIoError(const SyncPath &path, IoError ioError);
+        static std::wstring formatIoError(const QString &path, IoError ioError);
+        static std::wstring formatErrno(const SyncPath &path, long cError);
+        static std::wstring formatErrno(const QString &path, long cError);
+        static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
+        static std::wstring formatPath(const QString &path);
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
@@ -78,9 +90,9 @@ struct COMMONSERVER_EXPORT Utility {
                                           std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
 #ifdef _WIN32
-        static bool isNtfs(const SyncPath &dirPath);
+        static bool isNtfs(const SyncPath &targetPath);
 #endif
-        static std::string fileSystemName(const SyncPath &dirPath);
+        static std::string fileSystemName(const SyncPath &targetPath);
         static bool startsWith(const std::string &str, const std::string &prefix);
         static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
         static bool endsWith(const std::string &str, const std::string &suffix);
@@ -93,32 +105,39 @@ struct COMMONSERVER_EXPORT Utility {
         static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
         static bool isEqualInsensitive(const SyncName &a, const SyncName &b);
 #endif
+        static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
+        /**
+         * Normalize the SyncName parameters before comparing them.
+         * @param a SyncName value to be compared.
+         * @param b Other SyncName value to be compared.
+         * @param isEqual true if the normalized strings are equal.
+         * @return true if no normalization issue.
+         */
+        static bool checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame);
+        /**
+         * Normalize the SyncPath parameters before comparing them.
+         * @param a SyncPath value to be compared.
+         * @param b Other SyncPath value to be compared.
+         * @param isEqual true if the normalized strings are equal.
+         * @return true if no normalization issue.
+         */
+        static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
+
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
         static bool preventSleeping(bool enable);
 #endif
+        static void restartFinderExtension();
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
         static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);
         static void strhex2str(const std::string &hexstr, std::string &str);
         static std::vector<std::string> splitStr(const std::string &str, char sep);
         static std::string joinStr(const std::vector<std::string> &strList, char sep = 0);
-        static std::string opType2Str(OperationType opType);
-        static std::wstring opType2WStr(OperationType opType);
-        static std::string conflictType2Str(ConflictType conflictType);
-        static std::wstring conflictType2WStr(ConflictType conflictType);
-        static std::string side2Str(ReplicaSide side);
-        static std::wstring side2WStr(ReplicaSide side);
-        static std::string nodeType2Str(NodeType type);
-        static std::wstring nodeType2WStr(NodeType type);
-        static std::string logLevel2Str(LogLevel level);
-        static std::wstring logLevel2WStr(LogLevel level);
-        static std::string syncFileStatus2Str(SyncFileStatus status);
-        static std::wstring syncFileStatus2WStr(SyncFileStatus status);
         static std::string list2str(std::unordered_set<std::string> inList);
         static std::string list2str(std::list<std::string> inList);
 
-        static int pathDepth(const SyncPath path);
+        inline static int pathDepth(const SyncPath &path) { return (int) std::distance(path.begin(), path.end()); };
         static std::string computeMd5Hash(const std::string &in);
         static std::string computeMd5Hash(const char *in, std::size_t length);
         static std::string computeXxHash(const std::string &in);
@@ -134,18 +153,25 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncName logFileName();
         static SyncName logFileNameWithTime();
         static std::string toUpper(const std::string &str);
-        static std::string errId(const char *file, int line);
+
+        /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
+         *  static std::string errId(std::source_location location = std::source_location::current());
+         */
+        static std::string _errId(const char *file, int line);
+
 
         enum class UnicodeNormalization { NFC, NFD };
-        static SyncName normalizedSyncName(const SyncName &name, UnicodeNormalization normalization = UnicodeNormalization::NFC);
+        static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                       UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
+        static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept;
 
-        static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;
 #ifdef _WIN32
-        static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
+        static bool runDetachedProcess(std::wstring cmd);
 #endif
-        static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
-                                             IoError &ioError);
+        static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError);
+        static bool checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
+                                             bool &isLink, IoError &ioError);
 
         /* Resources analyser */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);
@@ -158,6 +184,7 @@ struct COMMONSERVER_EXPORT Utility {
 
         static SyncPath commonDocumentsFolderName();
         static SyncPath sharedFolderName();
+        static std::string userName();
 
     private:
         static log4cplus::Logger _logger;
@@ -165,4 +192,20 @@ struct COMMONSERVER_EXPORT Utility {
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 };
 
-}  // namespace KDC
+struct TimeCounter {
+        explicit TimeCounter(const std::string &name) : _name(name) {}
+        void start() { _start = clock(); }
+        void end() {
+            _end = clock();
+            _total += (double) (_end - _start) / CLOCKS_PER_SEC;
+        }
+        void trace() { LOG_DEBUG(Log::instance()->getLogger(), "Time counter " << _name.c_str() << " value:" << _total); }
+
+    private:
+        std::string _name;
+        clock_t _start = 0;
+        clock_t _end = 0;
+        double _total = 0;
+};
+
+} // namespace KDC

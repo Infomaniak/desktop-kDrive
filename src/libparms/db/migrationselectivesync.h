@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #pragma once
 
 #include "libparms/parmslib.h"
+#include "libcommon/utility/types.h"
 
 #include <string>
 #include <filesystem>
@@ -28,19 +29,19 @@ namespace KDC {
 class MigrationSelectiveSync {
     public:
         MigrationSelectiveSync();
-        MigrationSelectiveSync(int syncDbId, const std::filesystem::path &path, int type);
+        MigrationSelectiveSync(int syncDbId, const std::filesystem::path &path, SyncNodeType type);
 
         void setSyncDbId(int syncDbId) { _syncDbId = syncDbId; }
         const int &syncDbId() const { return _syncDbId; }
         void setPath(const std::filesystem::path &path) { _path = path; }
         const std::filesystem::path &path() const { return _path; }
-        inline void setType(int type) { _type = type; }
-        inline int type() const { return _type; }
+        inline void setType(SyncNodeType type) { _type = type; }
+        inline SyncNodeType type() const { return _type; }
 
     private:
         int _syncDbId;
         std::filesystem::path _path;
-        int _type;
+        SyncNodeType _type;
 };
 
-}  // namespace KDC
+} // namespace KDC

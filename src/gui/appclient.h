@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 #include "qtsingleapplication.h"
 #include "clientgui.h"
 #include "libcommongui/commclient.h"
-#include "updater/updaterclient.h"
 #include "config.h"
 
 #include <QApplication>
@@ -48,7 +47,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         explicit AppClient(int &argc, char **argv);
         ~AppClient();
 
-        bool debugMode();
+        bool debugCrash() const;
 
         void showParametersDialog();
         void showSynthesisDialog();
@@ -89,10 +88,14 @@ class AppClient : public SharedTools::QtSingleApplication {
         void errorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         void errorsCleared(int syncDbId);
         void logUploadStatusUpdated(LogUploadState status, int percent);
+        // Updater
+        void updateStateChanged(UpdateState state);
+        void showWindowsUpdateDialog(const VersionInfo &versionInfo);
 
     public slots:
         void onWizardDone(int);
         void onCrash();
+        void onCrashServer();
         void onCrashEnforce();
         void onCrashFatal();
 
@@ -107,8 +110,10 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool parseOptions(const QStringList &);
         void setupLogging();
 
-        void startServerAndDie(bool serverCrashDetected);
+        bool serverHasCrashed();
+        void startServerAndDie();
         bool connectToServer();
+        void updateSentryUser() const;
 
         std::shared_ptr<ClientGui> _gui = nullptr;
 
@@ -123,15 +128,14 @@ class AppClient : public SharedTools::QtSingleApplication {
         std::chrono::hours _logExpire = std::chrono::hours(0);
         bool _logFlush = false;
         bool _logDebug = false;
-        bool _debugMode = false;
-        QScopedPointer<UpdaterClient> _updaterClient;
+        bool _debugCrash = false;
         bool _quitInProcess = false;
 
     private slots:
         void onUseMonoIconsChanged(bool);
         void onCleanup();
-        void onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params);
+        void onSignalReceived(int id, SignalNum SignalNum, const QByteArray &params);
         void onLogTooBig();
 };
 
-}  // namespace KDC
+} // namespace KDC

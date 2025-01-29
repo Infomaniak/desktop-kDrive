@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,11 +27,13 @@ namespace KDC {
 
 class UserInfo {
     public:
-        UserInfo(int userDbId, const QString &name, const QString &email, const QImage &avatar, bool connected);
+        UserInfo(int userDbId, int userId, const QString &name, const QString &email, const QImage &avatar, bool connected);
         UserInfo();
 
         inline void setDbId(int dbId) { _dbId = dbId; }
         inline int dbId() const { return _dbId; }
+        inline void setUserId(int userId) { _userId = userId; }
+        inline int userId() const { return _userId; }
         inline void setName(const QString &name) { _name = name; }
         inline const QString &name() const { return _name; }
         inline void setEmail(const QString &email) { _email = email; }
@@ -42,6 +44,8 @@ class UserInfo {
         inline bool connected() const { return _connected; }
         inline bool credentialsAsked() const { return _credentialsAsked; }
         inline void setCredentialsAsked(bool newCredentialsAsked) { _credentialsAsked = newCredentialsAsked; }
+        [[nodiscard]] bool isStaff() const { return _isStaff; }
+        void setIsStaff(const bool is_staff) { _isStaff = is_staff; }
 
         friend QDataStream &operator>>(QDataStream &in, UserInfo &userInfo);
         friend QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo);
@@ -50,12 +54,16 @@ class UserInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<UserInfo> &list);
 
     private:
-        int _dbId;
+        int _dbId{-1};
+        int _userId{-1};
         QString _name;
         QString _email;
         QImage _avatar;
-        bool _connected;
-        bool _credentialsAsked = false;
+        bool _connected{false};
+
+        // Non DB attributes
+        bool _credentialsAsked{false};
+        bool _isStaff{false};
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,59 +39,63 @@ class Snapshot : public SharedObject {
 
         void init();
 
-        bool updateItem(const SnapshotItem &item);
-        bool removeItem(const NodeId &id);
+        bool updateItem(const SnapshotItem &newItem);
+        bool removeItem(const NodeId id); // Do not pass by reference to avoid dangling references
 
-        NodeId itemId(const SyncPath &path);
-        NodeId parentId(const NodeId &itemId);
+        NodeId itemId(const SyncPath &path) const;
+        NodeId parentId(const NodeId &itemId) const;
         bool setParentId(const NodeId &itemId, const NodeId &newParentId);
-        bool path(const NodeId &itemId, SyncPath &path) const noexcept;
-        SyncName name(const NodeId &itemId);
+        bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept;
+        SyncName name(const NodeId &itemId) const;
         bool setName(const NodeId &itemId, const SyncName &newName);
-        SyncTime createdAt(const NodeId &itemId);
+        SyncTime createdAt(const NodeId &itemId) const;
         bool setCreatedAt(const NodeId &itemId, SyncTime newTime);
-        SyncTime lastModified(const NodeId &itemId);
+        SyncTime lastModified(const NodeId &itemId) const;
         bool setLastModified(const NodeId &itemId, SyncTime newTime);
-        NodeType type(const NodeId &itemId);
-        int64_t size(const NodeId &itemId);
-        std::string contentChecksum(const NodeId &itemId);
+        NodeType type(const NodeId &itemId) const;
+        int64_t size(const NodeId &itemId) const;
+        std::string contentChecksum(const NodeId &itemId) const;
         bool setContentChecksum(const NodeId &itemId, const std::string &newChecksum);
-        bool canWrite(const NodeId &itemId);
-        bool canShare(const NodeId &itemId);
+        bool canWrite(const NodeId &itemId) const;
+        bool canShare(const NodeId &itemId) const;
         bool clearContentChecksum(const NodeId &itemId);
-        bool exists(const NodeId &itemId);
-        bool pathExists(const SyncPath &path);
-        bool isLink(const NodeId &itemId);
+        bool exists(const NodeId &itemId) const;
+        bool pathExists(const SyncPath &path) const;
+        bool isLink(const NodeId &itemId) const;
 
-        bool getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds);
+        bool getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) const;
 
-        void ids(std::unordered_set<NodeId> &ids);
+        void ids(std::unordered_set<NodeId> &ids) const;
         /** Checks if ancestorItem is an ancestor of item.
          * @return true indicates that ancestorItem is an ancestor of item
          */
-        bool isAncestor(const NodeId &itemId, const NodeId &ancestorItemId);
-        bool isOrphan(const NodeId &itemId);
+        bool isAncestor(const NodeId &itemId, const NodeId &ancestorItemId) const;
+        bool isOrphan(const NodeId &itemId) const;
 
         [[nodiscard]] inline ReplicaSide side() const { return _side; }
 
         [[nodiscard]] inline NodeId rootFolderId() const { return _rootFolderId; }
         inline void setRootFolderId(const NodeId &nodeId) { _rootFolderId = nodeId; }
 
-        bool isEmpty();
-        uint64_t nbItems();
+        bool isEmpty() const;
+        uint64_t nbItems() const;
 
-        bool isValid();
+        bool isValid() const;
         void setValid(bool newIsValid);
+
+        bool checkIntegrityRecursively() const;
 
     private:
         void removeChildrenRecursively(const NodeId &parentId);
+        bool checkIntegrityRecursively(const NodeId &parentId) const;
 
-        ReplicaSide _side = ReplicaSideUnknown;
+        ReplicaSide _side = ReplicaSide::Unknown;
         NodeId _rootFolderId;
-        std::unordered_map<NodeId, SnapshotItem> _items;  // key: id
+        std::unordered_map<NodeId, SnapshotItem> _items; // key: id
         bool _isValid = false;
-        mutable std::recursive_mutex _mutex;
+        bool _copy = false; // false for a real time snapshot, true for a copy
 
+        mutable std::recursive_mutex _mutex;
 };
 
-}  // namespace KDC
+} // namespace KDC

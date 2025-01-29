@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,12 @@
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/network/abstractnetworkjob.h"
 #include "log/log.h"
-#include "jobs/network/upload_session/abstractuploadsession.h"
+#include "jobs/network/API_v2/upload_session/abstractuploadsession.h"
 #include "libcommonserver/utility/utility.h"
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
 
-#include <thread>
-#include <algorithm>  // std::max
+#include <algorithm> // std::max
 
 #include <log4cplus/loggingmacros.h>
 
@@ -49,7 +48,7 @@ std::chrono::time_point<std::chrono::steady_clock> JobManager::_maxNbThreadChron
 std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> JobManager::_managedJobs;
 std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
                     std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
-    JobManager::_queuedJobs;
+        JobManager::_queuedJobs;
 std::unordered_set<UniqueId> JobManager::_runningJobs;
 std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>> JobManager::_pendingJobs;
 std::recursive_mutex JobManager::_mutex;
@@ -116,14 +115,12 @@ void JobManager::decreasePoolCapacity() {
     if (JobManager::instance()->maxNbThreads() > threadPoolMinCapacity) {
         // Decrease pool capacity
         // TODO: Store the pool capacity in DB?
-        _maxNbThread -= std::ceil((JobManager::instance()->maxNbThreads() - threadPoolMinCapacity) / 2.0);
+        _maxNbThread -= static_cast<int>(std::ceil((JobManager::instance()->maxNbThreads() - threadPoolMinCapacity) / 2.0));
         Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
         LOG_DEBUG(Log::instance()->getLogger(), "Job Manager capacity set to " << _maxNbThread);
     } else {
-#ifdef NDEBUG
-        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "JobManager::defaultCallback",
-                                                            "JobManager capacity cannot be decreased"));
-#endif
+        sentry::Handler::captureMessage(sentry::Level::Warning, "JobManager::defaultCallback",
+                                        "JobManager capacity cannot be decreased");
     }
 }
 
@@ -136,12 +133,12 @@ void JobManager::defaultCallback(UniqueId jobId) {
 JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
     int jobPoolCapacityFactor = ParametersCache::instance()->parameters().jobPoolCapacityFactor();
 
-    _maxNbThread = std::max(threadPoolMinCapacity, jobPoolCapacityFactor * (int)std::thread::hardware_concurrency());
+    _maxNbThread = std::max(threadPoolMinCapacity, jobPoolCapacityFactor * (int) std::thread::hardware_concurrency());
     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
 
     _cpuUsageThreshold = ParametersCache::instance()->parameters().maxAllowedCpu() / 100.0;
 
-    _thread = std::unique_ptr<std::thread>(new std::thread(run));
+    _thread = std::make_unique<StdLoggingThread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
 }
 
@@ -197,7 +194,7 @@ void JobManager::run() noexcept {
             managePendingJobs(uploadSessionCount);
         }
 
-        Utility::msleep(100);  // Sleep for 0.1s
+        Utility::msleep(100); // Sleep for 0.1s
     }
 }
 
@@ -244,8 +241,8 @@ void JobManager::adjustMaxNbThread() {
         return;
     }
     _cpuUsageThreshold = ParametersCache::instance()->parameters().maxAllowedCpu() == 0
-                             ? cpuThreadsThreshold
-                             : ParametersCache::instance()->parameters().maxAllowedCpu() / 100.0;
+                                 ? cpuThreadsThreshold
+                                 : ParametersCache::instance()->parameters().maxAllowedCpu() / 100.0;
     _maxNbThreadChrono = now;
 
     double cpuUsage = PerformanceWatcher::instance()->getMovingAverageCpuUsagePercent() / 100.0;
@@ -258,7 +255,7 @@ void JobManager::adjustMaxNbThread() {
     }
 
     maxTmpNbThread = std::max(maxTmpNbThread, threadPoolMinCapacity);
-    int threadMultiplier = _cpuUsageThreshold * 10;
+    int threadMultiplier = static_cast<int>(_cpuUsageThreshold * 10);
     _maxNbThread = std::min(maxTmpNbThread, threadMultiplier * static_cast<int>(std::thread::hardware_concurrency()));
 
     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
@@ -273,7 +270,7 @@ void JobManager::adjustMaxNbThread() {
 int JobManager::countUploadSession() {
     const std::scoped_lock lock(_mutex);
     int uploadSessionCount = 0;
-    for (UniqueId id : _runningJobs) {
+    for (UniqueId id: _runningJobs) {
         const auto &job = _managedJobs[id];
         if (std::dynamic_pointer_cast<AbstractUploadSession>(job)) {
             uploadSessionCount++;
@@ -302,7 +299,7 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
                                                                    << job->jobId() << " for execution");
                 } else {
                     LOGW_DEBUG(Log::instance()->getLogger(),
-                               "The thread pool has recovered capacity, queuing job " << job->jobId() << " for execution");
+                               L"The thread pool has recovered capacity, queuing job " << job->jobId() << L" for execution");
                 }
                 _queuedJobs.push(item.second);
             }
@@ -313,4 +310,4 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
     });
 }
 
-}  // namespace KDC
+} // namespace KDC

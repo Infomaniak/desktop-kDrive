@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,6 +64,7 @@ class COMMONSERVER_EXPORT Db {
         int extendedErrorCode() const;
 
         bool init(const std::string &version);
+        virtual std::string dbType() const { return "Unknown"; }
 
         virtual bool create(bool &retry) = 0;
         virtual bool prepare() = 0;
@@ -73,12 +74,22 @@ class COMMONSERVER_EXPORT Db {
 
         inline int createNormalizeSyncNameFunc() { return _sqliteDb->createNormalizeSyncNameFunc(); };
 
+        bool tableExists(const std::string &tableName, bool &exist);
+        bool columnExists(const std::string &tableName, const std::string &columnName, bool &exist);
+
     protected:
         void startTransaction();
         void commitTransaction();
         void rollbackTransaction();
         bool sqlFail(const std::string &log, const std::string &error);
         bool checkConnect(const std::string &version);
+
+        bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
+        bool addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
+                                const std::string &request, bool *columnAdded = nullptr);
+
+        // Helpers
+        bool createAndPrepareRequest(const char *requestId, const char *query);
 
         log4cplus::Logger _logger;
         std::shared_ptr<SqliteDb> _sqliteDb;
@@ -89,10 +100,11 @@ class COMMONSERVER_EXPORT Db {
         std::string _fromVersion;
 
     private:
-        bool checkIfTableExists(const std::string &tableName, bool &found);
         bool insertVersion(const std::string &version);
         bool updateVersion(const std::string &version, bool &found);
         bool selectVersion(std::string &version, bool &found);
+
+        friend class TestDb;
 };
 
-}  // namespace KDC
+} // namespace KDC

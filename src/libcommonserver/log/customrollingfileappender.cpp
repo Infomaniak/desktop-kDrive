@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,9 +126,9 @@ static void loglog_opening_result(helpers::LogLog &loglog, log4cplus::tostream c
     }
 }
 
-}  // namespace
+} // namespace
 
-}  // namespace log4cplus
+} // namespace log4cplus
 
 /***********************************/
 /********** namespace KDC **********/
@@ -138,7 +138,7 @@ namespace KDC {
 
 const log4cplus::tstring empty_str;
 
-static void rolloverFiles(const log4cplus::tstring &filename, unsigned int maxBackupIndex) {
+static void rolloverFiles(const log4cplus::tstring &filename, int maxBackupIndex) {
     log4cplus::helpers::LogLog *loglog = log4cplus::helpers::LogLog::getLogLog();
 
     // Delete the oldest file
@@ -172,11 +172,12 @@ static void rolloverFiles(const log4cplus::tstring &filename, unsigned int maxBa
 }
 
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::tstring &filename, long maxFileSize, int maxBackupIndex,
-                                                     bool immediateFlush, bool createDirs)
-    : RollingFileAppender(filename, maxFileSize, maxBackupIndex, immediateFlush, createDirs), _lastExpireCheck() {}
+                                                     bool immediateFlush, bool createDirs) :
+    RollingFileAppender(filename, LONG_MAX /*Let us handle a custom rollover*/, maxBackupIndex, immediateFlush, createDirs),
+    _maxFileSize(maxFileSize), _lastExpireCheck() {}
 
-CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties)
-    : RollingFileAppender(properties), _lastExpireCheck() {}
+CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties) :
+    RollingFileAppender(properties), _lastExpireCheck() {}
 
 void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEvent &event) {
     // Seek to the end of log file so that tellp() below returns the
@@ -184,7 +185,7 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     if (useLockFile) out.seekp(0, std::ios_base::end);
 
     // Rotate log file if needed before appending to it.
-    if (out.tellp() > maxFileSize) rollover(true);
+    if (out.tellp() > _maxFileSize) customRollover(true);
 
     try {
         RollingFileAppender::append(event);
@@ -196,16 +197,10 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     }
 
     // Rotate log file if needed after appending to it.
-    if (out.tellp() > maxFileSize) rollover(true);
-
-    // Check for expired files at startup and every hour
-    if (_lastExpireCheck == std::chrono::time_point<std::chrono::system_clock>() ||
-        _lastExpireCheck + std::chrono::hours(1) < std::chrono::system_clock::now()) {
-        checkForExpiredFiles();
-    }
+    if (out.tellp() > _maxFileSize) customRollover(true);
 }
 
-void CustomRollingFileAppender::rollover(bool alreadyLocked) {
+void CustomRollingFileAppender::customRollover(bool alreadyLocked) {
     log4cplus::helpers::LogLog &loglog = log4cplus::helpers::getLogLog();
     log4cplus::helpers::LockFileGuard guard;
 
@@ -263,7 +258,7 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
         log4cplus::tstring ztarget = target + LOG4CPLUS_TEXT(".gz");
 
         bool exists;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         const bool success = IoHelper::checkIfPathExists(ztarget, exists, ioError);
         if (!success) {
             loglog.debug(filename + LOG4CPLUS_TEXT(" failed to check if path exists"));
@@ -290,26 +285,26 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
 void CustomRollingFileAppender::checkForExpiredFiles() {
     _lastExpireCheck = std::chrono::system_clock::now();
     // Archive previous log files and delete expired files
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     SyncPath logDirPath;
-    if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoErrorSuccess) {
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoError::Success) {
         return;
     }
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoErrorSuccess) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
         FileStat fileStat;
         IoHelper::getFileStat(entry.path(), &fileStat, ioError);
-        if (ioError != IoErrorSuccess || fileStat.nodeType != NodeTypeFile) {
+        if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {
             continue;
         }
 
         // Delete expired files
         if (_expire > 0 && entry.path().string().find(APPLICATION_NAME) != std::string::npos) {
             const auto now = std::chrono::system_clock::now();
-            auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modtime);
-            auto expireDateTime = lastModified + std::chrono::seconds(_expire);
+            const auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modtime); // Only 1s precision.
+            const auto expireDateTime = lastModified + std::chrono::seconds(_expire);
             if (expireDateTime < now) {
                 log4cplus::file_remove(Utility::s2ws(entry.path().string()));
                 continue;
@@ -328,4 +323,4 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         }
     }
 }
-}  // namespace KDC
+} // namespace KDC

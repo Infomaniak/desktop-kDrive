@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,22 @@ UniqueId SyncOperation::_nextId = 0;
 
 SyncOperation::SyncOperation() : _id(_nextId++) {}
 
+SyncName SyncOperation::nodeName(ReplicaSide side) const {
+    auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
+    if (!node) return {};
+    return node->name();
+}
+
+SyncPath SyncOperation::nodePath(const ReplicaSide side) const {
+    if (!correspondingNode()) return affectedNode()->getPath(); // If there is no corresponding node, ignore side.
+    auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
+    return node->getPath();
+}
+
+NodeType SyncOperation::nodeType() const noexcept {
+    return _affectedNode ? _affectedNode->type() : NodeType::Unknown;
+}
+
 bool SyncOperation::operator==(const SyncOperation &other) const {
     return _id == other.id();
 }
@@ -35,7 +51,7 @@ SyncOperationList::~SyncOperationList() {
 void SyncOperationList::setOpList(const std::list<SyncOpPtr> &opList) {
     clear();
 
-    for (auto &op : opList) {
+    for (auto &op: opList) {
         pushOp(op);
     }
 }
@@ -96,12 +112,12 @@ void SyncOperationList::operator=(const SyncOperationList &other) {
 }
 
 void SyncOperationList::getMapIndexToOp(std::unordered_map<UniqueId, int> &map,
-                                        OperationType typeFilter /*= OperationTypeUnknown*/) {
+                                        OperationType typeFilter /*= OperationType::None*/) {
     int index = 0;
-    for (const auto &opId : _opSortedList) {
+    for (const auto &opId: _opSortedList) {
         SyncOpPtr syncOp = getOp(opId);
         if (syncOp != nullptr) {
-            if (typeFilter == OperationTypeNone) {
+            if (typeFilter == OperationType::None) {
                 map.insert({syncOp->id(), index++});
             } else {
                 if (syncOp->type() == typeFilter) {
@@ -112,4 +128,4 @@ void SyncOperationList::getMapIndexToOp(std::unordered_map<UniqueId, int> &map,
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -152,6 +152,7 @@ if (NOT DEFINED APPLICATION_ICON_NAME)
     set(APPLICATION_ICON_NAME "${APPLICATION_SHORTNAME}")
 endif ()
 
+
 if (WIN32)
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
@@ -160,13 +161,18 @@ if (WIN32)
     add_definitions(-D_WIN32_WINNT=0x0600)
     add_definitions(-DWINVER=0x0600)
     add_definitions(-DNTDDI_VERSION=0x0A000003)
+    add_definitions(-DWIN32_LEAN_AND_MEAN)
 endif (WIN32)
 
 if (UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wimplicit-fallthrough -Wformat=2 -g")
     if (APPLE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif()
+endif()
+
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts")
 endif()
 
 # Handle Translations, pick all client_* files from trans directory.
@@ -223,7 +229,7 @@ if (BUILD_KDRIVE_OSX_BUNDLE)
 
     # Crashpad_handler
     find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
-    message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
+    message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
 elseif(BUILD_CLIENT)
     if (WIN32)
@@ -248,7 +254,7 @@ elseif(BUILD_CLIENT)
 
         # Crashpad_handler
         find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
-        message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
+        message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # xxHash
@@ -258,7 +264,8 @@ elseif(BUILD_CLIENT)
     else ()
         # Default sync exclude list
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-            file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_INSTALL_PREFIX}/sync-exclude.lst)
+            file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
+            file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-linux.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
         else()
             install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
         endif ()
@@ -267,6 +274,18 @@ elseif(BUILD_CLIENT)
         find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
         install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
+
+        # Crashpad_handler
+        message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
+        if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+            find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+            message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
+            if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+                file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+            else()
+                install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
+            endif ()
+        endif ()
 
         # xxHash
         find_library(XXHASH_SHARED_LIBRARY NAMES xxhash NO_CACHE)

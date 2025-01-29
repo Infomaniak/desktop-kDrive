@@ -16,6 +16,11 @@ endif()
 
 set( APPLICATION_HELP_URL "https://support.infomaniak.com/" CACHE STRING "URL for the help menu" )
 set( APPLICATION_CONFLICT_HELP_URL "https://www.infomaniak.com/en/support/faq/2403/resolve-a-kdrive-sync-conflict" )
+set( FEEDBACK_FR_URL "https://feedback.userreport.com/fe6ca4b6-5812-4f39-8ca6-5f2300aecda6" )
+set( FEEDBACK_EN_URL "https://feedback.userreport.com/652ad8f0-84c8-4a21-9e31-7a8bd7134f46" )
+set( FEEDBACK_DE_URL "https://feedback.userreport.com/074f5c5a-372b-40a6-b82f-9157fdb3d2d7" )
+set( FEEDBACK_ES_URL "https://feedback.userreport.com/e1304b1e-ebd0-4ffe-9234-a1a91730e651" )
+set( FEEDBACK_IT_URL "https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31889a0012ee" )
 
 if( APPLE )
     set( APPLICATION_ICON_NAME  "kdrive-mac" )
@@ -42,8 +47,9 @@ else()
     set( NOTIFY_KDRIVE_V2_URL "https://notify.kdrive.infomaniak.com/2" )
     set( LOGIN_URL "https://login.infomaniak.com" )
 endif()
-set( TEST_DIR "${CMAKE_SOURCE_DIR}/test" )
+set( INFOMANIAK_API_URL "https://api.infomaniak.com/1" )
 
+set( TEST_DIR "${CMAKE_SOURCE_DIR}/test" )
 
 set ( CLIENT_ID "5EA39279-FF64-4BB8-A872-4A40B5786317" CACHE STRING "App client ID" )
 set ( REDIRECT_URI "kdrive://auth-desktop" CACHE STRING "Redirect URI" )
@@ -62,6 +68,8 @@ set( APPLICATION_LICENSE    "${KDRIVE_THEME_DIR}/license.txt" )
 
 set( DEBUGREPORTER_SUBMIT_URL "https://www.infomaniak.com/report/drive/logs" CACHE STRING "URL for debug reporter" )
 
+set( LEARNMORE_MOVE_TO_TRASH_URL "https://faq.infomaniak.com/2383#desktop" CACHE STRING "URL for move to trash exception FAQ" )
+
 if( APPLE )
     set( LEARNMORE_LITESYNC_URL "https://faq.infomaniak.com/2608" CACHE STRING "URL for Lite Sync FAQ" )
     set( LEARNMORE_LITESYNC_COMPATIBILITY_URL "https://faq.infomaniak.com/2608" CACHE STRING "URL for Lite Sync compatibility FAQ" )
@@ -69,7 +77,6 @@ else()
     set( LEARNMORE_LITESYNC_URL "https://faq.infomaniak.com/2562" CACHE STRING "URL for Lite Sync FAQ" )
     set( LEARNMORE_LITESYNC_COMPATIBILITY_URL "https://faq.infomaniak.com/2523" CACHE STRING "URL for Lite Sync compatibility FAQ" )
 endif()
-
 # Sentry
 set( SENTRY_SERVER_DSN "https://af2cd6793efb2b73683ff24abebed911@sentry-desktop.infomaniak.com/2" )
 set( SENTRY_CLIENT_DSN "https://1435053ba7740a09682093f424dfaf79@sentry-desktop.infomaniak.com/3" )

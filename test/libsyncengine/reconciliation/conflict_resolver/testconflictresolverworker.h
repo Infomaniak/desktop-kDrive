@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         void testMoveDelete1();
         void testMoveDelete2();
         void testMoveDelete3();
-        void testMoveDelete4();  // Test with orphan nodes
+        void testMoveDelete4(); // Test with orphan nodes
         void testMoveDelete5();
         void testMoveParentDelete();
         void testCreateParentDelete();
@@ -74,4 +74,4 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 
 #include "syncpal/isyncworker.h"
 #include "syncpal/syncpal.h"
-#include "utility/utility.h"
 #include "db/syncdb.h"
 #include "update_detection/file_system_observer/fsoperationset.h"
 #include "updatetree.h"
@@ -53,62 +52,60 @@ class UpdateTreeWorker : public ISyncWorker {
         /**
          * Create node where opType is Move
          * and nodeType is Directory.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step1MoveDirectory();
 
         /**
          * Create node where opType is Move
          * and nodeType is File.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step2MoveFile();
 
         /**
          * Create node where opType is Delete
          * and nodeType is Directory.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step3DeleteDirectory();
 
         /**
          * Create node where opType is Delete
          * and nodeType is File.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step4DeleteFile();
 
         /**
          * Create node where opType is Create
          * and nodeType is Directory.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step5CreateDirectory();
 
         /**
          * Create node where opType is Create
          * and nodeType is File.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step6CreateFile();
 
         /**
          * Create node where opType is Edit
          * and nodeType is File.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step7EditFile();
 
         /**
          * Update existing node with information from DB
          * and add missing nodes without change events.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step8CompleteUpdateTree();
 
         ExitCode createMoveNodes(const NodeType &nodeType);
-
-        void updateNodeId(std::shared_ptr<Node> node, const NodeId &newId);
 
         ExitCode getNewPathAfterMove(const SyncPath &path, SyncPath &newPath);
         ExitCode updateNodeWithDb(const std::shared_ptr<Node> parentNode);
@@ -119,12 +116,13 @@ class UpdateTreeWorker : public ISyncWorker {
         // Log update information if extended logging is on.
         void logUpdate(const std::shared_ptr<Node> node, const OperationType opType,
                        const std::shared_ptr<Node> parentNode = nullptr);
-        void updateTmpFileNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp, OperationType opType);
+        [[nodiscard]] bool updateTmpFileNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp,
+                                             OperationType opType);
         /**
          * Search for the parent of the node with path `nodePath` in the update tree through its database ID.
          \param nodePath: the path of the node whose parent is queried
          \param parentNode: it is set with a pointer to the parent node if it exists, with `nullptr` otherwise.
-         \return : ExitCodeOk if no unexpected error occurred.
+         \return : ExitCode::Ok if no unexpected error occurred.
          */
         ExitCode searchForParentNode(const SyncPath &nodePath, std::shared_ptr<Node> &parentNode);
 
@@ -136,7 +134,7 @@ class UpdateTreeWorker : public ISyncWorker {
          * - the user has created several files whose names have different encodings but same normalization (an issue
          *reported on Windows 10 and 11). This function fills `_createFileOperation` with all create operations on files.
          *
-         *\return : ExitCodeOk if no problematic create operations were detected.
+         *\return : ExitCode::Ok if no problematic create operations were detected.
          */
         ExitCode handleCreateOperationsWithSamePath();
 
@@ -145,7 +143,7 @@ class UpdateTreeWorker : public ISyncWorker {
             return getOrCreateNodeFromPath(path, false);
         }
         std::shared_ptr<Node> getOrCreateNodeFromDeletedPath(const SyncPath &path) { return getOrCreateNodeFromPath(path, true); }
-        void mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
+        bool mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
 
         /**
          * Check that there is no temporary node remaining in the update tree
@@ -162,4 +160,4 @@ class UpdateTreeWorker : public ISyncWorker {
         friend class TestUpdateTreeWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #pragma once
 
 #include "libcommon/comm.h"
+#include "libcommon/utility/utility.h"
 
 #include <deque>
 
@@ -29,7 +30,6 @@
 #include <QString>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include <QThread>
 #include <QWaitCondition>
 
 namespace KDC {
@@ -48,17 +48,20 @@ class CommClient : public QObject {
 
         bool connectToServer(quint16 commPort);
         bool execute(RequestNum num, const QByteArray &params, QByteArray &results, int timeout = COMM_SHORT_TIMEOUT);
+        bool execute(RequestNum num, const QByteArray &params, int timeout = COMM_SHORT_TIMEOUT);
+        bool execute(RequestNum num, int timeout = COMM_SHORT_TIMEOUT);
+
         void stop();
         static bool isConnected() { return _instance != nullptr; }
 
     signals:
         void sendError(int id);
-        void signalReceived(int id, /*SignalNum*/ int num, const QByteArray &params);
+        void signalReceived(int id, SignalNum num, const QByteArray &params);
         void disconnected();
 
     private:
         static std::shared_ptr<CommClient> _instance;
-        QThread *_requestWorkerThread;
+        QtLoggingThread *_requestWorkerThread;
         Worker *_requestWorker;
         QTcpSocket *_tcpConnection;
         QByteArray _buffer;
@@ -72,8 +75,8 @@ class CommClient : public QObject {
         void onErrorOccurred(QAbstractSocket::SocketError socketError);
         void onBytesWritten(qint64 numBytes);
         void onReadyRead();
-        void onSendRequest(int id, /*RequestNum*/ int num, const QByteArray &params);
-        void onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params);
+        void onSendRequest(int id, RequestNum num, const QByteArray &params);
+        void onSignalReceived(int id, SignalNum num, const QByteArray &params);
 
         friend class AppClient;
 };
@@ -95,9 +98,9 @@ class Worker : public QObject {
 
     signals:
         void finished();
-        void sendRequest(int id, /*RequestNum*/ int num, const QByteArray &params);
+        void sendRequest(int id, RequestNum num, const QByteArray &params);
         void replyReceived(int id, const QByteArray &result);
-        void signalReceived(int id, /*SignalNum*/ int num, const QByteArray &params);
+        void signalReceived(int id, SignalNum num, const QByteArray &params);
 
     private:
         QMutex _mutex;
@@ -112,4 +115,4 @@ class Worker : public QObject {
         QHash<int, QPair<SignalNum, QByteArray>> _signalMap;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcDriveItemWidget, "gui.driveitemwidget", QtInfoMsg)
 
-DriveItemWidget::DriveItemWidget(const DriveAvailableInfo &driveInfo, QListWidget *parent)
-    : QListWidgetItem(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfo.color()),
-                      driveInfo.name(), parent, Type),
-      _driveInfo(driveInfo) {
+DriveItemWidget::DriveItemWidget(const DriveAvailableInfo &driveInfo, QListWidget *parent) :
+    QListWidgetItem(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfo.color()),
+                    driveInfo.name(), parent, Type),
+    _driveInfo(driveInfo) {
     setSizeHint(QSize(parent->maximumWidth(), itemHeight));
 }
 
-}  // namespace KDC
+} // namespace KDC

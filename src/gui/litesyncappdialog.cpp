@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@ static const int subtitleLabelVMargin = 10;
 
 Q_LOGGING_CATEGORY(lcLiteSyncAppDialog, "gui.litesyncappdialog", QtInfoMsg)
 
-LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : CustomDialog(true, parent), _gui(gui), _appIdLineEdit(nullptr), _appNameLineEdit(nullptr), _validateButton(nullptr) {
+LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    CustomDialog(true, parent), _gui(gui), _appIdLineEdit(nullptr), _appNameLineEdit(nullptr), _validateButton(nullptr) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     QLabel *appIdLabel = new QLabel(this);
@@ -52,12 +52,12 @@ LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *pa
 
 #ifdef Q_OS_MAC
     // Get app fetching list from the LiteSync extension
-    for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
-        if (syncInfoMapElt.second.virtualFileMode() == VirtualFileModeMac) {
+    for (const auto &syncInfoMapElt: _gui->syncInfoMap()) {
+        if (syncInfoMapElt.second.virtualFileMode() == VirtualFileMode::Mac) {
             try {
                 ExitCode exitCode = GuiRequests::getFetchingAppList(_appTable);
-                if (exitCode != ExitCodeOk) {
-                    qCWarning(lcLiteSyncAppDialog()) << "Error in Requests::getFetchingAppList : " << exitCode;
+                if (exitCode != ExitCode::Ok) {
+                    qCWarning(lcLiteSyncAppDialog()) << "Error in Requests::getFetchingAppList : " << toInt(exitCode);
                 }
 
                 break;
@@ -162,4 +162,4 @@ void LiteSyncAppDialog::onValidateButtonTriggered(bool checked) {
     accept();
 }
 
-}  // namespace KDC
+} // namespace KDC

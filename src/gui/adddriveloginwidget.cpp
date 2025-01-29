@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ const QString codeChallengeMethodKey = "code_challenge_method";
 const QString codeChallengeKey = "code_challenge";
 const QString stateKey = "state";
 
-const QString hashMode = "S256";  // SHA-256
+const QString hashMode = "S256"; // SHA-256
 const QString responseType = "code";
 const QString authorizePath = "/authorize";
 
@@ -48,8 +48,8 @@ const int stateStringLength = 8;
 
 Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
-AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent)
-    : QWidget(parent), _codeVerifier(QString()), _userDbId(0), _webView(nullptr) {
+AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
+    QWidget(parent), _codeVerifier(QString()), _userDbId(0), _webView(nullptr) {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
@@ -81,8 +81,8 @@ void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString code, const 
     QString error;
     QString errorDescr;
     ExitCode exitCode = GuiRequests::requestToken(code, _codeVerifier, _userDbId, error, errorDescr);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken: code=" << exitCode;
 
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok,
                                 this);
@@ -117,7 +117,7 @@ QUrl AddDriveLoginWidget::generateUrl() {
     query.addQueryItem(clientIdKey, CLIENT_ID);
     query.addQueryItem(redirectUriKey, REDIRECT_URI);
     query.addQueryItem(codeChallengeMethodKey,
-                       hashMode);  // TODO : server return an error : invalid_request - invalid+challenge_code+format
+                       hashMode); // TODO : server return an error : invalid_request - invalid+challenge_code+format
     query.addQueryItem(codeChallengeKey, codeChallenge);
     query.addQueryItem(stateKey, CommonUtility::generateRandomStringAlphaNum(stateStringLength).c_str());
 
@@ -144,4 +144,4 @@ void AddDriveLoginWidget::refreshPage() {
     connect(_webView, &WebView::authorizationCodeUrlCatched, this, &AddDriveLoginWidget::onAuthorizationCodeReceived);
 }
 
-}  // namespace KDC
+} // namespace KDC

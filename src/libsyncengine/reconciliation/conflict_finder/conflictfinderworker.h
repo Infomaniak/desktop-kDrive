@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,11 +48,11 @@ class ConflictFinderWorker : public OperationProcessor {
         std::optional<Conflict> checkMoveMoveSourceConflict(std::shared_ptr<Node> moveNode);
         std::optional<Conflict> checkMoveMoveDestConflict(std::shared_ptr<Node> moveNode);
         std::optional<std::vector<Conflict>> determineMoveMoveCycleConflicts(
-            std::vector<std::shared_ptr<Node>> localMoveDirNodes, std::vector<std::shared_ptr<Node>> remoteMoveDirNodes);
+                std::vector<std::shared_ptr<Node>> localMoveDirNodes, std::vector<std::shared_ptr<Node>> remoteMoveDirNodes);
         std::optional<std::vector<std::shared_ptr<Node>>> findChangeEventInSubNodes(OperationType event,
                                                                                     std::shared_ptr<Node> parentNode);
 
         friend class TestConflictFinderWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

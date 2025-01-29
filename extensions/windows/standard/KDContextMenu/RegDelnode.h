@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ HRESULT RegDelnodeRecurse(HKEY hKeyRoot, LPTSTR lpSubKey) {
     // Enumerate the keys
 
     dwSize = MAX_PATH;
-    lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
+    lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, nullptr, nullptr, nullptr, &ftWrite);
 
     if (lResult == ERROR_SUCCESS) {
         do {
@@ -84,7 +84,7 @@ HRESULT RegDelnodeRecurse(HKEY hKeyRoot, LPTSTR lpSubKey) {
 
             dwSize = MAX_PATH;
 
-            lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, NULL, NULL, NULL, &ftWrite);
+            lResult = RegEnumKeyEx(hKey, 0, szName, &dwSize, nullptr, nullptr, nullptr, &ftWrite);
 
         } while (lResult == ERROR_SUCCESS);
     }

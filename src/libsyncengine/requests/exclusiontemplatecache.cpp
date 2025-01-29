@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,13 +59,13 @@ ExclusionTemplateCache::ExclusionTemplateCache() {
 void ExclusionTemplateCache::populateUndeletedExclusionTemplates() {
     _undeletedExclusionTemplates.clear();
 
-    for (const auto &exclusionTemplate : _defExclusionTemplates) {
+    for (const auto &exclusionTemplate: _defExclusionTemplates) {
         if (!exclusionTemplate.deleted()) {
             _undeletedExclusionTemplates.push_back(exclusionTemplate);
         }
     }
 
-    for (const auto &exclusionTemplate : _userExclusionTemplates) {
+    for (const auto &exclusionTemplate: _userExclusionTemplates) {
         if (!exclusionTemplate.deleted()) {
             _undeletedExclusionTemplates.push_back(exclusionTemplate);
         }
@@ -78,7 +78,7 @@ void ExclusionTemplateCache::updateRegexPatterns() {
     const std::lock_guard<std::mutex> lock(_mutex);
     _regexPatterns.clear();
 
-    for (const auto &exclPattern : exclusionTemplates()) {
+    for (const auto &exclPattern: exclusionTemplates()) {
         std::string templateTest = exclPattern.templ();
         escapeRegexSpecialChar(templateTest);
 
@@ -87,7 +87,7 @@ void ExclusionTemplateCache::updateRegexPatterns() {
         if (templateTest[0] == '*') {
             regexPattern += ".*?";
         } else {
-            regexPattern += "^";  // Start of string
+            regexPattern += "^"; // Start of string
         }
 
         std::vector<std::string> splitStr = Utility::splitStr(templateTest, '*');
@@ -107,7 +107,7 @@ void ExclusionTemplateCache::updateRegexPatterns() {
         if (templateTest[templateTest.size() - 1] == '*') {
             regexPattern += ".*?";
         } else {
-            regexPattern += "$";  // End of string
+            regexPattern += "$"; // End of string
         }
 
         _regexPatterns.emplace_back(std::regex(regexPattern), exclPattern);
@@ -118,7 +118,7 @@ void ExclusionTemplateCache::escapeRegexSpecialChar(std::string &in) {
     std::string out;
     static const char metacharacters[] = R"(\.^$-+()[]{}|?)";
     out.reserve(in.size());
-    for (const auto ch : in) {
+    for (const auto ch: in) {
         if (std::strchr(metacharacters, ch)) {
             out.push_back('\\');
         }
@@ -137,18 +137,18 @@ ExitCode ExclusionTemplateCache::update(bool def, const std::vector<ExclusionTem
     // Update exclusion templates
     if (!ParmsDb::instance()->updateAllExclusionTemplates(def, def ? _defExclusionTemplates : _userExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAllExclusionTemplates");
-        return ExitCodeDbError;
+        return ExitCode::DbError;
     }
 
     populateUndeletedExclusionTemplates();
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning,
                                                bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     if (!checkIfIsExcludedBecauseHidden(basePath, relativePath, isExcluded, ioError)) {
         return false;
@@ -166,7 +166,7 @@ bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const S
 bool ExclusionTemplateCache::checkIfIsExcludedBecauseHidden(const SyncPath &basePath, const SyncPath &relativePath,
                                                             bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     if (!basePath.empty() && !ParametersCache::instance()->parameters().syncHiddenFiles()) {
         // Call from local FS observer
@@ -195,23 +195,23 @@ bool ExclusionTemplateCache::checkIfIsExcludedBecauseHidden(const SyncPath &base
 bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, bool &isWarning) noexcept {
     const std::lock_guard<std::mutex> lock(_mutex);
     const std::string fileName = SyncName2Str(relativePath.filename().native());
-    for (const auto &pattern : _regexPatterns) {
+    for (const auto &pattern: _regexPatterns) {
         const std::string &patternStr = pattern.second.templ();
         isWarning = pattern.second.warning();
 
         switch (pattern.second.complexity()) {
-            case ExclusionTemplateComplexitySimplest: {
+            case ExclusionTemplateComplexity::Simplest: {
                 if (fileName == patternStr) {
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(),
                                   L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
                                              << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
                     }
-                    return true;  // Filename match exactly the pattern
+                    return true; // Filename match exactly the pattern
                 }
                 break;
             }
-            case ExclusionTemplateComplexitySimple: {
+            case ExclusionTemplateComplexity::Simple: {
                 std::string tmpStr = patternStr;
                 bool atBegining = tmpStr[0] == '*';
                 bool atEnd = tmpStr[tmpStr.length() - 1] == '*';
@@ -239,11 +239,11 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
                                   L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
                                              << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
                     }
-                    return true;  // Filename contains the pattern
+                    return true; // Filename contains the pattern
                 }
                 break;
             }
-            case ExclusionTemplateComplexityComplex:
+            case ExclusionTemplateComplexity::Complex:
             default: {
                 if (std::regex_match(fileName, pattern.first)) {
                     if (ParametersCache::isExtendedLogEnabled()) {
@@ -260,4 +260,4 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
     return false;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -36,17 +36,6 @@ target_link_libraries(${testparms_NAME}
 
 if (WIN32)
     target_link_libraries(${testparms_NAME}
-        log4cplus::log4cplusU)
-elseif(APPLE)
-    target_link_libraries(${testparms_NAME}
-        "/usr/local/lib/liblog4cplusU.dylib")
-else()
-    target_link_libraries(${testparms_NAME}
-        "/usr/local/lib/liblog4cplusU.so")
-endif()
-
-if (WIN32)
-    target_link_libraries(${testparms_NAME}
         debug
         "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
         optimized

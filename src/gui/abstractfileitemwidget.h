@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ class AbstractFileItemWidget : public QWidget {
 
         QSize sizeHint() const override;
 
-        void setFilePath(const QString &filePath, NodeType type = NodeTypeFile);
+        void setFilePath(const QString &filePath, NodeType type = NodeType::File);
         void setDriveName(const QString &driveName, const QString &localPath);
         void setPathIconColor(const QColor &color);
         void setMessage(const QString &str);
@@ -63,7 +63,7 @@ class AbstractFileItemWidget : public QWidget {
         void paintEvent(QPaintEvent *event) override;
 
         void setFileTypeIcon(const QString &ressourcePath);
-        void setFileName(const QString &path, NodeType type = NodeTypeFile);
+        void setFileName(const QString &path, NodeType type = NodeType::File);
         void setPath(const QString &path);
 
         QColor _backgroundColor;
@@ -81,4 +81,4 @@ class AbstractFileItemWidget : public QWidget {
         QLabel *_pathLabel = nullptr;
 };
 
-}  // namespace KDC
+} // namespace KDC

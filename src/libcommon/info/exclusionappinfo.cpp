@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 
 namespace KDC {
 
-ExclusionAppInfo::ExclusionAppInfo(const QString &appId, const QString &description, bool def)
-    : _appId(appId), _description(description), _def(def) {}
+ExclusionAppInfo::ExclusionAppInfo(const QString &appId, const QString &description, bool def) :
+    _appId(appId), _description(description), _def(def) {}
 
 ExclusionAppInfo::ExclusionAppInfo() : _appId(QString()), _description(QString()), _def(false) {}
 
@@ -36,9 +36,9 @@ QDataStream &operator<<(QDataStream &out, const ExclusionAppInfo &exclusionAppIn
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<ExclusionAppInfo> &list) {
-    int count = list.size();
+    int count = static_cast<int>(list.size());
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < count; i++) {
         ExclusionAppInfo exclusionAppInfo = list[i];
         out << exclusionAppInfo;
     }
@@ -46,7 +46,7 @@ QDataStream &operator<<(QDataStream &out, const QList<ExclusionAppInfo> &list) {
 }
 
 QDataStream &operator>>(QDataStream &in, QList<ExclusionAppInfo> &list) {
-    int count = 0;
+    auto count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
         ExclusionAppInfo *exclusionAppInfo = new ExclusionAppInfo();
@@ -56,4 +56,4 @@ QDataStream &operator>>(QDataStream &in, QList<ExclusionAppInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

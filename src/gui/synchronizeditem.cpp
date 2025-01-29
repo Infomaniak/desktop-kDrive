@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,8 @@ namespace KDC {
 
 SynchronizedItem::SynchronizedItem(int syncDbId, const QString &filePath, const QString &fileId, SyncFileStatus status,
                                    SyncDirection direction, NodeType type, const QString &fullFilePath, const QDateTime &dateTime,
-                                   const QString &error)
-    : _syncDbId(syncDbId),
-      _filePath(filePath),
-      _fileId(fileId),
-      _status(status),
-      _direction(direction),
-      _type(type),
-      _fullFilePath(fullFilePath),
-      _dateTime(dateTime),
-      _error(error),
-      _displayed(false) {}
+                                   const QString &error) :
+    _syncDbId(syncDbId), _filePath(filePath), _fileId(fileId), _status(status), _direction(direction), _type(type),
+    _fullFilePath(fullFilePath), _dateTime(dateTime), _error(error), _displayed(false) {}
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "libcommon/utility/utility.h"
-#include "libcommon/asserts.h"
 #include "libcommon/utility/types.h"
 
 #include <shlobj.h>
@@ -48,9 +47,9 @@ static SyncPath getAppSupportDir_private() {
         CoTaskMemFree(path);
         return appDataPath;
     }
-#ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility_win::getAppSupportDir_private", "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method"));
-#endif
+    sentry::Handler::captureMessage(sentry::Level::Warning, "Utility_win::getAppSupportDir_private",
+                                    "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method");
+
     return std::filesystem::temp_directory_path().parent_path().parent_path().native();
 }
 
@@ -59,9 +58,9 @@ static KDC::SyncPath getAppDir_private() {
 }
 
 static inline bool hasDarkSystray_private() {
-    QString themePath = QLatin1String(themePathC);
-    QSettings settings(themePath, QSettings::NativeFormat);
+    const QString themePath = QLatin1String(themePathC);
+    const QSettings settings(themePath, QSettings::NativeFormat);
+
     return !settings.value(QLatin1String(lightThemeKeyC), true).toBool();
 }
-
-}  // namespace KDC
+} // namespace KDC

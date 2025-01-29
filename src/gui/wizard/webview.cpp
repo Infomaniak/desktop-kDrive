@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -128,7 +128,7 @@ void WebView::loadFinished(bool ok) {
 }
 
 void WebView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode) {
-    qCInfo(lcWizardWebiew()) << terminationStatus << ", " << exitCode;
+    qCInfo(lcWizardWebiew()) << terminationStatus << " code=" << exitCode;
 }
 
 WebView::~WebView() {
@@ -148,7 +148,7 @@ void WebViewPageUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *reques
 
     QString code, state, error, errorDescr;
     bool ok = true;
-    for (const QString &part : parts) {
+    for (const QString &part: parts) {
         if (part.startsWith("code")) {
             code = part.split("=").last();
         } else if (part.startsWith("state")) {
@@ -178,6 +178,6 @@ void WebEnginePage::setUrl(const QUrl &url) {
     _rootUrl = url;
 }
 
-}  // namespace KDC
+} // namespace KDC
 
 #include "webview.moc"

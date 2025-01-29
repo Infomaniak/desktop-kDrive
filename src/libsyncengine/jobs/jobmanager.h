@@ -1,6 +1,7 @@
+
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@
 #pragma once
 
 #include "abstractjob.h"
+#include "libcommon/utility/utility.h"
 
 #include <log4cplus/logger.h>
 
@@ -38,7 +40,7 @@ namespace KDC {
 class JobPriorityCmp {
     public:
         bool operator()(const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j1,
-                        const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j2) {
+                        const std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> &j2) const {
             if (j1.second == j2.second) {
                 // Same thread priority, use the job ID to define priority
                 return j1.first->jobId() > j2.first->jobId();
@@ -67,9 +69,9 @@ class JobManager {
 
         std::shared_ptr<AbstractJob> getJob(const UniqueId &jobId);
         inline size_t countManagedJobs() { return _managedJobs.size(); }
-        inline size_t maxNbThreads() { return _maxNbThread; }
+        inline int maxNbThreads() { return _maxNbThread; }
 
-        void setPoolCapacity(int count);  // For testing purpose
+        void setPoolCapacity(int count); // For testing purpose
         void decreasePoolCapacity();
 
     private:
@@ -95,18 +97,18 @@ class JobManager {
         static std::chrono::time_point<std::chrono::steady_clock> _maxNbThreadChrono;
 
         log4cplus::Logger _logger;
-        std::unique_ptr<std::thread> _thread = nullptr;
+        std::unique_ptr<StdLoggingThread> _thread;
 
-        static std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs;  // queued + running + pending jobs
+        static std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs; // queued + running + pending jobs
         static std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
                                    std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
-            _queuedJobs;                                   // jobs waiting for an available thread
-        static std::unordered_set<UniqueId> _runningJobs;  // jobs currently running in a dedicated thread
+                _queuedJobs; // jobs waiting for an available thread
+        static std::unordered_set<UniqueId> _runningJobs; // jobs currently running in a dedicated thread
         static std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
-            _pendingJobs;  // jobs waiting for their parent job to be completed
+                _pendingJobs; // jobs waiting for their parent job to be completed
         static std::recursive_mutex _mutex;
 
         friend class TestJobManager;
 };
 
-}  // namespace KDC
+} // namespace KDC

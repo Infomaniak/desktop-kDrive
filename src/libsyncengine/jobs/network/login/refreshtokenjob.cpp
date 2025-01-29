@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ RefreshTokenJob::~RefreshTokenJob() {
 #endif
 }
 
-void RefreshTokenJob::setData(bool &canceled) {
+ExitInfo RefreshTokenJob::setData() {
     Poco::URI uri;
     uri.addQueryParameter(grantTypeKey, refreshTokenKey);
     uri.addQueryParameter(refreshTokenKey, _apiToken.refreshToken().c_str());
@@ -49,7 +49,7 @@ void RefreshTokenJob::setData(bool &canceled) {
     uri.addQueryParameter(durationKey, infiniteKey);
 
     _data = uri.getRawQuery();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

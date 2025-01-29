@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,15 +31,17 @@ void TestLiteSyncExtConnector::setUp() {}
 void TestLiteSyncExtConnector::tearDown() {}
 
 void TestLiteSyncExtConnector::testGetVfsStatus() {
+    /*
     bool isPlaceholder = false;
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
 
-//    // vfsGetStatus returns `true` if the file path indicates a non-existing item.
-//    log4cplus::Logger logger;
-//    CPPUNIT_ASSERT(LiteSyncExtConnector::vfsGetStatus("this_file_does_not_exist.txt", isPlaceholder, isHydrated, isSyncing,
-//                                                      progress, logger));
+    // vfsGetStatus returns `true` if the file path indicates a non-existing item.
+    log4cplus::Logger logger;
+    CPPUNIT_ASSERT(LiteSyncExtConnector::vfsGetStatus("this_file_does_not_exist.txt", isPlaceholder, isHydrated, isSyncing,
+                                                      progress, logger));
+    */
 }
 
-}  // namespace KDC
+} // namespace KDC

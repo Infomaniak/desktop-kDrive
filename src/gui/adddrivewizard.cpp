@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,12 +39,9 @@ static const int boxVBMargin = 40;
 
 Q_LOGGING_CATEGORY(lcAddDriveWizard, "gui.adddrivewizard", QtInfoMsg)
 
-AddDriveWizard::AddDriveWizard(std::shared_ptr<ClientGui> gui, int userDbId, QWidget *parent)
-    : CustomDialog(false, parent),
-      _gui(gui),
-      _currentStep(userDbId ? Login : None),
-      _userDbId(userDbId),
-      _action(KDC::GuiUtility::WizardAction::OpenFolder) {
+AddDriveWizard::AddDriveWizard(std::shared_ptr<ClientGui> gui, int userDbId, QWidget *parent) :
+    CustomDialog(false, parent), _gui(gui), _currentStep(userDbId ? Login : None), _userDbId(userDbId),
+    _action(KDC::GuiUtility::WizardAction::OpenFolder) {
     initUI();
     start();
 }
@@ -111,7 +108,7 @@ void AddDriveWizard::startNextStep(bool backward) {
     // Determine next step
     bool setupDrive = false;
 
-    _currentStep = (Step)(_currentStep + (backward ? -1 : 1));
+    _currentStep = (Step) (_currentStep + (backward ? -1 : 1));
 
     if (_currentStep == Login && backward) {
         if (!_addDriveListWidget->isAddUserClicked()) {
@@ -122,35 +119,35 @@ void AddDriveWizard::startNextStep(bool backward) {
     } else if (_currentStep == LiteSync) {
         VirtualFileMode virtualFileMode;
         ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::bestAvailableVfsMode";
             return;
         }
 
-        if (virtualFileMode != VirtualFileModeWin && virtualFileMode != VirtualFileModeMac) {
+        if (virtualFileMode != VirtualFileMode::Win && virtualFileMode != VirtualFileMode::Mac) {
             // Skip Lite Sync step
-            _currentStep = (Step)(_currentStep + (backward ? -1 : 1));
+            _currentStep = (Step) (_currentStep + (backward ? -1 : 1));
         }
     } else if (_currentStep == RemoteFolders && _liteSync) {
         // Skip Remote Folders step
-        _currentStep = (Step)(_currentStep + (backward ? -1 : 1));
+        _currentStep = (Step) (_currentStep + (backward ? -1 : 1));
     } else if (_currentStep == ExtensionSetup) {
         setupDrive = true;
 
         VirtualFileMode virtualFileMode;
         ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard) << "Error in Requests::bestAvailableVfsMode";
             return;
         }
 
         bool skipExtSetup = true;
 #ifdef Q_OS_MAC
-        if (virtualFileMode == VirtualFileModeMac && _liteSync) {
+        if (virtualFileMode == VirtualFileMode::Mac && _liteSync) {
             // Check LiteSync ext authorizations
             std::string liteSyncExtErrorDescr;
-            bool liteSyncExtOk =
-                CommonUtility::isLiteSyncExtEnabled() && CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
+            bool liteSyncExtOk = CommonUtility::isLiteSyncExtEnabled() &&
+                                 CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
             if (!liteSyncExtErrorDescr.empty()) {
                 qCWarning(lcAddDriveWizard) << "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: "
                                             << liteSyncExtErrorDescr.c_str();
@@ -161,7 +158,7 @@ void AddDriveWizard::startNextStep(bool backward) {
 
         if (skipExtSetup) {
             // Skip Extension Setup step
-            _currentStep = (Step)(_currentStep + (backward ? -1 : 1));
+            _currentStep = (Step) (_currentStep + (backward ? -1 : 1));
         }
     }
 
@@ -192,7 +189,7 @@ void AddDriveWizard::startNextStep(bool backward) {
         QString goodLocalFolderPath;
         QString error;
         ExitCode exitCode = GuiRequests::findGoodPathForNewSync(_syncDbId, localFolderPath, goodLocalFolderPath, error);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::findGoodPathForNewSyncFolder : " << error;
             goodLocalFolderPath = localFolderPath;
         }
@@ -236,7 +233,7 @@ bool AddDriveWizard::addSync(int userDbId, int accountId, int driveId, const QSt
 
     ExitCode exitCode = GuiRequests::addSync(userDbId, accountId, driveId, localFolderPathNormalized, serverFolderPath, QString(),
                                              liteSync, blackList, whiteList, _syncDbId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcAddDriveWizard()) << "Error in Requests::addSync";
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to create new synchronization"), QMessageBox::Ok, this);
         msgBox.exec();
@@ -260,7 +257,7 @@ void AddDriveWizard::onStepTerminated(bool next) {
         bool found = false;
         bool stayCurrentStep = false;
         if (next) {
-            for (auto &sync : _gui->syncInfoMap()) {
+            for (auto &sync: _gui->syncInfoMap()) {
                 int driveId = 0;
                 GuiRequests::getDriveIdFromSyncDbId(sync.first, driveId);
                 if (driveId == _driveInfo.driveId()) {
@@ -270,9 +267,9 @@ void AddDriveWizard::onStepTerminated(bool next) {
             }
             if (found) {
                 CustomMessageBox msgBox(
-                    QMessageBox::Warning,
-                    tr("The kDrive %1 is already synchronized on this computer. Continue anyway?").arg(_driveInfo.name()),
-                    QMessageBox::Yes | QMessageBox::No, this);
+                        QMessageBox::Warning,
+                        tr("The kDrive %1 is already synchronized on this computer. Continue anyway?").arg(_driveInfo.name()),
+                        QMessageBox::Yes | QMessageBox::No, this);
                 if (msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this)) != QMessageBox::Yes) {
                     stayCurrentStep = true;
                 }
@@ -314,4 +311,4 @@ void AddDriveWizard::onExit() {
     reject();
 }
 
-}  // namespace KDC
+} // namespace KDC

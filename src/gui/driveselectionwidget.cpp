@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,17 +42,10 @@ static const QColor defaultDriveColor = QColor::fromRgb(254, 254, 254);
 
 Q_LOGGING_CATEGORY(lcDriveSelectionWidget, "gui.driveselectionwidget", QtInfoMsg)
 
-DriveSelectionWidget::DriveSelectionWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : QPushButton(parent),
-      _currentDriveDbId(0),
-      _gui(gui),
-      _driveIconSize(QSize()),
-      _downIconSize(QSize()),
-      _downIconColor(QColor()),
-      _menuRightIconSize(QSize()),
-      _driveIconLabel(nullptr),
-      _driveTextLabel(nullptr),
-      _downIconLabel(nullptr) {
+DriveSelectionWidget::DriveSelectionWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    QPushButton(parent), _currentDriveDbId(0), _gui(gui), _driveIconSize(QSize()), _downIconSize(QSize()),
+    _downIconColor(QColor()), _menuRightIconSize(QSize()), _driveIconLabel(nullptr), _driveTextLabel(nullptr),
+    _downIconLabel(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
@@ -77,7 +70,7 @@ DriveSelectionWidget::DriveSelectionWidget(std::shared_ptr<ClientGui> gui, QWidg
 
 QSize DriveSelectionWidget::sizeHint() const {
     return QSize(_driveIconLabel->sizeHint().width() + _driveTextLabel->sizeHint().width() + _downIconLabel->sizeHint().width() +
-                     2 * boxSpacing + 2 * boxHMargin,
+                         2 * boxSpacing + 2 * boxHMargin,
                  QPushButton::sizeHint().height());
 }
 
@@ -116,7 +109,7 @@ void DriveSelectionWidget::onClick(bool checked) {
     if (_gui->driveInfoMap().size() > 0) {
         MenuWidget *menu = new MenuWidget(MenuWidget::List, this);
 
-        for (auto const &driveInfoMapElt : _gui->driveInfoMap()) {
+        for (auto const &driveInfoMapElt: _gui->driveInfoMap()) {
             QWidgetAction *selectDriveAction = new QWidgetAction(this);
             selectDriveAction->setProperty(driveIdProperty, driveInfoMapElt.first);
             MenuItemWidget *driveMenuItemWidget = new MenuItemWidget(driveInfoMapElt.second.name());
@@ -125,14 +118,14 @@ void DriveSelectionWidget::onClick(bool checked) {
             const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfoMapElt.second.accountDbId());
             if (accountInfoMapIt == _gui->accountInfoMap().end()) {
                 qCWarning(lcDriveSelectionWidget)
-                    << "Account not found in account map for accountDbId=" << driveInfoMapElt.second.accountDbId();
+                        << "Account not found in account map for accountDbId=" << driveInfoMapElt.second.accountDbId();
                 return;
             }
 
             const auto &userInfoMapIt = _gui->userInfoMap().find(accountInfoMapIt->second.userDbId());
             if (userInfoMapIt == _gui->userInfoMap().end()) {
                 qCWarning(lcDriveSelectionWidget)
-                    << "User not found in user map for userDbId=" << accountInfoMapIt->second.userDbId();
+                        << "User not found in user map for userDbId=" << accountInfoMapIt->second.userDbId();
                 return;
             }
 
@@ -189,7 +182,7 @@ void DriveSelectionWidget::setDriveIcon() {
     ExitCode exitCode;
     QColor driveColor;
     exitCode = GuiRequests::getDriveDefaultColor(driveColor);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcDriveSelectionWidget()) << "Error in Requests::getDriveDefaultColor";
         return;
     }
@@ -200,15 +193,15 @@ void DriveSelectionWidget::setDriveIcon() {
 void DriveSelectionWidget::setDriveIcon(const QColor &color) {
     if (_driveIconLabel) {
         _driveIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", color).pixmap(_driveIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", color).pixmap(_driveIconSize));
     }
 }
 
 void DriveSelectionWidget::setDownIcon() {
     if (_downIconLabel && _downIconSize != QSize() && _downIconColor != QColor()) {
         _downIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-down.svg", _downIconColor)
-                .pixmap(_downIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-down.svg", _downIconColor)
+                        .pixmap(_downIconSize));
     }
 }
 
@@ -224,4 +217,4 @@ void DriveSelectionWidget::retranslateUi() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

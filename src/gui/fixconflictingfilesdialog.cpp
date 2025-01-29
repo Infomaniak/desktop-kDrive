@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,9 @@
 #include "customtoolbutton.h"
 #include "guirequests.h"
 #include "libcommon/theme/theme.h"
-
+#include "libcommon/utility/utility.h"
+#include "guiutility.h"
+#include "config.h"
 #include <algorithm>
 
 #include <QDesktopServices>
@@ -42,13 +44,14 @@ static const int titleBoxVMargin = 14;
 
 static const QString learnMoreLink = "learnMoreLink";
 
-FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *parent /*= nullptr*/)
-    : CustomDialog(true, parent), _driveDbId(driveDbId) {
+FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *parent /*= nullptr*/) :
+    CustomDialog(true, parent), _driveDbId(driveDbId) {
     setModal(true);
     setResizable(true);
     GuiRequests::getConflictList(
-        _driveDbId, {ConflictTypeCreateCreate, ConflictTypeEditEdit, ConflictTypeMoveCreate, ConflictTypeMoveMoveDest},
-        _conflictList);
+            _driveDbId,
+            {ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest},
+            _conflictList);
     initUi();
 }
 
@@ -57,6 +60,11 @@ void FixConflictingFilesDialog::onLinkActivated(const QString &link) {
         if (!QDesktopServices::openUrl(QUrl(Theme::instance()->conflictHelpUrl()))) {
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(Theme::instance()->conflictHelpUrl()),
                                     QMessageBox::Ok, this);
+            msgBox.exec();
+        }
+    } else {
+        if (!QDesktopServices::openUrl(QUrl(link))) {
+            CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(link), QMessageBox::Ok, this);
             msgBox.exec();
         }
     }
@@ -86,6 +94,10 @@ void FixConflictingFilesDialog::onValidate() {
     accept();
 }
 
+void FixConflictingFilesDialog::onKeepRemoteButtonToggled(bool checked) {
+    _keepRemoteDisclaimerWidget->setVisible(checked);
+}
+
 void FixConflictingFilesDialog::initUi() {
     setObjectName("ResolveConflictsDialog");
 
@@ -93,7 +105,7 @@ void FixConflictingFilesDialog::initUi() {
     mainLayout->setContentsMargins(boxHMargin, 0, boxHMargin, boxVMargin);
 
     // Title
-    auto titleLabel = new QLabel(this);
+    const auto titleLabel = new QLabel(this);
     titleLabel->setObjectName("titleLabel");
     titleLabel->setText(tr("Solve conflict(s)"));
 
@@ -101,7 +113,7 @@ void FixConflictingFilesDialog::initUi() {
     mainLayout->addSpacing(titleBoxVMargin);
 
     // Description
-    auto textLabel = new QLabel(this);
+    const auto textLabel = new QLabel(this);
     textLabel->setObjectName("textLabel");
     textLabel->setWordWrap(true);
     textLabel->setText(descriptionText());
@@ -111,32 +123,58 @@ void FixConflictingFilesDialog::initUi() {
     mainLayout->addWidget(textLabel);
 
     // Selection buttons
-    auto selectionLabel = new QLabel(this);
+    const auto selectionLabel = new QLabel(this);
     selectionLabel->setObjectName("descriptionLabel");
-    selectionLabel->setText(tr("<b>What do you want to do with the %1 conflicted item(s) that is(are) not synced in kDrive?</b>")
-                                .arg(_conflictList.length()));
+    selectionLabel->setText(tr("<b>What do you want to do with the %1 conflicted item(s)?</b>").arg(_conflictList.length()));
 
     _keepLocalButton = new CustomRadioButton(this);
-    _keepLocalButton->setText(tr("Synchronize the local version of my item(s) in kDrive."));
+    _keepLocalButton->setText(tr("Save my changes and replace other users' versions."));
     _keepLocalButton->setChecked(true);
 
     _keepRemoteButton = new CustomRadioButton(this);
-    if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
-        _keepRemoteButton->setText(tr("Move the local version of my item(s) to the computer's trash."));
-    } else {
-        _keepRemoteButton->setText(tr("Permanently delete the local version of my item(s)."));
-    }
+    _keepRemoteButton->setText(tr("Undo my changes and keep other users' versions."));
+    connect(_keepRemoteButton, &CustomRadioButton::toggled, this, &FixConflictingFilesDialog::onKeepRemoteButtonToggled);
 
+    _keepRemoteDisclaimerWidget = new QWidget();
+    _keepRemoteDisclaimerWidget->setObjectName("disclaimerWidget");
+    const auto keepLocalDisclaimerLayout = new QHBoxLayout(_keepRemoteDisclaimerWidget);
+    const auto warningIconLabel = new QLabel();
+    warningIconLabel->setPixmap(
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", QColor(255, 140, 0))
+                    .pixmap(20, 20));
+    warningIconLabel->setContentsMargins(0, 0, boxHMargin / 4, 0);
+    keepLocalDisclaimerLayout->addWidget(warningIconLabel);
+
+    const auto keepRemoteDisclaimerLabel = new QLabel();
+    keepRemoteDisclaimerLabel->setWordWrap(true);
+    keepLocalDisclaimerLayout->addWidget(keepRemoteDisclaimerLabel);
+
+
+    if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
+        const auto keepRemoteDisclaimerLearnMoreLabel = new QLabel();
+        connect(keepRemoteDisclaimerLearnMoreLabel, &QLabel::linkActivated, this, &FixConflictingFilesDialog::onLinkActivated);
+        keepRemoteDisclaimerLabel->setText(
+                tr("Your changes may be permanently deleted. They cannot be restored from the kDrive web application."));
+        keepRemoteDisclaimerLearnMoreLabel->setText(
+                tr("<a style=%1 href=\"%2\">Learn more</a>").arg(CommonUtility::linkStyle, LEARNMORE_MOVE_TO_TRASH_URL));
+        keepLocalDisclaimerLayout->addWidget(keepRemoteDisclaimerLearnMoreLabel);
+    } else {
+        keepRemoteDisclaimerLabel->setText(
+                tr("Your changes will be permanently deleted. They cannot be restored from the kDrive web application."));
+    }
+    keepLocalDisclaimerLayout->setStretchFactor(keepRemoteDisclaimerLabel, 1);
+    _keepRemoteDisclaimerWidget->hide();
     auto selectionLayout = new QVBoxLayout(this);
     selectionLayout->setContentsMargins(0, 4 * boxVMargin, 0, boxVMargin);
     selectionLayout->setSpacing(boxHSpacing);
     selectionLayout->addWidget(selectionLabel);
     selectionLayout->addWidget(_keepLocalButton);
     selectionLayout->addWidget(_keepRemoteButton);
+    selectionLayout->addWidget(_keepRemoteDisclaimerWidget);
     mainLayout->addLayout(selectionLayout);
 
     // Details
-    auto detailsLabel = new QLabel(this);
+    const auto detailsLabel = new QLabel(this);
     detailsLabel->setObjectName("descriptionLabel");
     detailsLabel->setText(tr("Show item(s)"));
 
@@ -145,7 +183,7 @@ void FixConflictingFilesDialog::initUi() {
     _expandButton->setIconPath(":/client/resources/icons/actions/chevron-down.svg");
     connect(_expandButton, &CustomToolButton::clicked, this, &FixConflictingFilesDialog::onExpandButtonClicked);
 
-    auto detailsLabelLayout = new QHBoxLayout(this);
+    const auto detailsLabelLayout = new QHBoxLayout(this);
     detailsLabelLayout->addWidget(detailsLabel);
     detailsLabelLayout->addSpacing(5);
     detailsLabelLayout->addWidget(_expandButton);
@@ -160,31 +198,31 @@ void FixConflictingFilesDialog::initUi() {
 
     _stackedWidget = new QStackedWidget(this);
 
-    auto dummyWidget = new QWidget(this);
+    const auto dummyWidget = new QWidget(this);
     dummyWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     _stackedWidget->insertWidget(0, dummyWidget);
     _stackedWidget->insertWidget(1, _fileListWidget);
 
-    auto detailsLayout = new QVBoxLayout(this);
+    const auto detailsLayout = new QVBoxLayout(this);
     detailsLayout->setContentsMargins(0, 2 * boxVMargin, 0, boxVMargin);
     detailsLayout->addLayout(detailsLabelLayout);
     detailsLayout->addWidget(_stackedWidget);
     mainLayout->addLayout(detailsLayout);
 
     // Validation buttons
-    auto validateButton = new QPushButton(this);
+    const auto validateButton = new QPushButton(this);
     validateButton->setObjectName("defaultbutton");
     validateButton->setFlat(true);
     validateButton->setText(tr("VALIDATE"));
     connect(validateButton, &QPushButton::clicked, this, &FixConflictingFilesDialog::onValidate);
 
-    auto cancelButton = new QPushButton(this);
+    const auto cancelButton = new QPushButton(this);
     cancelButton->setObjectName("nondefaultbutton");
     cancelButton->setFlat(true);
     cancelButton->setText(tr("CANCEL"));
     connect(cancelButton, &QPushButton::clicked, this, &FixConflictingFilesDialog::reject);
 
-    auto buttonsLayout = new QHBoxLayout();
+    const auto buttonsLayout = new QHBoxLayout();
     buttonsLayout->setContentsMargins(0, 0, 0, boxVMargin);
     buttonsLayout->setSpacing(boxHSpacing);
     buttonsLayout->addWidget(validateButton);
@@ -198,22 +236,21 @@ void FixConflictingFilesDialog::initUi() {
 QString FixConflictingFilesDialog::descriptionText() const {
     QString str;
     str =
-        tr("When an item has been modified on both the computer and the kDrive or when an item has been created on the computer "
-           "with a name that already exists on the kDrive, "
-           "kDrive renames your local item and downloads kDrive's version on your computer so as not to lose any data.<br>");
+            tr("Modifications have been made to these files by several users in several places (online on kDrive, a computer or "
+               "a mobile). Folders containing these files may also have been deleted.<br>");
     str += tr("The local version of your item <b>is not synced</b> with kDrive. <a style=\"color: #489EF3\" href=\"%1\">Learn "
               "more</a>")
-               .arg(learnMoreLink);
+                   .arg(learnMoreLink);
 
     return str;
 }
 
 void FixConflictingFilesDialog::insertFileItems(const int nbItems) {
-    uint64_t max = std::min(_fileListWidget->count() + nbItems, (int)_conflictList.size());
-    for (uint64_t i = _fileListWidget->count(); i < max; i++) {
-        auto w = new FileItemWidget(_conflictList[i].destinationPath(), _conflictList[i].nodeType(), this);
+    int max = (std::min)(_fileListWidget->count() + nbItems, static_cast<int>(_conflictList.size()));
+    for (auto i = _fileListWidget->count(); i < max; i++) {
+        const auto w = new FileItemWidget(_conflictList[i].destinationPath(), _conflictList[i].nodeType(), this);
 
-        auto listWidgetItem = new QListWidgetItem();
+        const auto listWidgetItem = new QListWidgetItem();
         listWidgetItem->setFlags(Qt::NoItemFlags);
         listWidgetItem->setForeground(Qt::transparent);
         _fileListWidget->insertItem(i, listWidgetItem);
@@ -223,4 +260,4 @@ void FixConflictingFilesDialog::insertFileItems(const int nbItems) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

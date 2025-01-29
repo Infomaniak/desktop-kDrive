@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,38 +39,38 @@ void TestIo::testSetXAttrValue() {
             ofs << "Some content.\n";
             ofs.close();
         }
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "corrupted", ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
         std::string value;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
         CPPUNIT_ASSERT(value == "corrupted");
 
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "sound", ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
         CPPUNIT_ASSERT(value == "sound");
     }
 
     // A non-existing file
     {
-        const SyncPath path = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
-        IoError ioError = IoErrorSuccess;
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "on-fire", ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
     }
 
     // A non-existing file with a very long name
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
-        IoError ioError = IoErrorSuccess;
+        const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(!_testObj->setXAttrValue(path, "status", "water-proof", ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);
     }
 
     // A regular file missing owner write permission: access denied expected
@@ -83,16 +83,16 @@ void TestIo::testSetXAttrValue() {
         }
         std::filesystem::permissions(path, std::filesystem::perms::owner_write, std::filesystem::perm_options::remove);
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "locked", ioError));
 
         std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 
-        CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
+        CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
 
         std::string value;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorAttrNotFound);
+        CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
         CPPUNIT_ASSERT(value.empty());
     }
 #endif
@@ -106,34 +106,34 @@ void TestIo::testSetXAttrValue() {
             std::ofstream ofs(path);
             ofs.close();
         }
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
         bool value = false;
-        ioError = IoErrorUnknown;
+        ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
         CPPUNIT_ASSERT(value);
 
-        ioError = IoErrorUnknown;
+        ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_NORMAL, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
-        ioError = IoErrorUnknown;
+        ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, FILE_ATTRIBUTE_HIDDEN, value, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
         CPPUNIT_ASSERT(!value);
     }
 
     // A non-existing file
     {
-        const SyncPath path = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
-        IoError ioError = IoErrorSuccess;
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_NORMAL, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
     }
 #endif
 }
 
-}  // namespace KDC
+} // namespace KDC

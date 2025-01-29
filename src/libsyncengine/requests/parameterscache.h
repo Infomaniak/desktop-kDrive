@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,15 +29,16 @@ namespace KDC {
 class SYNCENGINE_EXPORT ParametersCache {
     public:
         static std::shared_ptr<ParametersCache> instance(bool isTest = false);
-        inline static bool isExtendedLogEnabled() noexcept { return instance()->_parameters.extendedLog(); };
+        // If _instance is not initialized, use extended log by default
+        static bool isExtendedLogEnabled() noexcept { return instance() ? instance()->_parameters.extendedLog() : true; }
 
         ParametersCache(ParametersCache const &) = delete;
         void operator=(ParametersCache const &) = delete;
 
-        inline Parameters &parameters() { return _parameters; }
-        ExitCode save();
+        Parameters &parameters() { return _parameters; }
+        void save(ExitCode *exitCode = nullptr) const;
 
-        void setUploadSessionParallelThreads(int count);  // For testing purpose
+        void setUploadSessionParallelThreads(int count); // For testing purpose
         void decreaseUploadSessionParallelThreads();
 
     private:
@@ -47,4 +48,4 @@ class SYNCENGINE_EXPORT ParametersCache {
         ParametersCache(bool isTest = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

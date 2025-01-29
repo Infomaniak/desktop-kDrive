@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@ class RemoteTemporaryDirectory {
     public:
         RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId, const std::string& testType = "undef");
         ~RemoteTemporaryDirectory();
+        void setDeleted() { _isDeleted = true; }
+        [[nodiscard]] bool isDeleted() const { return _isDeleted; }
 
         [[nodiscard]] const NodeId& id() const { return _dirId; }
         [[nodiscard]] const SyncName& name() const { return _dirName; }
@@ -34,6 +36,7 @@ class RemoteTemporaryDirectory {
         int _driveDbId{0};
         NodeId _dirId;
         SyncName _dirName;
+        bool _isDeleted{false};
 };
 
-}  // namespace KDC
+} // namespace KDC

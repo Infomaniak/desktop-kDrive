@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,12 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testNoOps);
         CPPUNIT_TEST(testMultipleOps);
         CPPUNIT_TEST(testLnkFileAlreadySynchronized);
+        CPPUNIT_TEST(testDifferentEncoding_NFC_NFD);
+        CPPUNIT_TEST(testDifferentEncoding_NFD_NFC);
+        CPPUNIT_TEST(testDifferentEncoding_NFD_NFD);
+        CPPUNIT_TEST(testDifferentEncoding_NFC_NFC);
+        CPPUNIT_TEST(testCreateDuplicateNamesWithDistinctEncodings);
+        CPPUNIT_TEST(testDeletionOfNestedFolders);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -41,21 +47,36 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
          */
         void testNoOps();
         /**
-         * Multiple operations of different types should be generated in this test.
+         * Multiple operations should be generated in this test: the types Create, Delete, Move and Edit are all expected.
          */
         void testMultipleOps();
         /**
          * Specific test for the issue https://infomaniak.atlassian.net/browse/KDESKTOP-893.
          * Sync is looping because a `.lnk` file was already synchronized with an earlier app's version.
-         * A Delete FS operation was generated on remote replica but could not be propagated since the file still exists on this 
+         * A Delete FS operation was generated on remote replica but could not be propagated since the file still exists on this
          * replica.
          * No FS operation should be generated on an excluded file.
          */
         void testLnkFileAlreadySynchronized();
+        // NFC in DB, NFD on FS
+        void testDifferentEncoding_NFC_NFD();
+        // NFD in DB, NFC on FS
+        void testDifferentEncoding_NFD_NFC();
+        // NFD in DB, NFD on FS
+        void testDifferentEncoding_NFD_NFD();
+        // NFC in DB, NFC on FS
+        void testDifferentEncoding_NFC_NFC();
+        void testCreateDuplicateNamesWithDistinctEncodings();
+
+        /**
+         * The deletion of a local folders and their common parent should generate a Delete operation for each item.
+         * Deletion of a blacklisted subfolder should not generate any operation.
+         */
+        void testDeletionOfNestedFolders();
 
     private:
         std::shared_ptr<SyncPal> _syncPal;
         LocalTemporaryDirectory _localTempDir{"TestSyncPal"};
 };
 
-}  // namespace KDC
+} // namespace KDC

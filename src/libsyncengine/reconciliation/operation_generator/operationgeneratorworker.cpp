@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,15 @@
 #include "update_detection/update_detector/updatetree.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "libcommon/log/sentry/ptraces.h"
 
 namespace KDC {
 
 OperationGeneratorWorker::OperationGeneratorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                                   const std::string &shortName)
-    : OperationProcessor(syncPal, name, shortName) {}
+                                                   const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
 
 void OperationGeneratorWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
@@ -37,19 +37,21 @@ void OperationGeneratorWorker::execute() {
     _bytesToDownload = 0;
 
     // Mark all nodes "Unprocessed"
-    _syncPal->updateTree(ReplicaSideLocal)->markAllNodesUnprocessed();
-    _syncPal->updateTree(ReplicaSideRemote)->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSide::Local)->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSide::Remote)->markAllNodesUnprocessed();
 
     _deletedNodes.clear();
 
     // Initiate breadth-first search with root nodes from both update trees
-    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
-    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideRemote)->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     // Explore both update trees
+    sentry::pTraces::counterScoped::GenerateItemOperations perfMonitor(syncDbId());
     while (!_queuedToExplore.empty()) {
+        perfMonitor.start();
         if (stopAsked()) {
-            exitCode = ExitCodeOk;
+            exitCode = ExitCode::Ok;
             break;
         }
 
@@ -73,63 +75,65 @@ void OperationGeneratorWorker::execute() {
         }
 
         // Explore children even if node is processed
-        for (const auto &child : currentNode->children()) {
+        for (const auto &child: currentNode->children()) {
             _queuedToExplore.push(child.second);
         }
 
-        if (currentNode->status() == NodeStatusProcessed) {
+        if (currentNode->status() == NodeStatus::Processed) {
             continue;
         }
 
         std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(currentNode);
-        if (!correspondingNode && !currentNode->hasChangeEvent(OperationTypeCreate) &&
-            (currentNode->hasChangeEvent(OperationTypeDelete) || currentNode->hasChangeEvent(OperationTypeEdit) ||
-             currentNode->hasChangeEvent(OperationTypeMove))) {
+        if (!correspondingNode && !currentNode->hasChangeEvent(OperationType::Create) &&
+            (currentNode->hasChangeEvent(OperationType::Delete) || currentNode->hasChangeEvent(OperationType::Edit) ||
+             currentNode->hasChangeEvent(OperationType::Move))) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << SyncName2WStr(currentNode->name()).c_str());
-            exitCode = ExitCodeDataError;
+            exitCode = ExitCode::DataError;
             break;
         }
 
-        if (currentNode->hasChangeEvent(OperationTypeCreate)) {
-            if (!(currentNode->side() == ReplicaSideLocal && currentNode->isSharedFolder())) {
+        if (currentNode->hasChangeEvent(OperationType::Create)) {
+            if (!(currentNode->side() == ReplicaSide::Local && currentNode->isSharedFolder())) {
                 generateCreateOperation(currentNode, correspondingNode);
             }
         }
 
-        if (currentNode->hasChangeEvent(OperationTypeDelete)) {
+        if (currentNode->hasChangeEvent(OperationType::Delete)) {
             generateDeleteOperation(currentNode, correspondingNode);
         }
 
-        if (currentNode->hasChangeEvent(OperationTypeEdit)) {
+        if (currentNode->hasChangeEvent(OperationType::Edit)) {
             generateEditOperation(currentNode, correspondingNode);
         }
 
-        if (currentNode->hasChangeEvent(OperationTypeMove)) {
+        if (currentNode->hasChangeEvent(OperationType::Move)) {
             generateMoveOperation(currentNode, correspondingNode);
         }
     }
 
-    if (exitCode == ExitCodeUnknown && _queuedToExplore.empty()) {
-        exitCode = ExitCodeOk;
+    if (exitCode == ExitCode::Unknown && _queuedToExplore.empty()) {
+        exitCode = ExitCode::Ok;
     }
 
     if (_bytesToDownload > 0) {
-        const int64_t freeBytes = Utility::freeDiskSpace(_syncPal->_localPath);
+        const int64_t freeBytes = Utility::freeDiskSpace(_syncPal->localPath());
         if (freeBytes >= 0) {
             if (freeBytes < _bytesToDownload + Utility::freeDiskSpaceLimit()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only "
-                                               << freeBytes << L" B available at path " << Path2WStr(_syncPal->_localPath).c_str()
-                                               << L", " << _bytesToDownload << L" B to download. Synchronization canceled.");
-                exitCode = ExitCodeSystemError;
-                setExitCause(ExitCauseNotEnoughDiskSpace);
+                LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only " << freeBytes << L" B available at path "
+                                                                      << Path2WStr(_syncPal->localPath()).c_str() << L", "
+                                                                      << _bytesToDownload
+                                                                      << L" B to download. Synchronization canceled.");
+                exitCode = ExitCode::SystemError;
+                setExitCause(ExitCause::NotEnoughDiskSpace);
             }
         } else {
-            LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at" << Path2WStr(_syncPal->_localPath).c_str());
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Could not determine free space available at" << Path2WStr(_syncPal->localPath()).c_str());
         }
     }
 
-    setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
 void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> currentNode,
@@ -140,36 +144,36 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
     if (correspondingNode && isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
         op->setCorrespondingNode(correspondingNode);
-        correspondingNode->setStatus(NodeStatusProcessed);
+        correspondingNode->setStatus(NodeStatus::Processed);
     }
 
-    op->setType(OperationTypeCreate);
+    op->setType(OperationType::Create);
     op->setAffectedNode(currentNode);
     ReplicaSide targetSide = otherSide(currentNode->side());
     op->setTargetSide(targetSide);
     // We do not set parent node here since it might have been just created as well. In that case, parent node does not exist yet
     // in update tree.
     op->setNewName(currentNode->name());
-    currentNode->setStatus(NodeStatusProcessed);
+    currentNode->setStatus(NodeStatus::Processed);
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Create-Create pseudo conflict detected. Operation Create to be propagated in DB only for item "
-                                   << SyncName2WStr(currentNode->name()).c_str());
+                                       << SyncName2WStr(currentNode->name()).c_str());
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(
-                _logger, L"Create operation "
-                             << op->id() << L" to be propagated on " << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
-                             << L" replica for item " << SyncName2WStr(op->newName()).c_str() << L" ("
-                             << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
+            LOGW_SYNCPAL_DEBUG(_logger, L"Create operation "
+                                                << op->id() << L" to be propagated on " << op->targetSide()
+                                                << L" replica for item " << SyncName2WStr(op->newName()).c_str() << L" ("
+                                                << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str()
+                                                << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSideLocal &&
-            currentNode->type() == NodeTypeFile) {
+        if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
+            currentNode->type() == NodeType::File) {
             _bytesToDownload += currentNode->size();
         }
     }
@@ -178,22 +182,22 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
 void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode) {
     SyncOpPtr op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode);  // Node must exists on both replica (except for create operations)
+    assert(correspondingNode); // Node must exists on both replica (except for create operations)
 
     // Check for Edit-Edit pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
-        correspondingNode->setStatus(NodeStatusProcessed);
+        correspondingNode->setStatus(NodeStatus::Processed);
     }
 
-    op->setType(OperationTypeEdit);
+    op->setType(OperationType::Edit);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
-    if (currentNode->hasChangeEvent(OperationTypeMove) && currentNode->status() == NodeStatusUnprocessed) {
-        currentNode->setStatus(NodeStatusPartiallyProcessed);
+    if (currentNode->hasChangeEvent(OperationType::Move) && currentNode->status() == NodeStatus::Unprocessed) {
+        currentNode->setStatus(NodeStatus::PartiallyProcessed);
     } else {
-        currentNode->setStatus(NodeStatusProcessed);
+        currentNode->setStatus(NodeStatus::Processed);
     }
     _syncPal->_syncOps->pushOp(op);
 
@@ -201,20 +205,19 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Edit-Edit pseudo conflict detected. Operation Edit to be propagated in DB only for item "
-                                   << SyncName2WStr(currentNode->name()).c_str());
+                                       << SyncName2WStr(currentNode->name()).c_str());
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Edit operation "
-                                            << op->id() << L" to be propagated on "
-                                            << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str() << L" replica for item "
-                                            << SyncName2WStr(currentNode->name()).c_str() << L"(ID: "
-                                            << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str()
-                                            << L")");
+                                                << op->id() << L" to be propagated on " << op->targetSide()
+                                                << L" replica for item " << SyncName2WStr(currentNode->name()).c_str() << L"(ID: "
+                                                << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str()
+                                                << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSideLocal &&
-            currentNode->type() == NodeTypeFile) {
+        if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
+            currentNode->type() == NodeType::File) {
             // Keep only the difference between remote size and local size
             int64_t diffSize = currentNode->size() - correspondingNode->size();
 
@@ -226,54 +229,46 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
 void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode) {
     SyncOpPtr op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode);  // Node must exists on both replica (except for create operations)
+    assert(correspondingNode); // Node must exists on both replica (except for create operations)
 
     // Check for Move-Move (Source) pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
-        correspondingNode->setStatus(NodeStatusProcessed);
+        correspondingNode->setStatus(NodeStatus::Processed);
     }
 
-    /*
-     * Special case:
-     * 1 - The file name contained à special character, for example: "test:1.png" and was renamed locally "test%3a1.png".
-     * 2 - The file is renamed "test%3a2.png" on local side. Since the "%3a" was not removed, the name is uploaded as it is on
-     * local replica and appears now "test%3a2.png" on remote. 3 - The file is renamed "test:2.png" on remote replica. We then try
-     * to rename the local file "test%3a2.png" but fail since it already exist
-     */
-    if (currentNode->side() == ReplicaSideRemote && correspondingNode->name().empty() &&
+    if (currentNode->side() == ReplicaSide::Remote && correspondingNode->name().empty() &&
         currentNode->name() == correspondingNode->name()) {
         // Only update DB and tree
         op->setOmit(true);
     }
 
-    op->setType(OperationTypeMove);
+    op->setType(OperationType::Move);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
     op->setNewName(currentNode->name());
-    if (currentNode->hasChangeEvent(OperationTypeEdit) && currentNode->status() == NodeStatusUnprocessed) {
-        currentNode->setStatus(NodeStatusPartiallyProcessed);
+    if (currentNode->hasChangeEvent(OperationType::Edit) && currentNode->status() == NodeStatus::Unprocessed) {
+        currentNode->setStatus(NodeStatus::PartiallyProcessed);
     } else {
-        currentNode->setStatus(NodeStatusProcessed);
+        currentNode->setStatus(NodeStatus::Processed);
     }
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
-                _logger, L"Move-Move (Source) pseudo conflict detected. Operation Move to be propagated in DB only for item "
-                             << SyncName2WStr(currentNode->name()).c_str());
+                    _logger, L"Move-Move (Source) pseudo conflict detected. Operation Move to be propagated in DB only for item "
+                                     << SyncName2WStr(currentNode->name()).c_str());
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Move operation "
-                                   << op->id() << L" to be propagated on "
-                                   << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str() << L" replica from \""
-                                   << (currentNode->moveOrigin() ? Path2WStr(currentNode->moveOrigin().value()).c_str() : L"")
-                                   << L"\" to \"" << Path2WStr(currentNode->getPath()).c_str() << L"\" (ID: "
-                                   << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
+                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica from \""
+                                       << (currentNode->moveOrigin() ? Path2WStr(currentNode->moveOrigin().value()).c_str() : L"")
+                                       << L"\" to \"" << Path2WStr(currentNode->getPath()).c_str() << L"\" (ID: "
+                                       << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
     }
 }
@@ -282,7 +277,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                                        std::shared_ptr<Node> correspondingNode) {
     auto op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode);  // Node must exist on both replica (except for create operations)
+    assert(correspondingNode); // Node must exist on both replica (except for create operations)
 
     // Do not generate delete operation if parent already deleted
     if (_deletedNodes.contains(*currentNode->parentNode()->id())) {
@@ -290,40 +285,40 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     }
 
     // Check if corresponding node has been also deleted
-    if (correspondingNode->hasChangeEvent(OperationTypeDelete)) {
+    if (correspondingNode->hasChangeEvent(OperationType::Delete)) {
         op->setOmit(true);
     }
 
-    op->setType(OperationTypeDelete);
+    op->setType(OperationType::Delete);
     findAndMarkAllChildNodes(currentNode);
-    currentNode->setStatus(NodeStatusProcessed);
+    currentNode->setStatus(NodeStatus::Processed);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
 
     // Also mark all corresponding nodes as Processed
     findAndMarkAllChildNodes(correspondingNode);
-    correspondingNode->setStatus(NodeStatusProcessed);
+    correspondingNode->setStatus(NodeStatus::Processed);
 
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Corresponding file already deleted on "
-                                            << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
-                                            << L" replica. Operation Delete to be propagated in DB only for item "
-                                            << SyncName2WStr(currentNode->name()).c_str());
+                                                << op->targetSide()
+                                                << L" replica. Operation Delete to be propagated in DB only for item "
+                                                << SyncName2WStr(currentNode->name()).c_str());
         }
-        _syncPal->_restart =
-            true;  // In certain cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
-                   // of next sync because nothing has changed but create events are not propagated
+        _syncPal->setRestart(true);
+        // In certain cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
+        // of next sync because nothing has changed but create events are not propagated
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(
-                _logger, L"Delete operation "
-                             << op->id() << L" to be propagated on " << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
-                             << L" replica for item " << SyncName2WStr(currentNode->name()).c_str() << L" ("
-                             << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
+            LOGW_SYNCPAL_DEBUG(_logger, L"Delete operation "
+                                                << op->id() << L" to be propagated on " << op->targetSide()
+                                                << L" replica for item " << SyncName2WStr(currentNode->name()).c_str() << L" ("
+                                                << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str()
+                                                << L")");
         }
     }
 
@@ -331,12 +326,12 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
 }
 
 void OperationGeneratorWorker::findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode) {
-    for (auto &childNode : parentNode->children()) {
-        if (childNode.second->type() == NodeTypeDirectory) {
+    for (auto &childNode: parentNode->children()) {
+        if (childNode.second->type() == NodeType::Directory) {
             findAndMarkAllChildNodes(childNode.second);
         }
-        childNode.second->setStatus(NodeStatusProcessed);
+        childNode.second->setStatus(NodeStatus::Processed);
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

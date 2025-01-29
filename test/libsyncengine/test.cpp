@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "update_detection/file_system_observer/testsnapshot.h"
 #include "update_detection/file_system_observer/testcomputefsoperationworker.h"
 #include "update_detection/update_detector/testupdatetree.h"
+#include "update_detection/update_detector/testnode.h"
 #include "update_detection/update_detector/testupdatetreeworker.h"
 #include "reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.h"
 #include "reconciliation/conflict_finder/testconflictfinderworker.h"
@@ -40,6 +41,13 @@
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
 #include "requests/testexclusiontemplatecache.h"
+#include "requests/testserverrequests.h"
+
+#ifdef __APPLE__
+#include "update_detection/file_system_observer/testfolderwatchermac.h"
+#elif __unix__
+#include "update_detection/file_system_observer/testfolderwatcherlinux.h"
+#endif
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
@@ -52,22 +60,29 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperation);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
+#ifdef __APPLE__
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
+#elif __unix__
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
+#endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestNode);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
-//  CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
-//  CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
-//  CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
-}  // namespace KDC
+CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
+} // namespace KDC
 
 int main(int, char **) {
     return runTestSuite("_kDriveTestSyncEngine.log");

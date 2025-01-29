@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,36 +28,33 @@ namespace KDC {
 
 class PlatformInconsistencyCheckerUtility {
     public:
-        typedef enum { SuffixTypeRename, SuffixTypeConflict, SuffixTypeOrphan, SuffixTypeBlacklisted } SuffixType;
+        enum class SuffixType { Conflict, Orphan, Blacklisted };
 
     public:
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> instance();
 
-        SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
-        static ExitCode renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
+        bool isNameTooLong(const SyncName &name) const;
+        bool isPathTooLong(size_t pathSize);
+        bool nameHasForbiddenChars(const SyncPath &name);
 
-        bool checkNameForbiddenChars(const SyncPath &name);
 #ifdef _WIN32
         bool fixNameWithBackslash(const SyncName &name, SyncName &newName);
 #endif
-        bool checkNameSize(const SyncPath &name);
-        bool checkReservedNames(const SyncPath &name);
-        bool checkPathLength(size_t pathSize, NodeType type);
+        bool checkReservedNames(const SyncName &name);
+        SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
+        static ExitInfo renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
 
     private:
         PlatformInconsistencyCheckerUtility();
 
         SyncName charToHex(unsigned int c);
         void setMaxPath();
-        SyncName generateSuffix(SuffixType suffixType = SuffixTypeRename);
+        SyncName generateSuffix(SuffixType suffixType);
 
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> _instance;
         static size_t _maxPathLength;
-#if defined(_WIN32)
-        static size_t _maxPathLengthFolder;
-#endif
 
         friend class TestPlatformInconsistencyCheckerWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

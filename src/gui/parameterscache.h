@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,12 @@ namespace KDC {
 class ParametersCache {
     public:
         static std::shared_ptr<ParametersCache> instance() noexcept;
-        inline static bool isExtendedLogEnabled() noexcept { return instance()->_parametersInfo.extendedLog(); };
+        static bool isExtendedLogEnabled() noexcept { return instance()->_parametersInfo.extendedLog(); };
 
         ParametersCache(ParametersCache const &) = delete;
         void operator=(ParametersCache const &) = delete;
 
-        inline ParametersInfo &parametersInfo() { return _parametersInfo; }
+        ParametersInfo &parametersInfo() { return _parametersInfo; }
         bool saveParametersInfo(bool displayMessageBoxOnError = true);
 
     private:
@@ -42,4 +42,4 @@ class ParametersCache {
         ParametersCache();
 };
 
-}  // namespace KDC
+} // namespace KDC

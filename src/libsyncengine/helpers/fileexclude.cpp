@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,13 +35,13 @@ std::shared_ptr<FileExclude> FileExclude::instance() {
 
 bool FileExclude::isExcluded(const SyncPath &relativePath, bool syncHiddenFiles) {
     bool isHidden = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
 
     if (!syncHiddenFiles && IoHelper::checkIfIsHiddenFile(relativePath, isHidden, ioError) && isHidden) {
         return true;
     }
 
-    for (const auto &pattern : getRegexPatterns()) {
+    for (const auto &pattern: getRegexPatterns()) {
         if (std::regex_match(relativePath.filename().string(), pattern.first)) {
             // TODO : send the associated warning if necessary
             // LOG4CPLUS_DEBUG(Log::instance()->getLogger(), "Item \"" << relativePath.string().c_str() << "\" rejected because of
@@ -62,7 +62,7 @@ const std::vector<std::pair<std::regex, ExclusionTemplate>> &FileExclude::getReg
     if (ParmsDb::instance()->exclusionTemplateChanged()) {
         _regexPatterns.clear();
 
-        for (const auto &exclPattern : ExclusionTemplateCache::instance()->exclusionTemplates()) {
+        for (const auto &exclPattern: ExclusionTemplateCache::instance()->exclusionTemplates()) {
             std::string templateTest = exclPattern.templ();
             escapeRegexSpecialChar(templateTest);
 
@@ -71,7 +71,7 @@ const std::vector<std::pair<std::regex, ExclusionTemplate>> &FileExclude::getReg
             if (templateTest[0] == '*') {
                 regexPattern += ".*?";
             } else {
-                regexPattern += "^";  // Start of string
+                regexPattern += "^"; // Start of string
             }
 
             std::vector<std::string> splitStr = Utility::splitStr(templateTest, '*');
@@ -91,7 +91,7 @@ const std::vector<std::pair<std::regex, ExclusionTemplate>> &FileExclude::getReg
             if (templateTest[templateTest.size() - 1] == '*') {
                 regexPattern += ".*?";
             } else {
-                regexPattern += "$";  // End of string
+                regexPattern += "$"; // End of string
             }
 
             _regexPatterns.push_back(std::make_pair(std::regex(regexPattern), exclPattern));
@@ -105,11 +105,11 @@ void FileExclude::escapeRegexSpecialChar(std::string &in) {
     std::string out;
     static const char metacharacters[] = R"(\.^$-+()[]{}|?)";
     out.reserve(in.size());
-    for (const auto &ch : in) {
+    for (const auto &ch: in) {
         if (std::strchr(metacharacters, ch)) out.push_back('\\');
         out.push_back(ch);
     }
     in = out;
 }
 
-}  // namespace KDC
+} // namespace KDC

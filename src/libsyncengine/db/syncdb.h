@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,8 @@ class SyncDb : public Db {
     public:
         SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId = std::string());
 
+        std::string dbType() const override { return "Sync"; }
+
         bool create(bool &retry) override;
         bool prepare() override;
         bool upgrade(const std::string &fromVersion, const std::string &toVersion) override;
@@ -40,7 +42,7 @@ class SyncDb : public Db {
         bool initData();
 
         bool insertNode(const DbNode &node, DbNodeId &dbNodeId,
-                        bool &constraintError);  // The local and remote names of an inserted node are normalized.
+                        bool &constraintError); // The local and remote names of an inserted node are normalized.
         bool updateNode(const DbNode &node, bool &found);
         bool updateNodeStatus(DbNodeId nodeId, SyncFileStatus status, bool &found);
         bool updateNodesSyncing(bool syncing);
@@ -51,23 +53,23 @@ class SyncDb : public Db {
         bool clearNodes();
 
         // Getters with replica IDs
-        bool id(ReplicaSide snapshot, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found);
-        bool id(ReplicaSide snapshot, DbNodeId dbNodeId, NodeId &nodeId, bool &found);
-        bool type(ReplicaSide snapshot, const NodeId &nodeId, NodeType &type, bool &found);
-        bool size(ReplicaSide snapshot, const NodeId &nodeId, int64_t &size, bool &found);
-        bool created(ReplicaSide snapshot, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
-        bool lastModified(ReplicaSide snapshot, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
-        bool parent(ReplicaSide snapshot, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
-        bool path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bool &found);
-        bool name(ReplicaSide snapshot, const NodeId &nodeId, SyncName &name, bool &found);
-        bool checksum(ReplicaSide snapshot, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);
-        bool ids(ReplicaSide snapshot, std::vector<NodeId> &ids, bool &found);
-        bool ids(ReplicaSide snapshot, std::unordered_set<NodeId> &ids, bool &found);
-        bool ancestor(ReplicaSide snapshot, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found);
-        bool dbId(ReplicaSide snapshot, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);
+        bool id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found);
+        bool id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found);
+        bool type(ReplicaSide side, const NodeId &nodeId, NodeType &type, bool &found);
+        bool size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &found);
+        bool created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
+        bool lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
+        bool parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
+        bool path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &found);
+        bool name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &found);
+        bool checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);
+        bool ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found);
+        bool ids(ReplicaSide side, std::unordered_set<NodeId> &ids, bool &found);
+        bool ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found);
+        bool dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);
         bool dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found);
-        bool correspondingNodeId(ReplicaSide snapshot, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
-        bool node(ReplicaSide snapshot, const NodeId &nodeId, DbNode &dbNode, bool &found);
+        bool correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
+        bool node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &found);
 
         // Getters with db IDs
         bool dbIds(std::unordered_set<DbNodeId> &ids, bool &found);
@@ -98,15 +100,36 @@ class SyncDb : public Db {
 
         bool setTargetNodeId(const std::string &targetNodeId, bool &found);
 
+    protected:
+        virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
+
     private:
         static DbNode _driveRootNode;
         DbNode _rootNode;
 
-        bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
-        bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
+        bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
+        bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
 
-        // Fixes an issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node
-        bool normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber);
+        // Helpers
+        bool checkNodeIds(const DbNode &node);
+
+        // Fixes
+        bool updateNodeLocalName(DbNodeId nodeId, const SyncName &localName, bool &found);
+        struct NamedNode {
+                DbNodeId dbNodeId{-1};
+                SyncName localName;
+        };
+        using IntNodeId = unsigned long long;
+        using NamedNodeMap = std::unordered_map<IntNodeId, NamedNode>;
+        bool selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap);
+        using SyncNameMap = std::unordered_map<DbNodeId, SyncName>;
+        bool updateNamesWithDistinctEncodings(const SyncNameMap &localNames);
+        // Fix issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node.
+        bool normalizeRemoteNames();
+        // Use the actual encoding of local file names in DB.
+        bool reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber);
+
+        friend class TestSyncDb;
 };
 
-}  // namespace KDC
+} // namespace KDC

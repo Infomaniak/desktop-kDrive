@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,9 +47,9 @@ static const int filesTableBoxVMargin = 20;
 
 static const int rowHeight = 38;
 
-static QVector<int> tableColumnWidth = QVector<int>() << 255  // tableColumn::Pattern
-                                                      << 190  // tableColumn::Deletable
-                                                      << 35;  // tableColumn::Action
+static QVector<int> tableColumnWidth = QVector<int>() << 255 // tableColumn::Pattern
+                                                      << 190 // tableColumn::Deletable
+                                                      << 35; // tableColumn::Action
 
 static const int viewIconPathRole = Qt::UserRole;
 static const int readOnlyRole = Qt::UserRole + 1;
@@ -58,17 +58,10 @@ static const char patternProperty[] = "pattern";
 
 Q_LOGGING_CATEGORY(lcFileExclusionDialog, "gui.fileexclusiondialog", QtInfoMsg)
 
-FileExclusionDialog::FileExclusionDialog(QWidget *parent)
-    : CustomDialog(true, parent),
-      _hiddenFilesCheckBox(nullptr),
-      _filesTableModel(nullptr),
-      _filesTableView(nullptr),
-      _saveButton(nullptr),
-      _actionIconColor(QColor()),
-      _actionIconSize(QSize()),
-      _needToSave(false),
-      _defaultTemplateList(QList<ExclusionTemplateInfo>()),
-      _userTemplateList(QList<ExclusionTemplateInfo>()) {
+FileExclusionDialog::FileExclusionDialog(QWidget *parent) :
+    CustomDialog(true, parent), _hiddenFilesCheckBox(nullptr), _filesTableModel(nullptr), _filesTableView(nullptr),
+    _saveButton(nullptr), _actionIconColor(QColor()), _actionIconSize(QSize()), _needToSave(false),
+    _defaultTemplateList(QList<ExclusionTemplateInfo>()), _userTemplateList(QList<ExclusionTemplateInfo>()) {
     initUI();
     updateUI();
 }
@@ -188,14 +181,14 @@ void FileExclusionDialog::updateUI() {
 
     ExitCode exitCode;
     exitCode = GuiRequests::getExclusionTemplateList(true, _defaultTemplateList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList: code=" << exitCode;
         return;
     }
 
     exitCode = GuiRequests::getExclusionTemplateList(false, _userTemplateList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList: code=" << exitCode;
         return;
     }
 
@@ -296,14 +289,14 @@ void FileExclusionDialog::loadPatternTable(QString scrollToPattern) {
     _filesTableModel->clear();
 
     // Default patterns
-    for (const auto &templ : _defaultTemplateList) {
+    for (const auto &templ: _defaultTemplateList) {
         if (!templ.deleted()) {
             addTemplate(templ, true, row, scrollToPattern, scrollToRow);
         }
     }
 
     // User patterns
-    for (const auto &templ : _userTemplateList) {
+    for (const auto &templ: _userTemplateList) {
         addTemplate(templ, false, row, scrollToPattern, scrollToRow);
     }
 
@@ -354,7 +347,7 @@ void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
     FileExclusionNameDialog dialog(this);
     if (dialog.exec() == QDialog::Accepted) {
         QString templ = dialog.templ();
-        for (const auto &templInfo : _userTemplateList) {
+        for (const auto &templInfo: _userTemplateList) {
             if (templInfo.templ() == templ) {
                 CustomMessageBox msgBox(QMessageBox::Information, tr("Exclusion template already exists!"), QMessageBox::Ok,
                                         this);
@@ -460,16 +453,16 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
     ExitCode exitCode = GuiRequests::setExclusionTemplateList(true, _defaultTemplateList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList: code=" << exitCode;
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
         return;
     }
 
     exitCode = GuiRequests::setExclusionTemplateList(false, _userTemplateList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList: code=" << exitCode;
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
         return;
@@ -479,11 +472,11 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
     ParametersCache::instance()->saveParametersInfo();
 
     exitCode = GuiRequests::propagateExcludeListChange();
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::propagateExcludeListChange : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::propagateExcludeListChange: code=" << exitCode;
     }
 
     accept();
 }
 
-}  // namespace KDC
+} // namespace KDC

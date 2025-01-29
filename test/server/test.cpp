@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,14 +23,20 @@
 #include "vfs/mac/testlitesyncextconnector.h"
 #endif
 #include "logarchiver/testlogarchiver.h"
-#include "updater/testupdater.h"
+#include "workers/testworkers.h"
+#include "updater/testabstractupdater.h"
+#include "updater/testupdatechecker.h"
+
 namespace KDC {
+
 #ifdef __APPLE__
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdater);
-}  // namespace KDC
+CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
+} // namespace KDC
 
 int main(int, char **) {
     return runTestSuite("_kDriveTestServer.log");

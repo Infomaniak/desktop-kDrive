@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,18 +34,24 @@ bool LocalCreateDirJob::canRun() {
 
     // Check that we can create the directory here
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilePath, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilePath).c_str());
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
     if (exists) {
         LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" already exist.");
-        _exitCode = ExitCodeDataError;
-        _exitCause = ExitCauseFileAlreadyExist;
+        _exitCode = ExitCode::DataError;
+        _exitCause = ExitCause::FileAlreadyExist;
         return false;
     }
 
@@ -57,46 +63,46 @@ void LocalCreateDirJob::runJob() {
         return;
     }
 
-    IoError ioError = IoErrorSuccess;
-    if (IoHelper::createDirectory(_destFilePath, ioError)) {
+    IoError ioError = IoError::Success;
+    if (IoHelper::createDirectory(_destFilePath, ioError) && ioError == IoError::Success) {
         if (isExtendedLog()) {
             LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" created");
         }
-        _exitCode = ExitCodeOk;
+        _exitCode = ExitCode::Ok;
     }
 
-    if (ioError == IoErrorAccessDenied) {
+    if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseNoSearchPermission;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return;
     }
 
-    if (ioError != IoErrorSuccess) {  // Unexpected error
+    if (ioError != IoError::Success) { // Unexpected error
         LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
         return;
     }
 
-    if (_exitCode == ExitCodeOk) {
+    if (_exitCode == ExitCode::Ok) {
         FileStat filestat;
         if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseFileAccessError;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
             return;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath).c_str());
-            _exitCode = ExitCodeDataError;
-            _exitCause = ExitCauseInvalidSnapshot;
+            _exitCode = ExitCode::DataError;
+            _exitCause = ExitCause::InvalidSnapshot;
             return;
-        } else if (ioError == IoErrorAccessDenied) {
+        } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseNoSearchPermission;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
             return;
         }
 
@@ -105,4 +111,4 @@ void LocalCreateDirJob::runJob() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

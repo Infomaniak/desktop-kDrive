@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,18 +29,13 @@
 namespace KDC {
 
 LocalFileSystemObserverWorker_unix::LocalFileSystemObserverWorker_unix(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                                                       const std::string &shortName)
-    : LocalFileSystemObserverWorker(syncPal, name, shortName) {
+                                                                       const std::string &shortName) :
+    LocalFileSystemObserverWorker(syncPal, name, shortName) {
 #ifdef __APPLE__
-    _folderWatcher.reset(new FolderWatcher_mac(this, syncPal->_localPath));
+    _folderWatcher.reset(new FolderWatcher_mac(this, syncPal->localPath()));
 #else
-    _folderWatcher.reset(new FolderWatcher_linux(this, syncPal->_localPath));
+    _folderWatcher.reset(new FolderWatcher_linux(this, syncPal->localPath()));
 #endif
 }
 
-LocalFileSystemObserverWorker_unix::~LocalFileSystemObserverWorker_unix() {
-    FolderWatcher *ptr = _folderWatcher.release();
-    delete ptr;
-}
-
-}  // namespace KDC
+} // namespace KDC

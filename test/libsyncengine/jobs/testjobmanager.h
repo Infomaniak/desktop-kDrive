@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "testincludes.h"
 #include "utility/types.h"
 #include "jobs/abstractjob.h"
+#include "test_utility/testhelpers.h"
 
 #include <mutex>
 #include <unordered_map>
@@ -62,29 +63,28 @@ class TestJobManager : public CppUnit::TestFixture {
         void testWithCallbackBigFiles();
         void testCancelJobs();
         void testJobDependencies();
-        void testJobPriority();   // Test execution order of jobs with different priority. Jobs with higher piority must be
-                                  // executed first.
-        void testJobPriority2();  // Test execution order of jobs with same priority. Jobs created first must be executed first.
-        void testJobPriority3();  // Test execution order of jobs. Jobs are created with priority alternating between Normal and
-                                  // Highest. It checks that jobs are dequed correctly in JobManager (issue #320:
-                                  // https://gitlab.infomaniak.ch/infomaniak/desktop-app/multi/kdrive/-/issues/320)
+        void testJobPriority(); // Test execution order of jobs with different priority. Jobs with higher piority must be
+                                // executed first.
+        void testJobPriority2(); // Test execution order of jobs with same priority. Jobs created first must be executed first.
+        void testJobPriority3(); // Test execution order of jobs. Jobs are created with priority alternating between Normal and
+                                 // Highest. It checks that jobs are dequed correctly in JobManager (issue #320:
+                                 // https://gitlab.infomaniak.ch/infomaniak/desktop-app/multi/kdrive/-/issues/320)
 
         void testReuseSocket();
 
         void generateBigFiles(const SyncPath &dirPath, int size, int count);
 
     private:
-        int _driveDbId;
-        NodeId _dirId;
+        const testhelpers::TestVariables _testVariables;
         SyncPath _localDirPath;
 
         std::unordered_map<uint64_t, std::shared_ptr<AbstractJob>> _ongoingJobs;
         std::recursive_mutex _mutex;
 
         void callback(uint64_t jobId);
-        int ongoingJobsCount();
+        size_t ongoingJobsCount();
         void testWithCallbackBigFiles(const SyncPath &dirPath, int size, int count);
         void cancelAllOngoingJobs();
 };
 
-}  // namespace KDC
+} // namespace KDC

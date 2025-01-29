@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,12 +47,8 @@ static const int resizeStripeWidth = 5;
 
 Q_LOGGING_CATEGORY(lcCustomDialog, "gui.customdialog", QtInfoMsg)
 
-CustomDialog::CustomDialog(bool popup, QWidget *parent)
-    : QDialog(parent),
-      _backgroundColor(QColor()),
-      _buttonIconColor(QColor()),
-      _backgroundForcedColor(QColor()),
-      _layout(nullptr) {
+CustomDialog::CustomDialog(const bool popup, QWidget *parent) :
+    QDialog(parent), _backgroundColor(QColor()), _buttonIconColor(QColor()), _backgroundForcedColor(QColor()), _layout(nullptr) {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -182,7 +178,7 @@ void CustomDialog::mouseMoveEvent(QMouseEvent *event) {
 
         switch (_initEdge) {
             case KDC::CustomDialog::Left: {
-                int topLeftX = _initTopLeft.x() + offsetVector.x();
+                int topLeftX = _initTopLeft.x() + static_cast<int>(round(offsetVector.x()));
                 if (_initBottomRight.x() - topLeftX < windowMinimumSize.width())
                     topLeftX = _initBottomRight.x() - windowMinimumSize.width();
 
@@ -190,11 +186,11 @@ void CustomDialog::mouseMoveEvent(QMouseEvent *event) {
                 break;
             }
             case KDC::CustomDialog::TopLeft: {
-                int topLeftX = _initTopLeft.x() + offsetVector.x();
+                int topLeftX = _initTopLeft.x() + static_cast<int>(round(offsetVector.x()));
                 if (_initBottomRight.x() - topLeftX < windowMinimumSize.width())
                     topLeftX = _initBottomRight.x() - windowMinimumSize.width();
 
-                int topLeftY = _initTopLeft.y() + offsetVector.y();
+                int topLeftY = _initTopLeft.y() + static_cast<int>(round(offsetVector.y()));
                 if (_initBottomRight.y() - topLeftY < windowMinimumSize.height())
                     topLeftY = _initBottomRight.y() - windowMinimumSize.height();
 
@@ -202,7 +198,7 @@ void CustomDialog::mouseMoveEvent(QMouseEvent *event) {
                 break;
             }
             case KDC::CustomDialog::Top: {
-                int topLeftY = _initTopLeft.y() + offsetVector.y();
+                int topLeftY = _initTopLeft.y() + static_cast<int>(round(offsetVector.y()));
                 if (_initBottomRight.y() - topLeftY < windowMinimumSize.height())
                     topLeftY = _initBottomRight.y() - windowMinimumSize.height();
 
@@ -210,46 +206,46 @@ void CustomDialog::mouseMoveEvent(QMouseEvent *event) {
                 break;
             }
             case KDC::CustomDialog::TopRight: {
-                int topLeftY = _initTopLeft.y() + offsetVector.y();
+                int topLeftY = _initTopLeft.y() + static_cast<int>(round(offsetVector.y()));
                 if (_initBottomRight.y() - topLeftY < windowMinimumSize.height())
                     topLeftY = _initBottomRight.y() - windowMinimumSize.height();
 
-                int bottomRightX = _initBottomRight.x() + offsetVector.x();
+                int bottomRightX = _initBottomRight.x() + static_cast<int>(round(offsetVector.x()));
                 if (bottomRightX - _initTopLeft.x() < windowMinimumSize.width()) bottomRightX = windowMinimumSize.width();
 
                 newGeometry = QRect(QPoint(_initTopLeft.x(), topLeftY), QPoint(bottomRightX, _initBottomRight.y()));
                 break;
             }
             case KDC::CustomDialog::Right: {
-                int bottomRightX = _initBottomRight.x() + offsetVector.x();
+                int bottomRightX = _initBottomRight.x() + static_cast<int>(round(offsetVector.x()));
                 if (bottomRightX - _initTopLeft.x() < windowMinimumSize.width()) bottomRightX = windowMinimumSize.width();
 
                 newGeometry = QRect(_initTopLeft, QPoint(bottomRightX, _initBottomRight.y()));
                 break;
             }
             case KDC::CustomDialog::BottomRight: {
-                int bottomRightX = _initBottomRight.x() + offsetVector.x();
+                int bottomRightX = _initBottomRight.x() + static_cast<int>(round(offsetVector.x()));
                 if (bottomRightX - _initTopLeft.x() < windowMinimumSize.width()) bottomRightX = windowMinimumSize.width();
 
-                int bottomRightY = _initBottomRight.y() + offsetVector.y();
+                int bottomRightY = _initBottomRight.y() + static_cast<int>(round(offsetVector.y()));
                 if (bottomRightY - _initTopLeft.y() < windowMinimumSize.height()) bottomRightY = windowMinimumSize.height();
 
                 newGeometry = QRect(_initTopLeft, QPoint(bottomRightX, bottomRightY));
                 break;
             }
             case KDC::CustomDialog::Bottom: {
-                int bottomRightY = _initBottomRight.y() + offsetVector.y();
+                int bottomRightY = _initBottomRight.y() + static_cast<int>(round(offsetVector.y()));
                 if (bottomRightY - _initTopLeft.y() < windowMinimumSize.height()) bottomRightY = windowMinimumSize.height();
 
                 newGeometry = QRect(_initTopLeft, QPoint(_initBottomRight.x(), bottomRightY));
                 break;
             }
             case KDC::CustomDialog::BottomLeft: {
-                int topLeftX = _initTopLeft.x() + offsetVector.x();
+                int topLeftX = _initTopLeft.x() + static_cast<int>(round(offsetVector.x()));
                 if (_initBottomRight.x() - topLeftX < windowMinimumSize.width())
                     topLeftX = _initBottomRight.x() - windowMinimumSize.width();
 
-                int bottomRightY = _initBottomRight.y() + offsetVector.y();
+                int bottomRightY = _initBottomRight.y() + static_cast<int>(round(offsetVector.y()));
                 if (bottomRightY - _initTopLeft.y() < windowMinimumSize.height()) bottomRightY = windowMinimumSize.height();
 
                 newGeometry = QRect(QPoint(topLeftX, _initTopLeft.y()), QPoint(_initBottomRight.x(), bottomRightY));
@@ -290,9 +286,10 @@ void CustomDialog::mouseReleaseEvent(QMouseEvent *event) {
 void CustomDialog::mouseHover(QHoverEvent *event) {
     if (!_isResizable) return;
 
-    if (_resizeMode) return;  // Do not change cursor in resize mode
+    if (_resizeMode) return; // Do not change cursor in resize mode
 
-    switch (calculateCursorPosition(event->position().x(), event->position().y())) {
+    switch (calculateCursorPosition(static_cast<int>(round(event->position().x())),
+                                    static_cast<int>(round(event->position().y())))) {
         case KDC::CustomDialog::Left:
             setCursor(Qt::SizeHorCursor);
             break;
@@ -371,4 +368,4 @@ void CustomDialog::onExit() {
     emit exit();
 }
 
-}  // namespace KDC
+} // namespace KDC

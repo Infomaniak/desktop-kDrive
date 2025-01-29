@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,16 +39,27 @@ class TmpBlacklistManager {
         void blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         void refreshBlacklist();
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
+        // Remove the item from local and/or remote blacklist
+        void removeItemFromTmpBlacklist(const SyncPath &relativePath);
         bool isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const;
+        bool isTmpBlacklisted(const NodeId &nodeId, ReplicaSide side) const;
         int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
 
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side);
         void removeFromDB(const NodeId &nodeId, ReplicaSide side);
+        int syncDbId() const noexcept {
+            assert(_syncPal);
+            return _syncPal->syncDbId();
+        };
+        void logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side, const SyncPath &path = "") const;
+        static SyncNodeType blackListType(const ReplicaSide side) {
+            return side == ReplicaSide::Local ? SyncNodeType::TmpLocalBlacklist : SyncNodeType::TmpRemoteBlacklist;
+        }
 
         std::unordered_map<NodeId, TmpErrorInfo> _localErrors;
         std::unordered_map<NodeId, TmpErrorInfo> _remoteErrors;
         std::shared_ptr<SyncPal> _syncPal;
 };
 
-}  // namespace KDC
+} // namespace KDC

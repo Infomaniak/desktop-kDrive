@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ bool ShellServices::initAndStartServiceTask() {
             TRACE_DEBUG(L"ExplorerCommandHandler cookie = %ld", cookie);
 
             auto customStateProvider =
-                winrt::make<ClassFactory<winrt::FileExplorerExtension::implementation::CustomStateProvider>>();
+                    winrt::make<ClassFactory<winrt::FileExplorerExtension::implementation::CustomStateProvider>>();
             winrt::check_hresult(CoRegisterClassObject(CLSID_CustomStateProvider, customStateProvider.get(), CLSCTX_LOCAL_SERVER,
                                                        REGCLS_MULTIPLEUSE, &cookie));
             TRACE_DEBUG(L"CustomStateProvider cookie = %ld", cookie);

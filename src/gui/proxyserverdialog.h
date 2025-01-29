@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,18 +53,18 @@ class ProxyServerDialog : public CustomDialog {
         };
 
         ProxyConfigInfo _proxyConfigInfo;
-        CustomRadioButton *_noProxyButton;
-        CustomRadioButton *_systemProxyButton;
-        CustomRadioButton *_manualProxyButton;
-        QWidget *_manualProxyWidget;
-        CustomComboBox *_proxyTypeComboBox;
-        QLineEdit *_portLineEdit;
-        QLineEdit *_addressLineEdit;
-        CustomCheckBox *_authenticationCheckBox;
-        QWidget *_authenticationWidget;
-        QLineEdit *_loginLineEdit;
-        QLineEdit *_pwdLineEdit;
-        QPushButton *_saveButton;
+        CustomRadioButton *_noProxyButton = nullptr;
+        CustomRadioButton *_systemProxyButton = nullptr;
+        CustomRadioButton *_manualProxyButton = nullptr;
+        QWidget *_manualProxyWidget = nullptr;
+        CustomComboBox *_proxyTypeComboBox = nullptr;
+        QLineEdit *_portLineEdit = nullptr;
+        QLineEdit *_addressLineEdit = nullptr;
+        CustomCheckBox *_authenticationCheckBox = nullptr;
+        QWidget *_authenticationWidget = nullptr;
+        QLineEdit *_loginLineEdit = nullptr;
+        QLineEdit *_pwdLineEdit = nullptr;
+        QPushButton *_saveButton = nullptr;
         bool _needToSave;
         PortValidator *_portValidator;
 
@@ -89,4 +89,4 @@ class ProxyServerDialog : public CustomDialog {
         void onPwdTextEdited(const QString &text);
 };
 
-}  // namespace KDC
+} // namespace KDC

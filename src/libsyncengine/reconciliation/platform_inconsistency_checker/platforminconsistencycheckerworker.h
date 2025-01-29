@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,20 +31,23 @@ class PlatformInconsistencyCheckerWorker : public OperationProcessor {
         void execute() override;
 
     private:
-        ExitCode checkTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath);
+        ExitCode checkTree(ReplicaSide side);
+        ExitCode checkRemoteTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath);
+        ExitCode checkLocalTree(std::shared_ptr<Node> localNode, const SyncPath &parentPath);
 
-        void blacklistNode(const std::shared_ptr<Node> remoteNode, const SyncPath &relativePath,
-                           const InconsistencyType inconsistencyType);
+        void blacklistNode(const std::shared_ptr<Node> node, const InconsistencyType inconsistencyType);
         bool checkPathAndName(std::shared_ptr<Node> remoteNode);
         void checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode);
 
+        bool pathChanged(std::shared_ptr<Node> node) const;
+        void removeLocalNodeFromDb(std::shared_ptr<Node> localNode);
         struct NodeIdPair {
                 NodeId remoteId;
-                NodeId localId;  // Optional, only required if the file is already synchronized.
+                NodeId localId; // Optional, only required if the file is already synchronized.
         };
         std::list<NodeIdPair> _idsToBeRemoved;
 
         friend class TestPlatformInconsistencyCheckerWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

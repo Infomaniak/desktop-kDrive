@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,13 +28,9 @@
 #include "parameterscache.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
-#include "updater/updaterclient.h"
+#include "libcommon/log/sentry/handler.h"
+#include "guirequests.h"
 
-#undef CONSOLE_DEBUG
-#ifdef CONSOLE_DEBUG
-#include <iostream>
-#endif
-#include <sentry.h>
 #include <QActionGroup>
 #include <QApplication>
 #include <QBoxLayout>
@@ -61,7 +57,7 @@ static const QSize windowSize(440, 575);
 static const QSize lockedWindowSize(440, 400);
 static const int triangleHeight = 10;
 static const int triangleWidth = 20;
-static const int trianglePosition = 100;  // Position from side
+static const int trianglePosition = 100; // Position from side
 static const int cornerRadius = 5;
 static const int shadowBlurRadius = 20;
 static const int toolBarHMargin = 10;
@@ -75,25 +71,25 @@ static const int defaultLogoIconSize = 50;
 static const int maxSynchronizedItems = 50;
 
 const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsDisabledMap = {
-    {NotificationsDisabledNever, QString(tr("Never"))},
-    {NotificationsDisabledOneHour, QString(tr("During 1 hour"))},
-    {NotificationsDisabledUntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-    {NotificationsDisabledTreeDays, QString(tr("During 3 days"))},
-    {NotificationsDisabledOneWeek, QString(tr("During 1 week"))},
-    {NotificationsDisabledAlways, QString(tr("Always"))}};
+        {NotificationsDisabled::Never, QString(tr("Never"))},
+        {NotificationsDisabled::OneHour, QString(tr("During 1 hour"))},
+        {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
+        {NotificationsDisabled::TreeDays, QString(tr("During 3 days"))},
+        {NotificationsDisabled::OneWeek, QString(tr("During 1 week"))},
+        {NotificationsDisabled::Always, QString(tr("Always"))}};
 
 const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsDisabledForPeriodMap = {
-    {NotificationsDisabledNever, QString(tr("Never"))},
-    {NotificationsDisabledOneHour, QString(tr("For 1 more hour"))},
-    {NotificationsDisabledUntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-    {NotificationsDisabledTreeDays, QString(tr("For 3 more days"))},
-    {NotificationsDisabledOneWeek, QString(tr("For 1 more week"))},
-    {NotificationsDisabledAlways, QString(tr("Always"))}};
+        {NotificationsDisabled::Never, QString(tr("Never"))},
+        {NotificationsDisabled::OneHour, QString(tr("For 1 more hour"))},
+        {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
+        {NotificationsDisabled::TreeDays, QString(tr("For 3 more days"))},
+        {NotificationsDisabled::OneWeek, QString(tr("For 1 more week"))},
+        {NotificationsDisabled::Always, QString(tr("Always"))}};
 
 Q_LOGGING_CATEGORY(lcSynthesisPopover, "gui.synthesispopover", QtInfoMsg)
 
-SynthesisPopover::SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugMode, QWidget *parent)
-    : QDialog(parent), _gui(gui), _debugMode(debugMode) {
+SynthesisPopover::SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent) :
+    QDialog(parent), _gui(gui), _debugCrash(debugCrash) {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -129,11 +125,11 @@ void SynthesisPopover::setPosition(const QRect &sysTrayIconRect) {
         if (position == KDC::GuiUtility::systrayPosition::Top || position == KDC::GuiUtility::systrayPosition::Bottom) {
             // Triangle position (left/right)
             trianglePositionLeft =
-                (_sysTrayIconRect.center().x() + rect().width() - trianglePosition < screenRect.x() + screenRect.width());
+                    (_sysTrayIconRect.center().x() + rect().width() - trianglePosition < screenRect.x() + screenRect.width());
         } else if (position == KDC::GuiUtility::systrayPosition::Left || position == KDC::GuiUtility::systrayPosition::Right) {
             // Triangle position (top/bottom)
             trianglePositionTop =
-                (_sysTrayIconRect.center().y() + rect().height() - trianglePosition < screenRect.y() + screenRect.height());
+                    (_sysTrayIconRect.center().y() + rect().height() - trianglePosition < screenRect.y() + screenRect.height());
         }
     }
 
@@ -144,14 +140,14 @@ void SynthesisPopover::setPosition(const QRect &sysTrayIconRect) {
 
         // Dialog position
         if (position == KDC::GuiUtility::systrayPosition::Top) {
-            popoverPosition =
-                QPoint(screenRect.x() + screenRect.width() - rect().width() - triangleHeight, screenRect.y() + triangleHeight);
+            popoverPosition = QPoint(screenRect.x() + screenRect.width() - rect().width() - triangleHeight,
+                                     screenRect.y() + triangleHeight);
         } else if (position == KDC::GuiUtility::systrayPosition::Bottom) {
             popoverPosition = QPoint(screenRect.x() + screenRect.width() - rect().width() - triangleHeight,
                                      screenRect.y() + screenRect.height() - rect().height() - triangleHeight);
         } else if (position == KDC::GuiUtility::systrayPosition::Left) {
-            popoverPosition =
-                QPoint(screenRect.x() + triangleHeight, screenRect.y() + screenRect.height() - rect().height() - triangleHeight);
+            popoverPosition = QPoint(screenRect.x() + triangleHeight,
+                                     screenRect.y() + screenRect.height() - rect().height() - triangleHeight);
         } else if (position == KDC::GuiUtility::systrayPosition::Right) {
             popoverPosition = QPoint(screenRect.x() + screenRect.width() - rect().width() - triangleHeight,
                                      screenRect.y() + screenRect.height() - rect().height() - triangleHeight);
@@ -169,9 +165,9 @@ void SynthesisPopover::setPosition(const QRect &sysTrayIconRect) {
                                      screenRect.y() + screenRect.height() - rect().height());
         } else if (position == KDC::GuiUtility::systrayPosition::Left) {
             // Dialog position
-            popoverPosition =
-                QPoint(screenRect.x(), trianglePositionTop ? _sysTrayIconRect.center().y() - trianglePosition
-                                                           : _sysTrayIconRect.center().y() - rect().height() + trianglePosition);
+            popoverPosition = QPoint(screenRect.x(),
+                                     trianglePositionTop ? _sysTrayIconRect.center().y() - trianglePosition
+                                                         : _sysTrayIconRect.center().y() - rect().height() + trianglePosition);
         } else if (position == KDC::GuiUtility::systrayPosition::Right) {
             // Dialog position
             popoverPosition = QPoint(screenRect.x() + screenRect.width() - rect().width(),
@@ -197,6 +193,11 @@ void SynthesisPopover::forceRedraw() {
     });
 #endif
 }
+void SynthesisPopover::refreshLockedStatus() {
+    auto updateState = UpdateState::Unknown;
+    GuiRequests::updateState(updateState);
+    onUpdateAvailabilityChange(updateState);
+}
 
 void SynthesisPopover::changeEvent(QEvent *event) {
     QDialog::changeEvent(event);
@@ -212,7 +213,7 @@ void SynthesisPopover::changeEvent(QEvent *event) {
 }
 
 void SynthesisPopover::paintEvent(QPaintEvent *event) {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
 
     QScreen *screen = QGuiApplication::screenAt(_sysTrayIconRect.center());
     if (!screen) {
@@ -230,11 +231,11 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
         if (position == KDC::GuiUtility::systrayPosition::Top || position == KDC::GuiUtility::systrayPosition::Bottom) {
             // Triangle position (left/right)
             trianglePositionLeft =
-                (_sysTrayIconRect.center().x() + rect().width() - trianglePosition < screenRect.x() + screenRect.width());
+                    (_sysTrayIconRect.center().x() + rect().width() - trianglePosition < screenRect.x() + screenRect.width());
         } else if (position == KDC::GuiUtility::systrayPosition::Left || position == KDC::GuiUtility::systrayPosition::Right) {
             // Triangle position (top/bottom)
             trianglePositionTop =
-                (_sysTrayIconRect.center().y() + rect().height() - trianglePosition < screenRect.y() + screenRect.height());
+                    (_sysTrayIconRect.center().y() + rect().height() - trianglePosition < screenRect.y() + screenRect.height());
         }
     }
 
@@ -251,12 +252,14 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
         QPointF trianglePoint3;
         if (position == KDC::GuiUtility::systrayPosition::Top) {
             // Triangle points
-            trianglePoint1 = QPoint(trianglePositionLeft ? trianglePosition - triangleWidth / 2.0
-                                                         : rect().width() - trianglePosition - triangleWidth / 2.0,
+            trianglePoint1 = QPoint(trianglePositionLeft
+                                            ? trianglePosition - static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().width() - trianglePosition - static_cast<int>(round(triangleWidth / 2.0)),
                                     triangleHeight);
             trianglePoint2 = QPoint(trianglePositionLeft ? trianglePosition : rect().width() - trianglePosition, 0);
-            trianglePoint3 = QPoint(trianglePositionLeft ? trianglePosition + triangleWidth / 2.0
-                                                         : rect().width() - trianglePosition + triangleWidth / 2.0,
+            trianglePoint3 = QPoint(trianglePositionLeft
+                                            ? trianglePosition + static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().width() - trianglePosition + static_cast<int>(round(triangleWidth / 2.0)),
                                     triangleHeight);
 
             // Border
@@ -267,19 +270,21 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
             painterPath.arcTo(QRect(intRect.bottomLeft() - QPoint(0, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 180,
                               90);
             painterPath.arcTo(
-                QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 270,
-                90);
+                    QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)),
+                    270, 90);
             painterPath.arcTo(QRect(intRect.topRight() - QPoint(cornerDiameter, 0), QSize(cornerDiameter, cornerDiameter)), 0,
                               90);
             painterPath.closeSubpath();
         } else if (position == KDC::GuiUtility::systrayPosition::Bottom) {
             // Triangle points
-            trianglePoint1 = QPoint(trianglePositionLeft ? trianglePosition - triangleWidth / 2.0
-                                                         : rect().width() - trianglePosition - triangleWidth / 2.0,
+            trianglePoint1 = QPoint(trianglePositionLeft
+                                            ? trianglePosition - static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().width() - trianglePosition - static_cast<int>(round(triangleWidth / 2.0)),
                                     rect().height() - triangleHeight);
             trianglePoint2 = QPoint(trianglePositionLeft ? trianglePosition : rect().width() - trianglePosition, rect().height());
-            trianglePoint3 = QPoint(trianglePositionLeft ? trianglePosition + triangleWidth / 2.0
-                                                         : rect().width() - trianglePosition + triangleWidth / 2.0,
+            trianglePoint3 = QPoint(trianglePositionLeft
+                                            ? trianglePosition + static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().width() - trianglePosition + static_cast<int>(round(triangleWidth / 2.0)),
                                     rect().height() - triangleHeight);
 
             // Border
@@ -287,8 +292,8 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
             painterPath.lineTo(trianglePoint2);
             painterPath.lineTo(trianglePoint3);
             painterPath.arcTo(
-                QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 270,
-                90);
+                    QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)),
+                    270, 90);
             painterPath.arcTo(QRect(intRect.topRight() - QPoint(cornerDiameter, 0), QSize(cornerDiameter, cornerDiameter)), 0,
                               90);
             painterPath.arcTo(QRect(intRect.topLeft(), QSize(cornerDiameter, cornerDiameter)), 90, 90);
@@ -297,13 +302,15 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
             painterPath.closeSubpath();
         } else if (position == KDC::GuiUtility::systrayPosition::Left) {
             // Triangle points
-            trianglePoint1 =
-                QPoint(triangleHeight, trianglePositionTop ? trianglePosition - triangleWidth / 2.0
-                                                           : rect().height() - trianglePosition - triangleWidth / 2.0);
+            trianglePoint1 = QPoint(triangleHeight,
+                                    trianglePositionTop
+                                            ? trianglePosition - static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().height() - trianglePosition - static_cast<int>(round(triangleWidth / 2.0)));
             trianglePoint2 = QPoint(0, trianglePositionTop ? trianglePosition : rect().height() - trianglePosition);
-            trianglePoint3 =
-                QPoint(triangleHeight, trianglePositionTop ? trianglePosition + triangleWidth / 2.0
-                                                           : rect().height() - trianglePosition + triangleWidth / 2.0);
+            trianglePoint3 = QPoint(triangleHeight,
+                                    trianglePositionTop
+                                            ? trianglePosition + static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().height() - trianglePosition + static_cast<int>(round(triangleWidth / 2.0)));
 
             // Border
             painterPath.moveTo(trianglePoint1);
@@ -312,8 +319,8 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
             painterPath.arcTo(QRect(intRect.bottomLeft() - QPoint(0, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 180,
                               90);
             painterPath.arcTo(
-                QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 270,
-                90);
+                    QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)),
+                    270, 90);
             painterPath.arcTo(QRect(intRect.topRight() - QPoint(cornerDiameter, 0), QSize(cornerDiameter, cornerDiameter)), 0,
                               90);
             painterPath.arcTo(QRect(intRect.topLeft(), QSize(cornerDiameter, cornerDiameter)), 90, 90);
@@ -321,12 +328,14 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
         } else if (position == KDC::GuiUtility::systrayPosition::Right) {
             // Triangle
             trianglePoint1 = QPoint(rect().width() - triangleHeight,
-                                    trianglePositionTop ? trianglePosition - triangleWidth / 2.0
-                                                        : rect().height() - trianglePosition - triangleWidth / 2.0);
+                                    trianglePositionTop
+                                            ? trianglePosition - static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().height() - trianglePosition - static_cast<int>(round(triangleWidth / 2.0)));
             trianglePoint2 = QPoint(rect().width(), trianglePositionTop ? trianglePosition : rect().height() - trianglePosition);
             trianglePoint3 = QPoint(rect().width() - triangleHeight,
-                                    trianglePositionTop ? trianglePosition + triangleWidth / 2.0
-                                                        : rect().height() - trianglePosition + triangleWidth / 2.0);
+                                    trianglePositionTop
+                                            ? trianglePosition + static_cast<int>(round(triangleWidth / 2.0))
+                                            : rect().height() - trianglePosition + static_cast<int>(round(triangleWidth / 2.0)));
 
             // Border
             painterPath.moveTo(trianglePoint3);
@@ -338,8 +347,8 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
             painterPath.arcTo(QRect(intRect.bottomLeft() - QPoint(0, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 180,
                               90);
             painterPath.arcTo(
-                QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 270,
-                90);
+                    QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)),
+                    270, 90);
             painterPath.closeSubpath();
         }
     }
@@ -435,8 +444,8 @@ void SynthesisPopover::initUI() {
     mainVBox->addLayout(hBoxToolBar);
 
     auto *iconLabel = new QLabel(this);
-    iconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg").pixmap(logoIconSize, logoIconSize));
+    iconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
+                                 .pixmap(logoIconSize, logoIconSize));
     hBoxToolBar->addWidget(iconLabel);
 
     hBoxToolBar->addStretch();
@@ -484,15 +493,15 @@ void SynthesisPopover::initUI() {
 
     auto *synchronizedButton = new CustomTogglePushButton(tr("Synchronized"), _buttonsBarWidget);
     synchronizedButton->setIconPath(":/client/resources/icons/actions/sync.svg");
-    _buttonsBarWidget->insertButton(DriveInfoClient::SynthesisStackedWidgetSynchronized, synchronizedButton);
+    _buttonsBarWidget->insertButton(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized), synchronizedButton);
 
     auto *favoritesButton = new CustomTogglePushButton(tr("Favorites"), _buttonsBarWidget);
     favoritesButton->setIconPath(":/client/resources/icons/actions/favorite.svg");
-    _buttonsBarWidget->insertButton(DriveInfoClient::SynthesisStackedWidgetFavorites, favoritesButton);
+    _buttonsBarWidget->insertButton(toInt(DriveInfoClient::SynthesisStackedWidget::Favorites), favoritesButton);
 
     auto *activityButton = new CustomTogglePushButton(tr("Activity"), _buttonsBarWidget);
     activityButton->setIconPath(":/client/resources/icons/actions/notifications.svg");
-    _buttonsBarWidget->insertButton(DriveInfoClient::SynthesisStackedWidgetActivity, activityButton);
+    _buttonsBarWidget->insertButton(toInt(DriveInfoClient::SynthesisStackedWidget::Activity), activityButton);
 
     // Stacked widget
     _stackedWidget = new QStackedWidget(this);
@@ -500,17 +509,17 @@ void SynthesisPopover::initUI() {
     mainVBox->setStretchFactor(_stackedWidget, 1);
 
     setSynchronizedDefaultPage(&_defaultSynchronizedPageWidget, this);
-    _stackedWidget->insertWidget(DriveInfoClient::SynthesisStackedWidgetSynchronized, _defaultSynchronizedPageWidget);
+    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized), _defaultSynchronizedPageWidget);
 
     _notImplementedLabel = new QLabel(this);
     _notImplementedLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     _notImplementedLabel->setObjectName("defaultTitleLabel");
-    _stackedWidget->insertWidget(DriveInfoClient::SynthesisStackedWidgetFavorites, _notImplementedLabel);
+    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Favorites), _notImplementedLabel);
 
     _notImplementedLabel2 = new QLabel(this);
     _notImplementedLabel2->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     _notImplementedLabel2->setObjectName("defaultTitleLabel");
-    _stackedWidget->insertWidget(DriveInfoClient::SynthesisStackedWidgetActivity, _notImplementedLabel2);
+    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Activity), _notImplementedLabel2);
 
     // Bottom
     auto *bottomWidget = new BottomWidget(this);
@@ -523,7 +532,7 @@ void SynthesisPopover::initUI() {
     // Update icon
     auto *updateIconLabel = new QLabel(this);
     updateIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/kdrive-update.svg")
-                                   .pixmap(lockedWindowSize.height() / 3, lockedWindowSize.height() / 3));
+                                       .pixmap(lockedWindowSize.height() / 3, lockedWindowSize.height() / 3));
     updateIconLabel->setAlignment(Qt::AlignHCenter);
     lockedAppVersionVBox->addWidget(updateIconLabel);
 
@@ -547,17 +556,6 @@ void SynthesisPopover::initUI() {
 
     lockedAppVersionVBox->addSpacing(defaultPageSpacing);
 
-    // Optional label (status reported by tha app in case of Error)
-    _lockedAppUpdateOptionalLabel = new QLabel();
-    _lockedAppUpdateOptionalLabel->setObjectName("defaultTextLabel");
-    _lockedAppUpdateOptionalLabel->setAlignment(Qt::AlignHCenter);
-    _lockedAppUpdateOptionalLabel->setWordWrap(true);
-    _lockedAppUpdateOptionalLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    _lockedAppUpdateOptionalLabel->setVisible(false);
-#ifndef Q_OS_LINUX
-    lockedAppVersionVBox->addWidget(_lockedAppUpdateOptionalLabel);
-#endif
-
     // Update button
     auto *lockedAppUpdateButtonHBox = new QHBoxLayout();
     lockedAppUpdateButtonHBox->setAlignment(Qt::AlignHCenter);
@@ -578,7 +576,7 @@ void SynthesisPopover::initUI() {
     _lockedAppUpdateManualLabel->setWordWrap(true);
     _lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     lockedAppVersionVBox->addWidget(_lockedAppUpdateManualLabel);
-#endif  //
+#endif
 
     // Shadow
     auto *effect = new QGraphicsDropShadowEffect(this);
@@ -602,7 +600,9 @@ void SynthesisPopover::initUI() {
     connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
     connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
     connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
-    connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &SynthesisPopover::onUpdateAvailabalityChange,
+
+    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
+    connect(_gui.get(), &ClientGui::updateStateChanged, this, &SynthesisPopover::onUpdateAvailabilityChange,
             Qt::UniqueConnection);
 }
 
@@ -624,7 +624,7 @@ void SynthesisPopover::openUrl(int syncDbId, const QString &filePath) {
 
 void SynthesisPopover::getFirstSyncWithStatus(SyncStatus status, int driveDbId, int &syncDbId, bool &found) {
     found = false;
-    for (auto const &syncInfoMapElt : _gui->syncInfoMap()) {
+    for (auto const &syncInfoMapElt: _gui->syncInfoMap()) {
         if (syncInfoMapElt.second.status() == status && syncInfoMapElt.second.driveDbId() == driveDbId) {
             syncDbId = syncInfoMapElt.first;
             found = true;
@@ -634,14 +634,12 @@ void SynthesisPopover::getFirstSyncWithStatus(SyncStatus status, int driveDbId, 
 }
 
 void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool &found) {
-    static QVector<SyncStatus> statusPriority = QVector<SyncStatus>()
-                                                << SyncStatus::SyncStatusStarting << SyncStatus::SyncStatusRunning
-                                                << SyncStatus::SyncStatusPauseAsked << SyncStatus::SyncStatusPaused
-                                                << SyncStatus::SyncStatusStopAsked << SyncStatus::SyncStatusStoped
-                                                << SyncStatus::SyncStatusError << SyncStatus::SyncStatusIdle;
+    static QVector<SyncStatus> statusPriority =
+            QVector<SyncStatus>() << SyncStatus::Starting << SyncStatus::Running << SyncStatus::PauseAsked << SyncStatus::Paused
+                                  << SyncStatus::StopAsked << SyncStatus::Stopped << SyncStatus::Error << SyncStatus::Idle;
 
     found = false;
-    for (SyncStatus status : qAsConst(statusPriority)) {
+    for (SyncStatus status: qAsConst(statusPriority)) {
         getFirstSyncWithStatus(status, driveDbId, syncDbId, found);
         if (found) {
             break;
@@ -657,13 +655,14 @@ void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool
 
 void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
     static QVector<SyncStatus> statusPriority =
-        QVector<SyncStatus>() << SyncStatusError << SyncStatusRunning << SyncStatusPauseAsked << SyncStatusPaused
-                              << SyncStatusStopAsked << SyncStatusStoped << SyncStatusStarting << SyncStatusIdle;
+            QVector<SyncStatus>() << SyncStatus::Error << SyncStatus::Running << SyncStatus::PauseAsked << SyncStatus::Paused
+                                  << SyncStatus::StopAsked << SyncStatus::Stopped << SyncStatus::Starting << SyncStatus::Idle;
 
-    static QVector<SyncStep> syncStepPriority =
-        QVector<SyncStep>() << SyncStepPropagation2 << SyncStepPropagation1 << SyncStepReconciliation4 << SyncStepReconciliation3
-                            << SyncStepReconciliation2 << SyncStepReconciliation1 << SyncStepUpdateDetection2
-                            << SyncStepUpdateDetection1 << SyncStepIdle << SyncStepDone << SyncStepNone;
+    static QVector<SyncStep> SyncStepPriority = QVector<SyncStep>() << SyncStep::Propagation2 << SyncStep::Propagation1
+                                                                    << SyncStep::Reconciliation4 << SyncStep::Reconciliation3
+                                                                    << SyncStep::Reconciliation2 << SyncStep::Reconciliation1
+                                                                    << SyncStep::UpdateDetection2 << SyncStep::UpdateDetection1
+                                                                    << SyncStep::Idle << SyncStep::Done << SyncStep::None;
 
     const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfo.accountDbId());
     if (accountInfoMapIt == _gui->accountInfoMap().end()) {
@@ -679,9 +678,9 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
 
     KDC::GuiUtility::StatusInfo statusInfo;
     if (userInfoMapIt->second.connected()) {
-        statusInfo._status = SyncStatusIdle;
+        statusInfo._status = SyncStatus::Idle;
         int syncsInPropagationStep = 0;
-        for (const auto &sync : _gui->syncInfoMap()) {
+        for (const auto &sync: _gui->syncInfoMap()) {
             const auto &syncInfo = sync.second;
             if (syncInfo.driveDbId() != driveInfo.dbId()) continue;
 
@@ -696,13 +695,13 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
             if (statusPriority.indexOf(statusInfo._status) > statusPriority.indexOf(syncInfo.status())) {
                 statusInfo._status = syncInfo.status();
             }
-            if (syncStepPriority.indexOf(statusInfo._syncStep) > syncStepPriority.indexOf(syncInfo.step())) {
+            if (SyncStepPriority.indexOf(statusInfo._syncStep) > SyncStepPriority.indexOf(syncInfo.step())) {
                 statusInfo._syncStep = syncInfo.step();
             }
-            if (syncInfo.step() != SyncStepPropagation2) {
+            if (syncInfo.step() != SyncStep::Propagation2) {
                 syncsInPropagationStep++;
             }
-            if (syncInfo.virtualFileMode() != VirtualFileModeOff) {
+            if (syncInfo.virtualFileMode() != VirtualFileMode::Off) {
                 statusInfo._liteSyncActivated = true;
             }
         }
@@ -730,7 +729,7 @@ void SynthesisPopover::refreshErrorsButton() {
     bool drivesWithErrors = false;
     bool drivesWithInfos = false;
 
-    for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
+    for (auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
         std::map<int, SyncInfoClient> syncInfoMap;
         _gui->loadSyncInfoMap(driveId, syncInfoMap);
         if (syncInfoMap.empty()) {
@@ -761,7 +760,7 @@ void SynthesisPopover::setSynchronizedDefaultPage(QWidget **widget, QWidget *par
         QLabel *iconLabel = new QLabel(parent);
         iconLabel->setAlignment(Qt::AlignHCenter);
         iconLabel->setPixmap(QIcon(":/client/resources/icons/document types/file-default.svg")
-                                 .pixmap(QSize(defaultLogoIconSize, defaultLogoIconSize)));
+                                     .pixmap(QSize(defaultLogoIconSize, defaultLogoIconSize)));
         vboxLayout->addWidget(iconLabel);
 
         _defaultTitleLabel = new QLabel(parent);
@@ -799,7 +798,7 @@ void SynthesisPopover::setSynchronizedDefaultPage(QWidget **widget, QWidget *par
                 // select a sync corresponding to the selected drive
                 // TODO: this view can't represented sync how to open the right sync if we have only the current drive
                 int syncDbId = _gui->syncInfoMap().begin()->first;
-                for (const auto &sync : _gui->syncInfoMap()) {
+                for (const auto &sync: _gui->syncInfoMap()) {
                     if (sync.second.driveDbId() == _gui->currentDriveDbId()) {
                         syncDbId = sync.first;
                         break;
@@ -833,10 +832,10 @@ void SynthesisPopover::handleRemovedDrives() {
 
     if (syncInfoMap.empty()) _statusBarWidget->reset();
 
-    for (int widgetIndex = DriveInfoClient::SynthesisStackedWidgetFirstAdded; widgetIndex < _stackedWidget->count();) {
+    for (int widgetIndex = toInt(DriveInfoClient::SynthesisStackedWidget::FirstAdded); widgetIndex < _stackedWidget->count();) {
         QWidget *widget = _stackedWidget->widget(widgetIndex);
         bool driveIsFound = false;
-        for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
+        for (auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
             if (driveInfo.synchronizedListWidget() == widget) {
                 driveIsFound = true;
                 ++widgetIndex;
@@ -910,8 +909,8 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
         return;
     }
 
-    if (itemInfo.status() == SyncFileStatusUnknown || itemInfo.status() == SyncFileStatusError ||
-        itemInfo.status() == SyncFileStatusIgnored) {
+    if (itemInfo.status() == SyncFileStatus::Unknown || itemInfo.status() == SyncFileStatus::Error ||
+        itemInfo.status() == SyncFileStatus::Ignored) {
         return;
     }
 
@@ -923,9 +922,9 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
         driveInfoIt->second.synchronizedListWidget()->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         driveInfoIt->second.synchronizedListWidget()->setUniformItemSizes(true);
         driveInfoIt->second.setSynchronizedListStackPosition(
-            _stackedWidget->addWidget(driveInfoIt->second.synchronizedListWidget()));
+                _stackedWidget->addWidget(driveInfoIt->second.synchronizedListWidget()));
         if (_gui->currentDriveDbId() == driveInfoIt->first &&
-            _buttonsBarWidget->position() == DriveInfoClient::SynthesisStackedWidgetSynchronized) {
+            _buttonsBarWidget->position() == toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized)) {
             _stackedWidget->setCurrentIndex(driveInfoIt->second.synchronizedListStackPosition());
         }
     }
@@ -945,7 +944,7 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
         // Update at most each 500 ms
         if (QDateTime::currentMSecsSinceEpoch() - _lastRefresh > UPDATE_PROGRESS_DELAY) {
             _lastRefresh = QDateTime::currentMSecsSinceEpoch();
-            for (int row = driveInfoIt->second.synchronizedItemList().count() - 1; row >= 0; row--) {
+            for (int row = static_cast<int>(driveInfoIt->second.synchronizedItemList().count() - 1); row >= 0; row--) {
                 if (!driveInfoIt->second.synchronizedItemList()[row].displayed()) {
                     addSynchronizedListWidgetItem(driveInfoIt->second, row);
                     driveInfoIt->second.synchronizedItemList()[row].setDisplayed(true);
@@ -957,16 +956,14 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
     if (driveInfoIt->second.synchronizedListWidget()->count() > maxSynchronizedItems) {
         QListWidgetItem *item = driveInfoIt->second.synchronizedListWidget()->item(maxSynchronizedItems);
         SynchronizedItemWidget *widget =
-            qobject_cast<SynchronizedItemWidget *>(driveInfoIt->second.synchronizedListWidget()->itemWidget(item));
+                qobject_cast<SynchronizedItemWidget *>(driveInfoIt->second.synchronizedListWidget()->itemWidget(item));
         widget->stopTimer();
         widget->deleteLater();
         delete driveInfoIt->second.synchronizedListWidget()->takeItem(maxSynchronizedItems);
     }
 }
 
-void SynthesisPopover::onOpenErrorsMenu(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenErrorsMenu() {
     QList<ErrorsPopup::DriveError> driveErrorList;
     getDriveErrorList(driveErrorList);
 
@@ -994,7 +991,7 @@ void SynthesisPopover::reset() {
     _driveSelectionWidget->clear();
     _progressBarWidget->reset();
     _statusBarWidget->reset();
-    _stackedWidget->setCurrentIndex(DriveInfoClient::SynthesisStackedWidgetSynchronized);
+    _stackedWidget->setCurrentIndex(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized));
 }
 
 void SynthesisPopover::addSynchronizedListWidgetItem(DriveInfoClient &driveInfoClient, int row) {
@@ -1004,7 +1001,7 @@ void SynthesisPopover::addSynchronizedListWidgetItem(DriveInfoClient &driveInfoC
 
 
     SynchronizedItemWidget *widget =
-        new SynchronizedItemWidget(driveInfoClient.synchronizedItemList()[row], driveInfoClient.synchronizedListWidget());
+            new SynchronizedItemWidget(driveInfoClient.synchronizedItemList()[row], driveInfoClient.synchronizedListWidget());
 
     QListWidgetItem *widgetItem = new QListWidgetItem();
     driveInfoClient.synchronizedListWidget()->insertItem(row, widgetItem);
@@ -1022,7 +1019,7 @@ void SynthesisPopover::addSynchronizedListWidgetItem(DriveInfoClient &driveInfoC
 
 void SynthesisPopover::getDriveErrorList(QList<ErrorsPopup::DriveError> &list) {
     list.clear();
-    for (auto const &driveInfoElt : _gui->driveInfoMap()) {
+    for (auto const &driveInfoElt: _gui->driveInfoMap()) {
         int driveUnresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, true);
         int driveAutoresolvedErrorsCount = _gui->driveErrorsCount(driveInfoElt.first, false);
         if (driveUnresolvedErrorsCount > 0 || driveAutoresolvedErrorsCount > 0) {
@@ -1059,58 +1056,37 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
     }
 }
 
-void SynthesisPopover::onUpdateAvailabalityChange() {
-    if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
+void SynthesisPopover::onUpdateAvailabilityChange(const UpdateState updateState) {
+    if (!_lockedAppUpdateButton) return;
     if (_lockedAppVersionWidget->isHidden()) return;
-    QString statusString;
-    UpdateState updateState = UpdateState::Error;
-    try {
-        if (!UpdaterClient::instance()->isSparkleUpdater()) {
-            statusString = UpdaterClient::instance()->statusString();
-            updateState = UpdaterClient::instance()->updateState();
-        } else {
-            updateState = UpdateState::Ready;  // On macOS, we just start the installer (Sparkle does the rest)
-        }
-    } catch (std::exception const &) {
-        return;
-    }
 
-    _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready);
-    _lockedAppUpdateOptionalLabel->setVisible(updateState != UpdateState::Ready && updateState != UpdateState::Downloading);
+    _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready || updateState == UpdateState::Available);
     switch (updateState) {
         case UpdateState::Ready:
+        case UpdateState::Available:
             _lockedAppUpdateButton->setText(tr("Update"));
             break;
         case UpdateState::Downloading:
             _lockedAppUpdateButton->setText(tr("Update download in progress"));
             break;
-        case UpdateState::Skipped:
-            UpdaterClient::instance()->unskipUpdate();
         case UpdateState::Checking:
             _lockedAppUpdateButton->setText(tr("Looking for update..."));
             break;
-        case UpdateState::ManualOnly:
+        case UpdateState::ManualUpdateAvailable:
             _lockedAppUpdateButton->setText(tr("Manual update"));
-            _lockedAppUpdateOptionalLabel->setText(statusString);
             break;
         default:
             _lockedAppUpdateButton->setText(tr("Unavailable"));
-            _lockedAppUpdateOptionalLabel->setText(statusString);
-            sentry_capture_event(sentry_value_new_message_event(
-                SENTRY_LEVEL_FATAL,  // FATAL as the app is not usable
-                "AppLocked",
-                (std::string("406 Error received but unable to fetch an update: ") + statusString.toStdString()).c_str()));
+            sentry::Handler::captureMessage(sentry::Level::Fatal, "AppLocked",
+                                            "HTTP Error426 received but unable to fetch an update");
             break;
     }
-    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
 }
 
-void SynthesisPopover::onStartInstaller() noexcept {
-    try {
-        UpdaterClient::instance()->startInstaller();
-    } catch (std::exception const &) {
-        // Do nothing
-    }
+void SynthesisPopover::onStartInstaller() const noexcept {
+    VersionInfo versionInfo;
+    GuiRequests::versionInfo(versionInfo);
+    _gui->onShowWindowsUpdateDialog(versionInfo);
 }
 
 void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
@@ -1119,7 +1095,7 @@ void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
         _lockedAppVersionWidget->show();
         setFixedSize(lockedWindowSize);
         _gui->closeAllExcept(this);
-        onUpdateAvailabalityChange();
+        refreshLockedStatus();
     } else if (!currentVersionLocked && _mainWidget->isHidden()) {
         _lockedAppVersionWidget->hide();
         _mainWidget->show();
@@ -1132,16 +1108,12 @@ void SynthesisPopover::onRefreshErrorList(int /*driveDbId*/) {
     refreshErrorsButton();
 }
 
-void SynthesisPopover::onOpenFolder(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenFolder() {
     int syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     openUrl(syncDbId);
 }
 
-void SynthesisPopover::onOpenWebview(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenWebview() {
     if (_gui->currentDriveDbId() != 0) {
         const auto driveInfoIt = _gui->driveInfoMap().find(_gui->currentDriveDbId());
         if (driveInfoIt == _gui->driveInfoMap().end()) {
@@ -1165,17 +1137,15 @@ void SynthesisPopover::onOpenWebview(bool checked) {
     }
 }
 
-void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
-    Q_UNUSED(checked)
-
-    MenuWidget *menu = new MenuWidget(MenuWidget::Menu, this);
+void SynthesisPopover::onOpenMiscellaneousMenu() {
+    auto *menu = new MenuWidget(MenuWidget::Menu, this);
 
     // Open Folder
     std::map<int, SyncInfoClient> syncInfoMap;
     _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
-    if (syncInfoMap.size() >= 1) {
-        QWidgetAction *foldersMenuAction = new QWidgetAction(this);
-        MenuItemWidget *foldersMenuItemWidget = new MenuItemWidget(tr("Open in folder"));
+    if (!syncInfoMap.empty()) {
+        auto *foldersMenuAction = new QWidgetAction(this);
+        auto *foldersMenuItemWidget = new MenuItemWidget(tr("Open in folder"));
         foldersMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
         foldersMenuAction->setDefaultWidget(foldersMenuItemWidget);
 
@@ -1187,16 +1157,15 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
             foldersMenuItemWidget->setHasSubmenu(true);
 
             // Open folders submenu
-            MenuWidget *submenu = new MenuWidget(MenuWidget::Submenu, menu);
+            auto *submenu = new MenuWidget(MenuWidget::Submenu, menu);
 
-            QActionGroup *openFolderActionGroup = new QActionGroup(this);
+            auto *openFolderActionGroup = new QActionGroup(this);
             openFolderActionGroup->setExclusive(true);
 
-            QWidgetAction *openFolderAction;
-            for (auto const &syncInfoMapElt : syncInfoMap) {
-                openFolderAction = new QWidgetAction(this);
-                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt.first);
-                MenuItemWidget *openFolderMenuItemWidget = new MenuItemWidget(syncInfoMapElt.second.name());
+            for (auto const &[syncId, syncInfo]: syncInfoMap) {
+                auto *openFolderAction = new QWidgetAction(this);
+                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncId);
+                auto *openFolderMenuItemWidget = new MenuItemWidget(syncInfo.name());
                 openFolderMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
                 openFolderAction->setDefaultWidget(openFolderMenuItemWidget);
                 connect(openFolderAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenFolder);
@@ -1211,8 +1180,8 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     }
 
     // Open web version
-    QWidgetAction *driveOpenWebViewAction = new QWidgetAction(this);
-    MenuItemWidget *driveOpenWebViewMenuItemWidget = new MenuItemWidget(tr("Open %1 web version").arg(APPLICATION_SHORTNAME));
+    auto *driveOpenWebViewAction = new QWidgetAction(this);
+    auto *driveOpenWebViewMenuItemWidget = new MenuItemWidget(tr("Open %1 web version").arg(APPLICATION_SHORTNAME));
     driveOpenWebViewMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/webview.svg");
     driveOpenWebViewAction->setDefaultWidget(driveOpenWebViewMenuItemWidget);
     driveOpenWebViewAction->setVisible(_gui->currentDriveDbId() != 0);
@@ -1220,9 +1189,9 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     menu->addAction(driveOpenWebViewAction);
 
     // Drive parameters
-    if (_gui->driveInfoMap().size()) {
-        QWidgetAction *driveParametersAction = new QWidgetAction(this);
-        MenuItemWidget *driveParametersMenuItemWidget = new MenuItemWidget(tr("Drive parameters"));
+    if (!_gui->driveInfoMap().empty()) {
+        auto *driveParametersAction = new QWidgetAction(this);
+        auto *driveParametersMenuItemWidget = new MenuItemWidget(tr("Drive parameters"));
         driveParametersMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg");
         driveParametersAction->setDefaultWidget(driveParametersMenuItemWidget);
         connect(driveParametersAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenDriveParameters);
@@ -1230,36 +1199,35 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     }
 
     // Disable Notifications
-    QWidgetAction *notificationsMenuAction = new QWidgetAction(this);
-    bool notificationAlreadyDisabledForPeriod =
-        _notificationsDisabled != NotificationsDisabledNever && _notificationsDisabled != NotificationsDisabledAlways;
-    MenuItemWidget *notificationsMenuItemWidget =
-        new MenuItemWidget(notificationAlreadyDisabledForPeriod
-                               ? tr("Notifications disabled until %1").arg(_notificationsDisabledUntilDateTime.toString())
-                               : tr("Disable Notifications"));
+    auto *notificationsMenuAction = new QWidgetAction(this);
+    const auto notificationAlreadyDisabledForPeriod =
+            _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
+    auto *notificationsMenuItemWidget =
+            new MenuItemWidget(notificationAlreadyDisabledForPeriod
+                                       ? tr("Notifications disabled until %1").arg(_notificationsDisabledUntilDateTime.toString())
+                                       : tr("Disable Notifications"));
     notificationsMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/notification-off.svg");
     notificationsMenuItemWidget->setHasSubmenu(true);
     notificationsMenuAction->setDefaultWidget(notificationsMenuItemWidget);
     menu->addAction(notificationsMenuAction);
 
     // Disable Notifications submenu
-    MenuWidget *submenu = new MenuWidget(MenuWidget::Submenu, menu);
+    auto *submenu = new MenuWidget(MenuWidget::Submenu, menu);
 
-    QActionGroup *notificationActionGroup = new QActionGroup(this);
+    auto *notificationActionGroup = new QActionGroup(this);
     notificationActionGroup->setExclusive(true);
 
     const std::map<NotificationsDisabled, QString> &notificationMap =
-        _notificationsDisabled == NotificationsDisabledNever || _notificationsDisabled == NotificationsDisabledAlways
-            ? _notificationsDisabledMap
-            : _notificationsDisabledForPeriodMap;
+            _notificationsDisabled == NotificationsDisabled::Never || _notificationsDisabled == NotificationsDisabled::Always
+                    ? _notificationsDisabledMap
+                    : _notificationsDisabledForPeriodMap;
 
-    QWidgetAction *notificationAction;
-    for (auto const &notificationMapElt : notificationMap) {
-        notificationAction = new QWidgetAction(this);
-        notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), notificationMapElt.first);
-        QString text = QCoreApplication::translate("KDC::SynthesisPopover", notificationMapElt.second.toStdString().c_str());
-        MenuItemWidget *notificationMenuItemWidget = new MenuItemWidget(text);
-        notificationMenuItemWidget->setChecked(notificationMapElt.first == _notificationsDisabled);
+    for (auto const &[notifDisabled, str]: notificationMap) {
+        auto *notificationAction = new QWidgetAction(this);
+        notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), toInt(notifDisabled));
+        QString text = QCoreApplication::translate("KDC::SynthesisPopover", str.toStdString().c_str());
+        auto *notificationMenuItemWidget = new MenuItemWidget(text);
+        notificationMenuItemWidget->setChecked(notifDisabled == _notificationsDisabled);
         notificationAction->setDefaultWidget(notificationMenuItemWidget);
         connect(notificationAction, &QWidgetAction::triggered, this, &SynthesisPopover::onNotificationActionTriggered);
         notificationActionGroup->addAction(notificationAction);
@@ -1269,47 +1237,62 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     notificationsMenuAction->setMenu(submenu);
 
     // Application preferences
-    QWidgetAction *preferencesAction = new QWidgetAction(this);
-    MenuItemWidget *preferencesMenuItemWidget = new MenuItemWidget(tr("Application preferences"));
+    auto *preferencesAction = new QWidgetAction(this);
+    auto *preferencesMenuItemWidget = new MenuItemWidget(tr("Application preferences"));
     preferencesMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/parameters.svg");
     preferencesAction->setDefaultWidget(preferencesMenuItemWidget);
     connect(preferencesAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenPreferences);
     menu->addAction(preferencesAction);
 
     // Help
-    QWidgetAction *helpAction = new QWidgetAction(this);
-    MenuItemWidget *helpMenuItemWidget = new MenuItemWidget(tr("Need help"));
+    auto *helpAction = new QWidgetAction(this);
+    auto *helpMenuItemWidget = new MenuItemWidget(tr("Need help"));
     helpMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/help.svg");
     helpAction->setDefaultWidget(helpMenuItemWidget);
     connect(helpAction, &QWidgetAction::triggered, this, &SynthesisPopover::onDisplayHelp);
     menu->addAction(helpAction);
 
+    // Send feedbacks
+    auto *feedbacksAction = new QWidgetAction(this);
+    auto *feedbacksMenuItemWidget = new MenuItemWidget(tr("Send feedbacks"));
+    feedbacksMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/messages-bubble-square-typing.svg");
+    feedbacksAction->setDefaultWidget(feedbacksMenuItemWidget);
+    connect(feedbacksAction, &QWidgetAction::triggered, this, &SynthesisPopover::onSendFeedback);
+    menu->addAction(feedbacksAction);
+
     // Quit
-    QWidgetAction *exitAction = new QWidgetAction(this);
-    MenuItemWidget *exitMenuItemWidget = new MenuItemWidget(tr("Quit kDrive"));
+    auto *exitAction = new QWidgetAction(this);
+    auto *exitMenuItemWidget = new MenuItemWidget(tr("Quit kDrive"));
     exitMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/error-sync.svg");
     exitAction->setDefaultWidget(exitMenuItemWidget);
     connect(exitAction, &QWidgetAction::triggered, this, &SynthesisPopover::onExit);
     menu->addAction(exitAction);
 
-    if (_debugMode) {
-        // Test crash
-        QWidgetAction *crashAction = new QWidgetAction(this);
-        MenuItemWidget *crashMenuItemWidget = new MenuItemWidget("Test crash");
+    if (_debugCrash) {
+        // Emulate a crash
+        auto *crashAction = new QWidgetAction(this);
+        auto *crashMenuItemWidget = new MenuItemWidget("Emulate a crash");
         crashAction->setDefaultWidget(crashMenuItemWidget);
         connect(crashAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrash);
         menu->addAction(crashAction);
 
-        // Test crash enforce
-        QWidgetAction *crashEnforceAction = new QWidgetAction(this);
-        MenuItemWidget *crashEnforceMenuItemWidget = new MenuItemWidget("Test crash enforce");
+        // Emulate a server crash
+        auto *crashServerAction = new QWidgetAction(this);
+        auto *crashServerMenuItemWidget = new MenuItemWidget("Emulate a server crash");
+        crashServerAction->setDefaultWidget(crashServerMenuItemWidget);
+        connect(crashServerAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashServer);
+        menu->addAction(crashServerAction);
+
+        // Emulate an ENFORCE crash
+        auto *crashEnforceAction = new QWidgetAction(this);
+        auto *crashEnforceMenuItemWidget = new MenuItemWidget("Emulate an ENFORCE crash");
         crashEnforceAction->setDefaultWidget(crashEnforceMenuItemWidget);
         connect(crashEnforceAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashEnforce);
         menu->addAction(crashEnforceAction);
 
-        // Test crash fatal
-        QWidgetAction *crashFatalAction = new QWidgetAction(this);
-        MenuItemWidget *crashFatalMenuItemWidget = new MenuItemWidget("Test crash fatal");
+        // Emulate a qFatal crash
+        auto *crashFatalAction = new QWidgetAction(this);
+        auto *crashFatalMenuItemWidget = new MenuItemWidget("Emulate a qFatal crash");
         crashFatalAction->setDefaultWidget(crashFatalMenuItemWidget);
         connect(crashFatalAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashFatal);
         menu->addAction(crashFatalAction);
@@ -1318,73 +1301,68 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     menu->exec(QWidget::mapToGlobal(_menuButton->geometry().center()));
 }
 
-void SynthesisPopover::onOpenPreferences(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenPreferences() {
     emit showParametersDialog();
 }
 
-void SynthesisPopover::onDisplayHelp(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onDisplayHelp() {
     QDesktopServices::openUrl(QUrl(Theme::instance()->helpUrl()));
 }
 
-void SynthesisPopover::onExit(bool checked) {
-    Q_UNUSED(checked)
+void SynthesisPopover::onSendFeedback() {
+    const auto url = QUrl(Theme::instance()->feedbackUrl(ParametersCache::instance()->parametersInfo().language()));
+    QDesktopServices::openUrl(url);
+}
 
+void SynthesisPopover::onExit() {
     hide();
     emit exit();
 }
 
-void SynthesisPopover::onCrash(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onCrash() {
     emit crash();
 }
 
-void SynthesisPopover::onCrashEnforce(bool checked) {
-    Q_UNUSED(checked)
+void SynthesisPopover::onCrashServer() {
+    emit crashServer();
+}
 
+void SynthesisPopover::onCrashEnforce() {
     emit crashEnforce();
 }
 
-void SynthesisPopover::onCrashFatal(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onCrashFatal() {
     emit crashFatal();
 }
 
-void SynthesisPopover::onNotificationActionTriggered(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onNotificationActionTriggered() {
     bool notificationAlreadyDisabledForPeriod =
-        _notificationsDisabled != NotificationsDisabledNever && _notificationsDisabled != NotificationsDisabledAlways;
+            _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
 
     _notificationsDisabled = qvariant_cast<NotificationsDisabled>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     switch (_notificationsDisabled) {
-        case NotificationsDisabledNever:
+        case NotificationsDisabled::Never:
             _notificationsDisabledUntilDateTime = QDateTime();
             break;
-        case NotificationsDisabledOneHour:
+        case NotificationsDisabled::OneHour:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
-                                                      ? _notificationsDisabledUntilDateTime.addSecs(60 * 60)
-                                                      : QDateTime::currentDateTime().addSecs(60 * 60);
+                                                          ? _notificationsDisabledUntilDateTime.addSecs(60 * 60)
+                                                          : QDateTime::currentDateTime().addSecs(60 * 60);
             break;
-        case NotificationsDisabledUntilTomorrow:
+        case NotificationsDisabled::UntilTomorrow:
             _notificationsDisabledUntilDateTime = QDateTime(QDateTime::currentDateTime().addDays(1).date(), QTime(8, 0));
             break;
-        case NotificationsDisabledTreeDays:
+        case NotificationsDisabled::TreeDays:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
-                                                      ? _notificationsDisabledUntilDateTime.addDays(3)
-                                                      : QDateTime::currentDateTime().addDays(3);
+                                                          ? _notificationsDisabledUntilDateTime.addDays(3)
+                                                          : QDateTime::currentDateTime().addDays(3);
             break;
-        case NotificationsDisabledOneWeek:
+        case NotificationsDisabled::OneWeek:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
-                                                      ? _notificationsDisabledUntilDateTime.addDays(7)
-                                                      : QDateTime::currentDateTime().addDays(7);
+                                                          ? _notificationsDisabledUntilDateTime.addDays(7)
+                                                          : QDateTime::currentDateTime().addDays(7);
             break;
-        case NotificationsDisabledAlways:
+        case NotificationsDisabled::Always:
             _notificationsDisabledUntilDateTime = QDateTime();
             break;
     }
@@ -1392,9 +1370,7 @@ void SynthesisPopover::onNotificationActionTriggered(bool checked) {
     emit disableNotifications(_notificationsDisabled, _notificationsDisabledUntilDateTime);
 }
 
-void SynthesisPopover::onOpenDriveParameters(bool checked) {
-    Q_UNUSED(checked)
-
+void SynthesisPopover::onOpenDriveParameters() {
     emit showParametersDialog(_gui->currentDriveDbId());
 }
 
@@ -1426,17 +1402,17 @@ void SynthesisPopover::onAddDrive() {
 }
 
 void SynthesisPopover::onPauseSync(ActionTarget target, int syncDbId) {
-    emit executeSyncAction(ActionTypeStop, target,
-                           (target == ActionTargetSync    ? syncDbId
-                            : target == ActionTargetDrive ? _gui->currentDriveDbId()
-                                                          : 0));
+    emit executeSyncAction(ActionType::Stop, target,
+                           (target == ActionTarget::Sync    ? syncDbId
+                            : target == ActionTarget::Drive ? _gui->currentDriveDbId()
+                                                            : 0));
 }
 
 void SynthesisPopover::onResumeSync(ActionTarget target, int syncDbId) {
-    emit executeSyncAction(ActionTypeStart, target,
-                           (target == ActionTargetSync    ? syncDbId
-                            : target == ActionTargetDrive ? _gui->currentDriveDbId()
-                                                          : 0));
+    emit executeSyncAction(ActionType::Start, target,
+                           (target == ActionTarget::Sync    ? syncDbId
+                            : target == ActionTarget::Drive ? _gui->currentDriveDbId()
+                                                            : 0));
 }
 
 void SynthesisPopover::onButtonBarToggled(int position) {
@@ -1445,27 +1421,29 @@ void SynthesisPopover::onButtonBarToggled(int position) {
         driveInfoIt->second.setStackedWidget(DriveInfoClient::SynthesisStackedWidget(position));
     }
 
-    switch (position) {
-        case DriveInfoClient::SynthesisStackedWidgetSynchronized:
+    switch (fromInt<DriveInfoClient::SynthesisStackedWidget>(position)) {
+        case DriveInfoClient::SynthesisStackedWidget::Synchronized:
             if (driveInfoIt != _gui->driveInfoMap().end() && driveInfoIt->second.synchronizedListStackPosition()) {
                 _stackedWidget->setCurrentIndex(driveInfoIt->second.synchronizedListStackPosition());
             } else {
-                _stackedWidget->setCurrentIndex(DriveInfoClient::SynthesisStackedWidgetSynchronized);
+                _stackedWidget->setCurrentIndex(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized));
             }
             break;
-        case DriveInfoClient::SynthesisStackedWidgetFavorites:
+        case DriveInfoClient::SynthesisStackedWidget::Favorites:
             if (driveInfoIt != _gui->driveInfoMap().end() && driveInfoIt->second.favoritesListStackPosition()) {
                 _stackedWidget->setCurrentIndex(driveInfoIt->second.favoritesListStackPosition());
             } else {
-                _stackedWidget->setCurrentIndex(DriveInfoClient::SynthesisStackedWidgetFavorites);
+                _stackedWidget->setCurrentIndex(toInt(DriveInfoClient::SynthesisStackedWidget::Favorites));
             }
             break;
-        case DriveInfoClient::SynthesisStackedWidgetActivity:
+        case DriveInfoClient::SynthesisStackedWidget::Activity:
             if (driveInfoIt != _gui->driveInfoMap().end() && driveInfoIt->second.activityListStackPosition()) {
                 _stackedWidget->setCurrentIndex(driveInfoIt->second.activityListStackPosition());
             } else {
-                _stackedWidget->setCurrentIndex(DriveInfoClient::SynthesisStackedWidgetActivity);
+                _stackedWidget->setCurrentIndex(toInt(DriveInfoClient::SynthesisStackedWidget::Activity));
             }
+            break;
+        default:
             break;
     }
 }
@@ -1548,12 +1526,12 @@ void SynthesisPopover::retranslateUi() {
     _menuButton->setToolTip(tr("More actions"));
     _notImplementedLabel->setText(tr("Not implemented!"));
     _lockedAppupdateAppLabel->setText(tr("Update kDrive App"));
-    _lockedAppLabel->setText(
-        tr("This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."));
+    _lockedAppLabel->setText(tr(
+            "This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."));
     _lockedAppUpdateButton->setText(tr("Update"));
 #ifdef Q_OS_LINUX
     _lockedAppUpdateManualLabel->setText(tr("Please download the latest version on the website."));
-#endif  // Q_OS_LINUX
+#endif // Q_OS_LINUX
 
     if (_defaultTextLabel) {
         switch (_defaultTextLabelType) {
@@ -1565,12 +1543,12 @@ void SynthesisPopover::retranslateUi() {
                 break;
             case defaultTextLabelTypeCanSync:
                 _defaultTextLabel->setText(
-                    tr("You can synchronize files <a style=\"%1\" href=\"%2\">from your computer</a>"
-                       " or on <a style=\"%1\" href=\"%3\">kdrive.infomaniak.com</a>.")
-                        .arg(CommonUtility::linkStyle, _localFolderUrl.toString(), _remoteFolderUrl.toString()));
+                        tr("You can synchronize files <a style=\"%1\" href=\"%2\">from your computer</a>"
+                           " or on <a style=\"%1\" href=\"%3\">kdrive.infomaniak.com</a>.")
+                                .arg(CommonUtility::linkStyle, _localFolderUrl.toString(), _remoteFolderUrl.toString()));
                 break;
         }
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

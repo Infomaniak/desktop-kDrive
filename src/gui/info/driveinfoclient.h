@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,14 +31,9 @@ namespace KDC {
 
 class DriveInfoClient : public DriveInfo {
     public:
-        typedef enum {
-            SynthesisStackedWidgetSynchronized = 0,
-            SynthesisStackedWidgetFavorites,
-            SynthesisStackedWidgetActivity,
-            SynthesisStackedWidgetFirstAdded
-        } SynthesisStackedWidget;
+        enum class SynthesisStackedWidget { Synchronized = 0, Favorites, Activity, FirstAdded };
 
-        typedef enum { ParametersStackedWidgetGeneral = 0, ParametersStackedWidgetFirstAdded } ParametersStackedWidget;
+        enum class ParametersStackedWidget { General = 0, FirstAdded };
 
         DriveInfoClient();
         DriveInfoClient(const DriveInfo &driveInfo);
@@ -92,7 +87,7 @@ class DriveInfoClient : public DriveInfo {
                            const QString &filePath) const;
 
     private:
-        SyncStatus _status{SyncStatusUndefined};
+        SyncStatus _status{SyncStatus::Undefined};
         bool _unresolvedConflicts{false};
 
         qint64 _totalSize{0};
@@ -102,7 +97,7 @@ class DriveInfoClient : public DriveInfo {
         bool _isBeingDeleted{false};
 
         // Synthesispopover attributes
-        SynthesisStackedWidget _stackedWidgetIndex{SynthesisStackedWidgetSynchronized};
+        SynthesisStackedWidget _stackedWidgetIndex{SynthesisStackedWidget::Synchronized};
         QListWidget *_synchronizedListWidget{nullptr};
         QVector<SynchronizedItem> _synchronizedItemList;
         int _synchronizedListStackPosition{0};
@@ -114,4 +109,4 @@ class DriveInfoClient : public DriveInfo {
         qint64 _lastErrorTimestamp{0};
 };
 
-}  // namespace KDC
+} // namespace KDC

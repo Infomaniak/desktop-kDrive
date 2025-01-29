@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@ namespace KDC {
 
 FolderWatcher_win::FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path) : FolderWatcher(parent, path) {}
 
-FolderWatcher_win::~FolderWatcher_win() {}
-
-bool FolderWatcher_win::ready() const {
-    return _ready;
-}
-
 void FolderWatcher_win::changesLost() {
     // Current snapshot needs to be invalidated
     _parent->invalidateSnapshot();
@@ -51,10 +45,11 @@ void FolderWatcher_win::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder: " << _folder.wstring().c_str());
     LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
 
-    _resultEventHandle = CreateEvent(NULL, true, false, NULL);
-    _stopEventHandle = CreateEvent(NULL, true, false, NULL);
+    _resultEventHandle = CreateEvent(nullptr, true, false, nullptr);
+    _stopEventHandle = CreateEvent(nullptr, true, false, nullptr);
 
     while (!_stop) {
+        setExitInfo(ExitCode::Ok);
         watchChanges();
 
         if (!_stop) {
@@ -79,13 +74,14 @@ void FolderWatcher_win::watchChanges() {
     LOG_DEBUG(_logger, "Start watching changes");
 
     _directoryHandle =
-        CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
-                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
+            CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
+                        nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
 
     if (_directoryHandle == INVALID_HANDLE_VALUE) {
         DWORD errorCode = GetLastError();
         LOGW_WARN(_logger, L"Failed to create handle for " << _folder.wstring().c_str() << L" - error:" << errorCode);
         _directoryHandle = nullptr;
+        setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
         return;
     }
 
@@ -100,9 +96,9 @@ void FolderWatcher_win::watchChanges() {
         DWORD dwBytesReturned = 0;
         if (!ReadDirectoryChangesW(_directoryHandle, &fileNotifyBuffer, static_cast<DWORD>(NOTIFY_BUFFER_SIZE), true,
                                    FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_ATTRIBUTES |
-                                       FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION |
-                                       FILE_NOTIFY_CHANGE_SECURITY,
-                                   &dwBytesReturned, &overlapped, NULL)) {
+                                           FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION |
+                                           FILE_NOTIFY_CHANGE_SECURITY,
+                                   &dwBytesReturned, &overlapped, nullptr)) {
             DWORD errorCode = GetLastError();
             if (errorCode == ERROR_NOTIFY_ENUM_DIR) {
                 LOG_DEBUG(_logger, "The buffer for changes overflowed! Fallback to static sync");
@@ -116,8 +112,7 @@ void FolderWatcher_win::watchChanges() {
         _ready = true;
 
         HANDLE handles[] = {_resultEventHandle, _stopEventHandle};
-        DWORD result = WaitForMultipleObjects(2, handles, false  // awake once one of them arrives
-                                              ,
+        DWORD result = WaitForMultipleObjects(2, handles, false, // awake once one of them arrives
                                               INFINITE);
 
         if (result == 1) {
@@ -149,57 +144,36 @@ void FolderWatcher_win::watchChanges() {
             SyncPath filepath = (_folder / wPathName).lexically_normal();
 
             bool skip = false;
-            const OperationType opType = operationFromAction(notifInfo->Action);
-
-            if (notifInfo->Action == FILE_ACTION_MODIFIED) {
-                bool isDirectory = false;
-                IoError ioError = IoErrorSuccess;
-                const bool isDirectorySuccess = IoHelper::checkIfIsDirectory(filepath, isDirectory, ioError);
-                if (!isDirectorySuccess) {
-                    LOGW_WARN(_logger,
-                              L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(filepath, ioError).c_str());
-                }
-                if (!isDirectory) {
-                    if (ioError == IoErrorNoSuchFileOrDirectory) {
-                        LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                                               << L" detected on item " << Path2WStr(filepath).c_str()
-                                                               << L" (item doesn't exist)");
-                        skip = true;
-                    }
-                } else {
-                    if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                                               << L" detected on item " << Path2WStr(filepath).c_str()
-                                                               << L" (directory)");
-                    }
-                    skip = true;
-                }
-            }
+            bool converted = false;
+            OperationType opType = operationFromAction(notifInfo->Action);
 
             // Unless the file was removed or renamed, get its full long name
             SyncPath longfilepath = filepath;
-            if (!skip && notifInfo->Action != FILE_ACTION_REMOVED && notifInfo->Action != FILE_ACTION_RENAMED_OLD_NAME) {
+            if (!skip && opType != OperationType::Delete && notifInfo->Action != FILE_ACTION_RENAMED_OLD_NAME) {
                 bool notFound = false;
                 if (!KDC::Utility::longPath(filepath, longfilepath, notFound)) {
                     if (notFound) {
                         // Item doesn't exist anymore
-                        LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                                               << L" detected on item " << Path2WStr(longfilepath).c_str()
-                                                               << L" (item doesn't exist)");
-                        skip = true;
+                        LOGW_DEBUG(_logger, L"Convert operation " << opType << L" detected on item "
+                                                                  << Utility::formatSyncPath(longfilepath)
+                                                                  << L" to Delete (item doesn't exist)");
+                        opType = OperationType::Delete;
+                        converted = true;
                     } else {
                         // Keep original name
                         LOGW_WARN(KDC::Log::instance()->getLogger(),
-                                  L"Error in Utility::longpath for path=" << Path2WStr(filepath).c_str());
+                                  L"Error in Utility::longpath for path=" << Path2WStr(filepath));
                     }
                 }
             }
 
             if (!skip) {
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                                      << L" detected on item " << Path2WStr(longfilepath).c_str());
+                    LOGW_DEBUG(_logger, L"Operation " << opType << (converted ? L"(converted) " : L"")
+                                                      << L" detected on item with " << Utility::formatSyncPath(longfilepath));
                 }
+
+                if (opType == OperationType::MoveOut) opType = OperationType::Move; // "MoveOut" is considered as Move from now on
 
                 changeDetected(longfilepath, opType);
             }
@@ -234,23 +208,18 @@ void FolderWatcher_win::closeHandle() {
 OperationType FolderWatcher_win::operationFromAction(DWORD action) {
     switch (action) {
         case FILE_ACTION_RENAMED_OLD_NAME:
-            return OperationTypeMove;
-            break;
+            return OperationType::MoveOut;
         case FILE_ACTION_RENAMED_NEW_NAME:
-            return OperationTypeMove;
-            break;
+            return OperationType::Move;
         case FILE_ACTION_ADDED:
-            return OperationTypeCreate;
-            break;
+            return OperationType::Create;
         case FILE_ACTION_REMOVED:
-            return OperationTypeDelete;
-            break;
+            return OperationType::Delete;
         case FILE_ACTION_MODIFIED:
-            return OperationTypeEdit;
-            break;
+            return OperationType::Edit;
     }
 
-    return OperationTypeNone;
+    return OperationType::None;
 }
 
-}  // namespace KDC
+} // namespace KDC

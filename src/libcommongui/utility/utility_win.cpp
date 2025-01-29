@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommon/utility/types.h"
-#include "libcommongui/utility/utility.h"
-
 #include <shlobj.h>
 #include <winbase.h>
 #include <windows.h>
 #include <winerror.h>
 #include <shlguid.h>
-#include <string>
 
 #include <QFile>
 #include <QDir>
@@ -43,9 +39,9 @@ static void setupFavLink_private(const QString &folder) {
 
         // Set the folder as system and Desktop.ini as hidden+system for explorer to pick it.
         // https://msdn.microsoft.com/en-us/library/windows/desktop/cc144102
-        DWORD folderAttrs = GetFileAttributesW((wchar_t *)folder.utf16());
-        SetFileAttributesW((wchar_t *)folder.utf16(), folderAttrs | FILE_ATTRIBUTE_SYSTEM);
-        SetFileAttributesW((wchar_t *)desktopIni.fileName().utf16(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
+        DWORD folderAttrs = GetFileAttributesW((wchar_t *) folder.utf16());
+        SetFileAttributesW((wchar_t *) folder.utf16(), folderAttrs | FILE_ATTRIBUTE_SYSTEM);
+        SetFileAttributesW((wchar_t *) desktopIni.fileName().utf16(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
     }
 
     // Windows Explorer: Place under "Favorites" (Links)
@@ -63,4 +59,4 @@ static void setupFavLink_private(const QString &folder) {
     QFile::link(folder, linkName);
 }
 
-}  // namespace KDC
+} // namespace KDC

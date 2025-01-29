@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,9 +40,9 @@ void TestOldSyncDb::tearDown() {
 void TestOldSyncDb::testSelectiveSync() {
     CPPUNIT_ASSERT(_testObj->exists());
 
-    std::list<std::pair<std::string, int>> selectiveSyncList;
+    std::list<std::pair<std::string, SyncNodeType>> selectiveSyncList;
     CPPUNIT_ASSERT(_testObj->selectAllSelectiveSync(selectiveSyncList));
     CPPUNIT_ASSERT(selectiveSyncList.size() > 0);
 }
 
-}  // namespace KDC
+} // namespace KDC

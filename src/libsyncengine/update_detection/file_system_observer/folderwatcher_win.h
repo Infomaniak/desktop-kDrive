@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,9 +32,6 @@ class LocalFileSystemObserverWorker;
 class FolderWatcher_win : public FolderWatcher {
     public:
         FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path);
-        ~FolderWatcher_win();
-
-        bool ready() const;
 
         void changesLost();
         void changeDetected(const SyncPath &path, OperationType opType);
@@ -44,9 +41,6 @@ class FolderWatcher_win : public FolderWatcher {
         void stopWatching() override;
 
     private:
-        /// Set to true once the WatcherThread is capturing events.
-        bool _ready = false;  // TODO : mutex???
-
         HANDLE _directoryHandle = nullptr;
         HANDLE _resultEventHandle = nullptr;
         HANDLE _stopEventHandle = nullptr;
@@ -57,4 +51,4 @@ class FolderWatcher_win : public FolderWatcher {
         OperationType operationFromAction(DWORD action);
 };
 
-}  // namespace KDC
+} // namespace KDC

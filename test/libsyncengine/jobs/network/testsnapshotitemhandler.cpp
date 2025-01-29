@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,15 @@
  */
 
 #include "testsnapshotitemhandler.h"
-#include "jobs/network/csvfullfilelistwithcursorjob.h"
-
+#include "libsyncengine/jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
 #include "libcommonserver/log/log.h"
 
 
 using namespace CppUnit;
 
 namespace KDC {
+
+static const std::string endOfFileDelimiter("#EOF");
 
 namespace snapshotitem_checker {
 std::string makeMessage(const CppUnit::Exception &e) {
@@ -51,7 +52,7 @@ Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept {
 
     return {};
 }
-}  // namespace snapshotitem_checker
+} // namespace snapshotitem_checker
 
 void TestSnapshotItemHandler::setUp() {}
 
@@ -72,9 +73,9 @@ void TestSnapshotItemHandler::testUpdateItem() {
         CPPUNIT_ASSERT_EQUAL(std::string("kDrive2"), SyncName2Str(item.name()));
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("file", SnapshotItemHandler::CsvIndexType, item));
-        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, item.type());
+        CPPUNIT_ASSERT_EQUAL(NodeType::File, item.type());
         CPPUNIT_ASSERT(handler.updateSnapshotItem("dir", SnapshotItemHandler::CsvIndexType, item));
-        CPPUNIT_ASSERT_EQUAL(NodeTypeDirectory, item.type());
+        CPPUNIT_ASSERT_EQUAL(NodeType::Directory, item.type());
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("1000", SnapshotItemHandler::CsvIndexSize, item));
         CPPUNIT_ASSERT_EQUAL(int64_t(1000), item.size());
@@ -85,7 +86,7 @@ void TestSnapshotItemHandler::testUpdateItem() {
         CPPUNIT_ASSERT(handler.updateSnapshotItem("124", SnapshotItemHandler::CsvIndexModtime, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(124), item.lastModified());
         CPPUNIT_ASSERT(handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexModtime,
-                                                  item));  // We can have negative values! (for dates before 1970)
+                                                  item)); // We can have negative values! (for dates before 1970)
         CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.lastModified());
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("1", SnapshotItemHandler::CsvIndexCanWrite, item));
@@ -156,11 +157,11 @@ std::string toCsvString(const std::string &name) {
     bool encloseInDoubleQuotes = false;
     bool prevCharBackslash = false;
 
-    for (char c : name) {
+    for (char c: name) {
         if (c == '"') {
-            if (!prevCharBackslash) {  // If a double quote is preceded by a comma, do not insert a second double quote.
+            if (!prevCharBackslash) { // If a double quote is preceded by a comma, do not insert a second double quote.
                 encloseInDoubleQuotes = true;
-                ss << '"';  // Insert 2 double quotes instead of one
+                ss << '"'; // Insert 2 double quotes instead of one
             }
         }
 
@@ -217,10 +218,11 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = true;
         bool error = true;
+        bool eof = true;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link";
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(!handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(!handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
     }
@@ -230,16 +232,17 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString("kDrive2") << ",dir,1000,123,124,0,1";
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
         const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive2")), SyncTime(123),
-                                        SyncTime(124), NodeTypeDirectory, int64_t(1000), true, false);
+                                        SyncTime(124), NodeType::Directory, int64_t(1000), true, false, true);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -250,16 +253,17 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("kDrive2")") << ",dir,1000,123,124,0,1,";
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
         const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string(R"("kDrive2")")), SyncTime(123),
-                                        SyncTime(124), NodeTypeDirectory, int64_t(1000), true, false);
+                                        SyncTime(124), NodeType::Directory, int64_t(1000), true, false, true);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -270,11 +274,12 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(""kDrive2"")") << ",dir,1000,123,124,0,1";
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
     }
@@ -284,17 +289,18 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(kDrive
 2)") << ",dir,1000,123,124,1,0,";
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
         const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive\n2")), SyncTime(123),
-                                        SyncTime(124), NodeTypeDirectory, int64_t(1000), false, true);
+                                        SyncTime(124), NodeType::Directory, int64_t(1000), false, true, true);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -305,12 +311,13 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("kDrive
     )");
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(error);
     }
@@ -320,11 +327,12 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(kDrive2)") << ",dir,1000,123,124,";
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
     }
@@ -334,11 +342,12 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("test"test")") << ",dir,1000,123,124,0,1";
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
     }
@@ -348,11 +357,12 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"("kDrive2")") << ",dir,1000,123,124,0,1";
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
     }
@@ -362,11 +372,12 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1";
         SnapshotItemHandler handler(Log::instance()->getLogger());
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
     }
@@ -376,6 +387,7 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
+        bool eof = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "0,1," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1\n"
@@ -384,18 +396,106 @@ void TestSnapshotItemHandler::testGetItem() {
         SnapshotItemHandler handler(Log::instance()->getLogger());
 
         // First line should be ignored because of parsing issue
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
         // The other ones should be correctly parsed
         int counter = 0;
-        while (handler.getItem(item, ss, error, ignore)) {
+        while (handler.getItem(item, ss, error, ignore, eof)) {
             counter++;
             CPPUNIT_ASSERT(!ignore);
             CPPUNIT_ASSERT(!error);
         }
-        CPPUNIT_ASSERT_EQUAL(2, counter);  // There should be 2 valid items
+        CPPUNIT_ASSERT_EQUAL(2, counter); // There should be 2 valid items
+    }
+
+    // End of line test : normal case
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        bool eof = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "1,0,test,dir,1000,123,124,0,1\n"
+           << endOfFileDelimiter.c_str();
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        while (handler.getItem(item, ss, error, ignore, eof)) {
+            // Nothing to do, just read the whole file
+        }
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT(eof);
+
+        const SnapshotItem expectedItem(NodeId("1"), NodeId("0"), Str2SyncName(std::string("test")), static_cast<SyncTime>(123),
+                                        static_cast<SyncTime>(124), NodeType::Directory, static_cast<int64_t>(1000), true, false,
+                                        true);
+        const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
+        CPPUNIT_ASSERT_MESSAGE(message, success);
+    }
+
+    // End of line test : missing EOF delimiter
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        bool eof = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "1,0,test,dir,1000,123,124,0,1\n";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        while (handler.getItem(item, ss, error, ignore, eof)) {
+            // Nothing to do, just read the whole file
+        }
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT(!eof);
+
+        const SnapshotItem expectedItem(NodeId("1"), NodeId("0"), Str2SyncName(std::string("test")), static_cast<SyncTime>(123),
+                                        static_cast<SyncTime>(124), NodeType::Directory, static_cast<int64_t>(1000), true, false,
+                                        true);
+        const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
+        CPPUNIT_ASSERT_MESSAGE(message, success);
+    }
+
+    // End of line test : EOF delimiter not at the end
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        bool eof = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "1,0,test,dir,1000,123,124,0,1\n"
+           << endOfFileDelimiter.c_str() << "\n"
+           << "2,0,test2,dir,1000,123,124,0,1";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT(!eof);
+        {
+            const SnapshotItem expectedItem(NodeId("1"), NodeId("0"), Str2SyncName(std::string("test")),
+                                            static_cast<SyncTime>(123), static_cast<SyncTime>(124), NodeType::Directory,
+                                            static_cast<int64_t>(1000), true, false, true);
+            const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
+            CPPUNIT_ASSERT_MESSAGE(message, success);
+        }
+
+        while (handler.getItem(item, ss, error, ignore, eof)) {
+            // Nothing to do, just read the whole file
+        }
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT(eof);
+        {
+            const SnapshotItem expectedItem(NodeId("2"), NodeId("0"), Str2SyncName(std::string("test2")),
+                                            static_cast<SyncTime>(123), static_cast<SyncTime>(124), NodeType::Directory,
+                                            static_cast<int64_t>(1000), true, false, true);
+            const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
+            CPPUNIT_ASSERT_MESSAGE(message, !success);
+        }
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

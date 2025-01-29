@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@
 
 namespace KDC {
 
-FileItemWidget::FileItemWidget(const QString &fullFilePath, const NodeType nodeType, QWidget *parent)
-    : AbstractFileItemWidget(parent), _fullFilePath(fullFilePath), _nodeType(nodeType) {
+FileItemWidget::FileItemWidget(const QString &fullFilePath, const NodeType nodeType, QWidget *parent) :
+    AbstractFileItemWidget(parent), _fullFilePath(fullFilePath), _nodeType(nodeType) {
     init();
 }
 
@@ -34,4 +34,4 @@ void FileItemWidget::init() {
     setFilePath(_fullFilePath, _nodeType);
 }
 
-}  // namespace KDC
+} // namespace KDC

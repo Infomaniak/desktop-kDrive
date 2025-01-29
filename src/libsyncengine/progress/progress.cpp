@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ Progress::Progress() : _progressPerSec(0), _prevCompleted(0), _initialSmoothing(
 void Progress::update() {
     const double smoothing = 0.9 * (1.0 - _initialSmoothing);
     _initialSmoothing *= 0.7;
-    _progressPerSec = smoothing * _progressPerSec + (1.0 - smoothing) * (_completed - _prevCompleted);
+    _progressPerSec = smoothing * _progressPerSec + (1.0 - smoothing) * static_cast<double>(_completed - _prevCompleted);
     _prevCompleted = _completed;
 }
 
@@ -35,7 +35,7 @@ Estimates Progress::estimates() const {
     Estimates est;
     est.setEstimatedBandwidth(int64_t(_progressPerSec));
     if (_progressPerSec != 0.0) {
-        est.setEstimatedEta(int64_t((_total - _completed) / _progressPerSec * 1000.0));
+        est.setEstimatedEta(static_cast<int64_t>(static_cast<double>(_total - _completed) / _progressPerSec * 1000.0));
     } else {
         est.setEstimatedEta(0);
     }
@@ -47,4 +47,4 @@ void Progress::setCompleted(int64_t completed) {
     _prevCompleted = std::min(_prevCompleted, _completed);
 }
 
-}  // namespace KDC
+} // namespace KDC

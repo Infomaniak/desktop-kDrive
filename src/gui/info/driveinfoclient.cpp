@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ DriveInfoClient::DriveInfoClient() : DriveInfo() {}
 DriveInfoClient::DriveInfoClient(const DriveInfo &driveInfo) : DriveInfo(driveInfo) {}
 
 void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
-    _status = SyncStatusUndefined;
+    _status = SyncStatus::Undefined;
     _unresolvedConflicts = false;
 
     std::size_t cnt = syncInfoMap.size();
@@ -33,8 +33,8 @@ void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
     if (cnt == 1) {
         SyncInfoClient &syncInfo = syncInfoMap.begin()->second;
         switch (syncInfo.status()) {
-            case SyncStatusUndefined:
-                _status = SyncStatusError;
+            case SyncStatus::Undefined:
+                _status = SyncStatus::Error;
                 break;
             default:
                 _status = syncInfo.status();
@@ -47,28 +47,28 @@ void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
         int abortOrPausedSeen = 0;
         int runSeen = 0;
 
-        for (auto &syncInfoMapElt : syncInfoMap) {
+        for (auto &syncInfoMapElt: syncInfoMap) {
             SyncInfoClient &syncInfo = syncInfoMapElt.second;
             if (syncInfo.paused()) {
                 abortOrPausedSeen++;
             } else {
                 switch (syncInfo.status()) {
-                    case SyncStatusUndefined:
+                    case SyncStatus::Undefined:
                         break;
-                    case SyncStatusStarting:
-                    case SyncStatusRunning:
+                    case SyncStatus::Starting:
+                    case SyncStatus::Running:
                         runSeen++;
                         break;
-                    case SyncStatusIdle:
+                    case SyncStatus::Idle:
                         goodSeen++;
                         break;
-                    case SyncStatusError:
+                    case SyncStatus::Error:
                         errorsSeen++;
                         break;
-                    case SyncStatusStopAsked:
-                    case SyncStatusStoped:
-                    case SyncStatusPauseAsked:
-                    case SyncStatusPaused:
+                    case SyncStatus::StopAsked:
+                    case SyncStatus::Stopped:
+                    case SyncStatus::PauseAsked:
+                    case SyncStatus::Paused:
                         abortOrPausedSeen++;
                 }
             }
@@ -78,13 +78,13 @@ void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
         }
 
         if (errorsSeen > 0) {
-            _status = SyncStatusError;
+            _status = SyncStatus::Error;
         } else if (runSeen > 0) {
-            _status = SyncStatusRunning;
+            _status = SyncStatus::Running;
         } else if (abortOrPausedSeen > 0) {
-            _status = SyncStatusPaused;
+            _status = SyncStatus::Paused;
         } else if (goodSeen > 0) {
-            _status = SyncStatusIdle;
+            _status = SyncStatus::Idle;
         }
     }
 }
@@ -101,4 +101,4 @@ QString DriveInfoClient::folderPath(std::shared_ptr<std::map<int, SyncInfoClient
     return fullFilePath;
 }
 
-}  // namespace KDC
+} // namespace KDC

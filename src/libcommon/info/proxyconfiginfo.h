@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ namespace KDC {
 
 class ProxyConfigInfo {
     public:
-        ProxyConfigInfo();
+        ProxyConfigInfo() = default;
         ProxyConfigInfo(ProxyType type, const QString &hostName, int port, bool needsAuth, const QString &user = "",
                         const QString &pwd = "");
 
@@ -48,12 +48,12 @@ class ProxyConfigInfo {
         friend QDataStream &operator<<(QDataStream &out, const ProxyConfigInfo &proxyConfigInfo);
 
     private:
-        ProxyType _type;
+        ProxyType _type = ProxyType::None;
         QString _hostName;
-        int _port;
-        bool _needsAuth;
+        int _port = 0;
+        bool _needsAuth = false;
         QString _user;
         QString _pwd;
 };
 
-}  // namespace KDC
+} // namespace KDC

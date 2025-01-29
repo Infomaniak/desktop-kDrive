@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "log/log.h"
+#include "libcommon/utility/utility.h"
 
 #include <filesystem>
 #include <string>
@@ -97,14 +98,14 @@ static int moveItemToTrash_private(const SyncPath &itemPath) {
 
     int result = system(command.c_str());
     if (result != 0) {
-        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to bin - err=" << std::to_string(result).c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result).c_str());
         return false;
     }
     return true;
 }
 
 int parseLineForRamStatus(char *line) {
-    int i = strlen(line);
+    int i = static_cast<int>(strlen(line));
     const char *p = line;
     while (*p < '0' || *p > '9') p++;
     line[i - 3] = '\0';
@@ -147,7 +148,7 @@ static bool ramCurrentlyUsedByProcess_private(uint64_t &ram, int &errorCode) {
 
     while (fgets(line, 128, file) != nullptr) {
         if (strncmp(line, "VmRSS:", 6) == 0) {
-            ram = parseLineForRamStatus(line);
+            ram = static_cast<uint64_t>(parseLineForRamStatus(line));
             break;
         }
     }
@@ -198,10 +199,10 @@ static bool cpuUsage_private(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow
         return false;
     } else {
         total = (totalUser - lastTotalUser) + (totalUserLow - lastTotalUserLow) + (totalSys - lastTotalSys);
-        percent = total;
+        percent = static_cast<double>(total);
         if (total > 0) {
             total += (totalIdle - lastTotalIdle);
-            percent /= total;
+            percent /= static_cast<double>(total);
             percent *= 100;
         } else {
             percent = 0;
@@ -246,8 +247,8 @@ static bool cpuUsageByProcess_private(double &percent) {
 
 static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
-    (void)creationDate;
-    (void)symlink;
+    (void) creationDate;
+    (void) symlink;
 
     exists = true;
 
@@ -261,4 +262,9 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
     return true;
 }
 
-}  // namespace KDC
+static std::string userName_private() {
+    bool isSet = false;
+    return CommonUtility::envVarValue("USER", isSet);
+}
+
+} // namespace KDC

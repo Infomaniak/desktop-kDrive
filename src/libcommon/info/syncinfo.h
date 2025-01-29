@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,9 +29,9 @@ namespace KDC {
 
 class SyncInfo {
     public:
+        SyncInfo() = default;
         SyncInfo(int dbId, int driveDbId, const QString &localPath, const QString &targetPath, const QString &targetNodeId,
                  bool supportVfs, VirtualFileMode virtualFileMode, const QString &navigationPaneClsid);
-        SyncInfo();
 
         inline void setDbId(int dbId) { _dbId = dbId; }
         inline int dbId() const { return _dbId; }
@@ -57,14 +57,14 @@ class SyncInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<SyncInfo> &list);
 
     protected:
-        int _dbId;
-        int _driveDbId;
+        int _dbId = 0;
+        int _driveDbId = 0;
         QString _localPath;
         QString _targetPath;
         QString _targetNodeId;
-        bool _supportVfs;
-        VirtualFileMode _virtualFileMode;
+        bool _supportVfs = false;
+        VirtualFileMode _virtualFileMode = VirtualFileMode::Off;
         QString _navigationPaneClsid;
 };
 
-}  // namespace KDC
+} // namespace KDC

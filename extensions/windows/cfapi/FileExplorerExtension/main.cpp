@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow) {
     // Create stop event
-    HANDLE stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-    if (stopEvent == NULL) {
+    HANDLE stopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+    if (stopEvent == nullptr) {
         TRACE_ERROR(L"Error in CreateEvent!");
         return -1;
     } else if (GetLastError() == ERROR_ALREADY_EXISTS) {

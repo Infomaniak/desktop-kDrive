@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,24 +40,24 @@ DEFINE_PROPERTYKEY(PKEY_StorageProviderTransferProgress, 0xE77E90DF, 0x6271, 0x4
 #define CHUNKBASESIZE 4096
 #define MAXCHUNKS 1000
 
-#define FIELD_SIZE(type, field) (sizeof(((type *)0)->field))
+#define FIELD_SIZE(type, field) (sizeof(((type *) 0)->field))
 #define CF_SIZE_OF_OP_PARAM(field) (FIELD_OFFSET(CF_OPERATION_PARAMETERS, field) + FIELD_SIZE(CF_OPERATION_PARAMETERS, field))
 
 CF_CALLBACK_REGISTRATION CloudProvider::s_callbackTable[] = {
-    {CF_CALLBACK_TYPE_FETCH_DATA, CloudProvider::onFetchData},
-    //{ CF_CALLBACK_TYPE_VALIDATE_DATA, CloudProvider::onValidateData },
-    {CF_CALLBACK_TYPE_CANCEL_FETCH_DATA, CloudProvider::onCancelFetchData},
-    //{ CF_CALLBACK_TYPE_FETCH_PLACEHOLDERS, CloudProvider::onNotifyFetchPlaceholder },
-    //{ CF_CALLBACK_TYPE_CANCEL_FETCH_PLACEHOLDERS, CloudProvider::onCancelFetchPlacehoders },
-    //{ CF_CALLBACK_TYPE_NOTIFY_FILE_OPEN_COMPLETION, CloudProvider::onNotifyOpenCompletion },
-    //{ CF_CALLBACK_TYPE_NOTIFY_FILE_CLOSE_COMPLETION, CloudProvider::onNotifyCloseCompletion },
-    {CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE, CloudProvider::onNotifyDehydrate},
-    //{ CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE_COMPLETION, CloudProvider::onNotifyDehydrateCompletion },
-    //{ CF_CALLBACK_TYPE_NOTIFY_DELETE, CloudProvider::onNotifyDelete },
-    //{ CF_CALLBACK_TYPE_NOTIFY_DELETE_COMPLETION, CloudProvider::onNotifyDeleteCompletion },
-    //{ CF_CALLBACK_TYPE_NOTIFY_RENAME, CloudProvider::onNotifyRename },
-    //{ CF_CALLBACK_TYPE_NOTIFY_RENAME_COMPLETION, CloudProvider::onNotifyRenameCompletion },
-    CF_CALLBACK_REGISTRATION_END};
+        {CF_CALLBACK_TYPE_FETCH_DATA, CloudProvider::onFetchData},
+        //{ CF_CALLBACK_TYPE_VALIDATE_DATA, CloudProvider::onValidateData },
+        {CF_CALLBACK_TYPE_CANCEL_FETCH_DATA, CloudProvider::onCancelFetchData},
+        //{ CF_CALLBACK_TYPE_FETCH_PLACEHOLDERS, CloudProvider::onNotifyFetchPlaceholder },
+        //{ CF_CALLBACK_TYPE_CANCEL_FETCH_PLACEHOLDERS, CloudProvider::onCancelFetchPlacehoders },
+        //{ CF_CALLBACK_TYPE_NOTIFY_FILE_OPEN_COMPLETION, CloudProvider::onNotifyOpenCompletion },
+        //{ CF_CALLBACK_TYPE_NOTIFY_FILE_CLOSE_COMPLETION, CloudProvider::onNotifyCloseCompletion },
+        {CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE, CloudProvider::onNotifyDehydrate},
+        //{ CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE_COMPLETION, CloudProvider::onNotifyDehydrateCompletion },
+        //{ CF_CALLBACK_TYPE_NOTIFY_DELETE, CloudProvider::onNotifyDelete },
+        //{ CF_CALLBACK_TYPE_NOTIFY_DELETE_COMPLETION, CloudProvider::onNotifyDeleteCompletion },
+        //{ CF_CALLBACK_TYPE_NOTIFY_RENAME, CloudProvider::onNotifyRename },
+        //{ CF_CALLBACK_TYPE_NOTIFY_RENAME_COMPLETION, CloudProvider::onNotifyRenameCompletion },
+        CF_CALLBACK_REGISTRATION_END};
 
 CloudProvider::CloudProvider(const LPCWSTR id, const LPCWSTR driveId, const LPCWSTR folderId, const LPCWSTR userId,
                              const LPCWSTR folderName, const LPCWSTR folderPath) {
@@ -90,6 +90,7 @@ bool CloudProvider::start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
         TRACE_ERROR(L"Error in CloudProviderRegistrar::registerWithShell!");
         return false;
     }
+    TRACE_DEBUG(L"CloudProviderRegistrar::registerWithShell done: syncRootID = %ls", _synRootID.c_str());
 
     // Hook up callback methods for transferring files between client and server
     TRACE_DEBUG(L"Calling connectSyncRootTransferCallbacks");
@@ -135,7 +136,7 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
     length.QuadPart = MAXLONGLONG;
     try {
         TRACE_DEBUG(L"Dehydrating placeholder: path = %ls", path);
-        winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, NULL));
+        winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, nullptr));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         if (ex.code() == HRESULT_FROM_WIN32(ERROR_CLOUD_FILE_IN_USE)) {
@@ -145,7 +146,7 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
             try {
                 TRACE_DEBUG(L"Get placeholder info: path = %ls", path);
                 winrt::check_hresult(
-                    CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
+                        CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
             } catch (winrt::hresult_error const &ex) {
                 if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
                     TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
@@ -157,14 +158,15 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
             if (res) {
                 try {
                     TRACE_DEBUG(L"Reverting placeholder: path = %ls", path);
-                    winrt::check_hresult(CfRevertPlaceholder(fileHandle.get(), CF_REVERT_FLAG_NONE, NULL));
+                    winrt::check_hresult(CfRevertPlaceholder(fileHandle.get(), CF_REVERT_FLAG_NONE, nullptr));
 
                     TRACE_DEBUG(L"Converting to placeholder: path = %ls", path);
                     winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), info.FileIdentity, info.FileIdentityLength,
-                                                                CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, NULL));
+                                                                CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr));
 
                     TRACE_DEBUG(L"Dehydrating placeholder: path = %ls", path);
-                    winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, NULL));
+                    winrt::check_hresult(
+                            CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, nullptr));
                 } catch (winrt::hresult_error const &ex) {
                     TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
                                 ex.message().c_str());
@@ -203,7 +205,7 @@ bool CloudProvider::hydrate(const wchar_t *path) {
 
     try {
         TRACE_DEBUG(L"Hydrating placeholder: path = %ls", path);
-        winrt::check_hresult(CfHydratePlaceholder(fileHandle.get(), offset, length, CF_HYDRATE_FLAG_NONE, NULL));
+        winrt::check_hresult(CfHydratePlaceholder(fileHandle.get(), offset, length, CF_HYDRATE_FLAG_NONE, nullptr));
     } catch (winrt::hresult_error const &ex) {
         std::lock_guard<std::mutex> lk(_providerInfo->_fetchMapMutex);
         const auto &fetchInfoIt = _providerInfo->_fetchMap.find(path);
@@ -285,8 +287,8 @@ bool CloudProvider::updateTransfer(const wchar_t *filePath, const wchar_t *fromF
         LARGE_INTEGER lengthToRead;
         totalLengthToRead.QuadPart = completed - fetchInfo._offset.QuadPart;
         size_t chunkSize = (totalLengthToRead.QuadPart > CHUNKBASESIZE
-                                ? min(MAXCHUNKS, totalLengthToRead.QuadPart / CHUNKBASESIZE) * CHUNKBASESIZE
-                                : totalLengthToRead.QuadPart);
+                                    ? min(MAXCHUNKS, totalLengthToRead.QuadPart / CHUNKBASESIZE) * CHUNKBASESIZE
+                                    : totalLengthToRead.QuadPart);
         char *transferData = new char[chunkSize];
         fromFilePathStream.seekg(fetchInfo._offset.QuadPart);
         while (((completed == fetchInfo._length.QuadPart && totalLengthToRead.QuadPart > 0) ||
@@ -423,10 +425,10 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         return;
     }
 
-    ProviderInfo *providerInfo = (ProviderInfo *)callbackInfo->CallbackContext;
+    ProviderInfo *providerInfo = (ProviderInfo *) callbackInfo->CallbackContext;
     if (providerInfo) {
         std::filesystem::path fullPath =
-            std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
+                std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
 
         if (wcsncmp(fullPath.wstring().c_str(), providerInfo->folderPath(), wcslen(providerInfo->folderPath()))) {
             TRACE_DEBUG(L"File not synchronized: %ls", fullPath.wstring().c_str());
@@ -434,7 +436,8 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         }
 
         if (callbackParameters->FetchData.Flags & CF_CALLBACK_FETCH_DATA_FLAG_NONE) {
-            if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey, callbackParameters->FetchData.RequiredFileOffset)) {
+            if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
+                                 callbackParameters->FetchData.RequiredFileOffset)) {
                 TRACE_ERROR(L"Error in cancelFetchData: path = %ls", fullPath.wstring().c_str());
             }
             return;
@@ -450,7 +453,7 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         FetchInfo fetchInfo;
         fetchInfo._connectionKey = callbackInfo->ConnectionKey;
         fetchInfo._transferKey = callbackInfo->TransferKey;
-        fetchInfo._offset = {0};  // Restart always from 0
+        fetchInfo._offset = {0}; // Restart always from 0
         fetchInfo._length = callbackParameters->FetchData.RequiredFileOffset;
         fetchInfo._length.QuadPart += callbackParameters->FetchData.RequiredLength.QuadPart;
         fetchInfo._updating = false;
@@ -467,7 +470,8 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
 
         if (!PipeClient::getInstance().sendMessageWithoutAnswer(L"MAKE_AVAILABLE_LOCALLY_DIRECT", fullPath.wstring())) {
             TRACE_ERROR(L"Error in Utilities::writeMessage!");
-            if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey, callbackParameters->FetchData.RequiredFileOffset)) {
+            if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
+                                 callbackParameters->FetchData.RequiredFileOffset)) {
                 TRACE_ERROR(L"Error in cancelFetchData: path = %ls", fullPath.wstring().c_str());
             }
         }
@@ -488,10 +492,10 @@ void CALLBACK CloudProvider::onCancelFetchData(_In_ CONST CF_CALLBACK_INFO *call
         return;
     }
 
-    ProviderInfo *providerInfo = (ProviderInfo *)callbackInfo->CallbackContext;
+    ProviderInfo *providerInfo = (ProviderInfo *) callbackInfo->CallbackContext;
     if (providerInfo) {
         std::filesystem::path fullPath =
-            std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
+                std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
 
         if (!cancelTransfer(providerInfo, fullPath.wstring().c_str(), false)) {
             TRACE_ERROR(L"Error in cancelTransfer: path = %lls", fullPath.wstring().c_str());
@@ -507,10 +511,10 @@ void CloudProvider::onNotifyDehydrate(_In_ CONST CF_CALLBACK_INFO *callbackInfo,
         return;
     }
 
-    ProviderInfo *providerInfo = (ProviderInfo *)callbackInfo->CallbackContext;
+    ProviderInfo *providerInfo = (ProviderInfo *) callbackInfo->CallbackContext;
     if (providerInfo) {
         std::filesystem::path fullPath =
-            std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
+                std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
 
         if (callbackInfo->ProcessInfo->ProcessId == Utilities::s_processId) {
             TRACE_DEBUG(L"Dehydration asked by app: path = %lls", fullPath.wstring().c_str());
@@ -615,8 +619,8 @@ bool CloudProvider::addFolderToSearchIndexer(const PCWSTR folder) {
 
     try {
         winrt::com_ptr<ISearchManager> searchManager;
-        winrt::check_hresult(
-            CoCreateInstance(__uuidof(CSearchManager), NULL, CLSCTX_SERVER, __uuidof(&searchManager), searchManager.put_void()));
+        winrt::check_hresult(CoCreateInstance(__uuidof(CSearchManager), nullptr, CLSCTX_SERVER, __uuidof(&searchManager),
+                                              searchManager.put_void()));
 
         winrt::com_ptr<ISearchCatalogManager> searchCatalogManager;
         winrt::check_hresult(searchManager->GetCatalog(MSSEARCH_INDEX, searchCatalogManager.put()));
@@ -634,11 +638,11 @@ bool CloudProvider::addFolderToSearchIndexer(const PCWSTR folder) {
     return true;
 }
 
-bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey, LARGE_INTEGER requiredFileOffset)
-{
+bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey,
+                                    LARGE_INTEGER requiredFileOffset) {
     // Update transfer status
-    CF_OPERATION_INFO opInfo = { 0 };
-    CF_OPERATION_PARAMETERS opParams = { 0 };
+    CF_OPERATION_INFO opInfo = {0};
+    CF_OPERATION_PARAMETERS opParams = {0};
 
     opInfo.StructSize = sizeof(opInfo);
     opInfo.Type = CF_OPERATION_TYPE_TRANSFER_DATA;
@@ -647,13 +651,12 @@ bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER
     opParams.ParamSize = CF_SIZE_OF_OP_PARAM(TransferData);
     opParams.TransferData.CompletionStatus = STATUS_UNSUCCESSFUL;
     opParams.TransferData.Buffer = nullptr;
-    opParams.TransferData.Offset = { 0 };  // Cancel entire transfer
+    opParams.TransferData.Offset = {0}; // Cancel entire transfer
     opParams.TransferData.Length = requiredFileOffset;
 
     try {
         winrt::check_hresult(CfExecute(&opInfo, &opParams));
-    }
-    catch (winrt::hresult_error const& ex) {
+    } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"Error catched: hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }

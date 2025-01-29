@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,10 @@ namespace KDC {
 class TestDb : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestDb);
         CPPUNIT_TEST(testQueries);
+        CPPUNIT_TEST(testTableExist);
+        CPPUNIT_TEST(testColumnExist);
+        CPPUNIT_TEST(testAddColumnIfMissing);
+        CPPUNIT_TEST(testAddIntegerColumnIfMissing);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -36,6 +40,10 @@ class TestDb : public CppUnit::TestFixture {
 
     protected:
         void testQueries();
+        void testTableExist();
+        void testColumnExist();
+        void testAddColumnIfMissing();
+        void testAddIntegerColumnIfMissing();
 
     private:
         struct Test {
@@ -68,4 +76,4 @@ class TestDb : public CppUnit::TestFixture {
         MyTestDb *_testObj;
 };
 
-}  // namespace KDC
+} // namespace KDC

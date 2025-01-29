@@ -57,19 +57,20 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
 ## QT 6.2.3
 
-From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), tick the **Archive** box to see earlier Qt versions.  
-In QT 6.2.3, select :
+From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
+tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
+In `QT 6.2.3`, select:
 - macOS
 - Sources
 - QT 5 Compatibility Module
 
-In Qt 6.2.3 Additional Libraries, select :
+In `Qt 6.2.3 Additional Libraries`, select:
 - Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
 - Qt WebView
 
-Add CMake in PATH (.zshrc):
+Add `CMake` in `PATH` by appending the following lines to your `.zshrc`:
 
 ```bash
 export PATH=$PATH:~/Qt/Tools/CMake/CMake.app/Contents/bin
@@ -79,7 +80,7 @@ export QTDIR=~/Qt/6.2.3/macos
 
 ## Sentry
 
-Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`)  
+Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`):
 
 ```bash
 cd ~/Projects/sentry-native
@@ -90,7 +91,7 @@ sudo cmake --install build
 
 ## log4cplus
 
-Download and build log4cplus :
+Download and build `log4cplus`:
 
 ```bash
 cd ~/Projects
@@ -112,7 +113,7 @@ git checkout v2.x
 
 ## CPPUnit
 
-Download and build CPPUnit :
+Download and build `CPPUnit`:
 
 You will probably need to install `automake` and `libtool`:
 ```
@@ -135,9 +136,9 @@ If the server does not reply to the `git clone` command, you can download the so
 
 ## OpenSSL
 
-Download and build OpenSSL :
+Download and build `OpenSSL`:
 
-Configure x86_64 :
+The configuration for the `x86_64` architecture is as follows:
 
 ```bash
 cd ~/Projects
@@ -153,9 +154,9 @@ cd openssl.x86_64
 make
 ```
 
-If you have an AMD architecture, run `sudo make install` then continue
+If you have an `AMD` architecture, run `sudo make install` then continue.
 
-Configure ARM :
+The configuration for the `ARM` architecture goes as follows:
 
 ```bash
 cd ~/Projects/openssl.arm64
@@ -163,7 +164,7 @@ cd ~/Projects/openssl.arm64
 make
 ```
 
-If you have an ARM architecture, run `sudo make install` then continue
+If you have an `ARM` architecture, run `sudo make install` then continue.
 
 ```bash
 cd ~/Projects
@@ -178,7 +179,7 @@ sudo cp openssl.multi/* /usr/local/lib/
 
 > :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
 
-Download and build Poco :
+Download and build `Poco`:
 
 ```bash
 cd ~/Projects
@@ -193,7 +194,7 @@ sudo cmake --build . --target install
 
 ## xxHash
 
-Download and build xxHash :
+Download and build `xxHash`:
 
 ```bash
 cd ~/Projects
@@ -209,9 +210,9 @@ sudo cmake --build . --target install
 
 ## libzip  
 
-> :warning: because the cmake builds in multi-architecture, `libzip` and its dependencies (in this case `zstd` must be installed in multi-architecture as well)
+> :warning: because the cmake builds in multi-architecture, `libzip` and its dependencies (in this case `zstd` must be installed in multi-architecture as well).
 
-Install `zstd` for multi-architecture :
+Install `zstd` for multi-architecture:
 ```bash
 cd ~/Projects
 curl -o zstd-1.5.6.tar.gz -L https://github.com/facebook/zstd/archive/v1.5.6.tar.gz
@@ -222,7 +223,7 @@ cmake --build . --config Release
 sudo cmake --build . --config Release --target install
 ```
 
-Clone and install libzip
+Clone and install `libzip`:
 ```bash
 cd ~/Projects
 git clone https://github.com/nih-at/libzip.git
@@ -236,18 +237,18 @@ sudo make install
 
 ## Sparkle
 
-Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.2) version 2.6.2 and copy the Sparkle directory in `~` and name it "Sparkle"  
-Copy and paste **Sparkle.Frameworks** in `~/Library/Frameworks` (create the directory is needed)
+Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.4) version `2.6.4` and copy the `Sparkle` directory in `~` and name it `Sparkle`.  
+Copy and paste `Sparkle.framework` in `~/Library/Frameworks` (create this directory if needed).
 
 ## Packages
 
-Install [Packages](http://s.sudre.free.fr/Software/Packages/about.html)
+Install [Packages](http://s.sudre.free.fr/Software/Packages/about.html).
 
 ## Notarytool
 
 Access [Apple account manager](https://appleid.apple.com/account/manage) and click on `Generate password`
-Enter `notarytool` as application name  
-Copy the previously generated password to use in the command below :
+Enter `notarytool` as application name.
+Copy the previously generated password to use in the command below:
 
 ```bash
 xcrun notarytool store-credentials "notarytool" --apple-id <email address> --team-id [team-id] --password <password>
@@ -257,7 +258,7 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 
 ## Linking dependencies
 
-In order for CMake to be able to find all dependencies, you might need to define `DYLD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
+In order for `CMake` to be able to find all dependencies, you might need to define `DYLD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
 Either add `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib` in your personal `.zshrc` file or add the environment variable in your IDE.
 
 ## Using CLion
@@ -300,8 +301,8 @@ Create the external tool to run `sign_app_debug.sh`:
 
 ### Qt Configuration
 
-Open the kDrive project in Qt Creator   
-In the project build settings, paste the following lines in the Initial Configuration Batch Edit (replace `<user>`)
+Open the `kDrive` project in `Qt Creator`.
+In the project build settings, paste the following lines in the `Initial Configuration Batch Edit` (replace `<user>` with the actual user name):
 
 ```
 -GUnix Makefiles
@@ -314,19 +315,20 @@ In the project build settings, paste the following lines in the Initial Configur
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive
 -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX=<team id>
 -DKDRIVE_THEME_DIR=/Users/<user>/Projects/desktop-kDrive/infomaniak
--DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/bin
+-DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/install
 -DBUILD_TESTING=OFF
 %{CMAKE_OSX_ARCHITECTURES:DefaultFlag}
 ```
 
-Build - Build Steps - Build :  
+Build - Build Steps - Build:  
 `cmake --build . --target all install`
 
-Build - Build Steps - Custom Process Step 1 :  
+Build - Build Steps - Custom Process Step 1:  
 `Command	: /Users/<user name>/Projects/kdrive/admin/osx/sign_app_debug.sh`  
-`Arguments	: %{ActiveProject:RunConfig:Executable:FileName} %{buildDir}/bin/kDrive.app "Developer ID Application: Infomaniak Network SA (864VDCS2QY)" "864VDCS2QY" "com.infomaniak.drive.desktopclient" 2>&1 1>/dev/null`
+`Arguments	: %{ActiveProject:RunConfig:Executable:FileName} %{buildDir}/install/kDrive.app "Developer ID Application: Infomaniak Network SA (864VDCS2QY)" "864VDCS2QY" "com.infomaniak.drive.desktopclient" 2>&1 1>/dev/null`
+`Working directory  : %{buildDir}`
 
-Run CMake again and start building the project.
+Run `CMake` again and start building the project.
 
 # Build in Release
 
@@ -341,33 +343,33 @@ pip3 install bs4 lxml
 
 ## Build
 
-In a terminal :
+Issue these commands a terminal:
 
 ```bash
 cd ~/Projects/desktop-kDrive
 ```
-For a simple unsigned build :
+For a simple unsigned release build:
 
 ```bash
-infomaniak-build-tools/macos/build-drive.sh 
+infomaniak-build-tools/macos/build-release.sh 
 ```
 
 # Disabling SIP in VMWare Fusion
 
-To Debug the application, the SIP needs to be disabled, this is because the extension is not signed and notarized in Debug mode.  
+To debug the application, the SIP needs to be disabled. This is because the extension is not signed and notarized in Debug mode.  
 If you are debugging on a Mac device, you can follow the [official Apple documentation](https://developer.apple.com/documentation/security/disabling_and_enabling_system_integrity_protection) to disable it.  
-If you want to debug on a MacOS VM, disabling the SIP depends on the tool you are using, here is one way to disable it on VMWare Fusion :
-- From a terminal in your VM, run `sudo nvram Asr-active-config=%7%00%00%00` to create a misspelled variable
-- Shut down the VM, and from its settings, go to `Startup Disk`, hold down the `Option` key, and select `Restart to Firmware`
-- Select `EFI Internal Shell` as boot option
-- You can clear the window by entering `mode 128 40`
-- Set the current filesystem volume to EFI : `fs0:`
-- Type `vol` to verify the selected filesystem is labeled `EFI`. If not, you can use `fs1:`, `fs2:` and so forth until you select the correct one
-- Enter the command `dmpstore Asr-active-config -s csr.bin` to save the active-config to csr.bin
+If you want to debug on a MacOS VM, disabling the SIP depends on the tool you are using. Here is one way to disable it on `VMWare Fusion`:
+- From a terminal inside your VM, run `sudo nvram Asr-active-config=%7%00%00%00` to create a misspelled variable.
+- Shut down the VM, and from its settings, go to `Startup Disk`, hold down the `Option` key, and select `Restart to Firmware`.
+- Select `EFI Internal Shell` as boot option.
+- You can clear the window by entering `mode 128 40`.
+- Set the current filesystem volume to EFI : `fs0:`.
+- Type `vol` to verify the selected filesystem is labeled `EFI`. If not, you can use `fs1:`, `fs2:` and so forth until you select the correct one.
+- Enter the command `dmpstore Asr-active-config -s csr.bin` to save the active-config to `csr.bin`.
 - Use `hexedit csr.bin` to edit the `csr.bin` file.
 - You will need to replace the hex `41` by `63` in the first line.
-- Save changes and exit, then type `cmpstore -l csr.bin` to create the csr-active-config variable in NVRAM
-- Type `dmpstore -d Asr-active-config` to remove the old invalid variable
-- Type `exit` to leave the Shell, and select `Mac OS X` from the Boot Manager
-- Your SIP should be disabled, you can check by opening a Terminal on your VM and typing `csrutil status`
+- Save changes and exit, then type `cmpstore -l csr.bin` to create the csr-active-config variable in `NVRAM`.
+- Type `dmpstore -d Asr-active-config` to remove the old invalid variable.
+- Type `exit` to leave the Shell, and select `Mac OS X` from the `Boot Manager`.
+- Your SIP should be disabled. You can check this by opening a `Terminal` on your VM and typing `csrutil status`.
 [source](https://apple.stackexchange.com/a/415100)

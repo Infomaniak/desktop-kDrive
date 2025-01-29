@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,13 +28,14 @@ namespace KDC {
 
 class PluginFactory {
     public:
-        ~PluginFactory();
+        virtual ~PluginFactory() = default;
         virtual QObject *create(KDC::VfsSetupParams &vfsSetupParams, QObject *parent = nullptr) = 0;
 };
 
-template <class PluginClass>
+template<class PluginClass>
 class DefaultPluginFactory : public PluginFactory {
     public:
+        virtual ~DefaultPluginFactory() = default;
         QObject *create(KDC::VfsSetupParams &vfsSetupParams, QObject *parent = nullptr) override {
             return new PluginClass(vfsSetupParams, parent);
         }
@@ -43,6 +44,6 @@ class DefaultPluginFactory : public PluginFactory {
 /// Return the expected name of a plugin, for use with QPluginLoader
 QString pluginFileName(const QString &type, const QString &name);
 
-}  // namespace KDC
+} // namespace KDC
 
 Q_DECLARE_INTERFACE(KDC::PluginFactory, "org.kDrive.PluginFactory")

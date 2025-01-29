@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 #pragma once
 
 #include "filesystemobserverworker.h"
-
 #include "jobs/network/networkjobsparams.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #include <Poco/JSON/Object.h>
 
@@ -37,30 +37,22 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         void execute() override;
         ExitCode generateInitialSnapshot() override;
         ExitCode processEvents() override;
-        [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::ReplicaSideRemote; }
+        [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::Remote; }
 
         ExitCode initWithCursor();
         ExitCode exploreDirectory(const NodeId &nodeId);
-        ExitCode getItemsInDir(const NodeId &dirId, const bool saveCursor);
+        ExitCode getItemsInDir(const NodeId &dirId, bool saveCursor);
 
         ExitCode sendLongPoll(bool &changes);
 
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::actionCodeUnknown};
-                NodeId nodeId;
-                NodeId parentNodeId;
-                SyncName name;
+                SnapshotItem snapshotItem;
                 SyncName path;
-                SyncName destName;
-                SyncTime createdAt{0};
-                SyncTime modtime{0};
-                NodeType type{NodeTypeUnknown};
-                int64_t size{0};
-                bool canWrite{true};
         };
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
-        ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
-        ExitCode processAction(const SyncName &usedName, const ActionInfo &actionInfo, std::set<NodeId, std::less<>> &movedItems);
+        ExitCode extractActionInfo(Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
+        ExitCode processAction(ActionInfo &actionInfo, std::set<NodeId, std::less<>> &movedItems);
 
         ExitCode checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
 
@@ -77,4 +69,4 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         friend class TestRemoteFileSystemObserverWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

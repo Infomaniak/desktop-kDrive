@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ static const int hMargin = 15;
 static const int vMargin = 15;
 static const int hButtonsSpacing = 10;
 
-PreferencesMenuBarWidget::PreferencesMenuBarWidget(QWidget *parent)
-    : HalfRoundRectWidget(parent), _backButton(nullptr), _titleLabel(nullptr) {
+PreferencesMenuBarWidget::PreferencesMenuBarWidget(QWidget *parent) :
+    HalfRoundRectWidget(parent), _backButton(nullptr), _titleLabel(nullptr) {
     setContentsMargins(hMargin, 0, hMargin, vMargin);
     setSpacing(0);
 
@@ -62,4 +62,4 @@ void PreferencesMenuBarWidget::retranslateUi() {
     _titleLabel->setText(tr("Preferences"));
 }
 
-}  // namespace KDC
+} // namespace KDC

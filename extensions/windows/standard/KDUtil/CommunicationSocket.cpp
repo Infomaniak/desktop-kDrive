@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ std::wstring getUserName() {
     }
 }
 
-}  // namespace
+} // namespace
 
 std::wstring CommunicationSocket::DefaultPipePath() {
     auto pipename = std::wstring(L"\\\\.\\pipe\\");
@@ -77,7 +77,7 @@ bool CommunicationSocket::Close() {
 
 
 bool CommunicationSocket::Connect(const std::wstring& pipename) {
-    _pipe = CreateFile(pipename.data(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    _pipe = CreateFile(pipename.data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 
     if (_pipe == INVALID_HANDLE_VALUE) {
         return false;
@@ -90,7 +90,7 @@ bool CommunicationSocket::SendMsg(const wchar_t* message) const {
     auto utf8_msg = StringUtil::toUtf8(message);
 
     DWORD numBytesWritten = 0;
-    auto result = WriteFile(_pipe, utf8_msg.c_str(), DWORD(utf8_msg.size()), &numBytesWritten, NULL);
+    auto result = WriteFile(_pipe, utf8_msg.c_str(), DWORD(utf8_msg.size()), &numBytesWritten, nullptr);
 
     if (result) {
         return true;
@@ -125,7 +125,7 @@ bool CommunicationSocket::ReadLine(wstring* response) {
         DWORD numBytesRead = 0;
         DWORD totalBytesAvailable = 0;
 
-        if (!PeekNamedPipe(_pipe, NULL, 0, 0, &totalBytesAvailable, 0)) {
+        if (!PeekNamedPipe(_pipe, nullptr, 0, 0, &totalBytesAvailable, 0)) {
             Close();
             return false;
         }
@@ -133,7 +133,7 @@ bool CommunicationSocket::ReadLine(wstring* response) {
             return false;
         }
 
-        if (!ReadFile(_pipe, resp_utf8.data(), DWORD(resp_utf8.size()), &numBytesRead, NULL)) {
+        if (!ReadFile(_pipe, resp_utf8.data(), DWORD(resp_utf8.size()), &numBytesRead, nullptr)) {
             Close();
             return false;
         }

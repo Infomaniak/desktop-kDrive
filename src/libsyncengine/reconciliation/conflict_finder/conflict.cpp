@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 
 namespace KDC {
 
-Conflict::Conflict(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, ConflictType type)
-    : _node(localNode), _correspondingNode(remoteNode), _type(type) {}
+Conflict::Conflict(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, ConflictType type) :
+    _node(localNode), _correspondingNode(remoteNode), _type(type) {}
 
 Conflict::~Conflict() {
     _node.reset();
@@ -35,14 +35,14 @@ ReplicaSide Conflict::sideOfEvent(OperationType opType) const {
     } else if (correspondingNode()->hasChangeEvent(opType)) {
         return correspondingNode()->side();
     } else {
-        return ReplicaSide::ReplicaSideUnknown;
+        return ReplicaSide::Unknown;
     }
 }
 
 std::shared_ptr<Node> Conflict::localNode() const {
-    if (node()->side() == ReplicaSide::ReplicaSideLocal) {
+    if (node()->side() == ReplicaSide::Local) {
         return node();
-    } else if (correspondingNode()->side() == ReplicaSide::ReplicaSideLocal) {
+    } else if (correspondingNode()->side() == ReplicaSide::Local) {
         return correspondingNode();
     } else {
         return nullptr;
@@ -53,8 +53,8 @@ std::shared_ptr<Node> Conflict::remoteNode() const {
     return localNode() == _node ? _correspondingNode : _node;
 }
 
-ConflictCmp::ConflictCmp(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree)
-    : _localUpdateTree(localUpdateTree), _remoteUpdateTree(remoteUpdateTree) {}
+ConflictCmp::ConflictCmp(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree) :
+    _localUpdateTree(localUpdateTree), _remoteUpdateTree(remoteUpdateTree) {}
 
 ConflictCmp::~ConflictCmp() {
     _localUpdateTree.reset();
@@ -73,15 +73,15 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
         SyncPath path1;
         SyncPath path2;
         switch (c1.type()) {
-            case ConflictTypeMoveParentDelete:
-            case ConflictTypeCreateParentDelete:
-            case ConflictTypeMoveDelete:
-            case ConflictTypeEditDelete:
+            case ConflictType::MoveParentDelete:
+            case ConflictType::CreateParentDelete:
+            case ConflictType::MoveDelete:
+            case ConflictType::EditDelete:
                 // Path of deleted node
-                path1 = pathOfEvent(c1, OperationType::OperationTypeDelete);
-                path2 = pathOfEvent(c2, OperationType::OperationTypeDelete);
+                path1 = pathOfEvent(c1, OperationType::Delete);
+                path2 = pathOfEvent(c2, OperationType::Delete);
                 break;
-            case ConflictTypeMoveMoveSource:
+            case ConflictType::MoveMoveSource:
                 // Move origin path of the local node
                 localNode = c1.localNode();
                 if (localNode && localNode->moveOrigin().has_value()) {
@@ -92,10 +92,10 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
                     path2 = *c2.correspondingNode()->moveOrigin();
                 }
                 break;
-            case ConflictTypeMoveMoveDest:
-            case ConflictTypeMoveMoveCycle:
-            case ConflictTypeCreateCreate:
-            case ConflictTypeEditEdit:
+            case ConflictType::MoveMoveDest:
+            case ConflictType::MoveMoveCycle:
+            case ConflictType::CreateCreate:
+            case ConflictType::EditEdit:
                 // Path of local node
                 localNode = c1.localNode();
                 if (localNode) {
@@ -106,10 +106,10 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
                     path2 = localNode->getPath();
                 }
                 break;
-            case ConflictTypeMoveCreate:
+            case ConflictType::MoveCreate:
                 // Path of the created node
-                path1 = pathOfEvent(c1, OperationType::OperationTypeCreate);
-                path2 = pathOfEvent(c2, OperationType::OperationTypeCreate);
+                path1 = pathOfEvent(c1, OperationType::Create);
+                path2 = pathOfEvent(c2, OperationType::Create);
                 break;
             default:
                 break;
@@ -131,15 +131,15 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
 
 SyncPath ConflictCmp::pathOfEvent(const Conflict &conflict, OperationType optype) const {
     ReplicaSide side = conflict.sideOfEvent(optype);
-    SyncPath path = (side == ReplicaSide::ReplicaSideLocal    ? conflict.node()->getPath()
-                     : side == ReplicaSide::ReplicaSideRemote ? conflict.correspondingNode()->getPath()
-                                                              : std::filesystem::path());
+    SyncPath path = (side == ReplicaSide::Local    ? conflict.node()->getPath()
+                     : side == ReplicaSide::Remote ? conflict.correspondingNode()->getPath()
+                                                   : std::filesystem::path());
 
     return path;
 }
 
-ConflictQueue::ConflictQueue(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree)
-    : _conflictCmp(localUpdateTree, remoteUpdateTree) {
+ConflictQueue::ConflictQueue(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree) :
+    _conflictCmp(localUpdateTree, remoteUpdateTree) {
     initQueue();
 }
 
@@ -163,7 +163,7 @@ void ConflictQueue::clear() {
 
 void ConflictQueue::initQueue() {
     _queue = std::unique_ptr<std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>>(
-        new std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>(_conflictCmp));
+            new std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>(_conflictCmp));
 }
 
-}  // namespace KDC
+} // namespace KDC

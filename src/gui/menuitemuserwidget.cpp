@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,14 +36,9 @@ static const int boxCurSpacing = 8;
 static const int pictureUserSize = 24;
 static const int pictureCurrUserSize = 40;
 
-MenuItemUserWidget::MenuItemUserWidget(const QString &name, const QString &email, bool currentUser, QWidget *parent)
-    : QWidget(parent),
-      _name(name),
-      _email(email),
-      _leftPictureLabel(nullptr),
-      _leftPictureSize(currentUser ? pictureCurrUserSize : pictureUserSize),
-      _checked(false),
-      _hasSubmenu(false) {
+MenuItemUserWidget::MenuItemUserWidget(const QString &name, const QString &email, bool currentUser, QWidget *parent) :
+    QWidget(parent), _name(name), _email(email), _leftPictureLabel(nullptr),
+    _leftPictureSize(currentUser ? pictureCurrUserSize : pictureUserSize), _checked(false), _hasSubmenu(false) {
     if (currentUser) {
         // different view if it's current User
         initCurrentUserUI();
@@ -128,4 +123,4 @@ void MenuItemUserWidget::paintEvent(QPaintEvent *paintEvent) {
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 }
 
-}  // namespace KDC
+} // namespace KDC

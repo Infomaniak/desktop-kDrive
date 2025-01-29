@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,35 +33,47 @@ bool LocalCopyJob::canRun() {
 
     // Check that we can copy the file in destination
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_dest).c_str());
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
     if (exists) {
         LOGW_DEBUG(_logger, L"Item " << Path2WStr(_dest).c_str() << L" already exist. Aborting current sync and restart.");
 
-        _exitCode = ExitCodeNeedRestart;
-        _exitCause = ExitCauseUnexpectedFileSystemEvent;
+        _exitCode = ExitCode::NeedRestart;
+        _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
 
     // Check that source file still exists
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_source).c_str());
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger,
                    L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_source).c_str());
-        _exitCode = ExitCodeNeedRestart;
-        _exitCause = ExitCauseUnexpectedFileSystemEvent;
+        _exitCode = ExitCode::NeedRestart;
+        _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
 
@@ -76,18 +88,26 @@ void LocalCopyJob::runJob() {
     try {
         std::filesystem::copy(_source, _dest);
         LOGW_INFO(_logger, L"Item " << Path2WStr(_source).c_str() << L" copied to " << Path2WStr(_dest).c_str());
-        _exitCode = ExitCodeOk;
+        _exitCode = ExitCode::Ok;
     } catch (std::filesystem::filesystem_error &fsError) {
         LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str() << L": "
-                                                   << Utility::s2ws(fsError.what()).c_str() << L" (" << fsError.code() << L")");
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+                                                   << Utility::s2ws(fsError.what()).c_str() << L" (" << fsError.code().value()
+                                                   << L")");
+        if (IoHelper::stdError2ioError(fsError.code()) == IoError::AccessDenied) {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
+        } else {
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
+        }
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
     } catch (...) {
         LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str()
                                                    << L": Unknown error");
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

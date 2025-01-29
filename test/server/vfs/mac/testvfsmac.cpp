@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,9 @@
 #include "io/iohelper.h"
 #include "log/log.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/testhelpers.h"
 
 namespace KDC {
-
-static const SyncTime defaultTime = std::time(nullptr);
 
 void TestVfsMac::setUp() {
     VfsSetupParams vfsSetupParams;
@@ -43,7 +42,7 @@ void TestVfsMac::testStatus() {
     {
         // Create temp directory and file.
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / filename;
+        const SyncPath path = temporaryDirectory.path() / filename;
         {
             std::ofstream ofs(path);
             ofs << "abc";
@@ -73,12 +72,12 @@ void TestVfsMac::testStatus() {
         const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
         struct stat fileInfo;
         fileInfo.st_size = 10;
-        fileInfo.st_mtimespec = {defaultTime, 0};
-        fileInfo.st_atimespec = {defaultTime, 0};
-        fileInfo.st_birthtimespec = {defaultTime, 0};
+        fileInfo.st_mtimespec = {testhelpers::defaultTime, 0};
+        fileInfo.st_atimespec = {testhelpers::defaultTime, 0};
+        fileInfo.st_birthtimespec = {testhelpers::defaultTime, 0};
         fileInfo.st_mode = S_IFREG;
-        extConnector->vfsCreatePlaceHolder(SyncName2QStr(filename), Path2QStr(temporaryDirectory.path), &fileInfo);
-        const SyncPath path = temporaryDirectory.path / filename;
+        extConnector->vfsCreatePlaceHolder(SyncName2QStr(filename), Path2QStr(temporaryDirectory.path()), &fileInfo);
+        const SyncPath path = temporaryDirectory.path() / filename;
 
         bool isPlaceholder = false;
         bool isHydrated = false;
@@ -100,19 +99,19 @@ void TestVfsMac::testStatus() {
         const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
         struct stat fileInfo;
         fileInfo.st_size = 10;
-        fileInfo.st_mtimespec = {defaultTime, 0};
-        fileInfo.st_atimespec = {defaultTime, 0};
-        fileInfo.st_birthtimespec = {defaultTime, 0};
+        fileInfo.st_mtimespec = {testhelpers::defaultTime, 0};
+        fileInfo.st_atimespec = {testhelpers::defaultTime, 0};
+        fileInfo.st_birthtimespec = {testhelpers::defaultTime, 0};
         fileInfo.st_mode = S_IFREG;
-        extConnector->vfsCreatePlaceHolder(SyncName2QStr(filename), Path2QStr(temporaryDirectory.path), &fileInfo);
-        const SyncPath path = temporaryDirectory.path / filename;
+        extConnector->vfsCreatePlaceHolder(SyncName2QStr(filename), Path2QStr(temporaryDirectory.path()), &fileInfo);
+        const SyncPath path = temporaryDirectory.path() / filename;
         {
             std::ofstream ofs(path);
             ofs << "abc";
             ofs.close();
         }
         // Simulate a partially hydrated placeholder by setting the status to `H30` (i.g. 30% completed)
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         IoHelper::setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "H30", ioError);
 
         bool isPlaceholder = false;
@@ -132,7 +131,7 @@ void TestVfsMac::testStatus() {
         // Create temp directory
         const LocalTemporaryDirectory temporaryDirectory;
         // Create file
-        const SyncPath path = temporaryDirectory.path / filename;
+        const SyncPath path = temporaryDirectory.path() / filename;
         {
             std::ofstream ofs(path);
             ofs << "abc";
@@ -152,4 +151,4 @@ void TestVfsMac::testStatus() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

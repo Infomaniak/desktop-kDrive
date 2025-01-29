@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
 
 #define PRAGMA_LOCKING_MODE_ID "db2"
 // #define PRAGMA_LOCKING_MODE             "PRAGMA locking_mode=EXCLUSIVE;"
-#define PRAGMA_LOCKING_MODE "PRAGMA locking_mode=NORMAL;"  // For debugging
+#define PRAGMA_LOCKING_MODE "PRAGMA locking_mode=NORMAL;" // For debugging
 
 #define PRAGMA_JOURNAL_MODE_ID "db3"
 #define PRAGMA_JOURNAL_MODE "PRAGMA journal_mode="
@@ -51,10 +51,6 @@
 
 #define PRAGMA_FOREIGN_KEYS_ID "db6"
 #define PRAGMA_FOREIGN_KEYS "PRAGMA foreign_keys=ON;"
-
-// Check if a table exists
-#define CHECK_TABLE_EXISTS_ID "check_table_exists"
-#define CHECK_TABLE_EXISTS "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1;"
 
 //
 // version
@@ -77,6 +73,14 @@
     "SELECT value "            \
     "FROM version;"
 
+// Item existence
+// Check if a table exists
+#define CHECK_TABLE_EXISTENCE_REQUEST_ID "check_table_existence"
+#define CHECK_TABLE_EXISTENCE_REQUEST "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1;"
+
+#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
+#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info(?1) WHERE name=?2;"
+
 namespace KDC {
 
 static std::string defaultJournalMode(const std::string &dbPath) {
@@ -90,19 +94,15 @@ static std::string defaultJournalMode(const std::string &dbPath) {
         return "DELETE";
     }
 #else
-    (void)dbPath;
+    (void) dbPath;
 #endif
 
     return "WAL";
 }
 
-Db::Db(const std::filesystem::path &dbPath)
-    : _logger(Log::instance()->getLogger()),
-      _sqliteDb(new SqliteDb()),
-      _dbPath(dbPath),
-      _transaction(false),
-      _journalMode(defaultJournalMode(dbPath.string())),
-      _fromVersion(std::string()) {}
+Db::Db(const std::filesystem::path &dbPath) :
+    _logger(Log::instance()->getLogger()), _sqliteDb(new SqliteDb()), _dbPath(dbPath), _transaction(false),
+    _journalMode(defaultJournalMode(dbPath.string())), _fromVersion(std::string()) {}
 
 Db::~Db() {
     close();
@@ -118,7 +118,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     std::filesystem::path dbPath(CommonUtility::getAppSupportDir());
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
 
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
@@ -200,10 +200,9 @@ bool Db::exists() {
         return false;
     } else {
         bool exists = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError).c_str());
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError));
             return false;
         }
 
@@ -313,26 +312,22 @@ bool Db::init(const std::string &version) {
 #define SQLITE_IOERR_SHMMAP (SQLITE_IOERR | (21 << 8))
 #endif
 
-    int errId;
-    std::string error;
+    if (!createAndPrepareRequest(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST)) return false;
+    if (!createAndPrepareRequest(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST)) return false;
 
     if (!version.empty()) {
         // Check if DB is already initialized
-        bool dbExists;
-        if (!checkIfTableExists("version", dbExists)) {
+        bool dbExists = false;
+        if (!tableExists("version", dbExists)) {
             return false;
         }
 
         if (dbExists) {
             // Check version
             LOG_DEBUG(_logger, "Check DB version");
-            ASSERT(queryCreate(SELECT_VERSION_REQUEST_ID));
-            if (!queryPrepare(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST, false, errId, error)) {
-                queryFree(SELECT_VERSION_REQUEST_ID);
-                return sqlFail(SELECT_VERSION_REQUEST_ID, error);
-            }
+            if (!createAndPrepareRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST)) return false;
 
-            bool found;
+            bool found = false;
             if (!selectVersion(_fromVersion, found)) {
                 LOG_WARN(_logger, "Error in Db::selectVersion");
                 return false;
@@ -344,54 +339,40 @@ bool Db::init(const std::string &version) {
 
             queryFree(SELECT_VERSION_REQUEST_ID);
 
-            if (_fromVersion != version) {
-                // Upgrade DB
-                LOG_INFO(_logger, "Upgrade DB from " << _fromVersion.c_str() << " to " << version.c_str());
-                if (!upgrade(_fromVersion, version)) {
-                    LOG_WARN(_logger, "Error in Db::upgrade");
-                    return false;
-                }
-
-                // Update version
-                ASSERT(queryCreate(UPDATE_VERSION_REQUEST_ID));
-                if (!queryPrepare(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST, false, errId, error)) {
-                    queryFree(UPDATE_VERSION_REQUEST_ID);
-                    return sqlFail(UPDATE_VERSION_REQUEST_ID, error);
-                }
-
-                if (!updateVersion(version, found)) {
-                    LOG_WARN(_logger, "Error in Db::updateVersion");
-                    return false;
-                }
-                if (!found) {
-                    LOG_WARN(_logger, "Version not found");
-                    return false;
-                }
-
-                queryFree(UPDATE_VERSION_REQUEST_ID);
+            // Upgrade DB
+            LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << _fromVersion << " to " << version);
+            if (!upgrade(_fromVersion, version)) {
+                LOG_WARN(_logger, "Error in Db::upgrade");
+                return false;
             }
+
+            // Update version
+            if (!createAndPrepareRequest(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST)) return false;
+            if (!updateVersion(version, found)) {
+                LOG_WARN(_logger, "Error in Db::updateVersion");
+                return false;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Version not found");
+                return false;
+            }
+
+            queryFree(UPDATE_VERSION_REQUEST_ID);
         } else {
             // Create version table
             LOG_DEBUG(_logger, "Create version table");
-            ASSERT(queryCreate(CREATE_VERSION_TABLE_ID));
-            if (!queryPrepare(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE, false, errId, error)) {
-                queryFree(CREATE_VERSION_TABLE_ID);
-                return sqlFail(CREATE_VERSION_TABLE_ID, error);
-            }
-            if (!queryExec(CREATE_VERSION_TABLE_ID, errId, error)) {
+            if (!createAndPrepareRequest(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE)) return false;
+
+            int errId = -1;
+            if (std::string error; !queryExec(CREATE_VERSION_TABLE_ID, errId, error)) {
                 queryFree(CREATE_VERSION_TABLE_ID);
                 return sqlFail(CREATE_VERSION_TABLE_ID, error);
             }
             queryFree(CREATE_VERSION_TABLE_ID);
 
             // Insert version
-            LOG_DEBUG(_logger, "Insert version " << version.c_str());
-            ASSERT(queryCreate(INSERT_VERSION_REQUEST_ID));
-            if (!queryPrepare(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST, false, errId, error)) {
-                queryFree(INSERT_VERSION_REQUEST_ID);
-                return sqlFail(INSERT_VERSION_REQUEST_ID, error);
-            }
-
+            LOG_DEBUG(_logger, "Insert version " << version);
+            if (!createAndPrepareRequest(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST)) return false;
             if (!insertVersion(version)) {
                 LOG_WARN(_logger, "Error in Db::insertVersion");
                 return false;
@@ -400,9 +381,8 @@ bool Db::init(const std::string &version) {
             queryFree(INSERT_VERSION_REQUEST_ID);
 
             // Create DB
-            LOG_INFO(_logger, "Create DB");
-            bool retry;
-            if (!create(retry)) {
+            LOG_INFO(_logger, "Create " << dbType() << " DB");
+            if (bool retry = false; !create(retry)) {
                 if (retry) {
                     LOG_WARN(_logger, "Error in Db::create - Retry");
                     _sqliteDb->close();
@@ -416,7 +396,7 @@ bool Db::init(const std::string &version) {
     }
 
     // Prepare DB
-    LOG_INFO(_logger, "Prepare DB");
+    LOG_INFO(_logger, "Prepare " << dbType().c_str() << " DB");
     if (!prepare()) {
         LOG_WARN(_logger, "Error in Db::prepare");
         return false;
@@ -428,7 +408,7 @@ bool Db::init(const std::string &version) {
 void Db::startTransaction() {
     if (!_transaction) {
         if (!_sqliteDb->startTransaction()) {
-            LOG_WARN(_logger, "ERROR starting transaction: " << _sqliteDb->error().c_str());
+            LOG_WARN(_logger, "ERROR starting transaction: " << _sqliteDb->error());
             return;
         }
         _transaction = true;
@@ -470,11 +450,13 @@ bool Db::sqlFail(const std::string &log, const std::string &error) {
 }
 
 bool Db::checkConnect(const std::string &version) {
+    (void) version;
+
     if (_sqliteDb && _sqliteDb->isOpened()) {
         // Unfortunately the sqlite isOpen check can return true even when the underlying storage
         // has become unavailable - and then some operations may cause crashes.
         bool exists = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError).c_str());
             close();
@@ -503,7 +485,7 @@ bool Db::checkConnect(const std::string &version) {
     }
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError).c_str());
         return false;
@@ -515,15 +497,7 @@ bool Db::checkConnect(const std::string &version) {
     }
 
     // SELECT_SQLITE_VERSION
-    int errId;
-    std::string error;
-
-    ASSERT(queryCreate(SELECT_SQLITE_VERSION_ID));
-    if (!queryPrepare(SELECT_SQLITE_VERSION_ID, SELECT_SQLITE_VERSION, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << SELECT_SQLITE_VERSION_ID);
-        queryFree(SELECT_SQLITE_VERSION_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(SELECT_SQLITE_VERSION_ID, SELECT_SQLITE_VERSION)) return false;
     bool hasData;
     if (!queryNext(SELECT_SQLITE_VERSION_ID, hasData) || !hasData) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_SQLITE_VERSION_ID);
@@ -536,12 +510,7 @@ bool Db::checkConnect(const std::string &version) {
     LOG_DEBUG(_logger, "sqlite3 version=" << result.c_str());
 
     // PRAGMA_LOCKING_MODE
-    ASSERT(queryCreate(PRAGMA_LOCKING_MODE_ID));
-    if (!queryPrepare(PRAGMA_LOCKING_MODE_ID, PRAGMA_LOCKING_MODE, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_LOCKING_MODE_ID);
-        queryFree(PRAGMA_LOCKING_MODE_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_LOCKING_MODE_ID, PRAGMA_LOCKING_MODE)) return false;
     if (!queryNext(PRAGMA_LOCKING_MODE_ID, hasData) || !hasData) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_LOCKING_MODE_ID);
         queryFree(PRAGMA_LOCKING_MODE_ID);
@@ -553,12 +522,7 @@ bool Db::checkConnect(const std::string &version) {
 
     // PRAGMA_JOURNAL_MODE
     std::string sql(PRAGMA_JOURNAL_MODE + _journalMode + ";");
-    ASSERT(queryCreate(PRAGMA_JOURNAL_MODE_ID));
-    if (!queryPrepare(PRAGMA_JOURNAL_MODE_ID, sql, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_JOURNAL_MODE_ID);
-        queryFree(PRAGMA_JOURNAL_MODE_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_JOURNAL_MODE_ID, sql.c_str())) return false;
     if (!queryNext(PRAGMA_JOURNAL_MODE_ID, hasData) || !hasData) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_JOURNAL_MODE_ID);
         queryFree(PRAGMA_JOURNAL_MODE_ID);
@@ -573,12 +537,7 @@ bool Db::checkConnect(const std::string &version) {
     std::string synchronousMode = "FULL";
     if (_journalMode.compare("WAL") == 0) synchronousMode = "NORMAL";
     sql = PRAGMA_SYNCHRONOUS + synchronousMode + ";";
-    ASSERT(queryCreate(PRAGMA_SYNCHRONOUS_ID));
-    if (!queryPrepare(PRAGMA_SYNCHRONOUS_ID, sql, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_SYNCHRONOUS_ID);
-        queryFree(PRAGMA_SYNCHRONOUS_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_SYNCHRONOUS_ID, sql.c_str())) return false;
     if (!queryNext(PRAGMA_SYNCHRONOUS_ID, hasData)) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_SYNCHRONOUS_ID);
         queryFree(PRAGMA_SYNCHRONOUS_ID);
@@ -588,12 +547,7 @@ bool Db::checkConnect(const std::string &version) {
     LOG_DEBUG(_logger, "sqlite3 synchronous=" << synchronousMode.c_str());
 
     // PRAGMA_CASE_SENSITIVE_LIKE
-    ASSERT(queryCreate(PRAGMA_CASE_SENSITIVE_LIKE_ID));
-    if (!queryPrepare(PRAGMA_CASE_SENSITIVE_LIKE_ID, PRAGMA_CASE_SENSITIVE_LIKE, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_CASE_SENSITIVE_LIKE_ID);
-        queryFree(PRAGMA_CASE_SENSITIVE_LIKE_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_CASE_SENSITIVE_LIKE_ID, PRAGMA_CASE_SENSITIVE_LIKE)) return false;
     if (!queryNext(PRAGMA_CASE_SENSITIVE_LIKE_ID, hasData)) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_CASE_SENSITIVE_LIKE_ID);
         queryFree(PRAGMA_CASE_SENSITIVE_LIKE_ID);
@@ -603,12 +557,7 @@ bool Db::checkConnect(const std::string &version) {
     LOG_DEBUG(_logger, "sqlite3 case_sensitivity=ON");
 
     // PRAGMA_FOREIGN_KEYS
-    ASSERT(queryCreate(PRAGMA_FOREIGN_KEYS_ID));
-    if (!queryPrepare(PRAGMA_FOREIGN_KEYS_ID, PRAGMA_FOREIGN_KEYS, false, errId, error)) {
-        LOG_WARN(_logger, "Error preparing query:" << PRAGMA_FOREIGN_KEYS_ID);
-        queryFree(PRAGMA_FOREIGN_KEYS_ID);
-        return false;
-    }
+    if (!createAndPrepareRequest(PRAGMA_FOREIGN_KEYS_ID, PRAGMA_FOREIGN_KEYS)) return false;
     if (!queryNext(PRAGMA_FOREIGN_KEYS_ID, hasData)) {
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_FOREIGN_KEYS_ID);
         queryFree(PRAGMA_FOREIGN_KEYS_ID);
@@ -617,41 +566,91 @@ bool Db::checkConnect(const std::string &version) {
     queryFree(PRAGMA_FOREIGN_KEYS_ID);
     LOG_DEBUG(_logger, "sqlite3 foreign_keys=ON");
 
-    // DB initialization
-    if (!init(version)) {
-        LOG_ERROR(_logger, "Database initialisation error");
+    return true;
+}
+
+bool Db::addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
+    const auto requestId = tableName + "add_column_" + columnName;
+    const auto request = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " INTEGER;";
+    return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
+}
+
+bool Db::addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
+                            const std::string &request, bool *columnAdded /*= nullptr*/) {
+    bool exist = false;
+    if (!columnExists(tableName, columnName, exist)) return false;
+    if (!exist) {
+        LOG_INFO(_logger, "Adding column " << columnName.c_str() << " into table " << tableName.c_str());
+        if (!createAndPrepareRequest(requestId.c_str(), request.c_str())) return false;
+        int errId = 0;
+        std::string error;
+        if (!queryExec(requestId, errId, error)) {
+            queryFree(requestId);
+            return sqlFail(requestId, error);
+        }
+        queryFree(requestId);
+
+        if (columnAdded) *columnAdded = true;
+    }
+    return true;
+}
+
+bool Db::createAndPrepareRequest(const char *requestId, const char *query) {
+    int errId = 0;
+    std::string error;
+
+    if (!queryCreate(requestId)) {
+        LOG_FATAL(_logger, "ENFORCE: \"queryCreate(" << requestId << ")\".");
+    }
+    if (!queryPrepare(requestId, query, false, errId, error)) {
+        queryFree(requestId);
+        return sqlFail(requestId, error);
+    }
+
+    return true;
+}
+
+bool Db::tableExists(const std::string &tableName, bool &exist) {
+    const std::scoped_lock lock(_mutex);
+
+    static const std::string id = CHECK_TABLE_EXISTENCE_REQUEST_ID;
+    ASSERT(queryResetAndClearBindings(id));
+    ASSERT(queryBindValue(id, 1, tableName));
+    if (!queryNext(id, exist)) {
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str());
         return false;
     }
 
+    return true;
+}
+
+bool Db::columnExists(const std::string &tableName, const std::string &columnName, bool &exist) {
+    if (!tableExists(tableName, exist) || !exist) return false;
+
+    const std::scoped_lock lock(_mutex);
+
+    static const std::string id = CHECK_COLUMN_EXISTENCE_REQUEST_ID;
+    ASSERT(queryResetAndClearBindings(id));
+    ASSERT(queryBindValue(id, 1, tableName));
+    ASSERT(queryBindValue(id, 2, columnName));
+
+    bool found = false;
+    if (!queryNext(id, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str());
+        return false;
+    }
+    if (!found) return false;
+
+    int count = 0;
+    ASSERT(queryIntValue(id, 0, count));
+    ASSERT(queryResetAndClearBindings(id));
+
+    exist = count != 0;
     return true;
 }
 
 void Db::setAutoDelete(bool value) {
     _sqliteDb->setAutoDelete(value);
-}
-
-bool Db::checkIfTableExists(const std::string &tableName, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-
-    int errId;
-    std::string error;
-    ASSERT(queryCreate(CHECK_TABLE_EXISTS_ID));
-    if (!queryPrepare(CHECK_TABLE_EXISTS_ID, CHECK_TABLE_EXISTS, false, errId, error)) {
-        queryFree(CHECK_TABLE_EXISTS_ID);
-        return sqlFail(CHECK_TABLE_EXISTS_ID, error);
-    }
-
-    ASSERT(queryResetAndClearBindings(CHECK_TABLE_EXISTS_ID));
-    ASSERT(queryBindValue(CHECK_TABLE_EXISTS_ID, 1, tableName));
-    if (!queryNext(CHECK_TABLE_EXISTS_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << CHECK_TABLE_EXISTS_ID);
-        queryFree(CHECK_TABLE_EXISTS_ID);
-        return false;
-    }
-
-    queryFree(CHECK_TABLE_EXISTS_ID);
-
-    return true;
 }
 
 bool Db::insertVersion(const std::string &version) {
@@ -710,4 +709,4 @@ bool Db::selectVersion(std::string &version, bool &found) {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

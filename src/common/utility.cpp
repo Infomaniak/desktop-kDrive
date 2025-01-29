@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include "common/utility.h"
-#include "version.h"
 
 // Note:  This file must compile without QtGui
 #include <QCoreApplication>
@@ -30,7 +29,6 @@
 #include <QUrl>
 #include <QProcess>
 #include <QObject>
-#include <QThread>
 #include <QDateTime>
 #include <QSysInfo>
 #include <QStandardPaths>
@@ -53,10 +51,6 @@
 
 #include <math.h>
 #include <stdarg.h>
-#include <cstring>
-#include <sstream>
-#include <iostream>
-#include <string>
 
 #if defined(Q_OS_WIN)
 #include "utility_win.cpp"
@@ -177,9 +171,9 @@ void OldUtility::addLegacySyncRootKeys(const QUuid &clsid, const QString &folder
     OldUtility::registrySetKeyValue(HKEY_CURRENT_USER, namespacePath, QString(), REG_SZ, title, error);
     // Step 12: Hide your extension from the Desktop
     OldUtility::registrySetKeyValue(
-        HKEY_CURRENT_USER,
-        QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel"), clsidStr,
-        REG_DWORD, 0x1, error);
+            HKEY_CURRENT_USER,
+            QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel"), clsidStr,
+            REG_DWORD, 0x1, error);
 
     // For us, to later be able to iterate and find our own namespace entries and associated CLSID.
     // Use the macro instead of the theme to make sure it matches with the uninstaller.
@@ -194,7 +188,7 @@ void OldUtility::removeLegacySyncRootKeys(const QUuid &clsid) {
     QString clsidPathWow64 = QString() % "Software\\Classes\\Wow6432Node\\CLSID\\" % clsidStr;
     QString namespacePath = QString() % "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Desktop\\NameSpace\\" % clsidStr;
     QString newstartpanelPath =
-        QString() % "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel";
+            QString() % "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel";
 
     if (OldUtility::registryExistKeyTree(HKEY_CURRENT_USER, clsidPath)) {
         OldUtility::registryDeleteKeyTree(HKEY_CURRENT_USER, clsidPath);
@@ -211,4 +205,4 @@ void OldUtility::removeLegacySyncRootKeys(const QUuid &clsid) {
 }
 #endif
 
-}  // namespace KDC
+} // namespace KDC

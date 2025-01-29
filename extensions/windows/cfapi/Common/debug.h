@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 #include <functional>
 
-typedef enum { TRACE_LEVEL_INFO = 0, TRACE_LEVEL_DEBUG, TRACE_LEVEL_WARNING, TRACE_LEVEL_ERROR } TraceLevel;
+enum class TraceLevel { INFO = 0, DEBUG, WARNING, _ERROR };
 
 // Type definition for the debug callback function.
-typedef std::function<void(TraceLevel, const wchar_t *)> TraceCbk;
+using TraceCbk = std::function<void(TraceLevel, const wchar_t *)>;

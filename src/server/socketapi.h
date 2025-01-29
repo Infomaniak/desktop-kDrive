@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,23 +17,13 @@
  */
 
 
-#ifndef SOCKETAPI_H
-#define SOCKETAPI_H
+#pragma once
 
 #include "libcommonserver/vfs.h"
 #include "socketlistener.h"
 #include "libcommon/utility/types.h"
-#include "libparms/db/parmsdb.h"
 #include "libsyncengine/syncpal/syncpal.h"
 
-#if defined(Q_OS_MAC)
-#include "socketapisocket_mac.h"
-#else
-#include <QLocalServer>
-typedef QLocalServer SocketApiServer;
-#endif
-
-#include <deque>
 #include <unordered_map>
 
 #include <QList>
@@ -42,32 +32,36 @@ typedef QLocalServer SocketApiServer;
 #include <QTemporaryFile>
 #include <QTimer>
 
-#define WORKER_GETFILE 0
-#define NB_WORKERS 1
+#if defined(Q_OS_MAC)
+#include "socketapisocket_mac.h"
+#else
+#include <QLocalServer>
+typedef QLocalServer SocketApiServer;
+#endif
 
 class QUrl;
 
 namespace KDC {
 
 struct FileData {
-        FileData();
+        FileData() = default;
 
         static FileData get(const QString &path);
         static FileData get(const KDC::SyncPath &path);
         FileData parentFolder() const;
 
         // Absolute path of the file locally
-        QString _localPath;
+        QString localPath;
 
         // Relative path of the file
-        QString _relativePath;
+        QString relativePath;
 
-        int _syncDbId;
-        int _driveDbId;
+        int syncDbId{0};
+        int driveDbId{0};
 
-        bool _isDirectory;
-        bool _isLink;
-        KDC::VirtualFileMode _virtualFileMode;
+        bool isDirectory{false};
+        bool isLink{false};
+        KDC::VirtualFileMode virtualFileMode{KDC::VirtualFileMode::Off};
 };
 
 class SocketApi : public QObject {
@@ -152,7 +146,7 @@ class SocketApi : public QObject {
 #endif
 
         // Sends the context menu options relating to sharing to listener
-        void sendSharingContextMenuOptions(const FileData &fileData, SocketListener *listener);
+        void sendSharingContextMenuOptions(const FileData &fileData, const SocketListener *listener);
         void addSharingContextMenuOptions(const FileData &fileData, QTextStream &response);
 
         /** Send the list of menu item. (added in version 1.1)
@@ -190,7 +184,17 @@ class SocketApi : public QObject {
         static bool openBrowser(const QUrl &url);
 
         QString socketAPIString(KDC::SyncFileStatus status, bool isPlaceholder, bool isHydrated, int progress) const;
+
+
+        // Try to retrieve the Sync object with DB ID `syncDbId`.
+        // Returns `false`, add errors and log messages on failure.
+        // Returns `true` and set `sync` with the result otherwise.
+        bool tryToRetrieveSync(const int syncDbId, KDC::Sync &sync) const;
+
+        // Retrieve map iterators.
+        // Returns the end() iterator on failure but also add an error and log a message in this case.
+        std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator retrieveVfsMapIt(const int syncDbId) const;
+        std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
 };
 
-}  // namespace KDC
-#endif  // SOCKETAPI_H
+} // namespace KDC

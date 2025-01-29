@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ class OperationProcessor : public ISyncWorker {
          * @param node a shared pointer to the node in current tree.
          * @return a shared pointer to the node in other tree. nullptr il not found.
          */
-        std::shared_ptr<Node> correspondingNodeInOtherTree(std::shared_ptr<Node> node);
+        virtual std::shared_ptr<Node> correspondingNodeInOtherTree(std::shared_ptr<Node> node);
         /**
          * Find the corresponding node in other tree.
          * Looks in DB only.
@@ -62,4 +62,4 @@ class OperationProcessor : public ISyncWorker {
         std::shared_ptr<Node> findCorrespondingNodeFromPath(std::shared_ptr<Node> node);
 };
 
-}  // namespace KDC
+} // namespace KDC

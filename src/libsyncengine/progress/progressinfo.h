@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,42 +34,41 @@ class SyncPal;
 
 class ProgressInfo {
     public:
-        ProgressInfo(std::shared_ptr<SyncPal> syncPal);
+        explicit ProgressInfo(std::shared_ptr<SyncPal> syncPal);
         ~ProgressInfo();
 
         void reset();
-        inline void setUpdate(bool value) { _update = value; }
-        inline bool update() const { return _update; }
+        void setUpdate(bool value) { _update = value; }
+        [[nodiscard]] bool update() const { return _update; }
         void updateEstimates();
-        void initProgress(const SyncFileItem &item);
-        void setProgress(const SyncPath &path, int64_t completed);
-        void setProgressComplete(const SyncPath &path, SyncFileStatus status);
-        bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
+        [[nodiscard]] bool initProgress(const SyncFileItem &item);
+        [[nodiscard]] bool setProgress(const SyncPath &path, int64_t completed);
+        [[nodiscard]] bool setProgressComplete(const SyncPath &path, SyncFileStatus status);
+        [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);
 
-        inline int64_t totalFiles() const { return _fileProgress.total(); }
-        inline int64_t completedFiles() const { return _fileProgress.completed(); }
-        inline int64_t totalSize() const { return _sizeProgress.total(); }
-        inline int64_t completedSize() const { return _sizeProgress.completed(); }
-        inline int64_t currentFile() const { return completedFiles(); }
-        Estimates totalProgress() const;
+        [[nodiscard]] int64_t totalFiles() const { return _fileProgress.total(); }
+        [[nodiscard]] int64_t completedFiles() const { return _fileProgress.completed(); }
+        [[nodiscard]] int64_t totalSize() const { return _sizeProgress.total(); }
+        [[nodiscard]] int64_t completedSize() const { return _sizeProgress.completed(); }
+        [[nodiscard]] int64_t currentFile() const { return completedFiles(); }
+        [[nodiscard]] Estimates totalProgress() const;
 
     private:
         std::shared_ptr<SyncPal> _syncPal;
         std::map<SyncPath, std::queue<ProgressItem>>
-            _currentItems;  // Use a queue here because in a few cases, we can have several operations on the same path (e.g.:
-                            // DELETE a file and CREATE a directory with exact same name)
+                _currentItems; // Use a queue here because in a few cases, we can have several operations on the same path (e.g.:
+                               // DELETE a file and CREATE a directory with exact same name)
         Progress _sizeProgress;
         Progress _fileProgress;
-        int64_t _totalSizeOfCompletedJobs;
-        double _maxFilesPerSecond;
-        double _maxBytesPerSecond;
-        bool _update;
+        int64_t _totalSizeOfCompletedJobs{0};
+        double _maxFilesPerSecond{0.0};
+        double _maxBytesPerSecond{0.0};
+        bool _update{false};
 
-        int64_t optimisticEta() const;
-        bool trustEta() const;
-        Estimates fileProgress(const SyncFileItem &item);
+        [[nodiscard]] int64_t optimisticEta() const;
+        [[nodiscard]] bool trustEta() const;
         void recomputeCompletedSize();
-        bool isSizeDependent(const SyncFileItem &item) const;
+        [[nodiscard]] bool isSizeDependent(const SyncFileItem &item) const;
 };
 
-}  // namespace KDC
+} // namespace KDC

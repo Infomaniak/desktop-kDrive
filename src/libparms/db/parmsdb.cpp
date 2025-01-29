@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/asserts.h"
 #include "libcommonserver/utility/utility.h"
-#include "utility/utility.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
 
@@ -61,7 +60,9 @@
     "extendedLog INTEGER,"                   \
     "maxAllowedCpu INTEGER,"                 \
     "uploadSessionParallelJobs INTEGER,"     \
-    "jobPoolCapacityFactor INTEGER);"
+    "jobPoolCapacityFactor INTEGER,"         \
+    "distributionChannel INTEGER"            \
+    ");"
 
 #define INSERT_PARAMETERS_REQUEST_ID "insert_parameters"
 #define INSERT_PARAMETERS_REQUEST                                                                                             \
@@ -69,9 +70,9 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, "    \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "     \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "               \
-    "jobPoolCapacityFactor) "                                                                                                 \
+    "jobPoolCapacityFactor, distributionChannel) "                                                                            \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, " \
-    "?25, ?26, ?27, ?28, ?29);"
+    "?25, ?26, ?27, ?28, ?29, ?30);"
 
 #define UPDATE_PARAMETERS_REQUEST_ID "update_parameters"
 #define UPDATE_PARAMETERS_REQUEST                                                                                               \
@@ -82,7 +83,7 @@
     "bigFolderSizeLimit=?17, darkTheme=?18, showShortcuts=?19, updateFileAvailable=?20, updateTargetVersion=?21, "              \
     "updateTargetVersionString=?22, "                                                                                           \
     "autoUpdateAttempted=?23, seenVersion=?24, dialogGeometry=?25, extendedLog=?26, maxAllowedCpu=?27, "                        \
-    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29;"
+    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30;"
 
 #define SELECT_PARAMETERS_REQUEST_ID "select_parameters"
 #define SELECT_PARAMETERS_REQUEST                                                                                          \
@@ -90,21 +91,14 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, " \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "  \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "            \
-    "jobPoolCapacityFactor "                                                                                               \
+    "jobPoolCapacityFactor, distributionChannel "                                                                          \
     "FROM parameters;"
-
-#define ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID "alter_parameters_add_max_allowed_cpu"
-#define ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST "ALTER TABLE parameters ADD COLUMN maxAllowedCpu INTEGER;"
-
-#define ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID "alter_parameters_add_upload_session_parallel_jobs"
-#define ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST \
-    "ALTER TABLE parameters ADD COLUMN uploadSessionParallelJobs INTEGER;"
-
-#define ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID "alter_parameters_add_job_pool_capacity_factor"
-#define ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST "ALTER TABLE parameters ADD COLUMN jobPoolCapacityFactor INTEGER;"
 
 #define UPDATE_PARAMETERS_JOB_REQUEST_ID "update_parameters_job"
 #define UPDATE_PARAMETERS_JOB_REQUEST "UPDATE parameters SET uploadSessionParallelJobs=?1, jobPoolCapacityFactor=?2;"
+
+#define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST_ID "alter_parameters_add_distribution"
+#define ALTER_PARAMETERS_ADD_DISTRIBUTION_CHANNEL_REQUEST "ALTER TABLE parameters ADD COLUMN distributionChannel INTEGER;"
 
 //
 // user
@@ -152,6 +146,9 @@
     "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user " \
     "ORDER BY dbId;"
 
+#define SELECT_LAST_CONNECTED_USER_REQUEST_ID "select_last_connected_user"
+#define SELECT_LAST_CONNECTED_USER_REQUEST \
+    "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
 //
 // account
 //
@@ -301,9 +298,16 @@
 
 #define SELECT_SYNC_REQUEST_ID "select_sync"
 #define SELECT_SYNC_REQUEST                                                                                           \
-    "SELECT driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "            \
+    "SELECT dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "      \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync " \
     "WHERE dbId=?1;"
+
+#define SELECT_SYNC_BY_PATH_REQUEST_ID "select_sync_by_path"
+#define SELECT_SYNC_BY_PATH_REQUEST                                                                                   \
+    "SELECT dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "      \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync " \
+    "WHERE dbPath=?1;"
+
 
 #define SELECT_ALL_SYNCS_REQUEST_ID "select_syncs"
 #define SELECT_ALL_SYNCS_REQUEST                                                                                      \
@@ -406,7 +410,7 @@
     "CREATE TABLE IF NOT EXISTS error("      \
     "dbId INTEGER PRIMARY KEY,"              \
     "time INTEGER,"                          \
-    "level INTEGER,"     /* Server level */  \
+    "level INTEGER," /* Server level */      \
     "functionName TEXT," /* SyncPal level */ \
     "syncDbId INTEGER,"                      \
     "workerName TEXT,"                       \
@@ -431,18 +435,18 @@
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16);"
 
 #define UPDATE_ERROR_REQUEST_ID "update_error"
-#define UPDATE_ERROR_REQUEST    \
-    "UPDATE error SET time=?1 " \
-    "WHERE dbId=?2;"
+#define UPDATE_ERROR_REQUEST             \
+    "UPDATE error SET time=?1, path=?2 " \
+    "WHERE dbId=?3;"
 
 #define DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID "delete_error_by_exitcode"
 #define DELETE_ALL_ERROR_BY_EXITCODE_REQUEST \
     "DELETE FROM error "                     \
     "WHERE exitCode=?1;"
 
-#define DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID "delete_error_by_exitcause"
-#define DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST \
-    "DELETE FROM error "                      \
+#define DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID "delete_error_by_exitcause"
+#define DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST \
+    "DELETE FROM error "                     \
     "WHERE exitCause=?1;"
 
 #define DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID "delete_error_by_level"
@@ -499,6 +503,10 @@
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID "select_migration_selectivesync"
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST "SELECT syncDbId, path, type FROM migration_selectivesync;"
 
+// Check column existance
+#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
+#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('?1') WHERE name='?2';"
+
 namespace KDC {
 
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
@@ -507,9 +515,19 @@ std::shared_ptr<ParmsDb> ParmsDb::instance(const std::filesystem::path &dbPath, 
                                            bool autoDelete /*= false*/, bool test /*= false*/) {
     if (_instance == nullptr) {
         if (dbPath.empty()) {
-            throw std::runtime_error("ParmsDb must be initialized!");
-        } else {
+            assert(false);
+            return nullptr;
+        }
+
+        try {
             _instance = std::shared_ptr<ParmsDb>(new ParmsDb(dbPath, version, autoDelete, test));
+        } catch (...) {
+            return nullptr;
+        }
+
+        if (!_instance->init(version)) {
+            _instance.reset();
+            return nullptr;
         }
     }
 
@@ -522,13 +540,12 @@ void ParmsDb::reset() {
     }
 }
 
-ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test)
-    : Db(dbPath), _test(test) {
+ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test) :
+    Db(dbPath), _test(test) {
     setAutoDelete(autoDelete);
 
     if (!checkConnect(version)) {
         throw std::runtime_error("Cannot open DB!");
-        return;
     }
 
     LOG_INFO(_logger, "ParmsDb initialization done");
@@ -549,7 +566,7 @@ bool ParmsDb::insertDefaultParameters() {
     Parameters parameters;
 
     ProxyConfig proxyConfig(parameters.proxyConfig());
-    proxyConfig.setType(ProxyTypeNone);
+    proxyConfig.setType(ProxyType::None);
     parameters.setProxyConfig(proxyConfig);
 
     int errId = 0;
@@ -585,6 +602,7 @@ bool ParmsDb::insertDefaultParameters() {
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_PARAMETERS_REQUEST_ID);
@@ -625,9 +643,9 @@ bool ParmsDb::updateExclusionTemplates() {
         return false;
     }
 
-    for (const auto &templDb : exclusionTemplateDbList) {
+    for (const auto &templDb: exclusionTemplateDbList) {
         bool exists = false;
-        for (const auto &templFile : exclusionTemplateFileList) {
+        for (const auto &templFile: exclusionTemplateFileList) {
             if (templFile == templDb.templ()) {
                 exists = true;
                 break;
@@ -649,16 +667,16 @@ bool ParmsDb::updateExclusionTemplates() {
         return false;
     }
 
-    for (const auto &templFile : exclusionTemplateFileList) {
+    for (const auto &templFile: exclusionTemplateFileList) {
         bool exists = false;
-        for (const auto &templDb : exclusionTemplateDbList) {
+        for (const auto &templDb: exclusionTemplateDbList) {
             if (templDb.templ() == templFile) {
                 exists = true;
                 break;
             }
         }
         if (!exists) {
-            for (const auto &userTempDb : exclusionTemplateUserDbList) {
+            for (const auto &userTempDb: exclusionTemplateUserDbList) {
                 if (templFile == userTempDb.templ()) {
                     bool found = false;
                     if (!deleteExclusionTemplate(userTempDb.templ(), found)) {
@@ -712,13 +730,13 @@ bool ParmsDb::updateExclusionApps() {
         return false;
     }
 
-    for (const auto &templDb : exclusionAppDbList) {
+    for (const auto &templDb: exclusionAppDbList) {
         if (templDb.def() == false) {
             continue;
         }
 
         bool exists = false;
-        for (const auto &templFile : exclusionAppFileList) {
+        for (const auto &templFile: exclusionAppFileList) {
             if (templFile.first == templDb.appId()) {
                 exists = true;
                 break;
@@ -734,10 +752,10 @@ bool ParmsDb::updateExclusionApps() {
         }
     }
 
-    for (const auto &templFile : exclusionAppFileList) {
+    for (const auto &templFile: exclusionAppFileList) {
         bool exists = false;
         bool def = false;
-        for (const auto &templDb : exclusionAppDbList) {
+        for (const auto &templDb: exclusionAppDbList) {
             if (templDb.appId() == templFile.first) {
                 exists = true;
                 def = templDb.def();
@@ -771,11 +789,7 @@ bool ParmsDb::create(bool &retry) {
     std::string error;
 
     // Parameters
-    ASSERT(queryCreate(CREATE_PARAMETERS_TABLE_ID));
-    if (!queryPrepare(CREATE_PARAMETERS_TABLE_ID, CREATE_PARAMETERS_TABLE, false, errId, error)) {
-        queryFree(CREATE_PARAMETERS_TABLE_ID);
-        return sqlFail(CREATE_PARAMETERS_TABLE_ID, error);
-    }
+    if (!createAndPrepareRequest(CREATE_PARAMETERS_TABLE_ID, CREATE_PARAMETERS_TABLE)) return false;
     if (!queryExec(CREATE_PARAMETERS_TABLE_ID, errId, error)) {
         // In certain situations the io error can be avoided by switching
         // to the DELETE journal mode
@@ -792,11 +806,7 @@ bool ParmsDb::create(bool &retry) {
     queryFree(CREATE_PARAMETERS_TABLE_ID);
 
     // User
-    ASSERT(queryCreate(CREATE_USER_TABLE_ID));
-    if (!queryPrepare(CREATE_USER_TABLE_ID, CREATE_USER_TABLE, false, errId, error)) {
-        queryFree(CREATE_USER_TABLE_ID);
-        return sqlFail(CREATE_USER_TABLE_ID, error);
-    }
+    if (!createAndPrepareRequest(CREATE_USER_TABLE_ID, CREATE_USER_TABLE)) return false;
     if (!queryExec(CREATE_USER_TABLE_ID, errId, error)) {
         queryFree(CREATE_USER_TABLE_ID);
         return sqlFail(CREATE_USER_TABLE_ID, error);
@@ -804,11 +814,7 @@ bool ParmsDb::create(bool &retry) {
     queryFree(CREATE_USER_TABLE_ID);
 
     // Account
-    ASSERT(queryCreate(CREATE_ACCOUNT_TABLE_ID));
-    if (!queryPrepare(CREATE_ACCOUNT_TABLE_ID, CREATE_ACCOUNT_TABLE, false, errId, error)) {
-        queryFree(CREATE_ACCOUNT_TABLE_ID);
-        return sqlFail(CREATE_ACCOUNT_TABLE_ID, error);
-    }
+    if (!createAndPrepareRequest(CREATE_ACCOUNT_TABLE_ID, CREATE_ACCOUNT_TABLE)) return false;
     if (!queryExec(CREATE_ACCOUNT_TABLE_ID, errId, error)) {
         queryFree(CREATE_ACCOUNT_TABLE_ID);
         return sqlFail(CREATE_ACCOUNT_TABLE_ID, error);
@@ -816,11 +822,7 @@ bool ParmsDb::create(bool &retry) {
     queryFree(CREATE_ACCOUNT_TABLE_ID);
 
     // Drive
-    ASSERT(queryCreate(CREATE_DRIVE_TABLE_ID));
-    if (!queryPrepare(CREATE_DRIVE_TABLE_ID, CREATE_DRIVE_TABLE, false, errId, error)) {
-        queryFree(CREATE_DRIVE_TABLE_ID);
-        return sqlFail(CREATE_DRIVE_TABLE_ID, error);
-    }
+    if (!createAndPrepareRequest(CREATE_DRIVE_TABLE_ID, CREATE_DRIVE_TABLE)) return false;
     if (!queryExec(CREATE_DRIVE_TABLE_ID, errId, error)) {
         queryFree(CREATE_DRIVE_TABLE_ID);
         return sqlFail(CREATE_DRIVE_TABLE_ID, error);
@@ -828,11 +830,7 @@ bool ParmsDb::create(bool &retry) {
     queryFree(CREATE_DRIVE_TABLE_ID);
 
     // Sync
-    ASSERT(queryCreate(CREATE_SYNC_TABLE_ID));
-    if (!queryPrepare(CREATE_SYNC_TABLE_ID, CREATE_SYNC_TABLE, false, errId, error)) {
-        queryFree(CREATE_SYNC_TABLE_ID);
-        return sqlFail(CREATE_SYNC_TABLE_ID, error);
-    }
+    if (!createAndPrepareRequest(CREATE_SYNC_TABLE_ID, CREATE_SYNC_TABLE)) return false;
     if (!queryExec(CREATE_SYNC_TABLE_ID, errId, error)) {
         queryFree(CREATE_SYNC_TABLE_ID);
         return sqlFail(CREATE_SYNC_TABLE_ID, error);
@@ -840,11 +838,7 @@ bool ParmsDb::create(bool &retry) {
     queryFree(CREATE_SYNC_TABLE_ID);
 
     // Exclusion Template
-    ASSERT(queryCreate(CREATE_EXCLUSION_TEMPLATE_TABLE_ID));
-    if (!queryPrepare(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, CREATE_EXCLUSION_TEMPLATE_TABLE, false, errId, error)) {
-        queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
-        return sqlFail(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, error);
-    }
+    if (!createAndPrepareRequest(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, CREATE_EXCLUSION_TEMPLATE_TABLE)) return false;
     if (!queryExec(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, errId, error)) {
         queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
         return sqlFail(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, error);
@@ -853,11 +847,7 @@ bool ParmsDb::create(bool &retry) {
 
 #ifdef __APPLE__
     // Exclusion App
-    ASSERT(queryCreate(CREATE_EXCLUSION_APP_TABLE_ID));
-    if (!queryPrepare(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE, false, errId, error)) {
-        queryFree(CREATE_EXCLUSION_APP_TABLE_ID);
-        return sqlFail(CREATE_EXCLUSION_APP_TABLE_ID, error);
-    }
+    if (!createAndPrepareRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE)) return false;
     if (!queryExec(CREATE_EXCLUSION_APP_TABLE_ID, errId, error)) {
         queryFree(CREATE_EXCLUSION_APP_TABLE_ID);
         return sqlFail(CREATE_EXCLUSION_APP_TABLE_ID, error);
@@ -866,11 +856,7 @@ bool ParmsDb::create(bool &retry) {
 #endif
 
     // Error
-    ASSERT(queryCreate(CREATE_ERROR_TABLE_ID));
-    if (!queryPrepare(CREATE_ERROR_TABLE_ID, CREATE_ERROR_TABLE, false, errId, error)) {
-        queryFree(CREATE_ERROR_TABLE_ID);
-        return sqlFail(CREATE_ERROR_TABLE_ID, error);
-    }
+    if (!createAndPrepareRequest(CREATE_ERROR_TABLE_ID, CREATE_ERROR_TABLE)) return false;
     if (!queryExec(CREATE_ERROR_TABLE_ID, errId, error)) {
         queryFree(CREATE_ERROR_TABLE_ID);
         return sqlFail(CREATE_ERROR_TABLE_ID, error);
@@ -884,363 +870,95 @@ bool ParmsDb::create(bool &retry) {
     }
 
     // Migration old selectivesync table
-    ASSERT(queryCreate(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID));
-    if (!queryPrepare(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE, false, errId, error)) {
-        queryFree(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID);
-        return sqlFail(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, error);
-    }
+    if (!createAndPrepareRequest(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE)) return false;
     if (!queryExec(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, errId, error)) {
         queryFree(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID);
         return sqlFail(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, error);
     }
     queryFree(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID);
 
-
     return true;
 }
 
 bool ParmsDb::prepare() {
-    int errId;
-    std::string error;
-
     // Parameters
-    ASSERT(queryCreate(INSERT_PARAMETERS_REQUEST_ID));
-    if (!queryPrepare(INSERT_PARAMETERS_REQUEST_ID, INSERT_PARAMETERS_REQUEST, false, errId, error)) {
-        queryFree(INSERT_PARAMETERS_REQUEST_ID);
-        return sqlFail(INSERT_PARAMETERS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_PARAMETERS_REQUEST_ID));
-    if (!queryPrepare(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_PARAMETERS_REQUEST_ID);
-        return sqlFail(UPDATE_PARAMETERS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_PARAMETERS_REQUEST_ID));
-    if (!queryPrepare(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST, false, errId, error)) {
-        queryFree(SELECT_PARAMETERS_REQUEST_ID);
-        return sqlFail(SELECT_PARAMETERS_REQUEST_ID, error);
-    }
-
+    if (!createAndPrepareRequest(INSERT_PARAMETERS_REQUEST_ID, INSERT_PARAMETERS_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST)) return false;
     // User
-    ASSERT(queryCreate(INSERT_USER_REQUEST_ID));
-    if (!queryPrepare(INSERT_USER_REQUEST_ID, INSERT_USER_REQUEST, false, errId, error)) {
-        queryFree(INSERT_USER_REQUEST_ID);
-        return sqlFail(INSERT_USER_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_USER_REQUEST_ID));
-    if (!queryPrepare(UPDATE_USER_REQUEST_ID, UPDATE_USER_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_USER_REQUEST_ID);
-        return sqlFail(UPDATE_USER_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_USER_REQUEST_ID));
-    if (!queryPrepare(DELETE_USER_REQUEST_ID, DELETE_USER_REQUEST, false, errId, error)) {
-        queryFree(DELETE_USER_REQUEST_ID);
-        return sqlFail(DELETE_USER_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_USER_REQUEST_ID));
-    if (!queryPrepare(SELECT_USER_REQUEST_ID, SELECT_USER_REQUEST, false, errId, error)) {
-        queryFree(SELECT_USER_REQUEST_ID);
-        return sqlFail(SELECT_USER_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_USER_BY_USERID_REQUEST_ID));
-    if (!queryPrepare(SELECT_USER_BY_USERID_REQUEST_ID, SELECT_USER_BY_USERID_REQUEST, false, errId, error)) {
-        queryFree(SELECT_USER_BY_USERID_REQUEST_ID);
-        return sqlFail(SELECT_USER_BY_USERID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_USERS_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_USERS_REQUEST_ID, SELECT_ALL_USERS_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_USERS_REQUEST_ID);
-        return sqlFail(SELECT_ALL_USERS_REQUEST_ID, error);
-    }
-
+    if (!createAndPrepareRequest(INSERT_USER_REQUEST_ID, INSERT_USER_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_USER_REQUEST_ID, UPDATE_USER_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_USER_REQUEST_ID, DELETE_USER_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_USER_REQUEST_ID, SELECT_USER_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_USER_BY_USERID_REQUEST_ID, SELECT_USER_BY_USERID_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_USERS_REQUEST_ID, SELECT_ALL_USERS_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_LAST_CONNECTED_USER_REQUEST_ID, SELECT_LAST_CONNECTED_USER_REQUEST)) return false;
     // Account
-    ASSERT(queryCreate(INSERT_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(INSERT_ACCOUNT_REQUEST_ID, INSERT_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(INSERT_ACCOUNT_REQUEST_ID);
-        return sqlFail(INSERT_ACCOUNT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(UPDATE_ACCOUNT_REQUEST_ID, UPDATE_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_ACCOUNT_REQUEST_ID);
-        return sqlFail(UPDATE_ACCOUNT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(DELETE_ACCOUNT_REQUEST_ID, DELETE_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ACCOUNT_REQUEST_ID);
-        return sqlFail(DELETE_ACCOUNT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(SELECT_ACCOUNT_REQUEST_ID, SELECT_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ACCOUNT_REQUEST_ID);
-        return sqlFail(SELECT_ACCOUNT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_ACCOUNTS_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_ACCOUNTS_REQUEST_ID, SELECT_ALL_ACCOUNTS_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_ACCOUNTS_REQUEST_ID);
-        return sqlFail(SELECT_ALL_ACCOUNTS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, SELECT_ALL_ACCOUNTS_BY_USER_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID);
-        return sqlFail(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, error);
-    }
-
+    if (!createAndPrepareRequest(INSERT_ACCOUNT_REQUEST_ID, INSERT_ACCOUNT_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_ACCOUNT_REQUEST_ID, UPDATE_ACCOUNT_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_ACCOUNT_REQUEST_ID, DELETE_ACCOUNT_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ACCOUNT_REQUEST_ID, SELECT_ACCOUNT_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_ACCOUNTS_REQUEST_ID, SELECT_ALL_ACCOUNTS_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, SELECT_ALL_ACCOUNTS_BY_USER_REQUEST)) return false;
     // Drive
-    ASSERT(queryCreate(INSERT_DRIVE_REQUEST_ID));
-    if (!queryPrepare(INSERT_DRIVE_REQUEST_ID, INSERT_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(INSERT_DRIVE_REQUEST_ID);
-        return sqlFail(INSERT_DRIVE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_DRIVE_REQUEST_ID));
-    if (!queryPrepare(UPDATE_DRIVE_REQUEST_ID, UPDATE_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_DRIVE_REQUEST_ID);
-        return sqlFail(UPDATE_DRIVE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_DRIVE_REQUEST_ID));
-    if (!queryPrepare(DELETE_DRIVE_REQUEST_ID, DELETE_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(DELETE_DRIVE_REQUEST_ID);
-        return sqlFail(DELETE_DRIVE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_DRIVE_REQUEST_ID));
-    if (!queryPrepare(SELECT_DRIVE_REQUEST_ID, SELECT_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(SELECT_DRIVE_REQUEST_ID);
-        return sqlFail(SELECT_DRIVE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID));
-    if (!queryPrepare(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, SELECT_DRIVE_BY_DRIVEID_REQUEST, false, errId, error)) {
-        queryFree(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID);
-        return sqlFail(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_DRIVES_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_DRIVES_REQUEST_ID, SELECT_ALL_DRIVES_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_DRIVES_REQUEST_ID);
-        return sqlFail(SELECT_ALL_DRIVES_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID);
-        return sqlFail(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, error);
-    }
-
+    if (!createAndPrepareRequest(INSERT_DRIVE_REQUEST_ID, INSERT_DRIVE_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_DRIVE_REQUEST_ID, UPDATE_DRIVE_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_DRIVE_REQUEST_ID, DELETE_DRIVE_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_DRIVE_REQUEST_ID, SELECT_DRIVE_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, SELECT_DRIVE_BY_DRIVEID_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_DRIVES_REQUEST_ID, SELECT_ALL_DRIVES_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST)) return false;
     // Sync
-    ASSERT(queryCreate(INSERT_SYNC_REQUEST_ID));
-    if (!queryPrepare(INSERT_SYNC_REQUEST_ID, INSERT_SYNC_REQUEST, false, errId, error)) {
-        queryFree(INSERT_SYNC_REQUEST_ID);
-        return sqlFail(INSERT_SYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_SYNC_REQUEST_ID));
-    if (!queryPrepare(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_SYNC_REQUEST_ID);
-        return sqlFail(UPDATE_SYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_SYNC_PAUSED_REQUEST_ID));
-    if (!queryPrepare(UPDATE_SYNC_PAUSED_REQUEST_ID, UPDATE_SYNC_PAUSED_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_SYNC_PAUSED_REQUEST_ID);
-        return sqlFail(UPDATE_SYNC_PAUSED_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID));
-    if (!queryPrepare(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID);
-        return sqlFail(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_SYNC_REQUEST_ID));
-    if (!queryPrepare(DELETE_SYNC_REQUEST_ID, DELETE_SYNC_REQUEST, false, errId, error)) {
-        queryFree(DELETE_SYNC_REQUEST_ID);
-        return sqlFail(DELETE_SYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_SYNC_REQUEST_ID));
-    if (!queryPrepare(SELECT_SYNC_REQUEST_ID, SELECT_SYNC_REQUEST, false, errId, error)) {
-        queryFree(SELECT_SYNC_REQUEST_ID);
-        return sqlFail(SELECT_SYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_SYNCS_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_SYNCS_REQUEST_ID);
-        return sqlFail(SELECT_ALL_SYNCS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, SELECT_ALL_SYNCS_BY_DRIVE_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID);
-        return sqlFail(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, error);
-    }
-
+    if (!createAndPrepareRequest(INSERT_SYNC_REQUEST_ID, INSERT_SYNC_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_SYNC_PAUSED_REQUEST_ID, UPDATE_SYNC_PAUSED_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_SYNC_REQUEST_ID, DELETE_SYNC_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_SYNC_REQUEST_ID, SELECT_SYNC_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_SYNC_BY_PATH_REQUEST_ID, SELECT_SYNC_BY_PATH_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, SELECT_ALL_SYNCS_BY_DRIVE_REQUEST)) return false;
     // Exclusion Template
-    ASSERT(queryCreate(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID));
-    if (!queryPrepare(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST, false, errId, error)) {
-        queryFree(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
-        return sqlFail(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID));
-    if (!queryPrepare(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, UPDATE_EXCLUSION_TEMPLATE_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID);
-        return sqlFail(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID));
-    if (!queryPrepare(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID, DELETE_EXCLUSION_TEMPLATE_REQUEST, false, errId, error)) {
-        queryFree(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID);
-        return sqlFail(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST, false, errId,
-                      error)) {
-        queryFree(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
-        return sqlFail(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID);
-        return sqlFail(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST, false, errId,
-                      error)) {
-        queryFree(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
-        return sqlFail(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, error);
-    }
-
+    if (!createAndPrepareRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, UPDATE_EXCLUSION_TEMPLATE_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_EXCLUSION_TEMPLATE_REQUEST_ID, DELETE_EXCLUSION_TEMPLATE_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
+        return false;
+    if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
+        return false;
 #ifdef __APPLE__
     // Exclusion App
-    ASSERT(queryCreate(INSERT_EXCLUSION_APP_REQUEST_ID));
-    if (!queryPrepare(INSERT_EXCLUSION_APP_REQUEST_ID, INSERT_EXCLUSION_APP_REQUEST, false, errId, error)) {
-        queryFree(INSERT_EXCLUSION_APP_REQUEST_ID);
-        return sqlFail(INSERT_EXCLUSION_APP_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_EXCLUSION_APP_REQUEST_ID));
-    if (!queryPrepare(UPDATE_EXCLUSION_APP_REQUEST_ID, UPDATE_EXCLUSION_APP_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_EXCLUSION_APP_REQUEST_ID);
-        return sqlFail(UPDATE_EXCLUSION_APP_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_EXCLUSION_APP_REQUEST_ID));
-    if (!queryPrepare(DELETE_EXCLUSION_APP_REQUEST_ID, DELETE_EXCLUSION_APP_REQUEST, false, errId, error)) {
-        queryFree(DELETE_EXCLUSION_APP_REQUEST_ID);
-        return sqlFail(DELETE_EXCLUSION_APP_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID);
-        return sqlFail(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_EXCLUSION_APP_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, SELECT_ALL_EXCLUSION_APP_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_EXCLUSION_APP_REQUEST_ID);
-        return sqlFail(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID);
-        return sqlFail(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, error);
-    }
+    if (!createAndPrepareRequest(INSERT_EXCLUSION_APP_REQUEST_ID, INSERT_EXCLUSION_APP_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_EXCLUSION_APP_REQUEST_ID, UPDATE_EXCLUSION_APP_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_EXCLUSION_APP_REQUEST_ID, DELETE_EXCLUSION_APP_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_APP_BY_DEF_REQUEST))
+        return false;
+    if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_APP_REQUEST_ID, SELECT_ALL_EXCLUSION_APP_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_APP_BY_DEF_REQUEST))
+        return false;
 #endif
-
     // Error
-    ASSERT(queryCreate(INSERT_ERROR_REQUEST_ID));
-    if (!queryPrepare(INSERT_ERROR_REQUEST_ID, INSERT_ERROR_REQUEST, false, errId, error)) {
-        queryFree(INSERT_ERROR_REQUEST_ID);
-        return sqlFail(INSERT_ERROR_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_ERROR_REQUEST_ID));
-    if (!queryPrepare(UPDATE_ERROR_REQUEST_ID, UPDATE_ERROR_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_ERROR_REQUEST_ID);
-        return sqlFail(UPDATE_ERROR_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, DELETE_ALL_ERROR_BY_EXITCODE_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID);
-        return sqlFail(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID, DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID);
-        return sqlFail(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, DELETE_ALL_ERROR_BY_LEVEL_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID);
-        return sqlFail(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_ERROR_BY_DBID_REQUEST_ID));
-    if (!queryPrepare(DELETE_ERROR_BY_DBID_REQUEST_ID, DELETE_ERROR_BY_DBID_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ERROR_BY_DBID_REQUEST_ID);
-        return sqlFail(DELETE_ERROR_BY_DBID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST, false,
-                      errId, error)) {
-        queryFree(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID);
-        return sqlFail(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST, false, errId,
-                      error)) {
-        queryFree(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
-        return sqlFail(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID));
-    if (!queryPrepare(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST, false,
-                      errId, error)) {
-        queryFree(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
-        return sqlFail(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, error);
-    }
-
+    if (!createAndPrepareRequest(INSERT_ERROR_REQUEST_ID, INSERT_ERROR_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_ERROR_REQUEST_ID, UPDATE_ERROR_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, DELETE_ALL_ERROR_BY_EXITCODE_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, DELETE_ALL_ERROR_BY_LEVEL_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_ERROR_BY_DBID_REQUEST_ID, DELETE_ERROR_BY_DBID_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID,
+                                 SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST))
+        return false;
+    if (!createAndPrepareRequest(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST))
+        return false;
+    if (!createAndPrepareRequest(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST))
+        return false;
     // Migration old selectivesync table
-    ASSERT(queryCreate(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID));
-    if (!queryPrepare(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, INSERT_MIGRATION_SELECTIVESYNC_REQUEST, false, errId, error)) {
-        queryFree(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID);
-        return sqlFail(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST, false, errId,
-                      error)) {
-        queryFree(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID);
-        return sqlFail(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
-    }
-
+    if (!createAndPrepareRequest(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, INSERT_MIGRATION_SELECTIVESYNC_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST))
+        return false;
     // App state
     if (!prepareAppState()) {
-        LOG_WARN(_logger, "Error in prepareAppState");
+        LOG_WARN(_logger, "Error in createAndPrepareRequestAppState");
         return false;
     }
 
@@ -1252,60 +970,29 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVersion*/) {
-    int errId;
-    std::string error;
-
-    std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.9")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.4.9 DB");
-
-        ASSERT(queryCreate(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID));
-        if (!queryPrepare(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID, ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST, false,
-                          errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID, error);
-        }
-        if (!queryExec(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID, error);
-        }
-        queryFree(ALTER_PARAMETERS_ADD_MAX_ALLOWED_CPU_REQUEST_ID);
+bool ParmsDb::upgrade(const std::string & /*fromVersion*/, const std::string & /*toVersion*/) {
+    const std::string tableName = "parameters";
+    std::string columnName = "maxAllowedCpu";
+    if (!addIntegerColumnIfMissing(tableName, columnName)) {
+        return false;
     }
 
-    // TODO: Version to update if this code is not delivered in 3.5.8
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.5.8")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.5.8 DB");
+    bool updateParameters = false;
+    columnName = "uploadSessionParallelJobs";
+    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
+        return false;
+    }
 
-        ASSERT(queryCreate(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID));
-        if (!queryPrepare(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID,
-                          ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST, false, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID, error);
-        }
-        if (!queryExec(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID, error);
-        }
-        queryFree(ALTER_PARAMETERS_ADD_UPLOAD_SESSION_PARALLEL_JOBS_REQUEST_ID);
+    columnName = "jobPoolCapacityFactor";
+    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
+        return false;
+    }
 
-        ASSERT(queryCreate(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID));
-        if (!queryPrepare(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID,
-                          ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST, false, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID, error);
-        }
-        if (!queryExec(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID, errId, error)) {
-            queryFree(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID);
-            return sqlFail(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID, error);
-        }
-        queryFree(ALTER_PARAMETERS_ADD_JOB_POOL_CAPACITY_FACTOR_REQUEST_ID);
+    if (updateParameters) {
+        int errId = 0;
+        std::string error;
 
-        ASSERT(queryCreate(UPDATE_PARAMETERS_JOB_REQUEST_ID));
-        if (!queryPrepare(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST, false, errId, error)) {
-            queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
-            return sqlFail(UPDATE_PARAMETERS_JOB_REQUEST_ID, error);
-        }
+        if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
         ASSERT(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         ASSERT(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
         ASSERT(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, Parameters::_jobPoolCapacityFactorDefault));
@@ -1320,8 +1007,14 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
         queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
 
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.3")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.6.3 DB");
+    columnName = "distributionChannel";
+    if (!addIntegerColumnIfMissing(tableName, columnName)) {
+        return false;
+    }
+
+    bool exist = false;
+    if (!tableExists("app_state", exist)) return false;
+    if (!exist) {
         if (!createAppState()) {
             LOG_WARN(_logger, "Error in createAppState");
             return false;
@@ -1333,12 +1026,12 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
 
 bool ParmsDb::initData() {
     // Clear Server and SyncPal level errors
-    if (!deleteErrors(ErrorLevelServer)) {
+    if (!deleteErrors(ErrorLevel::Server)) {
         LOG_WARN(_logger, "Error in clearErrors");
         return false;
     }
 
-    if (!deleteErrors(ErrorLevelSyncPal)) {
+    if (!deleteErrors(ErrorLevel::SyncPal)) {
         LOG_WARN(_logger, "Error in clearErrors");
         return false;
     }
@@ -1353,7 +1046,6 @@ bool ParmsDb::initData() {
         LOG_WARN(_logger, "Error in insertDefaultAppState");
         return false;
     }
-
 
     // Update exclusion templates
     if (!updateExclusionTemplates()) {
@@ -1408,6 +1100,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
     ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
+    ASSERT(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 30, static_cast<int>(parameters.distributionChannel())));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_PARAMETERS_REQUEST_ID);
@@ -1525,6 +1218,9 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
 
     ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 28, intResult));
     parameters.setJobPoolCapacityFactor(intResult);
+
+    ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
+    parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
 
     ASSERT(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 
@@ -1721,6 +1417,50 @@ bool ParmsDb::selectUserFromDriveDbId(int dbId, User &user, bool &found) {
     return selectUserFromAccountDbId(drive.accountDbId(), user, found);
 }
 
+bool ParmsDb::selectLastConnectedUser(User &user, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
+    if (!queryNext(SELECT_LAST_CONNECTED_USER_REQUEST_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_LAST_CONNECTED_USER_REQUEST_ID);
+        return false;
+    }
+    if (!found) {
+        return true;
+    }
+
+    int intResult;
+    ASSERT(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 0, intResult));
+    user.setDbId(intResult);
+
+    ASSERT(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 1, intResult));
+    user.setUserId(intResult);
+
+    std::string strResult;
+    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 2, strResult));
+    user.setKeychainKey(strResult);
+
+    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 3, strResult));
+    user.setName(strResult);
+
+    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 4, strResult));
+    user.setEmail(strResult);
+
+    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 5, strResult));
+    user.setAvatarUrl(strResult);
+
+    std::shared_ptr<std::vector<char>> blobResult;
+    ASSERT(queryBlobValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 6, blobResult));
+    user.setAvatar(blobResult);
+
+    ASSERT(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 7, intResult));
+    user.setToMigrate(static_cast<bool>(intResult));
+
+    ASSERT(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
+
+    return true;
+}
+
 bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
     const std::scoped_lock lock(_mutex);
 
@@ -1731,7 +1471,7 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_USERS_REQUEST_ID, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << SELECT_ALL_USERS_REQUEST_ID);
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_USERS_REQUEST_ID);
             return false;
         }
         if (!found) {
@@ -1770,7 +1510,7 @@ bool ParmsDb::getNewUserDbId(int &dbId) {
     }
 
     dbId = 1;
-    for (const User &user : userList) {
+    for (const User &user: userList) {
         // NB: userList is sorted by dbId
         if (user.dbId() > dbId) {
             break;
@@ -1882,7 +1622,7 @@ bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_ACCOUNTS_REQUEST_ID, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << SELECT_ALL_ACCOUNTS_REQUEST_ID);
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ACCOUNTS_REQUEST_ID);
             return false;
         }
         if (!found) {
@@ -1914,7 +1654,7 @@ bool ParmsDb::selectAllAccounts(int userDbId, std::vector<Account> &accountList)
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID);
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID);
             return false;
         }
         if (!found) {
@@ -1941,7 +1681,7 @@ bool ParmsDb::accountDbId(int userDbId, int accountId, int &dbId) {
     }
 
     dbId = 0;
-    for (const Account &account : accountList) {
+    for (const Account &account: accountList) {
         if (account.accountId() == accountId) {
             dbId = account.dbId();
             break;
@@ -1959,7 +1699,7 @@ bool ParmsDb::getNewAccountDbId(int &dbId) {
     }
 
     dbId = 1;
-    for (const Account &account : accountList) {
+    for (const Account &account: accountList) {
         // NB: accountList is sorted by dbId
         if (account.dbId() > dbId) {
             break;
@@ -2160,8 +1900,8 @@ bool ParmsDb::selectAllDrives(std::vector<Drive> &driveList) {
         int admin;
         ASSERT(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 7, admin));
 
-        driveList.push_back(
-            Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications), static_cast<bool>(admin)));
+        driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
+                                  static_cast<bool>(admin)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_DRIVES_REQUEST_ID));
 
@@ -2201,8 +1941,8 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
         int admin;
         ASSERT(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 6, admin));
 
-        driveList.push_back(
-            Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications), static_cast<bool>(admin)));
+        driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
+                                  static_cast<bool>(admin)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
 
@@ -2217,7 +1957,7 @@ bool ParmsDb::driveDbId(int accountDbId, int driveId, int &dbId) {
     }
 
     dbId = 0;
-    for (const Drive &drive : driveList) {
+    for (const Drive &drive: driveList) {
         if (drive.driveId() == driveId) {
             dbId = drive.dbId();
             break;
@@ -2235,7 +1975,7 @@ bool ParmsDb::getNewDriveDbId(int &dbId) {
     }
 
     dbId = 1;
-    for (const Drive &drive : driveList) {
+    for (const Drive &drive: driveList) {
         // NB: driveList is sorted by dbId
         if (drive.dbId() > dbId) {
             break;
@@ -2247,33 +1987,35 @@ bool ParmsDb::getNewDriveDbId(int &dbId) {
 }
 
 bool ParmsDb::insertSync(const Sync &sync) {
+    const char *requestId = INSERT_SYNC_REQUEST_ID;
+
     const std::scoped_lock lock(_mutex);
 
     std::string listingCursor;
-    int64_t listingCursorTimestamp;
+    int64_t listingCursorTimestamp{0};
     sync.listingCursor(listingCursor, listingCursorTimestamp);
 
     // Insert sync record
-    int errId;
-    std::string error;
+    ASSERT(queryResetAndClearBindings(requestId));
+    ASSERT(queryBindValue(requestId, 1, sync.dbId()));
+    ASSERT(queryBindValue(requestId, 2, sync.driveDbId()));
+    ASSERT(queryBindValue(requestId, 3, sync.localPath().native()));
+    ASSERT(queryBindValue(requestId, 4, sync.targetPath().native()));
+    ASSERT(queryBindValue(requestId, 5, sync.targetNodeId()));
+    ASSERT(queryBindValue(requestId, 6, sync.dbPath().native()));
+    ASSERT(queryBindValue(requestId, 7, static_cast<int>(sync.paused())));
+    ASSERT(queryBindValue(requestId, 8, static_cast<int>(sync.supportVfs())));
+    ASSERT(queryBindValue(requestId, 9, static_cast<int>(sync.virtualFileMode())));
+    ASSERT(queryBindValue(requestId, 10, static_cast<int>(sync.notificationsDisabled())));
+    ASSERT(queryBindValue(requestId, 11, static_cast<int>(sync.hasFullyCompleted())));
+    ASSERT(queryBindValue(requestId, 12, sync.navigationPaneClsid()));
+    ASSERT(queryBindValue(requestId, 13, listingCursor));
+    ASSERT(queryBindValue(requestId, 14, listingCursorTimestamp));
 
-    ASSERT(queryResetAndClearBindings(INSERT_SYNC_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 1, sync.dbId()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 2, sync.driveDbId()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 3, sync.localPath().native()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 4, sync.targetPath().native()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 5, sync.targetNodeId()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 6, sync.dbPath().native()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 7, static_cast<int>(sync.paused())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 8, static_cast<int>(sync.supportVfs())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 9, static_cast<int>(sync.virtualFileMode())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 10, static_cast<int>(sync.notificationsDisabled())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 11, static_cast<int>(sync.hasFullyCompleted())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 12, sync.navigationPaneClsid()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 13, listingCursor));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 14, listingCursorTimestamp));
-    if (!queryExec(INSERT_SYNC_REQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << INSERT_SYNC_REQUEST_ID);
+    int errId = -1;
+    std::string error;
+    if (!queryExec(requestId, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << requestId);
         return false;
     }
 
@@ -2387,64 +2129,96 @@ bool ParmsDb::deleteSync(int dbId, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
-    const std::scoped_lock lock(_mutex);
+void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
+    assert(std::string(requestId) == std::string(SELECT_SYNC_BY_PATH_REQUEST_ID) ||
+           std::string(requestId) == std::string(SELECT_SYNC_REQUEST_ID));
 
-    ASSERT(queryResetAndClearBindings(SELECT_SYNC_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_SYNC_REQUEST_ID, 1, dbId));
-    if (!queryNext(SELECT_SYNC_REQUEST_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << SELECT_SYNC_REQUEST_ID);
-        return false;
-    }
-    if (!found) {
-        return true;
-    }
+    int intResult = -1;
+    ASSERT(queryIntValue(requestId, 0, intResult));
+    sync.setDbId(intResult);
 
-    sync.setDbId(dbId);
-
-    int intResult;
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 0, intResult));
+    ASSERT(queryIntValue(requestId, 1, intResult));
     sync.setDriveDbId(intResult);
 
     SyncName syncNameResult;
-    ASSERT(querySyncNameValue(SELECT_SYNC_REQUEST_ID, 1, syncNameResult));
+    ASSERT(querySyncNameValue(requestId, 2, syncNameResult));
     sync.setLocalPath(SyncPath(syncNameResult));
 
-    ASSERT(querySyncNameValue(SELECT_SYNC_REQUEST_ID, 2, syncNameResult));
+    ASSERT(querySyncNameValue(requestId, 3, syncNameResult));
     sync.setTargetPath(SyncPath(syncNameResult));
 
     std::string strResult;
-    ASSERT(queryStringValue(SELECT_SYNC_REQUEST_ID, 3, strResult));
+    ASSERT(queryStringValue(requestId, 4, strResult));
     sync.setTargetNodeId(strResult);
 
-    ASSERT(querySyncNameValue(SELECT_SYNC_REQUEST_ID, 4, syncNameResult));
+    ASSERT(querySyncNameValue(requestId, 5, syncNameResult));
     sync.setDbPath(SyncPath(syncNameResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 5, intResult));
+    ASSERT(queryIntValue(requestId, 6, intResult));
     sync.setPaused(static_cast<bool>(intResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 6, intResult));
+    ASSERT(queryIntValue(requestId, 7, intResult));
     sync.setSupportVfs(static_cast<bool>(intResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 7, intResult));
+    ASSERT(queryIntValue(requestId, 8, intResult));
     sync.setVirtualFileMode(static_cast<VirtualFileMode>(intResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 8, intResult));
+    ASSERT(queryIntValue(requestId, 9, intResult));
     sync.setNotificationsDisabled(static_cast<bool>(intResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 9, intResult));
+    ASSERT(queryIntValue(requestId, 10, intResult));
     sync.setHasFullyCompleted(static_cast<bool>(intResult));
 
-    ASSERT(queryStringValue(SELECT_SYNC_REQUEST_ID, 10, strResult));
+    ASSERT(queryStringValue(requestId, 11, strResult));
     sync.setNavigationPaneClsid(strResult);
 
-    ASSERT(queryStringValue(SELECT_SYNC_REQUEST_ID, 11, strResult));
+    ASSERT(queryStringValue(requestId, 12, strResult));
 
     int64_t int64Result;
-    ASSERT(queryInt64Value(SELECT_SYNC_REQUEST_ID, 12, int64Result));
+    ASSERT(queryInt64Value(requestId, 13, int64Result));
     sync.setListingCursor(strResult, int64Result);
+}
 
-    ASSERT(queryResetAndClearBindings(SELECT_SYNC_REQUEST_ID));
+bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
+    static const char *requestId = SELECT_SYNC_BY_PATH_REQUEST_ID;
+
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(requestId));
+    ASSERT(queryBindValue(requestId, 1, syncDbPath));
+    if (!queryNext(requestId, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << requestId);
+        return false;
+    }
+
+    if (!found) return true;
+
+
+    fillSyncWithQueryResult(sync, requestId);
+
+    ASSERT(queryResetAndClearBindings(requestId));
+
+    return true;
+}
+
+bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
+    static const char *requestId = SELECT_SYNC_REQUEST_ID;
+
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(requestId));
+    ASSERT(queryBindValue(requestId, 1, dbId));
+    if (!queryNext(requestId, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << requestId);
+        return false;
+    }
+
+    if (!found) return true;
+
+
+    fillSyncWithQueryResult(sync, requestId);
+
+    ASSERT(queryResetAndClearBindings(requestId));
 
     return true;
 }
@@ -2566,7 +2340,7 @@ bool ParmsDb::getNewSyncDbId(int &dbId) {
     }
 
     dbId = 1;
-    for (const Sync &sync : syncList) {
+    for (const Sync &sync: syncList) {
         // NB: syncList is sorted by dbId
         if (sync.dbId() > dbId) {
             break;
@@ -2671,7 +2445,7 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         ASSERT(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
 
         exclusionTemplateList.push_back(
-            ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
+                ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
 
@@ -2727,7 +2501,7 @@ bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionT
     }
 
     // Insert new ExclusionTemplates
-    for (const ExclusionTemplate &exclusionTemplate : exclusionTemplateList) {
+    for (const ExclusionTemplate &exclusionTemplate: exclusionTemplateList) {
         ASSERT(queryResetAndClearBindings(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID));
         ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
         ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
@@ -2888,7 +2662,7 @@ bool ParmsDb::updateAllExclusionApps(bool def, const std::vector<ExclusionApp> &
     }
 
     // Insert new ExclusionApps
-    for (const ExclusionApp &exclusionApp : exclusionAppList) {
+    for (const ExclusionApp &exclusionApp: exclusionAppList) {
         ASSERT(queryResetAndClearBindings(INSERT_EXCLUSION_APP_REQUEST_ID));
         ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 1, exclusionApp.appId()));
         ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 2, exclusionApp.description()));
@@ -2914,20 +2688,20 @@ bool ParmsDb::insertError(const Error &err) {
 
     ASSERT(queryResetAndClearBindings(INSERT_ERROR_REQUEST_ID));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 1, err.time()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 2, err.level()));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 2, toInt(err.level())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 3, err.functionName()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 4, err.syncDbId() ? dbtype(err.syncDbId()) : std::monostate()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 5, err.workerName()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 6, err.exitCode()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 7, err.exitCause()));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 6, toInt(err.exitCode())));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 7, toInt(err.exitCause())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 8, err.localNodeId()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 9, err.remoteNodeId()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 10, err.nodeType()));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 10, toInt(err.nodeType())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 11, err.path().native()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 12, 0));  // TODO : Not used anymore
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 13, err.conflictType()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 14, err.inconsistencyType()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 15, err.cancelType()));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 12, 0)); // TODO : Not used anymore
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 13, toInt(err.conflictType())));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 14, toInt(err.inconsistencyType())));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 15, toInt(err.cancelType())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 16, err.destinationPath()));
     if (!queryExec(INSERT_ERROR_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_ERROR_REQUEST_ID);
@@ -2945,7 +2719,8 @@ bool ParmsDb::updateError(const Error &err, bool &found) {
 
     ASSERT(queryResetAndClearBindings(UPDATE_ERROR_REQUEST_ID));
     ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 1, err.time()));
-    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 2, err.dbId()));
+    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 2, err.path()));
+    ASSERT(queryBindValue(UPDATE_ERROR_REQUEST_ID, 3, err.dbId()));
     if (!queryExec(UPDATE_ERROR_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_ERROR_REQUEST_ID);
         return false;
@@ -2982,10 +2757,10 @@ bool ParmsDb::deleteAllErrorsByExitCause(ExitCause exitCause) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID, 1, static_cast<int>(exitCause)));
-    if (!queryExec(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID);
+    ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID));
+    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, 1, static_cast<int>(exitCause)));
+    if (!queryExec(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID);
         return false;
     }
 
@@ -2996,7 +2771,7 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
     const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 1, level));
+    ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 1, toInt(level)));
     ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 2, syncDbId));
     ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 3, limit));
     bool found;
@@ -3054,12 +2829,12 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
 bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
 
-    std::string requestId = (filter == ConflictTypeNone ? SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID
-                                                        : SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
+    std::string requestId = (filter == ConflictType::None ? SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID
+                                                          : SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
 
     ASSERT(queryResetAndClearBindings(requestId));
     ASSERT(queryBindValue(requestId, 1, syncDbId));
-    ASSERT(queryBindValue(requestId, 2, std::to_string(filter)));
+    ASSERT(queryBindValue(requestId, 2, std::to_string(toInt(filter))));
 
     bool found = false;
     for (;;) {
@@ -3102,7 +2877,7 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
         SyncName destinationPath;
         ASSERT(querySyncNameValue(requestId, 14, destinationPath));
 
-        errs.push_back(Error(dbId, time, ErrorLevelNode, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
+        errs.push_back(Error(dbId, time, ErrorLevel::Node, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
                              static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
                              static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
                              static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
@@ -3120,7 +2895,7 @@ bool ParmsDb::deleteErrors(ErrorLevel level) {
     std::string error;
 
     ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, 1, level));
+    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, 1, toInt(level)));
     if (!queryExec(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID);
         return false;
@@ -3129,7 +2904,7 @@ bool ParmsDb::deleteErrors(ErrorLevel level) {
     return true;
 }
 
-bool ParmsDb::deleteError(int dbId, bool &found) {
+bool ParmsDb::deleteError(int64_t dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
@@ -3160,7 +2935,7 @@ bool ParmsDb::insertMigrationSelectiveSync(const MigrationSelectiveSync &migrati
     ASSERT(queryResetAndClearBindings(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID));
     ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 1, migrationSelectiveSync.syncDbId()));
     ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 2, migrationSelectiveSync.path().native()));
-    ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 3, migrationSelectiveSync.type()));
+    ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 3, toInt(migrationSelectiveSync.type())));
     if (!queryExec(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID);
         return false;
@@ -3194,10 +2969,11 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
         int type;
         ASSERT(queryIntValue(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, 2, type));
 
-        migrationSelectiveSyncList.push_back(MigrationSelectiveSync(syncDbId, SyncPath(path), type));
+        migrationSelectiveSyncList.push_back(MigrationSelectiveSync(syncDbId, SyncPath(path), fromInt<SyncNodeType>(type)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
 
     return true;
 }
-}  // namespace KDC
+
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ class VirtualFilesCleaner {
                             bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
                             bool (*vfsClearFileAttributes)(int, const SyncPath &));
 
-        VirtualFilesCleaner(const SyncPath &path);
+        VirtualFilesCleaner(const SyncPath &path, int syncDbId);
 
         bool run();
         bool removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders);
@@ -41,21 +41,21 @@ class VirtualFilesCleaner {
         inline ExitCause exitCause() const { return _exitCause; }
 
     private:
-        bool removePlaceholdersRecursivly(const SyncPath &parentPath);
+        bool removePlaceholdersRecursively(const SyncPath &parentPath);
         bool recursiveDirectoryIterator(const SyncPath &path, std::filesystem::recursive_directory_iterator &dirIt);
         bool folderCanBeProcessed(std::filesystem::recursive_directory_iterator &dirIt);
 
         log4cplus::Logger _logger;
 
         SyncPath _rootPath;
-        int _syncDbId;
+        int _syncDbId{-1};
         std::shared_ptr<SyncDb> _syncDb = nullptr;
         bool (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                           int &progress);
-        bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &itemPath);
+                           int &progress) = nullptr;
+        bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &itemPath) = nullptr;
 
-        ExitCode _exitCode = ExitCodeUnknown;
-        ExitCause _exitCause = ExitCauseUnknown;
+        ExitCode _exitCode = ExitCode::Unknown;
+        ExitCause _exitCause = ExitCause::Unknown;
 };
 
-}  // namespace KDC
+} // namespace KDC

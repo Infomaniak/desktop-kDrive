@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
  */
 #include "localtemporarydirectory.h"
 
-#include "io/filestat.h"
-#include "io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <sstream>
 
@@ -35,23 +35,29 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
     const int maxRetry = 100;
     while (!std::filesystem::create_directory(_path) && retryCount < maxRetry) {
         retryCount++;
-        _path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
+        _path = std::filesystem::temp_directory_path() /
+                ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
     }
 
     if (retryCount == maxRetry) {
         throw std::runtime_error("Failed to create local temporary directory");
     }
-  
-    _path = std::filesystem::canonical(_path);  // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
+
+    _path = std::filesystem::canonical(_path); // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
     FileStat fileStat;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     IoHelper::getFileStat(_path, &fileStat, ioError);
     _id = std::to_string(fileStat.inode);
 }
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {
-    std::filesystem::remove_all(_path);
+    std::error_code ec;
+    std::filesystem::remove_all(_path, ec);
+    if (ec) {
+        // Cannot remove directory
+        assert(false);
+    }
 }
 
 
-}  // namespace KDC
+} // namespace KDC

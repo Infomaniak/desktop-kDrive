@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,11 @@ namespace KDC {
 
 class TestSnapshot : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSnapshot);
+        CPPUNIT_TEST(testItemId);
         CPPUNIT_TEST(testSnapshot);
+        CPPUNIT_TEST(testDuplicatedItem);
+        CPPUNIT_TEST(testSnapshotInsertionWithDifferentEncodings);
+        CPPUNIT_TEST(testPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -35,7 +39,14 @@ class TestSnapshot : public CppUnit::TestFixture {
         void tearDown() override;
 
     private:
+        void testItemId();
         void testSnapshot();
+        void testDuplicatedItem();
+        void testSnapshotInsertionWithDifferentEncodings();
+        void testPath();
+
+        std::unique_ptr<Snapshot> _snapshot;
+        NodeId _rootNodeId;
 };
 
-}  // namespace KDC
+} // namespace KDC

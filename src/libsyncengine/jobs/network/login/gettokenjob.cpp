@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@
 
 namespace KDC {
 
-GetTokenJob::GetTokenJob(const std::string &authorizationCode, const std::string &codeVerifier)
-    : AbstractLoginJob(), _authorizationCode(authorizationCode), _codeVerifier(codeVerifier) {
+GetTokenJob::GetTokenJob(const std::string &authorizationCode, const std::string &codeVerifier) :
+    AbstractLoginJob(), _authorizationCode(authorizationCode), _codeVerifier(codeVerifier) {
 #ifdef __APPLE__
     if (!Utility::preventSleeping(true)) {
         LOG_WARN(_logger, "Error in Utility::preventSleeping");
@@ -40,7 +40,7 @@ GetTokenJob::~GetTokenJob() {
 #endif
 }
 
-void GetTokenJob::setData(bool &canceled) {
+ExitInfo GetTokenJob::setData() {
     Poco::URI uri;
     uri.addQueryParameter(grantTypeKey, grantTypeAuthorization);
     uri.addQueryParameter(codeKey, _authorizationCode);
@@ -49,7 +49,7 @@ void GetTokenJob::setData(bool &canceled) {
     uri.addQueryParameter(redirectUriKey, REDIRECT_URI);
 
     _data = uri.getRawQuery();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

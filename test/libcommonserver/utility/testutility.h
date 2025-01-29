@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "testincludes.h"
+#include "test_utility/testhelpers.h"
 #include "libcommonserver/utility/utility.h"
 
 using namespace CppUnit;
@@ -36,6 +37,8 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testV2ws);
         CPPUNIT_TEST(testFormatStdError);
         CPPUNIT_TEST(testFormatIoError);
+        CPPUNIT_TEST(testFormatSyncName);
+        CPPUNIT_TEST(testFormatPath);
         CPPUNIT_TEST(testFormatSyncPath);
         CPPUNIT_TEST(testFormatRequest);
         CPPUNIT_TEST(testFileSystemName);
@@ -58,51 +61,59 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(isSubDir);
         CPPUNIT_TEST(testNormalizedSyncName);
         CPPUNIT_TEST(testNormalizedSyncPath);
+        CPPUNIT_TEST(testIsSameOrParentPath);
+        CPPUNIT_TEST(testUserName);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void);
-        void tearDown(void);
+        void setUp();
+        void tearDown();
 
     protected:
-        void testFreeDiskSpace(void);
-        void testIsCreationDateValid(void);
-        void testS2ws(void);
-        void testWs2s(void);
-        void testLtrim(void);
-        void testRtrim(void);
-        void testTrim(void);
-        void testMsSleep(void);
-        void testV2ws(void);
-        void testFormatStdError(void);
-        void testFormatIoError(void);
-        void testFormatSyncPath(void);
-        void testFormatRequest(void);
-        void testFileSystemName(void);
-        void testStartsWith(void);
-        void testStartsWithInsensitive(void);
-        void testEndsWith(void);
-        void testEndsWithInsensitive(void);
-        void testIsEqualInsensitive(void);
-        void testMoveItemToTrash(void);
-        void testGetLinuxDesktopType(void);
-        void testGetAppSupportDir(void);
-        void testStr2HexStr(void);
-        void testStrHex2Str(void);
-        void testSplitStr(void);
-        void testJoinStr(void);
-        void testPathDepth(void);
-        void testComputeMd5Hash(void);
-        void testXxHash(void);
-        void testToUpper(void);
-        void testErrId(void);
-        void isSubDir(void);
-        void testcheckIfDirEntryIsManaged(void);
+        void testFreeDiskSpace();
+        void testIsCreationDateValid();
+        void testS2ws();
+        void testWs2s();
+        void testLtrim();
+        void testRtrim();
+        void testTrim();
+        void testMsSleep();
+        void testV2ws();
+        void testFormatStdError();
+        void testFormatIoError();
+        void testFormatPath();
+        void testFormatSyncName();
+        void testFormatSyncPath();
+        void testFormatRequest();
+        void testFileSystemName();
+        void testStartsWith();
+        void testStartsWithInsensitive();
+        void testEndsWith();
+        void testEndsWithInsensitive();
+        void testIsEqualInsensitive();
+        void testMoveItemToTrash();
+        void testGetLinuxDesktopType();
+        void testGetAppSupportDir();
+        void testStr2HexStr();
+        void testStrHex2Str();
+        void testSplitStr();
+        void testJoinStr();
+        void testPathDepth();
+        void testComputeMd5Hash();
+        void testXxHash();
+        void testToUpper();
+        void testErrId();
+        void isSubDir();
+        void testcheckIfDirEntryIsManaged();
         void testNormalizedSyncName();
-        void testNormalizedSyncPath(void);
+        void testNormalizedSyncPath();
+        void testIsSameOrParentPath();
+        void testUserName();
 
     private:
         std::unique_ptr<Utility> _testObj;
+
+        bool checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal);
 };
 
-}  // namespace KDC
+} // namespace KDC

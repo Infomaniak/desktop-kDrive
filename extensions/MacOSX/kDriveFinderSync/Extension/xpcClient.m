@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,9 +76,7 @@
 		NSLog(@"[KD] ERROR: Could not determine file type of %@", [url path]);
 		isDir = NO;
 	}
-
-	NSString* normalizedPath = [[url path] decomposedStringWithCanonicalMapping];
-	[_xpcClientProxy askForStatus:normalizedPath isDirectory:isDir];
+	[_xpcClientProxy askForStatus:[url path] isDirectory:isDir];
 }
 
 - (NSString*) selectedPathsSeparatedByRecordSeparator
@@ -89,8 +87,7 @@
 		if (string.length > 0) {
 			[string appendString:@"\x1e"]; // record separator
 		}
-		NSString* normalizedPath = [[obj path] decomposedStringWithCanonicalMapping];
-		[string appendString:normalizedPath];
+		[string appendString:[obj path]];
 	}];
 	return string;
 }
@@ -161,22 +158,35 @@
 // XPCClientProxyDelegate protocol implementation
 - (void)setResultForPath:(NSString*)path result:(NSString*)result
 {
-	NSString *normalizedPath = [path decomposedStringWithCanonicalMapping];
-	[[FIFinderSyncController defaultController] setBadgeIdentifier:result forURL:[NSURL fileURLWithPath:normalizedPath]];
+	[[FIFinderSyncController defaultController] setBadgeIdentifier:result forURL:[NSURL fileURLWithPath:path]];
 }
 
 - (void)registerPath:(NSString*)path
 {
 	assert(_registeredDirectories);
 	[_registeredDirectories addObject:[NSURL fileURLWithPath:path]];
-	[FIFinderSyncController defaultController].directoryURLs = _registeredDirectories;
+    @try {
+        [FIFinderSyncController defaultController].directoryURLs = [NSSet setWithSet:_registeredDirectories];
+    } @catch(NSException* e) {
+        // Do nothing and wait for invalidationHandler
+        NSLog(@"[KD] set directoryURLs error %@", e.name);
+    }
+    
+    NSLog(@"[KD] Registered path %@", path);
 }
 
 - (void)unregisterPath:(NSString*)path
 {
     assert(_registeredDirectories);
 	[_registeredDirectories removeObject:[NSURL fileURLWithPath:path]];
-	[FIFinderSyncController defaultController].directoryURLs = _registeredDirectories;
+    @try {
+        [FIFinderSyncController defaultController].directoryURLs = [NSSet setWithSet:_registeredDirectories];
+    } @catch(NSException* e) {
+        // Do nothing and wait for invalidationHandler
+        NSLog(@"[KD] set directoryURLs error %@", e.name);
+    }
+    
+    NSLog(@"[KD] Unregister path %@", path);
 }
 
 - (void)setString:(NSString*)key value:(NSString*)value
@@ -208,7 +218,7 @@
 	[FIFinderSyncController defaultController].directoryURLs = [NSSet setWithObject:[NSURL fileURLWithPath:@"/"]];
 	// This will tell Finder that this extension isn't attached to any directory
 	// until we can reconnect to the sync client.
-	[FIFinderSyncController defaultController].directoryURLs = nil;
+    [FIFinderSyncController defaultController].directoryURLs = nil;
 }
 
 @end

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,78 +20,52 @@
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/log/log.h"
 
 namespace KDC {
 
-const Node Node::_nullNode;
-
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
-           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size)
-    : _idb(idb),
-      _side(side),
-      _name(Utility::normalizedSyncName(name)),
-      _inconsistencyType(InconsistencyTypeNone),
-      _type(type),
-      _id(id),
-      _previousId(std::nullopt),
-      _createdAt(createdAt),
-      _lastModified(lastmodified),
-      _size(size),
-      _status(NodeStatusUnprocessed),
-      _parentNode(nullptr),
-      _moveOrigin(std::nullopt),
-      _moveOriginParentDbId(std::nullopt),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
-
-Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type, int changeEvents,
-           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size,
-           std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId)
-    : _idb(idb),
-      _side(side),
-      _name(Utility::normalizedSyncName(name)),
-      _inconsistencyType(InconsistencyTypeNone),
-      _type(type),
-      _changeEvents(changeEvents),
-      _id(id),
-      _previousId(std::nullopt),
-      _createdAt(createdAt),
-      _lastModified(lastmodified),
-      _size(size),
-      _status(NodeStatusUnprocessed),
-      _parentNode(parentNode),
-      _moveOrigin(moveOrigin),
-      _moveOriginParentDbId(moveOriginParentDbId),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
-
-Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode)
-    : _side(side), _name(Utility::normalizedSyncName(name)), _type(type), _parentNode(parentNode), _isTmp(true) {
-    _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
+           OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
+           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
+           std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
+    _idb(idb), _side(side), _name(name), _type(type), _changeEvents(changeEvents), _id(id), _createdAt(createdAt),
+    _lastModified(lastmodified), _size(size), _moveOrigin(moveOrigin), _moveOriginParentDbId(moveOriginParentDbId),
+    _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
+    setParentNode(parentNode);
 }
 
-Node::Node()
-    : _idb(std::nullopt),
-      _side(ReplicaSide::ReplicaSideUnknown),
-      _name(SyncName()),
-      _inconsistencyType(InconsistencyTypeNone),
-      _type(NodeTypeUnknown),
-      _id(std::string()),
-      _previousId(std::nullopt),
-      _status(NodeStatusUnprocessed),
-      _parentNode(nullptr),
-      _moveOrigin(std::nullopt),
-      _moveOriginParentDbId(std::nullopt),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
+Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
+           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size,
+           std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
+    Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode, moveOrigin,
+         moveOriginParentDbId) {}
+
+Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode) :
+    _side(side), _name(name), _type(type), _isTmp(true) {
+    _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
+    setParentNode(parentNode);
+}
 
 bool Node::operator==(const Node &n) const {
     return n._idb == _idb && n._name == _name;
 }
 
-void Node::setName(const SyncName &name) {
-    _name = Utility::normalizedSyncName(name);
+bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
+    if (!parentNode) return true;
+
+    // Check that the parent is not a descendant
+    if (!isParentValid(parentNode)) {
+        assert(false);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Node::setParentNode", "Parent is a descendant");
+        return false;
+    }
+
+    _parentNode = parentNode;
+    return true;
 }
 
 std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) {
-    for (auto &child : this->children()) {
+    for (auto &child: this->children()) {
         // return only non excluded type
         if (child.second->name() == name && !child.second->hasChangeEvent(except)) {
             return child.second;
@@ -108,7 +82,7 @@ std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nod
         }
     }
 
-    for (auto &node : _childrenById) {
+    for (auto &node: _childrenById) {
         if (node.second->name() == name) {
             return node.second;
         }
@@ -129,7 +103,22 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
     if (!child->id().has_value()) {
         return false;
     }
+
+    // Check that the child is not an ancestor
+    if (std::shared_ptr<Node> tmpNode = parentNode(); tmpNode) {
+        while (tmpNode->parentNode() != nullptr) {
+            if (child == tmpNode) {
+                assert(false);
+                sentry::Handler::captureMessage(sentry::Level::Warning, "Node::insertChildren", "Child is an ancestor");
+                return false;
+            }
+
+            tmpNode = tmpNode->parentNode();
+        }
+    }
+
     _childrenById[*child->id()] = child;
+
     return true;
 }
 
@@ -145,7 +134,7 @@ size_t Node::deleteChildren(const NodeId &childId) {
 }
 
 bool Node::isEditFromDeleteCreate() const {
-    if (hasChangeEvent(OperationTypeEdit) && _previousId.has_value()) {
+    if (hasChangeEvent(OperationType::Edit) && _previousId.has_value()) {
         return true;
     }
     return false;
@@ -191,4 +180,24 @@ SyncPath Node::getPath() const {
     return path;
 }
 
-}  // namespace KDC
+bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
+    if (!potentialChild) return false; // `parentNode` is the root node,
+    if (potentialChild->id().has_value() && potentialChild->id() == _id) return false; // potentialChild cannot be its own parent
+    while (potentialChild) {
+        if (!potentialChild->id().has_value()) {
+            LOG_ERROR(Log::instance()->getLogger(), "Error in Node::isParentOf: Node has no id.");
+            assert(false && "Node has no id");
+            return false;
+        }
+        if (*potentialChild->id() == *_id) return true; // This node is a parent of `potentialChild`
+        potentialChild = potentialChild->parentNode();
+    }
+
+    return false;
+}
+
+bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
+    return !isParentOf(parentNode);
+}
+
+} // namespace KDC

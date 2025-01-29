@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ class __declspec(dllexport) StringUtil {
         static std::string toUtf8(const wchar_t* utf16, int len = -1);
         static std::wstring toUtf16(const char* utf8, int len = -1);
 
-        template <class T>
+        template<class T>
         static bool begins_with(const T& input, const T& match) {
             return input.size() >= match.size() && std::equal(match.begin(), match.end(), input.begin());
         }

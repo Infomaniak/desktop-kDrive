@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,8 +59,8 @@ qint64 qDateTimeToTime_t(const QDateTime &t);
 inline bool isWindows();
 inline bool isMac();
 inline bool isUnix();
-inline bool isLinux();  // use with care
-inline bool isBSD();    // use with care, does not match OS X
+inline bool isLinux(); // use with care
+inline bool isBSD(); // use with care, does not match OS X
 
 #ifdef Q_OS_WIN
 bool registryExistKeyTree(HKEY hRootKey, const QString &subKey);
@@ -80,7 +80,7 @@ void removeLegacySyncRootKeys(const QUuid &clsid);
 void UnixTimeToFiletime(time_t t, FILETIME *filetime);
 #endif
 
-}  // namespace OldUtility
+} // namespace OldUtility
 
 inline bool OldUtility::isWindows() {
 #ifdef Q_OS_WIN
@@ -122,4 +122,4 @@ inline bool OldUtility::isBSD() {
 #endif
 }
 
-}  // namespace KDC
+} // namespace KDC

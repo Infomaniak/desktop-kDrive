@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,29 +21,13 @@
 namespace KDC {
 
 SyncInfo::SyncInfo(int dbId, int driveDbId, const QString &localPath, const QString &targetPath, const QString &targetNodeId,
-                   bool supportVfs, VirtualFileMode virtualFileMode, const QString &navigationPaneClsid)
-    : _dbId(dbId),
-      _driveDbId(driveDbId),
-      _localPath(localPath),
-      _targetPath(targetPath),
-      _targetNodeId(targetNodeId),
-      _supportVfs(supportVfs),
-      _virtualFileMode(virtualFileMode),
-      _navigationPaneClsid(navigationPaneClsid) {}
-
-SyncInfo::SyncInfo()
-    : _dbId(0),
-      _driveDbId(0),
-      _localPath(QString()),
-      _targetPath(QString()),
-      _targetNodeId(QString()),
-      _supportVfs(false),
-      _virtualFileMode(VirtualFileModeOff),
-      _navigationPaneClsid(QString()) {}
+                   bool supportVfs, VirtualFileMode virtualFileMode, const QString &navigationPaneClsid) :
+    _dbId(dbId), _driveDbId(driveDbId), _localPath(localPath), _targetPath(targetPath), _targetNodeId(targetNodeId),
+    _supportVfs(supportVfs), _virtualFileMode(virtualFileMode), _navigationPaneClsid(navigationPaneClsid) {}
 
 QDataStream &operator>>(QDataStream &in, SyncInfo &info) {
     in >> info._dbId >> info._driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
-        info._virtualFileMode >> info._navigationPaneClsid;
+            info._virtualFileMode >> info._navigationPaneClsid;
     return in;
 }
 
@@ -54,9 +38,9 @@ QDataStream &operator<<(QDataStream &out, const SyncInfo &info) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<SyncInfo> &list) {
-    int count = list.size();
+    int count = static_cast<int>(list.size());
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < count; i++) {
         SyncInfo info = list[i];
         out << info;
     }
@@ -74,4 +58,4 @@ QDataStream &operator>>(QDataStream &in, QList<SyncInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,14 +50,9 @@ static const int nodeIdRole = Qt::UserRole + 3;
 Q_LOGGING_CATEGORY(lcBaseFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInfoMsg)
 
 BaseFolderTreeItemWidget::BaseFolderTreeItemWidget(std::shared_ptr<ClientGui> gui, int driveDbId, bool displayRoot,
-                                                   QWidget *parent)
-    : QTreeWidget(parent),
-      _gui(gui),
-      _driveDbId(driveDbId),
-      _displayRoot(displayRoot),
-      _folderIconColor(QColor()),
-      _folderIconSize(QSize()),
-      _inserting(false) {
+                                                   QWidget *parent) :
+    QTreeWidget(parent), _gui(gui), _driveDbId(driveDbId), _displayRoot(displayRoot), _folderIconColor(QColor()),
+    _folderIconSize(QSize()), _inserting(false) {
     initUI();
 }
 
@@ -67,7 +62,7 @@ void BaseFolderTreeItemWidget::loadSubFolders() {
     ExitCode exitCode;
     QList<NodeInfo> nodeInfoList;
     exitCode = GuiRequests::getSubFolders(_driveDbId, QString(), nodeInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcBaseFolderTreeItemWidget()) << "Error in Requests::getSubFolders";
         return;
     }
@@ -85,9 +80,9 @@ void BaseFolderTreeItemWidget::loadSubFolders() {
 
             // Set drive name
             root->setText(TreeWidgetColumn::Folder, _driveDbId == 0 ? QString() : driveInfoMapIt->second.name());
-            root->setIcon(
-                TreeWidgetColumn::Folder,
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfoMapIt->second.color()));
+            root->setIcon(TreeWidgetColumn::Folder,
+                          KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg",
+                                                            driveInfoMapIt->second.color()));
             root->setData(TreeWidgetColumn::Folder, dirRole, QString());
             root->setData(TreeWidgetColumn::Folder, baseDirRole, QString());
             root->setData(TreeWidgetColumn::Folder, nodeIdRole, QString());
@@ -241,7 +236,7 @@ void BaseFolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, QList<No
     while (it.hasNext()) {
         bool excluded = false;
         ExitCode exitCode = GuiRequests::getNameExcluded(it.next().name(), excluded);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcBaseFolderTreeItemWidget()) << "Error in Requests::getNameExcluded";
             return;
         }
@@ -251,7 +246,7 @@ void BaseFolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, QList<No
     }
 
     KDC::CommonGuiUtility::sortSubfolders(list);
-    for (NodeInfo nodeInfo : list) {
+    for (NodeInfo nodeInfo: list) {
         insertNode(item, nodeInfo);
     }
 }
@@ -267,7 +262,7 @@ void BaseFolderTreeItemWidget::onItemExpanded(QTreeWidgetItem *item) {
     ExitCode exitCode;
     QList<NodeInfo> nodeInfoList;
     exitCode = GuiRequests::getSubFolders(_driveDbId, nodeId, nodeInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcBaseFolderTreeItemWidget()) << "Error in Requests::getSubFolders";
         return;
     }
@@ -280,7 +275,7 @@ void BaseFolderTreeItemWidget::onCurrentItemChanged(QTreeWidgetItem *current, QT
         // Add action icon
         current->setIcon(TreeWidgetColumn::Action,
                          KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/folder-add.svg", _addIconColor)
-                             .pixmap(_addIconSize));
+                                 .pixmap(_addIconSize));
     }
 
     if (previous) {
@@ -350,8 +345,8 @@ void BaseFolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int column) 
     }
 }
 
-BaseFolderTreeItemWidget::CustomDelegate::CustomDelegate(BaseFolderTreeItemWidget *treeWidget, QObject *parent)
-    : QStyledItemDelegate(parent), _treeWidget(treeWidget) {}
+BaseFolderTreeItemWidget::CustomDelegate::CustomDelegate(BaseFolderTreeItemWidget *treeWidget, QObject *parent) :
+    QStyledItemDelegate(parent), _treeWidget(treeWidget) {}
 
 void BaseFolderTreeItemWidget::CustomDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
                                                                     const QModelIndex &index) const {
@@ -366,4 +361,4 @@ void BaseFolderTreeItemWidget::CustomDelegate::updateEditorGeometry(QWidget *edi
     editor->setGeometry(lineEditRect);
 }
 
-}  // namespace KDC
+} // namespace KDC

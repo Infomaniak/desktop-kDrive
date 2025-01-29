@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ SyncPath makeVeryLonPath(const SyncPath &rootPath) {
     const std::string pathSegment(50, 'a');
     SyncPath path = rootPath;
     for (int i = 0; i < 1000; ++i) {
-        path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
+        path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
     }
 
     return path;
@@ -94,15 +94,15 @@ void TestIo::tearDown() {
 void TestIo::testTempDirectoryPath() {
     {
         SyncPath tmpPath;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->tempDirectoryPath(tmpPath, ioError));
         CPPUNIT_ASSERT(!tmpPath.empty());
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     {
         SyncPath tmpPath;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         _testObj->setTempDirectoryPathFunction([](std::error_code &ec) -> SyncPath {
             ec = std::make_error_code(std::errc::not_enough_memory);
@@ -111,7 +111,7 @@ void TestIo::testTempDirectoryPath() {
 
         CPPUNIT_ASSERT(!_testObj->tempDirectoryPath(tmpPath, ioError));
         CPPUNIT_ASSERT(tmpPath.empty());
-        CPPUNIT_ASSERT(ioError == IoErrorUnknown);
+        CPPUNIT_ASSERT(ioError == IoError::Unknown);
 
         _testObj->resetFunctions();
     }
@@ -120,32 +120,56 @@ void TestIo::testTempDirectoryPath() {
 void TestIo::testLogDirectoryPath() {
     {
         SyncPath logDirPath;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->logDirectoryPath(logDirPath, ioError));
         CPPUNIT_ASSERT(!logDirPath.empty());
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     {
         SyncPath logDirPath;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         _testObj->setTempDirectoryPathFunction([](std::error_code &ec) -> SyncPath {
             ec = std::make_error_code(std::errc::not_enough_memory);
             return SyncPath{};
         });
-        /* As IoHelper::logDirectoryPath() use the path returned by Log::instance()->getLogFilePath().parent_path() if Log::_instance is not null,
-        *  we need to reset Log::_instance to ensure that we are in the default state where the function generates the log directory path from the temp directory path.
-        */
+        /* As IoHelper::logDirectoryPath() use the path returned by Log::instance()->getLogFilePath().parent_path() if
+         * Log::_instance is not null, we need to reset Log::_instance to ensure that we are in the default state where the
+         * function generates the log directory path from the temp directory path.
+         */
         auto logInstance = Log::_instance;
         Log::_instance.reset();
         CPPUNIT_ASSERT(!_testObj->logDirectoryPath(logDirPath, ioError));
         Log::_instance = logInstance;
         CPPUNIT_ASSERT(logDirPath.empty());
-        CPPUNIT_ASSERT(ioError == IoErrorUnknown);
+        CPPUNIT_ASSERT(ioError == IoError::Unknown);
 
         _testObj->resetFunctions();
     }
 }
 
-}  // namespace KDC
+void TestIo::testAccesDeniedOnLockedFiles() {
+#ifdef _WIN32 // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
+    LocalTemporaryDirectory tmpDir("TestIo-testAccesDeniedOnLockedFiles");
+    const SyncPath lockedFile = tmpDir.path() / "lockedFile.txt";
+    std::ofstream file(lockedFile);
+    CPPUNIT_ASSERT(file.is_open());
+    file.close();
+
+    // Lock the file
+    auto hFile = CreateFile(lockedFile.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    CPPUNIT_ASSERT(hFile != INVALID_HANDLE_VALUE);
+
+    // Try to delete the file
+    std::error_code ec;
+    std::filesystem::remove_all(lockedFile, ec);
+    const IoError ioError = IoHelper::stdError2ioError(ec);
+
+    // Unlock the file
+    CloseHandle(hFile);
+    CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
+#endif
+}
+
+} // namespace KDC

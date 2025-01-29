@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include <QtCore>
 #include <QtGui>
 #include <QStyle>
-#include <QApplication>
 #include <QSslSocket>
 
 namespace KDC {
@@ -111,7 +110,7 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
 
 void Theme::updateIconWithText(QIcon &icon, QString text) const {
     QList<QSize> sizes = icon.availableSizes();
-    for (QSize size : sizes) {
+    for (QSize size: sizes) {
         QPixmap px = icon.pixmap(size);
         QPainter painter(&px);
         int pictSize = size.width() / 2;
@@ -139,6 +138,22 @@ QString Theme::helpUrl() const {
 #else
     return QString();
 #endif
+}
+
+QString Theme::feedbackUrl(const Language language) const {
+    switch (language) {
+        case Language::French:
+            return FEEDBACK_FR_URL;
+        case Language::German:
+            return FEEDBACK_DE_URL;
+        case Language::Spanish:
+            return FEEDBACK_ES_URL;
+        case Language::Italian:
+            return FEEDBACK_IT_URL;
+        default:
+            break;
+    }
+    return FEEDBACK_EN_URL;
 }
 
 QString Theme::conflictHelpUrl() const {
@@ -171,24 +186,24 @@ QIcon Theme::syncStateIcon(KDC::SyncStatus status, bool sysTray, bool sysTrayMen
     QString statusIcon;
 
     switch (status) {
-        case KDC::SyncStatus::SyncStatusUndefined:
+        case KDC::SyncStatus::Undefined:
             // this can happen if no sync connections are configured.
             statusIcon = QLatin1String("state-information");
             break;
-        case KDC::SyncStatus::SyncStatusStarting:
-        case KDC::SyncStatus::SyncStatusRunning:
+        case KDC::SyncStatus::Starting:
+        case KDC::SyncStatus::Running:
             statusIcon = QLatin1String("state-sync");
             break;
-        case KDC::SyncStatus::SyncStatusIdle:
+        case KDC::SyncStatus::Idle:
             statusIcon = QLatin1String("state-ok");
             break;
-        case KDC::SyncStatus::SyncStatusPauseAsked:
-        case KDC::SyncStatus::SyncStatusPaused:
-        case KDC::SyncStatus::SyncStatusStopAsked:
-        case KDC::SyncStatus::SyncStatusStoped:
+        case KDC::SyncStatus::PauseAsked:
+        case KDC::SyncStatus::Paused:
+        case KDC::SyncStatus::StopAsked:
+        case KDC::SyncStatus::Stopped:
             statusIcon = QLatin1String("state-pause");
             break;
-        case KDC::SyncStatus::SyncStatusError:
+        case KDC::SyncStatus::Error:
             statusIcon = QLatin1String("state-error");
             break;
         default:
@@ -226,4 +241,4 @@ QString Theme::versionSwitchOutput() const {
     return helpText;
 }
 
-}  // namespace KDC
+} // namespace KDC

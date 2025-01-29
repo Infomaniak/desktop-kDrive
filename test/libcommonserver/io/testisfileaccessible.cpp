@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#define WIN32_LEAN_AND_MEAN
 
 #include "testio.h"
 
@@ -46,13 +44,13 @@ void TestIo::testIsFileAccessible() {
 
     Utility::msleep(10);
 
-    IoError ioError = IoErrorUnknown;
+    IoError ioError = IoError::Unknown;
     bool res = IoHelper::isFileAccessible(destPath, ioError);
     // IoHelper::isFileAccessible returns instantly `true` on MacOSX and Linux.
 #ifdef _WIN32
     CPPUNIT_ASSERT(!res);
 #else
-    (void)res;
+    (void) res;
 #endif
 
     // File copy not finished yet.
@@ -63,4 +61,4 @@ void TestIo::testIsFileAccessible() {
     CPPUNIT_ASSERT(res);
 }
 
-}  // namespace KDC
+} // namespace KDC

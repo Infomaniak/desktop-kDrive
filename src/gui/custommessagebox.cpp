@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,15 +37,9 @@ const std::string buttonTypeProperty = "buttonType";
 Q_LOGGING_CATEGORY(lcCustomMessageBox, "gui.custommessagebox", QtInfoMsg)
 
 CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, const QString &warningText, bool warning,
-                                   QMessageBox::StandardButtons buttons, QWidget *parent)
-    : CustomDialog(true, parent),
-      _icon(icon),
-      _warningLabel(nullptr),
-      _textLabel(nullptr),
-      _iconLabel(nullptr),
-      _buttonsHBox(nullptr),
-      _iconSize(QSize()),
-      _buttonCount(0) {
+                                   QMessageBox::StandardButtons buttons, QWidget *parent) :
+    CustomDialog(true, parent), _icon(icon), _warningLabel(nullptr), _textLabel(nullptr), _iconLabel(nullptr),
+    _buttonsHBox(nullptr), _iconSize(QSize()), _buttonCount(0) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     // Warning text
@@ -140,8 +134,7 @@ CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, 
 }
 
 CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, QMessageBox::StandardButtons buttons,
-                                   QWidget *parent)
-    : CustomMessageBox(icon, text, QString(), false, buttons, parent) {}
+                                   QWidget *parent) : CustomMessageBox(icon, text, QString(), false, buttons, parent) {}
 
 void CustomMessageBox::addButton(const QString &text, QMessageBox::StandardButton buttonType) {
     QPushButton *button = new QPushButton(this);
@@ -155,9 +148,9 @@ void CustomMessageBox::addButton(const QString &text, QMessageBox::StandardButto
 
 void CustomMessageBox::setDefaultButton(QMessageBox::StandardButton buttonType) {
     QList<QPushButton *> buttonList = findChildren<QPushButton *>();
-    for (QPushButton *button : buttonList) {
+    for (QPushButton *button: buttonList) {
         QMessageBox::StandardButton currentButtonType =
-            (QMessageBox::StandardButton)qvariant_cast<int>(button->property(buttonTypeProperty.c_str()));
+                (QMessageBox::StandardButton) qvariant_cast<int>(button->property(buttonTypeProperty.c_str()));
         if (currentButtonType == buttonType) {
             button->setObjectName("defaultbutton");
             button->setDefault(true);
@@ -196,9 +189,10 @@ void CustomMessageBox::setIcon() {
 
 QSize CustomMessageBox::sizeHint() const {
     return QSize(
-        contentsMargins().left() + contentsMargins().right() + 2 * boxHMargin + (_warningLabel ? _warningLabel->width() : 0),
-        contentsMargins().top() + contentsMargins().bottom() + messageVTMargin + 2 * messageVBMargin +
-            (_warningLabel ? _warningLabel->height() : 0) + (_textLabel ? _textLabel->height() : 0) + QPushButton().height());
+            contentsMargins().left() + contentsMargins().right() + 2 * boxHMargin + (_warningLabel ? _warningLabel->width() : 0),
+            contentsMargins().top() + contentsMargins().bottom() + messageVTMargin + 2 * messageVBMargin +
+                    (_warningLabel ? _warningLabel->height() : 0) + (_textLabel ? _textLabel->height() : 0) +
+                    QPushButton().height());
 }
 
 void CustomMessageBox::showEvent(QShowEvent *event) {
@@ -209,7 +203,7 @@ void CustomMessageBox::onButtonClicked(bool checked) {
     Q_UNUSED(checked)
 
     QMessageBox::StandardButton buttonType =
-        (QMessageBox::StandardButton)qvariant_cast<int>(sender()->property(buttonTypeProperty.c_str()));
+            (QMessageBox::StandardButton) qvariant_cast<int>(sender()->property(buttonTypeProperty.c_str()));
     done(buttonType);
 }
 
@@ -217,4 +211,4 @@ void CustomMessageBox::onExit() {
     reject();
 }
 
-}  // namespace KDC
+} // namespace KDC

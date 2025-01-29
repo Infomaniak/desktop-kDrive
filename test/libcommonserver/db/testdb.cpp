@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,10 +115,45 @@ void TestDb::testQueries() {
     CPPUNIT_ASSERT_EQUAL(tests2[1].textValue, test2.textValue);
 }
 
+void TestDb::testTableExist() {
+    bool exist = false;
+    CPPUNIT_ASSERT(_testObj->tableExists("test", exist) && exist);
+    CPPUNIT_ASSERT(_testObj->tableExists("not_existing_table_name", exist) && !exist);
+}
+
+void TestDb::testColumnExist() {
+    bool exist = false;
+    CPPUNIT_ASSERT(_testObj->columnExists("test", "intValue", exist) && exist);
+    CPPUNIT_ASSERT(_testObj->columnExists("test", "not_existing_column_name", exist) && !exist);
+    CPPUNIT_ASSERT(!_testObj->columnExists("not_existing_table_name", "intValue", exist));
+    CPPUNIT_ASSERT(!_testObj->columnExists("not_existing_table_name", "not_existing_column_name", exist));
+}
+
+void TestDb::testAddColumnIfMissing() {
+    const std::string requestId = "test_request_id";
+    std::string request = "ALTER TABLE test ADD COLUMN intValue INTEGER;";
+    bool columnAdded = false;
+    CPPUNIT_ASSERT(_testObj->addColumnIfMissing("test", "intValue", requestId, request, &columnAdded) && !columnAdded);
+
+    request = "ALTER TABLE test ADD COLUMN intValue2 INTEGER;";
+    CPPUNIT_ASSERT(_testObj->addColumnIfMissing("test", "intValue2", requestId, request, &columnAdded) && columnAdded);
+
+    request = "ALTER TABLE not_existing_table_name ADD COLUMN intValue3 INTEGER;";
+    CPPUNIT_ASSERT(!_testObj->addColumnIfMissing("not_existing_table_name", "intValue3", requestId, request, &columnAdded));
+}
+
+void TestDb::testAddIntegerColumnIfMissing() {
+    bool columnAdded = false;
+    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue", &columnAdded) && !columnAdded);
+    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue2", &columnAdded) && columnAdded);
+    CPPUNIT_ASSERT(!_testObj->addIntegerColumnIfMissing("not_existing_table_name", "intValue3", &columnAdded));
+}
+
 TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) : Db(dbPath) {
     if (!checkConnect("3.3.4")) {
         throw std::runtime_error("Cannot open DB!");
     }
+    init("3.3.4");
 }
 
 TestDb::MyTestDb::~MyTestDb() {
@@ -280,7 +315,7 @@ std::vector<TestDb::Test> TestDb::MyTestDb::selectTest() {
     return tests;
 }
 
-TestDb::Test::Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue)
-    : id(id), intValue(intValue), int64Value(int64Value), doubleValue(doubleValue), textValue(textValue) {}
+TestDb::Test::Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue) :
+    id(id), intValue(intValue), int64Value(int64Value), doubleValue(doubleValue), textValue(textValue) {}
 
-}  // namespace KDC
+} // namespace KDC

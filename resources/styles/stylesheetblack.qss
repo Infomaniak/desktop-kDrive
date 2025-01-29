@@ -3,6 +3,16 @@ QInputDialog QLabel
     qproperty-wordWrap:1;
 }
 
+QWidget#disclaimerWidget {
+    background-color: #1B1B1D;
+    border-radius: 5px;
+}
+
+QFrame#disclaimerWidget {
+    background-color: #1B1B1D;
+    border-radius: 5px;
+}
+
 /*******************/
 /* QProgressDialog */
 /*******************/
@@ -675,10 +685,10 @@ KDC--CustomDialog QWidget#debugDialogScrollable
 }
 
 /**************************/
-/* KDC--UpdateErrorDialog */
+/* KDC--UpdateDialog */
 /**************************/
 
-KDC--UpdateErrorDialog QPushButton#defaultsmallbutton
+KDC--UpdateDialog QPushButton#defaultsmallbutton
 {
     min-width: 100px;
 }

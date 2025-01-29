@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,14 +37,9 @@ static const int statusIconSize = 24;
 
 Q_LOGGING_CATEGORY(lcStatusBarWidget, "gui.statusbarwidget", QtInfoMsg)
 
-StatusBarWidget::StatusBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : HalfRoundRectWidget(parent),
-      _gui(gui),
-      _driveDbId(0),
-      _statusIconLabel(nullptr),
-      _statusLabel(nullptr),
-      _pauseButton(nullptr),
-      _resumeButton(nullptr) {
+StatusBarWidget::StatusBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    HalfRoundRectWidget(parent), _gui(gui), _driveDbId(0), _statusIconLabel(nullptr), _statusLabel(nullptr),
+    _pauseButton(nullptr), _resumeButton(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
     _statusIconLabel = new QLabel(this);
@@ -95,7 +90,7 @@ void StatusBarWidget::setStatus(KDC::GuiUtility::StatusInfo &statusInfo) {
     } else {
         _pauseButton->setDisabled(false);
         _resumeButton->setDisabled(false);
-        if (_statusInfo._status == KDC::SyncStatusPauseAsked || _statusInfo._status == KDC::SyncStatusStopAsked) {
+        if (_statusInfo._status == KDC::SyncStatus::PauseAsked || _statusInfo._status == KDC::SyncStatus::StopAsked) {
             _pauseButton->setDisabled(true);
             _resumeButton->setDisabled(true);
         }
@@ -103,7 +98,7 @@ void StatusBarWidget::setStatus(KDC::GuiUtility::StatusInfo &statusInfo) {
         _pauseButton->setVisible(false);
         _resumeButton->setVisible(false);
         if (_driveDbId) {
-            for (const auto &sync : _gui->syncInfoMap()) {
+            for (const auto &sync: _gui->syncInfoMap()) {
                 if (sync.second.driveDbId() != _driveDbId) {
                     continue;
                 }
@@ -148,9 +143,9 @@ void StatusBarWidget::showStatusMenu(bool pauseClicked) {
         createStatusActionMenu(menu, resetButtons, pauseClicked);
     } else {
         if (pauseClicked) {
-            emit pauseSync(ActionTargetDrive);
+            emit pauseSync(ActionTarget::Drive);
         } else {
-            emit resumeSync(ActionTargetDrive);
+            emit resumeSync(ActionTarget::Drive);
         }
         resetButtons = true;
     }
@@ -177,23 +172,23 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
         return;
     }
 
-    QString resumeMenukDriveSyncStr = tr("Resume kDrive \"%1\" synchronization");  // add (s)
+    QString resumeMenukDriveSyncStr = tr("Resume kDrive \"%1\" synchronization"); // add (s)
     QString resumeMenuSyncStr = tr("Resume synchronization");
     QString resumeMenuAllSyncStr = tr("Resume all kDrives synchronization");
     QString resumeMenuActionIcon = ":/client/resources/icons/actions/start.svg";
 
-    QString pauseMenukDriveSyncStr = tr("Pause kDrive \"%1\" synchronization");  // add (s)
+    QString pauseMenukDriveSyncStr = tr("Pause kDrive \"%1\" synchronization"); // add (s)
     QString pauseMenuSyncStr = tr("Pause synchronization");
     QString pauseMenuAllSyncStr = tr("Pause all kDrives synchronization");
     QString pauseMenuActionIcon = ":/client/resources/icons/actions/pause.svg";
 
-    QString menukDriveSyncStr = resumeMenukDriveSyncStr;  // add (s)
+    QString menukDriveSyncStr = resumeMenukDriveSyncStr; // add (s)
     QString menuSyncStr = resumeMenuSyncStr;
     QString menuAllSyncStr = resumeMenuAllSyncStr;
     QString menuActionIcon = resumeMenuActionIcon;
 
     if (pauseClicked) {
-        menukDriveSyncStr = pauseMenukDriveSyncStr;  // add (s)
+        menukDriveSyncStr = pauseMenukDriveSyncStr; // add (s)
         menuSyncStr = pauseMenuSyncStr;
         menuAllSyncStr = pauseMenuAllSyncStr;
         menuActionIcon = pauseMenuActionIcon;
@@ -201,7 +196,7 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
 
     QWidgetAction *widgetAction = new QWidgetAction(this);
     MenuItemWidget *actionMenuItemWidget =
-        new MenuItemWidget(menukDriveSyncStr.arg(_driveDbId ? driveInfoIt->second.name() : QString()));
+            new MenuItemWidget(menukDriveSyncStr.arg(_driveDbId ? driveInfoIt->second.name() : QString()));
     actionMenuItemWidget->setLeftIcon(menuActionIcon);
     widgetAction->setDefaultWidget(actionMenuItemWidget);
 
@@ -215,7 +210,7 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
     if (_gui->syncInfoMap().size() > 1) {
         // filter to get all
         std::map<int, SyncInfoClient> syncOfCurrentDrive;
-        for (auto const &syncInfoMapElt : _gui->syncInfoMap()) {
+        for (auto const &syncInfoMapElt: _gui->syncInfoMap()) {
             if (syncInfoMapElt.second.driveDbId() == _driveDbId) {
                 syncOfCurrentDrive.insert(syncInfoMapElt);
             }
@@ -237,14 +232,14 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
             syncActionGroup->setExclusive(true);
 
             QWidgetAction *syncAction;
-            for (auto const &syncInfoMapElt : syncOfCurrentDrive) {
-                if (pauseClicked &&
-                    (syncInfoMapElt.second.status() == SyncStatusStoped || syncInfoMapElt.second.status() == SyncStatusPaused)) {
+            for (auto const &syncInfoMapElt: syncOfCurrentDrive) {
+                if (pauseClicked && (syncInfoMapElt.second.status() == SyncStatus::Stopped ||
+                                     syncInfoMapElt.second.status() == SyncStatus::Paused)) {
                     continue;
                 }
 
-                if (!pauseClicked &&
-                    (syncInfoMapElt.second.status() != SyncStatusStoped && syncInfoMapElt.second.status() != SyncStatusPaused)) {
+                if (!pauseClicked && (syncInfoMapElt.second.status() != SyncStatus::Stopped &&
+                                      syncInfoMapElt.second.status() != SyncStatus::Paused)) {
                     continue;
                 }
 
@@ -279,8 +274,8 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
 
         menu->addSeparator();
         menu->addAction(allAction);
-        if (menu->exec(
-                QWidget::mapToGlobal(pauseClicked ? _pauseButton->geometry().center() : _resumeButton->geometry().center()))) {
+        if (menu->exec(QWidget::mapToGlobal(pauseClicked ? _pauseButton->geometry().center()
+                                                         : _resumeButton->geometry().center()))) {
             resetButtons = true;
         }
     }
@@ -291,29 +286,29 @@ void StatusBarWidget::showEvent(QShowEvent * /*event*/) {
 }
 
 void StatusBarWidget::onPauseSync() {
-    emit pauseSync(ActionTargetDrive);
+    emit pauseSync(ActionTarget::Drive);
 }
 
 void StatusBarWidget::onPauseFolderSync() {
     int folderId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
-    emit pauseSync(ActionTargetSync, folderId);
+    emit pauseSync(ActionTarget::Sync, folderId);
 }
 
 void StatusBarWidget::onPauseAllSync() {
-    emit pauseSync(ActionTargetAllDrives);
+    emit pauseSync(ActionTarget::AllDrives);
 }
 
 void StatusBarWidget::onResumeSync() {
-    emit resumeSync(ActionTargetDrive);
+    emit resumeSync(ActionTarget::Drive);
 }
 
 void StatusBarWidget::onResumeFolderSync() {
     int folderId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
-    emit resumeSync(ActionTargetSync, folderId);
+    emit resumeSync(ActionTarget::Sync, folderId);
 }
 
 void StatusBarWidget::onResumeAllSync() {
-    emit resumeSync(ActionTargetAllDrives);
+    emit resumeSync(ActionTarget::AllDrives);
 }
 
 void StatusBarWidget::retranslateUi() {
@@ -325,4 +320,4 @@ void StatusBarWidget::retranslateUi() {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

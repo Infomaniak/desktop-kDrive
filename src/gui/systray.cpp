@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,23 +44,23 @@ void Systray::showMessage(const QString &title, const QString &message, MessageI
     QString iconPathURI = SyncName2QStr(iconPath.native());
 
     if (QDBusInterface(NOTIFICATIONS_SERVICE, NOTIFICATIONS_PATH, NOTIFICATIONS_IFACE).isValid()) {
-        QList<QVariant> args = QList<QVariant>() << APPLICATION_NAME  // Application Name
-                                                 << quint32(0)        // Replaces ID
-                                                 << iconPathURI       // Notification Icon
-                                                 << title             // Summary
-                                                 << message           // Body
-                                                 << QStringList()     // Actions
-                                                 << QVariantMap()     // Hints
-                                                 << qint32(-1);       // Expiration Timeout
+        QList<QVariant> args = QList<QVariant>() << APPLICATION_NAME // Application Name
+                                                 << quint32(0) // Replaces ID
+                                                 << iconPathURI // Notification Icon
+                                                 << title // Summary
+                                                 << message // Body
+                                                 << QStringList() // Actions
+                                                 << QVariantMap() // Hints
+                                                 << qint32(-1); // Expiration Timeout
 
         QDBusMessage method =
-            QDBusMessage::createMethodCall(NOTIFICATIONS_SERVICE, NOTIFICATIONS_PATH, NOTIFICATIONS_IFACE, "Notify");
+                QDBusMessage::createMethodCall(NOTIFICATIONS_SERVICE, NOTIFICATIONS_PATH, NOTIFICATIONS_IFACE, "Notify");
         method.setArguments(args);
         QDBusConnection::sessionBus().asyncCall(method);
     } else
 #endif
 #ifdef Q_OS_OSX
-        if (isOsXNotificationEnabled()) {
+            if (isOsXNotificationEnabled()) {
         osxSendNotification(title, message);
     } else
 #endif
@@ -73,4 +73,4 @@ void Systray::setToolTip(const QString &tip) {
     QSystemTrayIcon::setToolTip(tip);
 }
 
-}  // namespace KDC
+} // namespace KDC

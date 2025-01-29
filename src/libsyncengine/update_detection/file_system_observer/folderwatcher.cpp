@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,20 +23,14 @@
 
 namespace KDC {
 
-FolderWatcher::FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPath &path)
-    : _logger(Log::instance()->getLogger()), _parent(parent), _folder(path) {}
-
-FolderWatcher::~FolderWatcher() {
-    if (_thread) {
-        stop();
-    }
-}
+FolderWatcher::FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
+    _logger(Log::instance()->getLogger()), _parent(parent), _folder(path) {}
 
 void FolderWatcher::start() {
     LOG_DEBUG(_logger, "Start Folder Watcher");
     _stop = false;
 
-    _thread = std::unique_ptr<std::thread>(new std::thread(executeFunc, this));
+    _thread = std::make_unique<std::thread>(executeFunc, this);
 
 #if defined(__APPLE__)
     _thread->detach();
@@ -52,16 +46,15 @@ void FolderWatcher::stop() {
 #if !defined(__APPLE__)
     if (_thread && _thread->joinable()) {
         _thread->join();
-        _thread.release();
     }
 #endif
 
     _thread = nullptr;
 }
 
-void *FolderWatcher::executeFunc(void *thisWorker) {
-    ((FolderWatcher *)thisWorker)->startWatching();
-    return nullptr;
+void FolderWatcher::executeFunc(void *thisWorker) {
+    ((FolderWatcher *) thisWorker)->startWatching();
+    log4cplus::threadCleanup();
 }
 
-}  // namespace KDC
+} // namespace KDC

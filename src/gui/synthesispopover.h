@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,11 +57,13 @@ class SynthesisPopover : public QDialog {
         static const std::map<NotificationsDisabled, QString> _notificationsDisabledMap;
         static const std::map<NotificationsDisabled, QString> _notificationsDisabledForPeriodMap;
 
-        explicit SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugMode, QWidget *parent = nullptr);
+        explicit SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent = nullptr);
         ~SynthesisPopover();
 
         void setPosition(const QRect &sysTrayIconRect);
         void forceRedraw();
+
+        void refreshLockedStatus();
 
     signals:
         void showParametersDialog(int syncDbId = 0, bool errorPage = false);
@@ -70,6 +72,7 @@ class SynthesisPopover : public QDialog {
         void disableNotifications(NotificationsDisabled type, QDateTime dateTime);
         void applyStyle();
         void crash();
+        void crashServer();
         void crashEnforce();
         void crashFatal();
         void cannotSelect(bool cannotSelect);
@@ -86,11 +89,11 @@ class SynthesisPopover : public QDialog {
         void onRefreshErrorList(int driveDbId);
         void onAppVersionLocked(bool currentVersionLocked);
         void onRefreshStatusNeeded();
-        void onUpdateAvailabalityChange();
+        void onUpdateAvailabilityChange(UpdateState updateState);
 
     private:
         std::shared_ptr<ClientGui> _gui;
-        bool _debugMode;
+        bool _debugCrash;
         QRect _sysTrayIconRect;
 
         QColor _backgroundMainColor;
@@ -105,7 +108,7 @@ class SynthesisPopover : public QDialog {
         QWidget *_defaultSynchronizedPageWidget{nullptr};
         QWidget *_mainWidget{nullptr};
         QWidget *_lockedAppVersionWidget{nullptr};
-        NotificationsDisabled _notificationsDisabled{NotificationsDisabledNever};
+        NotificationsDisabled _notificationsDisabled{NotificationsDisabled::Never};
         QDateTime _notificationsDisabledUntilDateTime;
         QLabel *_notImplementedLabel{nullptr};
         QLabel *_notImplementedLabel2{nullptr};
@@ -118,16 +121,15 @@ class SynthesisPopover : public QDialog {
         QLabel *_lockedAppupdateAppLabel;
         QPushButton *_lockedAppUpdateButton{nullptr};
         QLabel *_lockedAppLabel{nullptr};
-        QLabel *_lockedAppUpdateOptionalLabel{nullptr};
 #ifdef Q_OS_LINUX
-        QLabel *_lockedAppUpdateManualLabel {nullptr};
+        QLabel *_lockedAppUpdateManualLabel{nullptr};
 #endif
         void changeEvent(QEvent *event) override;
         void paintEvent(QPaintEvent *event) override;
         bool event(QEvent *event) override;
 
-        inline QColor backgroundMainColor() const { return _backgroundMainColor; }
-        inline void setBackgroundMainColor(const QColor &value) { _backgroundMainColor = value; }
+        [[nodiscard]] QColor backgroundMainColor() const { return _backgroundMainColor; }
+        void setBackgroundMainColor(const QColor &value) { _backgroundMainColor = value; }
 
         void initUI();
         QUrl syncUrl(int syncDbId, const QString &filePath);
@@ -146,19 +148,21 @@ class SynthesisPopover : public QDialog {
         void handleRemovedDrives();
 
     private slots:
-        void onOpenErrorsMenu(bool checked = false);
+        void onOpenErrorsMenu();
         void onDisplayErrors(int syncDbId);
-        void onOpenFolder(bool checked);
-        void onOpenWebview(bool checked);
-        void onOpenMiscellaneousMenu(bool checked);
-        void onOpenPreferences(bool checked = false);
-        void onNotificationActionTriggered(bool checked = false);
-        void onOpenDriveParameters(bool checked = false);
-        void onDisplayHelp(bool checked = false);
-        void onExit(bool checked = false);
-        void onCrash(bool checked = false);
-        void onCrashEnforce(bool checked = false);
-        void onCrashFatal(bool checked = false);
+        void onOpenFolder();
+        void onOpenWebview();
+        void onOpenMiscellaneousMenu();
+        void onOpenPreferences();
+        void onNotificationActionTriggered();
+        void onOpenDriveParameters();
+        void onDisplayHelp();
+        void onSendFeedback();
+        void onExit();
+        void onCrash();
+        void onCrashServer();
+        void onCrashEnforce();
+        void onCrashFatal();
         void onDriveSelected(int driveDbId);
         void onAddDrive();
         void onPauseSync(ActionTarget target, int syncDbId = 0);
@@ -173,8 +177,8 @@ class SynthesisPopover : public QDialog {
         void onSelectionChanged(bool isSelected);
         void onLinkActivated(const QString &link);
         void onUpdateSynchronizedListWidget();
-        void onStartInstaller() noexcept;
+        void onStartInstaller() const noexcept;
         void retranslateUi();
 };
 
-}  // namespace KDC
+} // namespace KDC

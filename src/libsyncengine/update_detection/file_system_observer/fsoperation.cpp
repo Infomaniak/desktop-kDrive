@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,15 +26,8 @@ UniqueId FSOperation::_nextId = 0;
 
 FSOperation::FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType, SyncTime createdAt /*= 0*/,
                          SyncTime lastModified /*= 0*/, int64_t size /*= 0*/, const SyncPath &path /*= ""*/,
-                         const SyncPath &destinationPath /*= ""*/)
-    : _id(_nextId++),
-      _operationType(operationType),
-      _nodeId(nodeId),
-      _objectType(objectType),
-      _createdAt(createdAt),
-      _lastModified(lastModified),
-      _size(size),
-      _path(Utility::normalizedSyncPath(path)),
-      _destinationPath(Utility::normalizedSyncPath(destinationPath)) {}
+                         const SyncPath &destinationPath /*= ""*/) :
+    _id(_nextId++), _operationType(operationType), _nodeId(nodeId), _objectType(objectType), _createdAt(createdAt),
+    _lastModified(lastModified), _size(size), _path(path), _destinationPath(destinationPath) {}
 
-}  // namespace KDC
+} // namespace KDC

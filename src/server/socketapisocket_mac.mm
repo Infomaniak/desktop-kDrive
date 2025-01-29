@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,9 @@
 #include "../extensions/MacOSX/kDriveFinderSync/Extension/xpcExtensionProtocol.h"
 #include "../extensions/MacOSX/kDriveFinderSync/LoginItemAgent/xpcLoginItemProtocol.h"
 
+#include "libcommon/utility/utility.h"
+
+#include <QCoreApplication>
 
 @interface LocalEnd : NSObject <XPCExtensionRemoteProtocol>
 
@@ -174,28 +177,36 @@ class SocketApiServerPrivate {
     // Setup our connection to the launch item's service
     // This will start the launch item if it isn't already running
     NSLog(@"[KD] Setup connection with login item agent");
-    NSBundle *appBundle = [NSBundle bundleForClass:[self class]];
-    NSString *loginItemAgentMachName = [appBundle objectForInfoDictionaryKey:@"LoginItemAgentMachName"];
-    if (!loginItemAgentMachName) {
-        NSLog(@"[KD] LoginItemAgentMachName undefined");
-        return;
-    }
+    NSString *loginItemAgentMachName = nil;
+    if (qApp) {
+        NSBundle *appBundle = [NSBundle bundleForClass:[self class]];
+        loginItemAgentMachName = [appBundle objectForInfoDictionaryKey:@"LoginItemAgentMachName"];
+        if (!loginItemAgentMachName) {
+            NSLog(@"[KD] LoginItemAgentMachName undefined");
+            return;
+        }
 
-    NSError *error = nil;
-    _loginItemAgentConnection = [[NSXPCConnection alloc] initWithLoginItemName:loginItemAgentMachName error:&error];
-    if (_loginItemAgentConnection == nil) {
-        NSLog(@"[KD] Failed to connect to login item agent: %@", [error description]);
-        return;
-    }
+        NSError *error = nil;
+        _loginItemAgentConnection = [[NSXPCConnection alloc]
+            initWithLoginItemName:loginItemAgentMachName
+                            error:&error];
+        if (_loginItemAgentConnection == nil) {
+            NSLog(@"[KD] Failed to connect to login item agent: %@", [error description]);
+            return;
+        }
+    } else {
+        // For testing
+        loginItemAgentMachName = [NSString
+            stringWithUTF8String:KDC::CommonUtility::loginItemAgentId().c_str()];
 
-    /*
-    // To debug with an existing login item agent
-    _loginItemAgentConnection = [[NSXPCConnection alloc] initWithMachServiceName:loginItemAgentMachName options:0];
-    if (_loginItemAgentConnection == nil) {
-        NSLog(@"[KD] Failed to connect to login item agent");
-        return;
+        _loginItemAgentConnection = [[NSXPCConnection alloc]
+            initWithMachServiceName:loginItemAgentMachName
+                            options:0];
+        if (_loginItemAgentConnection == nil) {
+            NSLog(@"[KD] Failed to connect to login item agent");
+            return;
+        }
     }
-    */
 
     // Set exported interface
     NSLog(@"[KD] Set exported interface for connection with ext");
@@ -337,7 +348,7 @@ SocketApiSocket::~SocketApiSocket() {}
 qint64 SocketApiSocket::readData(char *data, qint64 maxlen) {
     Q_D(SocketApiSocket);
     qint64 len = std::min(maxlen, static_cast<qint64>(d->_inBuffer.size()));
-    memcpy(data, d->_inBuffer.constData(), len);
+    memcpy(data, d->_inBuffer.constData(), static_cast<size_t>(len));
     d->_inBuffer.remove(0, len);
     return len;
 }
@@ -347,7 +358,9 @@ qint64 SocketApiSocket::writeData(const char *data, qint64 len) {
     if (d->_isRemoteDisconnected) return -1;
 
     @try {
-        [d->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<char *>(data) length:len freeWhenDone:NO]];
+        [d->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<char *>(data)
+                                                        length:static_cast<NSUInteger>(len)
+                                                  freeWhenDone:NO]];
         return len;
     } @catch (NSException *e) {
         d->disconnectRemote();

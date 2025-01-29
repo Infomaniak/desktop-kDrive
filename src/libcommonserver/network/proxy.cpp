@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,15 @@ std::shared_ptr<Proxy> Proxy::_instance = nullptr;
 
 std::shared_ptr<Proxy> Proxy::instance(const ProxyConfig &proxyConfig) {
     if (_instance == nullptr) {
-        if (proxyConfig.type() == ProxyTypeUndefined) {
-            throw std::runtime_error("Proxy must be initialized!");
-        } else {
+        if (proxyConfig.type() == ProxyType::Undefined) {
+            assert(false);
+            return nullptr;
+        }
+
+        try {
             _instance = std::shared_ptr<Proxy>(new Proxy(proxyConfig));
+        } catch (...) {
+            return nullptr;
         }
     }
 
@@ -38,4 +43,4 @@ std::shared_ptr<Proxy> Proxy::instance(const ProxyConfig &proxyConfig) {
 
 Proxy::Proxy(const ProxyConfig &proxyConfig) : _proxyConfig(proxyConfig) {}
 
-}  // namespace KDC
+} // namespace KDC

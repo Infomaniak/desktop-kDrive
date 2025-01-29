@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ struct IoHelperTests : public IoHelper {
 
 class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestIo);
-        CPPUNIT_TEST(testCheckSetAndGetRights);  // Keep this test before any tests that may use set/get rights functions
+        CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get rights functions
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testTempDirectoryPath);
@@ -54,6 +54,7 @@ class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateSymlink);
         CPPUNIT_TEST(testGetNodeId);
         CPPUNIT_TEST(testGetFileStat);
+        CPPUNIT_TEST(testGetRights);
         // CPPUNIT_TEST(testIsFileAccessible); // Temporary disabled: Infinite loop on Linux CI
         CPPUNIT_TEST(testFileChanged);
         CPPUNIT_TEST(testCheckIfIsHiddenFile);
@@ -64,12 +65,18 @@ class TestIo : public CppUnit::TestFixture {
 #endif
 
 #if defined(__APPLE__)
+        CPPUNIT_TEST(testRemoveXAttr);
         CPPUNIT_TEST(testCreateAlias);
 #endif
 #if defined(_WIN32)
         CPPUNIT_TEST(testCreateJunction);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
+        CPPUNIT_TEST(testAccesDeniedOnLockedFiles);
+        CPPUNIT_TEST(testOpenFileSuccess);
+        CPPUNIT_TEST(testOpenFileAccessDenied);
+        CPPUNIT_TEST(testOpenFileNonExisting);
+        CPPUNIT_TEST(testOpenLockedFileRemovedBeforeTimedOut);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -89,6 +96,7 @@ class TestIo : public CppUnit::TestFixture {
         void testCreateDirectory(void);
         void testCreateSymlink(void);
         void testGetFileStat(void);
+        void testGetRights(void);
         void testIsFileAccessible(void);
         void testFileChanged(void);
         void testCheckIfIsHiddenFile(void);
@@ -97,35 +105,39 @@ class TestIo : public CppUnit::TestFixture {
         void testSetXAttrValue(void);
 #endif
 #if defined(__APPLE__)
+        void testRemoveXAttr(void);
         void testCreateAlias(void);
-#endif
-#if defined(_WIN32)
+#elif defined(_WIN32)
         void testCreateJunction(void);
 #endif
-        void testCheckIfFileIsDehydrated(void);
-        void testCheckSetAndGetRights(void);
+        void testCheckIfFileIsDehydrated();
+        void testCheckSetAndGetRights();
 
     private:
-        void testGetItemTypeSimpleCases(void);
-        void testGetItemTypeEdgeCases(void);
-        void testGetItemTypeAllBranches(void);
+        void testGetItemTypeSimpleCases();
+        void testGetItemTypeEdgeCases();
+        void testGetItemTypeAllBranches();
 
-        void testGetFileSizeSimpleCases(void);
-        void testGetFileSizeAllBranches(void);
+        void testGetFileSizeSimpleCases();
+        void testGetFileSizeAllBranches();
 
-        void testCheckIfPathExistsSimpleCases(void);
-        void testCheckIfPathExistsAllBranches(void);
+        void testCheckIfPathExistsSimpleCases();
+        void testCheckIfPathExistWithDistinctEncodings();
 
-        void testCheckIfPathExistsWithSameNodeIdSimpleCases(void);
-        void testCheckIfPathExistsWithSameNodeIdAllBranches(void);
+        void testCheckIfPathExistsWithSameNodeIdSimpleCases();
 
-        void testCheckDirectoryIteratorNonExistingPath(void);
-        void testCheckDirectoryIteratorExistingPath(void);
-        void testCheckDirectoryIteratotNextAfterEndOfDir(void);
-        void testCheckDirectoryIteratorPermission(void);
-        void testCheckDirectoryRecursive(void);
-        void testCheckDirectoryIteratorUnexpectedDelete(void);
-        void testCheckDirectoryPermissionLost(void);
+        void testCheckDirectoryIteratorNonExistingPath();
+        void testCheckDirectoryIteratorExistingPath();
+        void testCheckDirectoryIteratotNextAfterEndOfDir();
+        void testCheckDirectoryIteratorPermission();
+        void testCheckDirectoryRecursive();
+        void testCheckDirectoryIteratorUnexpectedDelete();
+        void testCheckDirectoryPermissionLost();
+        void testAccesDeniedOnLockedFiles();
+        void testOpenFileSuccess();
+        void testOpenFileAccessDenied();
+        void testOpenFileNonExisting();
+        void testOpenLockedFileRemovedBeforeTimedOut();
 
     private:
         IoHelperTests *_testObj;
@@ -160,4 +172,4 @@ SyncPath makeVeryLonPath(const SyncPath &rootPath);
 SyncPath makeFileNameWithEmojis();
 
 
-}  // namespace KDC
+} // namespace KDC

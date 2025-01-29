@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,54 +18,48 @@
 
 #include "testexecutorworker.h"
 
-#include "vfs.h"
-
-#include <memory>
 #include "propagation/executor/executorworker.h"
-#include "libcommonserver/io/testio.h"
-#include "server/vfs/mac/litesyncextconnector.h"
 #include "io/filestat.h"
+#include "io/iohelper.h"
 #include "keychainmanager/keychainmanager.h"
 #include "network/proxy.h"
-#include "server/vfs/mac/vfs_mac.h"
-#include "utility/utility.h"
+#include "test_utility/testhelpers.h"
+
+#include <memory>
 
 namespace KDC {
 
 void TestExecutorWorker::setUp() {
-    const std::string accountIdStr = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string remotePathStr = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH");
-    const std::string apiTokenStr = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
+    const testhelpers::TestVariables testVariables;
 
     const std::string localPathStr = _localTempDir.path().string();
 
     // Insert api token into keystore
     std::string keychainKey("123");
     KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiTokenStr);
+    KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     std::filesystem::remove(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId(12321);
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr.c_str()));
+    int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
-    int driveId = atoi(driveIdStr.c_str());
+    int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    _sync = Sync(1, drive.dbId(), localPathStr, remotePathStr);
+    _sync = Sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
     ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
@@ -74,18 +68,30 @@ void TestExecutorWorker::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(_sync.dbId(), "3.4.0");
+    _syncPal = std::make_shared<SyncPal>(_sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal->createSharedObjects();
     _syncPal->createWorkers();
     _syncPal->syncDb()->setAutoDelete(true);
+
+    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
+}
+
+void TestExecutorWorker::tearDown() {
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
+    }
 }
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
     // Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
-    opPtr->setTargetSide(ReplicaSideRemote);
-    const auto node =
-        std::make_shared<Node>(1, ReplicaSideLocal, "test_file.txt", NodeTypeFile, "1234", defaultTime, defaultTime, 123);
+    opPtr->setTargetSide(ReplicaSide::Remote);
+    const auto node = std::make_shared<Node>(1, ReplicaSide::Local, "test_file.txt", NodeType::File, OperationType::None, "1234",
+                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                             _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
 
     // A hydrated placeholder.
@@ -100,7 +106,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
         });
 
         bool isDehydratedPlaceholder = false;
-        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
+        _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
         CPPUNIT_ASSERT(!isDehydratedPlaceholder);
     }
@@ -117,7 +123,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
         });
 
         bool isDehydratedPlaceholder = false;
-        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
+        _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
         CPPUNIT_ASSERT(isDehydratedPlaceholder);
     }
@@ -134,7 +140,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
         });
 
         bool isDehydratedPlaceholder = false;
-        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
+        _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
         CPPUNIT_ASSERT(!isDehydratedPlaceholder);
     }
@@ -151,11 +157,222 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
         });
 
         bool isDehydratedPlaceholder = false;
-        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
+        _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
         CPPUNIT_ASSERT(!isDehydratedPlaceholder);
     }
 #endif
+}
+
+SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
+                                                    const OperationType opType) {
+    auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
+                                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                       _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    auto correspondingNode = std::make_shared<Node>(
+            dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
+            testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+
+    SyncOpPtr op = std::make_shared<SyncOperation>();
+    op->setAffectedNode(node);
+    op->setCorrespondingNode(correspondingNode);
+    op->setType(opType);
+
+    return op;
+}
+
+
+SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeId dbNodeId, const SyncName &parentFilename,
+                                                                   const OperationType opType, const NodeType nodeType) {
+    auto parentNode =
+            std::make_shared<Node>(dbNodeId, ReplicaSide::Local, parentFilename, NodeType::Directory, OperationType::None,
+                                   "local_parent_id", testhelpers::defaultTime, testhelpers::defaultTime,
+                                   testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+
+    auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, Str("test_file.txt"), nodeType, OperationType::None,
+                                       "local_child_id", testhelpers::defaultTime, testhelpers::defaultTime,
+                                       testhelpers::defaultFileSize, parentNode);
+
+
+    auto correspondingNode =
+            std::make_shared<Node>(dbNodeId, ReplicaSide::Remote, Str("test_file.txt"), nodeType, OperationType::None,
+                                   "remote_child_id", testhelpers::defaultTime, testhelpers::defaultTime,
+                                   testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+
+    SyncOpPtr op = std::make_shared<SyncOperation>();
+    op->setAffectedNode(node);
+    op->setCorrespondingNode(correspondingNode);
+    op->setType(opType);
+
+    return op;
+}
+
+class ExecutorWorkerMock : public ExecutorWorker {
+    public:
+        ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
+            ExecutorWorker(syncPal, name, shortName) {};
+
+        using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
+        void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };
+
+    protected:
+        ArgsMap _correspondingNodeInOtherTree;
+        virtual std::shared_ptr<Node> correspondingNodeInOtherTree(const std::shared_ptr<Node> node) {
+            if (auto it = _correspondingNodeInOtherTree.find(node); it != _correspondingNodeInOtherTree.cend()) {
+                return it->second;
+            }
+
+            return nullptr;
+        };
+};
+
+void TestExecutorWorker::testIsValidDestination() {
+    // Always true if the target side is local or unknown
+    {
+        SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
+        CPPUNIT_ASSERT(_executorWorker->isValidDestination(op));
+    }
+    // Always true if the operation is not of type Create
+    {
+        SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(_executorWorker->isValidDestination(op));
+    }
+    // Always true if the item is created on the local replica at the root of the synchronisation folder
+    {
+        SyncOpPtr op = generateSyncOperation(1, Str("parent_dir"));
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(_executorWorker->isValidDestination(op));
+    }
+
+
+    const auto executorWorkerMock = std::shared_ptr<ExecutorWorkerMock>(new ExecutorWorkerMock(_syncPal, "Executor", "EXEC"));
+    // False if the item created on the local replica is not at the root of the synchronisation folder and has no
+    // corresponding parent node.
+    {
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), nullptr}});
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+
+    const auto root = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
+
+    // False if the item created on the local replica is not at the root of the synchronisation folder and has a
+    // corresponding parent node with no id.
+    {
+        const auto correspondingParentNode = std::make_shared<Node>(
+                666, ReplicaSide::Remote, Str("parent_dir"), NodeType::Directory, OperationType::None, std::nullopt,
+                testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
+
+
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), correspondingParentNode}});
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+
+    const auto correspondingParentCommonDocsNode = std::make_shared<Node>(
+            666, ReplicaSide::Remote, Utility::commonDocumentsFolderName(), NodeType::Directory, OperationType::None,
+            "common_docs_id", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
+
+    // False if the item created on the local replica is a file and has Common Documents as corresponding parent node.
+    {
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
+        op->setTargetSide(ReplicaSide::Remote);
+        executorWorkerMock->setCorrespondingNodeInOtherTree(
+                {{op->affectedNode()->parentNode(), correspondingParentCommonDocsNode}});
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+
+    // True if the item created on the local replica is a directory and has Common Documents as corresponding parent node.
+    {
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_dir"), OperationType::Create, NodeType::Directory);
+        op->setTargetSide(ReplicaSide::Remote);
+        executorWorkerMock->setCorrespondingNodeInOtherTree(
+                {{op->affectedNode()->parentNode(), correspondingParentCommonDocsNode}});
+        CPPUNIT_ASSERT(executorWorkerMock->isValidDestination(op));
+    }
+
+    const auto correspondingParentSharedNode = std::make_shared<Node>(
+            777, ReplicaSide::Remote, Utility::sharedFolderName(), NodeType::Directory, OperationType::None, "shared_id",
+            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
+
+    // False if the item is created on the local replica is a file and has Shared as corresponding parent node.
+    {
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
+        op->setTargetSide(ReplicaSide::Remote);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), correspondingParentSharedNode}});
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+
+    // False if the item created on the local replica is a directory and has Shared as corresponding parent node.
+    {
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_dir"), OperationType::Create, NodeType::Directory);
+        op->setTargetSide(ReplicaSide::Remote);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), correspondingParentSharedNode}});
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+}
+
+void TestExecutorWorker::testTerminatedJobsQueue() {
+    TerminatedJobsQueue terminatedJobsQueue;
+
+    int ended = 0; // count the number of ended threads
+
+    // Function objects to be used in the thread
+    std::function inserter = [&terminatedJobsQueue, &ended](const UniqueId id) {
+        terminatedJobsQueue.push(id);
+        ended++;
+    };
+    std::function popper = [&terminatedJobsQueue, &ended]() {
+        terminatedJobsQueue.pop();
+        ended++;
+    };
+    std::function fronter = [&terminatedJobsQueue, &ended]() {
+        [[maybe_unused]] auto foo = terminatedJobsQueue.front();
+        ended++;
+    };
+    std::function emptyChecker = [&terminatedJobsQueue, &ended]() {
+        [[maybe_unused]] auto foo = terminatedJobsQueue.empty();
+        ended++;
+    };
+
+    // Check that all functions are thread safe
+    terminatedJobsQueue.lock(); // Lock the queue for the current thread
+
+    std::thread t1(inserter, 1);
+    Utility::msleep(10); // Give enough time for the thread to terminate
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    std::thread t2(fronter);
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    std::thread t3(popper);
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    std::thread t4(emptyChecker);
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(0, ended);
+
+    terminatedJobsQueue.unlock(); // Unlock the queue for the current thread
+    Utility::msleep(10);
+    CPPUNIT_ASSERT_EQUAL(4, ended);
+
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join(); // Wait for all threads to finish.
+}
+
+void TestExecutorWorker::testLogCorrespondingNodeErrorMsg() {
+    SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
+    _executorWorker->logCorrespondingNodeErrorMsg(op);
+
+    op->setCorrespondingNode(nullptr);
+    _executorWorker->logCorrespondingNodeErrorMsg(op);
 }
 
 void TestExecutorWorker::testFixModificationDate() {
@@ -171,60 +388,162 @@ void TestExecutorWorker::testFixModificationDate() {
     }
 
     // Update DB
-    DbNode dbNode(0, _syncPal->syncDb()->rootNode().nodeId(), filename, filename, "lid", "rid", defaultTime, defaultTime,
-                  defaultTime,
-                  NodeTypeFile,
-                  defaultSize,
-                  "cs");
+    DbNode dbNode(0, _syncPal->syncDb()->rootNode().nodeId(), filename, filename, "lid", "rid", testhelpers::defaultTime,
+                  testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, "cs");
     DbNodeId dbNodeId;
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
 
-    // Generate sync operation
-    std::shared_ptr<Node> node =
-        std::make_shared<Node>(dbNodeId, ReplicaSideLocal, filename, NodeTypeFile, "lid", defaultTime, 12345, defaultSize);
-    std::shared_ptr<Node> correspondingNode =
-        std::make_shared<Node>(dbNodeId, ReplicaSideLocal, filename, NodeTypeFile,
-                                                                     "rid", defaultTime, defaultTime, defaultSize);
-    SyncOpPtr op = std::make_shared<SyncOperation>();
-    op->setAffectedNode(node);
-    op->setCorrespondingNode(correspondingNode);
-
-    CPPUNIT_ASSERT(_syncPal->_executorWorker->fixModificationDate(op, path));
+    SyncOpPtr op = generateSyncOperation(dbNodeId, filename);
+    CPPUNIT_ASSERT(_executorWorker->fixModificationDate(op, path));
 
     FileStat filestat;
-    IoError ioError = IoErrorUnknown;
+    IoError ioError = IoError::Unknown;
     IoHelper::getFileStat(path, &filestat, ioError);
 
-    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
-    CPPUNIT_ASSERT_EQUAL(defaultTime, filestat.modtime);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, filestat.modtime);
 }
 
 void TestExecutorWorker::testAffectedUpdateTree() {
     // Normal cases
     auto syncOp = std::make_shared<SyncOperation>();
-    syncOp->setTargetSide(ReplicaSideLocal);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _syncPal->_executorWorker->affectedUpdateTree(syncOp)->side());
+    syncOp->setTargetSide(ReplicaSide::Local);
 
-    syncOp->setTargetSide(ReplicaSideRemote);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _syncPal->_executorWorker->affectedUpdateTree(syncOp)->side());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, _executorWorker->affectedUpdateTree(syncOp)->side());
 
-    // ReplicaSideUnknown case
-    syncOp->setTargetSide(ReplicaSideUnknown);
-    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _syncPal->_executorWorker->affectedUpdateTree(syncOp));
+    syncOp->setTargetSide(ReplicaSide::Remote);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, _executorWorker->affectedUpdateTree(syncOp)->side());
+
+    // ReplicaSide::Unknown case
+    syncOp->setTargetSide(ReplicaSide::Unknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _executorWorker->affectedUpdateTree(syncOp));
 }
 
 void TestExecutorWorker::testTargetUpdateTree() {
     // Normal cases
     auto syncOp = std::make_shared<SyncOperation>();
-    syncOp->setTargetSide(ReplicaSideLocal);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _syncPal->_executorWorker->targetUpdateTree(syncOp)->side());
+    syncOp->setTargetSide(ReplicaSide::Local);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, _executorWorker->targetUpdateTree(syncOp)->side());
 
-    syncOp->setTargetSide(ReplicaSideRemote);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _syncPal->_executorWorker->targetUpdateTree(syncOp)->side());
+    syncOp->setTargetSide(ReplicaSide::Remote);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, _executorWorker->targetUpdateTree(syncOp)->side());
 
-    // ReplicaSideUnknown case
-    syncOp->setTargetSide(ReplicaSideUnknown);
-    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _syncPal->_executorWorker->targetUpdateTree(syncOp));
+    // ReplicaSide::Unknown case
+    syncOp->setTargetSide(ReplicaSide::Unknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _executorWorker->targetUpdateTree(syncOp));
 }
-}  // namespace KDC
+
+void TestExecutorWorker::testRemoveDependentOps() {
+    {
+        // Nested create.
+        _syncPal->_syncOps->clear();
+
+        auto op1Create = std::make_shared<SyncOperation>(); // a/ is created.
+        auto op2Create = std::make_shared<SyncOperation>(); // a/b/ is created.
+        auto op3Create = std::make_shared<SyncOperation>(); // a/b/c/ is created.
+        auto affectedNode1 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an1"), NodeType::Unknown,
+                                                    OperationType::None, "idAn1", 1234, 1234, 1, nullptr);
+        auto affectedNode2 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an2"), NodeType::Unknown,
+                                                    OperationType::None, "idAn2", 1234, 1234, 1, nullptr);
+        auto affectedNode3 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an3"), NodeType::Unknown,
+                                                    OperationType::None, "idAn3", 1234, 1234, 1, nullptr);
+        auto affectedNode4 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an4"), NodeType::Unknown,
+                                                    OperationType::None, "idAn4", 1234, 1234, 1, nullptr);
+
+        affectedNode4->setParentNode(affectedNode3);
+        affectedNode3->setParentNode(affectedNode2);
+        affectedNode2->setParentNode(affectedNode1);
+
+        op1Create->setAffectedNode(affectedNode2);
+        op2Create->setAffectedNode(affectedNode3);
+        op3Create->setAffectedNode(affectedNode4);
+
+        _syncPal->_syncOps->pushOp(op1Create);
+        _syncPal->_syncOps->pushOp(op2Create);
+        _syncPal->_syncOps->pushOp(op3Create);
+
+        _executorWorker->_opList = _syncPal->_syncOps->opSortedList();
+        _executorWorker->removeDependentOps(op1Create); // op1Create failed, we should remove op2Create and op3Create.
+
+        CPPUNIT_ASSERT(opsExist(op1Create));
+        CPPUNIT_ASSERT(!opsExist(op2Create));
+        CPPUNIT_ASSERT(!opsExist(op3Create));
+    }
+
+    {
+        // Nested Move.
+        _syncPal->_syncOps->clear();
+
+        auto op1Create = std::make_shared<SyncOperation>(); // a/ is created.
+        auto op2Move = std::make_shared<SyncOperation>(); // b/ is moved to a/b/.
+
+        auto affectedNode1 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an1"), NodeType::Unknown,
+                                                    OperationType::None, "idAn1", 1234, 1234, 1, nullptr); // a/
+        auto affectedNode2 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an2"), NodeType::Unknown,
+                                                    OperationType::None, "idAn2", 1234, 1234, 1, nullptr); // a/b
+
+        auto correspondingNode2 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn2"), NodeType::Unknown,
+                                                         OperationType::None, "idCn2", 1234, 1234, 1, nullptr); // b/
+
+        affectedNode2->setParentNode(affectedNode1);
+
+        op1Create->setAffectedNode(affectedNode1);
+        op2Move->setAffectedNode(affectedNode2);
+        op2Move->setCorrespondingNode(correspondingNode2);
+
+        _syncPal->_syncOps->pushOp(op1Create);
+        _syncPal->_syncOps->pushOp(op2Move);
+
+        _executorWorker->_opList = _syncPal->_syncOps->opSortedList();
+        _executorWorker->removeDependentOps(op1Create); // op2Move failed, we should remove op2Edit.
+        CPPUNIT_ASSERT(opsExist(op1Create));
+        CPPUNIT_ASSERT(!opsExist(op2Move));
+    }
+
+    {
+        // Double Move.
+        _syncPal->_syncOps->clear();
+
+        auto op1Move = std::make_shared<SyncOperation>(); // a is moved to b.
+        auto op2Move = std::make_shared<SyncOperation>(); // y is moved to b/y.
+
+        auto affectedNode1 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an1"), NodeType::Unknown,
+                                                    OperationType::None, "idAn1", 1234, 1234, 1, nullptr); // b
+        auto affectedNode2 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an2"), NodeType::Unknown,
+                                                    OperationType::None, "idAn2", 1234, 1234, 1, nullptr); // b/y
+
+        auto correspondingNode1 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn1"), NodeType::Unknown,
+                                                         OperationType::None, "idCn1", 1234, 1234, 1, nullptr); // a
+        auto correspondingNode2 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn2"), NodeType::Unknown,
+                                                         OperationType::None, "idCn2", 1234, 1234, 1, nullptr); // y
+
+        affectedNode2->setParentNode(affectedNode1);
+
+        op1Move->setAffectedNode(affectedNode1);
+        op1Move->setCorrespondingNode(correspondingNode1);
+
+        op2Move->setAffectedNode(affectedNode2);
+        op2Move->setCorrespondingNode(correspondingNode2);
+
+        _syncPal->_syncOps->pushOp(op1Move);
+        _syncPal->_syncOps->pushOp(op2Move);
+
+        _executorWorker->_opList = _syncPal->_syncOps->opSortedList();
+        _executorWorker->removeDependentOps(op1Move); // op2Move failed, we should remove op2Edit.
+        CPPUNIT_ASSERT(opsExist(op1Move));
+        CPPUNIT_ASSERT(!opsExist(op2Move));
+    }
+}
+
+bool TestExecutorWorker::opsExist(SyncOpPtr op) {
+    for (const auto &opId: _executorWorker->_opList) {
+        if (_syncPal->_syncOps->getOp(opId) == op) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+} // namespace KDC

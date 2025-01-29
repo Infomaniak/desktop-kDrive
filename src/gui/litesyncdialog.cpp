@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,26 +45,19 @@ static const int filesTableBoxVMargin = 20;
 
 static const int rowHeight = 38;
 
-static QVector<int> tableColumnWidth = QVector<int>() << 255  // tableColumn::AppId
-                                                      << 190  // tableColumn::AppName
-                                                      << 35;  // tableColumn::Action
+static QVector<int> tableColumnWidth = QVector<int>() << 255 // tableColumn::AppId
+                                                      << 190 // tableColumn::AppName
+                                                      << 35; // tableColumn::Action
 
 static const int viewIconPathRole = Qt::UserRole;
 static const int readOnlyRole = Qt::UserRole + 1;
 
 Q_LOGGING_CATEGORY(lcLiteSyncDialog, "gui.litesyncdialog", QtInfoMsg)
 
-LiteSyncDialog::LiteSyncDialog(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : CustomDialog(true, parent),
-      _gui(gui),
-      _appsTableModel(nullptr),
-      _appsTableView(nullptr),
-      _saveButton(nullptr),
-      _actionIconColor(QColor()),
-      _actionIconSize(QSize()),
-      _needToSave(false),
-      _defaultAppList(QList<ExclusionAppInfo>()),
-      _userAppList(QList<ExclusionAppInfo>()) {
+LiteSyncDialog::LiteSyncDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    CustomDialog(true, parent), _gui(gui), _appsTableModel(nullptr), _appsTableView(nullptr), _saveButton(nullptr),
+    _actionIconColor(QColor()), _actionIconSize(QSize()), _needToSave(false), _defaultAppList(QList<ExclusionAppInfo>()),
+    _userAppList(QList<ExclusionAppInfo>()) {
     initUI();
     updateUI();
 }
@@ -87,8 +80,8 @@ void LiteSyncDialog::initUI() {
     descriptionLabel->setObjectName("descriptionLabel");
     descriptionLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     descriptionLabel->setText(
-        tr("Some apps (backup, anti-virus...) access your files, which leads to their download when they are \"online\". Add "
-           "them in the list below to avoid this behaviour."));
+            tr("Some apps (backup, anti-virus...) access your files, which leads to their download when they are \"online\". Add "
+               "them in the list below to avoid this behaviour."));
     descriptionLabel->setWordWrap(true);
     mainLayout->addWidget(descriptionLabel);
     mainLayout->addSpacing(descriptionBoxVMargin);
@@ -172,14 +165,14 @@ void LiteSyncDialog::updateUI() {
 #ifdef Q_OS_MAC
     ExitCode exitCode;
     exitCode = GuiRequests::getExclusionAppList(true, _defaultAppList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcLiteSyncDialog()) << "Error in Requests::getExclusionAppList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcLiteSyncDialog()) << "Error in Requests::getExclusionAppList : " << toInt(exitCode);
         return;
     }
 
     exitCode = GuiRequests::getExclusionAppList(false, _userAppList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcLiteSyncDialog()) << "Error in Requests::getExclusionAppList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcLiteSyncDialog()) << "Error in Requests::getExclusionAppList : " << toInt(exitCode);
         return;
     }
 #endif
@@ -264,12 +257,12 @@ void LiteSyncDialog::loadAppTable(QString scrollToAppId) {
     _appsTableModel->clear();
 
     // Default apps
-    for (const auto &app : _defaultAppList) {
+    for (const auto &app: _defaultAppList) {
         addApp(app, true, row, scrollToAppId, scrollToRow);
     }
 
     // User apps
-    for (const auto &app : _userAppList) {
+    for (const auto &app: _userAppList) {
         addApp(app, false, row, scrollToAppId, scrollToRow);
     }
 
@@ -363,8 +356,8 @@ void LiteSyncDialog::onSaveButtonTriggered(bool checked) {
 #ifdef Q_OS_MAC
     ExitCode exitCode;
     exitCode = GuiRequests::setExclusionAppList(false, _userAppList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcLiteSyncDialog()) << "Error in Requests::setExclusionAppList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcLiteSyncDialog()) << "Error in Requests::setExclusionAppList : " << toInt(exitCode);
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
         return;
@@ -374,4 +367,4 @@ void LiteSyncDialog::onSaveButtonTriggered(bool checked) {
     accept();
 }
 
-}  // namespace KDC
+} // namespace KDC

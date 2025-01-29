@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ struct GuiRequests {
         static ExitCode setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<QString> &syncIdSet);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
-        static ExitCode getNodePath(int syncDbId, QString nodeId, QString &path);
+        static ExitCode getNodePath(int syncDbId, const QString &nodeId, QString &path);
         static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getNameExcluded(const QString &name, bool excluded);
@@ -71,7 +71,7 @@ struct GuiRequests {
         static ExitCode getFetchingAppList(QHash<QString, QString> &appTable);
 #endif
         static ExitCode getErrorInfoList(ErrorLevel level, int syncDbId, int limit, QList<ErrorInfo> &list);
-        static ExitCode getConflictList(int driveDbId, QList<ConflictType> filter, QList<ErrorInfo> &list);
+        static ExitCode getConflictList(int driveDbId, const QList<ConflictType> &filter, QList<ErrorInfo> &list);
         static ExitCode deleteErrorsServer();
         static ExitCode deleteErrorsForSync(int syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
@@ -90,12 +90,12 @@ struct GuiRequests {
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, int &userDbId, QString &error,
                                      QString &errorDescr);
         static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);
-        static ExitCode addSync(int userDbId, int accountId, int driveId, const QString localFolderPath,
+        static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                QSet<QString> blackList, QSet<QString> whiteList, int &syncDbId);
+                                const QSet<QString> &blackList, const QSet<QString> &whiteList, int &syncDbId);
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                const QString &serverFolderNodeId, bool liteSync, QSet<QString> blackList,
-                                QSet<QString> whiteList, int &syncDbId);
+                                const QString &serverFolderNodeId, bool liteSync, const QSet<QString> &blackList,
+                                const QSet<QString> &whiteList, int &syncDbId);
         static ExitCode startSyncs(int userDbId);
         static ExitCode getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
         static ExitCode getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
@@ -107,17 +107,17 @@ struct GuiRequests {
         static ExitCode getFolderSize(int userDbId, int driveId, const QString &nodeId);
 
         // C/S requests (others)
-        static ExitCode syncStart(int syncDbId);  // !!! Use COMM_AVERAGE_TIMEOUT !!!
-        static ExitCode syncStop(int syncDbId);   // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        static ExitCode syncStart(int syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        static ExitCode syncStop(int syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
         static ExitCode activateLoadInfo(bool activate);
         static ExitCode askForStatus();
-        static ExitCode checkCommStatus();           // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteUser(int userDbId);    // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteDrive(int driveDbId);  // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteSync(int syncDbId);    // Asynchronous because it can be time consuming
+        static ExitCode checkCommStatus(); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteSync(int syncDbId); // Asynchronous because it can be time consuming
         static ExitCode propagateSyncListChange(int syncDbId, bool restartSync);
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);
-        static ExitCode propagateExcludeListChange();  // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode propagateExcludeListChange(); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);
         static ExitCode setLaunchOnStartup(bool enabled);
@@ -126,5 +126,13 @@ struct GuiRequests {
         static ExitCode getLogDirEstimatedSize(uint64_t &size);
         static ExitCode sendLogToSupport(bool sendArchivedLogs);
         static ExitCode cancelLogUploadToSupport();
+        static ExitCode crash();
+
+        static ExitCode changeDistributionChannel(DistributionChannel channel);
+        static ExitCode versionInfo(VersionInfo &versionInfo, DistributionChannel channel = DistributionChannel::Unknown);
+        static ExitCode updateState(UpdateState &state);
+        static ExitCode startInstaller();
+        static ExitCode skipUpdate(const std::string &version);
+        static ExitCode reportClientDisplayed();
 };
-}  // namespace KDC
+} // namespace KDC

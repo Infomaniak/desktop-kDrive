@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,12 +31,9 @@ static const int boxHSpacing = 10;
 static const int titleBoxVMargin = 25;
 static const int startingManagerValue = 50;
 
-ResourcesManagerDialog::ResourcesManagerDialog(QWidget *parent)
-    : CustomDialog(true, parent),
-      _slideBarResources(nullptr),
-      _saveButton(nullptr),
-      _sliderValueLabel(nullptr),
-      _needToSave(false) {
+ResourcesManagerDialog::ResourcesManagerDialog(QWidget *parent) :
+    CustomDialog(true, parent), _slideBarResources(nullptr), _saveButton(nullptr), _sliderValueLabel(nullptr),
+    _needToSave(false) {
     initUI();
 
     ClientGui::restoreGeometry(this);
@@ -155,4 +152,4 @@ void ResourcesManagerDialog::updateLabel(int sliderValue) {
     _sliderValueLabel->setText(QString::number(sliderValue) + " %");
 }
 
-}  // namespace KDC
+} // namespace KDC

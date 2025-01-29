@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,8 +42,8 @@ static const QString dateFormat = "d MMM yyyy - HH:mm";
 
 Q_LOGGING_CATEGORY(lcFileErrorItemWidget, "gui.fileerroritemwidget", QtInfoMsg)
 
-FileErrorItemWidget::FileErrorItemWidget(const SynchronizedItem &item, const DriveInfo &driveInfo, QWidget *parent)
-    : GenericErrorItemWidget(parent), _item(item), _fileNameLabel(nullptr) {
+FileErrorItemWidget::FileErrorItemWidget(const SynchronizedItem &item, const DriveInfo &driveInfo, QWidget *parent) :
+    GenericErrorItemWidget(parent), _item(item), _fileNameLabel(nullptr) {
     QHBoxLayout *mainLayout = qobject_cast<QHBoxLayout *>(layout());
 
     // Left box
@@ -89,7 +89,7 @@ FileErrorItemWidget::FileErrorItemWidget(const SynchronizedItem &item, const Dri
 
     QLabel *driveIconLabel = new QLabel(this);
     driveIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfo.color())
-                                  .pixmap(statusIconSize));
+                                      .pixmap(statusIconSize));
     hBoxFilePath->addWidget(driveIconLabel);
 
     _pathLabel = new QLabel(this);
@@ -135,4 +135,4 @@ void FileErrorItemWidget::onLinkActivated(const QString &link) {
     emit openFolder(_item.fullFilePath());
 }
 
-}  // namespace KDC
+} // namespace KDC

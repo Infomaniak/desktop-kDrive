@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,22 +38,11 @@ static const int folderTreeBoxVMargin = 20;
 Q_LOGGING_CATEGORY(lcServerBaseFolderDialog, "gui.serverbasefolderdialog", QtInfoMsg)
 
 ServerBaseFolderDialog::ServerBaseFolderDialog(std::shared_ptr<ClientGui> gui, int driveDbId, const QString &localFolderName,
-                                               const QString &localFolderPath, QWidget *parent)
-    : CustomDialog(true, parent),
-      _gui(gui),
-      _driveDbId(driveDbId),
-      _localFolderName(localFolderName),
-      _localFolderPath(localFolderPath),
-      _infoIconLabel(nullptr),
-      _availableSpaceTextLabel(nullptr),
-      _folderTreeItemWidget(nullptr),
-      _backButton(nullptr),
-      _continueButton(nullptr),
-      _infoIconColor(QColor()),
-      _infoIconSize(QSize()),
-      _okToContinue(false),
-      _serverFolderBasePath(QString()),
-      _serverFolderList(QList<QPair<QString, QString>>()) {
+                                               const QString &localFolderPath, QWidget *parent) :
+    CustomDialog(true, parent), _gui(gui), _driveDbId(driveDbId), _localFolderName(localFolderName),
+    _localFolderPath(localFolderPath), _infoIconLabel(nullptr), _availableSpaceTextLabel(nullptr), _folderTreeItemWidget(nullptr),
+    _backButton(nullptr), _continueButton(nullptr), _infoIconColor(QColor()), _infoIconSize(QSize()), _okToContinue(false),
+    _serverFolderBasePath(QString()), _serverFolderList(QList<QPair<QString, QString>>()) {
     initUI();
     updateUI();
 }
@@ -65,8 +54,8 @@ void ServerBaseFolderDialog::setButtonIcon(const QColor &value) {
 void ServerBaseFolderDialog::setInfoIcon() {
     if (_infoIconLabel && _infoIconSize != QSize() && _infoIconColor != QColor()) {
         _infoIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/information.svg", _infoIconColor)
-                .pixmap(_infoIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/information.svg", _infoIconColor)
+                        .pixmap(_infoIconSize));
     }
 }
 
@@ -86,7 +75,7 @@ void ServerBaseFolderDialog::initUI() {
     descriptionLabel->setObjectName("descriptionLabel");
     descriptionLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     descriptionLabel->setText(
-        tr("The content of the selected folder will be synchronized into the <b>%1</b> folder.").arg(_localFolderName));
+            tr("The content of the selected folder will be synchronized into the <b>%1</b> folder.").arg(_localFolderName));
     mainLayout->addWidget(descriptionLabel);
     mainLayout->addSpacing(descriptionBoxVMargin);
 
@@ -146,8 +135,8 @@ void ServerBaseFolderDialog::initUI() {
 void ServerBaseFolderDialog::updateUI() {
     // Available space
     qint64 freeBytes = KDC::CommonUtility::freeDiskSpace(_localFolderPath);
-    _availableSpaceTextLabel->setText(
-        tr("Space available on your computer for the current folder : %1").arg(KDC::CommonGuiUtility::octetsToString(freeBytes)));
+    _availableSpaceTextLabel->setText(tr("Space available on your computer for the current folder : %1")
+                                              .arg(KDC::CommonGuiUtility::octetsToString(freeBytes)));
 
     _folderTreeItemWidget->loadSubFolders();
 }
@@ -177,7 +166,7 @@ void ServerBaseFolderDialog::onContinueButtonTriggered(bool checked) {
         folderPath += dirSeparator + _serverFolderList[i].first;
     }
 
-    for (const auto &syncInfoMapIt : _gui->syncInfoMap()) {
+    for (const auto &syncInfoMapIt: _gui->syncInfoMap()) {
         if (syncInfoMapIt.second.driveDbId() != _driveDbId) {
             continue;
         }
@@ -191,7 +180,7 @@ void ServerBaseFolderDialog::onContinueButtonTriggered(bool checked) {
 
     if (warnStrings.size() > 0) {
         QString text = QString();
-        for (const QString &warnString : warnStrings) {
+        for (const QString &warnString: warnStrings) {
             if (!text.isEmpty()) {
                 text += "<br>";
             }
@@ -236,4 +225,4 @@ void ServerBaseFolderDialog::onNoFolderSelected() {
     setOkToContinue(false);
 }
 
-}  // namespace KDC
+} // namespace KDC

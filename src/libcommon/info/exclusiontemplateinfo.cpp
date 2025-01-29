@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,14 +20,14 @@
 
 namespace KDC {
 
-ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def, bool deleted)
-    : _templ(templ), _warning(warning), _def(def), _deleted(deleted) {}
+ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def, bool deleted) :
+    _templ(templ), _warning(warning), _def(def), _deleted(deleted) {}
 
 ExclusionTemplateInfo::ExclusionTemplateInfo() : _templ(QString()), _warning(false), _def(false), _deleted(false) {}
 
 QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo) {
     in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def >>
-        exclusionTemplateInfo._deleted;
+            exclusionTemplateInfo._deleted;
     return in;
 }
 
@@ -38,9 +38,9 @@ QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusion
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<ExclusionTemplateInfo> &list) {
-    int count = list.size();
+    int count = static_cast<int>(list.size());
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < count; i++) {
         ExclusionTemplateInfo exclusionTemplateInfo = list[i];
         out << exclusionTemplateInfo;
     }
@@ -48,7 +48,7 @@ QDataStream &operator<<(QDataStream &out, const QList<ExclusionTemplateInfo> &li
 }
 
 QDataStream &operator>>(QDataStream &in, QList<ExclusionTemplateInfo> &list) {
-    int count = 0;
+    auto count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
         ExclusionTemplateInfo *exclusionTemplateInfo = new ExclusionTemplateInfo();
@@ -58,4 +58,4 @@ QDataStream &operator>>(QDataStream &in, QList<ExclusionTemplateInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

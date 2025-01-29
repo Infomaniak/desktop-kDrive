@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ QString longWinPath(const QString &inpath);
  *
  * It behaves as QFile::rename() but handles .lnk files correctly on Windows.
  */
-bool rename(const QString &originFileName, const QString &destinationFileName, QString *errorString = NULL);
+bool rename(const QString &originFileName, const QString &destinationFileName, QString *errorString = nullptr);
 
 /**
  * Removes a file.
@@ -127,7 +127,7 @@ bool isLnkFile(const QString &filename);
  *  - A conversion is only done if the path len is larger than 245. Otherwise,
  *    the Windows API functions work with the normal "unixoid" representation too.
  */
-template <typename S>
+template<typename S>
 S pathtoUNC(const S &str) {
     int len = 0;
     S longStr;
@@ -142,7 +142,7 @@ S pathtoUNC(const S &str) {
             longStr.append("\\\\?");
         }
     } else {
-        longStr.append("\\\\?\\");  // prepend string by this four magic chars.
+        longStr.append("\\\\?\\"); // prepend string by this four magic chars.
     }
     longStr += str;
 
@@ -155,7 +155,7 @@ S pathtoUNC(const S &str) {
     }
     return longStr;
 }
-}  // namespace FileSystem
+} // namespace FileSystem
 
 /** @} */
-}  // namespace KDC
+} // namespace KDC

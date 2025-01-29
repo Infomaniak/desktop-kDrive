@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,6 +75,8 @@ class ParametersInfo {
         inline const QMap<QString, QByteArray> &dialogGeometry() const { return _dialogGeometry; }
         inline int maxAllowedCpu() const { return _maxAllowedCpu; }
         inline void setMaxAllowedCpu(int maxAllowedCpu) { _maxAllowedCpu = maxAllowedCpu; }
+        [[nodiscard]] DistributionChannel distributionChannel() const { return _distributionChannel; }
+        void setDistributionChannel(const DistributionChannel channel) { _distributionChannel = channel; }
 
         friend QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo);
         friend QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo);
@@ -97,6 +99,7 @@ class ParametersInfo {
         bool _showShortcuts;
         QMap<QString, QByteArray> _dialogGeometry;
         int _maxAllowedCpu;
+        DistributionChannel _distributionChannel{DistributionChannel::Prod};
 };
 
-}  // namespace KDC
+} // namespace KDC

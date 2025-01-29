@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
-}  // namespace KDC
+} // namespace KDC
 
 int main(int, char **) {
     return runTestSuite("_kDriveTestCommonServer.log");

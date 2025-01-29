@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,43 +30,42 @@
 
 namespace KDC {
 
-bool isLocked(const SyncPath &path);
-
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
-    return (error == IoErrorNoSuchFileOrDirectory) || (error == IoErrorAttrNotFound) || (error == IoErrorAccessDenied);
+    return (error == IoError::NoSuchFileOrDirectory) || (error == IoError::AttrNotFound) || (error == IoError::AccessDenied);
 }
-}  // namespace
+} // namespace
 
-bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, std::string &value, IoError &ioError) noexcept {
+bool IoHelper::getXAttrValue(const SyncPath &path, const std::string_view &attrName, std::string &value,
+                             IoError &ioError) noexcept {
     value = "";
     ItemType itemType;
     if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
         ioError = itemType.ioError;
         return false;
     }
 
     // The item indicated by `path` doesn't exist.
-    if (itemType.linkType == LinkTypeNone && itemType.ioError == IoErrorNoSuchFileOrDirectory) {
-        ioError = IoErrorNoSuchFileOrDirectory;
+    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
+        ioError = IoError::NoSuchFileOrDirectory;
         return true;
     }
 
-    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
+    const bool isSymlink = itemType.linkType == LinkType::Symlink;
 
     for (;;) {
-        const long bufferLength = getxattr(path.native().c_str(), attrName.c_str(), NULL, 0, 0, isSymlink ? XATTR_NOFOLLOW : 0);
+        const ssize_t bufferLength = getxattr(path.native().c_str(), attrName.data(), NULL, 0, 0, isSymlink ? XATTR_NOFOLLOW : 0);
         if (bufferLength == -1) {
             ioError = posixError2ioError(errno);
             return _isXAttrValueExpectedError(ioError);
         }
 
-        value.resize(bufferLength);
-        if (getxattr(path.native().c_str(), attrName.c_str(), value.data(), bufferLength, 0, isSymlink ? XATTR_NOFOLLOW : 0) !=
-            bufferLength) {
+        value.resize(static_cast<size_t>(bufferLength));
+        if (getxattr(path.native().c_str(), attrName.data(), value.data(), static_cast<size_t>(bufferLength), 0,
+                     isSymlink ? XATTR_NOFOLLOW : 0) != bufferLength) {
             ioError = posixError2ioError(errno);
-            if (ioError == IoErrorResultOutOfRange) {
+            if (ioError == IoError::ResultOutOfRange) {
                 // XAttr length has changed, retry
                 continue;
             }
@@ -74,91 +73,71 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
         }
 
         // XAttr has been read
-        ioError = IoErrorSuccess;
+        ioError = IoError::Success;
         return true;
     }
 }
 
-bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, const std::string &value,
+bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrName, const std::string_view &value,
                              IoError &ioError) noexcept {
     ItemType itemType;
     if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
         ioError = itemType.ioError;
         return false;
     }
 
     // The item indicated by `path` doesn't exist.
-    if (itemType.linkType == LinkTypeNone && itemType.ioError == IoErrorNoSuchFileOrDirectory) {
-        ioError = IoErrorNoSuchFileOrDirectory;
+    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
+        ioError = IoError::NoSuchFileOrDirectory;
         return true;
     }
 
-    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
+    const bool isSymlink = itemType.linkType == LinkType::Symlink;
 
-    if (setxattr(path.native().c_str(), attrName.c_str(), value.data(), value.size(), 0, isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
+    if (setxattr(path.native().c_str(), attrName.data(), value.data(), value.size(), 0, isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
         ioError = posixError2ioError(errno);
         return _isXAttrValueExpectedError(ioError);
     }
 
     // XAttr has been set
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
     return true;
+}
+
+bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string_view> &attrNames, IoError &ioError) noexcept {
+    for (const auto &attrName: attrNames) {
+        if (removexattr(path.native().c_str(), attrName.data(), XATTR_NOFOLLOW) == -1) {
+            ioError = posixError2ioError(errno);
+            return _isXAttrValueExpectedError(ioError);
+        }
+    }
+
+    // XAttr has been removed
+    ioError = IoError::Success;
+    return true;
+}
+
+bool IoHelper::removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept {
+    static const std::vector<std::string_view> liteSyncAttrName = {litesync_attrs::status, litesync_attrs::pinState};
+    return removeXAttrs(path, liteSyncAttrName, ioError);
 }
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
     isDehydrated = false;
-    ioError = IoErrorSuccess;
-
-    static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
+    ioError = IoError::Success;
 
     std::string value;
-    const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::status, value, ioError);
     if (!result) {
         return false;
     }
 
     if (!value.empty()) {
-        isDehydrated = (value != "F");
+        isDehydrated = (value != litesync_attrs::statusOffline);
     }
 
     return true;
 }
 
-bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
-    read = false;
-    write = false;
-    exec = false;
-
-    ItemType itemType;
-    const bool success = getItemType(path, itemType);
-    if (!success) {
-        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError).c_str());
-        return false;
-    }
-    ioError = itemType.ioError;
-    if (ioError != IoErrorSuccess) {
-        return isExpectedError(ioError);
-    }
-    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
-
-    std::error_code ec;
-    std::filesystem::perms perms =
-        isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
-    if (ec) {
-       const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
-        ioError = stdError2ioError(ec);
-        if (!exists) {
-            ioError = IoErrorNoSuchFileOrDirectory;
-        }
-        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
-        return isExpectedError(ioError);
-    }
-
-    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
-    write = isLocked(path) ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
-    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
-    return true;
-}
-
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 
 namespace KDC {
 
-NodeInfo::NodeInfo(QString nodeId, QString name, qint64 size, QString parentNodeId, SyncTime modtime, QString path /*= ""*/)
-    : _nodeId(nodeId), _name(name), _size(size), _parentNodeId(parentNodeId), _modtime(modtime), _path(path) {}
+NodeInfo::NodeInfo(QString nodeId, QString name, qint64 size, QString parentNodeId, SyncTime modtime, QString path /*= ""*/) :
+    _nodeId(nodeId), _name(name), _size(size), _parentNodeId(parentNodeId), _modtime(modtime), _path(path) {}
 
 NodeInfo::NodeInfo() : _nodeId(QString()), _name(QString()), _size(0), _parentNodeId(QString()), _modtime(0) {}
 
@@ -36,9 +36,9 @@ QDataStream &operator<<(QDataStream &out, const NodeInfo &info) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<NodeInfo> &list) {
-    int count = list.size();
+    int count = static_cast<int>(list.size());
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < count; i++) {
         NodeInfo info = list[i];
         out << info;
     }
@@ -46,7 +46,7 @@ QDataStream &operator<<(QDataStream &out, const QList<NodeInfo> &list) {
 }
 
 QDataStream &operator>>(QDataStream &in, QList<NodeInfo> &list) {
-    int count = 0;
+    auto count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
         NodeInfo *info = new NodeInfo();
@@ -56,4 +56,4 @@ QDataStream &operator>>(QDataStream &in, QList<NodeInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

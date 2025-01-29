@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,34 +29,12 @@
 namespace KDC {
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
-    (void)(itemPath);
+    (void) (itemPath);
 
     isDehydrated = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     return true;
 }
 
-bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
-    read = false;
-    write = false;
-    exec = false;
-
-    std::error_code ec;
-    std::filesystem::perms perms = std::filesystem::status(path, ec).permissions();
-    if (ec) {
-        const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
-        ioError = stdError2ioError(ec);
-        if (!exists) {
-            ioError = IoErrorNoSuchFileOrDirectory;
-        }
-        return isExpectedError(ioError);
-    }
-
-    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
-    write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
-    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
-    return true;
-}
-
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,39 +20,19 @@
 
 namespace KDC {
 
-Sync::Sync()
-    : _dbId(0),
-      _driveDbId(0),
-      _localPath(std::filesystem::path()),
-      _targetPath(std::filesystem::path()),
-      _targetNodeId(NodeId()),
-      _paused(false),
-      _supportVfs(false),
-      _virtualFileMode(VirtualFileModeOff),
-      _notificationsDisabled(false),
-      _dbPath(std::filesystem::path()),
-      _hasFullyCompleted(false),
-      _navigationPaneClsid(std::string()),
-      _listingCursor(std::string()),
-      _listingCursorTimestamp(0) {}
+Sync::Sync() :
+    _dbId(0), _driveDbId(0), _localPath(std::filesystem::path()), _targetPath(std::filesystem::path()), _targetNodeId(NodeId()),
+    _paused(false), _supportVfs(false), _virtualFileMode(VirtualFileMode::Off), _notificationsDisabled(false),
+    _dbPath(std::filesystem::path()), _hasFullyCompleted(false), _navigationPaneClsid(std::string()),
+    _listingCursor(std::string()), _listingCursorTimestamp(0) {}
 
 Sync::Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, const std::filesystem::path &targetPath,
            const NodeId &targetNodeId, bool paused, bool supportVfs, VirtualFileMode virtualFileMode, bool notificationsDisabled,
            const std::filesystem::path &dbPath, bool hasFullyCompleted, const std::string &navigationPaneClsid,
-           const std::string &listingCursor, int64_t listingCursorTimestamp)
-    : _dbId(dbId),
-      _driveDbId(driveDbId),
-      _localPath(localPath),
-      _targetPath(targetPath),
-      _targetNodeId(targetNodeId),
-      _paused(paused),
-      _supportVfs(supportVfs),
-      _virtualFileMode(virtualFileMode),
-      _notificationsDisabled(notificationsDisabled),
-      _dbPath(dbPath),
-      _hasFullyCompleted(hasFullyCompleted),
-      _navigationPaneClsid(navigationPaneClsid),
-      _listingCursor(listingCursor),
-      _listingCursorTimestamp(listingCursorTimestamp) {}
+           const std::string &listingCursor, int64_t listingCursorTimestamp) :
+    _dbId(dbId), _driveDbId(driveDbId), _localPath(localPath), _targetPath(targetPath), _targetNodeId(targetNodeId),
+    _paused(paused), _supportVfs(supportVfs), _virtualFileMode(virtualFileMode), _notificationsDisabled(notificationsDisabled),
+    _dbPath(dbPath), _hasFullyCompleted(hasFullyCompleted), _navigationPaneClsid(navigationPaneClsid),
+    _listingCursor(listingCursor), _listingCursorTimestamp(listingCursorTimestamp) {}
 
-}  // namespace KDC
+} // namespace KDC

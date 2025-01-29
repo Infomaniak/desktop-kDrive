@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,10 @@
 
 namespace KDC {
 
-static int defaultToolTipDuration = 3000;  // ms
+static int defaultToolTipDuration = 3000; // ms
 
-CustomRadioButton::CustomRadioButton(QWidget *parent)
-    : QRadioButton(parent), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _customToolTip(nullptr) {
+CustomRadioButton::CustomRadioButton(QWidget *parent) :
+    QRadioButton(parent), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _customToolTip(nullptr) {
     connect(this, &QRadioButton::clicked, this, &CustomRadioButton::onClicked);
 }
 
@@ -62,4 +62,4 @@ void CustomRadioButton::onClicked(bool checked) {
     QApplication::sendEvent(this, new QEvent(QEvent::Leave));
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,11 @@
 
 namespace KDC {
 static const int threadPoolMinCapacity = 3;
-static const uint64_t chunkMaxSize = 100 * 1024 * 1024;               // 100MB
-static const uint64_t chunkMinSize = 10 * 1024 * 1024;                // 10MB
-static const uint64_t useUploadSessionThreshold = 100 * 1024 * 1024;  // if file size > 100MB -> start upload session
+static const uint64_t chunkMaxSize = 100 * 1024 * 1024; // 100MB
+static const uint64_t chunkMinSize = 10 * 1024 * 1024; // 10MB
+static const uint64_t useUploadSessionThreshold = 100 * 1024 * 1024; // if file size > 100MB -> start upload session
 static const uint64_t optimalTotalChunks = 200;
-static const uint64_t maxTotalChunks = 10000;  // Theoretical max. file size 10'000 * 100MB = 1TB
+static const uint64_t maxTotalChunks = 10000; // Theoretical max. file size 10'000 * 100MB = 1TB
 
 /*
  * Static string
@@ -83,9 +83,6 @@ static const std::string filesKey = "files";
 static const std::string idKey = "id";
 static const std::string parentIdKey = "parent_id";
 static const std::string nameKey = "name";
-static const std::string emailKey = "email";
-static const std::string avatarKey = "avatar";
-static const std::string displayNameKey = "display_name";
 static const std::string typeKey = "type";
 static const std::string sizeKey = "size";
 static const std::string visibilityKey = "visibility";
@@ -124,8 +121,8 @@ enum class ActionCode {
     actionCodeRename,
     actionCodeEdit,
     actionCodeAccess,
-    actionCodeTrash,   // The file has been put into the trash
-    actionCodeDelete,  // The file has been completely deleted from the trash
+    actionCodeTrash, // The file has been put into the trash
+    actionCodeDelete, // The file has been completely deleted from the trash
     actionCodeMoveIn,
     actionCodeMoveOut,
     actionCodeRestore,
@@ -153,7 +150,7 @@ static const std::string isRootKey = "is_root";
 static const std::string isTeamSpaceKey = "is_team_space";
 static const std::string isSharedSpaceKey = "is_shared_space";
 /// Items per page
-static const std::string nbItemPerPage = "1000";  // Default # of items max returned per page
+static const std::string nbItemPerPage = "1000"; // Default # of items max returned per page
 
 /// Errors
 static const std::string errorKey = "error";
@@ -161,6 +158,7 @@ static const std::string reasonKey = "reason";
 static const std::string codeKey = "code";
 static const std::string descriptionKey = "description";
 static const std::string contextKey = "context";
+
 /// Error codes
 enum class NetworkErrorCode {
     forbiddenError,
@@ -178,17 +176,19 @@ enum class NetworkErrorCode {
     accessDenied,
     fileTooBigError,
     quotaExceededError,
-    unknownError  // None of the handled errors
+    unknownError // None of the handled errors
 };
 
 enum class NetworkErrorReason {
     refreshTokenRevoked,
     notRenew,
-    unknownReason  // None of the handled reasons
+    unknownReason // None of the handled reasons
 };
 
 ActionCode getActionCode(const std::string &action) noexcept;
+
 NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept;
+
 NetworkErrorReason getNetworkErrorReason(const std::string &errorCode) noexcept;
 
 
@@ -196,4 +196,4 @@ NetworkErrorReason getNetworkErrorReason(const std::string &errorCode) noexcept;
 static const std::string storageObjectIsNotOk = "storage_object_is_not_ok";
 
 static const std::string invalidToken = "Invalid Token";
-}  // namespace KDC
+} // namespace KDC

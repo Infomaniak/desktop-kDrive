@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,15 +17,15 @@
  */
 
 #include "utilities.h"
+#include "../../../../src/libcommon/utility/utility_base.h"
 
 #include <winrt\base.h>
 
 #include <vector>
 #include <array>
-#include <regex>
 #include <filesystem>
 
-#define PIPE_TIMEOUT 5 * 1000  // ms
+#define PIPE_TIMEOUT 5 * 1000 // ms
 #define DEFAULT_BUFLEN 4096
 
 TraceCbk Utilities::s_traceCbk;
@@ -110,7 +110,7 @@ void Utilities::traceFileDates(const wchar_t *filePath) {
 
 std::string Utilities::utf16ToUtf8(const wchar_t *utf16, int len) {
     if (len < 0) {
-        len = (int)wcslen(utf16);
+        len = (int) wcslen(utf16);
     }
 
     if (len == 0) {
@@ -125,7 +125,7 @@ std::string Utilities::utf16ToUtf8(const wchar_t *utf16, int len) {
 
 std::wstring Utilities::utf8ToUtf16(const char *utf8, int len) {
     if (len < 0) {
-        len = (int)strlen(utf8);
+        len = (int) strlen(utf8);
     }
 
     if (len == 0) {
@@ -143,6 +143,7 @@ void Utilities::initPipeName(const wchar_t *appName) {
     wchar_t userName[DEFAULT_BUFLEN];
     GetUserName(userName, &len);
     s_pipeName = std::wstring(L"\\\\.\\pipe\\") + std::wstring(appName) + L"-" + std::wstring(userName, len);
+    TRACE_DEBUG(L"Init pipe: name = %ls", s_pipeName.c_str());
 }
 
 bool Utilities::connectToPipeServer() {
@@ -157,6 +158,7 @@ bool Utilities::connectToPipeServer() {
         return false;
     }
 
+    TRACE_DEBUG(L"Open pipe: name = %ls", s_pipeName.c_str());
     while (true) {
         s_pipe = CreateFile(s_pipeName.data(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
         if (s_pipe != INVALID_HANDLE_VALUE) {
@@ -196,7 +198,7 @@ bool Utilities::writeMessage(const std::wstring &verb, const std::wstring &path,
         msg = utf16ToUtf8(std::wstring(verb + MSG_CDE_SEPARATOR + path + MSG_END).c_str());
     } else {
         msg = utf16ToUtf8(
-            std::wstring(verb + MSG_CDE_SEPARATOR + std::to_wstring(msgId) + MSG_ARG_SEPARATOR + path + MSG_END).c_str());
+                std::wstring(verb + MSG_CDE_SEPARATOR + std::to_wstring(msgId) + MSG_ARG_SEPARATOR + path + MSG_END).c_str());
     }
 
     DWORD numBytesWritten = 0;
@@ -325,17 +327,16 @@ bool Utilities::readNextValue(std::wstring &message, std::wstring &value) {
 }
 
 std::wstring Utilities::getLastErrorMessage() {
-    DWORD errorMessageID = ::GetLastError();
-    if (errorMessageID == 0) return std::wstring();
+    const DWORD errorMessageID = ::GetLastError();
+    if (errorMessageID == 0) return {};
 
     LPWSTR messageBuffer = nullptr;
-    size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                 NULL, errorMessageID, NULL, (LPWSTR)&messageBuffer, 0, NULL);
+    const size_t size =
+            FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
+                           errorMessageID, NULL, (LPWSTR) &messageBuffer, 0, nullptr);
 
     // Escape quotes
-    std::wstring msg = std::wstring(messageBuffer, size);
-    // msg = std::regex_replace(msg, std::wregex(L"'"), L"");
-
+    const auto msg = std::wstring(messageBuffer, size);
     std::wostringstream message;
     message << errorMessageID << L" - " << msg;
 
@@ -344,7 +345,7 @@ std::wstring Utilities::getLastErrorMessage() {
     return message.str();
 }
 
-bool Utilities::checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJunction, bool &exists) {
+bool Utilities::checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunction, bool &exists) {
     isSymlink = false;
     isJunction = false;
     exists = true;
@@ -352,35 +353,24 @@ bool Utilities::checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJuncti
     HANDLE hFile = CreateFileW(path, FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
-        DWORD dwError = GetLastError();
-        exists = (dwError != ERROR_FILE_NOT_FOUND && dwError != ERROR_PATH_NOT_FOUND && dwError != ERROR_INVALID_DRIVE);
-        if (!exists) {
-            // Path doesn't exist
-            return true;
-        }
-
-        return false;
+        exists = KDC::utility_base::isLikeFileNotFoundError(GetLastError());
+        return !exists;
     }
 
     BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
-    REPARSE_DATA_BUFFER &ReparseBuffer = (REPARSE_DATA_BUFFER &)buf;
+    REPARSE_DATA_BUFFER &ReparseBuffer = (REPARSE_DATA_BUFFER &) buf;
     DWORD dwRet;
     if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, NULL, 0, &ReparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
                          NULL)) {
         DWORD dwError = GetLastError();
         CloseHandle(hFile);
 
-        bool notReparsePoint = (dwError == ERROR_NOT_A_REPARSE_POINT);
-        if (notReparsePoint) {
+        if (const bool notReparsePoint = (dwError == ERROR_NOT_A_REPARSE_POINT); notReparsePoint) {
             return true;
-        } else {
-            exists = (dwError != ERROR_FILE_NOT_FOUND && dwError != ERROR_PATH_NOT_FOUND && dwError != ERROR_INVALID_DRIVE);
-            if (!exists) {
-                // Path doesn't exist
-                return true;
-            }
-            return false;
         }
+
+        exists = KDC::utility_base::isLikeFileNotFoundError(GetLastError());
+        return !exists;
     }
 
     CloseHandle(hFile);
@@ -391,13 +381,13 @@ bool Utilities::checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJuncti
     return true;
 }
 
-bool Utilities::checkIfDirectory(const wchar_t *path, bool &isDirectory, bool &exists) {
+bool Utilities::checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool &exists) {
     exists = true;
 
     std::error_code ec;
     isDirectory = std::filesystem::is_directory(std::filesystem::path(path), ec);
     if (!isDirectory && ec.value() != 0) {
-        exists = (ec.value() != ERROR_FILE_NOT_FOUND && ec.value() != ERROR_PATH_NOT_FOUND && ec.value() != ERROR_INVALID_DRIVE);
+        exists = KDC::utility_base::isLikeFileNotFoundError(ec);
         if (!exists) {
             return true;
         }
@@ -415,8 +405,8 @@ bool Utilities::getCreateFileFlagsAndAttributes(const wchar_t *path, DWORD &dwFl
 
     bool isSymlink = false;
     bool isJunction = false;
-    if (!Utilities::checkIfLink(path, isSymlink, isJunction, exists)) {
-        TRACE_ERROR(L"Error in Utilities::checkIfLink: %ls", path);
+    if (!Utilities::checkIfIsLink(path, isSymlink, isJunction, exists)) {
+        TRACE_ERROR(L"Error in Utilities::checkIfIsLink: %ls", path);
         return false;
     }
 
@@ -431,7 +421,7 @@ bool Utilities::getCreateFileFlagsAndAttributes(const wchar_t *path, DWORD &dwFl
         dwFlagsAndAttributes = FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS;
     } else {
         bool isDirectory = false;
-        if (!Utilities::checkIfDirectory(path, isDirectory, exists)) {
+        if (!Utilities::checkIfIsDirectory(path, isDirectory, exists)) {
             TRACE_ERROR(L"Error in Utilities::checkIfDirectory : %ls", path);
             return false;
         }

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "log/log.h"
 
@@ -51,7 +52,7 @@ class PerformanceWatcher {
         static bool _stop;
 
         log4cplus::Logger _logger = Log::instance()->getLogger();
-        std::unique_ptr<std::thread> _thread = nullptr;
+        std::unique_ptr<StdLoggingThread> _thread = nullptr;
 
         static void updateAllStats();
 
@@ -84,4 +85,4 @@ class PerformanceWatcher {
         static uint64_t bytesToMb(uint64_t bytes);
 };
 
-}  // namespace KDC
+} // namespace KDC

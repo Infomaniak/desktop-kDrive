@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testNameClash);
         CPPUNIT_TEST(testNameClashAfterRename);
         CPPUNIT_TEST(testExecute);
+        CPPUNIT_TEST(testNameSizeLocalTree);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -47,10 +48,12 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
         void testNameClash();
         void testNameClashAfterRename();
         void testExecute();
+        void testNameSizeLocalTree();
 
     private:
         std::shared_ptr<SyncPal> _syncPal{nullptr};
         LocalTemporaryDirectory _tempDir{"testNameClashAfterRename"};
+        void initUpdateTree(ReplicaSide side);
 };
 
-}  // namespace KDC
+} // namespace KDC

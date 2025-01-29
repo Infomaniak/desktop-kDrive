@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,14 +25,14 @@
 namespace winrt {
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Provider;
-}  // namespace winrt
+} // namespace winrt
 
 IFACEMETHODIMP ExplorerCommandHandler::GetTitle(IShellItemArray *psiItemArray, LPWSTR *ppszName) {
     if (_contextMenuInfo._menuItem._root) {
         loadCommandItems(psiItemArray);
     }
 
-    *ppszName = NULL;
+    *ppszName = nullptr;
     return SHStrDup(_contextMenuInfo._menuItem._title.c_str(), ppszName);
 }
 
@@ -54,12 +54,12 @@ IFACEMETHODIMP ExplorerCommandHandler::GetFlags(EXPCMDFLAGS *pFlags) {
 }
 
 inline IFACEMETHODIMP ExplorerCommandHandler::GetIcon(IShellItemArray *psiItemArray, LPWSTR *ppszIcon) {
-    *ppszIcon = NULL;
+    *ppszIcon = nullptr;
     return SHStrDup(_contextMenuInfo._menuItem._iconPath, ppszIcon);
 }
 
 inline IFACEMETHODIMP ExplorerCommandHandler::GetToolTip(IShellItemArray *psiItemArray, LPWSTR *ppszInfotip) {
-    *ppszInfotip = NULL;
+    *ppszInfotip = nullptr;
 
     return S_OK;
 }
@@ -205,11 +205,11 @@ void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
 
             // bool enabled = flags.find(L'd') == std::string::npos;
             MenuItem menuItem{false, title, L"", true /*enabled*/,
-                              commandName};  // enabled flag not supported by new Windows 11 menu
+                              commandName}; // enabled flag not supported by new Windows 11 menu
             _contextMenuInfo._subMenuItems.push_back(menuItem);
         } while (!response.empty());
 
-        GetModuleFileNameW(NULL, _contextMenuInfo._menuItem._iconPath, MAX_FULL_PATH);
+        GetModuleFileNameW(nullptr, _contextMenuInfo._menuItem._iconPath, MAX_FULL_PATH);
         _contextMenuInfo._menuItem._enabled = _contextMenuInfo._subMenuItems.size() > 0;
     }
 }
@@ -236,7 +236,7 @@ IFACEMETHODIMP ExplorerCommandHandlerEnumerator::Next(ULONG celt, IExplorerComma
             _ullCurrent++;
         }
 
-        if (pceltFetched != NULL) {
+        if (pceltFetched != nullptr) {
             *pceltFetched = uIndex;
         }
 

@@ -161,5 +161,8 @@
         <file>resources/styles/stylesheetblack.qss</file>
         <file>resources/styles/stylesheetwhite.qss</file>
         <file>resources/icons/actions/light-down-arrow.svg</file>
+        <file>resources/pictures/en-endpoint-security.svg</file>
+        <file>resources/pictures/fr-endpoint-security.svg</file>
+        <file>resources/icons/actions/messages-bubble-square-typing.svg</file>
     </qresource>
 </RCC>

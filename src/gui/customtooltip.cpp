@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,8 +43,8 @@ static const int offsetY = 10;
 
 Q_LOGGING_CATEGORY(lcCustomToolTip, "gui.customtooltip", QtInfoMsg)
 
-CustomToolTip::CustomToolTip(const QString &text, const QPoint &position, int toolTipDuration, QWidget *parent)
-    : QDialog(parent), _cursorPosition(position) {
+CustomToolTip::CustomToolTip(const QString &text, const QPoint &position, int toolTipDuration, QWidget *parent) :
+    QDialog(parent), _cursorPosition(position) {
     setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::X11BypassWindowManagerHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -82,12 +82,13 @@ void CustomToolTip::paintEvent(QPaintEvent *event) {
     }
 
     // Calculate position
-    QPoint tooltipPosition = QPoint(_cursorPosition.x() - rect().width() / 2.0 + offsetX, _cursorPosition.y() + offsetY);
+    QPoint tooltipPosition =
+            QPoint(_cursorPosition.x() - static_cast<int>(round(rect().width() / 2.0)) + offsetX, _cursorPosition.y() + offsetY);
 
     // Triangle points
-    QPointF trianglePoint1 = QPoint((rect().width() - triangleWidth) / 2.0, triangleHeight);
-    QPointF trianglePoint2 = QPoint(rect().width() / 2.0, 1);
-    QPointF trianglePoint3 = QPoint((rect().width() + triangleWidth) / 2.0, triangleHeight);
+    QPointF trianglePoint1 = QPoint(static_cast<int>(round((rect().width() - triangleWidth) / 2.0)), triangleHeight);
+    QPointF trianglePoint2 = QPoint(static_cast<int>(round(rect().width() / 2.0)), 1);
+    QPointF trianglePoint3 = QPoint(static_cast<int>(round((rect().width() + triangleWidth) / 2.0)), triangleHeight);
 
     // Border
     int cornerDiameter = 2 * cornerRadius;
@@ -99,7 +100,8 @@ void CustomToolTip::paintEvent(QPaintEvent *event) {
     painterPath.arcTo(QRect(intRect.topLeft(), QSize(cornerDiameter, cornerDiameter)), 90, 90);
     painterPath.arcTo(QRect(intRect.bottomLeft() - QPoint(0, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 180, 90);
     painterPath.arcTo(
-        QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 270, 90);
+            QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 270,
+            90);
     painterPath.arcTo(QRect(intRect.topRight() - QPoint(cornerDiameter, 0), QSize(cornerDiameter, cornerDiameter)), 0, 90);
     painterPath.closeSubpath();
 
@@ -112,4 +114,4 @@ void CustomToolTip::paintEvent(QPaintEvent *event) {
     painter.drawPath(painterPath);
 }
 
-}  // namespace KDC
+} // namespace KDC

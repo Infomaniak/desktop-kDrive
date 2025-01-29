@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ QPoint WidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event) {
 }
 
 bool WidgetWithCustomToolTip::event(QEvent *event) {
-    static const int defaultToolTipDuration = 3000;  // ms
+    static const int defaultToolTipDuration = 3000; // ms
 
     if (event->type() == QEvent::ToolTip && !_customToolTipText.isEmpty()) {
         const QPoint position = customToolTipPosition(static_cast<QHelpEvent *>(event));
@@ -57,4 +57,4 @@ QPoint LargeWidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event) {
     return mapToGlobal(event->pos());
 }
 
-}  // namespace KDC
+} // namespace KDC

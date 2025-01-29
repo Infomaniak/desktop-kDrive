@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,32 @@
 
 namespace KDC {
 
-struct FileStat;
+#ifdef __APPLE__
+namespace litesync_attrs {
 
+//! Item status
+static constexpr std::string_view status("com.infomaniak.drive.desktopclient.litesync.status");
+//! Request
+static constexpr std::string_view pinState("com.infomaniak.drive.desktopclient.litesync.pinstate");
+
+//! The status of a dehydrated item
+static constexpr std::string_view statusOnline("O");
+//! The status of an hydrated item
+static constexpr std::string_view statusOffline("F");
+//! The status of a file during hydration is Hxx where xx is the % of progress
+static constexpr std::string_view statusHydrating("H");
+
+//! The placeholder’s content must be dehydrated
+static constexpr std::string_view pinStateUnpinned("U");
+//! The placeholder’s content must be hydrated
+static constexpr std::string_view pinStatePinned("P");
+//! The placeholder will not be synced
+static constexpr std::string_view pinStateExcluded("E");
+
+} // namespace litesync_attrs
+#endif
+
+struct FileStat;
 
 struct IoHelper {
     public:
@@ -61,8 +85,6 @@ struct IoHelper {
         static IoError stdError2ioError(const std::error_code &ec) noexcept;
         static IoError posixError2ioError(int error) noexcept;
         static std::string ioError2StdString(IoError ioError) noexcept;
-
-        static bool fileExists(const std::error_code &ec) noexcept;
 
         //! Get the item type of the item indicated by `path`.
         /*!
@@ -110,11 +132,12 @@ struct IoHelper {
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
          \param filestat is set with the file status of the item indicated by path, if the item exists and the status could be
-         succesfully retrieved, nullptr otherwise.
+         successfully retrieved, nullptr otherwise.
+         !!! For a symlink, filestat.nodeType is set with the type of the target !!!
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept;
+        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
 
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
@@ -181,19 +204,19 @@ struct IoHelper {
           \param size holds the size in bytes of the file indicated by path in case of success.
           \param ioError holds the error associated to a failure of the underlying OS API call, if any.
           \return true if no unexpected error occurred, false otherwise. If path indicates a directory, the function returns false
-          and ioError is set with IoErrorIsADirectory.
+          and ioError is set with IoError::IsADirectory.
         */
         [[nodiscard]] static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
 
         //! Get the size of the directory indicated by `path` expressed in bytes.
-        //! This funciton is recursiv.
+        //! This function is recursive.
         /*!
           \param path is the file system path of a directory.
           \param size holds the size in bytes of the directory indicated by path in case of success.
           \param ioError holds the error associated to a failure of the underlying OS API call, if any.
           \param maxDepth is the maximum depth of the recursion. Defaults to 50.
           \return true if no unexpected error occurred, false otherwise. If path indicates a File,
-            the function returns false and ioError is set with IoErrorIsADirectory.
+            the function returns false and ioError is set with IoError::IsADirectory.
         */
         static bool getDirectorySize(const SyncPath &path, uint64_t &size, IoError &ioError, unsigned int maxDepth = 50);
 
@@ -233,7 +256,7 @@ struct IoHelper {
         //! Check if the item indicated by `path` is a directory.
         /*!
          \param path is the file system path of the item to check for.
-         \param isDirectory is boolean that is set to true if the type of the item indicated by path is `NodeTypeFile`, false
+         \param isDirectory is boolean that is set to true if the type of the item indicated by path is `NodeType::File`, false
          otherwise.
          \param ioError holds the error returned when an underlying OS API call fails. Defaults to false.
          \return true if no unexpected error occurred, false otherwise. If the return value is false, isDirectory is also set with
@@ -246,19 +269,38 @@ struct IoHelper {
          \param path is the file system path of the directory to create.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise. If path indicates an existing directory, then the function
-         returns false and sets ioError with IoErrorDirectoryExists.
+         returns false and sets ioError with IoError::DirectoryExists.
          */
         static bool createDirectory(const SyncPath &path, IoError &ioError) noexcept;
 
-        //! Remove a directory located under the specified path.
+        /** Move an item located under the specified path.
+         *
+         * @param sourcePath is the source file system path of the item to move.
+         * @param destinationPath is the destination file system path of the item to move.
+         * @param ioError
+         * @return
+         */
+        static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+
+        /** Rename an item located under the specified path.
+         *
+         * @param sourcePath is the source file system path of the item to rename.
+         * @param destinationPath is the destination file system path of the item to rename.
+         * @param ioError holds the error returned when an underlying OS API call fails.
+         * @return true if no unexpected error occurred, false otherwise.
+         */
+        static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+
+        //! Remove an item located under the specified path.
         /*!
-         \param path is the file system path of the directory to remove.
+         \param path is the file system path of the item to remove.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool deleteDirectory(const SyncPath &path, IoError &ioError) noexcept;
+        static bool deleteItem(const SyncPath &path, IoError &ioError) noexcept;
 
-        //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the directory.
+        //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
+        //! directory.
         /*!
          \param path is the file system path of the directory to iterate over.
          \param recursive is a boolean indicating whether the iterator should be recursive or not.
@@ -301,7 +343,7 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getXAttrValue(const SyncPath &path, const std::string &attrName, std::string &value,
+        static bool getXAttrValue(const SyncPath &path, const std::string_view &attrName, std::string &value,
                                   IoError &ioError) noexcept;
         //! Sets the value of the extended attribute with specified name for the item indicated by path.
         /*!
@@ -311,13 +353,40 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool setXAttrValue(const SyncPath &path, const std::string &attrName, const std::string &value,
+        static bool setXAttrValue(const SyncPath &path, const std::string_view &attrName, const std::string_view &value,
                                   IoError &ioError) noexcept;
+        //! Remove the extended attributes with specified names for the item indicated by path.
+        /*!
+         \param path is the file system path of the item.
+         \param attrNames is a vector of the names of the extended attributes to remove.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool removeXAttrs(const SyncPath &path, const std::vector<std::string_view> &attrNames, IoError &ioError) noexcept;
+        //! Remove the LiteSync extended attributes for the item indicated by path.
+        /*!
+         \param path is the file system path of the item.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool removeLiteSyncXAttrs(const SyncPath &path, IoError &ioError) noexcept;
+        //! Build the 'status' extended attribute value.
+        /*!
+         \param isSyncing true if the file is hydrating.
+         \param progress is the % of progress of the hydration.
+         \param isHydrated true if the file is hydrated.
+         \return the 'status' extended attribute value.
+         */
+        inline static std::string statusXAttr(bool isSyncing, int progress, bool isHydrated) {
+            return (isSyncing ? std::string(litesync_attrs::statusHydrating) + std::to_string(progress)
+                              : (isHydrated ? std::string(litesync_attrs::statusOffline)
+                                            : std::string(litesync_attrs::statusOnline)));
+        }
 #endif
 
 #ifdef _WIN32
 #ifndef _WINDEF_
-        typedef unsigned long DWORD;
+        using DWORD = unsigned long;
 #endif
         static bool getXAttrValue(const SyncPath &path, DWORD attrCode, bool &value, IoError &ioError) noexcept;
         static bool setXAttrValue(const SyncPath &path, DWORD attrCode, IoError &ioError) noexcept;
@@ -361,13 +430,20 @@ struct IoHelper {
         static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
         static inline bool isLink(LinkType linkType) {
-            return linkType == LinkTypeSymlink || linkType == LinkTypeHardlink ||
-                   (linkType == LinkTypeFinderAlias && OldUtility::isMac()) ||
-                   (linkType == LinkTypeJunction && OldUtility::isWindows());
+            return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
+                   (linkType == LinkType::FinderAlias && OldUtility::isMac()) ||
+                   (linkType == LinkType::Junction && OldUtility::isWindows());
+        }
+
+        static inline bool isLinkFollowedByDefault(LinkType linkType) {
+            return linkType == LinkType::Symlink || linkType == LinkType::Junction;
         }
 
         // The most common and expected errors during IO operations
         static bool isExpectedError(IoError ioError) noexcept;
+
+        static bool openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut = 10 /*in seconds*/);
+        static ExitInfo openFile(const SyncPath &path, std::ifstream &file, int timeOut = 10 /*in seconds*/);
 
     protected:
         friend class DirectoryIterator;
@@ -377,10 +453,10 @@ struct IoHelper {
         // They can be modified in tests.
         static std::function<bool(const SyncPath &path, std::error_code &ec)> _isDirectory;
         static std::function<bool(const SyncPath &path, std::error_code &ec)> _isSymlink;
+        static std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> _rename;
         static std::function<SyncPath(const SyncPath &path, std::error_code &ec)> _readSymlink;
         static std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> _fileSize;
         static std::function<SyncPath(std::error_code &ec)> _tempDirectoryPath;
-
 #ifdef __APPLE__
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
@@ -399,7 +475,7 @@ struct IoHelper {
         static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
 #ifdef _WIN32
-        static bool _setRightsWindowsApiInheritance;  // For windows tests only
+        static bool _setRightsWindowsApiInheritance; // For windows tests only
         static int _getAndSetRightsMethod;
         static std::unique_ptr<BYTE[]> _psid;
         static TRUSTEE _trustee;
@@ -408,4 +484,4 @@ struct IoHelper {
 #endif
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,13 @@
 
 namespace KDC {
 
-ProxyConfigInfo::ProxyConfigInfo()
-    : _type(ProxyTypeNone), _hostName(QString()), _port(0), _needsAuth(false), _user(QString()), _pwd(QString()) {}
-
 ProxyConfigInfo::ProxyConfigInfo(ProxyType type, const QString &hostName, int port, bool needsAuth, const QString &user,
-                                 const QString &pwd)
-    : _type(type), _hostName(hostName), _port(port), _needsAuth(needsAuth), _user(user), _pwd(pwd) {}
+                                 const QString &pwd) :
+    _type(type), _hostName(hostName), _port(port), _needsAuth(needsAuth), _user(user), _pwd(pwd) {}
 
 QDataStream &operator>>(QDataStream &in, ProxyConfigInfo &proxyConfigInfo) {
     in >> proxyConfigInfo._type >> proxyConfigInfo._hostName >> proxyConfigInfo._port >> proxyConfigInfo._needsAuth >>
-        proxyConfigInfo._user >> proxyConfigInfo._pwd;
+            proxyConfigInfo._user >> proxyConfigInfo._pwd;
     return in;
 }
 
@@ -39,4 +36,4 @@ QDataStream &operator<<(QDataStream &out, const ProxyConfigInfo &proxyConfigInfo
     return out;
 }
 
-}  // namespace KDC
+} // namespace KDC

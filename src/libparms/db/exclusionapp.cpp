@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ namespace KDC {
 
 ExclusionApp::ExclusionApp() : _appId(std::string()), _description(std::string()), _def(false) {}
 
-ExclusionApp::ExclusionApp(const std::string &appId, const std::string &description, bool def)
-    : _appId(appId), _description(description), _def(def) {}
+ExclusionApp::ExclusionApp(const std::string &appId, const std::string &description, bool def) :
+    _appId(appId), _description(description), _def(def) {}
 
-}  // namespace KDC
+} // namespace KDC

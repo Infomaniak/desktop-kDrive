@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "testio.h"
-#include "libcommonserver/utility/utility.h"
 
 #include <filesystem>
 
@@ -26,8 +25,8 @@ using namespace CppUnit;
 namespace KDC {
 
 struct RightsSet {
-        RightsSet(int rights) : read(rights & 4), write(rights & 2), execute(rights & 1){};
-        RightsSet(bool read, bool write, bool execute) : read(read), write(write), execute(execute){};
+        RightsSet(int rights) : read(rights & 4), write(rights & 2), execute(rights & 1) {};
+        RightsSet(bool read, bool write, bool execute) : read(read), write(write), execute(execute) {};
         bool read;
         bool write;
         bool execute;
@@ -39,9 +38,9 @@ void TestIo::testCheckSetAndGetRights() {
         const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath path = temporaryDirectory.path() / "changePerm";
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         bool isReadable = false;
         bool isWritable = false;
@@ -50,7 +49,7 @@ void TestIo::testCheckSetAndGetRights() {
 #ifdef _WIN32
         // Test for a directory without any Explicit ACE (ie no inherited rights)
         CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
+        CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 #endif
 
         /* Test all the possible rights and all the possible order of rights modification. ie:
@@ -73,26 +72,26 @@ void TestIo::testCheckSetAndGetRights() {
          *  ...
          */
 #ifdef _WIN32
-        IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the windows API
-        for (int i = 0; i < 2; i++) {          // Test Windows API and fallback method
+        IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
+        for (int i = 0; i < 2; i++) { // Test Windows API and fallback method
 #endif
-            for (int baseRigths = 0; baseRigths < 7; baseRigths++) {
-                for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                    auto rightsSet = RightsSet(baseRigths);
+            for (int baseRights = 0; baseRights < 7; baseRights++) {
+                for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
+                    auto rightsSet = RightsSet(baseRights);
 #ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
-                        continue;  // Skip the test if the rights are not supported by the current method
+                        continue; // Skip the test if the rights are not supported by the current method
                     }
 #endif
                     bool result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
-                    result &= ioError == IoErrorSuccess;
+                    result &= ioError == IoError::Success;
                     if (!result) {
                         IoHelper::setRights(path, true, true, true, ioError);
                         CPPUNIT_ASSERT(false /* Failed to set base rights */);
                     }
 
                     result = IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError);
-                    result &= ioError == IoErrorSuccess;
+                    result &= ioError == IoError::Success;
                     if (!result) {
                         IoHelper::setRights(path, true, true, true, ioError);
                         CPPUNIT_ASSERT(false /* Failed to get base rights */);
@@ -103,21 +102,21 @@ void TestIo::testCheckSetAndGetRights() {
                         CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                     }
 
-                    rightsSet = RightsSet(targetRigths);
+                    rightsSet = RightsSet(targetRights);
 #ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
-                        continue;  // Skip the test if the rights are not supported by the current method
+                        continue; // Skip the test if the rights are not supported by the current method
                     }
 #endif
                     result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
-                    result &= ioError == IoErrorSuccess;
+                    result &= ioError == IoError::Success;
                     if (!result) {
                         IoHelper::setRights(path, true, true, true, ioError);
                         CPPUNIT_ASSERT(false /* Failed to set target rights */);
                     }
 
                     result = IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError);
-                    result &= ioError == IoErrorSuccess;
+                    result &= ioError == IoError::Success;
                     if (!result) {
                         IoHelper::setRights(path, true, true, true, ioError);
                         CPPUNIT_ASSERT(false /* Failed to get target rights */);
@@ -131,11 +130,11 @@ void TestIo::testCheckSetAndGetRights() {
             }
 #ifdef _WIN32
             if (i == 0) {
-                CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
+                CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the windows API
             }
-            IoHelper::_getAndSetRightsMethod = 1;  // Set the method to use std::filesystem method (fallback)
+            IoHelper::_getAndSetRightsMethod = 1; // Set the method to use std::filesystem method (fallback)
         }
-        IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the windows API
+        IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
 #endif
 
         // Restore the rights
@@ -147,7 +146,7 @@ void TestIo::testCheckSetAndGetRights() {
         const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath filepath = temporaryDirectory.path() / "changePerm.txt";
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
 
         std::ofstream file(filepath);
         CPPUNIT_ASSERT(file.is_open());
@@ -161,7 +160,7 @@ void TestIo::testCheckSetAndGetRights() {
 #ifdef _WIN32
         // Test for a file without any Explicit ACE (ie no inherited rights)
         CPPUNIT_ASSERT(IoHelper::getRights(filepath, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
+        CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 #endif
 
         /* Test all the possible rights and all the possible order of rights modification. ie:
@@ -185,27 +184,27 @@ void TestIo::testCheckSetAndGetRights() {
          */
 #ifdef _WIN32
 
-        IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the windows API
-        for (int i = 0; i < 2; i++) {          // Test Windows API and fallback method
+        IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
+        for (int i = 0; i < 2; i++) { // Test Windows API and fallback method
 #endif
-            for (int baseRigths = 0; baseRigths < 7;
-                 baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
-                for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                    auto rightsSet = RightsSet(baseRigths);
+            for (int baseRights = 0; baseRights < 7;
+                 baseRights++) { // Test all the possible rights and the all the possible order of rights modification
+                for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
+                    auto rightsSet = RightsSet(baseRights);
 #ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
-                        continue;  // Skip the test if the rights are not supported by the current method
+                        continue; // Skip the test if the rights are not supported by the current method
                     }
 #endif
                     bool result = IoHelper::setRights(filepath, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
-                    result &= ioError == IoErrorSuccess;
+                    result &= ioError == IoError::Success;
                     if (!result) {
                         IoHelper::setRights(filepath, true, true, true, ioError);
                         CPPUNIT_ASSERT(false /* Failed to set base rights */);
                     }
 
                     result = IoHelper::getRights(filepath, isReadable, isWritable, isExecutable, ioError);
-                    result &= ioError == IoErrorSuccess;
+                    result &= ioError == IoError::Success;
                     if (!result) {
                         IoHelper::setRights(filepath, true, true, true, ioError);
                         CPPUNIT_ASSERT(false /* Failed to get base rights */);
@@ -215,20 +214,20 @@ void TestIo::testCheckSetAndGetRights() {
                         CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                     }
 
-                    rightsSet = RightsSet(targetRigths);
+                    rightsSet = RightsSet(targetRights);
 #ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
-                        continue;  // Skip the test if the rights are not supported by the current method
+                        continue; // Skip the test if the rights are not supported by the current method
                     }
 #endif
                     result = IoHelper::setRights(filepath, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
-                    result &= ioError == IoErrorSuccess;
+                    result &= ioError == IoError::Success;
                     if (!result) {
                         IoHelper::setRights(filepath, true, true, true, ioError);
                         CPPUNIT_ASSERT(false /* Failed to set target rights */);
                     }
                     result = IoHelper::getRights(filepath, isReadable, isWritable, isExecutable, ioError);
-                    result &= ioError == IoErrorSuccess;
+                    result &= ioError == IoError::Success;
                     if (!result) {
                         IoHelper::setRights(filepath, true, true, true, ioError);
                         CPPUNIT_ASSERT(false /* Failed to get target rights */);
@@ -242,11 +241,11 @@ void TestIo::testCheckSetAndGetRights() {
             }
 #ifdef _WIN32
             if (i == 0) {
-                CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
+                CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the windows API
             }
-            IoHelper::_getAndSetRightsMethod = 1;  // Set the method to use the std::filesystem method (fallback)
+            IoHelper::_getAndSetRightsMethod = 1; // Set the method to use the std::filesystem method (fallback)
         }
-        IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the windows API
+        IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
 #endif
 
         // Restore the rights
@@ -261,12 +260,12 @@ void TestIo::testCheckSetAndGetRights() {
         const SyncPath subFilePath = path / "subFile.txt";
 
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         CPPUNIT_ASSERT(IoHelper::createDirectory(subFolderPath, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         std::ofstream file(subFilePath);
         CPPUNIT_ASSERT(file.is_open());
@@ -282,32 +281,32 @@ void TestIo::testCheckSetAndGetRights() {
         result = IoHelper::setRights(subFolderPath, true, true, true, ioError);
         result = IoHelper::setRights(subFilePath, true, true, true, ioError);
         CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
+        CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
         CPPUNIT_ASSERT(IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
+        CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
         CPPUNIT_ASSERT(IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
+        CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
         result = IoHelper::setRights(path, true, false, true, ioError);
-        result &= ioError == IoErrorSuccess;
+        result &= ioError == IoError::Success;
         if (!result) {
-            IoHelper::setRights(path, true, true, true, ioError);  // Restore the rights for delete
+            IoHelper::setRights(path, true, true, true, ioError); // Restore the rights for delete
             CPPUNIT_ASSERT(false /* Failed to set base rights */);
         }
 
         CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && !isWritable && isExecutable);
+        CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && !isWritable && isExecutable);
         CPPUNIT_ASSERT(IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
+        CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
         CPPUNIT_ASSERT(IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
+        CPPUNIT_ASSERT(ioError == IoError::Success && isReadable && isWritable && isExecutable);
 
         // Restore the rights
-        IoHelper::setRights(path, true, true, true, ioError);  // Restore the rights for delete
+        IoHelper::setRights(path, true, true, true, ioError); // Restore the rights for delete
 #ifdef _WIN32
-        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
+        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the windows API
 #endif
     }
 
@@ -318,12 +317,12 @@ void TestIo::testCheckSetAndGetRights() {
         const SyncPath path = temporaryDirectory.path() / "testCheckSetAndGetRights";
         const SyncPath subFolderPath = path / "subFolder";
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         CPPUNIT_ASSERT(IoHelper::createDirectory(subFolderPath, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         bool isReadable = false;
         bool isWritable = false;
@@ -349,12 +348,12 @@ void TestIo::testCheckSetAndGetRights() {
          *  ...
          */
         IoHelper::_setRightsWindowsApiInheritance = true;
-        for (int baseRigths = 0; baseRigths < 7;
-             baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
-            for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                auto rightsSet = RightsSet(baseRigths);
+        for (int baseRights = 0; baseRights < 7;
+             baseRights++) { // Test all the possible rights and the all the possible order of rights modification
+            for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
+                auto rightsSet = RightsSet(baseRights);
                 bool result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
-                result &= ioError == IoErrorSuccess;
+                result &= ioError == IoError::Success;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     IoHelper::_setRightsWindowsApiInheritance = false;
@@ -362,7 +361,7 @@ void TestIo::testCheckSetAndGetRights() {
                 }
 
                 result = IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError);
-                result &= ioError == IoErrorSuccess;
+                result &= ioError == IoError::Success;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     IoHelper::_setRightsWindowsApiInheritance = false;
@@ -375,16 +374,16 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
 
-                rightsSet = RightsSet(targetRigths);
+                rightsSet = RightsSet(targetRights);
                 result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
-                result &= ioError == IoErrorSuccess;
+                result &= ioError == IoError::Success;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     IoHelper::_setRightsWindowsApiInheritance = false;
                     CPPUNIT_ASSERT(false /* Failed to set target rights */);
                 }
                 result = IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError);
-                result &= ioError == IoErrorSuccess;
+                result &= ioError == IoError::Success;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     IoHelper::_setRightsWindowsApiInheritance = false;
@@ -402,7 +401,7 @@ void TestIo::testCheckSetAndGetRights() {
         // Restore the rights
         IoHelper::setRights(path, true, true, true, ioError);
         IoHelper::_setRightsWindowsApiInheritance = false;
-        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
+        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the windows API
 #endif
     }
 
@@ -413,9 +412,9 @@ void TestIo::testCheckSetAndGetRights() {
         const SyncPath path = temporaryDirectory.path() / "testCheckSetAndGetRights";
         const SyncPath filePath = path / "file.txt";
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         std::ofstream file(filePath);
         CPPUNIT_ASSERT(file.is_open());
@@ -446,12 +445,12 @@ void TestIo::testCheckSetAndGetRights() {
          *  ...
          */
         IoHelper::_setRightsWindowsApiInheritance = true;
-        for (int baseRigths = 0; baseRigths < 7;
-             baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
-            for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                auto rightsSet = RightsSet(baseRigths);
+        for (int baseRights = 0; baseRights < 7;
+             baseRights++) { // Test all the possible rights and the all the possible order of rights modification
+            for (int targetRights = baseRights + 1; targetRights < 8; targetRights++) {
+                auto rightsSet = RightsSet(baseRights);
                 bool result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
-                result &= ioError == IoErrorSuccess;
+                result &= ioError == IoError::Success;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     IoHelper::_setRightsWindowsApiInheritance = false;
@@ -459,7 +458,7 @@ void TestIo::testCheckSetAndGetRights() {
                 }
 
                 result = IoHelper::getRights(filePath, isReadable, isWritable, isExecutable, ioError);
-                result &= ioError == IoErrorSuccess;
+                result &= ioError == IoError::Success;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     IoHelper::_setRightsWindowsApiInheritance = false;
@@ -471,16 +470,16 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
 
-                rightsSet = RightsSet(targetRigths);
+                rightsSet = RightsSet(targetRights);
                 result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
-                result &= ioError == IoErrorSuccess;
+                result &= ioError == IoError::Success;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     IoHelper::_setRightsWindowsApiInheritance = false;
                     CPPUNIT_ASSERT(false /* Failed to set target rights */);
                 }
                 result = IoHelper::getRights(filePath, isReadable, isWritable, isExecutable, ioError);
-                result &= ioError == IoErrorSuccess;
+                result &= ioError == IoError::Success;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     IoHelper::_setRightsWindowsApiInheritance = false;
@@ -498,7 +497,7 @@ void TestIo::testCheckSetAndGetRights() {
         // Restore the rights
         IoHelper::setRights(path, true, true, true, ioError);
         IoHelper::_setRightsWindowsApiInheritance = false;
-        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the wndows API
+        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the wndows API
 #endif
     }
 
@@ -509,26 +508,26 @@ void TestIo::testCheckSetAndGetRights() {
         bool isReadable = false;
         bool isWritable = false;
         bool isExecutable = false;
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
 
         CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT_EQUAL(ioError, IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(ioError, IoError::NoSuchFileOrDirectory);
 
         CPPUNIT_ASSERT(IoHelper::setRights(path, true, true, true, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #ifdef _WIN32
-        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the wndows API
-        IoHelper::_getAndSetRightsMethod = 1;                       // Set the method to use the std::filesystem method (fallback)
+        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the wndows API
+        IoHelper::_getAndSetRightsMethod = 1; // Set the method to use the std::filesystem method (fallback)
         CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
-        CPPUNIT_ASSERT_EQUAL(ioError, IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(ioError, IoError::NoSuchFileOrDirectory);
 
         CPPUNIT_ASSERT(IoHelper::setRights(path, true, true, true, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 
 #endif
     }
 #ifdef _WIN32
-    IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the std::filesystem method (fallback)
+    IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the std::filesystem method (fallback)
 #endif
 }
-}  // namespace KDC
+} // namespace KDC

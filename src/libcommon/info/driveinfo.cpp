@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,21 +20,14 @@
 
 namespace KDC {
 
-DriveInfo::DriveInfo(int dbId, int accountDbId, const QString &name, const QColor &color)
-    : _dbId(dbId),
-      _accountDbId(accountDbId),
-      _name(name),
-      _color(color),
-      _maintenance(false),
-      _locked(false),
-      _accessDenied(false) {}
+DriveInfo::DriveInfo(int dbId, int accountDbId, const QString &name, const QColor &color) :
+    _dbId(dbId), _accountDbId(accountDbId), _name(name), _color(color) {}
 
-DriveInfo::DriveInfo()
-    : _dbId(0), _accountDbId(0), _name(QString()), _color(QString()), _maintenance(false), _locked(false), _accessDenied(false) {}
+DriveInfo::DriveInfo() : _dbId(0), _accountDbId(0) {}
 
 QDataStream &operator>>(QDataStream &in, DriveInfo &info) {
     in >> info._dbId >> info._accountDbId >> info._name >> info._color >> info._notifications >> info._maintenance >>
-        info._locked >> info._accessDenied;
+            info._locked >> info._accessDenied;
     return in;
 }
 
@@ -45,9 +38,9 @@ QDataStream &operator<<(QDataStream &out, const DriveInfo &info) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<DriveInfo> &list) {
-    int count = list.size();
+    int count = static_cast<int>(list.size());
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < count; i++) {
         DriveInfo info = list[i];
         out << info;
     }
@@ -65,4 +58,4 @@ QDataStream &operator>>(QDataStream &in, QList<DriveInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

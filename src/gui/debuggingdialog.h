@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ class DebuggingDialog : public CustomDialog {
         CustomToolButton *_extendedLogHelpButton = nullptr;
         CustomCheckBox *_deleteLogsCheckBox = nullptr;
         QPushButton *_saveButton = nullptr;
-        QPushButton *_sendLogButton = nullptr; 
+        QPushButton *_sendLogButton = nullptr;
         QPushButton *_cancelLogUploadButton = nullptr;
         QLabel *_debuggingFolderLabel = nullptr;
         QWidget *_heavyLogBox = nullptr;
@@ -59,11 +59,16 @@ class DebuggingDialog : public CustomDialog {
         QHBoxLayout *_logUploadInfoHBox = nullptr;
         bool _recordDebugging = false;
         bool _extendedLog = false;
-        LogLevel _minLogLevel = LogLevelDebug;
+        LogLevel _minLogLevel = LogLevel::Debug;
         bool _deleteLogs = false;
         bool _needToSave = false;
         bool _sendArchivedLogs = true;
-
+        /* _heavyLogLabelStr can't be a static const because of tr needing to be called at each instantiation to apply the
+         *  current language*
+         */
+        const QString _heavyLogLabelStr =
+                tr("The entire folder is large (> 100 MB) and may take some time to share. To reduce the sharing time, we "
+                   "recommend, that you share only the last kDrive session.");
         void initUI();
         void initLogUploadLayout();
         void displayHeavyLogBox();
@@ -87,4 +92,4 @@ class DebuggingDialog : public CustomDialog {
         void onLogUploadStatusUpdated(LogUploadState state, int progress);
 };
 
-}  // namespace KDC
+} // namespace KDC

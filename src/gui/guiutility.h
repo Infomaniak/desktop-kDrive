@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,8 +41,6 @@ class CustomToolTip;
 
 namespace GuiUtility {
 static const QString learnMoreLink = QString("learnMoreLink");
-static const QString clickHereLink = QString("clickHereLink");
-static const QString clickHereLink2 = QString("clickHereLink2");
 static const QString loginLink = QString("loginLink");
 
 enum systrayPosition { Top = 0, Bottom, Left, Right };
@@ -51,11 +49,11 @@ enum WizardAction { OpenFolder = 0, OpenParameters, AddDrive };
 
 struct StatusInfo {
         bool _unresolvedConflicts = false;
-        KDC::SyncStatus _status = KDC::SyncStatusUndefined;
+        KDC::SyncStatus _status = KDC::SyncStatus::Undefined;
         qint64 _syncedFiles = 0;
         qint64 _totalFiles = 0;
         qint64 _estimatedRemainingTime = 0;
-        KDC::SyncStep _syncStep = KDC::SyncStepNone;
+        KDC::SyncStep _syncStep = KDC::SyncStep::None;
         bool _oneSyncInPropagationStep = false;
         bool _liteSyncActivated = false;
         bool _disconnected = false;
@@ -96,7 +94,7 @@ int getQFontWeightFromQSSFontWeight(int weight);
 qint64 folderSize(const QString &dirPath);
 qint64 folderDiskSize(const QString &dirPath);
 
-// Returns `path` if `nodeType` is `NodeTypeDirectory`, else the parent folder path.
+// Returns `path` if `nodeType` is `NodeType::Directory`, else the parent folder path.
 QString getFolderPath(const QString &path, NodeType nodeType);
 
 // Opens the folder indicated by `path`, if `path` is valid, otherwise tries to open the parent folder.
@@ -117,21 +115,21 @@ QString getDateForCurrentLanguage(const QDateTime &dateTime, const QString &date
 #ifdef Q_OS_LINUX
 bool getLinuxDesktopType(QString &type, QString &version);
 #endif
-template <class C>
+template<class C>
 void setEnabledRecursively(C *root, bool enabled) {
     if (!root) return;
 
     root->setEnabled(enabled);
-    for (auto *child : root->template findChildren<QLayout *>()) {
+    for (auto *child: root->template findChildren<QLayout *>()) {
         setEnabledRecursively(child, enabled);
     }
-    for (auto *child : root->template findChildren<QWidget *>()) {
+    for (auto *child: root->template findChildren<QWidget *>()) {
         if (!enabled) child->setToolTip("");
         setEnabledRecursively(child, enabled);
     }
 }
-}  // namespace GuiUtility
+} // namespace GuiUtility
 
-}  // namespace KDC
+} // namespace KDC
 
 #endif

@@ -13,6 +13,7 @@ set(testcommon_SRCS
         api_token/testapitoken.cpp api_token/testapitoken.h
         utility/testutility.cpp utility/testutility.h
         utility/testtypes.cpp utility/testtypes.h
+        log/sentry/testsentryhandler.h log/sentry/testsentryhandler.cpp
 )
 
 if (WIN32)
@@ -31,17 +32,6 @@ set_target_properties(${testcommon_NAME} PROPERTIES
 target_link_libraries(${testcommon_NAME}
         ${libcommonserver_NAME}
 )
-
-if (WIN32)
-    target_link_libraries(${testcommon_NAME}
-            log4cplus::log4cplusU)
-elseif (APPLE)
-    target_link_libraries(${testcommon_NAME}
-            "/usr/local/lib/liblog4cplusU.dylib")
-else ()
-    target_link_libraries(${testcommon_NAME}
-            "/usr/local/lib/liblog4cplusU.so")
-endif ()
 
 if (WIN32)
     target_link_libraries(${testcommon_NAME}

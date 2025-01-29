@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,10 @@
 #include "testutility.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "config.h"
+#include "libcommon/utility/utility.h" // CommonUtility::isSubDir
+#include "libcommonserver/log/log.h"
 
-#include "libcommon/utility/utility.h"  // CommonUtility::isSubDir
-#include "Poco/URI.h"
+#include <Poco/URI.h>
 
 #include <climits>
 #include <iostream>
@@ -65,7 +66,7 @@ void TestUtility::testIsCreationDateValid(void) {
     auto currentTimePoint = std::chrono::time_point_cast<std::chrono::seconds>(currentTime);
     auto currentTimestamp = currentTimePoint.time_since_epoch().count();
 
-    for (int i = 10; i < currentTimestamp; i += 2629743) {  // step of one month
+    for (int64_t i = 10; i < currentTimestamp; i += 2629743) { // step of one month
         CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(i));
     }
     CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(currentTimestamp));
@@ -105,8 +106,9 @@ void TestUtility::testMsSleep() {
     auto end = std::chrono::high_resolution_clock::now();
     auto timeSpan = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << " timeSpan=" << timeSpan.count();
-    // CPPUNIT_ASSERT(timeSpan.count() > 800 && timeSpan.count() < 1200);
-    CPPUNIT_ASSERT(true);
+    long long timeSpanCount = static_cast<long long>(timeSpan.count());
+    CPPUNIT_ASSERT_GREATER((long long) (800), timeSpanCount);
+    CPPUNIT_ASSERT_LESS((long long) (1200), timeSpanCount);
 }
 
 void TestUtility::testV2ws() {
@@ -116,7 +118,7 @@ void TestUtility::testV2ws() {
     dbtype intValue(1234);
     CPPUNIT_ASSERT(_testObj->v2ws(intValue) == L"1234");
 
-    dbtype int64Value((int64_t)LLONG_MAX);
+    dbtype int64Value((int64_t) LLONG_MAX);
     CPPUNIT_ASSERT(_testObj->v2ws(int64Value) == L"9223372036854775807");
 
     dbtype doubleValue(123.456789);
@@ -177,6 +179,7 @@ void TestUtility::testIsEqualInsensitive(void) {
 }
 
 void TestUtility::testMoveItemToTrash(void) {
+    // !!! Linux - Move to trash fails on tmpfs
     LocalTemporaryDirectory tempDir;
     SyncPath path = tempDir.path() / "test.txt";
     std::ofstream file(path);
@@ -237,10 +240,19 @@ void TestUtility::testJoinStr() {
 }
 
 void TestUtility::testPathDepth() {
-    SyncPath path = "";
-    CPPUNIT_ASSERT_EQUAL(0, _testObj->pathDepth(path));
+    CPPUNIT_ASSERT_EQUAL(0, _testObj->pathDepth({}));
+    CPPUNIT_ASSERT_EQUAL(1, _testObj->pathDepth(SyncPath{"/"}));
+    CPPUNIT_ASSERT_EQUAL(1, _testObj->pathDepth(SyncPath{"A"}));
+    CPPUNIT_ASSERT_EQUAL(2, _testObj->pathDepth(SyncPath{"A/"}));
+    CPPUNIT_ASSERT_EQUAL(2, _testObj->pathDepth(SyncPath{"/A"}));
+    CPPUNIT_ASSERT_EQUAL(3, _testObj->pathDepth(SyncPath{"/A/"}));
+    CPPUNIT_ASSERT_EQUAL(2, _testObj->pathDepth(SyncPath{"A/B"}));
+    CPPUNIT_ASSERT_EQUAL(3, _testObj->pathDepth(SyncPath{"A/B/C"}));
+    CPPUNIT_ASSERT_EQUAL(4, _testObj->pathDepth(SyncPath{"/A/B/C"}));
+    CPPUNIT_ASSERT_EQUAL(5, _testObj->pathDepth(SyncPath{"/A/B/C/"}));
 
-    for (int i = 1; i < 10; i++) {
+    SyncPath path;
+    for (int i = 1; i < 5; i++) {
         path /= "dir";
         CPPUNIT_ASSERT_EQUAL(i, _testObj->pathDepth(path));
     }
@@ -248,15 +260,16 @@ void TestUtility::testPathDepth() {
 
 void TestUtility::testComputeMd5Hash() {
     std::vector<std::pair<std::string, std::string>> testCases = {
-        {"", "d41d8cd98f00b204e9800998ecf8427e"},
-        {"a", "0cc175b9c0f1b6a831c399e269772661"},
-        {"abc", "900150983cd24fb0d6963f7d28e17f72"},
-        {"abcdefghijklmnopqrstuvwxyz", "c3fcd3d76192e4007dfb496cca67e13b"},
-        {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", "d174ab98d277d9f5a5611c2c9f419d9f"},
-        {"12345678901234567890123456789012345678901234567890123456789012345678901234567890", "57edf4a22be3c955ac49da2e2107b67a"},
+            {"", "d41d8cd98f00b204e9800998ecf8427e"},
+            {"a", "0cc175b9c0f1b6a831c399e269772661"},
+            {"abc", "900150983cd24fb0d6963f7d28e17f72"},
+            {"abcdefghijklmnopqrstuvwxyz", "c3fcd3d76192e4007dfb496cca67e13b"},
+            {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", "d174ab98d277d9f5a5611c2c9f419d9f"},
+            {"12345678901234567890123456789012345678901234567890123456789012345678901234567890",
+             "57edf4a22be3c955ac49da2e2107b67a"},
     };
 
-    for (const auto &testCase : testCases) {
+    for (const auto &testCase: testCases) {
         CPPUNIT_ASSERT_EQUAL(testCase.second, _testObj->computeMd5Hash(testCase.first));
         CPPUNIT_ASSERT_EQUAL(testCase.second, _testObj->computeMd5Hash(testCase.first.c_str(), testCase.first.size()));
     }
@@ -286,14 +299,7 @@ void TestUtility::testToUpper() {
 }
 
 void TestUtility::testErrId() {
-    // The macro ERRID expands to Utility::errId(__FILE__, __LINE__) (see types.h)
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), ERRID);
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), _testObj->errId(__FILE__, __LINE__));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/defgh", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DE:10"), _testObj->errId("abc/de.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/def.r", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
 }
 
 void TestUtility::isSubDir() {
@@ -318,14 +324,14 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
 
     bool isManaged = false;
     bool isLink = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     std::filesystem::recursive_directory_iterator entry(tempDir.path());
 
     // Check with an existing file (managed)
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    CPPUNIT_ASSERT(ioError == IoError::Success);
 
     // Check with a simlink (managed)
     const SyncPath simLinkDir = tempDir.path() / "simLinkDir";
@@ -335,14 +341,14 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(isLink);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    CPPUNIT_ASSERT(ioError == IoError::Success);
 
     // Check with a directory
     entry = std::filesystem::recursive_directory_iterator(tempDir.path());
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    CPPUNIT_ASSERT(ioError == IoError::Success);
 }
 
 void TestUtility::testFormatStdError() {
@@ -362,13 +368,39 @@ void TestUtility::testFormatStdError() {
 }
 
 void TestUtility::testFormatIoError() {
-    const IoError ioError = IoErrorSuccess;
-    const SyncPath path = "A/AA";
-    const std::wstring result = _testObj->formatIoError(path, ioError);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''", result.find(L"err='Success'") != std::wstring::npos);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                           result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+    {
+        const IoError ioError = IoError::Success;
+        const SyncPath path = "A/AA";
+        const std::wstring result = _testObj->formatIoError(path, ioError);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
+                               result.find(L"err='Success'") != std::wstring::npos);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
+                               (result.length() - path.native().length()) > 20);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
+                               result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+    }
+
+    {
+        const IoError ioError = IoError::Success;
+        const QString path = "A/AA";
+        const std::wstring result = _testObj->formatIoError(path, ioError);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
+                               result.find(L"err='Success'") != std::wstring::npos);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
+                               (result.length() - path.toStdWString().length()) > 20);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
+                               result.find(path.toStdWString()) != std::wstring::npos);
+    }
+}
+
+void TestUtility::testFormatSyncName() {
+    const SyncName name = Str("FileA.txt");
+    CPPUNIT_ASSERT(Utility::formatSyncName(name).find(SyncName2WStr(name)) != std::wstring::npos);
+}
+
+void TestUtility::testFormatPath() {
+    const QString path = "A/AA";
+    CPPUNIT_ASSERT(Utility::formatPath(path).find(path.toStdWString()) != std::wstring::npos);
 }
 
 void TestUtility::testFormatSyncPath() {
@@ -387,66 +419,95 @@ void TestUtility::testFormatRequest() {
 }
 
 void TestUtility::testNormalizedSyncName() {
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName()).empty());
+    SyncName normalizedName;
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(), normalizedName) && normalizedName.empty());
 
-#ifdef _WIN32
     // The two Unicode normalizations coincide.
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"a") == Utility::normalizedSyncName(L"a", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"@") == Utility::normalizedSyncName(L"@", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"$") == Utility::normalizedSyncName(L"$", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"!") == Utility::normalizedSyncName(L"!", Utility::UnicodeNormalization::NFD));
+    bool equal = false;
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str(""), equal) && equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("a"), equal) && equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("@"), equal) && equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("$"), equal) && equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("!"), equal) && equal);
 
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"abcd") ==
-                   Utility::normalizedSyncName(L"abcd", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"(1234%)") ==
-                   Utility::normalizedSyncName(L"(1234%)", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("abcd"), equal) && equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("(1234%)"), equal) && equal);
 
     // The two Unicode normalizations don't coincide.
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"à") != Utility::normalizedSyncName(L"à", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"é") != Utility::normalizedSyncName(L"é", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"è") != Utility::normalizedSyncName(L"è", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"ê") != Utility::normalizedSyncName(L"ê", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"ü")) !=
-                   Utility::normalizedSyncName(L"ü", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"ö")) !=
-                   Utility::normalizedSyncName(L"ö", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("à"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("é"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("è"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("ê"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("ü"), equal) && !equal);
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("ö"), equal) && !equal);
 
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"aöe")) !=
-                   Utility::normalizedSyncName(L"aöe", Utility::UnicodeNormalization::NFD));
-#else
-    // The two Unicode normalizations coincide.
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("a") == Utility::normalizedSyncName("a", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("@") == Utility::normalizedSyncName("@", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("$") == Utility::normalizedSyncName("$", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("!") == Utility::normalizedSyncName("!", Utility::UnicodeNormalization::NFD));
-
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("abcd") ==
-                   Utility::normalizedSyncName("abcd", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("(1234%)") ==
-                   Utility::normalizedSyncName("(1234%)", Utility::UnicodeNormalization::NFD));
-
-    // The two Unicode normalizations don't coincide.
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("à") != Utility::normalizedSyncName("à", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("é") != Utility::normalizedSyncName("é", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("è") != Utility::normalizedSyncName("è", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("ê") != Utility::normalizedSyncName("ê", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("ü")) !=
-                   Utility::normalizedSyncName("ü", Utility::UnicodeNormalization::NFD));
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("ö")) !=
-                   Utility::normalizedSyncName("ö", Utility::UnicodeNormalization::NFD));
-
-    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("aöe")) !=
-                   Utility::normalizedSyncName("aöe", Utility::UnicodeNormalization::NFD));
-#endif
+    CPPUNIT_ASSERT(checkNfcAndNfdNamesEqual(Str("aöe"), equal) && !equal);
 }
 
 void TestUtility::testNormalizedSyncPath() {
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
+    SyncPath normalizedPath;
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
 #ifdef _WIN32
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)") == SyncPath("a/b/c"));
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)") == SyncPath("/a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)", normalizedPath) && normalizedPath == SyncPath("a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)", normalizedPath) && normalizedPath == SyncPath("/a/b/c"));
 #endif
 }
 
-}  // namespace KDC
+bool TestUtility::checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal) {
+    equal = false;
+
+    SyncName nfcNormalized;
+    if (!Utility::normalizedSyncName(name, nfcNormalized)) {
+        return false;
+    }
+    SyncName nfdNormalized;
+    if (!Utility::normalizedSyncName(name, nfdNormalized, Utility::UnicodeNormalization::NFD)) {
+        return false;
+    }
+    equal = (nfcNormalized == nfdNormalized);
+    return true;
+}
+
+void TestUtility::testIsSameOrParentPath() {
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("", "a"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c", "a/b/c1"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("a/b/c1", "a/b/c"));
+    CPPUNIT_ASSERT(!Utility::isDescendantOrEqual("/a/b/c", "a/b/c"));
+
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("", ""));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b/c"));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a", ""));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a/b"));
+    CPPUNIT_ASSERT(Utility::isDescendantOrEqual("a/b/c", "a"));
+}
+
+void TestUtility::testUserName() {
+    std::string userName(Utility::userName());
+    LOG_DEBUG(Log::instance()->getLogger(), "userName=" << userName.c_str());
+
+#ifdef _WIN32
+    const char *value = std::getenv("USERPROFILE");
+    CPPUNIT_ASSERT(value);
+    const SyncPath homeDir(value);
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+
+    if (homeDir.filename().native() == std::wstring(L"systemprofile")) {
+        // CI execution
+        CPPUNIT_ASSERT_EQUAL(std::string("SYSTEM"), userName);
+    } else {
+        CPPUNIT_ASSERT_EQUAL(SyncName2Str(homeDir.filename().native()), userName);
+    }
+#else
+    const char *value = std::getenv("HOME");
+    CPPUNIT_ASSERT(value);
+    const SyncPath homeDir(value);
+    LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
+    CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), userName);
+#endif
+}
+
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,8 +43,8 @@ static const int winDialogBoxHMargin = 12;
 static const int winDialogBoxVTMargin = 10;
 static const int winDialogBoxVBMargin = 0;
 
-CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent)
-    : QWidget(parent), _popup(popup), _dragging(false), _lastCursorPosition(QPoint()) {
+CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) :
+    QWidget(parent), _popup(popup), _dragging(false), _lastCursorPosition(QPoint()) {
     QHBoxLayout *hBox = new QHBoxLayout();
     setLayout(hBox);
 
@@ -137,7 +137,7 @@ void CustomSystemBar::mouseMoveEvent(QMouseEvent *event) {
 bool CustomSystemBar::event(QEvent *event) {
     if (event->type() == QEvent::WindowActivate || event->type() == QEvent::WindowDeactivate) {
         QList<QToolButton *> buttonList = findChildren<QToolButton *>();
-        for (QToolButton *button : buttonList) {
+        for (QToolButton *button: buttonList) {
             button->setEnabled(event->type() == QEvent::WindowActivate ? true : false);
         }
     }
@@ -150,4 +150,4 @@ void CustomSystemBar::onExit(bool checked) {
     emit exit();
 }
 
-}  // namespace KDC
+} // namespace KDC

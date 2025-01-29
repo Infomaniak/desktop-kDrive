@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@ static const int driveBoxHMargin = 10;
 static const int driveBoxVMargin = 10;
 static const int hButtonsSpacing = 50;
 
-MainMenuBarWidget::MainMenuBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : HalfRoundRectWidget(parent), _gui(gui), _driveSelectionWidget(nullptr), _progressBarWidget(nullptr), _helpButton(nullptr) {
+MainMenuBarWidget::MainMenuBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    HalfRoundRectWidget(parent), _gui(gui), _driveSelectionWidget(nullptr), _progressBarWidget(nullptr), _helpButton(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setSpacing(0);
 
@@ -112,4 +112,4 @@ void MainMenuBarWidget::retranslateUi() {
     _helpButton->setToolTip(tr("Help"));
 }
 
-}  // namespace KDC
+} // namespace KDC

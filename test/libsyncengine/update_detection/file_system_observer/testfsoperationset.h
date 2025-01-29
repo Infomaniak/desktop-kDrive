@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,8 +54,9 @@ class TestFsOperationSet : public CppUnit::TestFixture {
         void testfindOp();
         void testOperatorEqual();
         void testCopyConstructor();
+
     private:
         std::vector<OperationType> _operationTypes;
 };
 
-}  // namespace KDC
+} // namespace KDC

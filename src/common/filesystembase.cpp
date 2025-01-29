@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,13 +51,13 @@ void FileSystem::setFileHidden(const QString &filename, bool hidden) {
     QString fName = longWinPath(filename);
     DWORD dwAttrs;
 
-    dwAttrs = GetFileAttributesW((wchar_t *)fName.utf16());
+    dwAttrs = GetFileAttributesW((wchar_t *) fName.utf16());
 
     if (dwAttrs != INVALID_FILE_ATTRIBUTES) {
         if (hidden && !(dwAttrs & FILE_ATTRIBUTE_HIDDEN)) {
-            SetFileAttributesW((wchar_t *)fName.utf16(), dwAttrs | FILE_ATTRIBUTE_HIDDEN);
+            SetFileAttributesW((wchar_t *) fName.utf16(), dwAttrs | FILE_ATTRIBUTE_HIDDEN);
         } else if (!hidden && (dwAttrs & FILE_ATTRIBUTE_HIDDEN)) {
-            SetFileAttributesW((wchar_t *)fName.utf16(), dwAttrs & ~FILE_ATTRIBUTE_HIDDEN);
+            SetFileAttributesW((wchar_t *) fName.utf16(), dwAttrs & ~FILE_ATTRIBUTE_HIDDEN);
         }
     }
 #else
@@ -111,7 +111,7 @@ void FileSystem::setFileReadOnlyWeak(const QString &filename, bool readonly) {
     QFile::Permissions permissions = file.permissions();
 
     if (!readonly && (permissions & QFile::WriteOwner)) {
-        return;  // already writable enough
+        return; // already writable enough
     }
 
     setFileReadOnly(filename, readonly);
@@ -125,14 +125,14 @@ bool FileSystem::rename(const QString &originFileName, const QString &destinatio
     QString dest = longWinPath(destinationFileName);
 
     if (isLnkFile(originFileName) || isLnkFile(destinationFileName)) {
-        success = MoveFileEx((wchar_t *)orig.utf16(), (wchar_t *)dest.utf16(), MOVEFILE_COPY_ALLOWED | MOVEFILE_WRITE_THROUGH);
+        success = MoveFileEx((wchar_t *) orig.utf16(), (wchar_t *) dest.utf16(), MOVEFILE_COPY_ALLOWED | MOVEFILE_WRITE_THROUGH);
         if (!success) {
             wchar_t *string = 0;
-            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, ::GetLastError(),
-                          MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&string, 0, NULL);
+            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, nullptr, ::GetLastError(),
+                          MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) &string, 0, nullptr);
 
             error = QString::fromWCharArray(string);
-            LocalFree((HLOCAL)string);
+            LocalFree((HLOCAL) string);
         }
     } else
 #endif
@@ -174,11 +174,11 @@ bool FileSystem::openAndSeekFileSharedRead(QFile *file, QString *errorOrNull, qi
     DWORD creationDisp = OPEN_EXISTING;
 
     // Create the file handle.
-    SECURITY_ATTRIBUTES securityAtts = {sizeof(SECURITY_ATTRIBUTES), NULL, FALSE};
+    SECURITY_ATTRIBUTES securityAtts = {sizeof(SECURITY_ATTRIBUTES), nullptr, FALSE};
     QString fName = longWinPath(file->fileName());
 
-    HANDLE fileHandle = CreateFileW((const wchar_t *)fName.utf16(), accessRights, shareMode, &securityAtts, creationDisp,
-                                    FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE fileHandle = CreateFileW((const wchar_t *) fName.utf16(), accessRights, shareMode, &securityAtts, creationDisp,
+                                    FILE_ATTRIBUTE_NORMAL, nullptr);
 
     // Bail out on error.
     if (fileHandle == INVALID_HANDLE_VALUE) {
@@ -189,7 +189,7 @@ bool FileSystem::openAndSeekFileSharedRead(QFile *file, QString *errorOrNull, qi
     // Convert the HANDLE to an fd and pass it to QFile's foreign-open
     // function. The fd owns the handle, so when QFile later closes
     // the fd the handle will be closed too.
-    int fd = _open_osfhandle((intptr_t)fileHandle, _O_RDONLY);
+    int fd = _open_osfhandle((intptr_t) fileHandle, _O_RDONLY);
     if (fd == -1) {
         error = "could not make fd from handle";
         CloseHandle(fileHandle);
@@ -197,7 +197,7 @@ bool FileSystem::openAndSeekFileSharedRead(QFile *file, QString *errorOrNull, qi
     }
     if (!file->open(fd, QIODevice::ReadOnly, QFile::AutoCloseHandle)) {
         error = file->errorString();
-        _close(fd);  // implicitly closes fileHandle
+        _close(fd); // implicitly closes fileHandle
         return false;
     }
 
@@ -261,7 +261,7 @@ bool FileSystem::isFileLocked(const QString &fileName) {
     if (attr != INVALID_FILE_ATTRIBUTES) {
         // Try to open the file with as much access as possible..
         HANDLE win_h = CreateFileW(wuri, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                                   NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                                   nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
         if (win_h == INVALID_HANDLE_VALUE) {
             /* could not be opened, so locked? */
@@ -288,4 +288,4 @@ void FileSystem::setUserWritePermission(const QString &filename) {
     file.setPermissions(tmpPerm);
 }
 
-}  // namespace KDC
+} // namespace KDC

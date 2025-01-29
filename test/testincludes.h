@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,22 +32,5 @@
 #ifdef _WIN32
 #define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */
 #endif
-
-#include "config.h"
-#include "utility/types.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommon/utility/utility.h"
-
-static const KDC::SyncPath localTestDirPath(KDC::Utility::s2ws(TEST_DIR) + L"/test_ci");
-static const KDC::SyncTime defaultTime = std::time(nullptr);
-static const int64_t defaultSize = 1654788079;
-
-static std::string loadEnvVariable(const std::string &key) {
-    const std::string val = KDC::CommonUtility::envVarValue(key);
-    if (val.empty()) {
-        throw std::runtime_error("Environment variables " + key + " is missing!");
-    }
-    return val;
-}
 
 int runTestSuite(const std::string &logFileName);

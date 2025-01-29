@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,13 @@
 namespace KDC {
 
 struct COMMONSERVER_EXPORT JsonParserUtility {
-        template <typename T>
-        static bool extractValue(const Poco::JSON::Object::Ptr obj, const std::string &key, T &val, bool mandatory = true) {
+        template<typename T>
+        static bool extractValue(const Poco::JSON::Object::Ptr obj, const std::string &key, T &val, const bool mandatory = true) {
+            val = T();
             if (!obj) {
                 LOG_WARN(Log::instance()->getLogger(), "JSON object is NULL");
                 return false;
-            }
+            } // namespace KDC
 
             if (obj->has(key) && obj->isNull(key)) {
                 // Item exist in JSON but is null, this is ok
@@ -45,19 +46,43 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
                 var.convert(val);
             } catch (...) {
                 if (mandatory) {
-                    std::string msg = "Fail to extract value for key=" + key;
+                    const std::string msg = "Fail to extract value for key=" + key;
                     LOG_WARN(Log::instance()->getLogger(), msg.c_str());
-#ifdef NDEBUG
-                    sentry_capture_event(
-                        sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "JsonParserUtility::extractValue", msg.c_str()));
-#endif
-
+                    sentry::Handler::captureMessage(sentry::Level::Error, "JsonParserUtility::extractValue", msg);
                     return false;
                 }
             }
 
             return true;
         }
+
+        static Poco::JSON::Object::Ptr extractJsonObject(const Poco::JSON::Object::Ptr parentObj, const std::string &key) {
+            if (!parentObj) {
+                LOG_WARN(Log::instance()->getLogger(), "Parent object is NULL.");
+                return nullptr;
+            }
+
+            Poco::JSON::Object::Ptr obj = parentObj->getObject(key);
+            if (!obj) {
+                LOG_WARN(Log::instance()->getLogger(), "Missing JSON object: " << key.c_str());
+            }
+
+            return obj;
+        }
+
+        static Poco::JSON::Array::Ptr extractArrayObject(const Poco::JSON::Object::Ptr parentObj, const std::string &key) {
+            if (!parentObj) {
+                LOG_WARN(Log::instance()->getLogger(), "Parent object is NULL.");
+                return nullptr;
+            }
+
+            Poco::JSON::Array::Ptr array = parentObj->getArray(key);
+            if (!array) {
+                LOG_WARN(Log::instance()->getLogger(), "Missing JSON array: " << key.c_str());
+            }
+
+            return array;
+        }
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include "libcommon/info/nodeinfo.h"
 
 #include <QString>
-#include <QThread>
 #include <QCoreApplication>
 
 static const QString dirSeparator = "/";
@@ -31,7 +30,7 @@ static const QString dirSeparator = "/";
 namespace KDC {
 
 struct COMMONGUI_EXPORT CommonGuiUtility {
-        static void sleep(int sec);
+        static void sleep(unsigned long sec);
         static QString durationToDescriptiveString1(quint64 msecs);
 
         static void setupFavLink(const QString &folder);
@@ -41,4 +40,4 @@ struct COMMONGUI_EXPORT CommonGuiUtility {
         static QString octetsToString(qint64 octets);
 };
 
-}  // namespace KDC
+} // namespace KDC

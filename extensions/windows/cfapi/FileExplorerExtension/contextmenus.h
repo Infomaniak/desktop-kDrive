@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,8 +72,8 @@ class ExplorerCommandHandlerEnumerator : public IEnumExplorerCommand {
         // IUnknown
         IFACEMETHODIMP QueryInterface(REFIID riid, void **ppv) {
             static const QITAB qit[] = {
-                QITABENT(ExplorerCommandHandlerEnumerator, IEnumExplorerCommand),
-                {0},
+                    QITABENT(ExplorerCommandHandlerEnumerator, IEnumExplorerCommand),
+                    {0},
             };
             return QISearch(this, qit, riid, ppv);
         }
@@ -92,12 +92,12 @@ class ExplorerCommandHandlerEnumerator : public IEnumExplorerCommand {
         IFACEMETHODIMP Skip(ULONG celt);
         IFACEMETHODIMP Reset();
         IFACEMETHODIMP Clone(IEnumExplorerCommand **ppenum) {
-            *ppenum = NULL;
+            *ppenum = nullptr;
             return E_NOTIMPL;
         }
 
-        ExplorerCommandHandlerEnumerator(const ContextMenuInfo &contextMenuInfo)
-            : _cRef(1), _ullCurrent(0), _contextMenuInfo(contextMenuInfo) {}
+        ExplorerCommandHandlerEnumerator(const ContextMenuInfo &contextMenuInfo) :
+            _cRef(1), _ullCurrent(0), _contextMenuInfo(contextMenuInfo) {}
 
     private:
         ~ExplorerCommandHandlerEnumerator() {}

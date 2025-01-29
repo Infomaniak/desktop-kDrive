@@ -34,6 +34,7 @@ set(testsyncengine_SRCS
         ## Update Detector
         update_detection/update_detector/testupdatetree.h update_detection/update_detector/testupdatetree.cpp
         update_detection/update_detector/testupdatetreeworker.h update_detection/update_detector/testupdatetreeworker.cpp
+        update_detection/update_detector/testnode.h update_detection/update_detector/testnode.cpp
         # Reconciliation
         reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.h reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.cpp
         reconciliation/conflict_finder/testconflictfinderworker.h reconciliation/conflict_finder/testconflictfinderworker.cpp
@@ -49,9 +50,14 @@ set(testsyncengine_SRCS
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
-        ../test_classes/syncpaltest.cpp
-        ../test_classes/syncpaltest.h
+        requests/testserverrequests.h  requests/testserverrequests.cpp
 )
+
+if (APPLE)
+    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp)
+elseif (UNIX)
+    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherlinux.h update_detection/file_system_observer/testfolderwatcherlinux.cpp)
+endif ()
 
 if (USE_OUR_OWN_SQLITE3)
     list(APPEND testsyncengine_SRCS ${SQLITE3_SOURCE})
@@ -76,17 +82,6 @@ target_link_libraries(${testsyncengine_NAME}
 
 if (WIN32)
     target_link_libraries(${testsyncengine_NAME}
-            log4cplus::log4cplusU)
-elseif (APPLE)
-    target_link_libraries(${testsyncengine_NAME}
-            "/usr/local/lib/liblog4cplusU.dylib")
-else ()
-    target_link_libraries(${testsyncengine_NAME}
-            "/usr/local/lib/liblog4cplusU.so")
-endif ()
-
-if (WIN32)
-    target_link_libraries(${testsyncengine_NAME}
         debug
         "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
         optimized
@@ -100,12 +95,6 @@ else ()
 endif ()
 
 if (APPLE)
-    # Default sync exclude list
-    install(FILES ${CMAKE_SOURCE_DIR}/sync-exclude-osx.lst DESTINATION ${BIN_OUTPUT_DIRECTORY} RENAME sync-exclude.lst)
-
-    # Default Lite Sync app exclude list
-    install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
-
     install(CODE "
         message(STATUS \"Fixing library paths for ${testsyncengine_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})

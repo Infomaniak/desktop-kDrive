@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ namespace KDC {
 
 OldSyncDb::OldSyncDb(const SyncPath &dbPath) : Db(dbPath) {
     if (!checkConnect(std::string())) {
-        throw std::runtime_error("Cannot open DB!");
+        throw std::runtime_error("Cannot open old SyncDb.");
     }
 
     LOG_INFO(_logger, "Old SyncDb initialization done");
@@ -43,24 +43,14 @@ bool OldSyncDb::create(bool &retry) {
 }
 
 bool OldSyncDb::prepare() {
-    int errId = -1;
-    std::string error;
-
-    // Prepare request
-    ASSERT(queryCreate(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_SELECTIVESYNC_REQUEST, false, errId, error)) {
-        queryFree(SELECT_ALL_SELECTIVESYNC_REQUEST_ID);
-        return sqlFail(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, error);
-    }
-
-    return true;
+    return createAndPrepareRequest(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_SELECTIVESYNC_REQUEST);
 }
 
 bool OldSyncDb::upgrade(const std::string &, const std::string &) {
     return true;
 }
 
-bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, int>> &selectiveSyncList) {
+bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, SyncNodeType>> &selectiveSyncList) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
@@ -79,11 +69,11 @@ bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, int>> &s
         int type = -1;
         ASSERT(queryIntValue(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, 1, type));
 
-        selectiveSyncList.push_back(std::make_pair(path, type));
+        selectiveSyncList.push_back(std::make_pair(path, fromInt<SyncNodeType>(type)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
 
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

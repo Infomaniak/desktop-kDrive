@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,19 +24,12 @@
 
 namespace KDC {
 
-static int defaultToolTipDuration = 3000;  // ms
+static int defaultToolTipDuration = 3000; // ms
 
-CustomToolButton::CustomToolButton(QWidget *parent)
-    : QToolButton(parent),
-      _withMenu(false),
-      _baseIconSize(QSize()),
-      _iconPath(QString()),
-      _iconColor(QColor()),
-      _iconColorHover(QColor()),
-      _toolTipText(QString()),
-      _toolTipDuration(defaultToolTipDuration),
-      _hover(false),
-      _customToolTip(nullptr) {
+CustomToolButton::CustomToolButton(QWidget *parent) :
+    QToolButton(parent), _withMenu(false), _baseIconSize(QSize()), _iconPath(QString()), _iconColor(QColor()),
+    _iconColorHover(QColor()), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _hover(false),
+    _customToolTip(nullptr) {
     connect(this, &CustomToolButton::baseIconSizeChanged, this, &CustomToolButton::onBaseIconSizeChanged);
     connect(this, &CustomToolButton::iconColorChanged, this, &CustomToolButton::onIconColorChanged);
     connect(this, &CustomToolButton::clicked, this, &CustomToolButton::onClicked);
@@ -120,4 +113,4 @@ void CustomToolButton::setHover(bool hover) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

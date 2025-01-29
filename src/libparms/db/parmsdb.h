@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,9 @@ class PARMS_EXPORT ParmsDb : public Db {
         static std::shared_ptr<ParmsDb> instance(const std::filesystem::path &dbPath = std::filesystem::path(),
                                                  const std::string &version = std::string(), bool autoDelete = false,
                                                  bool test = false);
+
+        std::string dbType() const override { return "Parms"; }
+
         static void reset();
 
         ParmsDb(ParmsDb const &) = delete;
@@ -62,6 +65,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectUserFromAccountDbId(int dbId, User &user, bool &found);
         bool selectUserFromDriveDbId(int dbId, User &user, bool &found);
         bool selectAllUsers(std::vector<User> &userList);
+        bool selectLastConnectedUser(User &user, bool &found);
         bool getNewUserDbId(int &dbId);
 
         bool insertAccount(const Account &account);
@@ -90,6 +94,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool setSyncHasFullyCompleted(int dbId, bool value, bool &found);
         bool deleteSync(int dbId, bool &found);
         bool selectSync(int dbId, Sync &sync, bool &found);
+        bool selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found);
         bool selectAllSyncs(std::vector<Sync> &syncList);
         bool selectAllSyncs(int driveDbId, std::vector<Sync> &syncList);
         bool getNewSyncDbId(int &dbId);
@@ -117,17 +122,17 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs);
         bool selectConflicts(int syncDbId, ConflictType filter, std::vector<Error> &errs);
         bool deleteErrors(ErrorLevel level);
-        bool deleteError(int dbId, bool &found);
+        bool deleteError(int64_t dbId, bool &found);
 
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
         bool selectAppState(AppStateKey key, AppStateValue &value, bool &found);
-        bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found);  // update or insert
+        bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found); // update or insert
 
     private:
         friend class TestParmsDb;
-        bool _test;
+        bool _test{false};
 
         static std::shared_ptr<ParmsDb> _instance;
 
@@ -135,14 +140,16 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertDefaultParameters();
         bool insertDefaultAppState();
-        bool insertAppState(AppStateKey key, const std::string &value);
+        bool insertAppState(AppStateKey key, const std::string &value, bool updateOnlyIfEmpty = false);
         bool updateExclusionTemplates();
 
         bool createAppState();
         bool prepareAppState();
 
+        void fillSyncWithQueryResult(Sync &sync, const char *requestId);
+
 #ifdef __APPLE__
         bool updateExclusionApps();
 #endif
 };
-}  // namespace KDC
+} // namespace KDC

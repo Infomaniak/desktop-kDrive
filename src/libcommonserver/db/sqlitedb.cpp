@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,19 +149,19 @@ void SqliteDb::close() {
         // Delete DB
         std::error_code ec;
         if (!std::filesystem::remove(_dbPath, ec)) {
-            if (ec.value() != 0) {
-                LOGW_WARN(_logger, L"Failed to check if path exists " << Path2WStr(_dbPath).c_str() << L": "
-                                                                      << Utility::s2ws(ec.message()).c_str() << L" ("
-                                                                      << ec.value() << L")");
+            if (ec) {
+                LOGW_WARN(_logger, L"Failed to check if  " << Utility::formatSyncPath(_dbPath).c_str() << L" exists: "
+                                                           << Utility::formatStdError(ec).c_str());
             }
 
-            LOG_WARN(_logger, "Failed to remove db file");
+            LOG_WARN(_logger, "Failed to remove db file.");
         }
     }
 }
 
 bool SqliteDb::queryCreate(const std::string &id) {
     if (_queries.find(id) != _queries.end()) {
+        LOG_WARN(_logger, "Query ID " << id.c_str() << " already exist.");
         return false;
     }
 
@@ -304,9 +304,9 @@ bool SqliteDb::queryBlobValue(const std::string &id, int index, std::shared_ptr<
     if (_queries.find(id) != _queries.end()) {
         const QueryInfo &queryInfo = _queries.at(id);
         if (queryInfo._result._hasData) {
-            size_t blobSize = queryInfo._query->blobSize(index);
+            size_t blobSize = static_cast<size_t>(queryInfo._query->blobSize(index));
             if (blobSize) {
-                const unsigned char *blob = (const unsigned char *)queryInfo._query->blobValue(index);
+                const unsigned char *blob = (const unsigned char *) queryInfo._query->blobValue(index);
                 value = std::shared_ptr<std::vector<char>>(new std::vector<char>(blob, blob + blobSize));
                 if (!value) {
                     LOG_WARN(_logger, "Memory allocation error");
@@ -411,7 +411,7 @@ namespace details {
 
 SyncName makeSyncName(sqlite3_value *value) {
 #ifdef _WIN32
-    auto wvalue = (wchar_t *)sqlite3_value_text16(value);
+    auto wvalue = (wchar_t *) sqlite3_value_text16(value);
     return wvalue ? reinterpret_cast<const wchar_t *>(wvalue) : SyncName();
 #else
     auto charValue = reinterpret_cast<const char *>(sqlite3_value_text(value));
@@ -421,7 +421,13 @@ SyncName makeSyncName(sqlite3_value *value) {
 
 static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value **argv) {
     if (argc == 1) {
-        SyncName normalizedName = Utility::normalizedSyncName(makeSyncName(argv[0]));
+        SyncName name(makeSyncName(argv[0]));
+        SyncName normalizedName;
+        if (!Utility::normalizedSyncName(name, normalizedName)) {
+            // TODO: Is there a better solution?
+            normalizedName = name;
+        }
+
         if (!normalizedName.empty()) {
 #ifdef _WIN32
             sqlite3_result_text16(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
@@ -433,11 +439,11 @@ static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value 
     }
     sqlite3_result_null(context);
 }
-}  // namespace details
+} // namespace details
 
 int SqliteDb::createNormalizeSyncNameFunc() {
     return sqlite3_create_function(_sqlite3Db.get(), "normalizeSyncName", 1, SQLITE_UTF8, nullptr, &details::normalizeSyncName,
                                    nullptr, nullptr);
 }
 
-}  // namespace KDC
+} // namespace KDC

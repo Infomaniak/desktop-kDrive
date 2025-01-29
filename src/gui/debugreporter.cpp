@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@ static const QVector<QString> mapKeyName = QVector<QString>() << QString("Drive 
 
 Q_LOGGING_CATEGORY(lcDebugReporter, "gui.debugreporter", QtInfoMsg)
 
-DebugReporter::DebugReporter(const QUrl &url, QWidget *parent)
-    : QProgressDialog(tr("Sending of debugging information"), tr("Cancel"), 0, 100, parent), m_reply(0), m_url(url) {
+DebugReporter::DebugReporter(const QUrl &url, QWidget *parent) :
+    QProgressDialog(tr("Sending of debugging information"), tr("Cancel"), 0, 100, parent), m_reply(0), m_url(url) {
     // Add a layout in order to auto-resize to the content
     QVBoxLayout *layout = new QVBoxLayout;
     foreach (QObject *obj, children()) {
@@ -121,7 +121,7 @@ void DebugReporter::onProgress(qint64 done, qint64 total) {
         m_reply->abort();
     } else {
         if (total > 0) {
-            setValue(100 * done / total);
+            setValue(static_cast<int>(100 * done / total));
         }
     }
 }
@@ -134,4 +134,4 @@ void DebugReporter::onFail(int error, const QString &errorString) {
     reset();
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
     private:
         bool keepLocalVersion(const Error &error);
         bool keepRemoteVersion(const Error &error);
-        void deleteError(int errorDbId);
+        void deleteError(int64_t errorDbId);
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         bool _keepLocalVersion = false;
@@ -48,4 +48,4 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
         uint64_t _nbErrors = 0;
 };
 
-}  // namespace KDC
+} // namespace KDC

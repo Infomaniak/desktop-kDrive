@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,8 @@
 #include <searchapi.h>
 #include <minwinbase.h>
 #include <cfapi.h>
+#include <source_location>
+
 
 #define MAX_URI 255
 #define MAX_FULL_PATH 32000
@@ -39,17 +41,18 @@
 #define MSG_ARG_SEPARATOR L'\x1e'
 #define MSG_END L"\\/\n"
 
-#define TRACE(TRACE_LEVEL, MESSAGE, ...)                        \
-    {                                                           \
-        const int sz = 255;                                     \
-        wchar_t msg[sz];                                        \
-        swprintf(msg, sz, MESSAGE, __VA_ARGS__);                \
-        Utilities::trace(TRACE_LEVEL, __FILE__, __LINE__, msg); \
+#define TRACE(TRACE_LEVEL, MESSAGE, ...)                                           \
+    {                                                                              \
+        const auto location = std::source_location::current();                     \
+        const int sz = 255;                                                        \
+        wchar_t msg[sz];                                                           \
+        swprintf(msg, sz, MESSAGE, __VA_ARGS__);                                   \
+        Utilities::trace(TRACE_LEVEL, location.file_name(), location.line(), msg); \
     }
-#define TRACE_INFO(MESSAGE, ...) TRACE(TRACE_LEVEL_INFO, MESSAGE, __VA_ARGS__)
-#define TRACE_DEBUG(MESSAGE, ...) TRACE(TRACE_LEVEL_DEBUG, MESSAGE, __VA_ARGS__)
-#define TRACE_WARNING(MESSAGE, ...) TRACE(TRACE_LEVEL_WARNING, MESSAGE, __VA_ARGS__)
-#define TRACE_ERROR(MESSAGE, ...) TRACE(TRACE_LEVEL_ERROR, MESSAGE, __VA_ARGS__)
+#define TRACE_INFO(MESSAGE, ...) TRACE(TraceLevel::INFO, MESSAGE, __VA_ARGS__)
+#define TRACE_DEBUG(MESSAGE, ...) TRACE(TraceLevel::DEBUG, MESSAGE, __VA_ARGS__)
+#define TRACE_WARNING(MESSAGE, ...) TRACE(TraceLevel::WARNING, MESSAGE, __VA_ARGS__)
+#define TRACE_ERROR(MESSAGE, ...) TRACE(TraceLevel::_ERROR, MESSAGE, __VA_ARGS__)
 
 class Utilities {
     public:
@@ -80,12 +83,12 @@ class Utilities {
         static std::string utf16ToUtf8(const wchar_t *utf16, int len = -1);
         static std::wstring utf8ToUtf16(const char *utf8, int len = -1);
 
-        template <class T>
+        template<class T>
         static bool begins_with(const T &input, const T &match) {
             return input.size() >= match.size() && std::equal(match.begin(), match.end(), input.begin());
         }
 
-        template <class T>
+        template<class T>
         static bool ends_with(const T &input, const T &match) {
             return input.size() >= match.size() && std::equal(match.rbegin(), match.rend(), input.rbegin());
         }
@@ -101,8 +104,8 @@ class Utilities {
 
         static std::wstring getLastErrorMessage();
 
-        static bool checkIfLink(const wchar_t *path, bool &isSymlink, bool &isJunction, bool &exists);
-        static bool checkIfDirectory(const wchar_t *path, bool &isDirectory, bool &exists);
+        static bool checkIfIsLink(const wchar_t *path, bool &isSymlink, bool &isJunction, bool &exists);
+        static bool checkIfIsDirectory(const wchar_t *path, bool &isDirectory, bool &exists);
         static bool getCreateFileFlagsAndAttributes(const wchar_t *path, DWORD &dwFlagsAndAttributes, bool &exists);
 
         static TraceCbk s_traceCbk;

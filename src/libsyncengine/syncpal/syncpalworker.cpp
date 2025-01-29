@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,36 +27,47 @@
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
 #include "libcommonserver/utility/utility.h"
-
+#include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/ptraces.h"
+#include "libcommon/log/sentry/utility.h"
 #include <log4cplus/loggingmacros.h>
 
 #define UPDATE_PROGRESS_DELAY 1
 
 namespace KDC {
 
-SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName)
-    : ISyncWorker(syncPal, name, shortName),
-      _step(SyncStepIdle),
-      _pauseTime(std::chrono::time_point<std::chrono::system_clock>()) {}
+SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
+    ISyncWorker(syncPal, name, shortName), _step(SyncStep::Idle),
+    _pauseTime(std::chrono::time_point<std::chrono::system_clock>()) {}
 
 void SyncPalWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
-
+    ExitCode exitCode(ExitCode::Unknown);
+    sentry::pTraces::scoped::SyncInit perfMonitor(syncDbId());
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
-
-    if (_syncPal->_vfsMode != VirtualFileModeOff) {
+    if (_syncPal->vfsMode() != VirtualFileMode::Off) {
+        sentry::pTraces::scoped::ResetStatus perfMonitor1(syncDbId());
         // Reset vfs files status
         if (!resetVfsFilesStatus()) {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
+        } else {
+            perfMonitor1.stop();
         }
 
-        if (_syncPal->_vfsMode == VirtualFileModeMac) {
+        // Manage stop
+        if (stopAsked()) {
+            // Exit
+            exitCode = ExitCode::Ok;
+            setDone(exitCode);
+            return;
+        }
+        if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
             // Reset nodes syncing flag
             if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::updateNodesSyncing for syncDbId=" << _syncPal->syncDbId());
             }
         }
     }
+    perfMonitor.stop();
 
     // Sync loop
     bool isFSOInProgress[2] = {false, false};
@@ -73,7 +84,7 @@ void SyncPalWorker::execute() {
                     // Pause sync
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
-                    fsoWorkers[index]->stop();
+                    stopAndWaitForExitOfWorker(fsoWorkers[index]);
                     pause();
                 } else {
                     // Start worker
@@ -93,7 +104,7 @@ void SyncPalWorker::execute() {
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
 
             // Exit
-            exitCode = ExitCodeOk;
+            exitCode = ExitCode::Ok;
             break;
         }
 
@@ -125,20 +136,22 @@ void SyncPalWorker::execute() {
             // Check workers status
             ExitCode workersExitCode[2];
             for (int index = 0; index < 2; index++) {
-                workersExitCode[index] =
-                    (stepWorkers[index] && !stepWorkers[index]->isRunning() ? stepWorkers[index]->exitCode() : ExitCodeUnknown);
+                workersExitCode[index] = (stepWorkers[index] && !stepWorkers[index]->isRunning() ? stepWorkers[index]->exitCode()
+                                                                                                 : ExitCode::Unknown);
             }
 
-            if ((!stepWorkers[0] || workersExitCode[0] == ExitCodeOk) && (!stepWorkers[1] || workersExitCode[1] == ExitCodeOk)) {
+            if ((!stepWorkers[0] || workersExitCode[0] == ExitCode::Ok) &&
+                (!stepWorkers[1] || workersExitCode[1] == ExitCode::Ok)) {
                 // Next step
                 SyncStep step = nextStep();
                 if (step != _step) {
                     LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has finished");
+                    waitForExitOfWorkers(stepWorkers);
                     initStep(step, stepWorkers, inputSharedObject);
                     isStepInProgress = false;
                 }
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeNetworkError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeNetworkError)) {
+            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::NetworkError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::NetworkError)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop the step workers and pause sync
@@ -146,12 +159,12 @@ void SyncPalWorker::execute() {
                 isStepInProgress = false;
                 pause();
                 continue;
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeDataError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeDataError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeBackError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeBackError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeLogicError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeLogicError)) {
+            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DataError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::DataError) ||
+                       (stepWorkers[0] && workersExitCode[0] == ExitCode::BackError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::BackError) ||
+                       (stepWorkers[0] && workersExitCode[0] == ExitCode::LogicError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::LogicError)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop the step workers and restart a full sync
@@ -161,39 +174,34 @@ void SyncPalWorker::execute() {
                 _syncPal->_remoteFSObserverWorker->invalidateSnapshot();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeDbError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeDbError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeSystemError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeSystemError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeUpdateRequired) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeUpdateRequired)) {
+            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DbError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::DbError) ||
+                       (stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError) ||
+                       (stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::UpdateRequired)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop all workers and exit
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-                if ((stepWorkers[0] && workersExitCode[0] == ExitCodeSystemError &&
-                     (stepWorkers[0]->exitCause() == ExitCauseNotEnoughDiskSpace ||
-                      stepWorkers[0]->exitCause() == ExitCauseFileAccessError)) ||
-                    (stepWorkers[1] && workersExitCode[1] == ExitCodeSystemError &&
-                     (stepWorkers[1]->exitCause() == ExitCauseNotEnoughDiskSpace ||
-                      stepWorkers[1]->exitCause() == ExitCauseFileAccessError))) {
+                if ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
+                     (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
+                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccesError)) ||
+                    (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
+                     (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
+                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccesError))) {
                     // Exit without error
-                    exitCode = ExitCodeOk;
-                } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeUpdateRequired) ||
-                           (stepWorkers[1] && workersExitCode[1] == ExitCodeUpdateRequired)) {
-                    exitCode = ExitCodeUpdateRequired;
+                    exitCode = ExitCode::Ok;
+                } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::UpdateRequired) ||
+                           (stepWorkers[1] && workersExitCode[1] == ExitCode::UpdateRequired)) {
+                    exitCode = ExitCode::UpdateRequired;
                 } else {
-                    exitCode = ExitCodeFatalError;
-                    setExitCause(ExitCauseWorkerExited);
+                    exitCode = ExitCode::FatalError;
+                    setExitCause(ExitCause::WorkerExited);
                 }
                 break;
-            } else if (interruptCondition()) {
-                LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " interruption");
-
-                // Stop the step workers and restart a sync
-                stopAndWaitForExitOfWorkers(stepWorkers);
-                initStepFirst(stepWorkers, inputSharedObject, false);
-                continue;
             }
         } else {
             // Start workers
@@ -209,15 +217,15 @@ void SyncPalWorker::execute() {
             }
         }
 
-        if (exitCode != ExitCodeUnknown) {
+        if (exitCode != ExitCode::Unknown) {
             break;
         }
 
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    setDone(exitCode);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
+    setDone(exitCode);
 }
 
 std::string SyncPalWorker::stepName(SyncStep step) {
@@ -226,37 +234,37 @@ std::string SyncPalWorker::stepName(SyncStep step) {
     name = "<";
 
     switch (step) {
-        case SyncStepNone:
+        case SyncStep::None:
             name += "None";
             break;
-        case SyncStepIdle:
+        case SyncStep::Idle:
             name += "Idle";
             break;
-        case SyncStepUpdateDetection1:
+        case SyncStep::UpdateDetection1:
             name += "Compute FS operations";
             break;
-        case SyncStepUpdateDetection2:
+        case SyncStep::UpdateDetection2:
             name += "Update Trees";
             break;
-        case SyncStepReconciliation1:
+        case SyncStep::Reconciliation1:
             name += "Platform Inconsistency Checker";
             break;
-        case SyncStepReconciliation2:
+        case SyncStep::Reconciliation2:
             name += "Conflict Finder";
             break;
-        case SyncStepReconciliation3:
+        case SyncStep::Reconciliation3:
             name += "Conflict Resolver";
             break;
-        case SyncStepReconciliation4:
+        case SyncStep::Reconciliation4:
             name += "Operation Generator";
             break;
-        case SyncStepPropagation1:
+        case SyncStep::Propagation1:
             name += "Sorter";
             break;
-        case SyncStepPropagation2:
+        case SyncStep::Propagation2:
             name += "Executor";
             break;
-        case SyncStepDone:
+        case SyncStep::Done:
             name += "Done";
             break;
     }
@@ -268,10 +276,15 @@ std::string SyncPalWorker::stepName(SyncStep step) {
 
 void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                              std::shared_ptr<SharedObject> (&inputSharedObject)[2]) {
-    _step = step;
+    if (step == SyncStep::UpdateDetection1) {
+        sentry::pTraces::basic::Sync(syncDbId()).start();
+    }
+    sentry::syncStepToPTrace(_step, syncDbId())->stop();
+    sentry::syncStepToPTrace(step, syncDbId())->start();
 
+    _step = step;
     switch (step) {
-        case SyncStepIdle:
+        case SyncStep::Idle:
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
@@ -279,66 +292,72 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->resetEstimateUpdates();
             _syncPal->refreshTmpBlacklist();
             break;
-        case SyncStepUpdateDetection1:
-            workers[0] = _syncPal->_computeFSOperationsWorker;
+        case SyncStep::UpdateDetection1:
+            workers[0] = _syncPal->computeFSOperationsWorker();
             workers[1] = nullptr;
             _syncPal->copySnapshots();
-            inputSharedObject[0] = _syncPal->snapshot(ReplicaSideLocal, true);
-            inputSharedObject[1] = _syncPal->snapshot(ReplicaSideRemote, true);
-            _syncPal->_restart = false;
+            assert(_syncPal->snapshotCopy(ReplicaSide::Local)->checkIntegrityRecursively() &&
+                   "Local snapshot is corrupted, see logs for details");
+            assert(_syncPal->snapshotCopy(ReplicaSide::Remote)->checkIntegrityRecursively() &&
+                   "Remote snapshot is corrupted, see logs for details");
+            inputSharedObject[0] = nullptr;
+            inputSharedObject[1] = nullptr;
+            _syncPal->setRestart(false);
             break;
-        case SyncStepUpdateDetection2:
+        case SyncStep::UpdateDetection2:
             workers[0] = _syncPal->_localUpdateTreeWorker;
             workers[1] = _syncPal->_remoteUpdateTreeWorker;
-            inputSharedObject[0] = _syncPal->operationSet(ReplicaSideLocal);
-            inputSharedObject[1] = _syncPal->operationSet(ReplicaSideRemote);
+            inputSharedObject[0] = _syncPal->operationSet(ReplicaSide::Local);
+            inputSharedObject[1] = _syncPal->operationSet(ReplicaSide::Remote);
             break;
-        case SyncStepReconciliation1:
+        case SyncStep::Reconciliation1:
             workers[0] = _syncPal->_platformInconsistencyCheckerWorker;
             workers[1] = nullptr;
-            inputSharedObject[0] = _syncPal->updateTree(ReplicaSideRemote);
+            inputSharedObject[0] = _syncPal->updateTree(ReplicaSide::Remote);
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepReconciliation2:
+        case SyncStep::Reconciliation2:
             workers[0] = _syncPal->_conflictFinderWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepReconciliation3:
+        case SyncStep::Reconciliation3:
             workers[0] = _syncPal->_conflictResolverWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepReconciliation4:
+        case SyncStep::Reconciliation4:
             workers[0] = _syncPal->_operationsGeneratorWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepPropagation1:
+        case SyncStep::Propagation1:
             workers[0] = _syncPal->_operationsSorterWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->startEstimateUpdates();
             break;
-        case SyncStepPropagation2:
+        case SyncStep::Propagation2:
             workers[0] = _syncPal->_executorWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepDone:
+        case SyncStep::Done:
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
-            if (!_syncPal->_restart) {
-                _syncPal->setSyncHasFullyCompleted(true);
+            _syncPal->resetSnapshotInvalidationCounters();
+            if (!_syncPal->restart()) {
+                _syncPal->setSyncHasFullyCompletedInParms(true);
             }
+            sentry::pTraces::basic::Sync(syncDbId()).stop();
             break;
         default:
             LOG_SYNCPAL_WARN(_logger, "Invalid status");
@@ -358,99 +377,71 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
         _syncPal->resetSharedObjects();
     }
 
-    *_syncPal->_interruptSync = false;
-
-    initStep(SyncStepIdle, workers, inputSharedObject);
-}
-
-bool SyncPalWorker::interruptCondition() const {
-    switch (_step) {
-        case SyncStepIdle:
-            return false;
-            break;
-        case SyncStepUpdateDetection1:
-        case SyncStepUpdateDetection2:
-        case SyncStepReconciliation1:
-        case SyncStepReconciliation2:
-        case SyncStepReconciliation3:
-        case SyncStepReconciliation4:
-        case SyncStepPropagation1:
-        case SyncStepPropagation2:
-        case SyncStepDone:
-            return _syncPal->interruptSync();
-            break;
-        default:
-            LOG_SYNCPAL_WARN(_logger, "Invalid status");
-            return false;
-            break;
-    }
+    initStep(SyncStep::Idle, workers, inputSharedObject);
 }
 
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
-        case SyncStepIdle:
-            return (_syncPal->isSnapshotValid(ReplicaSideLocal) && _syncPal->isSnapshotValid(ReplicaSideRemote) &&
+        case SyncStep::Idle:
+            return (_syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote) &&
                     !_syncPal->_localFSObserverWorker->updating() && !_syncPal->_remoteFSObserverWorker->updating() &&
-                    (_syncPal->snapshot(ReplicaSideLocal)->updated() || _syncPal->snapshot(ReplicaSideRemote)->updated() ||
-                     _syncPal->_restart))
-                       ? SyncStepUpdateDetection1
-                       : SyncStepIdle;
-            break;
-        case SyncStepUpdateDetection1: {
-            auto logNbOps = [=](const ReplicaSide side) {
-                auto opsSet = _syncPal->operationSet(side);
+                    (_syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated() ||
+                     _syncPal->restart()))
+                           ? SyncStep::UpdateDetection1
+                           : SyncStep::Idle;
+        case SyncStep::UpdateDetection1: {
+            auto logNbOps = [this](const ReplicaSide side) {
+                const auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->nbOps()
-                                               << " " << Utility::side2Str(side).c_str()
-                                               << " operations detected (# CREATE: " << opsSet->nbOpsByType(OperationTypeCreate)
-                                               << ", # EDIT: " << opsSet->nbOpsByType(OperationTypeEdit)
-                                               << ", # MOVE: " << opsSet->nbOpsByType(OperationTypeMove)
-                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete) << ")");
+                                                   << " " << side << " operations detected (# CREATE: "
+                                                   << opsSet->nbOpsByType(OperationType::Create)
+                                                   << ", # EDIT: " << opsSet->nbOpsByType(OperationType::Edit)
+                                                   << ", # MOVE: " << opsSet->nbOpsByType(OperationType::Move)
+                                                   << ", # DELETE: " << opsSet->nbOpsByType(OperationType::Delete) << ")");
             };
-            logNbOps(ReplicaSideLocal);
-            logNbOps(ReplicaSideRemote);
+            logNbOps(ReplicaSide::Local);
+            logNbOps(ReplicaSide::Remote);
 
-            if (!_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap().empty()) {
-                _syncPal->fixCorruptedFile(_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap());
-                _syncPal->_restart = true;
-                return SyncStepIdle;
+            if (CommonUtility::isFileSizeMismatchDetectionEnabled() &&
+                !_syncPal->computeFSOperationsWorker()->getFileSizeMismatchMap().empty()) {
+                _syncPal->fixCorruptedFile(_syncPal->computeFSOperationsWorker()->getFileSizeMismatchMap());
+                _syncPal->setRestart(true);
+                return SyncStep::Idle;
             }
 
-            return (_syncPal->operationSet(ReplicaSideLocal)->updated() || _syncPal->operationSet(ReplicaSideRemote)->updated())
-                       ? SyncStepUpdateDetection2
-                       : SyncStepDone;
-            break;
+            return (_syncPal->operationSet(ReplicaSide::Local)->updated() ||
+                    _syncPal->operationSet(ReplicaSide::Remote)->updated())
+                           ? SyncStep::UpdateDetection2
+                           : SyncStep::Done;
         }
-        case SyncStepUpdateDetection2:
-            return (_syncPal->updateTree(ReplicaSideLocal)->updated() || _syncPal->updateTree(ReplicaSideRemote)->updated())
-                       ? SyncStepReconciliation1
-                       : SyncStepDone;
-            break;
-        case SyncStepReconciliation1:
-            return SyncStepReconciliation2;
-            break;
-        case SyncStepReconciliation2:
-            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_conflictQueue->size() << " conflicts found");
-            return _syncPal->_conflictQueue->empty() ? SyncStepReconciliation4 : SyncStepReconciliation3;
-            break;
-        case SyncStepReconciliation3:
-        case SyncStepReconciliation4:
-            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated");
-            return _syncPal->_conflictQueue->empty() ? SyncStepPropagation1 : SyncStepPropagation2;
-            break;
-        case SyncStepPropagation1:
-            return SyncStepPropagation2;
-            break;
-        case SyncStepPropagation2:
-            return SyncStepDone;
-            break;
-        case SyncStepDone:
-            return SyncStepIdle;
-            break;
+        case SyncStep::UpdateDetection2:
+            return (_syncPal->updateTree(ReplicaSide::Local)->updated() || _syncPal->updateTree(ReplicaSide::Remote)->updated())
+                           ? SyncStep::Reconciliation1
+                           : SyncStep::Done;
+        case SyncStep::Reconciliation1:
+            return SyncStep::Reconciliation2;
+        case SyncStep::Reconciliation2:
+            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_conflictQueue->size() << " conflicts found")
+            return _syncPal->_conflictQueue->empty() ? SyncStep::Reconciliation4 : SyncStep::Reconciliation3;
+        case SyncStep::Reconciliation3:
+        case SyncStep::Reconciliation4:
+            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated")
+            return _syncPal->_conflictQueue->empty() ? SyncStep::Propagation1 : SyncStep::Propagation2;
+        case SyncStep::Propagation1:
+            return SyncStep::Propagation2;
+        case SyncStep::Propagation2:
+            return SyncStep::Done;
+        case SyncStep::Done:
+            return SyncStep::Idle;
         default:
-            LOG_SYNCPAL_WARN(_logger, "Invalid status");
-            return SyncStepIdle;
-            break;
+            LOG_SYNCPAL_WARN(_logger, "Invalid status")
+            return SyncStep::Idle;
     }
+}
+
+void SyncPalWorker::stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> worker) {
+    worker->stop();
+    worker->waitForExit();
 }
 
 void SyncPalWorker::stopWorkers(std::shared_ptr<ISyncWorker> workers[2]) {
@@ -520,17 +511,20 @@ bool SyncPalWorker::resetVfsFilesStatus() {
     try {
         std::error_code ec;
         auto dirIt = std::filesystem::recursive_directory_iterator(
-            _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
+                _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
             return false;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+            if (stopAsked()) {
+                return true;
+            }
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {
                 bool dummy = dirIt->exists();
-                (void)(dummy);
+                (void) (dummy);
             } catch (std::filesystem::filesystem_error &) {
                 dirIt.disable_recursion_pending();
                 continue;
@@ -542,23 +536,23 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             // Check if the directory entry is managed
             bool isManaged = true;
             bool isLink = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
-                LOGW_SYNCPAL_WARN(
-                    _logger, L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath).c_str());
+                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : "
+                                                   << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
                 ok = false;
                 continue;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_SYNCPAL_DEBUG(_logger,
                                    L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
-            if (ioError == IoErrorAccessDenied) {
+            if (ioError == IoError::AccessDenied) {
                 LOGW_SYNCPAL_DEBUG(_logger,
                                    L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
@@ -606,15 +600,15 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                 }
 
                 // Fix pinstate if needed
-                if (isHydrated && pinState != PinStateAlwaysLocal) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinStateAlwaysLocal)) {
+                if (isHydrated && pinState != PinState::AlwaysLocal) {
+                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::AlwaysLocal)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;
                         continue;
                     }
-                } else if (!isHydrated && pinState != PinStateOnlineOnly) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinStateOnlineOnly)) {
+                } else if (!isHydrated && pinState != PinState::OnlineOnly) {
+                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::OnlineOnly)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;
@@ -622,8 +616,8 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                     }
                 }
             } else {
-                if (pinState == PinStateAlwaysLocal || pinState == PinStateOnlineOnly) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinStateUnspecified)) {
+                if (pinState == PinState::AlwaysLocal || pinState == PinState::OnlineOnly) {
+                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::Unspecified)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;
@@ -633,7 +627,8 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus: " << e.code() << " - " << e.what());
+        LOG_SYNCPAL_WARN(_logger,
+                         "Error caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
         ok = false;
     } catch (...) {
         LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus");
@@ -643,4 +638,4 @@ bool SyncPalWorker::resetVfsFilesStatus() {
     return ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

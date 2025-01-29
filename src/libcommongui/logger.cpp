@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 #include <iostream>
 
 #ifdef Q_OS_WIN
-#include <io.h>  // for stdout
+#include <io.h> // for stdout
 #endif
 
 static const int logSizeWatcherTimeout = 60000;
@@ -47,14 +47,19 @@ static void kdriveLogCatcher(QtMsgType type, const QMessageLogContext &ctx, cons
     if (qtMsgTypeLevel[type] < logger->minLogLevel()) return;
 
     // Create new context
-    const char *fileName = ctx.file;
-    if (fileName) {
-        const char *lastDirSep = strrchr(fileName, '/');
-        if (lastDirSep) {
-            fileName = lastDirSep + 1;
-        }
+    SyncName fileName;
+    if (ctx.file) {
+        const SyncPath filePath(ctx.file);
+        fileName = filePath.filename();
     }
-    QMessageLogContext ctxNew(fileName, ctx.line, ctx.function, ctx.category);
+#ifdef _WIN32
+    // For performance purposes, assume that the file name contains only mono byte chars
+    std::string unsafeFileName(CommonUtility::toUnsafeStr(fileName));
+    const char *fileNamePtr = unsafeFileName.c_str();
+#else
+    const char *fileNamePtr = fileName.c_str();
+#endif
+    QMessageLogContext ctxNew(fileNamePtr, ctx.line, ctx.function, ctx.category);
 
     if (!logger->isNoop()) {
         logger->doLog(qFormatLogMessage(type, ctxNew, message));
@@ -78,9 +83,9 @@ Logger *Logger::instance() {
 
 Logger::Logger(QObject *parent) : QObject(parent), _showTime(true), _doFileFlush(false), _logExpire(0), _logDebug(false) {
     qSetMessagePattern(
-        "%{time yyyy-MM-dd hh:mm:ss:zzz} "
-        "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
-        "(%{threadid}) %{file}:%{line} - %{message}");
+            "%{time yyyy-MM-dd hh:mm:ss:zzz} "
+            "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
+            "(%{threadid}) %{file}:%{line} - %{message}");
 #ifndef NO_MSG_HANDLER
     qInstallMessageHandler(kdriveLogCatcher);
 #else
@@ -119,7 +124,7 @@ void Logger::log(Log log) {
         msg = log.timeStamp.toString(QLatin1String("MM-dd hh:mm:ss:zzz")) + QLatin1Char(' ');
     }
 
-    msg += QString().asprintf("%p ", (void *)QThread::currentThread());
+    msg += QString().asprintf("%p ", (void *) QThread::currentThread());
     msg += log.message;
 
     doLog(msg);
@@ -177,10 +182,10 @@ void Logger::setLogFile(const QString &name) {
     }
 
     if (!openSucceeded) {
-        locker.unlock();  // Just in case postGuiMessage has a qDebug()
+        locker.unlock(); // Just in case postGuiMessage has a qDebug()
         postNotification(tr("Error"), QString(tr("<nobr>File '%1'<br/>cannot be opened for writing.<br/><br/>"
                                                  "The log output can <b>not</b> be saved!</nobr>"))
-                                          .arg(name));
+                                              .arg(name));
         return;
     }
 
@@ -276,7 +281,7 @@ void Logger::enterNextLogFile() {
 
         // Compress the previous log file. On a restart this can be the most recent
         // log file.
-        for (const QString &logToCompress : unzippedFiles) {
+        for (const QString &logToCompress: unzippedFiles) {
             if (!logToCompress.isEmpty()) {
                 QString compressedName = logToCompress + ".gz";
                 if (QFile::exists(compressedName)) {
@@ -310,4 +315,4 @@ bool Logger::compressSingleLog(const QString &sourceName, const QString &targetN
     return KDC::CommonUtility::compressFile(sourceName, targetName);
 }
 
-}  // namespace KDC
+} // namespace KDC

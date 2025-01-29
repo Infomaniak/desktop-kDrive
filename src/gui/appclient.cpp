@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
+#include "gui/updater/updatedialog.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QMenu>
@@ -45,8 +46,7 @@
 #include <stdlib.h>
 
 #include <sentry.h>
-
-#define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
+#include <log/sentry/handler.h>
 
 #define CONNECTION_TRIALS 3
 #define CHECKCOMMSTATUS_TRIALS 5
@@ -65,23 +65,6 @@ static const QList<QString> fontFiles = QList<QString>() << QString(":/client/re
                                                          << QString(":/client/resources/fonts/SuisseIntl-Black.otf");
 // static const QString defaultFontFamily("Suisse Int'l");
 
-#ifdef Q_OS_WIN
-static void displayHelpText(const QString &t)  // No console on Windows.
-{
-    static const QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
-    const QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() +
-                         QLatin1String("</pre><pre>") + spaces + QLatin1String("</pre></qt>");
-    QMessageBox::information(0, Theme::instance()->appClientName() + "_HelpText", text);
-}
-
-#else
-
-static void displayHelpText(const QString &t) {
-    std::cout << qUtf8Printable(t);
-}
-#endif
-
-
 AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv) {
     _startedAt.start();
 
@@ -92,7 +75,7 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     setStyle(new KDC::CustomProxyStyle);
 
     // Load fonts
-    for (const QString &fontFile : fontFiles) {
+    for (const QString &fontFile: fontFiles) {
         if (QFontDatabase::addApplicationFont(fontFile) < 0) {
             std::cout << "Error adding font file!" << std::endl;
         }
@@ -111,8 +94,10 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
 #else
     // Read comm port value from argument list
     if (!parseOptions(arguments())) {
-        // Start the server and die (the server will restart the client)
-        startServerAndDie(false);
+        QMessageBox msgBox;
+        msgBox.setText(tr("kDrive client is run with bad parameters!"));
+        msgBox.exec();
+        QTimer::singleShot(0, qApp, SLOT(quit()));
         return;
     }
 #endif
@@ -124,15 +109,14 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
         QTimer::singleShot(0, qApp, SLOT(quit()));
         return;
     }
+
     // Connect to server
     if (connectToServer()) {
         qCInfo(lcAppClient) << "Connected to server";
     } else {
         qCCritical(lcAppClient) << "Failed to connect to server";
-        startServerAndDie(true);
         return;
     }
-
 
     // Init ParametersCache
     ParametersCache::instance();
@@ -144,8 +128,6 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     KDC::GuiUtility::setStyle(qApp);
 
     CommonUtility::setupTranslations(QApplication::instance(), ParametersCache::instance()->parametersInfo().language());
-
-    _updaterClient.reset(new UpdaterClient);
 
 #ifdef PLUGINDIR
     // Setup extra plugin search path
@@ -163,9 +145,28 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     // Setup translations
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parametersInfo().language());
 
+    // Remove the files that keep a record of former crash or kill events
+    SignalType signalType = SignalType::None;
+    CommonUtility::clearSignalFile(AppType::Client, SignalCategory::Crash, signalType);
+    if (signalType != SignalType::None) {
+        qCInfo(lcAppClient) << "Restarting after a" << SignalCategory::Crash << "with signal" << signalType;
+    }
+
+    CommonUtility::clearSignalFile(AppType::Client, SignalCategory::Kill, signalType);
+    if (signalType != SignalType::None) {
+        qCInfo(lcAppClient) << "Restarting after a" << SignalCategory::Kill << "with signal" << signalType;
+    }
+
+    // Setup debug crash mode
+    bool isSet = false;
+    if (CommonUtility::envVarValue("KDRIVE_DEBUG_CRASH", isSet); isSet) {
+        _debugCrash = true;
+    }
+
     // Setup Gui
     _gui = std::shared_ptr<ClientGui>(new ClientGui(this));
     _gui->init();
+    GuiRequests::reportClientDisplayed();
 
     _theme->setSystrayUseMonoIcons(ParametersCache::instance()->parametersInfo().monoIcons());
     connect(_theme, &Theme::systrayUseMonoIconsChanged, this, &AppClient::onUseMonoIconsChanged);
@@ -175,8 +176,8 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
 
 #ifdef Q_OS_WIN
     ExitCode exitCode =
-        GuiRequests::setShowInExplorerNavigationPane(ParametersCache::instance()->parametersInfo().showShortcuts());
-    if (exitCode != ExitCodeOk) {
+            GuiRequests::setShowInExplorerNavigationPane(ParametersCache::instance()->parametersInfo().showShortcuts());
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcAppClient) << "Error in Requests::setShowInExplorerNavigationPane";
     }
 #endif
@@ -189,12 +190,16 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
         _gui->onNewDriveWizard();
     } else {
         // Ask user to log in if needed
-        for (auto const &userInfoClient : _gui->userInfoMap()) {
+        for (auto const &userInfoClient: _gui->userInfoMap()) {
             if (!userInfoClient.second.connected()) {
                 askUserToLoginAgain(userInfoClient.second.dbId(), userInfoClient.second.email(), false);
             }
         }
     }
+
+    // Update Sentry user
+    updateSentryUser();
+    connect(_gui.get(), &ClientGui::userListRefreshed, this, &AppClient::updateSentryUser);
 }
 
 AppClient::~AppClient() {
@@ -205,27 +210,27 @@ void AppClient::showSynthesisDialog() {
     _gui->showSynthesisDialog();
 }
 
-void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params) {
+void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params) {
     QDataStream paramsStream(params);
 
     qCDebug(lcAppClient) << "Sgnl rcvd" << id << num;
 
     switch (num) {
-        case SIGNAL_NUM_USER_ADDED: {
+        case SignalNum::USER_ADDED: {
             UserInfo userInfo;
             paramsStream >> userInfo;
 
             emit userAdded(userInfo);
             break;
         }
-        case SIGNAL_NUM_USER_UPDATED: {
+        case SignalNum::USER_UPDATED: {
             UserInfo userInfo;
             paramsStream >> userInfo;
 
             emit userUpdated(userInfo);
             break;
         }
-        case SIGNAL_NUM_USER_STATUSCHANGED: {
+        case SignalNum::USER_STATUSCHANGED: {
             int userDbId;
             bool connected;
             QString connexionError;
@@ -236,49 +241,49 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit userStatusChanged(userDbId, connected, connexionError);
             break;
         }
-        case SIGNAL_NUM_USER_REMOVED: {
+        case SignalNum::USER_REMOVED: {
             int userDbId;
             paramsStream >> userDbId;
 
             emit userRemoved(userDbId);
             break;
         }
-        case SIGNAL_NUM_ACCOUNT_ADDED: {
+        case SignalNum::ACCOUNT_ADDED: {
             AccountInfo accountInfo;
             paramsStream >> accountInfo;
 
             emit accountAdded(accountInfo);
             break;
         }
-        case SIGNAL_NUM_ACCOUNT_UPDATED: {
+        case SignalNum::ACCOUNT_UPDATED: {
             AccountInfo accountInfo;
             paramsStream >> accountInfo;
 
             emit accountUpdated(accountInfo);
             break;
         }
-        case SIGNAL_NUM_ACCOUNT_REMOVED: {
+        case SignalNum::ACCOUNT_REMOVED: {
             int accountDbId;
             paramsStream >> accountDbId;
 
             emit accountRemoved(accountDbId);
             break;
         }
-        case SIGNAL_NUM_DRIVE_ADDED: {
+        case SignalNum::DRIVE_ADDED: {
             DriveInfo driveInfo;
             paramsStream >> driveInfo;
 
             emit driveAdded(driveInfo);
             break;
         }
-        case SIGNAL_NUM_DRIVE_UPDATED: {
+        case SignalNum::DRIVE_UPDATED: {
             DriveInfo driveInfo;
             paramsStream >> driveInfo;
 
             emit driveUpdated(driveInfo);
             break;
         }
-        case SIGNAL_NUM_DRIVE_QUOTAUPDATED: {
+        case SignalNum::DRIVE_QUOTAUPDATED: {
             int driveDbId;
             qint64 total;
             qint64 used;
@@ -289,42 +294,42 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit driveQuotaUpdated(driveDbId, total, used);
             break;
         }
-        case SIGNAL_NUM_DRIVE_REMOVED: {
+        case SignalNum::DRIVE_REMOVED: {
             int driveDbId;
             paramsStream >> driveDbId;
 
             emit driveRemoved(driveDbId);
             break;
         }
-        case SIGNAL_NUM_DRIVE_DELETE_FAILED: {
+        case SignalNum::DRIVE_DELETE_FAILED: {
             int driveDbId;
             paramsStream >> driveDbId;
 
             emit driveDeletionFailed(driveDbId);
             break;
         }
-        case SIGNAL_NUM_SYNC_ADDED: {
+        case SignalNum::SYNC_ADDED: {
             SyncInfo syncInfo;
             paramsStream >> syncInfo;
 
             emit syncAdded(syncInfo);
             break;
         }
-        case SIGNAL_NUM_SYNC_UPDATED: {
+        case SignalNum::SYNC_UPDATED: {
             SyncInfo syncInfo;
             paramsStream >> syncInfo;
 
             emit syncUpdated(syncInfo);
             break;
         }
-        case SIGNAL_NUM_SYNC_REMOVED: {
+        case SignalNum::SYNC_REMOVED: {
             int syncDbId;
             paramsStream >> syncDbId;
 
             emit syncRemoved(syncDbId);
             break;
         }
-        case SIGNAL_NUM_SYNC_PROGRESSINFO: {
+        case SignalNum::SYNC_PROGRESSINFO: {
             int syncDbId;
             SyncStatus status;
             SyncStep step;
@@ -346,7 +351,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
                                   estimatedRemainingTime);
             break;
         }
-        case SIGNAL_NUM_SYNC_COMPLETEDITEM: {
+        case SignalNum::SYNC_COMPLETEDITEM: {
             int syncDbId;
             SyncFileItemInfo itemInfo;
             paramsStream >> syncDbId;
@@ -355,21 +360,21 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit itemCompleted(syncDbId, itemInfo);
             break;
         }
-        case SIGNAL_NUM_SYNC_VFS_CONVERSION_COMPLETED: {
+        case SignalNum::SYNC_VFS_CONVERSION_COMPLETED: {
             int syncDbId;
             paramsStream >> syncDbId;
 
             emit vfsConversionCompleted(syncDbId);
             break;
         }
-        case SIGNAL_NUM_SYNC_DELETE_FAILED: {
+        case SignalNum::SYNC_DELETE_FAILED: {
             int syncDbId;
             paramsStream >> syncDbId;
 
             emit syncDeletionFailed(syncDbId);
             break;
         }
-        case SIGNAL_NUM_NODE_FOLDER_SIZE_COMPLETED: {
+        case SignalNum::NODE_FOLDER_SIZE_COMPLETED: {
             QString nodeId;
             qint64 size;
             paramsStream >> nodeId;
@@ -378,7 +383,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit folderSizeCompleted(nodeId, size);
             break;
         }
-        case SIGNAL_NUM_NODE_FIX_CONFLICTED_FILES_COMPLETED: {
+        case SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED: {
             int syncDbId = 0;
             QVariant var;
             paramsStream >> syncDbId;
@@ -389,7 +394,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit fixConflictingFilesCompleted(syncDbId, nbErrors);
             break;
         }
-        case SIGNAL_NUM_UTILITY_SHOW_NOTIFICATION: {
+        case SignalNum::UTILITY_SHOW_NOTIFICATION: {
             QString title;
             QString message;
             paramsStream >> title;
@@ -398,7 +403,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit showNotification(title, message);
             break;
         }
-        case SIGNAL_NUM_UTILITY_NEW_BIG_FOLDER: {
+        case SignalNum::UTILITY_NEW_BIG_FOLDER: {
             int syncDbId;
             QString path;
             paramsStream >> syncDbId;
@@ -407,7 +412,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit newBigFolder(syncDbId, path);
             break;
         }
-        case SIGNAL_NUM_UTILITY_ERROR_ADDED: {
+        case SignalNum::UTILITY_ERROR_ADDED: {
             bool serverLevel;
             ExitCode exitCode;
             int syncDbId;
@@ -418,39 +423,45 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit errorAdded(serverLevel, exitCode, syncDbId);
             break;
         }
-        case SIGNAL_NUM_UTILITY_ERRORS_CLEARED: {
+        case SignalNum::UTILITY_ERRORS_CLEARED: {
             int syncDbId;
             paramsStream >> syncDbId;
 
             emit errorsCleared(syncDbId);
             break;
         }
-        case SIGNAL_NUM_UPDATER_SHOW_DIALOG: {
-            QString targetVersion;
-            QString targetVersionString;
-            QString clientVersion;
-            paramsStream >> targetVersion;
-            paramsStream >> targetVersionString;
-            paramsStream >> clientVersion;
-            QTimer::singleShot(500, this, [this, targetVersion, targetVersionString, clientVersion]() {
-                _updaterClient->showWindowsUpdaterDialog(targetVersion, targetVersionString, clientVersion);
-            });
+        case SignalNum::UPDATER_SHOW_DIALOG: {
+            VersionInfo versionInfo;
+            paramsStream >> versionInfo;
+            emit showWindowsUpdateDialog(versionInfo);
             break;
         }
-        case SIGNAL_NUM_UTILITY_SHOW_SETTINGS: {
+        case SignalNum::UPDATER_STATE_CHANGED: {
+            auto state = UpdateState::Unknown;
+            paramsStream >> state;
+            emit updateStateChanged(state);
+            break;
+        }
+        case SignalNum::UTILITY_SHOW_SETTINGS: {
             showParametersDialog();
             break;
         }
-        case SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS: {
+        case SignalNum::UTILITY_SHOW_SYNTHESIS: {
             showSynthesisDialog();
             break;
         }
-        case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
+        case SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
             LogUploadState status;
-            int progress;  // Progress in percentage
+            int progress; // Progress in percentage
             paramsStream >> status;
             paramsStream >> progress;
             emit logUploadStatusUpdated(status, progress);
+            break;
+        }
+        case SignalNum::UTILITY_QUIT: {
+            qCInfo(lcAppClient) << "Quit app client at the request of the app server";
+            _quitInProcess = true;
+            quit();
             break;
         }
         default: {
@@ -467,10 +478,11 @@ void AppClient::onLogTooBig() {
 }
 
 void AppClient::onQuit() {
+    qCInfo(lcAppClient) << "Quit app client at the request of the user";
     _quitInProcess = true;
     if (CommClient::isConnected()) {
         QByteArray results;
-        if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_QUIT, QByteArray(), results)) {
+        if (!CommClient::instance()->execute(RequestNum::UTILITY_QUIT, QByteArray(), results)) {
             // Do nothing
         }
     }
@@ -479,19 +491,23 @@ void AppClient::onQuit() {
 }
 
 void AppClient::onServerDisconnected() {
-#if NDEBUG
     if (!_quitInProcess) {
-        startServerAndDie(true);
-        qCCritical(lcAppClient) << "The server was unexpectedly disconnected. The application will be restarted.";
-    } else {
-        qCInfo(lcAppClient) << "Server disconnected while the client is closing: this is expected.";
-    }
+#if NDEBUG
+        if (serverHasCrashed()) {
+            qCCritical(lcAppClient) << "Server disconnected because it has crashed.";
+            // Restart server and die
+            startServerAndDie();
+        } else {
+            qCInfo(lcAppClient) << "Server disconnected because it was killed.";
+            QTimer::singleShot(0, qApp, SLOT(quit()));
+        }
 #else
-    const auto msg = QStringLiteral("The server got disconnected. As the app is in debug mode, it will not be restarted.");
-    displayHelpText(msg);
-    QTimer::singleShot(0, qApp, SLOT(quit()));
-    qCCritical(lcAppClient) << msg;
+        qCInfo(lcAppClient) << "Server disconnected";
+        QTimer::singleShot(0, qApp, SLOT(quit()));
 #endif
+    } else {
+        qCInfo(lcAppClient) << "Server disconnected because the user quitted.";
+    }
 }
 
 void AppClient::onCleanup() {
@@ -499,7 +515,14 @@ void AppClient::onCleanup() {
 }
 
 void AppClient::onCrash() {
+    // SIGSEGV crash
     KDC::CommonUtility::crash();
+}
+
+void AppClient::onCrashServer() {
+    if (const auto exitCode = GuiRequests::crash(); exitCode != ExitCode::Ok) {
+        qCWarning(lcAppClient) << "Error in Requests::crash";
+    }
 }
 
 void AppClient::onCrashEnforce() {
@@ -516,7 +539,7 @@ void AppClient::onWizardDone(int res) {
         ExitCode exitCode;
         QList<int> userDbIdList;
         exitCode = GuiRequests::getUserDbIdList(userDbIdList);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAppClient) << "Error in Requests::getUserDbIdList";
         }
 
@@ -528,7 +551,7 @@ void AppClient::onWizardDone(int res) {
 #endif
         if (shouldSetAutoStart) {
             ExitCode exitCode = GuiRequests::setLaunchOnStartup(true);
-            if (exitCode != ExitCodeOk) {
+            if (exitCode != ExitCode::Ok) {
                 qCWarning(lcAppClient()) << "Error in GuiRequests::setLaunchOnStartup";
             }
         }
@@ -546,7 +569,7 @@ void AppClient::setupLogging() {
     logger->setLogDebug(_logDebug);
     logger->enterNextLogFile();
 
-    logger->setMinLogLevel(ParametersCache::instance()->parametersInfo().logLevel());
+    logger->setMinLogLevel(toInt(ParametersCache::instance()->parametersInfo().logLevel()));
 
     if (ParametersCache::instance()->parametersInfo().useLog()) {
         // Don't override other configured logging
@@ -554,7 +577,7 @@ void AppClient::setupLogging() {
 
         logger->setupTemporaryFolderLogDir();
         if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
-            logger->setLogExpire(std::chrono::hours(CommonUtility::logsPurgeRate * 24));  // C++20 offers std::chrono::day.
+            logger->setLogExpire(std::chrono::hours(CommonUtility::logsPurgeRate * 24)); // C++20 offers std::chrono::day.
         } else {
             logger->setLogExpire(std::chrono::hours(0));
         }
@@ -567,14 +590,21 @@ void AppClient::setupLogging() {
     connect(logger, &KDC::Logger::showNotification, this, &AppClient::showNotification);
 
     qCInfo(lcAppClient) << QString::fromLatin1("################## %1 locale:[%2] ui_lang:[%3] version:[%4] os:[%5]")
-                               .arg(_theme->appClientName())
-                               .arg(QLocale::system().name())
-                               .arg(property("ui_lang").toString())
-                               .arg(_theme->version())
-                               .arg(KDC::CommonUtility::platformName());
+                                   .arg(_theme->appClientName())
+                                   .arg(QLocale::system().name())
+                                   .arg(property("ui_lang").toString())
+                                   .arg(_theme->version())
+                                   .arg(KDC::CommonUtility::platformName());
 }
 
-void AppClient::startServerAndDie(bool serverCrashDetected) {
+bool AppClient::serverHasCrashed() {
+    // Check if a crash file exists
+    const auto sigFilePath(CommonUtility::signalFilePath(AppType::Server, SignalCategory::Crash));
+    std::error_code ec;
+    return std::filesystem::exists(sigFilePath, ec);
+}
+
+void AppClient::startServerAndDie() {
     // Start the client
     QString pathToExecutable = QCoreApplication::applicationDirPath();
 
@@ -585,12 +615,10 @@ void AppClient::startServerAndDie(bool serverCrashDetected) {
 #endif
 
     auto serverProcess = new QProcess(this);
-    if (serverCrashDetected) {
-        QStringList arguments;
-        arguments << QStringLiteral("--crashRecovered");
-        serverProcess->setProgram(pathToExecutable);
-        serverProcess->setArguments(arguments);
-    }
+    QStringList arguments;
+    arguments << QStringLiteral("--crashRecovered");
+    serverProcess->setProgram(pathToExecutable);
+    serverProcess->setArguments(arguments);
     serverProcess->setProgram(pathToExecutable);
     serverProcess->startDetached();
 
@@ -600,8 +628,8 @@ void AppClient::startServerAndDie(bool serverCrashDetected) {
 bool AppClient::connectToServer() {
     // Check if a commPort is provided
     if (_commPort == 0) {
-        qCCritical(lcAppClient()) << "No comm port provided to the client at startup, failed to connect to server!";
-        startServerAndDie(false);
+        // Should not happen (checked before)
+        qCCritical(lcAppClient()) << "Comm port is not set";
         return false;
     }
 
@@ -624,7 +652,7 @@ bool AppClient::connectToServer() {
     count = 0;
     while (count < CHECKCOMMSTATUS_TRIALS) {
         const ExitCode exitCode = GuiRequests::checkCommStatus();
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAppClient()) << "Check of comm status failed";
             count++;
         } else {
@@ -637,6 +665,20 @@ bool AppClient::connectToServer() {
         return false;
     }
     return true;
+}
+
+void AppClient::updateSentryUser() const {
+    auto userInfo = _gui->userInfoMap().find(_gui->currentUserDbId());
+    if (userInfo == _gui->userInfoMap().end()) {
+        qCWarning(lcAppClient) << "No user found in updateSentryUser()";
+        SentryUser user("No user logged", "No user logged", "No user logged");
+        sentry::Handler::instance()->setAuthenticatedUser(user);
+        return;
+    }
+
+    SentryUser user(userInfo->second.email().toStdString(), userInfo->second.name().toStdString(),
+                    std::to_string(userInfo->second.userId()));
+    sentry::Handler::instance()->setAuthenticatedUser(user);
 }
 
 void AppClient::onUseMonoIconsChanged(bool) {
@@ -654,13 +696,13 @@ bool AppClient::parseOptions(const QStringList &options) {
     it.next();
 
     // Read comm port
-    _commPort = it.next().toUInt();
+    _commPort = static_cast<unsigned short>(it.next().toUInt());
 
     return true;
 }
 
-bool AppClient::debugMode() {
-    return _debugMode;
+bool AppClient::debugCrash() const {
+    return _debugCrash;
 }
 
 void AppClient::showParametersDialog() {
@@ -686,4 +728,4 @@ void AppClient::onTryTrayAgain() {
     _gui->hideAndShowTray();
 }
 
-}  // namespace KDC
+} // namespace KDC

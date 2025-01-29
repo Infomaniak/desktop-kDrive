@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 using namespace CppUnit;
 
 namespace KDC {
-class SnapshotItem;
 
 class TestSnapshotItemHandler : public CppUnit::TestFixture {
     public:
@@ -49,9 +48,6 @@ struct Result {
         bool success{true};
         std::string message;
 };
+} // namespace snapshotitem_checker
 
-static std::string makeMessage(const CppUnit::Exception &e);
-static Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept;
-};  // namespace snapshotitem_checker
-
-}  // namespace KDC
+} // namespace KDC

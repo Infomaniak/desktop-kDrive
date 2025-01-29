@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,8 +32,8 @@ namespace KDC {
 static const QString dateFormat = "d MMM yyyy - HH:mm";
 
 GenericErrorItemWidget::GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg,
-                                               const ErrorInfo &errorInfo, QWidget *parent)
-    : AbstractFileItemWidget(parent), _gui(gui), _errorInfo(errorInfo), _errorMsg(errorMsg) {
+                                               const ErrorInfo &errorInfo, QWidget *parent) :
+    AbstractFileItemWidget(parent), _gui(gui), _errorInfo(errorInfo), _errorMsg(errorMsg) {
     init();
 }
 
@@ -41,7 +41,7 @@ void GenericErrorItemWidget::init() {
     setMessage(_errorMsg);
 
     // Path layout
-    if (_errorInfo.level() == ErrorLevelSyncPal || _errorInfo.level() == ErrorLevelNode) {
+    if (_errorInfo.level() == ErrorLevel::SyncPal || _errorInfo.level() == ErrorLevel::Node) {
         const auto &syncInfoMapIt = _gui->syncInfoMap().find(_errorInfo.syncDbId());
         if (syncInfoMapIt == _gui->syncInfoMap().end()) {
             throw std::runtime_error(GENERICERRORITEMWIDGET_NEW_ERROR_MSG);
@@ -53,13 +53,13 @@ void GenericErrorItemWidget::init() {
         }
 
         // Path
-        if (_errorInfo.level() == ErrorLevelSyncPal) {
+        if (_errorInfo.level() == ErrorLevel::SyncPal) {
             setDriveName(driveInfoMapIt->second.name(), syncInfoMapIt->second.localPath());
             setPathIconColor(driveInfoMapIt->second.color());
-        } else if (_errorInfo.level() == ErrorLevelNode) {
-            const bool useDestPath = _errorInfo.cancelType() == CancelTypeAlreadyExistRemote ||
-                                     _errorInfo.cancelType() == CancelTypeMoveToBinFailed ||
-                                     _errorInfo.conflictType() == ConflictTypeEditDelete;
+        } else if (_errorInfo.level() == ErrorLevel::Node) {
+            const bool useDestPath = _errorInfo.cancelType() == CancelType::AlreadyExistRemote ||
+                                     _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
+                                     _errorInfo.conflictType() == ConflictType::EditDelete;
             const QString &filePath = useDestPath ? _errorInfo.destinationPath() : _errorInfo.path();
             setFilePath(filePath, _errorInfo.nodeType());
         }
@@ -97,15 +97,15 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
 }
 
 bool GenericErrorItemWidget::openInWebview() const {
-    return _errorInfo.inconsistencyType() == InconsistencyTypePathLength ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeCase ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeReservedName ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeNameLength ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar ||
-           _errorInfo.cancelType() == CancelTypeAlreadyExistLocal ||
-           (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
-           (_errorInfo.exitCode() == ExitCodeBackError && _errorInfo.exitCause() == ExitCauseNotFound);
+    return _errorInfo.inconsistencyType() == InconsistencyType::PathLength ||
+           _errorInfo.inconsistencyType() == InconsistencyType::Case ||
+           _errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar ||
+           _errorInfo.inconsistencyType() == InconsistencyType::ReservedName ||
+           _errorInfo.inconsistencyType() == InconsistencyType::NameLength ||
+           _errorInfo.inconsistencyType() == InconsistencyType::NotYetSupportedChar ||
+           _errorInfo.cancelType() == CancelType::AlreadyExistLocal ||
+           (_errorInfo.conflictType() == ConflictType::EditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
+           (_errorInfo.exitCode() == ExitCode::BackError && _errorInfo.exitCause() == ExitCause::NotFound);
 }
 
-}  // namespace KDC
+} // namespace KDC

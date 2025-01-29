@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,17 +54,17 @@ bool GetAvatarJob::handleError(std::istream &is, const Poco::URI &uri) {
         LOG_WARN(_logger, "Unknown error in request: " << uri.toString().c_str());
     }
 
-    _exitCause = ExitCauseApiErr;
-    _exitCode = ExitCodeBackError;
+    _exitCause = ExitCause::ApiErr;
+    _exitCode = ExitCode::BackError;
 
     return false;
 }
 
 bool GetAvatarJob::handleResponse(std::istream &is) {
     _avatar = std::shared_ptr<std::vector<char>>(
-        new std::vector<char>(std::istreambuf_iterator<char>(is), (std::istreambuf_iterator<char>())));
+            new std::vector<char>(std::istreambuf_iterator<char>(is), (std::istreambuf_iterator<char>())));
 
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

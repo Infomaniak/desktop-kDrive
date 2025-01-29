@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,13 +142,13 @@ class Vfs : public QObject {
          * new placeholder shall supersede, for rename-replace actions with new downloads,
          * for example.
          */
-        virtual bool convertToPlaceholder(const QString &path, const KDC::SyncFileItem &item, bool &needRestart) = 0;
+        virtual bool convertToPlaceholder(const QString &path, const KDC::SyncFileItem &item) = 0;
 
         virtual bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                        bool &finished) = 0;
 
         virtual bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) = 0;
-        virtual bool cleanUpStatuses() { return true; };
+        virtual bool cleanUpStatuses() { return true; }
 
         /// Determine whether the file at the given absolute path is a dehydrated placeholder.
         virtual bool isDehydratedPlaceholder(const QString &filePath, bool isAbsolutePath = false) = 0;
@@ -217,10 +217,10 @@ class Vfs : public QObject {
         VfsSetupParams _vfsSetupParams;
 
         // Callbacks
-        void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status);
-        void (*_syncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool &syncing);
-        void (*_setSyncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool syncing);
-        void (*_exclusionAppList)(QString &appList);
+        void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status) = nullptr;
+        void (*_syncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool &syncing) = nullptr;
+        void (*_setSyncFileSyncing)(int syncDbId, const KDC::SyncPath &itemPath, bool syncing) = nullptr;
+        void (*_exclusionAppList)(QString &appList) = nullptr;
 
         inline bool extendedLog() { return _extendedLog; }
 
@@ -240,13 +240,11 @@ class Vfs : public QObject {
         inline log4cplus::Logger logger() { return _vfsSetupParams._logger; }
 
     private:
-        void effectivePinState(const QString &relativePath, KDC::PinState &effPinState);
-
         bool _extendedLog;
         bool _started;
 };
 
-}  // namespace KDC
+} // namespace KDC
 
 Q_DECLARE_INTERFACE(KDC::Vfs, "Vfs")
 
@@ -266,7 +264,7 @@ class VfsOff : public Vfs {
 
         virtual ~VfsOff();
 
-        KDC::VirtualFileMode mode() const override { return KDC::VirtualFileModeOff; }
+        KDC::VirtualFileMode mode() const override { return KDC::VirtualFileMode::Off; }
 
         bool socketApiPinStateActionsShown() const override { return false; }
         bool isHydrating() const override { return false; }
@@ -274,7 +272,7 @@ class VfsOff : public Vfs {
         bool updateMetadata(const QString &, time_t, time_t, qint64, const QByteArray &, QString *) override { return true; }
         bool createPlaceholder(const KDC::SyncPath &, const KDC::SyncFileItem &) override { return true; }
         bool dehydratePlaceholder(const QString &) override { return true; }
-        bool convertToPlaceholder(const QString &, const KDC::SyncFileItem &, bool &) override { return true; }
+        bool convertToPlaceholder(const QString &, const KDC::SyncFileItem &) override { return true; }
         bool updateFetchStatus(const QString &, const QString &, qint64, bool &, bool &) override { return true; }
         bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
 
@@ -282,7 +280,7 @@ class VfsOff : public Vfs {
         bool isDehydratedPlaceholder(const QString &, bool) override { return false; }
 
         bool setPinState(const QString &, KDC::PinState) override { return true; }
-        KDC::PinState pinState(const QString &) override { return KDC::PinStateAlwaysLocal; }
+        KDC::PinState pinState(const QString &) override { return KDC::PinState::AlwaysLocal; }
         bool status(const QString &, bool &, bool &, bool &, int &) override { return true; }
         virtual bool setThumbnail(const QString &, const QPixmap &) override { return true; }
         virtual bool setAppExcludeList() override { return true; }
@@ -296,6 +294,8 @@ class VfsOff : public Vfs {
     protected:
         bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool /*unregister*/) override {}
+
+        friend class TestWorkers;
 };
 
 /// Check whether the plugin for the mode is available.
@@ -307,4 +307,4 @@ KDC::VirtualFileMode bestAvailableVfsMode();
 /// Create a VFS instance for the mode, returns nullptr on failure.
 std::unique_ptr<Vfs> createVfsFromPlugin(KDC::VirtualFileMode virtualFileMode, VfsSetupParams &vfsSetupParams, QString &error);
 
-}  // namespace KDC
+} // namespace KDC

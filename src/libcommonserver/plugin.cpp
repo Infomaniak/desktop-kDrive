@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,8 @@
 
 namespace KDC {
 
-PluginFactory::~PluginFactory() = default;
-
 QString pluginFileName(const QString &type, const QString &name) {
     return QString(QLatin1String("%1syncengine_%2_%3")).arg(APPLICATION_NAME, type, name);
 }
 
-}  // namespace KDC
+} // namespace KDC

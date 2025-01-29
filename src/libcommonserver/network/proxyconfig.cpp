@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,8 @@
 
 namespace KDC {
 
-ProxyConfig::ProxyConfig()
-    : _type(ProxyTypeNone), _hostName(std::string()), _port(0), _needsAuth(false), _user(std::string()), _token(std::string()) {}
-
 ProxyConfig::ProxyConfig(ProxyType type, const std::string &hostName, int port, bool needsAuth, const std::string &user,
-                         const std::string &pwd)
-    : _type(type), _hostName(hostName), _port(port), _needsAuth(needsAuth), _user(user), _token(pwd) {}
+                         const std::string &pwd) :
+    _type(type), _hostName(hostName), _port(port), _needsAuth(needsAuth), _user(user), _token(pwd) {}
 
-}  // namespace KDC
+} // namespace KDC

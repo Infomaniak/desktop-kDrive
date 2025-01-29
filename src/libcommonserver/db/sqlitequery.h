@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ class SqliteQuery {
         int64_t int64Value(int index) const;
         double doubleValue(int index) const;
         const void *blobValue(int index) const;
-        size_t blobSize(int index) const;
+        int blobSize(int index) const;
 
         inline int errorId() const { return _errId; }
         inline const std::string &error() const { return _error; }
@@ -71,7 +71,7 @@ class SqliteQuery {
         log4cplus::Logger _logger;
         std::shared_ptr<sqlite3> _sqlite3Db;
         std::shared_ptr<sqlite3_stmt> _stmt;
-        int _errId;
+        int _errId{-1};
         std::string _error;
         std::string _sql;
 
@@ -80,4 +80,4 @@ class SqliteQuery {
         bool isPragma() const;
 };
 
-}  // namespace KDC
+} // namespace KDC

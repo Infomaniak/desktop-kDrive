@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ namespace KDC {
 
 std::shared_ptr<ParametersCache> ParametersCache::_instance = nullptr;
 
-std::shared_ptr<ParametersCache> ParametersCache::instance(bool isTest /*= false*/) {
+std::shared_ptr<ParametersCache> ParametersCache::instance(const bool isTest /*= false*/) {
     if (_instance == nullptr) {
         try {
             _instance = std::shared_ptr<ParametersCache>(new ParametersCache(isTest));
@@ -49,35 +49,40 @@ ParametersCache::ParametersCache(bool isTest /*= false*/) {
     bool found = false;
     if (!ParmsDb::instance()->selectParameters(_parameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectParameters");
-        throw std::runtime_error("Failed to create ParametersCache instance!");
+        throw std::runtime_error("Failed to read parameters");
     }
     if (!found) {
+        assert(false);
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
-        throw std::runtime_error("Failed to create ParametersCache instance!");
+        throw std::runtime_error("Failed to read parameters");
     }
 }
 
-ExitCode ParametersCache::save() {
+void ParametersCache::save(ExitCode *exitCode /*= nullptr*/) const {
     // Get old parameters
     Parameters oldParameters;
     bool found = false;
     if (!ParmsDb::instance()->selectParameters(oldParameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectParameters");
-        return ExitCodeDbError;
+        if (exitCode) *exitCode = ExitCode::DbError;
+        return;
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
-        return ExitCodeDataError;
+        if (exitCode) *exitCode = ExitCode::DataError;
+        return;
     }
 
     // Update parameters
     if (!ParmsDb::instance()->updateParameters(_parameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateParameters");
-        return ExitCodeDbError;
+        if (exitCode) *exitCode = ExitCode::DbError;
+        return;
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
-        return ExitCodeDataError;
+        if (exitCode) *exitCode = ExitCode::DataError;
+        return;
     }
 
     // Check if Log parameters have been updated
@@ -85,14 +90,15 @@ ExitCode ParametersCache::save() {
         oldParameters.purgeOldLogs() != _parameters.purgeOldLogs()) {
         if (!Log::instance()->configure(_parameters.useLog(), _parameters.logLevel(), _parameters.purgeOldLogs())) {
             LOG_WARN(Log::instance()->getLogger(), "Error in Log::configure");
-            return ExitCodeSystemError;
+            if (exitCode) *exitCode = ExitCode::SystemError;
+            return;
         }
     }
 
-    return ExitCodeOk;
+    if (exitCode) *exitCode = ExitCode::Ok;
 }
 
-void ParametersCache::setUploadSessionParallelThreads(int count) {
+void ParametersCache::setUploadSessionParallelThreads(const int count) {
     _parameters.setUploadSessionParallelJobs(count);
     save();
 }
@@ -105,11 +111,9 @@ void ParametersCache::decreaseUploadSessionParallelThreads() {
         LOG_DEBUG(Log::instance()->getLogger(),
                   "Upload session max parallel threads parameters set to " << newUploadSessionParallelJobs);
     } else {
-#ifdef NDEBUG
-        sentry_capture_event(sentry_value_new_message_event(
-            SENTRY_LEVEL_WARNING, "AppServer::addError", "Upload session max parallel threads parameters cannot be decreased"));
-#endif
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError",
+                                        "Upload session max parallel threads parameters cannot be decreased");
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

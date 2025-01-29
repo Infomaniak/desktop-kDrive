@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,7 +88,6 @@ class ParametersDialog : public CustomDialog {
         DrivePreferencesWidget *_drivePreferencesWidget{nullptr};
         QScrollArea *_drivePreferencesScrollArea{nullptr};
         QWidget *_noDrivePagewidget{nullptr};
-        ActionWidget *_sendLogsWidget{nullptr};
         QStackedWidget *_errorsStackedWidget{nullptr};
         QLabel *_defaultTextLabel{nullptr};
 
@@ -96,16 +95,16 @@ class ParametersDialog : public CustomDialog {
         QByteArray contents(const QString &path);
         void reset();
 
-        QString getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const noexcept;
-        QString getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const noexcept;
-        QString getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const noexcept;
-        QString getInconsistencyText(InconsistencyType inconsistencyType) const noexcept;
-        QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "") const noexcept;
-        QString getErrorMessage(const ErrorInfo &errorInfo) const noexcept;
-        QString getBackErrorText(const ErrorInfo &errorInfo) const noexcept;
-        QString getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const noexcept;
-        QString getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const noexcept;
-        QString getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept;
+        QString getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const;
+        QString getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const;
+        QString getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const;
+        QString getInconsistencyText(InconsistencyType inconsistencyType) const;
+        QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "") const;
+        QString getErrorMessage(const ErrorInfo &errorInfo) const;
+        QString getBackErrorText(const ErrorInfo &errorInfo) const;
+        QString getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const;
+        QString getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const;
+        QString getErrorLevelNodeText(const ErrorInfo &errorInfo) const;
 
         void createErrorTabWidgetIfNeeded(int driveDbId);
         void refreshErrorList(int driveDbId);
@@ -123,7 +122,6 @@ class ParametersDialog : public CustomDialog {
         void onDisplayPreferences();
         void onBackButtonClicked();
         void onSetStyle(bool darkTheme);
-        void onSendLogs();
         void onOpenFolder(const QString &filePath);
         void onDebugReporterDone(bool retCode, const QString &debugId = QString());
         void retranslateUi();
@@ -133,4 +131,4 @@ class ParametersDialog : public CustomDialog {
         void onClearErrors(int syncDbId, bool autoResolved);
 };
 
-}  // namespace KDC
+} // namespace KDC

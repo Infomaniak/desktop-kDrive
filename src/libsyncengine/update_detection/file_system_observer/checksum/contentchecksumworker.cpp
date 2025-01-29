@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,10 +30,8 @@ std::mutex ContentChecksumWorker::_checksumMutex;
 std::unordered_map<UniqueId, std::shared_ptr<ComputeChecksumJob>> ContentChecksumWorker::_runningJobs;
 
 ContentChecksumWorker::ContentChecksumWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                             const std::string &shortName, std::shared_ptr<Snapshot> localSnapshot)
-    : ISyncWorker(syncPal, name, shortName),
-      _localSnapshot(localSnapshot),
-      _threadPool(1, 5)  // Min 1 thread, max 5
+                                             const std::string &shortName, std::shared_ptr<Snapshot> localSnapshot) :
+    ISyncWorker(syncPal, name, shortName), _localSnapshot(localSnapshot), _threadPool(1, 5) // Min 1 thread, max 5
 {}
 
 ContentChecksumWorker::~ContentChecksumWorker() {
@@ -55,7 +53,7 @@ void ContentChecksumWorker::callback(UniqueId jobId) {
 }
 
 void ContentChecksumWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
@@ -76,7 +74,7 @@ void ContentChecksumWorker::execute() {
 
             _runningJobs.clear();
 
-            exitCode = ExitCodeOk;
+            exitCode = ExitCode::Ok;
             break;
         }
         // We never pause this thread
@@ -89,7 +87,7 @@ void ContentChecksumWorker::execute() {
             if (_threadPool.available()) {
                 const std::lock_guard<std::mutex> lock(_checksumMutex);
                 std::shared_ptr<ComputeChecksumJob> job =
-                    std::make_shared<ComputeChecksumJob>(_toCompute.front().first, _toCompute.front().second, _localSnapshot);
+                        std::make_shared<ComputeChecksumJob>(_toCompute.front().first, _toCompute.front().second, _localSnapshot);
                 _runningJobs.insert({job->jobId(), job});
                 job->setMainCallback(callback);
                 _threadPool.start(*job);
@@ -103,8 +101,8 @@ void ContentChecksumWorker::execute() {
         Utility::msleep(10);
     }
 
-    setDone(exitCode);
     LOG_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    setDone(exitCode);
 }
 
-}  // namespace KDC
+} // namespace KDC

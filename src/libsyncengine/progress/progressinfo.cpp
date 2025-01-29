@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,7 @@
 
 namespace KDC {
 
-ProgressInfo::ProgressInfo(std::shared_ptr<SyncPal> syncPal)
-    : _syncPal(syncPal), _totalSizeOfCompletedJobs(0), _maxFilesPerSecond(0), _maxBytesPerSecond(0), _update(false) {
+ProgressInfo::ProgressInfo(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {
     reset();
 }
 
@@ -38,7 +37,7 @@ void ProgressInfo::reset() {
 
     // Historically, these starting estimates were way lower, but that lead
     // to gross overestimation of ETA when a good estimate wasn't available.
-    _maxBytesPerSecond = 2000000.0;  // 2 MB/s
+    _maxBytesPerSecond = 2000000.0; // 2 MB/s
     _maxFilesPerSecond = 10.0;
 
     _update = false;
@@ -48,8 +47,8 @@ static bool shouldCountProgress(const SyncFileItem &item) {
     const auto instruction = item.instruction();
 
     // Skip any ignored, error or non-propagated files and directories.
-    if (instruction == SyncFileInstructionNone || instruction == SyncFileInstructionUpdateMetadata ||
-        instruction == SyncFileInstructionIgnore) {
+    if (instruction == SyncFileInstruction::None || instruction == SyncFileInstruction::UpdateMetadata ||
+        instruction == SyncFileInstruction::Ignore) {
         return false;
     }
 
@@ -65,7 +64,7 @@ void ProgressInfo::updateEstimates() {
     _fileProgress.update();
 
     // Update progress of all running items.
-    for (auto &item : _currentItems) {
+    for (auto &item: _currentItems) {
         if (item.second.empty()) {
             continue;
         }
@@ -76,47 +75,74 @@ void ProgressInfo::updateEstimates() {
     _maxBytesPerSecond = std::max(_sizeProgress.progressPerSec(), _maxBytesPerSecond);
 }
 
-void ProgressInfo::initProgress(const SyncFileItem &item) {
-    SyncPath path = item.newPath().has_value() ? item.newPath().value() : item.path();
+bool ProgressInfo::initProgress(const SyncFileItem &item) {
+    const SyncPath path = item.newPath().has_value() ? item.newPath().value() : item.path();
     ProgressItem progressItem;
     progressItem.setItem(item);
     progressItem.progress().setTotal(item.size());
     progressItem.progress().setCompleted(0);
 
-    _currentItems[path].push(progressItem);
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+
+    _currentItems[normalizedPath].push(progressItem);
 
     _fileProgress.setTotal(_fileProgress.total() + 1);
     _sizeProgress.setTotal(_sizeProgress.total() + item.size());
+    return true;
 }
 
 bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
-    auto it = _currentItems.find(path);
-    if (_currentItems.find(path) == _currentItems.end() || it->second.empty()) {
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+
+    const auto it = _currentItems.find(normalizedPath);
+    if (it == _currentItems.end() || it->second.empty()) {
         return false;
     }
     item = it->second.front().item();
     return true;
 }
 
-void ProgressInfo::setProgress(const SyncPath &path, int64_t completed) {
-    auto it = _currentItems.find(path);
-    if (it == _currentItems.end() || it->second.empty()) {
-        return;
+bool ProgressInfo::setProgress(const SyncPath &path, const int64_t completed) {
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
     }
 
-    SyncFileItem &item = it->second.front().item();
-    if (!shouldCountProgress(item)) {
-        return;
+    const auto it = _currentItems.find(normalizedPath);
+    if (it == _currentItems.end() || it->second.empty()) {
+        return true;
+    }
+
+    if (const SyncFileItem &item = it->second.front().item(); !shouldCountProgress(item)) {
+        return true;
     }
 
     it->second.front().progress().setCompleted(completed);
     recomputeCompletedSize();
+    return true;
 }
 
-void ProgressInfo::setProgressComplete(const SyncPath &path, SyncFileStatus status) {
-    auto it = _currentItems.find(path);
+bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatus status) {
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(path, normalizedPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        return false;
+    }
+
+    const auto it = _currentItems.find(normalizedPath);
     if (it == _currentItems.end() || it->second.empty()) {
-        return;
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Item not found in ProgressInfo list (normal for ommited operation): " << Utility::formatSyncPath(path));
+        return true;
     }
 
     SyncFileItem &item = it->second.front().item();
@@ -125,7 +151,7 @@ void ProgressInfo::setProgressComplete(const SyncPath &path, SyncFileStatus stat
     _syncPal->addCompletedItem(_syncPal->syncDbId(), item);
 
     if (!shouldCountProgress(item)) {
-        return;
+        return true;
     }
 
     _fileProgress.setCompleted(_fileProgress.completed() + 1);
@@ -135,15 +161,16 @@ void ProgressInfo::setProgressComplete(const SyncPath &path, SyncFileStatus stat
 
     it->second.pop();
     if (it->second.empty()) {
-        _currentItems.erase(path);
+        _currentItems.erase(normalizedPath);
     }
     recomputeCompletedSize();
+    return true;
 }
 
 bool ProgressInfo::isSizeDependent(const SyncFileItem &item) const {
     return !item.isDirectory() &&
-           (item.instruction() == SyncFileInstructionUpdate || item.instruction() == SyncFileInstructionGet ||
-            item.instruction() == SyncFileInstructionPut) &&
+           (item.instruction() == SyncFileInstruction::Update || item.instruction() == SyncFileInstruction::Get ||
+            item.instruction() == SyncFileInstruction::Put) &&
            !item.dehydrated();
 }
 
@@ -166,35 +193,27 @@ Estimates ProgressInfo::totalProgress() const {
     double transU = 0.1;
     double transL = 0.01;
     double slowTransfer =
-        1.0 - std::max(0.0, std::min((trans - transL * _maxBytesPerSecond) / ((transU - transL) * _maxBytesPerSecond), 1.0));
+            1.0 - std::max(0.0, std::min((trans - transL * _maxBytesPerSecond) / ((transU - transL) * _maxBytesPerSecond), 1.0));
 
     double beOptimistic = nearMaxFps * slowTransfer;
-    size.setEstimatedEta(int64_t((1.0 - beOptimistic) * size.estimatedEta() + beOptimistic * optimisticEta()));
+    size.setEstimatedEta(static_cast<int64_t>(((1.0 - beOptimistic) * static_cast<double>(size.estimatedEta()) +
+                                               beOptimistic * static_cast<double>(optimisticEta()))));
 
     return size;
 }
 
 int64_t ProgressInfo::optimisticEta() const {
-    return static_cast<int64_t>(_fileProgress.remaining() / _maxFilesPerSecond * 1000 +
-                                _sizeProgress.remaining() / _maxBytesPerSecond * 1000);
+    return static_cast<int64_t>(static_cast<double>(_fileProgress.remaining()) / _maxFilesPerSecond * 1000 +
+                                static_cast<double>(_sizeProgress.remaining()) / _maxBytesPerSecond * 1000);
 }
 
 bool ProgressInfo::trustEta() const {
     return totalProgress().estimatedEta() < 100 * optimisticEta();
 }
 
-Estimates ProgressInfo::fileProgress(const SyncFileItem &item) {
-    auto it = _currentItems.find(item.path());
-    if (it == _currentItems.end() || it->second.empty()) {
-        return Estimates();
-    }
-
-    return it->second.front().progress().estimates();
-}
-
 void ProgressInfo::recomputeCompletedSize() {
     int64_t r = _totalSizeOfCompletedJobs;
-    for (auto &itemElt : _currentItems) {
+    for (auto &itemElt: _currentItems) {
         if (isSizeDependent(itemElt.second.front().item())) {
             r += itemElt.second.front().progress().completed();
         }
@@ -202,4 +221,4 @@ void ProgressInfo::recomputeCompletedSize() {
     _sizeProgress.setCompleted(r);
 }
 
-}  // namespace KDC
+} // namespace KDC

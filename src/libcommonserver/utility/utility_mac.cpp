@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 #include "log/log.h"
+#include "libcommon/utility/utility.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <sstream>
 #include <string>
@@ -36,10 +38,12 @@ static bool init_private() {
     return true;
 }
 
-static void free_private() {}
+static void makeMessage() {}
 
-bool moveItemToTrash(const SyncPath &itemPath, std::string &errorStr);
+bool moveItemToTrash(const SyncPath &itemPath, std::wstring &errorStr);
 bool preventSleeping(bool enable);
+bool preventSleeping();
+void restartFinderExtension();
 
 static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (itemPath.empty()) {
@@ -47,9 +51,10 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         return false;
     }
 
-    std::string errorStr;
+    std::wstring errorStr;
     if (!moveItemToTrash(itemPath, errorStr)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in moveItemToTrash - err=" << errorStr.c_str());
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in moveItemToTrash on " << Utility::formatSyncPath(itemPath) << L" - err='" << errorStr << L"'.");
         return false;
     }
 
@@ -60,11 +65,15 @@ static bool preventSleeping_private(bool enable) {
     return preventSleeping(enable);
 }
 
+static void restartFinderExtension_private() {
+    return restartFinderExtension();
+}
+
 static bool totalRamAvailable_private(uint64_t &ram, int &errorCode) {
     int mib[2];
     mib[0] = CTL_HW;
     mib[1] = HW_MEMSIZE;
-    int64_t physical_memory;
+    uint64_t physical_memory;
     size_t length = sizeof(int64_t);
     if (sysctl(mib, 2, &physical_memory, &length, nullptr, 0) == 0) {
         ram = physical_memory;
@@ -83,10 +92,8 @@ static bool ramCurrentlyUsed_private(uint64_t &ram, int &errorCode) {
     mach_port = mach_host_self();
     count = sizeof(vm_stats) / sizeof(natural_t);
     if (KERN_SUCCESS == host_page_size(mach_port, &page_size) &&
-        KERN_SUCCESS == host_statistics64(mach_port, HOST_VM_INFO, (host_info64_t)&vm_stats, &count)) {
-        long long used_memory =
-            ((int64_t)vm_stats.active_count + (int64_t)vm_stats.inactive_count + (int64_t)vm_stats.wire_count) *
-            (int64_t)page_size;
+        KERN_SUCCESS == host_statistics64(mach_port, HOST_VM_INFO, (host_info64_t) &vm_stats, &count)) {
+        uint64_t used_memory = (vm_stats.active_count + vm_stats.inactive_count + vm_stats.wire_count) * page_size;
         ram = used_memory;
         return true;
     }
@@ -98,7 +105,7 @@ static bool ramCurrentlyUsedByProcess_private(uint64_t &ram, int &errorCode) {
     struct task_basic_info t_info {};
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
 
-    if (KERN_SUCCESS != task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count)) {
+    if (KERN_SUCCESS != task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t) &t_info, &t_info_count)) {
         errorCode = errno;
         return false;
     }
@@ -110,14 +117,16 @@ static bool ramCurrentlyUsedByProcess_private(uint64_t &ram, int &errorCode) {
 static bool cpuUsage_private(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
     host_cpu_load_info_data_t cpuinfo;
     mach_msg_type_number_t count = HOST_CPU_LOAD_INFO_COUNT;
-    if (host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&cpuinfo, &count) == KERN_SUCCESS) {
+    if (host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t) &cpuinfo, &count) == KERN_SUCCESS) {
         uint64_t totalTicks = 0;
-        for (auto cpu_tick : cpuinfo.cpu_ticks) totalTicks += cpu_tick;
+        for (auto cpu_tick: cpuinfo.cpu_ticks) totalTicks += cpu_tick;
         uint64_t idleTicks = cpuinfo.cpu_ticks[CPU_STATE_IDLE];
 
         uint64_t totalTicksSinceLastTime = totalTicks - previousTotalTicks;
         uint64_t idleTicksSinceLastTime = idleTicks - previousIdleTicks;
-        uint64_t proportion = (totalTicksSinceLastTime > 0) ? ((float)idleTicksSinceLastTime) / totalTicksSinceLastTime : 0.0;
+        uint64_t proportion = (totalTicksSinceLastTime > 0)
+                                      ? static_cast<uint64_t>(((float) idleTicksSinceLastTime) / totalTicksSinceLastTime)
+                                      : 0.0;
         percent = 1.0f - proportion;
         percent *= 100.0;
 
@@ -168,4 +177,10 @@ static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KD
                                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
     return KDC::setFileDates(filePath, creationDate, modificationDate, symlink, exists);
 }
-}  // namespace KDC
+
+static std::string userName_private() {
+    bool isSet = false;
+    return CommonUtility::envVarValue("USER", isSet);
+}
+
+} // namespace KDC

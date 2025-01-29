@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "abstractfileitemwidget.h"
 #include "gui/custommessagebox.h"
 #include "guiutility.h"
+#include "libcommon/utility/utility.h"
 
 #include <QFileInfo>
 #include <QGraphicsDropShadowEffect>
@@ -37,17 +38,10 @@ static const int boxVSpacing = 10;
 static const int shadowBlurRadius = 20;
 static const QSize iconSize = QSize(15, 15);
 
-AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/)
-    : QWidget(parent)
-    , _topLayout(new QHBoxLayout)
-    , _fileTypeIconLabel(new QLabel)
-    , _filenameLabel(new QLabel)
-    , _middleLayout(new QHBoxLayout)
-    , _messageLabel(new QLabel)
-    , _bottomLayout(new QHBoxLayout)
-    , _driveIconLabel(new QLabel)
-    , _pathLabel(new QLabel)
-{
+AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) :
+    QWidget(parent), _topLayout(new QHBoxLayout), _fileTypeIconLabel(new QLabel), _filenameLabel(new QLabel),
+    _middleLayout(new QHBoxLayout), _messageLabel(new QLabel), _bottomLayout(new QHBoxLayout), _driveIconLabel(new QLabel),
+    _pathLabel(new QLabel) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
     auto mainLayout = new QVBoxLayout;
@@ -123,7 +117,7 @@ QSize AbstractFileItemWidget::sizeHint() const {
     return {width(), height};
 }
 
-void AbstractFileItemWidget::setFilePath(const QString &filePath, NodeType type /*= NodeTypeFile*/) {
+void AbstractFileItemWidget::setFilePath(const QString &filePath, NodeType type /*= NodeType::File*/) {
     setFileName(filePath, type);
     setPath(filePath);
 }
@@ -135,7 +129,7 @@ void AbstractFileItemWidget::setDriveName(const QString &driveName, const QStrin
 
 void AbstractFileItemWidget::setPathIconColor(const QColor &color) {
     _driveIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", color).pixmap(iconSize));
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", color).pixmap(iconSize));
 }
 
 void AbstractFileItemWidget::setMessage(const QString &str) {
@@ -158,7 +152,8 @@ void AbstractFileItemWidget::openFolder(const QString &path) {
 void AbstractFileItemWidget::setLogoColor(const QColor &color) {
     _logoColor = color;
     _driveIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor).pixmap(iconSize));
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor)
+                    .pixmap(iconSize));
 }
 
 void AbstractFileItemWidget::paintEvent(QPaintEvent *event) {
@@ -192,7 +187,8 @@ void AbstractFileItemWidget::setFileName(const QString &path, NodeType type) {
 
 void AbstractFileItemWidget::setPath(const QString &path) {
     _driveIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor).pixmap(iconSize));
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor)
+                    .pixmap(iconSize));
 
     const QFileInfo fInfo(path);
     QString printablePath;
@@ -207,4 +203,4 @@ void AbstractFileItemWidget::setPath(const QString &path) {
     _pathLabel->setToolTip(path);
 }
 
-}  // namespace KDC
+} // namespace KDC

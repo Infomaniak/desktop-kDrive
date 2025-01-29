@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "syncpal/syncpal.h"
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
 
 using namespace CppUnit;
 
@@ -97,6 +98,7 @@ class TestIntegration : public CppUnit::TestFixture {
         NodeId _newTestFileRemoteId;
 
         std::vector<testFctPtr> _testFctPtrVector;
+        LocalTemporaryDirectory _localTmpDir{"test_integration"};
 };
 
-}  // namespace KDC
+} // namespace KDC

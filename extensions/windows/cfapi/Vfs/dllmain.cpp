@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,6 +81,7 @@ DLL_EXP int __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, cons
         if (s_cloudProviders.size() == 0) {
             if (!Utilities::connectToPipeServer()) {
                 TRACE_ERROR(L"Error in connectToPipeServer!");
+                delete cloudProvider;
                 return E_ABORT;
             }
         }

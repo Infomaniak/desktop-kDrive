@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,8 +41,8 @@ KDContextMenuFactory::~KDContextMenuFactory() {
 
 IFACEMETHODIMP KDContextMenuFactory::QueryInterface(REFIID riid, void **ppv) {
     static const QITAB qit[] = {
-        QITABENT(KDContextMenuFactory, IClassFactory),
-        {0},
+            QITABENT(KDContextMenuFactory, IClassFactory),
+            {0},
     };
     return QISearch(this, qit, riid, ppv);
 }
@@ -66,7 +66,7 @@ IFACEMETHODIMP KDContextMenuFactory::CreateInstance(IUnknown *pUnkOuter, REFIID 
     HRESULT hr = CLASS_E_NOAGGREGATION;
 
     // pUnkOuter is used for aggregation. We do not support it in the sample.
-    if (pUnkOuter == NULL) {
+    if (pUnkOuter == nullptr) {
         hr = E_OUTOFMEMORY;
 
         // Create the COM component.

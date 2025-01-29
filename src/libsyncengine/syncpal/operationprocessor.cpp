@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 
 namespace KDC {
 
-OperationProcessor::OperationProcessor(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName)
-    : ISyncWorker(syncPal, name, shortName) {}
+OperationProcessor::OperationProcessor(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
+    ISyncWorker(syncPal, name, shortName) {}
 
 bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode) {
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
@@ -31,18 +31,26 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         return false;
     }
 
-    std::shared_ptr<Snapshot> snapshot = _syncPal->snapshot(node->side(), true);
-    std::shared_ptr<Snapshot> otherSnapshot = _syncPal->snapshot(correspondingNode->side(), true);
+    std::shared_ptr<const Snapshot> snapshot = _syncPal->snapshotCopy(node->side());
+    std::shared_ptr<const Snapshot> otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
 
     // Create-Create pseudo-conflict
-    if (node->hasChangeEvent(OperationTypeCreate) && correspondingNode->hasChangeEvent(OperationTypeCreate) &&
-        node->type() == NodeTypeDirectory && correspondingNode->type() == NodeTypeDirectory) {
+    if (node->hasChangeEvent(OperationType::Create) && correspondingNode->hasChangeEvent(OperationType::Create) &&
+        node->type() == NodeType::Directory && correspondingNode->type() == NodeType::Directory) {
         return true;
     }
 
     // Move-Move (Source) pseudo-conflict
-    if (node->hasChangeEvent(OperationTypeMove) && correspondingNode->hasChangeEvent(OperationTypeMove) &&
-        node->parentNode()->idb() == correspondingNode->parentNode()->idb() && node->name() == correspondingNode->name()) {
+    bool isEqual = false;
+    if (!Utility::checkIfSameNormalization(node->name(), correspondingNode->name(), isEqual)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfSameNormalization: "
+                                                        << Utility::formatSyncName(node->name()) << L" / "
+                                                        << Utility::formatSyncName(correspondingNode->name()));
+        return false;
+    }
+
+    if (node->hasChangeEvent(OperationType::Move) && correspondingNode->hasChangeEvent(OperationType::Move) &&
+        node->parentNode()->idb() == correspondingNode->parentNode()->idb() && isEqual) {
         return true;
     }
 
@@ -53,14 +61,19 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
     }
 
     bool useContentChecksum =
-        !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
+            !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
     bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
                            snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
-    if (node->type() == NodeType::NodeTypeFile && correspondingNode->type() == node->type() &&
-        node->hasChangeEvent((OperationTypeCreate | OperationTypeEdit)) &&
-        correspondingNode->hasChangeEvent(OperationTypeCreate | OperationTypeEdit) &&
-        (useContentChecksum ? snapshot->contentChecksum(*node->id()) == otherSnapshot->contentChecksum(*correspondingNode->id())
-                            : sameSizeAndDate)) {
+    bool hasSameContent = useContentChecksum ? snapshot->contentChecksum(*node->id()) ==
+                                                       otherSnapshot->contentChecksum(*correspondingNode->id())
+                                             : sameSizeAndDate;
+
+    bool hasCreateOrEditChangeEvent =
+            (node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Edit)) &&
+            (correspondingNode->hasChangeEvent(OperationType::Create) || correspondingNode->hasChangeEvent(OperationType::Edit));
+
+    if (node->type() == NodeType::File && correspondingNode->type() == node->type() && hasCreateOrEditChangeEvent &&
+        hasSameContent) {
         return true;
     }
 
@@ -182,4 +195,4 @@ bool OperationProcessor::isABelowB(std::shared_ptr<Node> a, std::shared_ptr<Node
     return false;
 }
 
-}  // namespace KDC
+} // namespace KDC

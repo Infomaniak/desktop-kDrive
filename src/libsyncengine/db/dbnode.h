@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,9 +31,16 @@ class DbNode {
                const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
                std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
                std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
-               const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatusUnknown, bool syncing = false);
+               const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatus::Unknown, bool syncing = false);
+
+        DbNode(std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
+               const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
+               std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
+               std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
+               const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatus::Unknown, bool syncing = false);
 
         DbNode();
+        virtual ~DbNode() = default;
 
         inline DbNodeId nodeId() const { return _nodeId; }
         inline std::optional<DbNodeId> parentNodeId() const { return _parentNodeId; }
@@ -49,6 +56,12 @@ class DbNode {
         inline const std::optional<std::string> &checksum() const { return _checksum; }
         inline SyncFileStatus status() const { return _status; }
         inline bool syncing() const { return _syncing; }
+        inline bool hasLocalNodeId() const noexcept { return nodeIdLocal() ? !nodeIdLocal()->empty() : false; }
+        inline bool hasRemoteNodeId() const noexcept { return nodeIdRemote() ? !nodeIdRemote()->empty() : false; }
+
+        SyncTime lastModified(const ReplicaSide side) const;
+        NodeId nodeId(const ReplicaSide side) const;
+        SyncName name(const ReplicaSide side) const;
 
         inline void setNodeId(DbNodeId nodeId) { _nodeId = nodeId; }
         inline void setParentNodeId(std::optional<DbNodeId> parentNodeId) { _parentNodeId = parentNodeId; }
@@ -72,8 +85,8 @@ class DbNode {
     protected:
         DbNodeId _nodeId;
         std::optional<DbNodeId> _parentNodeId;
-        SyncName _nameLocal;   // /!\ Must be in NFC form
-        SyncName _nameRemote;  // /!\ Must be in NFC form
+        SyncName _nameLocal; // /!\ Must be in NFC form
+        SyncName _nameRemote; // /!\ Must be in NFC form
         std::optional<NodeId> _nodeIdLocal;
         std::optional<NodeId> _nodeIdRemote;
         std::optional<SyncTime> _created;
@@ -86,4 +99,4 @@ class DbNode {
         bool _syncing;
 };
 
-}  // namespace KDC
+} // namespace KDC

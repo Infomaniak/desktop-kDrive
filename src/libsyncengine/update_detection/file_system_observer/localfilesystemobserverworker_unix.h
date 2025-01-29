@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,9 @@ class LocalFileSystemObserverWorker_unix : public LocalFileSystemObserverWorker 
     public:
         LocalFileSystemObserverWorker_unix(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                            const std::string &shortName);
-        ~LocalFileSystemObserverWorker_unix();
 
     protected:
         virtual bool isFolderWatcherReliable() const override { return (_folderWatcher && _folderWatcher->isReliable()); }
 };
 
-}  // namespace KDC
+} // namespace KDC

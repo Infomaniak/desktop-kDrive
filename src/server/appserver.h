@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,6 @@
  */
 
 #pragma once
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#endif
 
 #include "qtsingleapplication.h"
 #include "libcommonserver/commserver.h"
@@ -40,10 +36,10 @@
 #include <QElapsedTimer>
 #include <QPointer>
 #include <QQueue>
-#include <QThread>
 #include <QTimer>
 
 namespace KDC {
+class UpdateManager;
 
 class Theme;
 /**
@@ -90,13 +86,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void showAlreadyRunning();
 
         void showHint(std::string errorHint);
-        bool debugMode();
         bool startClient();
-
-    public slots:
-        void onCrash();
-        void onCrashEnforce();
-        void onCrashFatal();
 
     private:
         log4cplus::Logger _logger;
@@ -126,16 +116,17 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
 
-        // options from command line:
-        bool _debugMode{false};
+        std::unique_ptr<UpdateManager> _updateManager;
 
         void parseOptions(const QStringList &);
-        void initLogging() noexcept(false);
-        void setupProxy();
-        void handleCrashRecovery(bool &shouldQuit);  // Sets `shouldQuit` with true if the crash recovery is successful, false if
-                                                     // the application should exit.
+        bool initLogging() noexcept;
+        void logUsefulInformation() const;
+        bool setupProxy() noexcept;
+        void handleCrashRecovery(bool &shouldQuit); // Sets `shouldQuit` with true if the crash recovery is successful, false if
+                                                    // the application should exit.
         bool serverCrashedRecently(int seconds = 60 /*Allow one server self restart per minute (default)*/);
         bool clientCrashedRecently(int second = 60 /*Allow one client self restart per minute (default)*/);
+        void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);
@@ -151,7 +142,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         ExitCode createAndStartVfs(const Sync &sync, ExitCause &exitCause) noexcept;
         // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
-        ExitCode tryCreateAndStartVfs(Sync &sync) noexcept;
+        [[nodiscard]] ExitCode tryCreateAndStartVfs(Sync &sync) noexcept;
         ExitCode stopVfs(int syncDbId, bool unregister);
 
         ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
@@ -185,23 +176,24 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendSyncDeletionFailed(int syncDbId);
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
-        void sendErrorsCleared(int syncDbId);
+        static void sendErrorsCleared(int syncDbId);
+        void sendQuit(); // Ask client to quit
 
         // See types.h -> AppStateKey for the possible values of status
         void cancelLogUpload();
-        void uploadLog(bool includeArchivedLogs);
+        ExitInfo uploadLog(bool includeArchivedLogs);
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();
-        void stopSyncTask(int syncDbId);  // Long task which can block GUI: post-poned in the event loop by means of timer
-        void stopAllSyncsTask(const std::vector<int> &syncDbIdList);  // Idem.
-        void deleteAccountIfNeeded(int accountDbId);                  // Remove the account if no drive is associated to it.
+        void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
+        void stopAllSyncsTask(const std::vector<int> &syncDbIdList); // Idem.
+        void deleteAccountIfNeeded(int accountDbId); // Remove the account if no drive is associated to it.
         void deleteDrive(int driveDbId, int accountDbId);
 
         static void addError(const Error &error);
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         static void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
-        static void sendSignal(int sigId, int syncDbId, const SigValueType &val);
+        static void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
         static bool vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded);
         static bool vfsExclude(int syncDbId, const SyncPath &itemPath);
@@ -210,7 +202,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static bool vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                               int &progress);
         static bool vfsCreatePlaceholder(int syncDbIdconst, const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        static bool vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item, bool &needRestart);
+        static bool vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item);
         static bool vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                       const int64_t size, const NodeId &id, std::string &error);
         static bool vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
@@ -238,21 +230,31 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
+        void updateSentryUser() const;
+
+        bool clientHasCrashed() const;
+        void handleClientCrash(bool &quit);
+
+        // For testing purpose
+        void crash() const;
+
     private slots:
         void onLoadInfo();
         void onUpdateSyncsProgress();
         void onSendFilesNotifications();
         void onRestartSyncs();
         void onScheduleAppRestart();
-        void onShowWindowsUpdateErrorDialog();
+        void onShowWindowsUpdateDialog();
+        void onUpdateStateChanged(UpdateState state);
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
         void onRestartClientReceived();
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
+        void onSendNotifAsked(const QString &title, const QString &message);
 
     signals:
-        void socketApiExecuteCommandDirect(const QString& commandLine);
+        void socketApiExecuteCommandDirect(const QString &commandLine);
 };
 
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "languagechangefilter.h"
 #include "utility/utility.h"
 #include "parameterscache.h"
+#include "libcommon/utility/utility.h"
 
 #include <QApplication>
 #include <QBoxLayout>
@@ -57,18 +58,10 @@ static const int hoverStartTimer = 250;
 
 Q_LOGGING_CATEGORY(lcSynchronizedItemWidget, "gui.synchronizeditemidget", QtInfoMsg)
 
-SynchronizedItemWidget::SynchronizedItemWidget(const SynchronizedItem &item, QWidget *parent)
-    : QWidget(parent),
-      _item(item),
-      _isWaitingTimer(false),
-      _isSelected(false),
-      _isMenuOpened(false),
-      _cannotSelect(false),
-      _fileIconSize(QSize()),
-      _directionIconSize(QSize()),
-      _backgroundColorSelection(QColor()),
-      _fileIconLabel(nullptr),
-      _fileDateLabel(nullptr) {
+SynchronizedItemWidget::SynchronizedItemWidget(const SynchronizedItem &item, QWidget *parent) :
+    QWidget(parent), _item(item), _isWaitingTimer(false), _isSelected(false), _isMenuOpened(false), _cannotSelect(false),
+    _fileIconSize(QSize()), _directionIconSize(QSize()), _backgroundColorSelection(QColor()), _fileIconLabel(nullptr),
+    _fileDateLabel(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
     _waitingTimer.setSingleShot(true);
@@ -251,7 +244,7 @@ QIcon SynchronizedItemWidget::getIconWithStatus(const QString &filePath, NodeTyp
 
     Q_CHECK_PTR(qApp->primaryScreen());
     qreal ratio = qApp->primaryScreen()->devicePixelRatio();
-    QPixmap pixmap(QSize(scene.width() * ratio, scene.height() * ratio));
+    QPixmap pixmap(QSize(static_cast<int>(round(scene.width() * ratio)), static_cast<int>(round(scene.height() * ratio))));
     pixmap.fill(Qt::transparent);
 
     QPainter painter(&pixmap);
@@ -267,17 +260,17 @@ QIcon SynchronizedItemWidget::getIconWithStatus(const QString &filePath, NodeTyp
 void SynchronizedItemWidget::setDirectionIcon() {
     if (_fileDirectionLabel && _directionIconSize != QSize() && _directionIconColor != QColor()) {
         switch (_item.direction()) {
-            case SyncDirectionUnknown:
+            case SyncDirection::Unknown:
                 break;
-            case SyncDirectionUp:
+            case SyncDirection::Up:
                 _fileDirectionLabel->setPixmap(
-                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/upload.svg", _directionIconColor)
-                        .pixmap(_directionIconSize));
+                        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/upload.svg", _directionIconColor)
+                                .pixmap(_directionIconSize));
                 break;
-            case SyncDirectionDown:
+            case SyncDirection::Down:
                 _fileDirectionLabel->setPixmap(
-                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/download.svg", _directionIconColor)
-                        .pixmap(_directionIconSize));
+                        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/download.svg", _directionIconColor)
+                                .pixmap(_directionIconSize));
                 break;
         }
     }
@@ -398,4 +391,4 @@ void SynchronizedItemWidget::onWaitingTimerTimeout() {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

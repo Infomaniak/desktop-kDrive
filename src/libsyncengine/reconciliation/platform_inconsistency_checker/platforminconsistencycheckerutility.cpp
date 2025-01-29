@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,34 +40,36 @@ static const char forbiddenFilenameChars[] = {'/', '\0'};
 #endif
 #endif
 
-#define MAX_NAME_LENGTH 255
+static const int maxNameLengh = 255; // Max filename length is uniformized to 255 characters for all platforms and backends
 
 namespace KDC {
 
-#ifdef WIN32
+#ifdef _WIN32
 static const std::unordered_set<std::string> reservedWinNames = {
-    "CON",  "PRN",  "AUX",  "NUL",  "CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5",
-    "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
+        "CON",  "PRN",  "AUX",  "NUL",  "CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5",
+        "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 #endif
 
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::_instance = nullptr;
 size_t PlatformInconsistencyCheckerUtility::_maxPathLength = 0;
-#if defined(_WIN32)
-size_t PlatformInconsistencyCheckerUtility::_maxPathLengthFolder = 0;
-#endif
 
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::instance() {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<PlatformInconsistencyCheckerUtility>(new PlatformInconsistencyCheckerUtility());
+        try {
+            _instance = std::shared_ptr<PlatformInconsistencyCheckerUtility>(new PlatformInconsistencyCheckerUtility());
+        } catch (...) {
+            assert(false);
+            return nullptr;
+        }
     }
     return _instance;
 }
 
 SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPath &name, SuffixType suffixType) {
     SyncName suffix = generateSuffix(suffixType);
-    SyncName sub = name.stem().native().substr(0, MAX_NAME_LENGTH - suffix.size() - name.extension().native().size());
+    const SyncName sub = name.stem().native().substr(0, maxNameLengh - suffix.size() - name.extension().native().size());
 
-#ifdef WIN32
+#ifdef _WIN32
     SyncName nameStr(name.native());
     // Can't finish with a space or a '.'
     if (nameStr.back() == ' ' || nameStr.back() == '.') {
@@ -78,7 +80,7 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
     return sub + suffix + name.extension().native();
 }
 
-ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType,
+ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType,
                                                               SyncPath *newPathPtr /*= nullptr*/) {
     const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(absoluteLocalPath, suffixType);
     auto newFullPath = absoluteLocalPath.parent_path() / newName;
@@ -90,11 +92,11 @@ ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
         *newPathPtr = std::move(newFullPath);
     }
 
-    return moveJob.exitCode();
+    return {moveJob.exitCode(), moveJob.exitCause()};
 }
 
-bool PlatformInconsistencyCheckerUtility::checkNameForbiddenChars(const SyncPath &name) {
-    for (auto c : forbiddenFilenameChars) {
+bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {
+    for (auto c: forbiddenFilenameChars) {
         if (name.native().find(c) != std::string::npos) {
             return true;
         }
@@ -107,7 +109,7 @@ bool PlatformInconsistencyCheckerUtility::checkNameForbiddenChars(const SyncPath
     }
 
     // Check for forbidden ascii codes
-    for (wchar_t c : name.native()) {
+    for (wchar_t c: name.native()) {
         int asciiCode(c);
         if (asciiCode <= 31) {
             return true;
@@ -123,7 +125,7 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
     size_t pos = name.find('\\');
     while (pos != std::string::npos) {
         if (newName.empty()) {
-            newName = name;  // Copy filename to newName only if necessary
+            newName = name; // Copy filename to newName only if necessary
         }
 
         newName.replace(pos, 1, charToHex(newName[pos]));
@@ -134,39 +136,34 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
 }
 #endif
 
-bool PlatformInconsistencyCheckerUtility::checkNameSize(const SyncPath &name) {
-    if (name.native().size() > MAX_NAME_LENGTH) {
-        return true;
-    }
-
-    return false;
+bool PlatformInconsistencyCheckerUtility::isNameTooLong(const SyncName &name) const {
+    return name.size() > maxNameLengh;
 }
 
 // return false if the file name is ok
 // true if the file name has been fixed
-bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncPath &name) {
+bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &name) {
     if (name.empty()) {
         return false;
     }
 
-    SyncName nameStr(name.native());
-    if (nameStr == Str("..") || nameStr == Str(".")) {
+    if (name == Str("..") || name == Str(".")) {
         return true;
     }
 
-#ifdef WIN32
+#ifdef _WIN32
     // Can't have only dots
-    if (std::ranges::count(nameStr, '.') == nameStr.size()) {
+    if (std::ranges::count(name, '.') == name.size()) {
         return true;
     }
 
     // Can't finish with a '.'
-    if (nameStr[nameStr.size() - 1] == '.') {
+    if (name[name.size() - 1] == '.') {
         return true;
     }
 
-    for (const auto &reserved : reservedWinNames) {
-        if (Utility::startsWithInsensitive(nameStr, Str2SyncName(reserved)) && nameStr.size() == reserved.size()) {
+    for (const auto &reserved: reservedWinNames) {
+        if (Utility::startsWithInsensitive(name, Str2SyncName(reserved)) && name.size() == reserved.size()) {
             return true;
         }
     }
@@ -175,18 +172,8 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncPath &nam
     return false;
 }
 
-bool PlatformInconsistencyCheckerUtility::checkPathLength(size_t pathSize, NodeType type) {
-    size_t maxLength = _maxPathLength;
-
-#ifdef _WIN32
-    if (type == NodeTypeDirectory) {
-        maxLength = _maxPathLengthFolder;
-    }
-#else
-    (void)type;
-#endif
-
-    return pathSize > maxLength;
+bool PlatformInconsistencyCheckerUtility::isPathTooLong(size_t pathSize) {
+    return pathSize > _maxPathLength;
 }
 
 PlatformInconsistencyCheckerUtility::PlatformInconsistencyCheckerUtility() {
@@ -201,12 +188,9 @@ SyncName PlatformInconsistencyCheckerUtility::charToHex(unsigned int c) {
 
 void PlatformInconsistencyCheckerUtility::setMaxPath() {
     _maxPathLength = CommonUtility::maxPathLength();
-#if defined(_WIN32)
-    _maxPathLengthFolder = CommonUtility::maxPathLengthFolder();
-#endif
 }
 
-SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixType /*= SuffixTypeRename*/) {
+SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixType) {
     std::time_t now = std::time(nullptr);
     std::tm tm = *std::localtime(&now);
 
@@ -215,16 +199,13 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     ss << std::put_time(&tm, Str("%Y%m%d_%H%M%S"));
 
     switch (suffixType) {
-        case SuffixTypeRename:
-            suffix = Str("_renamed_");
-            break;
-        case SuffixTypeConflict:
+        case SuffixType::Conflict:
             suffix = Str("_conflict_");
             break;
-        case SuffixTypeOrphan:
+        case SuffixType::Orphan:
             suffix = Str("_orphan_");
             break;
-        case SuffixTypeBlacklisted:
+        case SuffixType::Blacklisted:
             suffix = Str("_blacklisted_");
             break;
     }
@@ -232,4 +213,4 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     return suffix + ss.str() + Str("_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
 }
 
-}  // namespace KDC
+} // namespace KDC

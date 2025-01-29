@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateOpWithPseudoConflict);
         CPPUNIT_TEST(testMoveOp);
         CPPUNIT_TEST(testMoveOpWithPseudoConflict);
+        CPPUNIT_TEST(testMoveOpWithPseudoConflictButDifferentEncoding);
         CPPUNIT_TEST(testEditOp);
         CPPUNIT_TEST(testEditOpWithPseudoConflict);
         CPPUNIT_TEST(testDeleteOp);
@@ -47,6 +48,7 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture {
         void testCreateOpWithPseudoConflict();
         void testMoveOp();
         void testMoveOpWithPseudoConflict();
+        void testMoveOpWithPseudoConflictButDifferentEncoding();
         void testEditOp();
         void testEditOpWithPseudoConflict();
         void testDeleteOp();
@@ -58,4 +60,4 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture {
         log4cplus::Logger _logger;
 };
 
-}  // namespace KDC
+} // namespace KDC

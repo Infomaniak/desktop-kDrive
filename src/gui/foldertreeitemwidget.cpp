@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,20 +48,10 @@ const QColor FolderTreeItemWidget::_sizeTextColor = QColor(0x939393);
 
 Q_LOGGING_CATEGORY(lcFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInfoMsg)
 
-FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool displayRoot, QWidget *parent)
-    : QTreeWidget(parent),
-      _gui(gui),
-      _syncDbId(0),
-      _userDbId(0),
-      _driveId(0),
-      _driveName(QString()),
-      _driveColor(QColor()),
-      _nodeId(QString()),
-      _displayRoot(displayRoot),
-      _mode(Update),
-      _oldBlackList(QSet<QString>()),
-      _oldUndecidedList(QSet<QString>()),
-      _inserting(false) {
+FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool displayRoot, QWidget *parent) :
+    QTreeWidget(parent), _gui(gui), _syncDbId(0), _userDbId(0), _driveId(0), _driveName(QString()), _driveColor(QColor()),
+    _nodeId(QString()), _displayRoot(displayRoot), _mode(Update), _oldBlackList(QSet<QString>()),
+    _oldUndecidedList(QSet<QString>()), _inserting(false) {
     initUI();
 
     // Make sure we don't get crashes if the sync is destroyed while the dialog is still opened
@@ -73,13 +63,13 @@ void FolderTreeItemWidget::setSyncDbId(int syncDbId) {
     _syncDbId = syncDbId;
 
     ExitCode exitCode = updateBlackUndecidedSet();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in updateBlackUndecidedSet";
         return;
     }
 
     exitCode = GuiRequests::getDriveIdFromSyncDbId(_syncDbId, _driveId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getDriveIdFromSyncDbId";
         return;
     }
@@ -123,7 +113,7 @@ void FolderTreeItemWidget::setUserDbIdAndDriveInfo(int userDbId, const DriveAvai
 
 void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(int driveDbId, const QString &serverFolderNodeId) {
     ExitCode exitCode = GuiRequests::getDriveIdFromDriveDbId(driveDbId, _driveId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getDriveIdFromDriveDbId";
         return;
     }
@@ -144,14 +134,14 @@ void FolderTreeItemWidget::loadSubFolders() {
 
     QList<NodeInfo> nodeInfoList;
     ExitCode exitCode = GuiRequests::getSubFolders(_userDbId, _driveId, _nodeId, nodeInfoList, true);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSubFolders";
         emit terminated(true);
         return;
     }
 
     exitCode = updateBlackUndecidedSet();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in updateBlackUndecidedSet";
         return;
     }
@@ -178,29 +168,29 @@ ExitCode FolderTreeItemWidget::updateBlackUndecidedSet() {
         }
 
         if (userConnected) {
-            ExitCode exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeTypeBlackList, _oldBlackList);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeTypeBlackList";
+            ExitCode exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::BlackList, _oldBlackList);
+            if (exitCode != ExitCode::Ok) {
+                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::BlackList";
                 return exitCode;
             }
 
-            exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeTypeUndecidedList, _oldUndecidedList);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeTypeUndecidedList";
+            exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::UndecidedList, _oldUndecidedList);
+            if (exitCode != ExitCode::Ok) {
+                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::UndecidedList";
                 return exitCode;
             }
         }
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 void FolderTreeItemWidget::updateBlacklistPathMap() {
     for (int i = 0; i < 2; i++) {
-        for (const QString &nodeId : i == 0 ? _oldBlackList : _oldUndecidedList) {
+        for (const QString &nodeId: i == 0 ? _oldBlackList : _oldUndecidedList) {
             QString path;
             ExitCode exitCode = GuiRequests::getNodePath(_syncDbId, nodeId, path);
-            if (exitCode != ExitCodeOk) {
+            if (exitCode != ExitCode::Ok) {
                 qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getNodePath";
                 continue;
             }
@@ -444,7 +434,7 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
         bool excluded = false;
         ExitCode exitCode = GuiRequests::getNameExcluded(it.next().name(), excluded);
 
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getNameExcluded";
             return;
         }
@@ -477,7 +467,7 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
             ExitCode exitCode;
             NodeInfo nodeInfo;
             exitCode = GuiRequests::getNodeInfo(_userDbId, _driveId, nodeId, nodeInfo);
-            if (exitCode != ExitCodeOk) {
+            if (exitCode != ExitCode::Ok) {
                 qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getNodeInfo";
                 return;
             }
@@ -500,7 +490,7 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
     }
 
     KDC::CommonGuiUtility::sortSubfolders(list);
-    for (NodeInfo nodeInfo : list) {
+    for (NodeInfo nodeInfo: list) {
         insertNode(item, nodeInfo);
     }
 
@@ -527,7 +517,7 @@ void FolderTreeItemWidget::onItemExpanded(QTreeWidgetItem *item) {
     QList<NodeInfo> nodeInfoList;
     ExitCode exitCode;
     exitCode = GuiRequests::getSubFolders(_userDbId, _driveId, nodeId, nodeInfoList, true);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSubFolders";
         return;
     }
@@ -673,10 +663,10 @@ void FolderTreeItemWidget::addTreeWidgetItemToQueue(const QString &nodeId, QTree
 
     // Get new size
     ExitCode exitCode = GuiRequests::getFolderSize(_userDbId, _driveId, nodeId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getFolderSize for userDbId=" << _userDbId
                                             << " driveId=" << _driveId << " nodeId=" << nodeId;
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

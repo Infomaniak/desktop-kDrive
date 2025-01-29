@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@
     }
     
     // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with ext");
+    NSLog(@"[KD] Set exported interface for connection with login agent");
     _loginItemAgentConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemRemoteProtocol)];
     _loginItemAgentConnection.exportedObject = self;
     
@@ -186,5 +186,12 @@
 - (void)appIsRunning:(NSXPCListenerEndpoint *)endPoint
 {
 }
+
+- (IBAction) okButtonAction : (id) sender {
+    NSLog(@"Button action here");
+    
+    // Add your test here
+}
+
 
 @end

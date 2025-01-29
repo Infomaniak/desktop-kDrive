@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -195,7 +195,6 @@
 	// Cut the trailing newline. We always only receive one line from the client.
 	answer = [answer substringToIndex:[answer length] - 1];
 	NSArray *chunks = [answer componentsSeparatedByString: @":"];
-	
 	if( [[chunks objectAtIndex:0] isEqualToString:@"STATUS"] ) {
 		NSString *result = [chunks objectAtIndex:1];
 		NSString *path = [chunks objectAtIndex:2];

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,8 +45,8 @@ static const int warningBoxSpacing = 10;
 
 Q_LOGGING_CATEGORY(lcLocalFolderDialog, "gui.localfolderdialog", QtInfoMsg)
 
-LocalFolderDialog::LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent)
-    : CustomDialog(true, parent), _gui(gui), _localFolderPath(localFolderPath) {
+LocalFolderDialog::LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent) :
+    CustomDialog(true, parent), _gui(gui), _localFolderPath(localFolderPath) {
     initUI();
     updateUI();
 }
@@ -186,7 +186,7 @@ void LocalFolderDialog::updateUI() {
         QDir dir(_localFolderPath);
         _folderNameLabel->setText(dir.dirName());
         _folderPathLabel->setText(
-            QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle).arg(_localFolderPath));
+                QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle).arg(_localFolderPath));
     }
     _folderSelectionWidget->setVisible(!ok);
     _folderSelectedWidget->setVisible(ok);
@@ -194,21 +194,21 @@ void LocalFolderDialog::updateUI() {
     if (_liteSync) {
         VirtualFileMode virtualFileMode;
         ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcLocalFolderDialog) << "Error in Requests::bestAvailableVfsMode";
             return;
         }
 
-        if (virtualFileMode == VirtualFileModeWin || virtualFileMode == VirtualFileModeMac) {
+        if (virtualFileMode == VirtualFileMode::Win || virtualFileMode == VirtualFileMode::Mac) {
             // Check file system
             QString fsName(KDC::CommonUtility::fileSystemName(_localFolderPath));
-            _folderCompatibleWithLiteSync = ((virtualFileMode == VirtualFileModeWin && fsName == "NTFS") ||
-                                             (virtualFileMode == VirtualFileModeMac && fsName == "apfs"));
+            _folderCompatibleWithLiteSync = ((virtualFileMode == VirtualFileMode::Win && fsName == "NTFS") ||
+                                             (virtualFileMode == VirtualFileMode::Mac && fsName == "apfs"));
             if (!_folderCompatibleWithLiteSync) {
-                _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync.<br>"
-"Please select another folder or if you continue Lite Sync will be disabled.<br>"
-"<a style="%1" href="%2">Learn more</a>)")
-                                           .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
+                _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync.<br>
+Please select another folder. If you continue Lite Sync will be disabled.<br>
+<a style="%1" href="%2">Learn more</a>)")
+                                               .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
                 _warningWidget->setVisible(true);
             } else {
                 _warningWidget->setVisible(false);
@@ -244,16 +244,16 @@ void LocalFolderDialog::selectFolder(const QString &startDirPath) {
 void LocalFolderDialog::setFolderIcon() {
     if (_folderIconColor != QColor() && _folderIconSize != QSize()) {
         _folderIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/folder.svg", _folderIconColor)
-                .pixmap(_folderIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/folder.svg", _folderIconColor)
+                        .pixmap(_folderIconSize));
     }
 }
 
 void LocalFolderDialog::setWarningIcon() {
     if (_warningIconColor != QColor() && _warningIconSize != QSize()) {
         _warningIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", _warningIconColor)
-                .pixmap(_warningIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", _warningIconColor)
+                        .pixmap(_warningIconSize));
     }
 }
 
@@ -292,4 +292,4 @@ void LocalFolderDialog::onLinkActivated(const QString &link) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,9 +53,9 @@ static void setupFavLink_private(const QString &folder) {
 
         // Set the folder as system and Desktop.ini as hidden+system for explorer to pick it.
         // https://msdn.microsoft.com/en-us/library/windows/desktop/cc144102
-        DWORD folderAttrs = GetFileAttributesW((wchar_t *)folder.utf16());
-        SetFileAttributesW((wchar_t *)folder.utf16(), folderAttrs | FILE_ATTRIBUTE_SYSTEM);
-        SetFileAttributesW((wchar_t *)desktopIni.fileName().utf16(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
+        DWORD folderAttrs = GetFileAttributesW((wchar_t *) folder.utf16());
+        SetFileAttributesW((wchar_t *) folder.utf16(), folderAttrs | FILE_ATTRIBUTE_SYSTEM);
+        SetFileAttributesW((wchar_t *) desktopIni.fileName().utf16(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
     }
 
     // Windows Explorer: Place under "Favorites" (Links)
@@ -195,13 +195,13 @@ bool OldUtility::registrySetKeyValue(HKEY hRootKey, const QString &subKey, const
     // for both 32 and 64bit.
     REGSAM sam = KEY_WRITE | KEY_WOW64_64KEY;
     LONG result =
-        RegCreateKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), 0, nullptr, 0, sam, nullptr, &hKey, nullptr);
+            RegCreateKeyEx(hRootKey, reinterpret_cast<LPCWSTR>(subKey.utf16()), 0, nullptr, 0, sam, nullptr, &hKey, nullptr);
     ASSERT(result == ERROR_SUCCESS);
     if (result != ERROR_SUCCESS) {
         LPTSTR errorText = NULL;
         if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
                            result, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                           (LPTSTR)&errorText,  // output
+                           (LPTSTR) &errorText, // output
                            0, NULL)) {
             error = "Format message failed";
         } else {
@@ -222,9 +222,9 @@ bool OldUtility::registrySetKeyValue(HKEY hRootKey, const QString &subKey, const
         case REG_EXPAND_SZ:
         case REG_SZ: {
             QString string = value.toString();
-            result =
-                RegSetValueEx(hKey, reinterpret_cast<LPCWSTR>(valueName.utf16()), 0, type,
-                              reinterpret_cast<const BYTE *>(string.constData()), ((DWORD)string.size() + 1) * sizeof(QChar));
+            result = RegSetValueEx(hKey, reinterpret_cast<LPCWSTR>(valueName.utf16()), 0, type,
+                                   reinterpret_cast<const BYTE *>(string.constData()),
+                                   ((DWORD) string.size() + 1) * sizeof(QChar));
             break;
         }
         default:
@@ -235,7 +235,7 @@ bool OldUtility::registrySetKeyValue(HKEY hRootKey, const QString &subKey, const
         LPTSTR errorText = NULL;
         if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
                            result, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                           (LPTSTR)&errorText,  // output
+                           (LPTSTR) &errorText, // output
                            0, NULL)) {
             error = "Format message failed";
         } else {
@@ -325,8 +325,8 @@ bool OldUtility::registryWalkSubKeys(HKEY hRootKey, const QString &subKey,
 
 void OldUtility::UnixTimeToFiletime(time_t t, FILETIME *filetime) {
     LONGLONG ll = Int32x32To64(t, 10000000) + 116444736000000000;
-    filetime->dwLowDateTime = (DWORD)ll;
+    filetime->dwLowDateTime = (DWORD) ll;
     filetime->dwHighDateTime = ll >> 32;
 }
 
-}  // namespace KDC
+} // namespace KDC

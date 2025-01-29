@@ -41,7 +41,6 @@ set(client_SRCS
     ../libcommongui/commclient.h ../libcommongui/commclient.cpp
     ../common/filesystembase.h ../common/filesystembase.cpp
     ../libcommongui/logger.h ../libcommongui/logger.cpp
-    ../libcommon/updater.h ../libcommon/updater.cpp
     clientgui.h clientgui.cpp
     debugreporter.h debugreporter.cpp
     guiutility.h guiutility.cpp
@@ -81,6 +80,7 @@ set(client_SRCS
     customtreewidgetitem.h customtreewidgetitem.cpp
     customsystembar.h customsystembar.cpp
     customwordwraplabel.h customwordwraplabel.cpp
+    taglabel.h taglabel.cpp
     debuggingdialog.h debuggingdialog.cpp
     disabledoverlay.h disabledoverlay.cpp
     drivepreferenceswidget.h drivepreferenceswidget.cpp
@@ -116,6 +116,8 @@ set(client_SRCS
     preferencesblocwidget.h preferencesblocwidget.cpp
     preferencesmenubarwidget.h preferencesmenubarwidget.cpp
     preferenceswidget.h preferenceswidget.cpp
+    versionwidget.h versionwidget.cpp
+    betaprogramdialog.h betaprogramdialog.cpp
     progressbarwidget.h progressbarwidget.cpp
     proxyserverdialog.h proxyserverdialog.cpp
     guirequests.h guirequests.cpp
@@ -125,8 +127,7 @@ set(client_SRCS
     synchronizeditem.h synchronizeditem.cpp
     synchronizeditemwidget.h synchronizeditemwidget.cpp
     synthesispopover.h synthesispopover.cpp
-    updater/updateerrordialog.h updater/updateerrordialog.cpp
-    updater/updaterclient.h updater/updaterclient.cpp
+    updater/updatedialog.h updater/updatedialog.cpp
     userselectionwidget.h userselectionwidget.cpp
     customextensionsetupwidget.h customextensionsetupwidget.cpp
     customlabel.h customlabel.cpp
@@ -262,7 +263,6 @@ target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE}
     Qt6::Network Qt6::Sql Qt6::SvgWidgets Qt6::WebEngineWidgets
     sentry::sentry
     Poco::Foundation Poco::Net
-    ${libcommon_NAME}
     ${libcommongui_NAME})
 
 ## handle DBUS for Fdo notifications
@@ -302,6 +302,13 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE AND NOT WIN32)
     if(SharedMimeInfo_FOUND)
         update_xdg_mimetypes(${DATADIR}/mime/packages)
     endif(SharedMimeInfo_FOUND)
+endif()
+
+if(BUILD_KDRIVE_OSX_BUNDLE)
+    # Crashpad_handler
+    find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+    message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
+    install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
 endif()
 
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)

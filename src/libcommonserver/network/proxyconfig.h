@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ namespace KDC {
 
 class ProxyConfig {
     public:
-        ProxyConfig();
+        ProxyConfig() = default;
         ProxyConfig(ProxyType type, const std::string &hostName, int port, bool needsAuth, const std::string &user = "",
                     const std::string &pwd = "");
 
@@ -44,12 +44,12 @@ class ProxyConfig {
         inline void setToken(const std::string &token) { _token = token; }
 
     private:
-        ProxyType _type;
+        ProxyType _type = ProxyType::None;
         std::string _hostName;
-        int _port;
-        bool _needsAuth;
+        int _port = 0;
+        bool _needsAuth = false;
         std::string _user;
         std::string _token;
 };
 
-}  // namespace KDC
+} // namespace KDC

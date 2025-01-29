@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,4 +24,4 @@ Account::Account() : _dbId(0), _accountId(0), _userDbId(0) {}
 
 Account::Account(int dbId, int accountId, int userDbId) : _dbId(dbId), _accountId(accountId), _userDbId(userDbId) {}
 
-}  // namespace KDC
+} // namespace KDC

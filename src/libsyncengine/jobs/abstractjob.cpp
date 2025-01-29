@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ AbstractJob::~AbstractJob() {
     if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(_logger, "Job " << _jobId << " deleted");
     }
+    log4cplus::threadCleanup();
 }
 
 ExitCode AbstractJob::runSynchronously() {
@@ -99,9 +100,10 @@ void AbstractJob::run() {
 
 void AbstractJob::callback(UniqueId id) {
     try {
+        std::scoped_lock lock(_additionalCallbackMutex);
         if (_mainCallback && _additionalCallback) {
-            _additionalCallback(
-                id);  // Call the "additional" callback first since the main callback might delete the last reference on the job
+            _additionalCallback(id); // Call the "additional" callback first since the main callback might delete the last
+                                     // reference on the job
         }
     } catch (...) {
         LOG_WARN(_logger, "Invalid additionalCallback " << id);
@@ -116,4 +118,4 @@ void AbstractJob::callback(UniqueId id) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

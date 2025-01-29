@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/vfs.h"
 #include "libcommonserver/plugin.h"
 #include "litesyncextconnector.h"
@@ -28,7 +29,6 @@
 #include <QMutex>
 #include <QObject>
 #include <QScopedPointer>
-#include <QThread>
 #include <QWaitCondition>
 
 #define WORKER_HYDRATION 0
@@ -44,7 +44,7 @@ struct WorkerInfo {
         std::deque<QString> _queue;
         QWaitCondition _queueWC;
         bool _stop = false;
-        QList<QThread *> _threadList;
+        QList<QtLoggingThread *> _threadList;
 };
 
 class VfsMac : public Vfs {
@@ -67,7 +67,7 @@ class VfsMac : public Vfs {
 
         bool createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
         bool dehydratePlaceholder(const QString &path) override;
-        bool convertToPlaceholder(const QString &path, const SyncFileItem &item, bool &needRestart) override;
+        bool convertToPlaceholder(const QString &path, const SyncFileItem &item) override;
         bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
         void cancelHydrate(const QString &filePath) override;
@@ -96,6 +96,8 @@ class VfsMac : public Vfs {
     protected:
         bool startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
         void stopImpl(bool unregister) override;
+
+        friend class TestWorkers;
 
     private:
         LiteSyncExtConnector *_connector{nullptr};
@@ -126,4 +128,4 @@ class MacVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsMac> 
         Q_INTERFACES(KDC::PluginFactory)
 };
 
-}  // namespace KDC
+} // namespace KDC

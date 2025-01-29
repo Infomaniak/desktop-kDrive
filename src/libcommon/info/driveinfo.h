@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,13 +61,13 @@ class DriveInfo {
         int _accountDbId;
         QString _name;
         QColor _color;
-        bool _notifications;
-        bool _admin;
+        bool _notifications{false};
+        bool _admin{false};
 
         // Non DB attributes
-        bool _maintenance;
-        bool _locked;
-        bool _accessDenied;
+        bool _maintenance{false};
+        bool _locked{false};
+        bool _accessDenied{false};
 };
 
-}  // namespace KDC
+} // namespace KDC

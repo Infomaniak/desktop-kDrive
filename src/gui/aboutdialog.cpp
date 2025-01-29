@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,8 +57,8 @@ AboutDialog::AboutDialog(QWidget *parent) : CustomDialog(true, parent), _logoCol
 
 void AboutDialog::setLogoColor(const QColor &color) {
     _logoColor = color;
-    _logoTextIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor).pixmap(logoTextIconSize));
+    _logoTextIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor)
+                                          .pixmap(logoTextIconSize));
 }
 
 void AboutDialog::initUI() {
@@ -80,7 +80,7 @@ void AboutDialog::initUI() {
 
     QLabel *logoIconLabel = new QLabel(this);
     logoIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
-                                 .pixmap(QSize(logoIconSize, logoIconSize)));
+                                     .pixmap(QSize(logoIconSize, logoIconSize)));
     logoHBox->addWidget(logoIconLabel);
     logoHBox->addSpacing(hLogoSpacing);
 
@@ -119,17 +119,17 @@ void AboutDialog::initUI() {
 QString AboutDialog::aboutText() const {
     QString about;
     about = tr("Version %1. For more information visit <a style=\"%2\" href=\"%3\">%4</a><br><br>")
-                .arg(KDC::CommonUtility::escape(KDRIVE_VERSION_STRING), CommonUtility::linkStyle, domainLink,
-                     "https://" KDRIVE_STRINGIFY(APPLICATION_DOMAIN));
+                    .arg(KDC::CommonUtility::escape(KDRIVE_VERSION_STRING), CommonUtility::linkStyle, domainLink,
+                         "https://" KDRIVE_STRINGIFY(APPLICATION_DOMAIN));
     about += tr("Copyright 2019-%1 Infomaniak Network SA<br><br>").arg(QDate::currentDate().year());
     about += tr("Distributed by %1 and licensed under the <a style=\"%3\" href=\"%4\">%5</a>.<br><br>"
                 "%2 and the %2 logo are registered trademarks of %1.<br><br>")
-                 .arg(KDC::CommonUtility::escape(APPLICATION_VENDOR), KDC::CommonUtility::escape(APPLICATION_NAME),
-                      CommonUtility::linkStyle, gnuLink, "GNU Lesser General Public License (LGPL) Version 3.0");
+                     .arg(KDC::CommonUtility::escape(APPLICATION_VENDOR), KDC::CommonUtility::escape(APPLICATION_NAME),
+                          CommonUtility::linkStyle, gnuLink, "GNU Lesser General Public License (LGPL) Version 3.0");
 
-    about +=
-        tr("<p><small>Built from <a style=\"color: #489EF3\" href=\"%1\">Git sources</a> on %2, %3 using Qt %4, %5</small></p>")
-            .arg(gitLink, __DATE__, __TIME__, qVersion(), QSslSocket::sslLibraryVersionString());
+    about += tr("<p><small>Built from <a style=\"color: #489EF3\" href=\"%1\">Git sources</a> on %2, %3 using Qt %4, "
+                "%5</small></p>")
+                     .arg(gitLink, __DATE__, __TIME__, qVersion(), QSslSocket::sslLibraryVersionString());
 
     return about;
 }
@@ -170,4 +170,4 @@ void AboutDialog::onLinkActivated(const QString &link) {
     accept();
 }
 
-}  // namespace KDC
+} // namespace KDC

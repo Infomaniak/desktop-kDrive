@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,10 @@
 
 namespace KDC {
 
-GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob(const std::string &username, const std::string &password)
-    : AbstractLoginJob(), _username(username), _password(password) {}
+GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob(const std::string &username, const std::string &password) :
+    AbstractLoginJob(), _username(username), _password(password) {}
 
-void GetTokenFromAppPasswordJob::setData(bool &canceled) {
+ExitInfo GetTokenFromAppPasswordJob::setData() {
     Poco::URI uri;
     uri.addQueryParameter(usernameKey, _username);
     uri.addQueryParameter(passwordKey, _password);
@@ -33,7 +33,7 @@ void GetTokenFromAppPasswordJob::setData(bool &canceled) {
     uri.addQueryParameter(clientIdKey, CLIENT_ID);
 
     _data = uri.getRawQuery();
-    canceled = false;
+    return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

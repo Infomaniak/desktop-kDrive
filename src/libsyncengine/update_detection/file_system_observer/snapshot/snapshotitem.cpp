@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,17 +26,11 @@ SnapshotItem::SnapshotItem(const NodeId &id) : _id(id) {}
 
 SnapshotItem::SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt,
                            SyncTime lastModified, NodeType type, int64_t size, bool isLink /*= false*/, bool canWrite /*= true*/,
-                           bool canShare /*= true*/)
-    : _id(id),
-      _parentId(parentId),
-      _name(name),
-      _createdAt(createdAt),
-      _lastModified(lastModified),
-      _type(type),
-      _size(size),
-      _isLink(isLink),
-      _canWrite(canWrite),
-      _canShare(canShare) {}
+                           bool canShare /*= true*/) :
+    _id(id), _parentId(parentId), _name(name), _createdAt(createdAt), _lastModified(lastModified), _type(type), _size(size),
+    _isLink(isLink), _canWrite(canWrite), _canShare(canShare) {
+    setName(name); // Needed for the computation of _normalizedName
+}
 
 SnapshotItem::SnapshotItem(const SnapshotItem &other) {
     *this = other;
@@ -54,6 +48,7 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _id = other.id();
     _parentId = other.parentId();
     _name = other.name();
+    _normalizedName = other.normalizedName();
     _createdAt = other.createdAt();
     _lastModified = other.lastModified();
     _type = other.type();
@@ -62,6 +57,7 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _contentChecksum = other.contentChecksum();
     _canWrite = other.canWrite();
     _canShare = other.canShare();
+    _path = other.path();
 }
 
 void SnapshotItem::addChildren(const NodeId &id) {
@@ -72,4 +68,4 @@ void SnapshotItem::removeChildren(const NodeId &id) {
     _childrenIds.erase(id);
 }
 
-}  // namespace KDC
+} // namespace KDC

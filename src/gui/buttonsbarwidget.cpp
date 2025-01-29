@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,8 @@ static const int vMargin = 20;
 
 Q_LOGGING_CATEGORY(lcButtonsBarWidget, "gui.buttonsbarwidget", QtInfoMsg)
 
-ButtonsBarWidget::ButtonsBarWidget(QWidget *parent)
-    : QWidget(parent), _position(0), _backgroundColor(QColor()), _hboxLayout(nullptr) {
+ButtonsBarWidget::ButtonsBarWidget(QWidget *parent) :
+    QWidget(parent), _position(0), _backgroundColor(QColor()), _hboxLayout(nullptr) {
     _hboxLayout = new QHBoxLayout();
     _hboxLayout->setContentsMargins(hMargin, vMargin, hMargin, vMargin);
     setLayout(_hboxLayout);
@@ -50,7 +50,7 @@ void ButtonsBarWidget::insertButton(int position, CustomTogglePushButton *button
 
 void ButtonsBarWidget::selectButton(int position) {
     int i = 0;
-    for (auto btn : qAsConst(buttonsList)) {
+    for (auto btn: qAsConst(buttonsList)) {
         if (i == position) {
             btn->setChecked(true);
             emit buttonToggled(position);
@@ -72,7 +72,7 @@ void ButtonsBarWidget::paintEvent(QPaintEvent *event) {
 void ButtonsBarWidget::onToggle(bool checked) {
     if (checked) {
         int position = 0;
-        for (auto btn : qAsConst(buttonsList)) {
+        for (auto btn: qAsConst(buttonsList)) {
             if (btn == sender()) {
                 _position = position;
                 emit buttonToggled(position);
@@ -84,4 +84,4 @@ void ButtonsBarWidget::onToggle(bool checked) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,12 @@
 
 #include "syncpal.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
 #include <thread>
 
-#define LOOP_PAUSE_SLEEP_PERIOD 200  // 0.2 sec
-#define LOOP_EXEC_SLEEP_PERIOD 100   // 0.1 sec
+#define LOOP_PAUSE_SLEEP_PERIOD 200 // 0.2 sec
+#define LOOP_EXEC_SLEEP_PERIOD 100 // 0.1 sec
 
 namespace KDC {
 
@@ -73,7 +74,7 @@ class ISyncWorker {
         inline int syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
 
     private:
-        static void *executeFunc(void *thisWorker);
+        static void executeFunc(void *thisWorker);
 
         const std::string _name;
         const std::string _shortName;
@@ -83,8 +84,8 @@ class ISyncWorker {
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
         bool _isPaused{false};
-        ExitCode _exitCode{ExitCodeUnknown};
-        ExitCause _exitCause{ExitCauseUnknown};
+        ExitCode _exitCode{ExitCode::Unknown};
+        ExitCause _exitCause{ExitCause::Unknown};
 };
 
-}  // namespace KDC
+} // namespace KDC

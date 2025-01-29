@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,20 +23,16 @@
 namespace KDC {
 
 ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                         bool testing /*= false*/)
-    : _logger(Log::instance()->getLogger()), _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName) {}
+                         bool testing /*= false*/) :
+    _logger(Log::instance()->getLogger()), _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName) {}
 
 ISyncWorker::~ISyncWorker() {
     if (_isRunning) {
-        stop();
+        ISyncWorker::stop();
     }
-
-    if (_thread && _thread->joinable()) {
-        _thread->join();
-        _thread = nullptr;
-    }
-
+    waitForExit();
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " destroyed");
+    log4cplus::threadCleanup();
 }
 
 void ISyncWorker::start() {
@@ -47,15 +43,9 @@ void ISyncWorker::start() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " start");
 
-    if (_thread && _thread->joinable()) {
-        _thread->join();
-        _thread.release();
-        _thread = nullptr;
-    }
-
     _stopAsked = false;
     _isRunning = true;
-    _exitCause = ExitCauseUnknown;
+    _exitCause = ExitCause::Unknown;
 
     _thread.reset(new std::thread(executeFunc, this));
 }
@@ -114,14 +104,11 @@ void ISyncWorker::stop() {
 }
 
 void ISyncWorker::waitForExit() {
-    if (!_isRunning) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " is not running");
-        return;
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " wait for exit");
+
+    if (_thread && _thread->joinable()) {
+        _thread->join();
     }
-
-    _thread->join();
-
-    _isRunning = false;
 }
 
 void ISyncWorker::setPauseDone() {
@@ -140,21 +127,22 @@ void ISyncWorker::setUnpauseDone() {
     _unpauseAsked = false;
 }
 
-void ISyncWorker::setDone(ExitCode code) {
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " has finished with code=" << code << " and cause=" << _exitCause);
+void ISyncWorker::setDone(ExitCode exitCode) {
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " has finished with code=" << exitCode << " cause=" << _exitCause);
 
-    if (code != ExitCodeOk) {
-        _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, code, _exitCause));
+    if (exitCode != ExitCode::Ok) {
+        _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, exitCode, _exitCause));
     }
 
     _isRunning = false;
     _stopAsked = false;
-    _exitCode = code;
+    _exitCode = exitCode;
+    log4cplus::threadCleanup();
 }
 
-void *ISyncWorker::executeFunc(void *thisWorker) {
-    ((ISyncWorker *)thisWorker)->execute();
-    return nullptr;
+void ISyncWorker::executeFunc(void *thisWorker) {
+    ((ISyncWorker *) thisWorker)->execute();
+    log4cplus::threadCleanup();
 }
 
-}  // namespace KDC
+} // namespace KDC

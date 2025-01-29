@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,6 +111,9 @@ class PARMS_EXPORT Parameters {
         inline int jobPoolCapacityFactor() const { return _jobPoolCapacityFactor; }
         inline void setJobPoolCapacityFactor(const int jobPoolCapacityFactor) { _jobPoolCapacityFactor = jobPoolCapacityFactor; }
 
+        [[nodiscard]] DistributionChannel distributionChannel() const { return _distributionChannel; }
+        void setDistributionChannel(const DistributionChannel channel) { _distributionChannel = channel; }
+
         static int _uploadSessionParallelJobsDefault;
         static int _jobPoolCapacityFactorDefault;
 
@@ -127,7 +130,7 @@ class PARMS_EXPORT Parameters {
         bool _syncHiddenFiles;
         ProxyConfig _proxyConfig;
         bool _useBigFolderSizeLimit;
-        int64_t _bigFolderSizeLimit;  // MB
+        int64_t _bigFolderSizeLimit; // MB
         bool _darkTheme;
         bool _showShortcuts;
         std::string _updateFileAvailable;
@@ -139,6 +142,7 @@ class PARMS_EXPORT Parameters {
         int _maxAllowedCpu;
         int _uploadSessionParallelJobs;
         int _jobPoolCapacityFactor;
+        DistributionChannel _distributionChannel{DistributionChannel::Prod};
 };
 
-}  // namespace KDC
+} // namespace KDC

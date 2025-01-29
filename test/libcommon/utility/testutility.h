@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,11 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testStringToAppStateValue);
         CPPUNIT_TEST(testArgsWriter);
         CPPUNIT_TEST(testCompressFile);
+        CPPUNIT_TEST(testCurrentVersion);
+        CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
+#ifdef _WIN32
+        CPPUNIT_TEST(testGetLastErrorMessage);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     protected:
@@ -38,6 +43,12 @@ class TestUtility : public CppUnit::TestFixture {
         void testStringToAppStateValue();
         void testArgsWriter();
         void testCompressFile();
+        void testCurrentVersion();
+        void testGenerateRandomStringAlphaNum();
+#ifdef _WIN32
+        void testGetLastErrorMessage();
+#endif
 };
 
-}  // namespace KDC
+
+} // namespace KDC

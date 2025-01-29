@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,17 +45,17 @@ ExitCode SyncNodeCache::syncNodes(int syncDbId, SyncNodeType type, std::unordere
 
     if (_syncNodesMap.find(syncDbId) == _syncNodesMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncNodes map for syncDbId=" << syncDbId);
-        return ExitCodeDataError;
+        return ExitCode::DataError;
     }
 
     if (_syncNodesMap[syncDbId].find(type) == _syncNodesMap[syncDbId].end()) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type=" << type);
-        return ExitCodeDataError;
+                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type= " << type);
+        return ExitCode::DataError;
     }
 
     syncNodes = _syncNodesMap[syncDbId][type];
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const std::unordered_set<NodeId> &syncNodes) {
@@ -63,18 +63,18 @@ ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const std::unord
 
     if (_syncDbMap.find(syncDbId) == _syncDbMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncDb map for syncDbId=" << syncDbId);
-        return ExitCodeDataError;
+        return ExitCode::DataError;
     }
 
     if (_syncNodesMap.find(syncDbId) == _syncNodesMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncNodes map for syncDbId=" << syncDbId);
-        return ExitCodeDataError;
+        return ExitCode::DataError;
     }
 
     if (_syncNodesMap[syncDbId].find(type) == _syncNodesMap[syncDbId].end()) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type=" << type);
-        return ExitCodeDataError;
+                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type= " << type);
+        return ExitCode::DataError;
     }
 
     _syncNodesMap[syncDbId][type] = syncNodes;
@@ -82,10 +82,10 @@ ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const std::unord
     // Update sync nodes set
     if (!_syncDbMap[syncDbId]->updateAllSyncNodes(type, syncNodes)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::updateAllSyncNodes");
-        return ExitCodeDbError;
+        return ExitCode::DbError;
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) {
@@ -94,17 +94,17 @@ ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) 
     _syncDbMap[syncDbId] = syncDb;
 
     // Load sync nodes for all sync node types
-    for (int typeInt = SyncNodeTypeBlackList; typeInt <= SyncNodeTypeTmpLocalBlacklist; typeInt++) {
-        SyncNodeType type = static_cast<SyncNodeType>(typeInt);
+    for (int typeInt = toInt(SyncNodeType::BlackList); typeInt <= toInt(SyncNodeType::TmpLocalBlacklist); typeInt++) {
+        SyncNodeType type = fromInt<SyncNodeType>(typeInt);
         std::unordered_set<NodeId> nodeIdSet;
         if (!syncDb->selectAllSyncNodes(type, nodeIdSet)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::selectAllSyncNodes");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
         _syncNodesMap[syncDbId][type] = nodeIdSet;
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode SyncNodeCache::clearCache(int syncDbId) {
@@ -112,18 +112,18 @@ ExitCode SyncNodeCache::clearCache(int syncDbId) {
 
     if (_syncDbMap.find(syncDbId) == _syncDbMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncDb map for syncDbId=" << syncDbId);
-        return ExitCodeDataError;
+        return ExitCode::DataError;
     }
 
     if (_syncNodesMap.find(syncDbId) == _syncNodesMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncNodes map for syncDbId=" << syncDbId);
-        return ExitCodeDataError;
+        return ExitCode::DataError;
     }
 
     _syncDbMap.erase(syncDbId);
     _syncNodesMap.erase(syncDbId);
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

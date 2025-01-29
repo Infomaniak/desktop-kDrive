@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "common/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
-#include "libcommon/utility/utility.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <QDataStream>
 #include <QDir>
@@ -28,7 +28,6 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QJsonObject>
-#include <QThread>
 #include <QTimer>
 
 #include <fstream>
@@ -41,19 +40,19 @@ std::shared_ptr<CommServer> CommServer::_instance = nullptr;
 
 std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<CommServer>(new CommServer(parent));
+        try {
+            _instance = std::shared_ptr<CommServer>(new CommServer(parent));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     return _instance;
 }
 
-CommServer::CommServer(QObject *parent)
-    : QObject(parent),
-      _requestWorkerThread(new QThread()),
-      _requestWorker(new Worker()),
-      _tcpSocket(nullptr),
-      _buffer(QByteArray()),
-      _hasQuittedProperly(false) {
+CommServer::CommServer(QObject *parent) :
+    QObject(parent), _requestWorkerThread(new QtLoggingThread()), _requestWorker(new Worker()), _tcpSocket(nullptr),
+    _buffer(QByteArray()), _hasQuittedProperly(false) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);
     connect(_requestWorkerThread, &QThread::started, _requestWorker, &Worker::onStart);
@@ -91,9 +90,14 @@ void CommServer::sendReply(int id, const QByteArray &result) {
     }
 }
 
-bool CommServer::sendSignal(int num, const QByteArray &params, int &id) {
+bool CommServer::sendSignal(const SignalNum num, const QByteArray &params) {
+    int id = 0;
+    return sendSignal(num, params, id);
+}
+
+bool CommServer::sendSignal(SignalNum num, const QByteArray &params, int &id) {
     if (_tcpSocket && _tcpSocket->isOpen()) {
-        _requestWorker->addSignal((SignalNum)num, params, id);
+        _requestWorker->addSignal(num, params, id);
         return true;
     }
     return false;
@@ -156,18 +160,18 @@ void CommServer::onReadyRead() {
 
         while (_buffer.count()) {
             // Read size
-            if (_buffer.count() < (int)sizeof(qint32)) {
+            if (_buffer.count() < (int) sizeof(qint32)) {
                 break;
             }
 
-            int size = CommonUtility::ArrayToInt(_buffer.mid(0, (qint32)sizeof(qint32)));
+            int size = CommonUtility::toInt(_buffer.mid(0, (qint32) sizeof(qint32)));
 
             // Read data
-            if (_buffer.count() < (int)sizeof(qint32) + size) {
+            if (_buffer.count() < (int) sizeof(qint32) + size) {
                 break;
             }
 
-            _buffer.remove(0, (int)sizeof(qint32));
+            _buffer.remove(0, (int) sizeof(qint32));
             QByteArray data = _buffer.mid(0, size);
             _buffer.remove(0, size);
 
@@ -185,7 +189,7 @@ void CommServer::onReadyRead() {
             }
 
             QJsonObject msgObj = msgDoc.object();
-            if (msgObj[MSG_TYPE].toInt() == MsgType::REQUEST) {
+            if (msgObj[MSG_TYPE].toInt() == toInt(MsgType::REQUEST)) {
                 const int id(msgObj[MSG_REQUEST_ID].toInt());
                 const RequestNum num(static_cast<RequestNum>(msgObj[MSG_REQUEST_NUM].toInt()));
                 const QByteArray params(QByteArray::fromBase64(msgObj[MSG_REQUEST_PARAMS].toString().toUtf8()));
@@ -210,7 +214,7 @@ void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
         // Restart comm server
         start();
         // Restart client
-        emit startClient();
+        emit restartClient();
         return;
     }
 
@@ -220,8 +224,8 @@ void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     }
 }
 
-void CommServer::onRequestReceived(int id, int num, const QByteArray &params) {
-    QTimer::singleShot(0, this, [=]() { emit requestReceived(id, (RequestNum)num, params); });
+void CommServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
+    QTimer::singleShot(0, this, [=]() { emit requestReceived(id, (RequestNum) num, params); });
 }
 
 void CommServer::onSendReply(int id, const QByteArray &result) {
@@ -236,7 +240,7 @@ void CommServer::onSendReply(int id, const QByteArray &result) {
     }
 
     QJsonObject replyObj;
-    replyObj[MSG_TYPE] = MsgType::REPLY;
+    replyObj[MSG_TYPE] = toInt(MsgType::REPLY);
     replyObj[MSG_REPLY_ID] = id;
     replyObj[MSG_REPLY_RESULT] = QString(result.toBase64());
 
@@ -246,7 +250,7 @@ void CommServer::onSendReply(int id, const QByteArray &result) {
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd rpl " << id);
 
-        _tcpSocket->write(KDC::CommonUtility::IntToArray(reply.count()));
+        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(reply.count())));
         _tcpSocket->write(reply);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();
@@ -257,7 +261,7 @@ void CommServer::onSendReply(int id, const QByteArray &result) {
     }
 }
 
-void CommServer::onSendSignal(int id, int num, const QByteArray &params) {
+void CommServer::onSendSignal(int id, SignalNum num, const QByteArray &params) {
     if (!_tcpSocket) {
         // LOG_WARN(Log::instance()->getLogger(), "Not connected!");
         return;
@@ -269,9 +273,9 @@ void CommServer::onSendSignal(int id, int num, const QByteArray &params) {
     }
 
     QJsonObject signalObj;
-    signalObj[MSG_TYPE] = MsgType::SIGNAL;
+    signalObj[MSG_TYPE] = toInt(MsgType::SIGNAL);
     signalObj[MSG_SIGNAL_ID] = id;
-    signalObj[MSG_SIGNAL_NUM] = num;
+    signalObj[MSG_SIGNAL_NUM] = toInt(num);
     signalObj[MSG_SIGNAL_PARAMS] = QString(params.toBase64());
 
     QJsonDocument signalDoc(signalObj);
@@ -280,7 +284,7 @@ void CommServer::onSendSignal(int id, int num, const QByteArray &params) {
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << num);
 
-        _tcpSocket->write(KDC::CommonUtility::IntToArray(signal.count()));
+        _tcpSocket->write(KDC::CommonUtility::toQByteArray(static_cast<int>(signal.count())));
         _tcpSocket->write(signal);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();
@@ -399,4 +403,4 @@ void Worker::onStart() {
     LOG_DEBUG(Log::instance()->getLogger(), "Worker ended");
 }
 
-}  // namespace KDC
+} // namespace KDC

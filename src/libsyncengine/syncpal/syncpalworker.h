@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ class SyncPalWorker : public ISyncWorker {
     public:
         SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
 
-        void execute();
+        void execute() override;
         inline SyncStep step() const { return _step; }
         inline std::chrono::time_point<std::chrono::system_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);
@@ -38,13 +38,12 @@ class SyncPalWorker : public ISyncWorker {
     private:
         SyncStep _step;
         std::chrono::time_point<std::chrono::system_clock> _pauseTime;
-
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
                            bool reset);
-        bool interruptCondition() const;
         SyncStep nextStep() const;
+        void stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> worker);
         void stopWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void waitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
@@ -54,5 +53,4 @@ class SyncPalWorker : public ISyncWorker {
         void unpauseAllWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         bool resetVfsFilesStatus();
 };
-
-}  // namespace KDC
+} // namespace KDC

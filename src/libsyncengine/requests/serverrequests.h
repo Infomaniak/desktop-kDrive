@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,16 +99,16 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
         static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
         static ExitCode getPublicLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
-        static ExitCode getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
+        static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
                                       std::function<void(const QString &, qint64)> callback);
         static ExitCode getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId);
         static ExitCode getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path);
 
         // C/S requests (others)
-        static ExitCode deleteUser(int userDbId);        // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteAccount(int accountDbId);  // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteDrive(int driveDbId);      // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteSync(int syncDbId);        // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteAccount(int accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests
         static ExitCode loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
@@ -134,21 +134,12 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                                              ExclusionTemplate &exclusionTemplate);
         static void exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo);
         static void exclusionAppInfoToExclusionApp(const ExclusionAppInfo &exclusionAppInfo, ExclusionApp &exclusionApp);
-        static ExitCode loadOldSelectiveSyncTable(const SyncPath &syncDbPath, QList<QPair<QString, int>> &list);
+        static ExitCode loadOldSelectiveSyncTable(const SyncPath &syncDbPath, QList<QPair<QString, SyncNodeType>> &list);
         static ExitCode migrateSelectiveSync(int syncDbId, std::pair<SyncPath, SyncName> &syncToMigrate);
         static bool isDisplayableError(const Error &error);
         static bool isAutoResolvedError(const Error &error);
         static ExitCode getUserFromSyncDbId(int syncDbId, User &user);
-
-        /* Send log to support
-         * \param includeArchivedLog If true, all logs will be sent, else only the last session logs will be sent.
-         * \param progressCallback The callback to be called with the progress percentage, the function returns false if the user
-         * cancels the operation (else true). \param exitCause The exit cause to be filled in case of error. If no error occurred,
-         * it will be set to ExitCauseUnknown;
-         */
-        static ExitCode sendLogToSupport(bool includeArchivedLog, const std::function<bool(LogUploadState, int)> &progressCallback,
-                                         ExitCause &exitCause);
-        static ExitCode cancelLogToSupport(ExitCause &exitCause);
+        static ExitCode fixProxyConfig();
 
     private:
         static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);
@@ -165,4 +156,4 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
 };
 
-}  // namespace KDC
+} // namespace KDC

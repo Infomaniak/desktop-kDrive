@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,12 @@
 
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
-
-#include "db/parmsdb.h"
 #include "syncpal/syncpal.h"
-
+#if defined(_WIN32)
+#include "libsyncengine/update_detection/file_system_observer/localfilesystemobserverworker_win.h"
+#else
+#include "libsyncengine/update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
+#endif
 #include <log4cplus/logger.h>
 
 using namespace CppUnit;
@@ -31,39 +33,76 @@ using namespace CppUnit;
 namespace KDC {
 
 class LocalFileSystemObserverWorker;
+#if defined(_WIN32)
+class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_win {
+    public:
+        MockLocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                          const std::string &shortName) :
+            LocalFileSystemObserverWorker_win(syncPal, name, shortName) {}
+
+        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
+            Utility::msleep(200);
+            LocalFileSystemObserverWorker_win::changesDetected(changes);
+        }
+
+        void waitForUpdate(long long timeoutMs = 10000) const;
+};
+#else
+class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_unix {
+    public:
+        MockLocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                          const std::string &shortName) :
+            LocalFileSystemObserverWorker_unix(syncPal, name, shortName) {}
+
+        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
+            Utility::msleep(200);
+            LocalFileSystemObserverWorker_unix::changesDetected(changes);
+        }
+        void waitForUpdate(long long timeoutMs = 10000) const;
+};
+#endif
 
 class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
-        CPPUNIT_TEST(testFolderWatcherWithInitialSnapshot);
-        CPPUNIT_TEST(testFolderWatcherWithFiles);
-        CPPUNIT_TEST(testFolderWatcherDeleteDir);
-        CPPUNIT_TEST(testFolderWatcherWithDirs);
-        CPPUNIT_TEST(testFolderWatcherWithSpecialCases);
+        CPPUNIT_TEST(testLFSOWithInitialSnapshot);
+        CPPUNIT_TEST(testLFSOWithFiles);
+        CPPUNIT_TEST(testLFSOWithDuplicateFileNames);
+        CPPUNIT_TEST(testLFSODeleteDir);
+        CPPUNIT_TEST(testLFSOWithDirs);
+        CPPUNIT_TEST(testLFSOFastMoveDeleteMove);
+        CPPUNIT_TEST(testLFSOFastMoveDeleteMoveWithEncodingChange);
+        CPPUNIT_TEST(testLFSOWithSpecialCases1);
+        CPPUNIT_TEST(testLFSOWithSpecialCases2);
+        CPPUNIT_TEST(testInvalidateCounter);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
         void tearDown() override;
 
-    protected:
-        void testFolderWatcher(void);
-
     private:
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 
-        static const SyncPath _testFolderPath;
-        static const SyncPath _testPicturesFolderName;
-        static const uint64_t _nbFileInTestDir;
-
         LocalTemporaryDirectory _tempDir;
-        SyncPath _testRootFolderPath;
+        SyncPath _rootFolderPath;
+        SyncPath _subDirPath;
+        std::vector<std::pair<NodeId, SyncPath>> _testFiles;
 
-        void testFolderWatcherWithInitialSnapshot();
-        void testFolderWatcherWithFiles();
-        void testFolderWatcherWithDirs();
-        void testFolderWatcherDeleteDir();
-        void testFolderWatcherWithSpecialCases();
+        void testLFSOWithInitialSnapshot();
+        void testLFSOWithFiles();
+        void testLFSOWithDuplicateFileNames();
+        void testLFSOWithDirs();
+        void testLFSODeleteDir();
+        void testLFSOFastMoveDeleteMove();
+        void testLFSOFastMoveDeleteMoveWithEncodingChange();
+        void testLFSOWithSpecialCases1();
+        void testLFSOWithSpecialCases2();
+        void testInvalidateCounter();
+
+        static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
+        static bool vfsPinState(int, const SyncPath &, PinState &) { return true; };
+        static bool vfsFileStatusChanged(int, const SyncPath &, SyncFileStatus) { return true; };
 };
 
-}  // namespace KDC
+} // namespace KDC

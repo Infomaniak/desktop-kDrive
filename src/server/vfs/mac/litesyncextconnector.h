@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,16 +29,6 @@
 #include <QPixmap>
 #include <QString>
 
-// EXT_ATTR_STATUS clone
-#define VFS_STATUS_ONLINE "O"
-#define VFS_STATUS_OFFLINE "F"
-#define VFS_STATUS_HYDRATING "H"
-
-// EXT_ATTR_PIN_STATE clone
-#define VFS_PIN_STATE_UNPINNED "U"
-#define VFS_PIN_STATE_PINNED "P"
-#define VFS_PIN_STATE_EXCLUDED "E"
-
 namespace KDC {
 
 class LiteSyncExtConnectorPrivate;
@@ -60,8 +50,8 @@ class LiteSyncExtConnector {
         bool vfsStop(int syncDbId);
         bool vfsDehydratePlaceHolder(const QString &absoluteFilepath, const QString &localSyncPath);
         bool vfsHydratePlaceHolder(const QString &filePath);
-        bool vfsSetPinState(const QString &path, const QString &localSyncPath, const QString &pinState);
-        bool vfsGetPinState(const QString &path, QString &pinState);
+        bool vfsSetPinState(const QString &path, const QString &localSyncPath, const std::string_view &pinState);
+        bool vfsGetPinState(const QString &path, std::string &pinState);
         bool vfsConvertToPlaceHolder(const QString &filePath, bool isHydrated);
         bool vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath, const struct stat *fileStat);
         bool vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
@@ -74,7 +64,7 @@ class LiteSyncExtConnector {
         bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                           int &progress) noexcept {
             return vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress, _logger);
-        };
+        }
         bool vfsSetAppExcludeList(const QString &appList);
         bool vfsGetFetchingAppList(QHash<QString, QString> &appTable);
         bool vfsUpdateMetadata(const QString &absoluteFilePath, const struct stat *fileStat, QString *error);
@@ -106,4 +96,4 @@ class LiteSyncExtConnector {
         bool sendStatusToFinder(const QString &path, bool isSyncing, int progress, bool isHydrated);
 };
 
-}  // namespace KDC
+} // namespace KDC

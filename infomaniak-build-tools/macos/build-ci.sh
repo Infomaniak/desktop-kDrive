@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Infomaniak kDrive - Desktop
-# Copyright (C) 2023-2024 Infomaniak Network SA
+# Copyright (C) 2023-2025 Infomaniak Network SA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,15 +40,17 @@ export PATH=$QTDIR/bin:$PATH
 # Set Infomaniak Theme
 KDRIVE_DIR="$SRCDIR/infomaniak"
 
-# Path to Sparkle installation
-SPARKLE_DIR="$HOME/Library/Frameworks"
-
-# Prepare directory
-mkdir -p build-macos/client
-mkdir -p build-macos/install
-INSTALLDIR="$PWD/build-macos/install"
+# Set build dir
 BUILDDIR="$PWD/build-macos/client"
 
+# Set install dir
+INSTALLDIR="$PWD/build-macos/client/install"
+
+# Create install dir if needed
+mkdir -p build-macos/client
+mkdir -p build-macos/client/install
+
+# Backup the existing .app if there is one
 if [ -d "$INSTALLDIR/$APPNAME-old.app" ]; then
 	rm -rf "$INSTALLDIR/$APPNAME-old.app"
 fi
@@ -57,40 +59,31 @@ if [ -d "$INSTALLDIR/$APPNAME.app" ]; then
 	cp -a "$INSTALLDIR/$APPNAME.app" "$INSTALLDIR/$APPNAME-old.app"
 fi
 
-pushd "$BUILDDIR"
-
+# Prepare additional cmake arguments
 if [ -z "$KDRIVE_VERSION_BUILD" ]; then
 	KDRIVE_VERSION_BUILD="$(date +%Y%m%d)"
 fi
 
-# Prepare cmake arguments
 CMAKE_PARAMS=(-DKDRIVE_VERSION_BUILD="$KDRIVE_VERSION_BUILD")
 
 if [ -n "$TEAM_IDENTIFIER" -a -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-if [ -n "$APPLICATION_SERVER_URL" ]; then
-	CMAKE_PARAMS+=(-DAPPLICATION_SERVER_URL="$APPLICATION_SERVER_URL")
-fi
+# Configure
+pushd "$BUILDDIR"
 
 # Configure infomaniakdrive
 cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
 	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DSPARKLE_LIBRARY="$SPARKLE_DIR/Sparkle.framework" \
-	-DOPENSSL_ROOT_DIR="/usr/local/" \
-	-DOPENSSL_INCLUDE_DIR="/usr/local/include/" \
-	-DOPENSSL_CRYPTO_LIBRARY="/usr/local/lib/libcrypto.dylib" \
-	-DOPENSSL_SSL_LIBRARY="/usr/local/lib/libssl.dylib" \
 	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
-	-DQTDIR="$QTDIR" \
 	-DBUILD_UNIT_TESTS=1 \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
 
 # Build kDrive sources
-make -j6 install
+make -j6 all install
 
 popd

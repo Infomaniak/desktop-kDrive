@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,6 @@
 
 namespace KDC {
 
-typedef std::variant<std::monostate, int, int64_t, double, std::string, std::wstring, std::shared_ptr<std::vector<char>>> dbtype;
+using dbtype = std::variant<std::monostate, int, int64_t, double, std::string, std::wstring, std::shared_ptr<std::vector<char>>>;
 
-}
+} // namespace KDC

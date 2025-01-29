@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,29 +17,37 @@
  */
 
 #include "filesystemobserverworker.h"
-#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
 
-FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                                   const std::string &shortName, ReplicaSide side)
-    : ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _snapshot(syncPal->snapshot(side)) {}
+constexpr int maxRetryBeforeInvalidation = 3;
 
-FileSystemObserverWorker::~FileSystemObserverWorker() {}
+FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                                   const std::string &shortName, const ReplicaSide side) :
+    ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _snapshot(syncPal->snapshot(side)) {}
 
 void FileSystemObserverWorker::invalidateSnapshot() {
-    if (_snapshot->isValid()) {
-        _snapshot->init();
-        //    *_interruptSync = true;     // TODO : check if it is possible to avoid restarting the full sync is those cases
-        LOG_SYNCPAL_DEBUG(_logger, (_snapshot->side() == ReplicaSideLocal ? "Local" : "Remote") << " snapshot invalidated");
+    if (!_snapshot->isValid()) return;
+    // The synchronisation will restart, even if there is no change in the file system and if the snapshot is not actually invalidated.
+    _syncPal->setRestart(true);
+
+    _invalidateCounter++;
+    if (_invalidateCounter < maxRetryBeforeInvalidation) {
+        LOG_SYNCPAL_DEBUG(_logger, _snapshot->side()
+                                           << " snapshot is not invalidated. Invalidation count: " << _invalidateCounter);
+        return;
     }
+
+    _snapshot->init();
+    _invalidateCounter = 0;
+    LOG_SYNCPAL_DEBUG(_logger, _snapshot->side() << " snapshot invalidated");
 }
 
 void FileSystemObserverWorker::forceUpdate() {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     _updating = true;
 }
 
-}  // namespace KDC
+} // namespace KDC

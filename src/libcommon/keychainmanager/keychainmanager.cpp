@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,6 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#include <sentry.h>
-
 #define PACKAGE "com.infomaniak.drive"
 #define SERVICE "desktopclient"
 
@@ -36,7 +34,11 @@ std::shared_ptr<KeyChainManager> KeyChainManager::_instance = nullptr;
 
 std::shared_ptr<KeyChainManager> KeyChainManager::instance(bool testing) {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(testing));
+        try {
+            _instance = std::shared_ptr<KeyChainManager>(new KeyChainManager(testing));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     return _instance;
@@ -49,10 +51,7 @@ bool KeyChainManager::writeDummyTest() {
     if (!KeyChainManager::instance()->writeToken(dummyKeychainKey, dummyData)) {
         std::string error = "Test writing into the keychain failed. Token not refreshed.";
         LOG_WARN(Log::instance()->getLogger(), error.c_str());
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "KeyChainManager::writeDummyTest", error.c_str()));
-#endif
+        sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeDummyTest", error);
 
         return false;
     }
@@ -75,32 +74,13 @@ bool KeyChainManager::writeToken(const std::string &keychainKey, const std::stri
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
                   "Failed to save authentication info to keychain: " << error.code << " - " << error.message.c_str());
-
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "KeyChainManager::writeToken", error.message.c_str()));
-#endif
+        sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeToken", error.message);
 
         return false;
     }
 
     return true;
 }
-
-#if defined(__unix__) && !defined(__APPLE__)
-std::string exec(const char *cmd) {
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
-    }
-    return result;
-}
-#endif
 
 bool KeyChainManager::readDataFromKeystore(const std::string &keychainKey, std::string &data, bool &found) {
     keychain::Error error{};
@@ -148,10 +128,7 @@ bool KeyChainManager::deleteToken(const std::string &keychainKey) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
                   "Failed to delete authentication info to keychain: " << error.code << " - " << error.message.c_str());
 
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "KeyChainManager::deleteToken", error.message.c_str()));
-#endif
+        sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::deleteToken", error.message);
 
         return false;
     }
@@ -159,4 +136,4 @@ bool KeyChainManager::deleteToken(const std::string &keychainKey) {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

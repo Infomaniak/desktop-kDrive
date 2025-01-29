@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,6 +104,9 @@
                             @"com.apple.appkit.xpc.openAndSavePanelService",    // openAndSavePanelService
                             @"com.apple.appkit.xpc.documentPopoverViewService", // documentPopoverViewService
                             @"com.apple.QuickLookThumbnailing.extension.ThumbnailExtension-macOS",  // QuickLookThumbnailing
+                            @"com.apple.quicklook.thumbnail.ImageExtension",    // Quicklook Thumbnail
+                            @"com.apple.quicklook.thumbnail.AudiovisualExtension",    // Quicklook Thumbnail
+                            @"com.apple.quicklook.thumbnail",                   // Quicklook Thumbnail
                             @"com.apple.Terminal",                              // Terminal
                             @"com.apple.system_profiler",                       // System profiler
                             @"com.apple.path_helper",                           // help manage the PATH environment variable,

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include <mutex>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace KDC {
 
@@ -34,8 +35,8 @@ class FSOperationSet : public SharedObject {
         explicit FSOperationSet(ReplicaSide side) : _side(side) {}
         ~FSOperationSet();
 
-        FSOperationSet(const FSOperationSet &other)
-            : _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId), _side(other._side) {}
+        FSOperationSet(const FSOperationSet &other) :
+            _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId), _side(other._side) {}
         FSOperationSet &operator=(FSOperationSet &other);
 
         bool getOp(UniqueId id, FSOpPtr &opPtr) const;
@@ -58,8 +59,8 @@ class FSOperationSet : public SharedObject {
         std::unordered_map<UniqueId, FSOpPtr> _ops;
         std::unordered_map<OperationType, std::unordered_set<UniqueId>> _opsByType;
         std::unordered_map<NodeId, std::unordered_set<UniqueId>> _opsByNodeId;
-        ReplicaSide _side = ReplicaSideUnknown;
+        ReplicaSide _side = ReplicaSide::Unknown;
         mutable std::recursive_mutex _mutex;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@ class UpdateTree : public SharedObject {
         ~UpdateTree();
 
         void insertNode(std::shared_ptr<Node> node);
-        void deleteNode(std::shared_ptr<Node> node);
-        void deleteNode(const NodeId &id);
-        inline const ReplicaSide &side() const { return _side; }
+        [[nodiscard]] bool deleteNode(std::shared_ptr<Node> node, int depth = 1);
+        [[nodiscard]] bool deleteNode(const NodeId &id);
+        [[nodiscard]] inline const ReplicaSide &side() const { return _side; }
         inline std::shared_ptr<Node> rootNode() { return _rootNode; }
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &nodes() { return _nodes; }
         inline std::unordered_map<NodeId, NodeId> &previousIdSet() { return _previousIdSet; }
@@ -50,11 +50,12 @@ class UpdateTree : public SharedObject {
         bool isAncestor(const NodeId &nodeId, const NodeId &ancestorNodeId) const;
 
         void markAllNodesUnprocessed();
+        void clear();
         void init();
 
         inline bool inconsistencyCheckDone() const { return _inconsistencyCheckDone; }
         inline void setInconsistencyCheckDone() { _inconsistencyCheckDone = true; }
-
+        [[nodiscard]] bool updateNodeId(std::shared_ptr<Node> node, const NodeId &newId);
         inline void setRootFolderId(const NodeId &nodeId) { _rootNode->setId(std::make_optional<NodeId>(nodeId)); }
 
     private:
@@ -67,10 +68,8 @@ class UpdateTree : public SharedObject {
 
         bool _inconsistencyCheckDone = false;
 
-        void clear();
-
         friend class TestUpdateTree;
         friend class TestUpdateTreeWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

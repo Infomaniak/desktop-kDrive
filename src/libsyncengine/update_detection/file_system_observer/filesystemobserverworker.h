@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "libcommon/utility/types.h"
 
 #include <list>
-#include <unordered_set>
 
 namespace KDC {
 
@@ -33,11 +32,13 @@ class FileSystemObserverWorker : public ISyncWorker {
     public:
         FileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                                  ReplicaSide side);
-        ~FileSystemObserverWorker();
 
         void invalidateSnapshot();
+        void resetInvalidateCounter() { _invalidateCounter = 0; }
         virtual void forceUpdate();
-        virtual inline bool updating() const { return _updating; }
+        [[nodiscard]] virtual bool updating() const { return _updating; }
+
+        [[nodiscard]] std::shared_ptr<Snapshot> snapshot() const { return _snapshot; };
 
     protected:
         std::shared_ptr<SyncDb> _syncDb;
@@ -49,16 +50,17 @@ class FileSystemObserverWorker : public ISyncWorker {
         std::mutex _mutex;
 
         virtual ExitCode generateInitialSnapshot() = 0;
-        virtual ExitCode processEvents() { return ExitCodeOk; }
+        virtual ExitCode processEvents() { return ExitCode::Ok; }
 
-        virtual bool isFolderWatcherReliable() const { return true; }
+        [[nodiscard]] virtual bool isFolderWatcherReliable() const { return true; }
 
     private:
-        static void *executeFunc(void *thisWorker);
-        virtual ReplicaSide getSnapshotType() const = 0;
+        [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;
+
+        int _invalidateCounter{false}; // A counter used to invalidate the snapshot only after a few attempt.
 
         friend class TestLocalFileSystemObserverWorker;
         friend class TestRemoteFileSystemObserverWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

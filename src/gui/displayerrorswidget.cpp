@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,15 +29,9 @@ static const int boxHMargin = 20;
 static const int boxVMargin = 5;
 static const int boxSpacing = 10;
 
-DisplayErrorsWidget::DisplayErrorsWidget(QWidget *parent)
-    : ClickableWidget(parent),
-      _backgroundColor(QColor()),
-      _warningIconColor(QColor()),
-      _warningIconSize(QSize()),
-      _actionIconColor(QColor()),
-      _actionIconSize(QSize()),
-      _warningIconLabel(nullptr),
-      _actionIconLabel(nullptr) {
+DisplayErrorsWidget::DisplayErrorsWidget(QWidget *parent) :
+    ClickableWidget(parent), _backgroundColor(QColor()), _warningIconColor(QColor()), _warningIconSize(QSize()),
+    _actionIconColor(QColor()), _actionIconSize(QSize()), _warningIconLabel(nullptr), _actionIconLabel(nullptr) {
     setContentsMargins(0, 0, 0, 0);
 
     QHBoxLayout *hbox = new QHBoxLayout();
@@ -80,16 +74,16 @@ void DisplayErrorsWidget::paintEvent(QPaintEvent *event) {
 void DisplayErrorsWidget::setWarningIcon() {
     if (_warningIconLabel && _warningIconSize != QSize() && _warningIconColor != QColor()) {
         _warningIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", _warningIconColor)
-                .pixmap(_warningIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", _warningIconColor)
+                        .pixmap(_warningIconSize));
     }
 }
 
 void DisplayErrorsWidget::setActionIcon() {
     if (_actionIconLabel && _actionIconSize != QSize() && _actionIconColor != QColor()) {
         _actionIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-right.svg", _actionIconColor)
-                .pixmap(_actionIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-right.svg", _actionIconColor)
+                        .pixmap(_actionIconSize));
     }
 }
 
@@ -113,4 +107,4 @@ void DisplayErrorsWidget::onClick() {
     emit displayErrors();
 }
 
-}  // namespace KDC
+} // namespace KDC

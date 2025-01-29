@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@ struct FileStat {
         uint64_t inode = 0;
         bool isHidden = false;
         // Type of the item or target item if symlink
-        // Value for a dangling symlink: NodeTypeUnknown (macOS & Linux), NodeTypeFile/NodeTypeDirectory (Windows)
-        NodeType nodeType = NodeTypeUnknown;
+        // Value for a dangling symlink: NodeType::Unknown (macOS & Linux), NodeType::File/NodeType::Directory (Windows)
+        NodeType nodeType = NodeType::Unknown;
 };
 
-}  // namespace KDC
+} // namespace KDC

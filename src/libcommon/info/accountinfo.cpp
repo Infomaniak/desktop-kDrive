@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,9 @@ QDataStream &operator<<(QDataStream &out, const AccountInfo &accountInfo) {
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<AccountInfo> &list) {
-    int count = list.size();
+    int count = static_cast<int>(list.size());
     out << count;
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < count; i++) {
         AccountInfo accountInfo = list[i];
         out << accountInfo;
     }
@@ -55,4 +55,4 @@ QDataStream &operator>>(QDataStream &in, QList<AccountInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

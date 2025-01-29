@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,10 +45,10 @@ bool hasLaunchOnStartup_private(const QString &, log4cplus::Logger logger) {
         // We need to iterate over the items and check which one is "ours".
         UInt32 seedValue;
         CFArrayRef itemsArray = LSSharedFileListCopySnapshot(loginItems, &seedValue);
-        CFStringRef appUrlRefString = CFURLGetString(urlRef);  // no need for release
+        CFStringRef appUrlRefString = CFURLGetString(urlRef); // no need for release
         LOG4CPLUS_DEBUG(logger, "App filePath=" << CFStringGetCStringPtr(appUrlRefString, kCFStringEncodingUTF8));
         for (int i = 0; i < CFArrayGetCount(itemsArray); i++) {
-            LSSharedFileListItemRef item = (LSSharedFileListItemRef)CFArrayGetValueAtIndex(itemsArray, i);
+            LSSharedFileListItemRef item = (LSSharedFileListItemRef) CFArrayGetValueAtIndex(itemsArray, i);
             CFURLRef itemUrlRef = NULL;
 
             if (LSSharedFileListItemResolve(item, 0, &itemUrlRef, NULL) == noErr && itemUrlRef) {
@@ -96,7 +96,7 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
         CFStringRef appUrlRefString = CFURLGetString(urlRef);
         qCDebug(lcUtility()) << "App to remove filePath=" << QString::fromCFString(appUrlRefString);
         for (int i = 0; i < CFArrayGetCount(itemsArray); i++) {
-            LSSharedFileListItemRef item = (LSSharedFileListItemRef)CFArrayGetValueAtIndex(itemsArray, i);
+            LSSharedFileListItemRef item = (LSSharedFileListItemRef) CFArrayGetValueAtIndex(itemsArray, i);
             CFURLRef itemUrlRef = NULL;
 
             if (LSSharedFileListItemResolve(item, 0, &itemUrlRef, NULL) == noErr && itemUrlRef) {
@@ -124,4 +124,4 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
     CFRelease(urlRef);
 }
 
-}  // namespace KDC
+} // namespace KDC

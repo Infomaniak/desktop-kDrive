@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ class SyncInfoClient : public SyncInfo {
 
     private:
         bool _paused{false};
-        SyncStatus _status{SyncStatus::SyncStatusUndefined};
+        SyncStatus _status{SyncStatus::Undefined};
         SyncStep _step;
         bool _unresolvedConflicts{false};
         qint64 _currentFile{0};
@@ -65,4 +65,4 @@ class SyncInfoClient : public SyncInfo {
         bool _isBeingDeleted{false};
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #pragma once
 
 #include "customcombobox.h"
+#include "versionwidget.h"
 #include "widgetwithcustomtooltip.h"
 
 #include <QColor>
@@ -37,7 +38,7 @@ class CustomSwitch;
 // A data class holding the switch widget and the line edit field
 // which let users confirm the synchronization of a folder whose size
 // is above a user-defined threshold (amount).
-struct LargeFolderConfirmation : public QObject {  // Derived from QObject because retranslateUi calls tr()
+struct LargeFolderConfirmation : public QObject { // Derived from QObject because retranslateUi calls tr()
         Q_OBJECT
     public:
         explicit LargeFolderConfirmation(QBoxLayout *folderConfirmationBox);
@@ -55,34 +56,13 @@ struct LargeFolderConfirmation : public QObject {  // Derived from QObject becau
         CustomSwitch *_switch{nullptr};
 };
 
-// A struct holding together the up-to-date status of the application, an update button
-// and the application version with an hyperlink to the release notes.
-struct VersionWidget {
-        explicit VersionWidget(QBoxLayout *parentBox, const QString &versionNumberLinkText);
-        void updateStatus(QString status, bool updateAvailable, const QString &releaseNoteLinkText);
-        void setVersionLabelText(const QString &text);
-
-        const QPushButton *updateButton() const { return _updateButton; };
-        void setUpdateButtonText(const QString &text);
-        const QLabel *updateStatusLabel() const { return _updateStatusLabel; };
-        const QLabel *showReleaseNoteLabel() const { return _showReleaseNoteLabel; };
-        const QLabel *versionNumberLabel() const { return _versionNumberLabel; };
-
-    private:
-        QLabel *_versionLabel{nullptr};
-        QLabel *_updateStatusLabel{nullptr};
-        QLabel *_showReleaseNoteLabel{nullptr};
-        QLabel *_versionNumberLabel{nullptr};
-        QPushButton *_updateButton{nullptr};
-};
-
 class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
 
     public:
         explicit PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-        void showErrorBanner(bool unresolvedErrors);
+        void showErrorBanner(bool unresolvedErrors) const;
 
     signals:
         void setStyle(bool darkTheme);
@@ -94,13 +74,17 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         std::shared_ptr<ClientGui> _gui;
 
         std::unique_ptr<LargeFolderConfirmation> _largeFolderConfirmation;
-        std::unique_ptr<VersionWidget> _versionWidget;
+        VersionWidget *_versionWidget;
         CustomComboBox *_languageSelectorComboBox{nullptr};
         QLabel *_generalLabel{nullptr};
         QLabel *_darkThemeLabel{nullptr};
         QLabel *_monochromeLabel{nullptr};
         QLabel *_launchAtStartupLabel{nullptr};
         QLabel *_moveToTrashLabel{nullptr};
+        QLabel *_moveToTrashTipsLabel{nullptr};
+        QWidget *_moveTotrashDisclaimerWidget{nullptr};
+        QLabel *_moveToTrashDisclaimerLabel{nullptr};
+        QLabel *_moveToTrashKnowMoreLabel{nullptr};
         QLabel *_languageSelectorLabel{nullptr};
         QLabel *_shortcutsLabel{nullptr};
         QLabel *_advancedLabel{nullptr};
@@ -114,7 +98,8 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void showEvent(QShowEvent *event) override;
 
         void clearUndecidedLists();
-        void updateStatus(QString status, bool updateAvailable);
+
+        [[nodiscard]] bool isStaff() const;
 
     private slots:
         void onFolderConfirmationSwitchClicked(bool checked = false);
@@ -132,10 +117,8 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onProxyServerWidgetClicked();
         void onLiteSyncWidgetClicked();
         void onLinkActivated(const QString &link);
-        void onUpdateInfo();
-        void onStartInstaller();
 
-        void retranslateUi();
+        void retranslateUi() const;
 };
 
-}  // namespace KDC
+} // namespace KDC

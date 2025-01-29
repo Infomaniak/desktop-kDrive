@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ IFACEMETHODIMP KDOverlayFactory::QueryInterface(REFIID riid, void **ppv) {
         AddRef();
     } else {
         hResult = E_NOINTERFACE;
-        *ppv = NULL;
+        *ppv = nullptr;
     }
 
     return hResult;
@@ -61,7 +61,7 @@ IFACEMETHODIMP_(ULONG) KDOverlayFactory::Release() {
 IFACEMETHODIMP KDOverlayFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, void **ppv) {
     HRESULT hResult = CLASS_E_NOAGGREGATION;
 
-    if (pUnkOuter != NULL) {
+    if (pUnkOuter != nullptr) {
         return hResult;
     }
 

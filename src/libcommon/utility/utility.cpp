@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "utility.h"
+#include "libcommon/log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
 
@@ -24,25 +25,21 @@
 #include <sys/types.h>
 
 #ifdef Q_OS_UNIX
-
 #include <sys/statvfs.h>
-
 #endif
 
+#include <random>
 #include <fstream>
 #include <sstream>
+#include <signal.h>
 
 #ifdef _WIN32
 #include <Poco/Util/WinRegistryKey.h>
 #endif
 
-#include <sentry.h>
-
 #ifdef ZLIB_FOUND
 #include <zlib.h>
 #endif
-
-#include <random>
 
 #include <QDir>
 #include <QFileInfo>
@@ -69,12 +66,17 @@
 #define MAX_PATH_LENGTH_MAC 1023
 #define MAX_PATH_LENGTH_LINUX 4096
 
-#define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
+#ifdef __APPLE__
+constexpr char liteSyncExtBundleIdStr[] = "com.infomaniak.drive.desktopclient.LiteSyncExt";
+constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent";
+#endif
 
 namespace KDC {
 
-const int CommonUtility::logsPurgeRate = 7;               // days
-const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
+std::mutex CommonUtility::_generateRandomStringMutex;
+
+const int CommonUtility::logsPurgeRate = 7; // days
+const int CommonUtility::logMaxSize = 500 * 1024 * 1024; // MB
 
 SyncPath CommonUtility::_workingDirPath = "";
 
@@ -87,26 +89,46 @@ static const QString italianCode = "it";
 static std::random_device rd;
 static std::default_random_engine gen(rd());
 
-std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*/) {
-    static const char alphanum[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
-
-    static std::uniform_int_distribution<int> distrib(
-        0, sizeof(alphanum) - 2);  // -2 in order to avoid the null terminating character
+std::string CommonUtility::generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib,
+                                                const int length /*= 10*/) {
+    const std::lock_guard<std::mutex> lock(_generateRandomStringMutex);
 
     std::string tmp;
-    tmp.reserve(length);
+    tmp.reserve(static_cast<size_t>(length));
     for (int i = 0; i < length; ++i) {
-        tmp += alphanum[distrib(gen)];
+        tmp += charArray[distrib(gen)];
     }
 
     return tmp;
 }
 
+std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*/) {
+    static constexpr char charArray[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+
+    static std::uniform_int_distribution<int> distrib(
+            0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
+
+    return generateRandomString(charArray, distrib, length);
+}
+
+std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
+    static constexpr char charArray[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz"
+            "-._~";
+
+    static std::uniform_int_distribution<int> distrib(
+            0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
+
+    return generateRandomString(charArray, distrib, length);
+}
+
 void CommonUtility::crash() {
-    volatile int *a = (int *)(NULL);
+    volatile int *a = (int *) (NULL);
     *a = 1;
 }
 
@@ -114,14 +136,38 @@ QString CommonUtility::platformName() {
     return QSysInfo::prettyProductName();
 }
 
+Platform CommonUtility::platform() {
+    const QString name = platformName();
+    if (name.contains("macos", Qt::CaseInsensitive)) return Platform::MacOS;
+    if (name.contains("windows", Qt::CaseInsensitive)) return Platform::Windows;
+    // Otherwise we consider the OS to be Linux based
+    if (platformArch().contains("arm", Qt::CaseInsensitive)) return Platform::LinuxARM;
+
+    return Platform::LinuxAMD;
+}
+
 QString CommonUtility::platformArch() {
     return QSysInfo::currentCpuArchitecture();
 }
 
-std::string CommonUtility::userAgentString() {
-    std::ostringstream userAgent;
-    userAgent << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
-    return userAgent.str();
+const std::string &CommonUtility::userAgentString() {
+    static std::string str;
+    if (str.empty()) {
+        std::stringstream ss;
+        ss << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
+        str = ss.str();
+    }
+    return str;
+}
+
+const std::string &CommonUtility::currentVersion() {
+    static std::string str;
+    if (str.empty()) {
+        std::stringstream ss;
+        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH << "." << KDRIVE_VERSION_BUILD;
+        str = ss.str();
+    }
+    return str;
 }
 
 QString CommonUtility::fileSystemName(const QString &dirPath) {
@@ -139,10 +185,10 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
     return QString();
 }
 
-QString CommonUtility::getIconPath(IconType iconType) {
+QString CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
-            return "../Resources/kdrive-mac.icns";  // TODO : To be changed to a specific incs file
+            return "../Resources/kdrive-mac.icns"; // TODO : To be changed to a specific incs file
             break;
         case KDC::CommonUtility::COMMON_DOCUMENT_ICON:
             // return path to common_document_folder.icns;   // Not implemented yet
@@ -175,35 +221,16 @@ bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType icon
 #endif
 }
 
-std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
-    static const char charArray[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz"
-        "-._~";
-
-    static std::uniform_int_distribution<int> distrib(
-        0, sizeof(charArray) - 2);  // -2 in order to avoid the null terminating character
-
-    std::string tmp;
-    tmp.reserve(length);
-    for (int i = 0; i < length; ++i) {
-        tmp += charArray[distrib(gen)];
-    }
-
-    return tmp;
-}
-
 qint64 CommonUtility::freeDiskSpace(const QString &path) {
 #if defined(Q_OS_MAC) || defined(Q_OS_FREEBSD) || defined(Q_OS_FREEBSD_KERNEL) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
     struct statvfs stat;
     if (statvfs(path.toLocal8Bit().data(), &stat) == 0) {
-        return (qint64)stat.f_bavail * stat.f_frsize;
+        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
     }
 #elif defined(Q_OS_UNIX)
     struct statvfs64 stat;
     if (statvfs64(path.toLocal8Bit().data(), &stat) == 0) {
-        return (qint64)stat.f_bavail * stat.f_frsize;
+        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
     }
 #elif defined(Q_OS_WIN)
     ULARGE_INTEGER freeBytes;
@@ -215,7 +242,7 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
     return -1;
 }
 
-QByteArray CommonUtility::IntToArray(qint32 source) {
+QByteArray CommonUtility::toQByteArray(const qint32 source) {
     // Avoid use of cast, this is the Qt way to serialize objects
     QByteArray temp;
     QDataStream data(&temp, QIODevice::ReadWrite);
@@ -223,7 +250,7 @@ QByteArray CommonUtility::IntToArray(qint32 source) {
     return temp;
 }
 
-int CommonUtility::ArrayToInt(QByteArray source) {
+int CommonUtility::toInt(QByteArray source) {
     int temp;
     QDataStream data(&source, QIODevice::ReadWrite);
     data >> temp;
@@ -266,12 +293,8 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
     }
 
     if (!res) {
-        sentry_value_t event = sentry_value_new_event();
         std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
-        sentry_value_t exc = sentry_value_new_exception("CommonUtility::stringToAppStateValue", message.c_str());
-        sentry_value_set_stacktrace(exc, NULL, 0);
-        sentry_event_add_exception(event, exc);
-        sentry_capture_event(event);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::stringToAppStateValue", message);
     }
 
     return res;
@@ -289,6 +312,7 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     } else {
         return false;
     }
+
     return true;
 }
 
@@ -340,14 +364,14 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
     qint64 compressedSize = 0;
     while (!original.atEnd()) {
         auto data = original.read(1024 * 1024);
-        if (auto written = gzwrite(compressed, data.data(), data.size()); written != data.size()) {
+        if (auto written = gzwrite(compressed, data.data(), static_cast<unsigned int>(data.size())); written != data.size()) {
             gzclose(compressed);
             return false;
         }
         compressedSize += data.size();
         if (!safeProgressCallback(static_cast<int>((100 * compressedSize) / original.size()))) {
             gzclose(compressed);
-            return true;  // User cancelled
+            return true; // User cancelled
         }
     }
     gzclose(compressed);
@@ -374,7 +398,7 @@ QString applicationTrPath() {
 #elif defined(__APPLE__)
 
 #ifdef QT_NO_DEBUG
-    return QCoreApplication::applicationDirPath() + QLatin1String("/../Resources/Translations");  // path defaults to app dir.
+    return QCoreApplication::applicationDirPath() + QLatin1String("/../Resources/Translations"); // path defaults to app dir.
 #else
     return QString("%1/kDrive.app/Contents/Resources/Translations").arg(CMAKE_INSTALL_PREFIX);
 #endif
@@ -397,7 +421,7 @@ QString substLang(const QString &lang) {
     return lang;
 }
 
-void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enforcedLocale) {
+void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language enforcedLocale) {
     QStringList uiLanguages = languageCodeList(enforcedLocale);
 
     static QTranslator *translator = nullptr;
@@ -418,7 +442,7 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
     qtTranslator = new QTranslator(app);
 
     foreach (QString lang, uiLanguages) {
-        lang.replace(QLatin1Char('-'), QLatin1Char('_'));  // work around QTBUG-25973
+        lang.replace(QLatin1Char('-'), QLatin1Char('_')); // work around QTBUG-25973
         lang = substLang(lang);
         const QString trPath = applicationTrPath();
         const QString trFile = QLatin1String("client_") + lang;
@@ -435,9 +459,9 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
             if (!qtTranslator->load(qtTrFile, qtTrPath)) {
                 if (!qtTranslator->load(qtTrFile, trPath)) {
                     if (!qtTranslator->load(qtBaseTrFile, qtTrPath)) {
-                        static_cast<void>(
-                            qtTranslator->load(qtBaseTrFile, trPath));  // static_cast<void>() explicitly discard warning on
-                                                                        // function declared with 'nodiscard' attribute
+                        static_cast<void>(qtTranslator->load(qtBaseTrFile, trPath));
+                        // static_cast<void>() explicitly discard warning on
+                        // function declared with 'nodiscard' attribute
                     }
                 }
             }
@@ -449,7 +473,7 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
     }
 }
 
-bool CommonUtility::colorThresholdCheck(int red, int green, int blue) {
+bool CommonUtility::colorThresholdCheck(const int red, const int green, const int blue) {
     return 1.0 - (0.299 * red + 0.587 * green + 0.114 * blue) / 255.0 > 0.5;
 }
 
@@ -462,13 +486,13 @@ SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &p
     }
 
     std::vector<SyncName> rootPathElts;
-    for (const auto &dir : rootPathNormal) {
+    for (const auto &dir: rootPathNormal) {
         rootPathElts.push_back(dir.native());
     }
 
     size_t index = 0;
     std::filesystem::path relativePath;
-    for (const auto &dir : pathNormal) {
+    for (const auto &dir: pathNormal) {
         if (index >= rootPathElts.size()) {
             relativePath /= dir;
         } else if (dir != rootPathElts[index]) {
@@ -481,7 +505,7 @@ SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &p
     return relativePath;
 }
 
-QStringList CommonUtility::languageCodeList(KDC::Language enforcedLocale) {
+QStringList CommonUtility::languageCodeList(const KDC::Language enforcedLocale) {
     QStringList uiLanguages = QLocale::system().uiLanguages();
     uiLanguages.prepend(languageCode(enforcedLocale));
 
@@ -492,30 +516,30 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
     return languageCode.compare(englishCode) == 0;
 }
 
-QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
+QString CommonUtility::languageCode(const KDC::Language enforcedLocale) {
     switch (enforcedLocale) {
-        case KDC::LanguageDefault: {
+        case KDC::Language::Default: {
             return QLocale::system().uiLanguages().isEmpty() ? QString() : QLocale::system().uiLanguages().first().left(2);
             break;
         }
-        case KDC::LanguageEnglish:
+        case KDC::Language::English:
             return englishCode;
             break;
-        case KDC::LanguageFrench:
+        case KDC::Language::French:
             return frenchCode;
             break;
-        case KDC::LanguageGerman:
+        case KDC::Language::German:
             return germanCode;
             break;
-        case KDC::LanguageItalian:
+        case KDC::Language::Italian:
             return italianCode;
             break;
-        case KDC::LanguageSpanish:
+        case KDC::Language::Spanish:
             return spanishCode;
             break;
     }
 
-    return QString();
+    return {};
 }
 
 SyncPath CommonUtility::getAppDir() {
@@ -533,24 +557,15 @@ SyncPath CommonUtility::getAppSupportDir() {
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
     if (!std::filesystem::is_directory(dirPath, ec)) {
-        bool exists;
+        bool exists = false;
 #ifdef _WIN32
-        exists = (ec.value() != ERROR_FILE_NOT_FOUND && ec.value() != ERROR_PATH_NOT_FOUND && ec.value() != ERROR_INVALID_DRIVE);
+        exists = CommonUtility::isLikeFileNotFoundError(ec);
 #else
         exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
 #endif
 
-        if (exists) {
-            return SyncPath();
-        }
-
-        if (!std::filesystem::create_directory(dirPath, ec)) {
-            if (ec.value() != 0) {
-                return SyncPath();
-            }
-
-            return SyncPath();
-        }
+        if (exists) return SyncPath();
+        if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
     }
 
     return dirPath;
@@ -560,10 +575,10 @@ SyncPath CommonUtility::getAppWorkingDir() {
     return _workingDirPath;
 }
 
-QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, NodeType type) {
-    if (type == NodeTypeDirectory) {
+QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, const NodeType type) {
+    if (type == NodeType::Directory) {
         return QString(":/client/resources/icons/document types/folder.svg");
-    } else if (type == NodeTypeFile) {
+    } else if (type == NodeType::File) {
         QMimeDatabase db;
         QMimeType mime = db.mimeTypeForFile(fileName, QMimeDatabase::MatchExtension);
         if (mime.name().startsWith("image/")) {
@@ -617,36 +632,35 @@ QString CommonUtility::getRelativePathFromHome(const QString &dirPath) {
     return QDir::toNativeSeparators(name);
 }
 
+bool CommonUtility::isFileSizeMismatchDetectionEnabled() {
+    static const bool enableFileSizeMismatchDetection = !envVarValue("KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION").empty();
+    return enableFileSizeMismatchDetection;
+}
+
 size_t CommonUtility::maxPathLength() {
 #if defined(_WIN32)
-    Poco::Util::WinRegistryKey key(R"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem)", true);
-    bool exist = key.exists("LongPathsEnabled");
-    if (exist && key.getInt("LongPathsEnabled")) {
-        return MAX_PATH_LENGTH_WIN_LONG;
-    } else {
-        return MAX_PATH_LENGTH_WIN_SHORT;
+    static size_t _maxPathWin = 0;
+    if (_maxPathWin == 0) {
+        Poco::Util::WinRegistryKey key(R"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem)", true);
+        bool exist = key.exists("LongPathsEnabled");
+        if (exist && key.getInt("LongPathsEnabled")) {
+            _maxPathWin = MAX_PATH_LENGTH_WIN_LONG;
+        } else {
+            _maxPathWin = MAX_PATH_LENGTH_WIN_SHORT;
+        }
     }
-
+    // For folders in short path mode, it is MAX_PATH - 12
+    // (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
+    // We decided to apply this rule for files too. We could else encounter issues.
+    // If the path length of a folder is > MAX_PATH - 12 and the path length of a file in this folder is between MAX_PATH - 12 and
+    // MAX_PATH. It would lead to a synced file in a folder that is not synced (hence excluded because of its path length).
+    return (_maxPathWin == MAX_PATH_LENGTH_WIN_LONG) ? MAX_PATH_LENGTH_WIN_LONG : MAX_PATH_LENGTH_WIN_SHORT - 12;
 #elif defined(__APPLE__)
     return MAX_PATH_LENGTH_MAC;
 #else
     return MAX_PATH_LENGTH_LINUX;
 #endif
 }
-
-#if defined(_WIN32)
-size_t CommonUtility::maxPathLengthFolder() {
-    Poco::Util::WinRegistryKey key(R"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem)", true);
-    bool exist = key.exists("LongPathsEnabled");
-    if (exist && key.getInt("LongPathsEnabled")) {
-        return MAX_PATH_LENGTH_WIN_LONG;
-    } else {
-        return MAX_PATH_LENGTH_WIN_SHORT -
-               12;  // For folders in short path mode, it is MAX_PATH - 12
-                    // (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
-    }
-}
-#endif
 
 bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
     if (path1.compare(path2) == 0) {
@@ -664,7 +678,7 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #if defined(NDEBUG)
-// Release mode
+    // Release mode
 #if defined(__APPLE__) || defined(_WIN32)
     // Version format = "X.Y.Z (build yyyymmdd)"
     size_t sepPosition = dbVersion.find(" ");
@@ -682,6 +696,8 @@ const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 }
 
 void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion) {
+    if (version.empty()) return;
+
     std::string::size_type prevPos = 0;
     std::string::size_type pos = 0;
     do {
@@ -689,6 +705,15 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
         tabVersion.push_back(std::stoi(version.substr(prevPos, pos - prevPos)));
         prevPos = pos + 1;
     } while (pos != std::string::npos);
+}
+
+SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
+    using namespace KDC::event_dump_files;
+    auto sigFilePath =
+            std::filesystem::temp_directory_path() /
+            (appType == AppType::Server ? (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName)
+                                        : (signalCategory == SignalCategory::Crash ? clientCrashFileName : clientKillFileName));
+    return sigFilePath;
 }
 
 bool CommonUtility::isVersionLower(const std::string &currentVersion, const std::string &targetVersion) {
@@ -699,19 +724,11 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
     extractIntFromStrVersion(targetVersion, targetTabVersion);
 
     if (currTabVersion.size() != targetTabVersion.size()) {
-        // Should not happen
-        return false;
+        return false; // Should not happen
     }
 
-    for (size_t i = 0; i < targetTabVersion.size(); i++) {
-        if (currTabVersion[i] > targetTabVersion[i]) {
-            return false;
-        } else if (currTabVersion[i] < targetTabVersion[i]) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::lexicographical_compare(currTabVersion.begin(), currTabVersion.end(), targetTabVersion.begin(),
+                                        targetTabVersion.end());
 }
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
@@ -722,7 +739,7 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
     std::error_code ec;
 
     SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
-    if (!std::filesystem::exists(tmpDirPath)) {
+    if (!std::filesystem::exists(tmpDirPath, ec)) {
         std::filesystem::create_directory(tmpDirPath, ec);
         if (ec.value()) {
             return false;
@@ -739,15 +756,15 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
 
     std::filesystem::remove_all(tmpPath, ec);
 #else
-    (void)name;
+    (void) name;
 #endif
     return true;
 }
 
 // Check if dir name is valid by trying to create a tmp file
 bool CommonUtility::fileNameIsValid(const SyncName &name) {
-    if (!std::filesystem::exists(std::filesystem::temp_directory_path() / tmpDirName)) {
-        std::error_code ec;
+    std::error_code ec;
+    if (!std::filesystem::exists(std::filesystem::temp_directory_path() / tmpDirName, ec)) {
         std::filesystem::create_directory(std::filesystem::temp_directory_path() / tmpDirName, ec);
         if (ec.value()) {
             return false;
@@ -762,23 +779,39 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
 
     output.close();
 
-    std::error_code ec;
     std::filesystem::remove_all(tmpPath, ec);
     return true;
 }
 
+#ifdef __APPLE__
+const std::string CommonUtility::loginItemAgentId() {
+    return loginItemAgentIdStr;
+}
+
+const std::string CommonUtility::liteSyncExtBundleId() {
+    return liteSyncExtBundleIdStr;
+}
+#endif
+
 std::string CommonUtility::envVarValue(const std::string &name) {
+    bool isSet = false;
+    return envVarValue(name, isSet);
+}
+
+std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
 #ifdef _WIN32
     char *value = nullptr;
-    size_t sz = 0;
-    if (_dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
+    isSet = false;
+    if (size_t sz = 0; _dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
         std::string valueStr(value);
         free(value);
+        isSet = true;
         return valueStr;
     }
 #else
     char *value = std::getenv(name.c_str());
     if (value) {
+        isSet = true;
         return std::string(value);
         // Don't free "value"
     }
@@ -787,13 +820,78 @@ std::string CommonUtility::envVarValue(const std::string &name) {
     return std::string();
 }
 
+void CommonUtility::handleSignals(void (*sigHandler)(int)) {
+    // Kills
+    signal(SIGTERM, sigHandler); // Termination request, sent to the program
+    signal(SIGABRT, sigHandler); // Abnormal termination condition, as is e.g. initiated by abort()
+    signal(SIGINT, sigHandler); // External interrupt, usually initiated by the user
+
+    // Crashes
+    signal(SIGSEGV, sigHandler); // Invalid memory access (segmentation fault)
+    signal(SIGFPE, sigHandler); // Erroneous arithmetic operation such as divide by zero
+    signal(SIGILL, sigHandler); // Invalid program image, such as invalid instruction
+#ifndef Q_OS_WIN
+    signal(SIGBUS, sigHandler); // Access to an invalid address
+
+    signal(SIGPIPE, SIG_IGN);
+#endif
+}
+
+void CommonUtility::writeSignalFile(const AppType appType, const SignalType signalType) noexcept {
+    SignalCategory signalCategory;
+    if (signalType == SignalType::Segv || signalType == SignalType::Fpe || signalType == SignalType::Ill
+#ifndef Q_OS_WIN
+        || signalType == SignalType::Bus
+#endif
+    ) {
+        // Crash
+        signalCategory = SignalCategory::Crash;
+    } else {
+        // Kill
+        signalCategory = SignalCategory::Kill;
+    }
+
+    SyncPath sigFilePath(signalFilePath(appType, signalCategory));
+    std::ofstream sigFile(sigFilePath);
+    if (sigFile) {
+        sigFile << KDC::toInt(signalType) << std::endl;
+        sigFile.close();
+    }
+}
+
+void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory signalCategory, SignalType &signalType) noexcept {
+    signalType = SignalType::None;
+
+    SyncPath sigFilePath(signalFilePath(appType, signalCategory));
+    std::error_code ec;
+    if (std::filesystem::exists(sigFilePath, ec)) {
+        // Read signal value
+        int value;
+        std::ifstream sigFile(sigFilePath);
+        sigFile >> value;
+        sigFile.close();
+
+        signalType = KDC::fromInt<SignalType>(value);
+
+        // Remove file
+        std::filesystem::remove(sigFilePath, ec);
+    }
+}
+
+#ifdef _WIN32
+std::string CommonUtility::toUnsafeStr(const SyncName &name) {
+    std::string unsafeName(name.begin(), name.end());
+    return unsafeName;
+}
+#endif
+
 #ifdef __APPLE__
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
     process->start(
-        "bash",
-        QStringList() << "-c"
-                      << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(LITE_SYNC_EXT_BUNDLE_ID));
+            "bash",
+            QStringList() << "-c"
+                          << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(liteSyncExtBundleIdStr));
     process->waitForStarted();
     process->waitForFinished();
     QByteArray result = process->readAll();
@@ -813,15 +911,15 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
-                              .arg(serviceStr)
-                              .arg(LITE_SYNC_EXT_BUNDLE_ID));
+                                  .arg(serviceStr)
+                                  .arg(liteSyncExtBundleIdStr));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
-                              .arg(serviceStr)
-                              .arg(LITE_SYNC_EXT_BUNDLE_ID));
+                                  .arg(serviceStr)
+                                  .arg(liteSyncExtBundleIdStr));
         }
 
         query.exec();
@@ -850,6 +948,6 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
 
     return false;
 }
-#endif
 
-}  // namespace KDC
+#endif
+} // namespace KDC

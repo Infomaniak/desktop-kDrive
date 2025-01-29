@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
            << QLatin1String("GenericName=") << QLatin1String("File Synchronizer") << Qt::endl
            << QLatin1String("Exec=\"") << appimageDir << "\"" << Qt::endl
            << QLatin1String("Terminal=") << "false" << Qt::endl
-           << QLatin1String("Icon=") << appName.toLower() << Qt::endl  // always use lowercase for icons
+           << QLatin1String("Icon=") << appName.toLower() << Qt::endl // always use lowercase for icons
            << QLatin1String("Categories=") << QLatin1String("Network") << Qt::endl
            << QLatin1String("Type=") << QLatin1String("Application") << Qt::endl
            << QLatin1String("StartupNotify=") << "false" << Qt::endl
@@ -97,4 +97,4 @@ void setLaunchOnStartup_private(const QString &appName, const QString &guiName, 
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,18 +28,19 @@ namespace KDC {
 
 class ErrorInfo {
     public:
-        ErrorInfo(int dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
-                  ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
-                  NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
-                  CancelType cancelType = CancelTypeNone, const QString &destinationPath = "");
+        ErrorInfo(int64_t dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId,
+                  const QString &workerName, ExitCode exitCode, ExitCause exitCause, const QString &localNodeId,
+                  const QString &remoteNodeId, NodeType nodeType, const QString &path, ConflictType conflictType,
+                  InconsistencyType inconsistencyType, CancelType cancelType = CancelType::None,
+                  const QString &destinationPath = "");
         ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
                   ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
                   NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
-                  CancelType cancelType = CancelTypeNone, const QString &destinationPath = "");
+                  CancelType cancelType = CancelType::None, const QString &destinationPath = "");
         ErrorInfo();
 
-        inline int dbId() const { return _dbId; }
-        inline void setDbId(int dbId) { _dbId = dbId; }
+        inline int64_t dbId() const { return _dbId; }
+        inline void setDbId(int64_t dbId) { _dbId = dbId; }
         inline qint64 getTime() const { return _time; }
         inline void setTime(qint64 time) { _time = time; }
         inline ErrorLevel level() const { return _level; }
@@ -80,23 +81,23 @@ class ErrorInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<ErrorInfo> &list);
 
     private:
-        int _dbId;
-        qint64 _time;
-        ErrorLevel _level;
+        int64_t _dbId{0};
+        qint64 _time{0};
+        ErrorLevel _level{ErrorLevel::Unknown};
         QString _functionName;
-        int _syncDbId;
+        int _syncDbId{0};
         QString _workerName;
-        ExitCode _exitCode;
-        ExitCause _exitCause;
+        ExitCode _exitCode{ExitCode::Unknown};
+        ExitCause _exitCause{ExitCause::Unknown};
         QString _localNodeId;
         QString _remoteNodeId;
-        NodeType _nodeType;
+        NodeType _nodeType{NodeType::Unknown};
         QString _path;
         QString _destinationPath;
-        ConflictType _conflictType;
-        InconsistencyType _inconsistencyType;
-        CancelType _cancelType;
-        bool _autoResolved;
+        ConflictType _conflictType{ConflictType::None};
+        InconsistencyType _inconsistencyType{InconsistencyType::None};
+        CancelType _cancelType{CancelType::None};
+        bool _autoResolved{false};
 };
 
-}  // namespace KDC
+} // namespace KDC

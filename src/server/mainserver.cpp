@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,10 @@
 #include "version.h"
 #include "common/utility.h"
 #include "libcommon/asserts.h"
-#include "updater/updaterserver.h"
+#include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/handler.h"
+#include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/log/log.h"
 
 #include <QtGlobal>
@@ -33,6 +35,7 @@
 
 #include <signal.h>
 #include <iostream>
+#include <fstream>
 
 #ifdef Q_OS_UNIX
 #include <sys/time.h>
@@ -40,8 +43,6 @@
 #endif
 
 #include <log4cplus/loggingmacros.h>
-
-#include <sentry.h>
 
 #define APP_RLIMIT_NOFILE 0x100000
 
@@ -54,59 +55,39 @@
 #endif
 
 void signalHandler(int signum) {
-    std::cerr << "Server stoped with signal " << signum << std::endl;
+    KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(signum);
+    std::cerr << "Server stopped with signal " << signalType << std::endl;
 
-    // Make sure everything flushes
-#ifdef NDEBUG
-    auto sentryClose = qScopeGuard([] { sentry_close(); });
-#endif
+    KDC::CommonUtility::writeSignalFile(KDC::AppType::Server, signalType);
 
     exit(signum);
 }
 
 int main(int argc, char **argv) {
-#ifndef Q_OS_WIN
-    signal(SIGABRT, signalHandler);
-    signal(SIGKILL, signalHandler);
-    signal(SIGBUS, signalHandler);
-    signal(SIGSEGV, signalHandler);
-
-    signal(SIGPIPE, SIG_IGN);
-#endif
+    // KDC::CommonUtility::handleSignals(signalHandler); // !!! The signal handler interferes with Sentry !!!
 
     std::cout << "kDrive server starting" << std::endl;
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
+#ifdef __unix__
+    const std::string value = KDC::CommonUtility::envVarValue("APPIMAGE");
+    if (!value.empty()) {
+        KDC::CommonUtility::_workingDirPath /= "usr/bin";
+    }
+#endif
 
-#ifdef NDEBUG
-    // Sentry init
-    sentry_options_t *options = sentry_options_new();
-    sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
-    KDC::SyncPath appWorkingPath = KDC::CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
-#endif
-    KDC::SyncPath appSupportPath = KDC::CommonUtility::getAppSupportDir() / SENTRY_SERVER_DB_PATH;
-#if defined(Q_OS_WIN)
-    sentry_options_set_handler_pathw(options, appWorkingPath.c_str());
-    sentry_options_set_database_pathw(options, appSupportPath.c_str());
-#elif defined(Q_OS_MAC)
-    sentry_options_set_handler_path(options, appWorkingPath.c_str());
-    sentry_options_set_database_path(options, appSupportPath.c_str());
-#endif
-    sentry_options_set_release(options, KDRIVE_VERSION_STRING);
-    sentry_options_set_debug(options, false);
-    sentry_options_set_max_breadcrumbs(options, 1000);
-    ASSERT(sentry_init(options) == 0);
-#endif
+    KDC::sentry::Handler::init(KDC::AppType::Server);
+    KDC::sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::sentry::ConfidentialityLevel::Authenticated);
+    KDC::sentry::pTraces::basic::AppStart().start();
 
     Q_INIT_RESOURCE(client);
 
     std::unique_ptr<KDC::AppServer> appPtr = nullptr;
     try {
         appPtr = std::unique_ptr<KDC::AppServer>(new KDC::AppServer(argc, argv));
-    } catch (std::exception const &e) {
-        std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
+    } catch (const std::exception &e) {
+        std::cerr << "kDrive server initialization error: error=" << e.what() << std::endl;
         return -1;
     }
 
@@ -199,18 +180,6 @@ int main(int argc, char **argv) {
         appPtr->showAlreadyRunning();
         return 0;
     }
-
-    // If handleStartup returns true, main() needs to terminate here, e.g. because the updater is triggered
-    KDC::UpdaterServer *updater = KDC::UpdaterServer::instance();
-    if (updater && updater->handleStartup()) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Update in progress, exiting...");
-        return 1;
-    }
-
-    // Make sure everything flushes
-#ifdef NDEBUG
-    auto sentryClose = qScopeGuard([] { sentry_close(); });
-#endif
 
     return appPtr->exec();
 }

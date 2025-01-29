@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,8 +48,6 @@
 #include <sstream>
 #include <ctime>
 
-#include <sentry.h>
-
 #ifndef _WIN32
 #include <utf8proc.h>
 #endif
@@ -67,7 +65,6 @@
 #define SHARED_FOLDER "Shared"
 
 namespace KDC {
-
 static const SyncName excludedTemplateFileName(Str("sync-exclude.lst"));
 
 #if defined(__APPLE__)
@@ -103,12 +100,12 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 #if defined(__APPLE__)
     struct statvfs stat;
     if (statvfs(path.c_str(), &stat) == 0) {
-        return (int64_t)stat.f_bavail * stat.f_frsize;
+        return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
 #elif defined(__unix__)
     struct statvfs64 stat;
     if (statvfs64(path.c_str(), &stat) == 0) {
-        return (int64_t)stat.f_bavail * stat.f_frsize;
+        return (int64_t) (stat.f_bavail * stat.f_frsize);
     }
 #elif defined(_WIN32)
     ULARGE_INTEGER freeBytes;
@@ -121,14 +118,14 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 }
 
 int64_t Utility::freeDiskSpaceLimit() {
-    static int64_t limit = 250 * 1000 * 1000LL;  // 250MB
+    static int64_t limit = 250 * 1000 * 1000LL; // 250MB
     return limit;
 }
 
 bool Utility::enoughSpace(const SyncPath &path) {
-    const int64_t freeBytes = Utility::freeDiskSpace(path);
+    const int64_t freeBytes = freeDiskSpace(path);
     if (freeBytes >= 0) {
-        if (freeBytes < Utility::freeDiskSpaceLimit()) {
+        if (freeBytes < freeDiskSpaceLimit()) {
             return false;
         }
     }
@@ -156,7 +153,7 @@ bool Utility::setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::Syn
     return true;
 }
 
-bool Utility::isCreationDateValid(uint64_t creationDate) {
+bool Utility::isCreationDateValid(int64_t creationDate) {
     if (creationDate == 0 || creationDate == 443779200) {
         // Do not upload or save on DB invalid dates
         // 443779200 correspond to "Tuesday 24 January 1984 08:00:00" which is a default date set by macOS
@@ -206,9 +203,24 @@ std::wstring Utility::v2ws(const dbtype &v) {
     return std::visit(VariantPrinter{}, v);
 }
 
+std::wstring Utility::formatSyncName(const SyncName &name) {
+    std::wstringstream ss;
+    ss << L"name='" << SyncName2WStr(name) << L"'";
+
+    return ss.str();
+}
+
 std::wstring Utility::formatSyncPath(const SyncPath &path) {
     std::wstringstream ss;
     ss << L"path='" << Path2WStr(path) << L"'";
+
+    return ss.str();
+}
+
+
+std::wstring Utility::formatPath(const QString &path) {
+    std::wstringstream ss;
+    ss << L"path='" << QStr2WStr(path) << L"'";
 
     return ss.str();
 }
@@ -217,13 +229,13 @@ std::wstring Utility::formatStdError(const std::error_code &ec) {
 #ifdef _WIN32
     std::stringstream ss;
     ss << ec.message() << " (code: " << ec.value() << ")";
-    return Utility::s2ws(ss.str());
+    return s2ws(ss.str());
 #elif defined(__unix__)
     std::stringstream ss;
     ss << ec.message() << ". (code: " << ec.value() << ")";
-    return Utility::s2ws(ss.str());
+    return s2ws(ss.str());
 #elif defined(__APPLE__)
-    return Utility::s2ws(ec.message());
+    return s2ws(ec.message());
 #endif
 }
 
@@ -234,11 +246,33 @@ std::wstring Utility::formatStdError(const SyncPath &path, const std::error_code
     return ss.str();
 }
 
-std::wstring Utility::formatIoError(const SyncPath &path, IoError ioError) {
+std::wstring Utility::formatIoError(const IoError ioError) {
     std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"', err='" << s2ws(IoHelper::ioError2StdString(ioError)) << L"'";
+    ss << s2ws(IoHelper::ioError2StdString(ioError));
 
     return ss.str();
+}
+
+std::wstring Utility::formatIoError(const SyncPath &path, const IoError ioError) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', err='" << formatIoError(ioError) << L"'";
+
+    return ss.str();
+}
+
+std::wstring Utility::formatIoError(const QString &path, const IoError ioError) {
+    return formatIoError(QStr2Path(path), ioError);
+}
+
+std::wstring Utility::formatErrno(const SyncPath &path, long cError) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', errno=" << cError;
+
+    return ss.str();
+}
+
+std::wstring Utility::formatErrno(const QString &path, long cError) {
+    return formatErrno(QStr2Path(path), cError);
 }
 
 std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description) {
@@ -253,38 +287,36 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
     errorStream << "Error in reply";
 
     // Try to parse as string
-    if (std::string str(std::istreambuf_iterator<char>(inputStream), {}); !str.empty()) {
+    if (const std::string str(std::istreambuf_iterator<char>(inputStream), {}); !str.empty()) {
         errorStream << ", error: " << str.c_str();
     }
 
     errorStream << ", content type: " << httpResponse.getContentType().c_str();
     errorStream << ", reason: " << httpResponse.getReason().c_str();
 
-    std::string encoding = httpResponse.get("Content-Encoding", "");
+    const std::string encoding = httpResponse.get("Content-Encoding", "");
     if (!encoding.empty()) {
         errorStream << ", encoding: " << encoding.c_str();
     }
 
-    return errorStream.str();  // str() return a copy of the underlying string
+    return errorStream.str(); // str() return a copy of the underlying string
 }
 
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
-#ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, errorTitle.c_str(), errorMsg.c_str()));
-#endif
+    sentry::Handler::captureMessage(sentry::Level::Warning, errorTitle, errorMsg);
     LOG_WARN(logger, errorTitle.c_str() << ": " << errorMsg.c_str());
 }
 
 #ifdef _WIN32
 static std::unordered_map<std::string, bool> rootFsTypeMap;
 
-bool Utility::isNtfs(const SyncPath &dirPath) {
-    auto it = rootFsTypeMap.find(dirPath.root_name().string());
+bool Utility::isNtfs(const SyncPath &targetPath) {
+    auto it = rootFsTypeMap.find(targetPath.root_name().string());
     if (it == rootFsTypeMap.end()) {
-        std::string fsType = Utility::fileSystemName(dirPath);
-        auto val = rootFsTypeMap.insert({dirPath.root_name().string(), fsType == NTFS});
+        std::string fsType = fileSystemName(targetPath);
+        auto val = rootFsTypeMap.insert({targetPath.root_name().string(), fsType == NTFS});
         if (!val.second) {
             // Failed to insert into map
             return false;
@@ -295,10 +327,10 @@ bool Utility::isNtfs(const SyncPath &dirPath) {
 }
 #endif
 
-std::string Utility::fileSystemName(const SyncPath &dirPath) {
+std::string Utility::fileSystemName(const SyncPath &targetPath) {
 #if defined(__APPLE__)
     struct statfs stat;
-    if (statfs(dirPath.root_path().native().c_str(), &stat) == 0) {
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
         return stat.f_fstypename;
     }
 #elif defined(_WIN32)
@@ -306,18 +338,20 @@ std::string Utility::fileSystemName(const SyncPath &dirPath) {
     DWORD dwMaxFileNameLength = 0;
     DWORD dwFileSystemFlags = 0;
 
-    if (GetVolumeInformation(dirPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
                              szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-        return Utility::ws2s(szFileSystemName);
+        return ws2s(szFileSystemName);
     } else {
         // Not all the requested information is retrieved
         DWORD dwError = GetLastError();
-        LOGW_WARN(logger(),
-                  L"Error in GetVolumeInformation for " << Path2WStr(dirPath.root_name()).c_str() << L" (" << dwError << L")");
+        LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << formatSyncName(targetPath.root_name()) << L" ("
+                                                                  << CommonUtility::getErrorMessage(dwError) << L")");
 
         // !!! File system name can be OK or not !!!
-        return Utility::ws2s(szFileSystemName);
+        return ws2s(szFileSystemName);
     }
+#else
+    (void) targetPath;
 #endif
 
     return std::string();
@@ -335,13 +369,13 @@ bool Utility::startsWithInsensitive(const std::string &str, const std::string &p
 }
 
 bool Utility::endsWith(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
-                                                     [](char c1, char c2) { return c1 == c2; });
+    return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
+                                                     suffix.begin(), [](char c1, char c2) { return c1 == c2; });
 }
 
 bool Utility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
     return str.size() >= suffix.size() &&
-           std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
+           std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(), suffix.begin(),
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
 
@@ -381,6 +415,49 @@ bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
 }
 #endif
 
+bool Utility::checkIfSameNormalization(const SyncName &a, const SyncName &b, bool &areSame) {
+    SyncName aNormalized;
+    if (!normalizedSyncName(a, aNormalized)) {
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(a));
+        return false;
+    }
+    SyncName bNormalized;
+    if (!normalizedSyncName(b, bNormalized)) {
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(b));
+        return false;
+    }
+    areSame = (aNormalized == bNormalized);
+    return true;
+}
+
+bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame) {
+    SyncPath aNormalized;
+    if (!normalizedSyncPath(a, aNormalized)) {
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncPath: " << formatSyncPath(a));
+        return false;
+    }
+    SyncPath bNormalized;
+    if (!normalizedSyncPath(b, bNormalized)) {
+        LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncPath: " << formatSyncPath(b));
+        return false;
+    }
+    areSame = (aNormalized == bNormalized);
+    return true;
+}
+
+bool Utility::isDescendantOrEqual(const SyncPath &potentialChild, const SyncPath &path) {
+    if (path == potentialChild) return true;
+    for (auto it = potentialChild.begin(), it2 = path.begin(); it != potentialChild.end(); ++it, ++it2) {
+        if (it2 == path.end()) {
+            return true;
+        }
+        if (*it != *it2) {
+            return false;
+        }
+    }
+    return false;
+}
+
 bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     return moveItemToTrash_private(itemPath);
 }
@@ -391,6 +468,12 @@ bool Utility::preventSleeping(bool enable) {
 }
 #endif
 
+void Utility::restartFinderExtension() {
+#ifdef __APPLE__
+    restartFinderExtension_private();
+#endif
+}
+
 void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capital) {
     hexstr.resize(str.size() * 2);
     const char a = capital ? 'A' - 1 : 'a' - 1;
@@ -398,8 +481,8 @@ void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capit
     size_t i;
     int c;
     for (i = 0, c = str[0] & 0xFF; i < hexstr.size(); c = str[i / 2] & 0xFF) {
-        hexstr[i++] = c > 0x9F ? (c / 16 - 9) | a : c / 16 | '0';
-        hexstr[i++] = (c & 0xF) > 9 ? (c % 16 - 9) | a : c % 16 | '0';
+        hexstr[i++] = c > 0x9F ? static_cast<char>(c / 16 - 9) | a : static_cast<char>(c / 16) | '0';
+        hexstr[i++] = (c & 0xF) > 9 ? static_cast<char>(c % 16 - 9) | a : static_cast<char>(c % 16) | '0';
     }
 }
 
@@ -408,7 +491,7 @@ void Utility::strhex2str(const std::string &hexstr, std::string &str) {
     str.resize((hexstr.size() + 1) / 2);
 
     for (size_t i = 0, j = 0; i < str.size(); i++, j++) {
-        str[i] = (hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) << 4, j++;
+        str[i] = static_cast<char>((hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) << 4), j++;
         str[i] |= (hexstr[j] & '@' ? hexstr[j] + 9 : hexstr[j]) & 0xF;
     }
 }
@@ -435,169 +518,10 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
     return str;
 }
 
-std::string Utility::opType2Str(OperationType opType) {
-    switch (opType) {
-        case OperationTypeCreate:
-            return "CREATE";
-        case OperationTypeDelete:
-            return "DELETE";
-        case OperationTypeEdit:
-            return "EDIT";
-        case OperationTypeMove:
-            return "MOVE";
-        case OperationTypeRights:
-            return "RIGHTS";
-        default:
-            return "UNKNOWN";
-    }
-}
-
-std::wstring Utility::opType2WStr(OperationType opType) {
-    return s2ws(opType2Str(opType));
-}
-
-std::string Utility::conflictType2Str(ConflictType conflictType) {
-    switch (conflictType) {
-        case ConflictTypeMoveParentDelete: {
-            return "Move-ParentDelete";
-        }
-        case ConflictTypeMoveDelete: {
-            return "Move-Delete";
-        }
-        case ConflictTypeCreateParentDelete: {
-            return "Create-ParentDelete";
-        }
-        case ConflictTypeMoveMoveSource: {
-            return "Move-Move(Source)";
-        }
-        case ConflictTypeMoveMoveDest: {
-            return "Move-Move(Dest)";
-        }
-        case ConflictTypeMoveCreate: {
-            return "Move-Create";
-        }
-        case ConflictTypeEditDelete: {
-            return "Edit-Delete";
-        }
-        case ConflictTypeCreateCreate: {
-            return "Create-Create";
-        }
-        case ConflictTypeEditEdit: {
-            return "Edit-Edit";
-        }
-        case ConflictTypeMoveMoveCycle: {
-            return "Move-Move(Cycle)";
-        }
-        default: {
-            return "Unknown";
-        }
-    }
-}
-
-std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
-    return s2ws(conflictType2Str(conflictType));
-}
-
-std::string Utility::side2Str(ReplicaSide side) {
-    switch (side) {
-        case ReplicaSideLocal: {
-            return "Local";
-        }
-        case ReplicaSideRemote: {
-            return "Remote";
-        }
-        default: {
-            return "Unknown";
-        }
-    }
-}
-
-std::wstring Utility::side2WStr(ReplicaSide side) {
-    return s2ws(side2Str(side));
-}
-
-std::string Utility::nodeType2Str(NodeType type) {
-    switch (type) {
-        case NodeTypeDirectory: {
-            return "Directory";
-        }
-        case NodeTypeFile: {
-            return "File";
-        }
-        default: {
-            return "Unknown";
-        }
-    }
-}
-
-std::wstring Utility::nodeType2WStr(NodeType type) {
-    return s2ws(nodeType2Str(type));
-}
-
-std::string Utility::logLevel2Str(LogLevel level) {
-    switch (level) {
-        case LogLevelDebug: {
-            return "debug";
-        }
-        case LogLevelInfo: {
-            return "info";
-        }
-        case LogLevelWarning: {
-            return "warning";
-        }
-        case LogLevelError: {
-            return "error";
-        }
-        case LogLevelFatal: {
-            return "fatal";
-        }
-        default:
-            break;
-    }
-
-    return std::string();
-}
-
-std::wstring Utility::logLevel2WStr(LogLevel level) {
-    return s2ws(logLevel2Str(level));
-}
-
-std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
-    switch (status) {
-        case SyncFileStatusUnknown: {
-            return "Unknown";
-        }
-        case SyncFileStatusError: {
-            return "Error";
-        }
-        case SyncFileStatusSuccess: {
-            return "Success";
-        }
-        case SyncFileStatusConflict: {
-            return "Conflict";
-        }
-        case SyncFileStatusInconsistency: {
-            return "Inconsistency";
-        }
-        case SyncFileStatusIgnored: {
-            return "Ignored";
-        }
-        case SyncFileStatusSyncing: {
-            return "Syncing";
-        }
-    }
-
-    return "";
-}
-
-std::wstring Utility::syncFileStatus2WStr(SyncFileStatus status) {
-    return s2ws(syncFileStatus2Str(status));
-}
-
 std::string Utility::list2str(std::unordered_set<std::string> inList) {
     bool first = true;
     std::string out;
-    for (const auto &str : inList) {
+    for (const auto &str: inList) {
         if (!first) {
             out += ",";
         }
@@ -612,7 +536,7 @@ std::string Utility::list2str(std::unordered_set<std::string> inList) {
 std::string Utility::list2str(std::list<std::string> inList) {
     bool first = true;
     std::string out;
-    for (const auto &str : inList) {
+    for (const auto &str: inList) {
         if (!first) {
             out += ",";
         }
@@ -622,14 +546,6 @@ std::string Utility::list2str(std::list<std::string> inList) {
         }
     }
     return out;
-}
-
-int Utility::pathDepth(const SyncPath path) {
-    int level = 0;
-    for (auto it = path.begin(); it != path.end(); ++it) {
-        level++;
-    }
-    return level;
 }
 
 std::string Utility::computeMd5Hash(const std::string &in) {
@@ -680,14 +596,6 @@ SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
 
 SyncPath Utility::binRelativePath() {
     SyncPath path(resourcesPath);
-
-#ifdef __unix__
-    const std::string value = CommonUtility::envVarValue("APPIMAGE");
-    if (!value.empty()) {
-        path = path / "usr/bin";
-    }
-#endif
-
     return path;
 }
 
@@ -711,20 +619,20 @@ std::string Utility::toUpper(const std::string &str) {
     return upperStr;
 }
 
-std::string Utility::errId(const char *file, int line) {
-    std::string err =
-        Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
+std::string Utility::_errId(const char *file, int line) {
+    std::string err = toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
     return err;
 }
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization normalization) {
-#ifdef _WIN32
+bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName, UnicodeNormalization normalization) noexcept {
     if (name.empty()) {
-        return name;
+        normalizedName = name;
+        return true;
     }
 
+#ifdef _WIN32
     static const int maxIterations = 10;
     LPWSTR strResult = nullptr;
     HANDLE hHeap = GetProcessHeap();
@@ -735,27 +643,21 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
         if (strResult) {
             HeapFree(hHeap, 0, strResult);
         }
-        strResult = (LPWSTR)HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
+        strResult = (LPWSTR) HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
         iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
                                          name.c_str(), -1, strResult, iSizeEstimated);
 
         if (iSizeEstimated > 0) {
-            break;  // success
+            break; // success
         }
 
         if (iSizeEstimated <= 0) {
             DWORD dwError = GetLastError();
             if (dwError != ERROR_INSUFFICIENT_BUFFER) {
                 // Real error, not buffer error
-                LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
-                                                                   << std::to_wstring(dwError));
-
-#ifdef NDEBUG
-                sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_FATAL, "Utility::normalizedSyncName",
-                                                                    "Failed to normalize string"));
-#endif
-
-                throw std::runtime_error("Failed to normalize string");
+                LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" ("
+                                                             << CommonUtility::getErrorMessage(dwError) << L")");
+                return false;
             }
 
             // New guess is negative of the return value.
@@ -765,93 +667,98 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
 
     if (iSizeEstimated <= 0) {
         DWORD dwError = GetLastError();
-        LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
-                                                           << std::to_wstring(dwError));
-
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_FATAL, "Utility::normalizedSyncName", "Failed to normalize string"));
-#endif
-
-        throw std::runtime_error("Failed to normalize string");
-    }
-
-    SyncName syncName(strResult);
-    HeapFree(hHeap, 0, strResult);
-    return syncName;
-#else
-    if (name.empty()) {
-        return SyncName(name);
-    }
-
-    char *str = nullptr;
-    if (normalization == UnicodeNormalization::NFD) {
-        str = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
-    } else {
-        str = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
-    }
-
-    if (!str) {  // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion has
-                 // failed. e.g.: Linux can sometime send filesystem events with strange character in the path
-        return "";  // TODO : we should return a boolean value to explicitly say that the conversion has failed. Output value
-                    // should be passed by reference as a parameter.
-    }
-
-    SyncName syncName(str);
-    std::free((void *)str);
-    return syncName;
-#endif
-}
-
-SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
-    auto segmentIt = path.begin();
-    if (segmentIt == path.end()) return {};
-
-    auto segment = *segmentIt;
-    if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) segment = normalizedSyncName(segment);
-
-    SyncPath result{segment};
-    ++segmentIt;
-
-    for (; segmentIt != path.end(); ++segmentIt) {
-        if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
-            result /= normalizedSyncName(*segmentIt);
-        }
-    }
-
-    return result;
-}
-
-bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
-                                       IoError &ioError) {
-    isManaged = true;
-    isLink = false;
-    ioError = IoErrorSuccess;
-
-    ItemType itemType;
-    bool result = IoHelper::getItemType(dirIt->path(), itemType);
-    ioError = itemType.ioError;
-    if (!result) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirIt->path(), ioError).c_str());
+        LOGW_DEBUG(logger(),
+                   L"Failed to normalize " << formatSyncName(name) << L" (" << CommonUtility::getErrorMessage(dwError) << L")");
         return false;
     }
 
-    if (itemType.ioError == IoErrorNoSuchFileOrDirectory || itemType.ioError == IoErrorAccessDenied) {
-        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirIt->path(), ioError).c_str());
+    normalizedName = SyncName(strResult);
+    HeapFree(hHeap, 0, strResult);
+    return true;
+#else
+    char *strResult = nullptr;
+    if (normalization == UnicodeNormalization::NFD) {
+        strResult = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
+    } else {
+        strResult = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+    }
+
+    if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion
+                      // has failed. e.g.: Linux can sometime send filesystem events with strange character in the path
+        LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name));
+        return false;
+    }
+
+    normalizedName = SyncName(strResult);
+    std::free((void *) strResult);
+    return true;
+#endif
+}
+
+bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept {
+    auto segmentIt = path.begin();
+    if (segmentIt == path.end()) return true;
+
+    auto segment = *segmentIt;
+    if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
+        SyncName normalizedName;
+        if (!normalizedSyncName(segment, normalizedName)) {
+            LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(segment));
+            return false;
+        }
+        segment = normalizedName;
+    }
+
+    normalizedPath = SyncPath(segment);
+    ++segmentIt;
+    for (; segmentIt != path.end(); ++segmentIt) {
+        if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
+            SyncName normalizedName;
+            if (!normalizedSyncName(*segmentIt, normalizedName)) {
+                LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(*segmentIt));
+                return false;
+            }
+            normalizedPath /= normalizedName;
+        }
+    }
+
+    return true;
+}
+
+bool Utility::checkIfDirEntryIsManaged(const std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
+                                       IoError &ioError) {
+    return checkIfDirEntryIsManaged(*dirIt, isManaged, isLink, ioError);
+}
+
+bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, bool &isLink, IoError &ioError) {
+    isManaged = true;
+    isLink = false;
+    ioError = IoError::Success;
+
+    ItemType itemType;
+    bool result = IoHelper::getItemType(dirEntry.path(), itemType);
+    ioError = itemType.ioError;
+    if (!result) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+        return false;
+    }
+
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
+        LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
         return true;
     }
 
-    isLink = itemType.linkType != LinkTypeNone;
-    if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
-        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
-                                       << L" because it's not a directory, a regular file or a symlink");
+    isLink = itemType.linkType != LinkType::None;
+    if (!dirEntry.is_directory() && !dirEntry.is_regular_file() && !isLink) {
+        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
+                                       << L" because it is not a directory, a regular file or a symlink");
         isManaged = false;
         return true;
     }
 
-    if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
+    if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(),
-                  L"Ignore " << formatSyncPath(dirIt->path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
+                  L"Ignore " << formatSyncPath(dirEntry.path()) << L" because size > " << CommonUtility::maxPathLength());
         isManaged = false;
         return true;
     }
@@ -877,14 +784,10 @@ bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
 }
 
 #ifdef _WIN32
-bool Utility::fileExists(DWORD dwError) noexcept {
-    return (dwError != ERROR_FILE_NOT_FOUND && dwError != ERROR_PATH_NOT_FOUND && dwError != ERROR_INVALID_DRIVE);
-}
-
 bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
     int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
     if (!length) {
-        const bool exists = fileExists(GetLastError());
+        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
@@ -898,7 +801,7 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
     if (!length) {
-        const bool exists = fileExists(GetLastError());
+        const bool exists = CommonUtility::isLikeFileNotFoundError(GetLastError());
         if (!exists) {
             notFound = true;
         }
@@ -912,6 +815,37 @@ bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool 
 
     return true;
 }
+
+bool Utility::runDetachedProcess(std::wstring cmd) {
+    PROCESS_INFORMATION pinfo;
+    STARTUPINFOW startupInfo = {sizeof(STARTUPINFO),
+                                0,
+                                0,
+                                0,
+                                (ulong) CW_USEDEFAULT,
+                                (ulong) CW_USEDEFAULT,
+                                (ulong) CW_USEDEFAULT,
+                                (ulong) CW_USEDEFAULT,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0};
+    bool success = success = CreateProcess(0, cmd.data(), 0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0, 0,
+                                           &startupInfo, &pinfo);
+
+    if (success) {
+        CloseHandle(pinfo.hThread);
+        CloseHandle(pinfo.hProcess);
+    }
+    return success;
+}
+
 #endif
 
 
@@ -945,11 +879,11 @@ bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint
 #ifdef __unix__
     return cpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle, percent);
 #else
-    (void)(lastTotalUser);
-    (void)(lastTotalUserLow);
-    (void)(lastTotalSys);
-    (void)(lastTotalIdle);
-    (void)(percent);
+    (void) (lastTotalUser);
+    (void) (lastTotalUserLow);
+    (void) (lastTotalSys);
+    (void) (lastTotalIdle);
+    (void) (percent);
 #endif
     return false;
 }
@@ -958,9 +892,9 @@ bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks
 #ifdef __APPLE__
     return cpuUsage_private(previousTotalTicks, previousIdleTicks, percent);
 #else
-    (void)(previousTotalTicks);
-    (void)(previousIdleTicks);
-    (void)(percent);
+    (void) (previousTotalTicks);
+    (void) (previousIdleTicks);
+    (void) (percent);
 #endif
     return false;
 }
@@ -977,4 +911,8 @@ SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
 
-}  // namespace KDC
+std::string Utility::userName() {
+    return userName_private();
+}
+
+} // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,17 +19,19 @@
 #pragma once
 
 #include "testincludes.h"
-#include "update_detection/update_detector/updatetreeworker.h"
 
 using namespace CppUnit;
 
 namespace KDC {
+class UpdateTree;
+class FSOperationSet;
 
 class TestUpdateTree : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUpdateTree);
         CPPUNIT_TEST(testConstructors);
         CPPUNIT_TEST(testAll);
         CPPUNIT_TEST(testChangeEvents);
+        CPPUNIT_TEST(testInsertionOfFileNamesWithDifferentEncodings);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -40,10 +42,11 @@ class TestUpdateTree : public CppUnit::TestFixture {
         void testConstructors();
         void testAll();
         void testChangeEvents();
+        void testInsertionOfFileNamesWithDifferentEncodings();
 
     private:
         UpdateTree *_myTree;
         std::shared_ptr<FSOperationSet> _operationSet;
 };
 
-}  // namespace KDC
+} // namespace KDC

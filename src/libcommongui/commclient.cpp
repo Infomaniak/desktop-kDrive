@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,18 +36,19 @@ Q_LOGGING_CATEGORY(lcCommClient, "gui.commclient", QtInfoMsg)
 
 std::shared_ptr<CommClient> CommClient::instance(QObject *parent) {
     if (_instance == nullptr) {
-        _instance = std::shared_ptr<CommClient>(new CommClient(parent));
+        try {
+            _instance = std::shared_ptr<CommClient>(new CommClient(parent));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     return _instance;
 }
 
-CommClient::CommClient(QObject *parent)
-    : QObject(parent),
-      _requestWorkerThread(new QThread()),
-      _requestWorker(new Worker()),
-      _tcpConnection(new QTcpSocket()),
-      _buffer(QByteArray()) {
+CommClient::CommClient(QObject *parent) :
+    QObject(parent), _requestWorkerThread(new QtLoggingThread()), _requestWorker(new Worker()), _tcpConnection(new QTcpSocket()),
+    _buffer(QByteArray()) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);
     connect(_requestWorkerThread, &QThread::started, _requestWorker, &Worker::onStart);
@@ -110,9 +111,9 @@ bool CommClient::sendRequest(int id, RequestNum num, const QByteArray &params) {
     }
 
     QJsonObject requestObj;
-    requestObj[MSG_TYPE] = MsgType::REQUEST;
+    requestObj[MSG_TYPE] = toInt(MsgType::REQUEST);
     requestObj[MSG_REQUEST_ID] = id;
-    requestObj[MSG_REQUEST_NUM] = num;
+    requestObj[MSG_REQUEST_NUM] = toInt(num);
     requestObj[MSG_REQUEST_PARAMS] = QString(params.toBase64());
 
     QJsonDocument requestDoc(requestObj);
@@ -121,7 +122,7 @@ bool CommClient::sendRequest(int id, RequestNum num, const QByteArray &params) {
     try {
         qCDebug(lcCommClient()) << "Snd rqst" << id << num;
 
-        _tcpConnection->write(KDC::CommonUtility::IntToArray(request.size()));
+        _tcpConnection->write(KDC::CommonUtility::toQByteArray(static_cast<int>(request.size())));
         _tcpConnection->write(request);
 #ifdef Q_OS_WIN
         _tcpConnection->flush();
@@ -147,18 +148,18 @@ void CommClient::onReadyRead() {
 
         while (_buffer.size()) {
             // Read size
-            if (_buffer.size() < (int)sizeof(qint32)) {
+            if (_buffer.size() < (int) sizeof(qint32)) {
                 break;
             }
 
-            int size = CommonUtility::ArrayToInt(_buffer.mid(0, (qint32)sizeof(qint32)));
+            int size = CommonUtility::toInt(_buffer.mid(0, (qint32) sizeof(qint32)));
 
             // Read data
-            if (_buffer.size() < (int)sizeof(qint32) + size) {
+            if (_buffer.size() < (int) sizeof(qint32) + size) {
                 break;
             }
 
-            _buffer.remove(0, (int)sizeof(qint32));
+            _buffer.remove(0, (int) sizeof(qint32));
             QByteArray data = _buffer.mid(0, size);
             _buffer.remove(0, size);
 
@@ -176,13 +177,13 @@ void CommClient::onReadyRead() {
             }
 
             QJsonObject msgObj = msgDoc.object();
-            if (msgObj[MSG_TYPE].toInt() == MsgType::REPLY) {
+            if (msgObj[MSG_TYPE].toInt() == toInt(MsgType::REPLY)) {
                 const int id(msgObj[MSG_REPLY_ID].toInt());
                 const QByteArray result(QByteArray::fromBase64(msgObj[MSG_REPLY_RESULT].toString().toUtf8()));
 
                 // Add reply to worker queue
                 _requestWorker->addReply(id, result);
-            } else if (msgObj[MSG_TYPE].toInt() == MsgType::SIGNAL) {
+            } else if (msgObj[MSG_TYPE].toInt() == toInt(MsgType::SIGNAL)) {
                 const int id(msgObj[MSG_SIGNAL_ID].toInt());
                 const SignalNum num(static_cast<SignalNum>(msgObj[MSG_SIGNAL_NUM].toInt()));
                 const QByteArray params(QByteArray::fromBase64(msgObj[MSG_SIGNAL_PARAMS].toString().toUtf8()));
@@ -216,16 +217,16 @@ void CommClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     }
 }
 
-void CommClient::onSendRequest(int id, /*RequestNum*/ int num, const QByteArray &params) {
-    QTimer::singleShot(0, this, [=]() {
-        if (!sendRequest(id, (RequestNum)num, params)) {
+void CommClient::onSendRequest(int id, RequestNum num, const QByteArray &params) {
+    QTimer::singleShot(0, this, [this, id, num, params]() {
+        if (!sendRequest(id, num, params)) {
             emit sendError(id);
         }
     });
 }
 
-void CommClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params) {
-    QTimer::singleShot(0, this, [=]() { emit signalReceived(id, num, params); });
+void CommClient::onSignalReceived(int id, SignalNum num, const QByteArray &params) {
+    QTimer::singleShot(0, this, [this, id, num, params]() { emit signalReceived(id, num, params); });
 }
 
 CommClient::~CommClient() {
@@ -234,7 +235,8 @@ CommClient::~CommClient() {
     }
 }
 
-bool CommClient::execute(RequestNum num, const QByteArray &params, QByteArray &results, int timeout /*= COMM_SHORT_TIMEOUT*/) {
+bool CommClient::execute(const RequestNum num, const QByteArray &params, QByteArray &results,
+                         const int timeout /*= COMM_SHORT_TIMEOUT*/) {
     if (!_tcpConnection) {
         return false;
     }
@@ -279,6 +281,16 @@ bool CommClient::execute(RequestNum num, const QByteArray &params, QByteArray &r
     return ret;
 }
 
+bool CommClient::execute(const RequestNum num, const QByteArray &params, const int timeout) {
+    QByteArray result;
+    return execute(num, params, result, timeout);
+}
+
+bool CommClient::execute(const RequestNum num, const int timeout) {
+    QByteArray results;
+    return execute(num, {}, results, timeout);
+}
+
 void CommClient::stop() {
     _requestWorker->stop();
 
@@ -295,7 +307,8 @@ void CommClient::stop() {
         if (_tcpConnection->isOpen()) {
             _tcpConnection->close();
         }
-        _tcpConnection->deleteLater();
+        // Test again the pointer value since it might has been set to nullptr in CommClient::onDisconnected()
+        if (_tcpConnection) _tcpConnection->deleteLater();
     }
 
     _instance = nullptr;
@@ -398,4 +411,4 @@ void Worker::onStart() {
     qCDebug(lcCommClient) << "Worker ended";
 }
 
-}  // namespace KDC
+} // namespace KDC
