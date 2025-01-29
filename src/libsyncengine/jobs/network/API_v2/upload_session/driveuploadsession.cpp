@@ -37,7 +37,7 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driv
 }
 
 DriveUploadSession::~DriveUploadSession() {
-    if (!_vfs) return;
+    if (!_vfs || isAborted()) return;
     if (ExitInfo exitInfo = _vfs->forceStatus(getFilePath(), false, 100, true); !exitInfo) {
         LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()) << L" : " << exitInfo);
     }
@@ -110,10 +110,4 @@ bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessi
 
     return true;
 }
-
-void DriveUploadSession::abort() {
-    AbstractUploadSession::abort();
-    setVfsForceStatusCallback(nullptr);
-}
-
 } // namespace KDC

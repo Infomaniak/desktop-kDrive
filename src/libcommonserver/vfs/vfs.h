@@ -414,7 +414,7 @@ class VfsOff : public Vfs {
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
         void exclude(const SyncPath &) override { /*VfsOff*/ }
         bool isExcluded(const SyncPath &) override { return false; }
-        bool fileStatusChanged(const SyncPath &, KDC::SyncFileStatus) final { return true; }
+        bool fileStatusChanged(const SyncPath &, KDC::SyncFileStatus) override { return true; }
 
         void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
         void dehydrate(const SyncPath &) override { /*VfsOff*/ }

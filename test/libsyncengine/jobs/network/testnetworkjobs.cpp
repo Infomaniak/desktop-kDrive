@@ -53,6 +53,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 
 #include <iostream>
 
@@ -856,18 +857,32 @@ void TestNetworkJobs::testUploadAborted() {
     const SyncPath localFilePath = temporaryDirectory.path() / bigFileName;
     createBigTextFile(localFilePath);
 
-    const std::shared_ptr<UploadJob> job = std::make_shared<UploadJob>(nullptr, _driveDbId, localFilePath,
-                                                                       localFilePath.filename().native(), remoteTmpDir.id(), 0);
+    auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    bool forceStatusCalled = false;
+    vfs->setForceStatusMock([&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
+                                                 [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
+        forceStatusCalled = true;
+        return ExitCode::Ok;
+    });
+
+    auto job =
+            std::make_shared<UploadJob>(vfs, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
     JobManager::instance()->queueAsyncJob(job);
 
-    Utility::msleep(1000); // Wait 1sec
-
+    int counter = 0;
+    while (!job->isRunning()) {
+        Utility::msleep(10);
+        CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
+    }
     job->abort();
 
     Utility::msleep(1000); // Wait 1sec
 
     NodeId newNodeId = job->nodeId();
     CPPUNIT_ASSERT(newNodeId.empty());
+
+    job.reset();
+    CPPUNIT_ASSERT_MESSAGE("forceStatus should not be called after an aborted UploadSession", !forceStatusCalled);
 }
 
 void TestNetworkJobs::testDriveUploadSessionConstructorException() {
@@ -1028,20 +1043,33 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
 
     LOG_DEBUG(Log::instance()->getLogger(),
               "$$$$$ testDriveUploadSessionSynchronousAborted - " << _nbParalleleThreads << " threads");
-    std::shared_ptr<DriveUploadSession> DriveUploadSessionJob = std::make_shared<DriveUploadSession>(
-            nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1);
+
+    auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    bool forceStatusCalled = false;
+    vfs->setForceStatusMock([&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
+                                                 [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
+        forceStatusCalled = true;
+        return ExitCode::Ok;
+    });
+
+    auto DriveUploadSessionJob = std::make_shared<DriveUploadSession>(
+            vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1);
     JobManager::instance()->queueAsyncJob(DriveUploadSessionJob);
 
-    Utility::msleep(1000); // Wait 1sec
-
+    int counter = 0;
+    while (!DriveUploadSessionJob->isRunning()) {
+        Utility::msleep(10);
+        CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
+    }
     DriveUploadSessionJob->abort();
-    CPPUNIT_ASSERT(!DriveUploadSessionJob->hasVfsForceStatusCallback());
-
 
     Utility::msleep(1000); // Wait 1sec
 
     NodeId newNodeId = DriveUploadSessionJob->nodeId();
     CPPUNIT_ASSERT(newNodeId.empty());
+
+    DriveUploadSessionJob.reset(); // Ensure forceStatus is not called after the job is aborted.
+    CPPUNIT_ASSERT_MESSAGE("forceStatus should not be called after an aborted UploadSession", !forceStatusCalled);
 }
 
 void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
@@ -1052,13 +1080,24 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
     const SyncPath localFilePath = temporaryDirectory.path() / bigFileName;
     createBigTextFile(localFilePath);
 
+    auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    bool forceStatusCalled = false;
+    vfs->setForceStatusMock([&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
+                                                 [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
+        forceStatusCalled = true;
+        return ExitCode::Ok;
+    });
 
-    std::shared_ptr<DriveUploadSession> DriveUploadSessionJob =
-            std::make_shared<DriveUploadSession>(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
+    auto DriveUploadSessionJob =
+            std::make_shared<DriveUploadSession>(vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
                                                  remoteTmpDir.id(), 12345, false, _nbParalleleThreads);
     JobManager::instance()->queueAsyncJob(DriveUploadSessionJob);
 
-    Utility::msleep(1000); // Wait 1sec
+    int counter = 0;
+    while (!DriveUploadSessionJob->isRunning()) {
+        Utility::msleep(10);
+        CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
+    }
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted - Abort");
     DriveUploadSessionJob->abort();
@@ -1075,6 +1114,9 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
     CPPUNIT_ASSERT(dataArray);
     CPPUNIT_ASSERT(dataArray->empty());
+
+    DriveUploadSessionJob.reset(); // Ensure forceStatus is not called after the job is aborted.
+    CPPUNIT_ASSERT_MESSAGE("forceStatus should not be called after an aborted UploadSession", !forceStatusCalled);
 }
 
 void TestNetworkJobs::testGetAppVersionInfo() {

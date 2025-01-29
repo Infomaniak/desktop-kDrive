@@ -73,7 +73,6 @@ class AbstractJob : public Poco::Runnable {
 
         virtual void abort();
         bool isAborted() const;
-        bool hasVfsForceStatusCallback() const noexcept { return _vfsForceStatus != nullptr; };
 
         [[nodiscard]] inline bool bypassCheck() const { return _bypassCheck; }
         inline void setBypassCheck(bool newBypassCheck) { _bypassCheck = newBypassCheck; }

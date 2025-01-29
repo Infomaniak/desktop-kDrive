@@ -69,7 +69,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testDuplicateRenameMove);
         CPPUNIT_TEST(testRename);
         CPPUNIT_TEST(testUpload);
-        //        CPPUNIT_TEST(testUploadAborted);
+        CPPUNIT_TEST(testUploadAborted);
         CPPUNIT_TEST(testDriveUploadSessionConstructorException);
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);

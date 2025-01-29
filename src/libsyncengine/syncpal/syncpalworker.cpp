@@ -582,7 +582,7 @@ bool SyncPalWorker::resetVfsFilesStatus() {
           
             if (!isPlaceholder) continue;
 
-            PinState pinState = _syncPal->_syncPal->vfs()->pinState(dirIt->path()));
+            PinState pinState = _syncPal->vfs()->pinState(dirIt->path());
 
             if (isSyncing) {
                 // Force status to dehydrated

@@ -413,10 +413,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
         }
 
         if (ExitInfo exitInfo = generateCreateJob(syncOp, job, hydrating); !exitInfo) {
-           LOGW_SYNCPAL_WARN(_logger,
-                            L"Failed to generate create job for: "
-                                << SyncName2WStr(syncOp->affectedNode()->name())
-                                << L" " << exitInfo);
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate create job for: " << SyncName2WStr(syncOp->affectedNode()->name())
+                                                                              << L" " << exitInfo);
             return exitInfo;
         }
 
@@ -593,12 +591,9 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 }
             }
 
-            PinState pinState = PinState::Unknown;
-            if (_syncPal->vfsPinState(absoluteLocalFilePath, pinState)) {
-                hydrating = pinState == PinState::AlwaysLocal;
-            } else {
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to get pin state for " << Utility::formatSyncPath(absoluteLocalFilePath));
-            }
+            PinState pinState = _syncPal->vfs()->pinState(absoluteLocalFilePath);
+            hydrating = pinState == PinState::AlwaysLocal;
+
         } else {
             if (syncOp->affectedNode()->type() == NodeType::Directory) {
                 job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath);
@@ -1171,8 +1166,8 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             const NodeId fileId = correspondingNode->id().has_value() ? *correspondingNode->id() : std::string();
             const NodeId destDirId = remoteParentNode->id().has_value() ? *remoteParentNode->id() : std::string();
             try {
-                job = std::make_shared<MoveJob>(_syncPal->vfs(), _syncPal->driveDbId(), absoluteDestLocalFilePath, fileId, destDirId,
-                                                syncOp->newName());
+                job = std::make_shared<MoveJob>(_syncPal->vfs(), _syncPal->driveDbId(), absoluteDestLocalFilePath, fileId,
+                                                destDirId, syncOp->newName());
             } catch (std::exception &e) {
                 LOG_SYNCPAL_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
                 return ExitCode::DataError;
