@@ -106,6 +106,7 @@
                             @"com.apple.appkit.xpc.openAndSavePanelService",    // openAndSavePanelService
                             @"com.apple.appkit.xpc.documentPopoverViewService", // documentPopoverViewService
                             @"com.apple.QuickLookThumbnailing.extension.ThumbnailExtension-macOS",  // QuickLookThumbnailing
+                            @"com.apple.quicklook.thumbnail",                   // Quicklook Thumbnail
                             @"com.apple.Terminal",                              // Terminal
                             @"com.apple.system_profiler",                       // System profiler
                             @"com.apple.path_helper",                           // help manage the PATH environment variable,
