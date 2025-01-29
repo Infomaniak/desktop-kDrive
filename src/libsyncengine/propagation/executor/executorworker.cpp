@@ -1028,45 +1028,42 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
 
     bool isPlaceholder = false;
     bool isHydrated = false;
-    bool isSyncingTmp = false;
     int progress = 0;
-    if (ExitInfo exitInfo = _syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncingTmp, progress); !exitInfo) {
+    if (ExitInfo exitInfo = _syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
         return exitInfo;
     }
 
-    if (syncOp->targetSide() == ReplicaSide::Remote) {
-        if (isPlaceholder && !isHydrated) {
-            ignoreItem = true;
-            return fixModificationDate(syncOp, absolutePath);
-        }
-        return ExitCode::Ok;
+    switch (syncOp->targetSide()) {
+        case ReplicaSide::Remote:
+            if (isPlaceholder && !isHydrated) {
+                ignoreItem = true;
+                return fixModificationDate(syncOp, absolutePath);
+            }
+            break;
+        case ReplicaSide::Local:
+            if (isPlaceholder && !isSyncing) {
+                if (!isHydrated) {
+                    // Update metadata
+                    std::string error;
+                    if (ExitInfo exitInfo = _syncPal->vfsUpdateMetadata(
+                                absolutePath,
+                                syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
+                                syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
+                                syncOp->affectedNode()->size(),
+                                syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string());
+                        !exitInfo) {
+                        return exitInfo;
+                    }
+                } // else: the file is hydrated, we can proceed with download
+            }
+            break;
+        default:
+            LOGW_WARN(_logger, L"Invalid target side: " << syncOp->targetSide());
+            return ExitCode::LogicError;
     }
 
-    if (syncOp->targetSide() == ReplicaSide::Local) {
-        if (isPlaceholder) {
-            if (isSyncingTmp) {
-                // Ignore this item until it is synchronized
-                isSyncing = true;
-            } else if (!isHydrated) {
-                // Update metadata
-                std::string error;
-                if (ExitInfo exitInfo = _syncPal->vfsUpdateMetadata(
-                            absolutePath,
-                            syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
-                            syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
-                            syncOp->affectedNode()->size(),
-                            syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string());
-                    !exitInfo) {
-                    return exitInfo;
-                }
-            } // else: the file is hydrated, we can proceed with download
-        }
-        return ExitCode::Ok;
-    }
-
-    LOGW_WARN(_logger, L"Invalid target side: " << syncOp->targetSide());
-    return ExitCode::LogicError;
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
