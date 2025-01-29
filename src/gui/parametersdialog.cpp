@@ -812,6 +812,10 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
                 return tr(
                         "Can't access item.<br>"
                         "Please fix the read and write permissions.");
+            } else if (errorInfo.exitCause() == ExitCause::NotEnoughDiskSpace) {
+                return tr(
+                        "There is not enough space left on your disk.<br>"
+                        "The download has been canceled.");
             }
             return tr("System error.");
         }
