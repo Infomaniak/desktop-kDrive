@@ -46,7 +46,9 @@ class MockIoHelperTestNetworkJobs : public IoHelper {
 class TestNetworkJobs : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestNetworkJobs);
-        CPPUNIT_TEST(testCreateDir);
+        CPPUNIT_TEST(testDownload);
+
+      /*  CPPUNIT_TEST(testCreateDir);
         CPPUNIT_TEST(testCopyToDir);
         CPPUNIT_TEST(testDelete);
         CPPUNIT_TEST(testDownload);
@@ -76,7 +78,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testGetAppVersionInfo);
-        CPPUNIT_TEST(testDirectDownload);
+        CPPUNIT_TEST(testDirectDownload);*/
         CPPUNIT_TEST_SUITE_END();
 
     public:

@@ -565,6 +565,9 @@ PinState VfsWin::pinState(const SyncPath &relativePathStd) {
         case VFS_PIN_STATE_UNSPECIFIED:
             state = PinState::Unspecified;
             break;
+        case VFS_PIN_STATE_EXCLUDED:
+            state = PinState::Unspecified;
+            break;
         default:
             assert(false && "Invalid pin state");
             LOGW_WARN(logger(),

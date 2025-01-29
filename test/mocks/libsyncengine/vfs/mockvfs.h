@@ -53,10 +53,10 @@ class MockVfs : public T {
         ExitInfo convertToPlaceholder(const SyncPath &path, const KDC::SyncFileItem &item) override {
             return _convertToPlaceholder ? _convertToPlaceholder(path, item) : T::convertToPlaceholder(path, item);
         }
-        ExitInfo updateFetchStatus(const SyncPath &path, const SyncPath &path2, int64_t size, bool &isSyncing,
-                                   bool &isHydrated) override {
-            return _updateFetchStatus ? _updateFetchStatus(path, path2, size, isSyncing, isHydrated)
-                                      : T::updateFetchStatus(path, path2, size, isSyncing, isHydrated);
+        ExitInfo updateFetchStatus(const SyncPath &path, const SyncPath &path2, int64_t received, bool &canceled,
+                                   bool &finished) override {
+            return _updateFetchStatus ? _updateFetchStatus(path, path2, received, canceled, finished)
+                                      : T::updateFetchStatus(path, path2, received, canceled, finished);
         }
 
         ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) override {

@@ -584,12 +584,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
 
     std::ofstream output;
     do {
-#ifdef _WIN32
-        const std::string tmpFileName = tmpnam(nullptr);
-#else
         const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-#endif
-
         _tmpPath = tmpDirectoryPath / tmpFileName;
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
