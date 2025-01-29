@@ -301,7 +301,7 @@ bool Placeholders::getInfo(const PCWSTR path, CF_PLACEHOLDER_STANDARD_INFO &info
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
         // Links are not managed by MS Cloud File API
-        info.PinState = CF_PIN_STATE_UNSPECIFIED;
+        info.PinState = CF_PIN_STATE_EXCLUDED;
         return true;
     }
 
