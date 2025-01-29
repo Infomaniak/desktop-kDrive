@@ -18,7 +18,7 @@
 
 #include "testlitesyncextconnector.h"
 
-#include "server/vfs/mac/litesyncextconnector.h"
+#include "libcommonserver/vfs/mac/litesyncextconnector.h"
 
 using namespace CppUnit;
 

@@ -576,6 +576,8 @@ std::string toString(const PinState e) {
             return "OnlineOnly";
         case PinState::Unspecified:
             return "Unspecified";
+        case PinState::Unknown:
+            return "Unknown";
         default:
             return noConversionStr;
     }

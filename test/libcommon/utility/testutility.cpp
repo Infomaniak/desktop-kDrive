@@ -19,6 +19,7 @@
 #include "config.h"
 #include "testutility.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
 #include <iostream>
@@ -299,6 +300,39 @@ void TestUtility::testCurrentVersion() {
     CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}\.{1}\d{1,2}\.{1}\d{1,2}\.{1}\d{0,8}$)")));
 }
 
+SourceLocation testSourceLocationFooFunc(uint32_t &constructLine, SourceLocation location = SourceLocation::currentLoc()) {
+    constructLine = __LINE__ - 1;
+    return location;
+}
+
+void TestUtility::testSourceLocation() {
+    SourceLocation location = SourceLocation::currentLoc();
+    uint32_t correctLine = __LINE__ - 1;
+
+    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
+    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
+
+#ifdef SRC_LOC_AVALAIBALE
+    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
+#else
+    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
+#endif
+
+    // Test as a default argument
+    uint32_t fooFuncLine = 0;
+    location = testSourceLocationFooFunc(fooFuncLine);
+    correctLine = __LINE__ - 1;
+
+    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
+#ifdef SRC_LOC_AVALAIBALE
+    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
+    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
+#else
+    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
+    CPPUNIT_ASSERT_EQUAL(fooFuncLine, location.line());
+#endif
+}
+
 void TestUtility::testGenerateRandomStringAlphaNum() {
     {
         int err = 0;
@@ -336,6 +370,16 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
         }
         CPPUNIT_ASSERT(err == 0);
     }
+}
+void TestUtility::testLanguageCode() {
+    CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(Language::English).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("fr"), CommonUtility::languageCode(Language::French).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("de"), CommonUtility::languageCode(Language::German).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
+    // English is the default language and is always returned of the provided language code is unknown.
+    CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(Language::Default).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(static_cast<Language>(18)).toStdString());
 }
 
 #ifdef _WIN32

@@ -75,13 +75,12 @@ class ExecutorWorker : public OperationProcessor {
         void initProgressManager();
         void initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
 
-        ExitInfo handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored);
+        ExitInfo handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored, bool &hydrating);
         ExitInfo checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
-        ExitInfo generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
+        ExitInfo generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hydrating) noexcept;
         ExitInfo checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath);
         ExitInfo convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated);
-        ExitInfo processCreateOrConvertToPlaceholderError(const SyncPath &relativeLocalPath, bool create);
         ExitInfo handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &ignored);
         ExitInfo generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
 
@@ -150,10 +149,10 @@ class ExecutorWorker : public OperationProcessor {
 
         // This methode will return ExitCode::Ok if the error is safely managed and the executor can continue. Else, it will
         // return opsExitInfo.
-        ExitInfo handleExecutorError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
-        ExitInfo handleOpsFileAccessError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
-        ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, ExitInfo opsExitInfo);
-        ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, ExitInfo opsExitInfo);
+        ExitInfo handleExecutorError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsLocalFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsFileNotFound(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
+        ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
         ExitInfo removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, OperationType opType);

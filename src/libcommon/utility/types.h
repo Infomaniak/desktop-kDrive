@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
 
 #include <string>
@@ -28,6 +27,7 @@
 #include <variant>
 #include <qdebug.h>
 #include <signal.h>
+#include "sourcelocation.h"
 
 namespace KDC {
 
@@ -230,25 +230,37 @@ enum class ExitCause {
     MoveToTrashFailed,
     InvalidName,
     LiteSyncNotAllowed,
+    NotPlaceHolder,
     NetworkTimeout,
     SocketsDefuncted, // macOS: sockets defuncted by kernel
     NotFound,
     QuotaExceeded,
     FullListParsingError,
     OperationCanceled,
-    ShareLinkAlreadyExists
+    ShareLinkAlreadyExists,
+    InvalidArgument
 };
 std::string toString(ExitCause e);
 
 struct ExitInfo {
         ExitInfo() = default;
-        constexpr ExitInfo(const ExitCode &code, const ExitCause &cause) : _code(code), _cause(cause) {}
-        ExitInfo(const ExitCode &code) : _code(code) {}
+        constexpr ExitInfo(const ExitCode &code, const ExitCause &cause,
+                           const SourceLocation srcLoc = SourceLocation::currentLoc()) :
+            _code(code),
+            _cause(cause), _srcLoc(srcLoc) {}
+
+        ExitInfo(const ExitCode &code, const SourceLocation srcLoc = SourceLocation::currentLoc()) :
+            _code(code), _srcLoc(srcLoc) {}
+
         const ExitCode &code() const { return _code; }
         const ExitCause &cause() const { return _cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
-        explicit operator std::string() const { return "ExitInfo{" + toString(code()) + ", " + toString(cause()) + "}"; }
+        explicit operator std::string() const {
+            // Example: "ExitInfo{SystemError-NotFound from (file.cpp:42[functionName])}"
+            // Example: "ExitInfo{Ok-Unknown}"
+            return "ExitInfo{" + toString(code()) + "-" + toString(cause()) + srcLocStr() + "}";
+        }
         constexpr operator bool() const { return _code == ExitCode::Ok; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
@@ -256,6 +268,12 @@ struct ExitInfo {
     private:
         ExitCode _code{ExitCode::Unknown};
         ExitCause _cause{ExitCause::Unknown};
+        SourceLocation _srcLoc;
+
+        std::string srcLocStr() const {
+            if (_code == ExitCode::Ok) return "";
+            return " from (" + _srcLoc.toString() + ")";
+        }
 };
 std::string toString(ExitInfo e);
 
@@ -387,7 +405,14 @@ std::string toString(NotificationsDisabled e);
 enum class VirtualFileMode { Off, Win, Mac, Suffix };
 std::string toString(VirtualFileMode e);
 
-enum class PinState { Inherited, AlwaysLocal, OnlineOnly, Unspecified };
+enum class PinState {
+    Inherited, // The pin state is inherited from the parent folder. It can only be set and should never be returned by a getter.
+    AlwaysLocal, // The content is always available on the device.
+    OnlineOnly, // The content resides only on the server and is downloaded on demand.
+    Unspecified, // Indicates that the system is free to (de)hydrate the content as needed.
+    Unknown, // Represents an uninitialized state or an error. It has no equivalent in filesystems.
+};
+
 std::string toString(PinState e);
 
 enum class ProxyType {
