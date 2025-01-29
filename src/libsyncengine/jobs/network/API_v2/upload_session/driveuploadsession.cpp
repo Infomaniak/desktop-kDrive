@@ -30,8 +30,8 @@ DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> sy
 DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
                                        const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
                                        bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/) :
-    AbstractUploadSession(filepath, filename, nbParalleleThread),
-    _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime), _remoteParentDirId(remoteParentDirId) {
+    AbstractUploadSession(filepath, filename, nbParalleleThread), _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime),
+    _remoteParentDirId(remoteParentDirId) {
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
 }
@@ -111,4 +111,10 @@ bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessi
 
     return true;
 }
+
+void DriveUploadSession::abort() {
+    AbstractUploadSession::abort();
+    setVfsForceStatusCallback(nullptr);
+}
+
 } // namespace KDC
