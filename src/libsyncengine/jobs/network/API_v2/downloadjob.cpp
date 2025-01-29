@@ -557,14 +557,15 @@ bool DownloadJob::moveTmpFile(bool &restartSync) {
 }
 
 bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace) {
-    const SyncPath &smallerDir =
-            Utility::getFreeDiskSpace(tmpDirPath) < Utility::getFreeDiskSpace(destDirPath) ? tmpDirPath : destDirPath;
+    auto tmpDirSize = Utility::Utility::getFreeDiskSpace(tmpDirPath);
+    auto destDirSize = Utility::Utility::getFreeDiskSpace(destDirPath);
 
-    if (const int64_t freeBytes = Utility::getFreeDiskSpace(smallerDir); freeBytes >= 0) {
+    if (const auto &freeBytes = std::min(tmpDirSize, destDirSize); freeBytes >= 0) {
         if (freeBytes < neededPlace + Utility::freeDiskSpaceLimit()) {
             return false;
         }
     } else {
+        const SyncPath &smallerDir = tmpDirSize < destDirSize ? tmpDirPath : destDirPath;
         LOGW_WARN(_logger, L"Could not determine free space available at " << Utility::formatSyncPath(smallerDir));
     }
     return true;
