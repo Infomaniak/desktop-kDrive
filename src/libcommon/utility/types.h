@@ -246,8 +246,7 @@ struct ExitInfo {
         ExitInfo() = default;
         constexpr ExitInfo(const ExitCode &code, const ExitCause &cause,
                            const SourceLocation srcLoc = SourceLocation::currentLoc()) :
-            _code(code),
-            _cause(cause), _srcLoc(srcLoc) {}
+            _code(code), _cause(cause), _srcLoc(srcLoc) {}
 
         ExitInfo(const ExitCode &code, const SourceLocation srcLoc = SourceLocation::currentLoc()) :
             _code(code), _srcLoc(srcLoc) {}
@@ -405,7 +404,14 @@ std::string toString(NotificationsDisabled e);
 enum class VirtualFileMode { Off, Win, Mac, Suffix };
 std::string toString(VirtualFileMode e);
 
-enum class PinState { Inherited, AlwaysLocal, OnlineOnly, Unspecified };
+enum class PinState {
+    Inherited, // The pin state is inherited from the parent folder. It can only be set and should never be returned by a getter.
+    AlwaysLocal, // The content is always available on the device.
+    OnlineOnly, // The content resides only on the server and is downloaded on demand.
+    Unspecified, // Indicates that the system is free to (de)hydrate the content as needed.
+    Unknown, // Represents an uninitialized state or an error. It has no equivalent in filesystems.
+};
+
 std::string toString(PinState e);
 
 enum class ProxyType {

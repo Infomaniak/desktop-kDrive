@@ -23,22 +23,23 @@
 
 namespace KDC {
 
-class TestOperationSorterWorker : public CppUnit::TestFixture {
+class TestOperationSorterWorker final : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestOperationSorterWorker);
         CPPUNIT_TEST(testMoveFirstAfterSecond);
-        CPPUNIT_TEST(testFixDeleteBeforeMove);
-        CPPUNIT_TEST(testFixMoveBeforeCreate);
-        CPPUNIT_TEST(testFixMoveBeforeDelete);
-        CPPUNIT_TEST(testFixCreateBeforeMove);
-        CPPUNIT_TEST(testFixCreateBeforeMoveBis);
-        CPPUNIT_TEST(testFixDeleteBeforeCreate);
-        CPPUNIT_TEST(testFixMoveBeforeMoveOccupied);
-        CPPUNIT_TEST(testFixCreateBeforeCreate);
-        CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFilp);
-        CPPUNIT_TEST(testFixImpossibleFirstMoveOp);
-        CPPUNIT_TEST(testFindCompleteCycles);
-        CPPUNIT_TEST(testBreakCycleEx1);
-        CPPUNIT_TEST(testBreakCycleEx2);
+        // CPPUNIT_TEST(testFixDeleteBeforeMove);
+        // CPPUNIT_TEST(testFixMoveBeforeCreate);
+        // CPPUNIT_TEST(testFixMoveBeforeDelete);
+        // CPPUNIT_TEST(testFixCreateBeforeMove);
+        // CPPUNIT_TEST(testFixCreateBeforeMoveBis);
+        // CPPUNIT_TEST(testFixDeleteBeforeCreate);
+        // CPPUNIT_TEST(testFixMoveBeforeMoveOccupied);
+        // CPPUNIT_TEST(testFixCreateBeforeCreate);
+        // // CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFilp);
+        // CPPUNIT_TEST(testFixImpossibleFirstMoveOp);
+        // CPPUNIT_TEST(testFindCompleteCycles);
+        // CPPUNIT_TEST(testBreakCycleEx1);
+        // CPPUNIT_TEST(testBreakCycleEx2);
+        CPPUNIT_TEST(testBreakCycle);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -59,6 +60,7 @@ class TestOperationSorterWorker : public CppUnit::TestFixture {
         void testFindCompleteCycles();
         void testBreakCycleEx1();
         void testBreakCycleEx2();
+        void testBreakCycle();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;

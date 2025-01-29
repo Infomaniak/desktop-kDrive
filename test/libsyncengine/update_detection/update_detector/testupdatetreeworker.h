@@ -31,6 +31,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testUpdateTmpFileNode);
         CPPUNIT_TEST(testHandleCreateOperationsWithSamePath);
         CPPUNIT_TEST(testSearchForParentNode);
+        CPPUNIT_TEST(testGetNewPathAfterMove);
         CPPUNIT_TEST(testStep1);
         CPPUNIT_TEST(testStep2);
         CPPUNIT_TEST(testStep3);
@@ -67,6 +68,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
         void testUpdateTmpFileNode();
         void testHandleCreateOperationsWithSamePath();
         void testSearchForParentNode();
+        void testGetNewPathAfterMove();
 
         // Test with already existing UpdateTree
         void testStep1();
