@@ -30,7 +30,7 @@ ISyncWorker::~ISyncWorker() {
     if (_isRunning) {
         ISyncWorker::stop();
     }
-
+    waitForExit();
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " destroyed");
     log4cplus::threadCleanup();
 }
