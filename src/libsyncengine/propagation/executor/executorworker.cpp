@@ -1055,6 +1055,7 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                         !exitInfo) {
                         return exitInfo;
                     }
+                    syncOp->setOmit(true);
                 } // else: the file is hydrated, we can proceed with download
             }
             break;
