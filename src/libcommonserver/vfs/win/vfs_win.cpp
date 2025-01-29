@@ -108,13 +108,22 @@ void VfsWin::stopImpl(bool unregister) {
 
 void VfsWin::dehydrate(const SyncPath &path) {
     LOGW_DEBUG(logger(), L"dehydrate: " << Utility::formatSyncPath(path));
+    SyncPath relativePath = CommonUtility::relativePath(_vfsSetupParams._localPath, path);
+
+    // Check file status
+    SyncFileStatus status;
+    _syncFileStatus(_vfsSetupParams._syncDbId, relativePath, status);
+    if (status == SyncFileStatus::Unknown) {
+        // The file is not synchronized, do nothing
+        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatSyncPath(path));
+        return;
+    }
 
     // Dehydrate file
     if (vfsDehydratePlaceHolder(path.native().c_str()) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsDehydratePlaceHolder: " << Utility::formatSyncPath(path));
     }
 
-    SyncPath relativePath = CommonUtility::relativePath(_vfsSetupParams._localPath, path);
     _setSyncFileSyncing(_vfsSetupParams._syncDbId, relativePath, false);
 }
 
