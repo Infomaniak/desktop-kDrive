@@ -110,4 +110,10 @@ bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessi
 
     return true;
 }
+
+void DriveUploadSession::abort() {
+    AbstractUploadSession::abort();
+    setVfsForceStatusCallback(nullptr);
+}
+
 } // namespace KDC
