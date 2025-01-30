@@ -1154,8 +1154,8 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
-    _syncPal->vfsStatus(absoluteOriginLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress);
-    _syncPal->vfsForceStatus(absoluteDestLocalFilePath, false, 100, isHydrated);
+    _syncPal->vfs()->status(absoluteOriginLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress);
+    _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, false, 100, isHydrated);
 
     if (job->exitCode() == ExitCode::Ok && syncOp->conflict().type() != ConflictType::None) {
         // Conflict fixing job finished successfully
