@@ -281,6 +281,14 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     _instance->_isSentryActivated = true;
 }
 
+void Handler::init(const std::shared_ptr<Handler> &initializedHandler) {
+    if (_instance) {
+        assert(false && "Handler already initialized");
+        return;
+    }
+    _instance = initializedHandler;
+}
+
 void Handler::setAuthenticatedUser(const SentryUser &user) {
     std::scoped_lock lock(_mutex);
     _authenticatedUser = user;
@@ -292,8 +300,8 @@ void Handler::setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level) 
     _globalConfidentialityLevel = level;
 }
 
-void Handler::_captureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
-                              const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
+void Handler::privateCaptureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
+                                    const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
     if (!_isSentryActivated) return;
 
     std::scoped_lock lock(_mutex);

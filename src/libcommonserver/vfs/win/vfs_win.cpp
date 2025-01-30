@@ -39,7 +39,7 @@ namespace KDC {
 VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
-
+    sentry::Handler::init(vfsSetupParams._sentryHandler);
     TraceCbk debugCallback = std::bind(&VfsWin::debugCbk, this, std::placeholders::_1, std::placeholders::_2);
 
     Utility::setLogger(logger());
@@ -69,8 +69,7 @@ void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
             break;
         case TraceLevel::Error:
             LOGW_ERROR(logger(), msg);
-            if (_vfsSetupParams._sentryHandler)
-                _vfsSetupParams._sentryHandler->_captureMessage(sentry::Level::Error, "VfsWin::debugCbk", Utility::ws2s(msg));
+            sentry::Handler::captureMessage(sentry::Level::Error, "VfsWin::debugCbk", Utility::ws2s(msg));
             break;
     }
 }

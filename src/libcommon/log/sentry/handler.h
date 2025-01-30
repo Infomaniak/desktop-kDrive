@@ -67,6 +67,9 @@ class Handler {
         virtual ~Handler();
         static std::shared_ptr<Handler> instance();
         static void init(AppType appType, int breadCrumbsSize = 100);
+
+        // Allow to have a unique hanlder across the dlls.
+        static void init(const std::shared_ptr<Handler> &initializedHandler);
         void setAuthenticatedUser(const SentryUser &user);
         void setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level);
 
@@ -83,9 +86,8 @@ class Handler {
          */
         static void captureMessage(Level level, const std::string &title, const std::string &message,
                                    const SentryUser &user = SentryUser()) {
-            instance()->_captureMessage(level, title, message, user);
+            instance()->privateCaptureMessage(level, title, message, user);
         }
-        void _captureMessage(Level level, const std::string &title, std::string message, const SentryUser &user = SentryUser());
 
 
         // Performances monitoring
@@ -107,6 +109,8 @@ class Handler {
         void setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit);
         void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
         virtual void sendEventToSentry(const Level level, const std::string &title, const std::string &message) const;
+        void privateCaptureMessage(Level level, const std::string &title, std::string message,
+                                   const SentryUser &user = SentryUser());
 
 
     private:
