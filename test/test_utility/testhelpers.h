@@ -44,6 +44,7 @@ struct TestVariables {
         std::string remoteDirId;
         std::string remotePath;
         std::string apiToken;
+        SyncPath local8MoPartitionPath;
 
         TestVariables() {
             userId = loadEnvVariable("KDRIVE_TEST_CI_USER_ID");
@@ -52,6 +53,7 @@ struct TestVariables {
             remoteDirId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID");
             remotePath = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH");
             apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
+            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH");
         }
 };
 
