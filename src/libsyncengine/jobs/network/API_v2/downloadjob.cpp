@@ -69,7 +69,7 @@ DownloadJob::~DownloadJob() {
     if (!_vfs) return;
     if (_responseHandlingCanceled) {
         if (const ExitInfo exitInfo = _vfs->setPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+            LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
         // TODO: usefull ?
