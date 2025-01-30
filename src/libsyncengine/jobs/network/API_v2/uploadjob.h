@@ -43,6 +43,7 @@ class UploadJob : public AbstractTokenNetworkJob {
     protected:
         virtual bool canRun() override;
         virtual bool handleResponse(std::istream &is) override;
+        bool handleError(std::istream &is, const Poco::URI &uri) override;
 
     private:
         virtual std::string getSpecificUrl() override;

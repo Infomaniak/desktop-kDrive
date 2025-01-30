@@ -17,7 +17,6 @@
  */
 
 #include "uploadjob.h"
-#include "common/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
@@ -30,8 +29,8 @@ namespace KDC {
 
 UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
                      SyncTime modtime) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _filePath(filepath), _filename(filename),
-    _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _filePath(filepath), _filename(filename), _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -104,6 +103,19 @@ bool UploadJob::handleResponse(std::istream &is) {
                 return false;
             }
         }
+    }
+
+    return true;
+}
+
+
+bool UploadJob::handleError(std::istream &is, const Poco::URI &uri) {
+    if (!AbstractTokenNetworkJob::handleError(is, uri)) return false;
+
+    if (const auto errorCode = getNetworkErrorCode(_errorCode); errorCode == NetworkErrorCode::quotaExceededError) {
+        _exitCause = ExitCause::QuotaExceeded;
+        LOG_DEBUG(_logger, "Quota exceeded");
+        noRetry();
     }
 
     return true;
