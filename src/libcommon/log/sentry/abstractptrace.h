@@ -33,7 +33,6 @@ class AbstractPTrace {
         virtual void start() { (void) _start(); }
         virtual void stop(const PTraceStatus status = PTraceStatus::Ok) { _stop(status); }
         virtual void restart() { _restart(); }
-        bool PERFTEST_rateLimited() const { return rateLimited; }
     protected:
         explicit AbstractPTrace(const PTraceDescriptor &info) : _pTraceInfo(info) {};
         explicit AbstractPTrace(const PTraceDescriptor &info, const int dbId) : _pTraceInfo(info), _syncDbId(dbId) {};
@@ -41,22 +40,22 @@ class AbstractPTrace {
         // Start a new performance trace.
         inline AbstractPTrace &_start() {
             if (!checkCustomSampleRate()) {
-                rateLimited = true;
+                _rateLimited = true;
                 return *this;
             }
-            rateLimited = false;
-            //_pTraceId = sentry::Handler::instance()->startPTrace(_pTraceInfo, _syncDbId);
+            _rateLimited = false;
+            _pTraceId = sentry::Handler::instance()->startPTrace(_pTraceInfo, _syncDbId);
             return *this;
         }
 
         // Stop the performance trace.
         void _stop(const PTraceStatus status = PTraceStatus::Ok) noexcept {
-            if (rateLimited) return;
+            if (_rateLimited) return;
             if (_pTraceId) { // If the performance trace id is set, use it to stop the performance trace (faster).
-                //Handler::instance()->stopPTrace(_pTraceId, status);
+                Handler::instance()->stopPTrace(_pTraceId, status);
                 _pTraceId = 0;
             } else {
-                //Handler::instance()->stopPTrace(_pTraceInfo, _syncDbId, status);
+                Handler::instance()->stopPTrace(_pTraceInfo, _syncDbId, status);
             }
         }
 
@@ -72,7 +71,7 @@ class AbstractPTrace {
         PTraceDescriptor _pTraceInfo;
         int _syncDbId = -1;
 
-        bool rateLimited = false;
+        bool _rateLimited = false;
         bool checkCustomSampleRate() const {
             if (_pTraceInfo._customSampleRate >= 1.0) return true;
             static std::random_device rd;
