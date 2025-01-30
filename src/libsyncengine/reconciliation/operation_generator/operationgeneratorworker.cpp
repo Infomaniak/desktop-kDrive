@@ -116,7 +116,7 @@ void OperationGeneratorWorker::execute() {
     }
 
     if (_bytesToDownload > 0) {
-        const int64_t freeBytes = Utility::freeDiskSpace(_syncPal->localPath());
+        const int64_t freeBytes = Utility::getFreeDiskSpace(_syncPal->localPath());
         if (freeBytes >= 0) {
             if (freeBytes < _bytesToDownload + Utility::freeDiskSpaceLimit()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only " << freeBytes << L" B available at path "
