@@ -33,7 +33,7 @@ class AbstractPTrace {
         virtual void start() { (void) _start(); }
         virtual void stop(const PTraceStatus status = PTraceStatus::Ok) { _stop(status); }
         virtual void restart() { _restart(); }
-
+        bool PERFTEST_rateLimited() const { return rateLimited; }
     protected:
         explicit AbstractPTrace(const PTraceDescriptor &info) : _pTraceInfo(info) {};
         explicit AbstractPTrace(const PTraceDescriptor &info, const int dbId) : _pTraceInfo(info), _syncDbId(dbId) {};
@@ -45,7 +45,7 @@ class AbstractPTrace {
                 return *this;
             }
             rateLimited = false;
-            _pTraceId = sentry::Handler::instance()->startPTrace(_pTraceInfo, _syncDbId);
+            //_pTraceId = sentry::Handler::instance()->startPTrace(_pTraceInfo, _syncDbId);
             return *this;
         }
 
@@ -53,10 +53,10 @@ class AbstractPTrace {
         void _stop(const PTraceStatus status = PTraceStatus::Ok) noexcept {
             if (rateLimited) return;
             if (_pTraceId) { // If the performance trace id is set, use it to stop the performance trace (faster).
-                Handler::instance()->stopPTrace(_pTraceId, status);
+                //Handler::instance()->stopPTrace(_pTraceId, status);
                 _pTraceId = 0;
             } else {
-                Handler::instance()->stopPTrace(_pTraceInfo, _syncDbId, status);
+                //Handler::instance()->stopPTrace(_pTraceInfo, _syncDbId, status);
             }
         }
 
@@ -75,9 +75,9 @@ class AbstractPTrace {
         bool rateLimited = false;
         bool checkCustomSampleRate() const {
             if (_pTraceInfo._customSampleRate >= 1.0) return true;
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            std::uniform_real_distribution dis(0.0, 1.0);
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            static std::uniform_real_distribution dis(0.0, 1.0);
             return dis(gen) < _pTraceInfo._customSampleRate;
         }
 };
