@@ -389,48 +389,51 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
 
 void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveOccupied");
-    std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
-    std::unordered_set<UniqueId> moveOps2 = moveOps;
-    for (const auto &moveOpId: moveOps) {
-        SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+    const auto moveOpIds = _unsortedList.opListIdByType(OperationType::Move);
+    auto otherMoveOpIds = moveOpIds;
+    for (const auto &moveOpId: moveOpIds) {
+        const auto moveOp = _unsortedList.getOp(moveOpId);
 
-        for (const auto &moveOpId2: moveOps2) {
-            SyncOpPtr moveOp2 = _unsortedList.getOp(moveOpId2);
-            if (moveOp == moveOp2 || moveOp2->targetSide() != moveOp->targetSide()) {
+        for (const auto &otherMoveOpId: otherMoveOpIds) {
+            const auto otherMoveOp = _unsortedList.getOp(otherMoveOpId);
+            if (moveOp == otherMoveOp || otherMoveOp->targetSide() != moveOp->targetSide()) {
                 continue;
             }
 
-            std::shared_ptr<Node> moveNode = moveOp2->affectedNode();
-
-            if (!moveOp2->affectedNode()->moveOrigin().has_value()) {
+            const auto moveNode = moveOp->affectedNode();
+            if (!moveNode->parentNode()) continue;
+            if (!moveNode->moveOrigin().has_value()) {
                 LOG_SYNCPAL_WARN(_logger, "Missing origin path");
                 return;
             }
 
-            SyncPath sourcePath = *moveOp2->affectedNode()->moveOrigin();
+            const auto moveNodeOriginPath = moveNode->moveOrigin();
             bool found = false;
-            std::optional<NodeId> sourceParentId;
-            if (!_syncPal->_syncDb->id(moveNode->side(), sourcePath.parent_path(), sourceParentId, found)) {
+            std::optional<NodeId> moveNodeParentId;
+            if (!_syncPal->_syncDb->id(moveNode->side(), moveNodeOriginPath->parent_path(), moveNodeParentId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
                 return;
             }
             if (!found) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Node not found for path = " << Path2WStr(sourcePath.parent_path()).c_str());
+                LOGW_SYNCPAL_DEBUG(_logger,
+                                   L"Node not found for path = " << Path2WStr(moveNodeOriginPath->parent_path()).c_str());
                 break;
             }
 
-            if (std::shared_ptr<Node> otherMoveNode = moveOp->affectedNode(); otherMoveNode->parentNode() != nullptr) {
-                if (std::optional<NodeId> moveDestParentId = otherMoveNode->parentNode()->id();
-                    sourceParentId == moveDestParentId) {
-                    if (moveNode->name() == otherMoveNode->moveOrigin()->filename() ||
-                        moveNode->moveOrigin()->filename() == otherMoveNode->name()) {
-                        // move only if moveOp is before op
-                        moveFirstAfterSecond(moveOp2, moveOp);
-                    }
-                }
+            const auto otherMoveNode = otherMoveOp->affectedNode();
+            const auto otherMoveNodeDestPath = otherMoveNode->getPath();
+
+            // Check that both nodes have the same parent.
+            if (std::optional<NodeId> otherMoveNodeParentId = otherMoveNode->parentNode()->id();
+                otherMoveNodeParentId != moveNodeParentId)
+                continue;
+
+            if (moveNodeOriginPath->filename() == otherMoveNodeDestPath.filename()) {
+                // move only if moveOp is before otherMoveOp
+                moveFirstAfterSecond(otherMoveOp, moveOp);
             }
         }
-        moveOps2.erase(moveOpId);
+        otherMoveOpIds.erase(moveOpId);
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveOccupied");
 }
