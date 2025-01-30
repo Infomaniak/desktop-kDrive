@@ -38,7 +38,7 @@ MoveJob::~MoveJob() {
     bool isSyncing = false;
     int progress = 0;
     if (const ExitInfo exitInfo = _vfs->status(_destFilepath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_destFilepath) << L" : " << exitInfo);
+        LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(_destFilepath) << L": " << exitInfo);
     }
 
     if (const ExitInfo exitInfo = _vfs->forceStatus(_destFilepath, false, 100,
