@@ -82,7 +82,6 @@ namespace KDC {
 std::unordered_map<int, std::shared_ptr<SyncPal>> AppServer::_syncPalMap;
 std::unordered_map<int, std::shared_ptr<KDC::Vfs>> AppServer::_vfsMap;
 std::vector<AppServer::Notification> AppServer::_notifications;
-std::chrono::time_point<std::chrono::steady_clock> AppServer::_lastSyncPalStart = std::chrono::steady_clock::now();
 
 namespace {
 
@@ -972,7 +971,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             const bool resumedByUser = exitCode == ExitCode::Ok;
 
             exitCode = initSyncPal(sync, std::unordered_set<NodeId>(), std::unordered_set<NodeId>(), std::unordered_set<NodeId>(),
-                                   true, resumedByUser, false);
+                                   true, 0, resumedByUser, false);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                 addError(Error(errId(), exitCode, exitCause));
@@ -1115,7 +1114,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, 0, false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -1206,7 +1205,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, 0, false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -2649,6 +2648,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
         return ExitCode::DbError;
     }
 
+    int startDelay = 0;
     for (Account &account: accountList) {
         // Load drive list
         std::vector<Drive> driveList;
@@ -2722,7 +2722,8 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                 const bool start = !user.keychainKey().empty();
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, false, false);
+                startDelay += START_SYNCPALS_TIME_GAP;
+                exitCode = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, startDelay, false, false);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(sync.dbId(), errId(), exitCode, ExitCause::Unknown));
@@ -3309,16 +3310,8 @@ ExitCode AppServer::updateAllUsersInfo() {
 
 ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList,
                                 const std::unordered_set<NodeId> &undecidedList, const std::unordered_set<NodeId> &whiteList,
-                                bool start, bool resumedByUser, bool firstInit) {
+                                bool start, int startDelay, bool resumedByUser, bool firstInit) {
     ExitCode exitCode;
-
-    std::chrono::duration<double, std::milli> elapsed_ms = std::chrono::steady_clock::now() - _lastSyncPalStart;
-    if (elapsed_ms.count() < START_SYNCPALS_TIME_GAP) {
-        // Shifts the start of the next sync
-        Utility::msleep(START_SYNCPALS_TIME_GAP - static_cast<int>(elapsed_ms.count()));
-    }
-    _lastSyncPalStart = std::chrono::steady_clock::now();
-
     if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
         // Create SyncPal
         try {
@@ -3386,7 +3379,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
             _syncPalMap[sync.dbId()]->unpause();
         } else if (!_syncPalMap[sync.dbId()]->isRunning()) {
             // Start SyncPal
-            _syncPalMap[sync.dbId()]->start();
+            _syncPalMap[sync.dbId()]->start(startDelay);
         }
     }
 
@@ -3399,7 +3392,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
 }
 
 ExitCode AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                                const QSet<QString> &whiteList, bool start, bool resumedByUser, bool firstInit) {
+                                const QSet<QString> &whiteList, bool start, int startDelay, bool resumedByUser, bool firstInit) {
     ExitCode exitCode;
 
     std::unordered_set<NodeId> blackList2;
@@ -3417,7 +3410,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
         whiteList2.insert(nodeId.toStdString());
     }
 
-    exitCode = initSyncPal(sync, blackList2, undecidedList2, whiteList2, start, resumedByUser, firstInit);
+    exitCode = initSyncPal(sync, blackList2, undecidedList2, whiteList2, start, startDelay, resumedByUser, firstInit);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in initSyncPal");
         return exitCode;

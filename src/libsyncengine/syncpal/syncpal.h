@@ -96,7 +96,7 @@ struct SyncPalInfo {
         bool syncHasFullyCompleted{false};
 
         // An advanced synchronisation targets a subdirectory of a remote drive
-        bool isAdvancedSync() const { return !targetPath.empty(); };
+        bool isAdvancedSync() const { return !targetPath.empty(); }
 };
 
 
@@ -160,7 +160,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void syncPalStartCallback(UniqueId jobId);
 
-        void start();
+        //! Start SyncPal.
+        /*!
+         \param startDelay represents the time (expressed in seconds) the SyncPalWorker must wait before starting.
+         */
+        void start(int startDelay = 0);
         void stop(bool pausedByUser = false, bool quit = false, bool clear = false);
         void pause();
         void unpause();
@@ -299,7 +303,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void freeSharedObjects();
         void initSharedObjects();
         void resetSharedObjects();
-        void createWorkers();
+        void createWorkers(int startDelay);
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,

@@ -31,11 +31,10 @@ namespace KDC {
 
 class ISyncWorker {
     public:
-        ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
+        ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName, int startDelay = 0,
                     bool testing = false);
         virtual ~ISyncWorker();
 
-        // Returns true if the thread was successfully started, false if there was an error starting the thread
         virtual void start();
         virtual void pause();
         virtual void unpause();
@@ -63,6 +62,7 @@ class ISyncWorker {
         bool _testing{false};
 
     protected:
+        bool sleepUntilStartDelay();
         void setPauseDone();
         void setUnpauseDone();
         void setExitCause(ExitCause cause) { _exitCause = cause; }
@@ -78,6 +78,7 @@ class ISyncWorker {
 
         const std::string _name;
         const std::string _shortName;
+        const int _startDelay{0};
         std::unique_ptr<std::thread> _thread;
         bool _stopAsked{false};
         bool _isRunning{false};

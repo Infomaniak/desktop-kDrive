@@ -28,7 +28,7 @@ namespace KDC {
 
 class SyncPalWorker : public ISyncWorker {
     public:
-        SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
+        SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName, int startDelay);
 
         void execute() override;
         inline SyncStep step() const { return _step; }

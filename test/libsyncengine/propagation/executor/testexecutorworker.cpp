@@ -70,7 +70,7 @@ void TestExecutorWorker::setUp() {
 
     _syncPal = std::make_shared<SyncPal>(_sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
-    _syncPal->createWorkers();
+    _syncPal->createWorkers(0);
     _syncPal->syncDb()->setAutoDelete(true);
 
     _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
