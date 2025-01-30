@@ -159,7 +159,7 @@ void DownloadJob::runJob() noexcept {
         }
 
         if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, true, 0, false); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
             _exitCode = exitInfo.code();
             _exitCause = exitInfo.cause();
             return;
