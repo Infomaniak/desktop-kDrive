@@ -74,7 +74,7 @@ DownloadJob::~DownloadJob() {
 
         // TODO: usefull ?
         if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, false, 0, false); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
         _vfs->cancelHydrate(_localpath);
