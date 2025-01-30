@@ -392,7 +392,7 @@ void TestNetworkJobs::testDownload() {
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
     {
-        // Not Enought disk space
+        // Not Enough disk space
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
