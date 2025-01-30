@@ -433,7 +433,7 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
                 moveFirstAfterSecond(otherMoveOp, moveOp);
             }
         }
-        otherMoveOpIds.erase(moveOpId);
+        (void) otherMoveOpIds.erase(moveOpId);
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveOccupied");
 }
