@@ -974,39 +974,25 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
 
     bool isPlaceholder = false;
     bool isHydrated = false;
-    bool isSyncingTmp = false;
     int progress = 0;
-    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncingTmp, progress); !exitInfo) {
+    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
         return exitInfo;
     }
 
-    if (syncOp->targetSide() == ReplicaSide::Remote) {
-        if (isPlaceholder && !isHydrated) {
-            ignoreItem = true;
-            return fixModificationDate(syncOp, absolutePath);
-        }
-    } else {
-        if (isPlaceholder) {
-            switch (_syncPal->vfs()->pinState(absolutePath)) {
-                case PinState::Inherited: {
-                    // TODO : what do we do in that case??
-                    LOG_SYNCPAL_WARN(_logger, "Inherited pin state not implemented yet");
-                    return ExitCode::LogicError;
-                }
-                case PinState::AlwaysLocal: {
-                    if (isSyncingTmp) {
-                        // Ignore this item until it is synchronized
-                        isSyncing = true;
-                    } else if (isHydrated) {
-                        // Download
-                    }
-                    break;
-                }
-                case PinState::OnlineOnly: {
+    switch (syncOp->targetSide()) {
+        case ReplicaSide::Remote:
+            if (isPlaceholder && !isHydrated) {
+                ignoreItem = true;
+                return fixModificationDate(syncOp, absolutePath);
+            }
+            break;
+        case ReplicaSide::Local:
+            if (isPlaceholder && !isSyncing) {
+                if (!isHydrated) {
                     // Update metadata
-                    syncOp->setOmit(true); // Do not propagate change in file system, only in DB
-                    if (ExitInfo exitInfo = _syncPal->vfs()->updateMetadata(
+                    std::string error;
+                    if (ExitInfo exitInfo = _syncPal->vfs()-+>updateMetadata(
                                 absolutePath,
                                 syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
                                 syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
@@ -1015,16 +1001,13 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                         !exitInfo) {
                         return exitInfo;
                     }
-                    break;
-                }
-                case PinState::Unknown:
-                default: {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Ignore EDIT for file: " << Path2WStr(absolutePath));
-                    ignoreItem = true;
-                    return ExitCode::Ok;
-                }
+                    syncOp->setOmit(true);
+                } // else: the file is hydrated, we can proceed with download
             }
-        }
+            break;
+        default:
+            LOGW_WARN(_logger, L"Invalid target side: " << syncOp->targetSide());
+            return ExitCode::LogicError;
     }
 
     return ExitCode::Ok;
