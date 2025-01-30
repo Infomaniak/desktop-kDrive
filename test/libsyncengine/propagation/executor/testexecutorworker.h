@@ -57,11 +57,11 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testFixModificationDate);
         CPPUNIT_TEST(testAffectedUpdateTree);
         CPPUNIT_TEST(testTargetUpdateTree);
-        CPPUNIT_TEST(testLogCorrespondingNodeErrorMsg);
         CPPUNIT_TEST(testRemoveDependentOps);
         CPPUNIT_TEST(testIsValidDestination);
         CPPUNIT_TEST(testTerminatedJobsQueue);
-        CPPUNIT_TEST(propagateConflictToDbAndTree);
+        CPPUNIT_TEST(testPropagateConflictToDbAndTree);
+        CPPUNIT_TEST(testDeleteOpNodes);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -73,11 +73,11 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         void testFixModificationDate();
         void testAffectedUpdateTree();
         void testTargetUpdateTree();
-        void testLogCorrespondingNodeErrorMsg();
         void testRemoveDependentOps();
         void testIsValidDestination();
         void testTerminatedJobsQueue();
-        void propagateConflictToDbAndTree();
+        void testPropagateConflictToDbAndTree();
+        void testDeleteOpNodes();
 
         bool opsExist(SyncOpPtr op);
         SyncOpPtr generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,

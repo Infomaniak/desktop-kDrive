@@ -572,8 +572,10 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             bool isHydrated = false;
             bool isSyncing = false;
             int progress = 0;
-            if (ExitInfo exitInfo = _syncPal->vfsStatus(dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus : " << Utility::formatSyncPath(dirIt->path()) << L": " << exitInfo);
+            if (ExitInfo exitInfo = _syncPal->vfsStatus(dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress);
+                !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in vfsStatus : " << Utility::formatSyncPath(dirIt->path()) << L": " << exitInfo);
                 ok = false;
                 continue;
             }
@@ -589,16 +591,12 @@ bool SyncPalWorker::resetVfsFilesStatus() {
 
             if (isSyncing) {
                 // Force status to dehydrated
-              if (ExitInfo exitInfo =
-                      _syncPal->vfsForceStatus(dirIt->path(), false, 0, false);
-                  !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in vfsForceStatus : "
-                                      << Utility::formatSyncPath(dirIt->path())
-                                      << L": " << exitInfo);
-                ok = false;
-                continue;
-              }
+                if (ExitInfo exitInfo = _syncPal->vfsForceStatus(dirIt->path(), false, 0, false); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path()) << L": "
+                                                                             << exitInfo);
+                    ok = false;
+                    continue;
+                }
                 isHydrated = false;
             }
 
