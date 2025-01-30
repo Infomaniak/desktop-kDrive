@@ -331,7 +331,7 @@ void TestExecutorWorker::testTerminatedJobsQueue() {
     t4.join(); // Wait for all threads to finish.
 }
 
-void TestExecutorWorker::propagateConflictToDbAndTree() {
+void TestExecutorWorker::testPropagateConflictToDbAndTree() {
     bool propagateChange = false;
     const auto syncOp = generateSyncOperation(1, Str("test"));
 
@@ -390,12 +390,25 @@ void TestExecutorWorker::propagateConflictToDbAndTree() {
     CPPUNIT_ASSERT_EQUAL(false, propagateChange);
 }
 
-void TestExecutorWorker::testLogCorrespondingNodeErrorMsg() {
-    SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
-    _executorWorker->logCorrespondingNodeErrorMsg(op);
+void TestExecutorWorker::testDeleteOpNodes() {
+    const auto syncOp = generateSyncOperation(1, Str("test"));
+    syncOp->setTargetSide(ReplicaSide::Remote);
 
-    op->setCorrespondingNode(nullptr);
-    _executorWorker->logCorrespondingNodeErrorMsg(op);
+    {
+        _syncPal->updateTree(ReplicaSide::Local)->insertNode(syncOp->affectedNode());
+        _syncPal->updateTree(ReplicaSide::Remote)->insertNode(syncOp->correspondingNode());
+        CPPUNIT_ASSERT(_executorWorker->deleteOpNodes(syncOp));
+        CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*syncOp->affectedNode()->id()));
+        CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(*syncOp->correspondingNode()->id()));
+    }
+
+    {
+        // No corresponding node
+        syncOp->setCorrespondingNode(nullptr);
+        _syncPal->updateTree(ReplicaSide::Local)->insertNode(syncOp->affectedNode());
+        CPPUNIT_ASSERT(_executorWorker->deleteOpNodes(syncOp));
+        CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*syncOp->affectedNode()->id()));
+    }
 }
 
 void TestExecutorWorker::testFixModificationDate() {

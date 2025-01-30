@@ -392,7 +392,7 @@ void TestNetworkJobs::testDownload() {
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
     {
-        // Not Enought disk space
+        // Not Enough disk space
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
@@ -404,7 +404,6 @@ void TestNetworkJobs::testDownload() {
         UploadJob uploadJob(nullptr, _driveDbId, local9MoFilePath, Str2SyncName("9Mo.txt"), remoteTmpDir.id(), 0);
         uploadJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
-
 
         SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
