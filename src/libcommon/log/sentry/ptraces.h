@@ -97,7 +97,7 @@ struct Propagation2 : public AbstractPTrace {
 /* Scoped performance traces will automatically start when the object is created and stop when the object is
  destroyed.
  Some scoped performance traces expect to be manually stopped. In this case, the stop() method must be called, else the trace will
- be consider as aborted when the object will be destroyed. Such traces are indicated by a comment in their class definition.
+ be considered as aborted when the object will be destroyed. Such traces are indicated by a comment in their class definition.
  */
 namespace scoped {
 struct LFSOChangeDetected : public AbstractScopedPTrace {
