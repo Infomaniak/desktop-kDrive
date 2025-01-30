@@ -510,16 +510,40 @@ void TestNetworkJobs::testDownload() {
 void TestNetworkJobs::testDownloadAborted() {
     const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
     const SyncPath localDestFilePath = temporaryDirectory.path() / bigFileName;
+
+    auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    bool forceStatusCalled = false;
+    bool isSyncingRes = false;
+    int progressRes = 0;
+    bool isHydratedRes = false;
+    vfs->setForceStatusMock([&forceStatusCalled, &isSyncingRes, &progressRes, &isHydratedRes](
+                                    [[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
+                                    [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
+        forceStatusCalled = true;
+        isSyncingRes = isSyncing;
+        progressRes = progress;
+        isHydratedRes = isHydrated;
+        return ExitCode::Ok;
+    });
+
     std::shared_ptr<DownloadJob> job =
-            std::make_shared<DownloadJob>(nullptr, _driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            std::make_shared<DownloadJob>(vfs, _driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
     JobManager::instance()->queueAsyncJob(job);
 
-    Utility::msleep(1000); // Wait 1sec
-
+    int counter = 0;
+    while (!job->isRunning()) {
+        Utility::msleep(10);
+        CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
+    }
     job->abort();
 
     Utility::msleep(1000); // Wait 1sec
+    job.reset();
 
+    CPPUNIT_ASSERT(forceStatusCalled);
+    CPPUNIT_ASSERT(!isSyncingRes);
+    CPPUNIT_ASSERT_EQUAL(0, progressRes);
+    CPPUNIT_ASSERT(!isHydratedRes);
     CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
 }
 
