@@ -193,10 +193,11 @@ bool DownloadJob::handleResponse(std::istream &is) {
         isLink = true;
     }
 
-    bool dummy1, dummy2 = false;
-    int dummy3 = 0;
+    bool dummyIsPlaceHolder = false;
+    bool dummyIsSyncing = false;
+    int dummyProgress = 0;
     if (_vfs) {
-        _vfs->status(_localpath, dummy1, _isHydrated, dummy2, dummy3);
+        _vfs->status(_localpath, dummyIsPlaceHolder, _isHydrated, dummyIsSyncing, dummyProgress);
     } else {
         _isHydrated = true;
     }
