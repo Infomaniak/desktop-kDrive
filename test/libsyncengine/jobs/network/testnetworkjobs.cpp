@@ -396,25 +396,21 @@ void TestNetworkJobs::testDownload() {
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
-      const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId,
-                                                  "testDownload");
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
         std::ofstream ofs(local9MoFilePath, std::ios::binary);
         ofs << std::string(9 * 1000000, 'a');
         ofs.close();
 
         // Upload file
-      UploadJob uploadJob(_driveDbId, local9MoFilePath, Str2SyncName("9Mo.txt"),
-                          remoteTmpDir.id(), 0);
+        UploadJob uploadJob(_driveDbId, local9MoFilePath, Str2SyncName("9Mo.txt"), remoteTmpDir.id(), 0);
         uploadJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
 
-      SyncPath smallPartitionPath =
-          testhelpers::TestVariables().local8MoPartitionPath;
+        SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
         bool exist = false;
-      CPPUNIT_ASSERT(
-          IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(exist);
 
