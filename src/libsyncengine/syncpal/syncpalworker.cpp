@@ -568,38 +568,33 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                 continue;
             }
 
-            bool isPlaceholder = false;
-            bool isHydrated = false;
-            bool isSyncing = false;
-            int progress = 0;
-            if (ExitInfo exitInfo = _syncPal->vfsStatus(dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus : " << Utility::formatSyncPath(dirIt->path()) << L": " << exitInfo);
+            VfsStatus vfsStatus;
+            if (ExitInfo exitInfo = _syncPal->vfsStatus(dirIt->path(), vfsStatus); !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in vfsStatus : " << Utility::formatSyncPath(dirIt->path()) << L": " << exitInfo);
                 ok = false;
                 continue;
             }
 
-            if (!isPlaceholder) continue;
+            if (!vfsStatus.isPlaceholder) continue;
 
-            PinState pinState;
+            auto pinState = PinState::Unknown;
             if (!_syncPal->vfsPinState(dirIt->path(), pinState)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                 ok = false;
                 continue;
             }
 
-            if (isSyncing) {
-                // Force status to dehydrated
-              if (ExitInfo exitInfo =
-                      _syncPal->vfsForceStatus(dirIt->path(), false, 0, false);
-                  !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in vfsForceStatus : "
-                                      << Utility::formatSyncPath(dirIt->path())
-                                      << L": " << exitInfo);
-                ok = false;
-                continue;
-              }
-                isHydrated = false;
+            if (vfsStatus.isSyncing) {
+                // Force status to "dehydrated"
+                constexpr VfsStatus resetVfsStatus;
+                if (ExitInfo exitInfo = _syncPal->vfsForceStatus(dirIt->path(), resetVfsStatus); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(dirIt->path()) << L": "
+                                                                             << exitInfo);
+                    ok = false;
+                    continue;
+                }
+                vfsStatus.isHydrated = false;
             }
 
             bool hydrationOrDehydrationInProgress = false;
@@ -612,7 +607,8 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             }
 
             // Fix hydration state if needed.
-            if ((isHydrated && pinState == PinState::OnlineOnly) || (!isHydrated && pinState == PinState::AlwaysLocal)) {
+            if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
+                (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                 if (!_syncPal->vfsFileStatusChanged(dirIt->path(), SyncFileStatus::Syncing)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                     ok = false;

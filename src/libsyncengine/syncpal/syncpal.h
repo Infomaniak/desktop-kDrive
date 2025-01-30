@@ -179,7 +179,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool vfsExclude(const SyncPath &itemPath);
         bool vfsPinState(const SyncPath &itemPath, PinState &pinState);
         ExitInfo vfsSetPinState(const SyncPath &itemPath, PinState pinState);
-        ExitInfo vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress);
+        ExitInfo vfsStatus(const SyncPath &itemPath, VfsStatus &vfsStatus);
         ExitInfo vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item);
         ExitInfo vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item);
         ExitInfo vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
@@ -187,7 +187,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitInfo vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                       bool &finished);
         bool vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status);
-        ExitInfo vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false);
+        ExitInfo vfsForceStatus(const SyncPath &path, const VfsStatus &vfsStatus);
         bool vfsCleanUpStatuses();
         bool vfsClearFileAttributes(const SyncPath &path);
         bool vfsCancelHydrate(const SyncPath &path);

@@ -30,15 +30,16 @@ DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> sy
 DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
                                        const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
                                        bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/) :
-    AbstractUploadSession(filepath, filename, nbParalleleThread),
-    _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime), _remoteParentDirId(remoteParentDirId) {
+    AbstractUploadSession(filepath, filename, nbParalleleThread), _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime),
+    _remoteParentDirId(remoteParentDirId) {
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
 }
 
 DriveUploadSession::~DriveUploadSession() {
     if (_vfsForceStatus) {
-        if (ExitInfo exitInfo = _vfsForceStatus(getFilePath(), false, 100, true); !exitInfo) {
+        constexpr VfsStatus vfsStatus = {.isHydrated = true, .progress = 100};
+        if (const auto exitInfo = _vfsForceStatus(getFilePath(), vfsStatus); !exitInfo) {
             LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()) << L" : " << exitInfo);
         }
     }

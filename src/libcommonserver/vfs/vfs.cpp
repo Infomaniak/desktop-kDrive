@@ -112,14 +112,14 @@ void Vfs::stop(bool unregister) {
     }
 }
 
-ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation& location) const {
+ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation &location) const {
     if (ExitInfo exitInfo = checkIfPathIsValid(itemPath, true, location); !exitInfo) {
         return exitInfo;
     }
     return defaultVfsError(location);
 }
 
-ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation& location) const {
+ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation &location) const {
     if (itemPath.empty()) {
         LOGW_WARN(logger(), L"Empty path provided in Vfs::checkIfPathIsValid");
         assert(false && "Empty path in a VFS call");
@@ -194,17 +194,17 @@ VfsOff::VfsOff(QObject *parent) : Vfs(VfsSetupParams(), parent) {}
 
 VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
-VfsOff::~VfsOff() {}
+VfsOff::~VfsOff() = default;
 
-ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
-    QString path = SyncName2QStr(pathStd.native());
-    KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
-    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
+ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus) {
+    const SyncPath fullPath(_vfsSetupParams._localPath / pathStd);
+    if (const ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
     // Update Finder
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
-    QString status = isSyncing ? "SYNC" : "OK";
+    QString status = vfsStatus.isSyncing ? "SYNC" : "OK";
+    QString path = SyncName2QStr(pathStd.native());
     _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
 
     return ExitCode::Ok;
@@ -214,21 +214,21 @@ ExitInfo VfsOff::startImpl(bool &, bool &, bool &) {
     return ExitCode::Ok;
 }
 
-static QString modeToPluginName(KDC::VirtualFileMode virtualFileMode) {
-    if (virtualFileMode == KDC::VirtualFileMode::Suffix) return "suffix";
-    if (virtualFileMode == KDC::VirtualFileMode::Win) return "win";
-    if (virtualFileMode == KDC::VirtualFileMode::Mac) return "mac";
-    return QString();
+static QString modeToPluginName(const VirtualFileMode virtualFileMode) {
+    if (virtualFileMode == VirtualFileMode::Suffix) return "suffix";
+    if (virtualFileMode == VirtualFileMode::Win) return "win";
+    if (virtualFileMode == VirtualFileMode::Mac) return "mac";
+    return {};
 }
 
-bool KDC::isVfsPluginAvailable(KDC::VirtualFileMode virtualFileMode, QString &error) {
-    if (virtualFileMode == KDC::VirtualFileMode::Off) return true;
+bool KDC::isVfsPluginAvailable(const VirtualFileMode virtualFileMode, QString &error) {
+    if (virtualFileMode == VirtualFileMode::Off) return true;
 
-    if (virtualFileMode == KDC::VirtualFileMode::Suffix) {
+    if (virtualFileMode == VirtualFileMode::Suffix) {
         return false;
     }
 
-    if (virtualFileMode == KDC::VirtualFileMode::Win) {
+    if (virtualFileMode == VirtualFileMode::Win) {
         if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::Windows &&
             QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10 &&
             QOperatingSystemVersion::current().microVersion() >= MIN_WINDOWS10_MICROVERSION_FOR_CFAPI) {
@@ -282,16 +282,15 @@ bool KDC::isVfsPluginAvailable(KDC::VirtualFileMode virtualFileMode, QString &er
     return true;
 }
 
-KDC::VirtualFileMode KDC::bestAvailableVfsMode() {
-    QString error;
-    if (isVfsPluginAvailable(KDC::VirtualFileMode::Win, error)) {
-        return KDC::VirtualFileMode::Win;
-    } else if (isVfsPluginAvailable(KDC::VirtualFileMode::Mac, error)) {
-        return KDC::VirtualFileMode::Mac;
-    } else if (isVfsPluginAvailable(KDC::VirtualFileMode::Suffix, error)) {
-        return KDC::VirtualFileMode::Suffix;
+VirtualFileMode KDC::bestAvailableVfsMode() {
+    if (QString error; isVfsPluginAvailable(VirtualFileMode::Win, error)) {
+        return VirtualFileMode::Win;
+    } else if (isVfsPluginAvailable(VirtualFileMode::Mac, error)) {
+        return VirtualFileMode::Mac;
+    } else if (isVfsPluginAvailable(VirtualFileMode::Suffix, error)) {
+        return VirtualFileMode::Suffix;
     }
-    return KDC::VirtualFileMode::Off;
+    return VirtualFileMode::Off;
 }
 
 std::unique_ptr<Vfs> KDC::createVfsFromPlugin(KDC::VirtualFileMode virtualFileMode, VfsSetupParams &vfsSetupParams,

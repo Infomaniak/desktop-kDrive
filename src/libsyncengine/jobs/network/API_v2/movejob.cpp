@@ -25,23 +25,21 @@ namespace KDC {
 
 MoveJob::MoveJob(int driveDbId, const SyncPath &destFilepath, const NodeId &fileId, const NodeId &destDirId,
                  const SyncName &name /*= ""*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _destFilepath(destFilepath), _fileId(fileId), _destDirId(destDirId), _name(name) {
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _destFilepath(destFilepath), _fileId(fileId),
+    _destDirId(destDirId), _name(name) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
 MoveJob::~MoveJob() {
     if (_vfsForceStatus && _vfsStatus) {
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        if (ExitInfo exitInfo = _vfsStatus(_destFilepath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+        VfsStatus vfsStatus;
+        if (const auto exitInfo = _vfsStatus(_destFilepath, vfsStatus); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_destFilepath) << L" : " << exitInfo);
         }
 
-        if (ExitInfo exitInfo = _vfsForceStatus(_destFilepath, false, 100,
-                                                isHydrated);
+        vfsStatus.isSyncing = false;
+        vfsStatus.progress = 100;
+        if (const auto exitInfo = _vfsForceStatus(_destFilepath, vfsStatus);
             !exitInfo) { // TODO : to be refactored, some parameters are used on macOS only
             LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_destFilepath) << L" : " << exitInfo);
         }

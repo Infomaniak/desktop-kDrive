@@ -37,7 +37,8 @@ UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, con
 
 UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (_vfsForceStatus) {
-        if (ExitInfo exitInfo = _vfsForceStatus(_filePath, false, 0, true); !exitInfo) {
+        constexpr VfsStatus vfsStatus = {.isHydrated = true};
+        if (const auto exitInfo = _vfsForceStatus(_filePath, vfsStatus); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath) << L" : " << exitInfo);
         }
     }

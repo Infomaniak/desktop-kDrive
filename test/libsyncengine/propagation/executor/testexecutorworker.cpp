@@ -94,11 +94,12 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
                                              testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
 
-    std::shared_ptr<MockVfs> mockVfs = std::make_shared<MockVfs>();
+    auto mockVfs = std::make_shared<MockVfs>();
     _syncPal->setVfsPtr(mockVfs);
     // A hydrated placeholder.
     {
-        mockVfs->setVfsStatusOutput(true, true, false, 0);
+        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = true, .isSyncing = false, .progress = 0};
+        mockVfs->setVfsStatusOutput(vfsStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -107,7 +108,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A dehydrated placeholder.
     {
-        mockVfs->setVfsStatusOutput(true, false, false, 0);
+        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = false, .isSyncing = false, .progress = 0};
+        mockVfs->setVfsStatusOutput(vfsStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -116,7 +118,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A partially hydrated placeholder (syncing item).
     {
-        mockVfs->setVfsStatusOutput(true, false, true, 30);
+        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = false, .isSyncing = true, .progress = 30};
+        mockVfs->setVfsStatusOutput(vfsStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -125,7 +128,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // Not a placeholder.
     {
-        mockVfs->setVfsStatusOutput(false, false, false, 0);
+        constexpr VfsStatus vfsStatus = {.isPlaceholder = false, .isHydrated = false, .isSyncing = false, .progress = 0};
+        mockVfs->setVfsStatusOutput(vfsStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -180,7 +184,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName){};
+            ExecutorWorker(syncPal, name, shortName) {};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };

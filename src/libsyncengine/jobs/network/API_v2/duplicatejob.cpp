@@ -30,15 +30,8 @@ DuplicateJob::DuplicateJob(int driveDbId, const NodeId &remoteFileId, const Sync
 
 DuplicateJob::~DuplicateJob() {
     if (_vfsForceStatus && _vfsStatus && !_absoluteFinalPath.empty()) {
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        if (ExitInfo exitInfo = _vfsStatus(_absoluteFinalPath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
-        }
-
-        if (ExitInfo exitInfo = _vfsForceStatus(_absoluteFinalPath, false, 0, false); !exitInfo) {
+        const VfsStatus vfsStatus;
+        if (const auto exitInfo = _vfsForceStatus(_absoluteFinalPath, vfsStatus); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
     }

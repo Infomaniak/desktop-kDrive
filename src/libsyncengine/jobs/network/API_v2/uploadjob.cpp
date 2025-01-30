@@ -45,13 +45,14 @@ UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const NodeId &file
 
 UploadJob::~UploadJob() {
     if (_vfsForceStatus) {
-        if (ExitInfo exitInfo = _vfsForceStatus(_filePath, false, 100, true); !exitInfo) {
+        constexpr VfsStatus vfsStatus = {.isHydrated = true, .progress = 100};
+        if (const auto exitInfo = _vfsForceStatus(_filePath, vfsStatus); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath) << L" : " << exitInfo);
         }
     }
 
     if (_vfsSetPinState) {
-        if (ExitInfo exitInfo = _vfsSetPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
+        if (const auto exitInfo = _vfsSetPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsSetPinState - path=" << Path2WStr(_filePath) << L": " << exitInfo);
         }
     }

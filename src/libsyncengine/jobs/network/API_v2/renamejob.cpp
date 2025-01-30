@@ -29,15 +29,14 @@ RenameJob::RenameJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &
 
 RenameJob::~RenameJob() {
     if (_vfsForceStatus && _vfsStatus && !_absoluteFinalPath.empty()) {
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        if (ExitInfo exitInfo = _vfsStatus(_absoluteFinalPath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+        VfsStatus vfsStatus;
+        if (const auto exitInfo = _vfsStatus(_absoluteFinalPath, vfsStatus); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
 
-        if (ExitInfo exitInfo = _vfsForceStatus(_absoluteFinalPath, false, 0, isHydrated); !exitInfo) {
+        vfsStatus.isSyncing = false;
+        vfsStatus.progress = 0;
+        if (const auto exitInfo = _vfsForceStatus(_absoluteFinalPath, vfsStatus); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
     }

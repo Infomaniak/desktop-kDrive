@@ -29,6 +29,7 @@
 #include "libcommonserver/utility/utility.h"
 
 #include <QDir>
+#include <QPixmap>
 
 #import <Cocoa/Cocoa.h>
 #import <SystemExtensions/SystemExtensions.h>
@@ -770,13 +771,12 @@ bool LiteSyncExtConnector::vfsStart(int syncDbId, const QString &folderPath, boo
     _folders[syncDbId] = folderPath;
 
     // Send root status to Finder
-    bool isHydrated;
-    int progress;
-    if (!vfsGetStatus(folderPath, isPlaceholder, isHydrated, isSyncing, progress)) {
+    VfsStatus vfsStatus;
+    if (!vfsGetStatus(folderPath, vfsStatus)) {
         return false;
     }
 
-    if (!sendStatusToFinder(folderPath, isSyncing, isSyncing ? 100 : 0, isHydrated)) {
+    if (!sendStatusToFinder(folderPath, vfsStatus.isSyncing, vfsStatus.isSyncing ? 100 : 0, vfsStatus.isHydrated)) {
         LOGW_WARN(_logger, L"Error in sendStatusToFinder: " << Utility::formatPath(folderPath));
         return false;
     }
@@ -907,7 +907,8 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
     }
 
     // Set status
-    if (!vfsSetStatus(absoluteFilepath, localSyncPath, false, 0, false)) {
+    VfsStatus vfsStatus;
+    if (!vfsSetStatus(absoluteFilepath, localSyncPath, vfsStatus)) {
         return false;
     }
 
@@ -956,8 +957,8 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path,
 
         if (!foundChild) {
             // Set status
-            bool isHydrated = (pinState == litesync_attrs::pinStatePinned);
-            if (!vfsSetStatus(path, localSyncPath, false, 0, isHydrated)) {
+            VfsStatus vfsStatus = {.isHydrated = pinState == litesync_attrs::pinStatePinned};
+            if (!vfsSetStatus(path, localSyncPath, vfsStatus)) {
                 return false;
             }
         }
@@ -1111,16 +1112,12 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     // Update parent directory status if needed
     QFileInfo info(path);
 
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    bool isSyncing = false;
-    int progress = 0;
-
-    if (!vfsGetStatus(path, isPlaceholder, isHydrated, isSyncing, progress)) {
+    VfsStatus vfsStatus;
+    if (!vfsGetStatus(path, vfsStatus)) {
         return false;
     }
 
-    if (isHydrated) {
+    if (vfsStatus.isHydrated) {
         return vfsProcessDirStatus(info.dir().path(), localSyncPath);
     }
 
@@ -1209,7 +1206,8 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
 
             // Set status
-            if (!vfsSetStatus(filePath, localSyncPath, false, 0, true)) {
+            VfsStatus vfsStatus = {.isHydrated = true};
+            if (!vfsSetStatus(filePath, localSyncPath, vfsStatus)) {
                 return false;
             }
 
@@ -1235,8 +1233,8 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
         } else {
             // Set status
-            int progress = static_cast<int>(ceil(float(completed) / fileSize * 100));
-            if (!vfsSetStatus(filePath, localSyncPath, true, progress)) {
+            VfsStatus vfsStatus = {.isSyncing = true, .progress = static_cast<int>(ceil(float(completed) / fileSize * 100))};
+            if (!vfsSetStatus(filePath, localSyncPath, vfsStatus)) {
                 return false;
             }
         }
@@ -1263,13 +1261,7 @@ bool LiteSyncExtConnector::vfsSetThumbnail(const QString &absoluteFilePath, cons
     return true;
 }
 
-bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                                        int &progress, log4cplus::Logger &logger) noexcept {
-    isPlaceholder = false;
-    isHydrated = false;
-    isSyncing = false;
-    progress = 0;
-
+bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus, log4cplus::Logger &logger) noexcept {
     constexpr auto isExpectedError = [](IoError error) -> bool {
         return error == IoError::Success || error == IoError::AttrNotFound || error == IoError::NoSuchFileOrDirectory;
     };
@@ -1287,12 +1279,12 @@ bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, bool &i
     if (value.empty())
         return true;
 
-    isPlaceholder = true;
-    isHydrated = (value == litesync_attrs::statusOffline);
-    isSyncing = value.starts_with(litesync_attrs::statusHydrating);
+    vfsStatus.isPlaceholder = true;
+    vfsStatus.isHydrated = (value == litesync_attrs::statusOffline);
+    vfsStatus.isSyncing = value.starts_with(litesync_attrs::statusHydrating);
 
-    if (isSyncing) {
-        progress = std::stoi(value.substr(litesync_attrs::statusHydrating.length()));
+    if (vfsStatus.isSyncing) {
+        vfsStatus.progress = std::stoi(value.substr(litesync_attrs::statusHydrating.length()));
     }
 
     return true;
@@ -1325,13 +1317,10 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     std::string stdPath = absoluteFilePath.toStdString();
 
     // Check status
-    bool isPlaceholder;
-    bool isHydrated;
-    bool isSyncing;
-    int progress;
-    vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress);
+    VfsStatus vfsStatus;
+    vfsGetStatus(absoluteFilePath, vfsStatus);
 
-    if (!isPlaceholder || isHydrated || isSyncing) {
+    if (!vfsStatus.isPlaceholder || vfsStatus.isHydrated || vfsStatus.isSyncing) {
         return true;
     }
 
@@ -1360,7 +1349,7 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     }
 
     // Set file dates
-    bool exists;
+    bool exists = false;
     if (!Utility::setFileDates(QStr2Path(absoluteFilePath), fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec,
                                false, exists)) {
         LOGW_WARN(_logger,
@@ -1386,30 +1375,26 @@ bool LiteSyncExtConnector::vfsIsExcluded(const QString &path) {
     return pinState == litesync_attrs::pinStateExcluded;
 }
 
-bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &localSyncPath, bool isSyncing, int progress,
-                                        bool isHydrated /*= false*/) {
-    bool isPlaceholder = false;
-    bool isSyncingCurrent = false;
-    bool isHydratedCurrent = false;
-    int progressCurrent = 0;
-    if (!vfsGetStatus(path, isPlaceholder, isHydratedCurrent, isSyncingCurrent, progressCurrent)) {
+bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &localSyncPath, const VfsStatus &vfsStatus) {
+    VfsStatus currentVfsStatus;
+    if (!vfsGetStatus(path, currentVfsStatus)) {
         return false;
     }
 
-    if (!isPlaceholder) {
+    if (!currentVfsStatus.isPlaceholder) {
         // After a download, the file is replaced by the temp file, therefor we need to convert it again to placeholder
-        vfsConvertToPlaceHolder(path, isHydrated);
+        vfsConvertToPlaceHolder(path, vfsStatus.isHydrated);
     }
 
-    int roundedProgress = progress;
-    if (isSyncing) {
-        int stepWidth = 100 / SYNC_STEPS;
-        roundedProgress = static_cast<int>(ceil(float(progress) / stepWidth) * stepWidth);
+    auto roundedProgress = vfsStatus.progress;
+    if (vfsStatus.isSyncing) {
+        int64_t stepWidth = 100 / SYNC_STEPS;
+        roundedProgress = static_cast<int>(ceil(float(vfsStatus.progress) / stepWidth) * stepWidth);
     }
 
-    if (isSyncing != isSyncingCurrent || roundedProgress != progressCurrent || isHydrated != isHydratedCurrent) {
+    if (vfsStatus.isSyncing != currentVfsStatus.isSyncing || roundedProgress != currentVfsStatus.progress || vfsStatus.isHydrated != currentVfsStatus.isHydrated) {
         // Set status
-        std::string status = IoHelper::statusXAttr(isSyncing, roundedProgress, isHydrated);
+        std::string status = IoHelper::statusXAttr(vfsStatus.isSyncing, roundedProgress, vfsStatus.isHydrated);
         IoError ioError = IoError::Success;
         if (!setXAttrValue(path, litesync_attrs::status, status, ioError)) {
             LOGW_WARN(_logger,
@@ -1421,22 +1406,24 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
             return false;
         }
 
-        if (!sendStatusToFinder(path, isSyncing, roundedProgress, isHydrated)) {
+        if (!sendStatusToFinder(path, vfsStatus.isSyncing, roundedProgress, vfsStatus.isHydrated)) {
             LOGW_WARN(_logger, L"Call to sendStatusToFinder failed: " << Utility::formatPath(path));
             return false;
         }
 
-        if (isSyncing != isSyncingCurrent || isHydrated != isHydratedCurrent) {
+        if (vfsStatus.isSyncing != currentVfsStatus.isSyncing || vfsStatus.isHydrated != currentVfsStatus.isHydrated) {
             // Update parent directory status
             const QString parentPath = QFileInfo(path).dir().path();
             if (parentPath == localSyncPath) return true;
 
-            if (isSyncing) {
+            if (vfsStatus.isSyncing) {
                 {
                     const std::lock_guard<std::mutex> lock(_mutex);
                     _syncingFolders[parentPath].insert(path);
                 }
-                vfsSetStatus(parentPath, localSyncPath, isSyncing, 100, isHydrated);
+
+                VfsStatus tmpVfsStatus = {.isPlaceholder = vfsStatus.isPlaceholder, .isSyncing = vfsStatus.isSyncing, .isHydrated = vfsStatus.isHydrated, .progress = 100};
+                vfsSetStatus(parentPath, localSyncPath, vfsStatus);
             } else {
                 _mutex.lock();
                 _syncingFolders[parentPath].remove(path);
@@ -1467,15 +1454,12 @@ bool LiteSyncExtConnector::vfsCleanUpStatuses(const QString &localSyncPath) {
 }
 
 bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QString &localSyncPath) {
-    bool isPlaceholder = false;
-    bool isSyncing = false;
-    bool isHydrated = false;
-    int progress = 0;
-    if (!vfsGetStatus(path, isPlaceholder, isHydrated, isSyncing, progress)) {
+    VfsStatus vfsStatus;
+    if (!vfsGetStatus(path, vfsStatus)) {
         return false;
     }
 
-    if (!isPlaceholder) {
+    if (!vfsStatus.isPlaceholder) {
         return true;
     }
 
@@ -1502,26 +1486,24 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path, const QStrin
             continue;
         }
 
-        bool isChildPlaceholder = false;
-        bool isChildHydrated = false;
-        bool isChildSyncing = false;
-        int childProgress = 0;
-        if (!vfsGetStatus(tmpPath, isChildPlaceholder, isChildHydrated, isChildSyncing, childProgress)) {
+        VfsStatus childVfsStatus;
+        if (!vfsGetStatus(tmpPath, childVfsStatus)) {
             continue;
         }
 
-        if (isChildSyncing) {
+        if (childVfsStatus.isSyncing) {
             hasASyncingChild = true;
             break;
         }
 
-        if (!isChildHydrated) {
+        if (!childVfsStatus.isHydrated) {
             hasADehydratedChild = true;
             break;
         }
     }
 
-    if (!vfsSetStatus(path, localSyncPath, hasASyncingChild, 100, !hasADehydratedChild)) {
+    VfsStatus tmpVfsStatus = {.isSyncing = hasASyncingChild, .isHydrated = !hasADehydratedChild, .progress = 100};
+    if (!vfsSetStatus(path, localSyncPath, tmpVfsStatus)) {
         return false;
     }
 
@@ -1569,15 +1551,12 @@ bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QStri
             continue;
         }
 
-        bool tmpIsPlaceholder = false;
-        bool tmpIsHydrated = false;
-        bool tmpIsSyncing = false;
-        int progress = 0;
-        if (!vfsGetStatus(tmpPath, tmpIsPlaceholder, tmpIsHydrated, tmpIsSyncing, progress)) {
+        VfsStatus vfsStatus;
+        if (!vfsGetStatus(tmpPath, vfsStatus)) {
             continue;
         }
 
-        if (tmpIsSyncing) {
+        if (vfsStatus.isSyncing) {
             if (tmpInfo.isDir()) {
                 if (!checkFilesAttributes(tmpPath, localSyncPath, filesToFix)) {
                     // No file has to be changed, but we still need to refresh this directory
@@ -1586,14 +1565,15 @@ bool LiteSyncExtConnector::checkFilesAttributes(const QString &path, const QStri
                 atLeastOneChanged = true;
             } else {
                 if (pinState == litesync_attrs::pinStateUnpinned
-                    || (pinState == litesync_attrs::pinStatePinned && !tmpIsHydrated)) {
+                    || (pinState == litesync_attrs::pinStatePinned && !vfsStatus.isHydrated)) {
                     // A file should never be unpinned and syncing
                     // nor pinned and not completely hydrated
-                    if (pinState == litesync_attrs::pinStatePinned && !tmpIsHydrated) {
+                    if (pinState == litesync_attrs::pinStatePinned && !vfsStatus.isHydrated) {
                         vfsSetPinState(tmpPath, localSyncPath, litesync_attrs::pinStateUnpinned);
                     }
 
-                    vfsSetStatus(tmpPath, localSyncPath, false, 0, false);
+                    VfsStatus resetVfsStatus;
+                    vfsSetStatus(tmpPath, localSyncPath, resetVfsStatus);
                     filesToFix.append(tmpPath);
                     atLeastOneChanged = true;
                 }

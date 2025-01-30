@@ -20,13 +20,13 @@
 
 #include "libcommon/utility/types.h"
 #include "libcommonserver/log/log.h"
+#include "vfs/vfs.h"
 
 #include <sys/stat.h>
 
 #include <QMap>
 #include <QHash>
 #include <QSet>
-#include <QPixmap>
 #include <QString>
 
 namespace KDC {
@@ -38,8 +38,7 @@ class LiteSyncExtConnector {
         LiteSyncExtConnector(LiteSyncExtConnector &other) = delete;
         void operator=(const LiteSyncExtConnector &) = delete;
         static LiteSyncExtConnector *instance(log4cplus::Logger logger, ExecuteCommand executeCommand);
-        static bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                                 int &progress, log4cplus::Logger &logger) noexcept;
+        static bool vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus, log4cplus::Logger &logger) noexcept;
 
         ~LiteSyncExtConnector();
 
@@ -58,12 +57,10 @@ class LiteSyncExtConnector {
                                   unsigned long long completed, bool &canceled, bool &finished);
         bool vfsCancelHydrate(const QString &filePath);
         bool vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap);
-        bool vfsSetStatus(const QString &path, const QString &localSyncPath, bool isSyncing, int progress,
-                          bool isHydrated = false);
+        bool vfsSetStatus(const QString &path, const QString &localSyncPath, const VfsStatus &vfsStatus);
         bool vfsCleanUpStatuses(const QString &localSyncPath);
-        bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                          int &progress) noexcept {
-            return vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress, _logger);
+        bool vfsGetStatus(const QString &absoluteFilePath, VfsStatus &vfsStatus) noexcept {
+            return vfsGetStatus(absoluteFilePath, vfsStatus, _logger);
         }
         bool vfsSetAppExcludeList(const QString &appList);
         bool vfsGetFetchingAppList(QHash<QString, QString> &appTable);

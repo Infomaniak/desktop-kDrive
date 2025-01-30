@@ -19,6 +19,7 @@
 #pragma once
 
 #include "utility/types.h"
+#include "vfs/vfs.h"
 
 #include <Poco/Runnable.h>
 
@@ -80,11 +81,11 @@ class AbstractJob : public Poco::Runnable {
             _vfsSetPinState = callback;
         }
         inline void setVfsForceStatusCallback(
-                const std::function<ExitInfo(const SyncPath &, bool, int, bool)> &callback) noexcept {
+                const std::function<ExitInfo(const SyncPath &, const VfsStatus &)> &callback) noexcept {
             _vfsForceStatus = callback;
         }
         inline void setVfsStatusCallback(
-                const std::function<ExitInfo(const SyncPath &, bool &, bool &, bool &, int &)> &callback) noexcept {
+                const std::function<ExitInfo(const SyncPath &, VfsStatus &vfsStatus)> &callback) noexcept {
             _vfsStatus = callback;
         }
         inline void setVfsUpdateMetadataCallback(
@@ -112,9 +113,8 @@ class AbstractJob : public Poco::Runnable {
         std::function<ExitInfo(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled, bool &finished)>
                 _vfsUpdateFetchStatus;
         std::function<ExitInfo(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState;
-        std::function<ExitInfo(const SyncPath &path, bool isSyncing, int progress, bool isHydrated)> _vfsForceStatus;
-        std::function<ExitInfo(const SyncPath &path, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress)>
-                _vfsStatus;
+        std::function<ExitInfo(const SyncPath &path, const VfsStatus &vfsStatus)> _vfsForceStatus;
+        std::function<ExitInfo(const SyncPath &path, VfsStatus &vfsStatus)> _vfsStatus;
         std::function<ExitInfo(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
                                const NodeId &id)>
                 _vfsUpdateMetadata;

@@ -25,21 +25,20 @@
 
 namespace KDC {
 
-class MockVfs : public VfsOff {
+class MockVfs final : public VfsOff {
     public:
         explicit MockVfs() : VfsOff(vfsSetupParams) {}
-        inline void setVfsStatusOutput(bool isPlaceholder, bool isHydrated, bool isSyncing, int progress) {
-            vfsStatusIsHydrated = isHydrated;
-            vfsStatusIsSyncing = isSyncing;
-            vfsStatusIsPlaceholder = isPlaceholder;
-            vfsStatusProgress = progress;
+        void setVfsStatusOutput(const VfsStatus &vfsStatus) {
+            vfsStatusIsHydrated = vfsStatus.isHydrated;
+            vfsStatusIsSyncing = vfsStatus.isSyncing;
+            vfsStatusIsPlaceholder = vfsStatus.isPlaceholder;
+            vfsStatusProgress = vfsStatus.progress;
         }
-        inline ExitInfo status([[maybe_unused]] const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                        int &progress) override {
-            isHydrated = vfsStatusIsHydrated;
-            isSyncing = vfsStatusIsSyncing;
-            isPlaceholder = vfsStatusIsPlaceholder;
-            progress = vfsStatusProgress;
+        ExitInfo status([[maybe_unused]] const SyncPath &filePath, VfsStatus &vfsStatus) override {
+            vfsStatus.isHydrated = vfsStatusIsHydrated;
+            vfsStatus.isSyncing = vfsStatusIsSyncing;
+            vfsStatus.isPlaceholder = vfsStatusIsPlaceholder;
+            vfsStatus.progress = vfsStatusProgress;
             return ExitCode::Ok;
         }
 
@@ -47,7 +46,7 @@ class MockVfs : public VfsOff {
         bool vfsStatusIsHydrated = false;
         bool vfsStatusIsSyncing = false;
         bool vfsStatusIsPlaceholder = false;
-        int vfsStatusProgress = 0;
+        int64_t vfsStatusProgress = 0;
         VfsSetupParams vfsSetupParams;
 };
 

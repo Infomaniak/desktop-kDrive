@@ -92,8 +92,7 @@ struct ListenerHasSocketPred {
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
                      const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent),
-    _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
@@ -299,7 +298,7 @@ void SocketApi::registerSync(int syncDbId) {
 }
 
 void SocketApi::unregisterSync(int syncDbId) {
-    KDC::Sync sync;
+    Sync sync;
     if (!tryToRetrieveSync(syncDbId, sync)) return;
 
     broadcastMessage(buildMessage(QString("UNREGISTER_PATH"), SyncName2QStr(sync.localPath().native()), QString()), true);
@@ -327,18 +326,15 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
         listener->registerMonitoredDirectory(static_cast<unsigned int>(qHash(directory)));
     }
 
-    SyncFileStatus status = KDC::SyncFileStatus::Unknown;
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    int progress = 0;
-    if (!syncFileStatus(fileData, status, isPlaceholder, isHydrated, progress)) {
+    auto status = SyncFileStatus::Unknown;
+    VfsStatus vfsStatus;
+    if (!syncFileStatus(fileData, status, vfsStatus)) {
         LOGW_DEBUG(KDC::Log::instance()->getLogger(),
                    L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(fileData.localPath).c_str());
         return;
     }
 
-    const QString message =
-            buildMessage(QString("STATUS"), fileData.localPath, socketAPIString(status, isPlaceholder, isHydrated, progress));
+    const QString message = buildMessage(QString("STATUS"), fileData.localPath, socketAPIString(status, vfsStatus));
     listener->sendMessage(message);
 }
 
@@ -414,11 +410,10 @@ void SocketApi::fetchPrivateLinkUrlHelper(const QString &localFile, const std::f
     targetFun(linkUrl);
 }
 
-bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &status, bool &isPlaceholder, bool &isHydrated,
-                               int &progress) {
-    status = KDC::SyncFileStatus::Unknown;
-    isPlaceholder = false;
-    isHydrated = false;
+bool SocketApi::syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus) {
+    status = SyncFileStatus::Unknown;
+    vfsStatus.isPlaceholder = false;
+    vfsStatus.isHydrated = false;
 
     if (!fileData.syncDbId) return false;
 
@@ -434,7 +429,7 @@ bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &st
     }
 
     if (exists) {
-        status = KDC::SyncFileStatus::Success;
+        status = SyncFileStatus::Success;
     }
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
@@ -442,14 +437,13 @@ bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &st
 
 
     if (vfsMapIt->second->mode() == KDC::VirtualFileMode::Mac || vfsMapIt->second->mode() == KDC::VirtualFileMode::Win) {
-        bool isSyncing = false;
-        if (!vfsMapIt->second->status(QStr2Path(fileData.localPath), isPlaceholder, isHydrated, isSyncing, progress)) {
+        if (!vfsMapIt->second->status(QStr2Path(fileData.localPath), vfsStatus)) {
             LOGW_WARN(KDC::Log::instance()->getLogger(),
                       L"Error in Vfs::status - " << Utility::formatPath(fileData.localPath).c_str());
             return false;
         }
 
-        if (isSyncing) {
+        if (vfsStatus.isSyncing) {
             status = KDC::SyncFileStatus::Syncing;
         }
     }
@@ -573,31 +567,29 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
         }
 
         // Check file status
-        KDC::SyncFileStatus status = KDC::SyncFileStatus::Unknown;
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        int progress = 0;
-        if (!syncFileStatus(fileData, status, isPlaceholder, isHydrated, progress)) {
+        auto status = SyncFileStatus::Unknown;
+        VfsStatus vfsStatus;
+        if (!syncFileStatus(fileData, status, vfsStatus)) {
             LOGW_WARN(KDC::Log::instance()->getLogger(),
                       L"Error in SocketApi::syncFileStatus - " << Utility::formatSyncPath(filePath).c_str());
             continue;
         }
 
-        if (!isPlaceholder) {
+        if (!vfsStatus.isPlaceholder) {
             // File is not a placeholder, this should never happen
             LOGW_WARN(KDC::Log::instance()->getLogger(),
                       L"File is not a placeholder - " << Utility::formatSyncPath(filePath).c_str());
             continue;
         }
 
-        if (isHydrated || status == KDC::SyncFileStatus::Syncing) {
+        if (vfsStatus.isHydrated || status == KDC::SyncFileStatus::Syncing) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
                       L"File is already hydrated/ing - " << Utility::formatSyncPath(filePath).c_str());
             continue;
         }
 
 #ifdef __APPLE__
-        // Not done in Windows case: triggers an hydration
+        // Not done in Windows case: triggers a hydration
         // Set pin state
         if (!setPinState(fileData, KDC::PinState::AlwaysLocal)) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
@@ -633,29 +625,29 @@ bool SocketApi::syncForPath(const std::filesystem::path &path, KDC::Sync &sync) 
     return false;
 }
 
-QString SocketApi::socketAPIString(KDC::SyncFileStatus status, bool isPlaceholder, bool isHydrated, int progress) const {
+QString SocketApi::socketAPIString(SyncFileStatus status, const VfsStatus &vfsStatus) const {
     QString statusString;
 
     switch (status) {
-        case KDC::SyncFileStatus::Unknown:
+        case SyncFileStatus::Unknown:
             statusString = QLatin1String("NOP");
             break;
-        case KDC::SyncFileStatus::Syncing:
-            statusString = QLatin1String("SYNC_%1").arg(QString::number(progress));
+        case SyncFileStatus::Syncing:
+            statusString = QLatin1String("SYNC_%1").arg(QString::number(vfsStatus.progress));
             break;
-        case KDC::SyncFileStatus::Conflict:
-        case KDC::SyncFileStatus::Ignored:
+        case SyncFileStatus::Conflict:
+        case SyncFileStatus::Ignored:
             statusString = QLatin1String("IGNORE");
             break;
-        case KDC::SyncFileStatus::Success:
-        case KDC::SyncFileStatus::Inconsistency:
-            if ((isPlaceholder && isHydrated) || !isPlaceholder) {
+        case SyncFileStatus::Success:
+        case SyncFileStatus::Inconsistency:
+            if ((vfsStatus.isPlaceholder && vfsStatus.isHydrated) || !vfsStatus.isPlaceholder) {
                 statusString = QLatin1String("OK");
             } else {
                 statusString = QLatin1String("ONLINE");
             }
             break;
-        case KDC::SyncFileStatus::Error:
+        case SyncFileStatus::Error:
             statusString = QLatin1String("ERROR");
             break;
     }
@@ -1083,25 +1075,21 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
     _dehydrationMutex.unlock();
 
     // File availability actions
-    if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileMode::Off && vfsMapIt->second->socketApiPinStateActionsShown()) {
+    if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->socketApiPinStateActionsShown()) {
         ENFORCE(!files.isEmpty());
 
         bool canHydrate = true;
         bool canDehydrate = true;
         bool canCancelHydration = false;
         for (const auto &file: qAsConst(files)) {
-            bool isPlaceholder = false;
-            bool isHydrated = false;
-            bool isSyncing = false;
-            int progress = 0;
-            if (!canCancelHydration &&
-                vfsMapIt->second->status(QStr2Path(file), isPlaceholder, isHydrated, isSyncing, progress) && isSyncing) {
+            VfsStatus vfsStatus;
+            if (!canCancelHydration && vfsMapIt->second->status(QStr2Path(file), vfsStatus) && vfsStatus.isSyncing) {
                 canCancelHydration = syncPalMapIt->second->isDownloadOngoing(QStr2Path(file));
             }
 
             if (isSingleFile) {
-                canHydrate = isPlaceholder && !isSyncing && !isHydrated;
-                canDehydrate = isPlaceholder && !isSyncing && isHydrated;
+                canHydrate = vfsStatus.isPlaceholder && !vfsStatus.isSyncing && !vfsStatus.isHydrated;
+                canDehydrate = vfsStatus.isPlaceholder && !vfsStatus.isSyncing && vfsStatus.isHydrated;
             }
         }
 
@@ -1279,11 +1267,11 @@ QString SocketApi::buildRegisterPathMessage(const QString &path) {
     return message;
 }
 
-void SocketApi::processFileList(const QStringList &inFileList, std::list<KDC::SyncPath> &outFileList) {
+void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList) {
     // Process all files
     for (const QString &path: qAsConst(inFileList)) {
         FileData fileData = FileData::get(path);
-        if (fileData.virtualFileMode == KDC::VirtualFileMode::Mac) {
+        if (fileData.virtualFileMode == VirtualFileMode::Mac) {
             QFileInfo info(path);
             if (info.isDir()) {
                 const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
@@ -1292,17 +1280,14 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<KDC::Sy
                     QString tmpPath(tmpInfo.filePath());
                     FileData tmpFileData = FileData::get(tmpPath);
 
-                    KDC::SyncFileStatus status = KDC::SyncFileStatus::Unknown;
-                    bool isPlaceholder = false;
-                    bool isHydrated = false;
-                    int progress = 0;
-                    if (!syncFileStatus(tmpFileData, status, isPlaceholder, isHydrated, progress)) {
+                    auto status = SyncFileStatus::Unknown;
+                    if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
                         LOGW_WARN(KDC::Log::instance()->getLogger(),
                                   L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(tmpPath).c_str());
                         continue;
                     }
 
-                    if (status == KDC::SyncFileStatus::Unknown || status == KDC::SyncFileStatus::Ignored) {
+                    if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
                         continue;
                     }
 
