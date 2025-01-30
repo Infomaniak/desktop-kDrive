@@ -56,7 +56,7 @@ struct COMMONSERVER_EXPORT Utility {
 
         static bool init();
         static void free();
-        static int64_t freeDiskSpace(const SyncPath &path);
+        static int64_t getFreeDiskSpace(const SyncPath &path);
         static int64_t freeDiskSpaceLimit();
         static bool enoughSpace(const SyncPath &path);
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
