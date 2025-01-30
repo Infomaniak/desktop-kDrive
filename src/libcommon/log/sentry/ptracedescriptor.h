@@ -67,14 +67,15 @@ enum class PTraceName {
 // application.
 struct PTraceDescriptor {
         PTraceDescriptor() = default;
-        PTraceDescriptor(std::string pTraceTitle, std::string pTraceDescription, PTraceName pTraceName,
-                         PTraceName parentPTraceName = PTraceName::None) :
-            _pTraceName{pTraceName}, _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
-            _pTraceDescription{std::move(pTraceDescription)} {}
+        PTraceDescriptor(std::string pTraceTitle, std::string pTraceDescription, const PTraceName pTraceName,
+                         const PTraceName parentPTraceName = PTraceName::None, double _customSampleRate = 1.0) :
+            _customSampleRate{_customSampleRate}, _pTraceName{pTraceName}, _parentPTraceName{parentPTraceName},
+            _pTraceTitle{std::move(pTraceTitle)}, _pTraceDescription{std::move(pTraceDescription)} {}
 
         const PTraceName _pTraceName = PTraceName::None;
         const PTraceName _parentPTraceName = PTraceName::None;
         const std::string _pTraceTitle;
         const std::string _pTraceDescription;
+        const double _customSampleRate = 1.0; // Final sample rate is _customSampleRate * sentry sample rate (see sentry::Handler::init).
 };
 } // namespace KDC::sentry

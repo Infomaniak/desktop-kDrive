@@ -102,7 +102,8 @@ struct Propagation2 : public AbstractPTrace {
 namespace scoped {
 struct LFSOChangeDetected : public AbstractScopedPTrace {
         explicit LFSOChangeDetected(int syncDbId) :
-            AbstractScopedPTrace({"LFSO_ChangeDetected", "Handle one detected changes", PTraceName::LFSOChangeDetected},
+            AbstractScopedPTrace({"LFSO_ChangeDetected", "Handle one detected changes", PTraceName::LFSOChangeDetected,
+                                  PTraceName::None, 0.01},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
@@ -115,8 +116,9 @@ struct LFSOGenerateInitialSnapshot : public AbstractScopedPTrace {
 
 struct RFSOChangeDetected : public AbstractScopedPTrace {
         explicit RFSOChangeDetected(int syncDbId) :
-            AbstractScopedPTrace({"RFSO_ChangeDetected", "Handle one detected changes", PTraceName::RFSOChangeDetected},
-                                 PTraceStatus::Ok, syncDbId) {}
+            AbstractScopedPTrace(
+                    {"RFSO_ChangeDetected", "Handle one detected changes", PTraceName::RFSOChangeDetected, PTraceName::None, 0.1},
+                    PTraceStatus::Ok, syncDbId) {}
 };
 
 // This scoped performance trace expects to be manually stopped.
