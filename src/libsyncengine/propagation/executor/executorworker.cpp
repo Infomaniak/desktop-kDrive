@@ -992,7 +992,7 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                 if (!isHydrated) {
                     // Update metadata
                     std::string error;
-                    if (ExitInfo exitInfo = _syncPal->vfs()-+>updateMetadata(
+                    if (ExitInfo exitInfo = _syncPal->vfs()->updateMetadata(
                                 absolutePath,
                                 syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
                                 syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
