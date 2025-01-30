@@ -56,13 +56,13 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
 
         ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) final;
-        ExitInfo forceStatus(const SyncPath &absolutePath, bool isSyncing, int progress, bool isHydrated = false) final;
+        ExitInfo forceStatus(const SyncPath &absolutePath, const VfsStatus &vfsStatus) final;
 
         ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated) final;
 
         ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) final;
         PinState pinState(const SyncPath &relativePath) final;
-        ExitInfo status(const SyncPath &, bool &, bool &, bool &, int &) final;
+        ExitInfo status(const SyncPath &, VfsStatus &) final;
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) final { return ExitCode::Ok; };
         ExitInfo setAppExcludeList() final { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) final { return ExitCode::Ok; }
