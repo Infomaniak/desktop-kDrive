@@ -31,8 +31,8 @@ namespace KDC {
 
 class ISyncWorker {
     public:
-        ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName, int startDelay = 0,
-                    bool testing = false);
+        ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
+                    std::chrono::seconds startDelay = std::chrono::seconds(0), bool testing = false);
         virtual ~ISyncWorker();
 
         virtual void start();
@@ -78,7 +78,7 @@ class ISyncWorker {
 
         const std::string _name;
         const std::string _shortName;
-        const int _startDelay{0};
+        const std::chrono::seconds _startDelay{0};
         std::unique_ptr<std::thread> _thread;
         bool _stopAsked{false};
         bool _isRunning{false};

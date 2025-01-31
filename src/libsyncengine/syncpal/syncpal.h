@@ -164,7 +164,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         /*!
          \param startDelay represents the time (expressed in seconds) the SyncPalWorker must wait before starting.
          */
-        void start(int startDelay = 0);
+        void start(std::chrono::seconds startDelay = std::chrono::seconds(0));
         void stop(bool pausedByUser = false, bool quit = false, bool clear = false);
         void pause();
         void unpause();
@@ -303,7 +303,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void freeSharedObjects();
         void initSharedObjects();
         void resetSharedObjects();
-        void createWorkers(int startDelay);
+        void createWorkers(std::chrono::seconds startDelay);
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,

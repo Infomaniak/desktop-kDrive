@@ -971,7 +971,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             const bool resumedByUser = exitCode == ExitCode::Ok;
 
             exitCode = initSyncPal(sync, std::unordered_set<NodeId>(), std::unordered_set<NodeId>(), std::unordered_set<NodeId>(),
-                                   true, 0, resumedByUser, false);
+                                   true, std::chrono::seconds(0), resumedByUser, false);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                 addError(Error(errId(), exitCode, exitCause));
@@ -1114,7 +1114,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, 0, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, std::chrono::seconds(0), false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -1205,7 +1205,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, 0, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, std::chrono::seconds(0), false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -2648,7 +2648,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
         return ExitCode::DbError;
     }
 
-    int startDelay = 0;
+    std::chrono::seconds startDelay{0};
     for (Account &account: accountList) {
         // Load drive list
         std::vector<Drive> driveList;
@@ -2722,7 +2722,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                 const bool start = !user.keychainKey().empty();
 
                 // Create and start SyncPal
-                startDelay += START_SYNCPALS_TIME_GAP;
+                startDelay += std::chrono::seconds(START_SYNCPALS_TIME_GAP);
                 exitCode = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, startDelay, false, false);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
@@ -3310,7 +3310,7 @@ ExitCode AppServer::updateAllUsersInfo() {
 
 ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList,
                                 const std::unordered_set<NodeId> &undecidedList, const std::unordered_set<NodeId> &whiteList,
-                                bool start, int startDelay, bool resumedByUser, bool firstInit) {
+                                bool start, std::chrono::seconds startDelay, bool resumedByUser, bool firstInit) {
     ExitCode exitCode;
     if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
         // Create SyncPal
@@ -3392,7 +3392,8 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
 }
 
 ExitCode AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                                const QSet<QString> &whiteList, bool start, int startDelay, bool resumedByUser, bool firstInit) {
+                                const QSet<QString> &whiteList, bool start, std::chrono::seconds startDelay, bool resumedByUser,
+                                bool firstInit) {
     ExitCode exitCode;
 
     std::unordered_set<NodeId> blackList2;

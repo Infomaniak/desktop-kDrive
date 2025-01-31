@@ -22,8 +22,8 @@
 
 namespace KDC {
 
-ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName, int startDelay,
-                         bool testing /*= false*/) :
+ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
+                         std::chrono::seconds startDelay, bool testing /*= false*/) :
     _logger(Log::instance()->getLogger()),
     _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName), _startDelay(startDelay) {}
 
@@ -113,14 +113,15 @@ void ISyncWorker::waitForExit() {
 }
 
 bool ISyncWorker::sleepUntilStartDelay() {
-    if (_startDelay) {
-        int delay = _startDelay;
-        while (delay--) {
+    if (_startDelay.count()) {
+        auto delay = _startDelay;
+        while (delay.count()) {
             // Manage stop
             if (stopAsked()) {
                 return false;
             }
             std::this_thread::sleep_for(std::chrono::seconds(1));
+            delay -= std::chrono::seconds(1);
         }
     }
 
