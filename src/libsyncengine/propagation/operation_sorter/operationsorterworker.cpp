@@ -389,12 +389,10 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
 
 void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveOccupied");
-    const auto opIds = _unsortedList.opListIdByType(OperationType::Move);
-    auto otherOpIds = opIds;
-    for (const auto &opId: opIds) {
+    for (const auto opIds = _unsortedList.opListIdByType(OperationType::Move); const auto &opId: opIds) {
         const auto op = _unsortedList.getOp(opId);
 
-        for (const auto &moveOpId: otherOpIds) {
+        for (const auto &moveOpId: opIds) {
             const auto otherOp = _unsortedList.getOp(moveOpId);
             if (op == otherOp || otherOp->targetSide() != op->targetSide()) {
                 continue;
@@ -402,42 +400,25 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
 
             const auto node = op->affectedNode();
             if (!node->parentNode()) continue;
-            if (!node->moveOrigin().has_value()) {
-                LOG_SYNCPAL_WARN(_logger, "Missing origin path");
-                return;
-            }
 
             const auto otherNode = otherOp->affectedNode();
-            if (!otherNode->parentNode()) continue;
             if (!otherNode->moveOrigin().has_value()) {
                 LOG_SYNCPAL_WARN(_logger, "Missing origin path");
                 return;
             }
 
             const auto nodePath = node->getPath();
-            const auto nodeOriginPath = node->moveOrigin();
-            const auto otherNodePath = otherNode->getPath();
             const auto otherNodeOriginPath = otherNode->moveOrigin();
 
             const auto nodeParentId = node->parentNode()->id();
-            const auto otherNodeParentId = otherNode->parentNode()->id();
-
-            NodeId nodeOriginParentId;
-            if (!getIdFromDb(node->side(), nodeOriginPath->parent_path(), nodeOriginParentId)) continue;
             NodeId otherNodeOriginParentId;
             if (!getIdFromDb(otherNode->side(), otherNodeOriginPath->parent_path(), otherNodeOriginParentId)) continue;
 
             if (nodeParentId == otherNodeOriginParentId && nodePath.filename() == otherNodeOriginPath->filename()) {
                 // move only if op is before otherMoveOp
                 moveFirstAfterSecond(op, otherOp);
-                continue;
-            }
-            if (nodeOriginParentId == otherNodeParentId && nodeOriginPath->filename() == otherNodePath.filename()) {
-                // move only if otherMoveOp is before op
-                moveFirstAfterSecond(otherOp, op);
             }
         }
-        (void) otherOpIds.erase(opId);
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveOccupied");
 }
