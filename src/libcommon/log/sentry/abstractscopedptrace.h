@@ -30,11 +30,11 @@ class AbstractScopedPTrace : public AbstractPTrace {
     protected:
         explicit AbstractScopedPTrace(const PTraceDescriptor &info, PTraceStatus autoStopStatus) :
             AbstractPTrace(info), _autoStopStatus(autoStopStatus) {
-            start();
+            AbstractScopedPTrace::start();
         }
         explicit AbstractScopedPTrace(const PTraceDescriptor &info, PTraceStatus autoStopStatus, int syncDbId) :
             AbstractPTrace(info, syncDbId), _autoStopStatus(autoStopStatus) {
-            start();
+            AbstractScopedPTrace::start();
         }
 
     private:
