@@ -1111,6 +1111,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
     SyncPath relativeDestLocalFilePath;
     SyncPath absoluteDestLocalFilePath;
     SyncPath relativeOriginLocalFilePath;
+    SyncPath absoluteOriginLocalFilePath;
 
     if (syncOp->targetSide() == ReplicaSide::Local) {
         // Target side is local, so corresponding node is on local side.
@@ -1133,7 +1134,8 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
         relativeOriginLocalFilePath = correspondingNode->getPath();
         absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
-        SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
+        absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
+
         job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
     } else {
         // Target side is remote, so affected node is on local side.
@@ -1156,7 +1158,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
         relativeOriginLocalFilePath = correspondingNode->getPath();
         absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
-        SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
+        absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
 
         if (syncOp->isBreakingCycleOp() || relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
             // This is just a rename
@@ -1214,6 +1216,13 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
 
     job->setAffectedFilePath(relativeDestLocalFilePath);
     job->runSynchronously();
+
+    bool isPlaceholder = false;
+    bool isHydrated = false;
+    bool isSyncing = false;
+    int progress = 0;
+    _syncPal->vfsStatus(absoluteOriginLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress);
+    _syncPal->vfsForceStatus(absoluteDestLocalFilePath, false, 100, isHydrated);
 
     if (job->exitCode() == ExitCode::Ok && syncOp->conflict().type() != ConflictType::None) {
         // Conflict fixing job finished successfully

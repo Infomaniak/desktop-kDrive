@@ -246,8 +246,7 @@ struct ExitInfo {
         ExitInfo() = default;
         constexpr ExitInfo(const ExitCode &code, const ExitCause &cause,
                            const SourceLocation srcLoc = SourceLocation::currentLoc()) :
-            _code(code),
-            _cause(cause), _srcLoc(srcLoc) {}
+            _code(code), _cause(cause), _srcLoc(srcLoc) {}
 
         ExitInfo(const ExitCode &code, const SourceLocation srcLoc = SourceLocation::currentLoc()) :
             _code(code), _srcLoc(srcLoc) {}
