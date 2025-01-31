@@ -41,68 +41,54 @@ namespace KDC {
 #define READ_PAUSE_SLEEP_PERIOD 100 // 0.1 s
 #define READ_RETRIES 10
 
-DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
-                         SyncTime creationTime, SyncTime modtime, bool isCreate) :
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
+                         int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
-    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate) {
+    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
 }
 
-DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize) :
+DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
+                         int64_t expectedSize) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
-    _expectedSize(expectedSize), _ignoreDateTime(true) {
+    _expectedSize(expectedSize), _ignoreDateTime(true), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
 }
 
 DownloadJob::~DownloadJob() {
-    try {
-        // Remove tmp file
-        // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must
-        // be deleted
-        if (!removeTmpFile() && !_isCreate) {
-            LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
+    // Remove tmp file
+    // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must
+    // be deleted
+    if (!removeTmpFile() && !_isCreate) {
+        LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
+    }
+    if (!_vfs) return;
+    if (_responseHandlingCanceled) {
+        if (const ExitInfo exitInfo = _vfs->setPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
-        if (_responseHandlingCanceled) {
-            if (_vfsSetPinState) {
-                if (ExitInfo exitInfo = _vfsSetPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
-                    LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
-                }
-            }
-
-            // TODO: usefull ?
-            if (_vfsForceStatus) {
-                if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, false); !exitInfo) {
-                    LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
-                }
-            }
-
-            if (_vfsCancelHydrate) {
-                if (!_vfsCancelHydrate(_localpath)) {
-                    LOGW_WARN(_logger, L"Error in vfsCancelHydrate: " << Utility::formatSyncPath(_localpath));
-                }
-            }
-        } else {
-            if (_vfsSetPinState) {
-                if (ExitInfo exitInfo =
-                            _vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
-                    !exitInfo) {
-                    LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
-                }
-            }
-
-            if (_vfsForceStatus) {
-                if (ExitInfo exitInfo = _vfsForceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok); !exitInfo) {
-                    LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
-                }
-            }
+        // TODO: usefull ?
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, false, 0, false); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
-    } catch (const std::bad_function_call &e) {
-        LOG_ERROR(_logger, "Error in DownloadJob::~DownloadJob: " << e.what());
+
+        _vfs->cancelHydrate(_localpath);
+
+    } else {
+        if (const ExitInfo exitInfo =
+                    _vfs->setPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
+            !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+        }
+
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+        }
     }
 }
 
@@ -141,46 +127,42 @@ bool DownloadJob::canRun() {
 }
 
 void DownloadJob::runJob() noexcept {
-    if (!_isCreate) {
+    if (!_isCreate && _vfs) {
         // Update size on file system
-        if (_vfsUpdateMetadata) {
-            FileStat filestat;
-            IoError ioError = IoError::Success;
-            if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
-                LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError));
-                _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::Unknown;
-                return;
-            }
-            if (ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath));
-                _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::NotFound;
-                return;
-            } else if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath));
-                _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::FileAccessError;
-                return;
-            }
-
-            if (ExitInfo exitInfo = _vfsUpdateMetadata(_localpath, filestat.creationTime, filestat.modtime, _expectedSize,
-                                                       std::to_string(filestat.inode));
-                !exitInfo) {
-                LOGW_WARN(_logger, L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_localpath));
-                _exitCode = exitInfo.code();
-                _exitCause = exitInfo.cause();
-                return;
-            }
+        FileStat filestat;
+        IoError ioError = IoError::Success;
+        if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError));
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
+            return;
+        }
+        if (ioError == IoError::NoSuchFileOrDirectory) {
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath));
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::NotFound;
+            return;
+        } else if (ioError == IoError::AccessDenied) {
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath));
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
+            return;
         }
 
-        if (_vfsForceStatus) {
-            if (ExitInfo exitInfo = _vfsForceStatus(_localpath, true, 0, false); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
-                _exitCode = exitInfo.code();
-                _exitCause = exitInfo.cause();
-                return;
-            }
+        if (const ExitInfo exitInfo = _vfs->updateMetadata(_localpath, filestat.creationTime, filestat.modtime, _expectedSize,
+                                                           std::to_string(filestat.inode));
+            !exitInfo) {
+            LOGW_WARN(_logger, L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_localpath));
+            _exitCode = exitInfo.code();
+            _exitCause = exitInfo.cause();
+            return;
+        }
+
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, true, 0, false); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+            _exitCode = exitInfo.code();
+            _exitCause = exitInfo.cause();
+            return;
         }
     }
 
@@ -211,6 +193,15 @@ bool DownloadJob::handleResponse(std::istream &is) {
         isLink = true;
     }
 
+    bool dummyIsPlaceHolder = false;
+    bool dummyIsSyncing = false;
+    int dummyProgress = 0;
+    if (_vfs) {
+        _vfs->status(_localpath, dummyIsPlaceHolder, _isHydrated, dummyIsSyncing, dummyProgress);
+    } else {
+        _isHydrated = true;
+    }
+
     // Process download
     if (isLink) {
         // Create link
@@ -236,9 +227,10 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
         bool restartSync = false;
         if (!_responseHandlingCanceled) {
-            if (_vfsUpdateFetchStatus && !fetchFinished) {
+            if (_vfs && !_isHydrated && !fetchFinished) { // updateFetchStatus is used only for hydration.
                 // Update fetch status
-                if (ExitInfo exitInfo = _vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
+                if (ExitInfo exitInfo =
+                            _vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished);
                     !exitInfo) {
                     LOGW_WARN(_logger,
                               L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
@@ -250,7 +242,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 }
 
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
-            } else if (!_vfsUpdateFetchStatus) {
+            } else if (_isHydrated) {
                 // Replace file by tmp one
                 if (!moveTmpFile(restartSync)) {
                     LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
@@ -593,12 +585,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
 
     std::ofstream output;
     do {
-#ifdef _WIN32
-        const std::string tmpFileName = tmpnam(nullptr);
-#else
         const std::string tmpFileName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-#endif
-
         _tmpPath = tmpDirectoryPath / tmpFileName;
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
@@ -686,11 +673,11 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
                     }
                 }
 
-                if (_vfsUpdateFetchStatus) {
+                if (_vfs && !_isHydrated) { // updateFetchStatus is used only for hydration.
                     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
                     if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
-                        if (!_vfsUpdateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
+                        if (!_vfs->updateFetchStatus(_tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
                             LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath));
                             fetchError = true;
                             break;

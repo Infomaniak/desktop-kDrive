@@ -3322,9 +3322,15 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
     _lastSyncPalStart = std::chrono::steady_clock::now();
 
     if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
+        std::shared_ptr<Vfs> vfsPtr;
+        if (ExitInfo exitInfo = getVfsPtr(sync.dbId(), vfsPtr); !exitInfo) {
+            LOG_WARN(_logger, "Error in getVfsPtr for syncDbId=" << sync.dbId() << " " << exitInfo);
+            return exitInfo.code();
+        }
+
         // Create SyncPal
         try {
-            _syncPalMap[sync.dbId()] = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), _theme->version().toStdString()));
+            _syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfsPtr, sync.dbId(), _theme->version().toStdString());
         } catch (std::exception const &) {
             LOG_WARN(_logger, "Error in SyncPal::SyncPal for syncDbId=" << sync.dbId());
             return ExitCode::DbError;
@@ -3334,14 +3340,6 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
         _syncPalMap[sync.dbId()]->setAddErrorCallback(&addError);
         _syncPalMap[sync.dbId()]->setAddCompletedItemCallback(&addCompletedItem);
         _syncPalMap[sync.dbId()]->setSendSignalCallback(&sendSignal);
-
-        std::shared_ptr<Vfs> vfsPtr;
-        if (ExitInfo exitInfo = getVfsPtr(sync.dbId(), vfsPtr); !exitInfo) {
-            LOG_WARN(_logger, "Error in getVfsPtr for syncDbId=" << sync.dbId() << " " << exitInfo);
-            return exitInfo.code();
-        }
-
-        _syncPalMap[sync.dbId()]->setVfsPtr(vfsPtr);
 
         if (blackList != std::unordered_set<NodeId>()) {
             // Set blackList (create or overwrite the possible existing list in DB)
@@ -3497,16 +3495,17 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
         // Create VFS instance
         VfsSetupParams vfsSetupParams;
-        vfsSetupParams._syncDbId = sync.dbId();
+        vfsSetupParams.syncDbId = sync.dbId();
 #ifdef Q_OS_WIN
-        vfsSetupParams._driveId = drive.driveId();
-        vfsSetupParams._userId = user.userId();
+        vfsSetupParams.driveId = drive.driveId();
+        vfsSetupParams.userId = user.userId();
 #endif
-        vfsSetupParams._localPath = sync.localPath();
-        vfsSetupParams._targetPath = sync.targetPath();
+        vfsSetupParams.localPath = sync.localPath();
+        vfsSetupParams.targetPath = sync.targetPath();
         connect(this, &AppServer::socketApiExecuteCommandDirect, _socketApi.data(), &SocketApi::executeCommandDirect);
-        vfsSetupParams._executeCommand = [this](const char *command) { emit socketApiExecuteCommandDirect(QString(command)); };
-        vfsSetupParams._logger = _logger;
+        vfsSetupParams.executeCommand = [this](const char *command) { emit socketApiExecuteCommandDirect(QString(command)); };
+        vfsSetupParams.logger = _logger;
+        vfsSetupParams.sentryHandler = sentry::Handler::instance();
         QString error;
         std::shared_ptr vfsPtr = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
         if (!vfsPtr) {

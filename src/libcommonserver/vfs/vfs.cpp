@@ -41,8 +41,8 @@ void Vfs::starVfsWorkers() {
     // !!! Disabled for testing because no QEventLoop !!!
     if (qApp) {
         // Start worker threads
-        for (int i = 0; i < nbWorkers; i++) {
-            for (int j = 0; j < s_nb_threads[i]; j++) {
+        for (size_t i = 0; i < nbWorkers; i++) {
+            for (size_t j = 0; j < s_nb_threads[i]; j++) {
                 auto *workerThread = new QtLoggingThread();
                 _workerInfo[i]._threadList.append(workerThread);
                 auto *worker = new VfsWorker(this, i, j, logger());
@@ -112,14 +112,14 @@ void Vfs::stop(bool unregister) {
     }
 }
 
-ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation& location) const {
+ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation &location) const {
     if (ExitInfo exitInfo = checkIfPathIsValid(itemPath, true, location); !exitInfo) {
         return exitInfo;
     }
     return defaultVfsError(location);
 }
 
-ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation& location) const {
+ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation &location) const {
     if (itemPath.empty()) {
         LOGW_WARN(logger(), L"Empty path provided in Vfs::checkIfPathIsValid");
         assert(false && "Empty path in a VFS call");
@@ -192,20 +192,21 @@ void VfsWorker::start() {
 
 VfsOff::VfsOff(QObject *parent) : Vfs(VfsSetupParams(), parent) {}
 
-VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
+VfsOff::VfsOff(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
 VfsOff::~VfsOff() {}
 
 ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
     QString path = SyncName2QStr(pathStd.native());
-    KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
+    KDC::SyncPath fullPath(_vfsSetupParams.localPath / QStr2Path(path));
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
     // Update Finder
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
     QString status = isSyncing ? "SYNC" : "OK";
-    _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
+    if (_vfsSetupParams.executeCommand)
+        _vfsSetupParams.executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
 
     return ExitCode::Ok;
 }
