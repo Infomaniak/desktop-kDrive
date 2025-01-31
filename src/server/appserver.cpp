@@ -354,6 +354,8 @@ AppServer::AppServer(int &argc, char **argv) :
         return;
     }
 
+    sentry::Handler::captureMessage(sentry::Level::Info, "kDrive started", "kDrive started");
+
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
 

@@ -268,7 +268,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     }
 
 #ifdef NDEBUG
-    sentry_options_set_traces_sample_rate(options, 0.001); // 0.1% of traces will be sent to sentry.
+    sentry_options_set_traces_sample_rate(options, 0.1); // 0.1% of traces will be sent to sentry.
 #else
     sentry_options_set_traces_sample_rate(options, 1);
 #endif
