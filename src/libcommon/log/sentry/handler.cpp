@@ -283,7 +283,6 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 
 void Handler::init(const std::shared_ptr<Handler> &initializedHandler) {
     if (_instance) {
-        assert(false && "Handler already initialized");
         return;
     }
     _instance = initializedHandler;

@@ -102,7 +102,8 @@ struct SyncPalInfo {
 
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
-        SyncPal(const std::shared_ptr<Vfs>& vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
+        SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
+                const bool hasFullyCompleted);
         SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
