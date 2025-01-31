@@ -44,14 +44,14 @@ constexpr short workerDehydration = 1;
 
 namespace KDC {
 struct VfsSetupParams {
-        int _syncDbId;
-        int _driveId;
-        int _userId;
-        SyncPath _localPath;
-        SyncPath _targetPath;
-        std::string _namespaceCLSID;
-        KDC::ExecuteCommand _executeCommand;
-        log4cplus::Logger _logger;
+        int syncDbId;
+        int driveId;
+        int userId;
+        SyncPath localPath;
+        SyncPath targetPath;
+        std::string namespaceCLSID;
+        KDC::ExecuteCommand executeCommand;
+        log4cplus::Logger logger;
 };
 
 /** Interface describing how to deal with virtual/placeholder files.
@@ -284,8 +284,8 @@ class Vfs : public QObject {
 
         inline void setExtendedLog(bool extendedLog) { _extendedLog = extendedLog; }
 
-        inline const std::string &namespaceCLSID() { return _vfsSetupParams._namespaceCLSID; }
-        inline void setNamespaceCLSID(const std::string &CLSID) { _vfsSetupParams._namespaceCLSID = CLSID; }
+        inline const std::string &namespaceCLSID() { return _vfsSetupParams.namespaceCLSID; }
+        inline void setNamespaceCLSID(const std::string &CLSID) { _vfsSetupParams.namespaceCLSID = CLSID; }
 
         virtual void dehydrate(const SyncPath &path) = 0;
         virtual void hydrate(const SyncPath &path) = 0;
@@ -323,7 +323,7 @@ class Vfs : public QObject {
 
         virtual void stopImpl(bool unregister) = 0;
 
-        inline log4cplus::Logger logger() const { return _vfsSetupParams._logger; }
+        inline log4cplus::Logger logger() const { return _vfsSetupParams.logger; }
 
 
         /* Handle a VFS error by logging it and returning an ExitInfo with the appropriate error code.

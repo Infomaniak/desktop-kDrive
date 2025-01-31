@@ -198,14 +198,14 @@ VfsOff::~VfsOff() {}
 
 ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
     QString path = SyncName2QStr(pathStd.native());
-    KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
+    KDC::SyncPath fullPath(_vfsSetupParams.localPath / QStr2Path(path));
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
     // Update Finder
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
     QString status = isSyncing ? "SYNC" : "OK";
-    _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
+    _vfsSetupParams.executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
 
     return ExitCode::Ok;
 }

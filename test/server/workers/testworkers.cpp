@@ -99,15 +99,15 @@ void TestWorkers::setUp() {
 
     // Create VFS instance
     VfsSetupParams vfsSetupParams;
-    vfsSetupParams._syncDbId = _sync.dbId();
+    vfsSetupParams.syncDbId = _sync.dbId();
 #ifdef _WIN32
-    vfsSetupParams._driveId = drive.driveId();
-    vfsSetupParams._userId = user.userId();
+    vfsSetupParams.driveId = drive.driveId();
+    vfsSetupParams.userId = user.userId();
 #endif
-    vfsSetupParams._localPath = _sync.localPath();
-    vfsSetupParams._targetPath = _sync.targetPath();
-    vfsSetupParams._logger = _logger;
-    vfsSetupParams._executeCommand = [](const char *) {};
+    vfsSetupParams.localPath = _sync.localPath();
+    vfsSetupParams.targetPath = _sync.targetPath();
+    vfsSetupParams.logger = _logger;
+    vfsSetupParams.executeCommand = [](const char *) {};
 
 #if defined(__APPLE__)
     _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
