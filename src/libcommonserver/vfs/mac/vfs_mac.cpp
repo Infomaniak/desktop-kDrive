@@ -31,14 +31,14 @@
 
 namespace KDC {
 VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
-    Vfs(vfsSetupParams, parent), _localSyncPath{Path2QStr(_vfsSetupParams.localPath)} {
+    Vfs(vfsSetupParams, parent), _localSyncPath{Path2QStr(_vfsSetupParams._localPath)} {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
 
     Utility::setLogger(logger());
     IoHelper::setLogger(logger());
 
-    _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams.executeCommand);
+    _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams._executeCommand);
     if (!_connector) {
         LOG_WARN(logger(), "Error in LiteSyncExtConnector::instance");
         throw std::runtime_error("Unable to initialize LiteSyncExtConnector.");
@@ -52,7 +52,7 @@ VirtualFileMode VfsMac::mode() const {
 }
 
 ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
-    LOG_DEBUG(logger(), "startImpl - syncDbId=" << _vfsSetupParams.syncDbId);
+    LOG_DEBUG(logger(), "startImpl - syncDbId=" << _vfsSetupParams._syncDbId);
 
     if (!_connector) {
         LOG_WARN(logger(), "LiteSyncExtConnector not initialized!");
@@ -90,8 +90,8 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
 
     bool isPlaceholder = false;
     bool isSyncing = false;
-    QString folderPath = QString::fromStdString(_vfsSetupParams.localPath.native());
-    if (!_connector->vfsStart(_vfsSetupParams.syncDbId, folderPath, isPlaceholder, isSyncing)) {
+    QString folderPath = QString::fromStdString(_vfsSetupParams._localPath.native());
+    if (!_connector->vfsStart(_vfsSetupParams._syncDbId, folderPath, isPlaceholder, isSyncing)) {
         LOG_WARN(logger(), "Error in vfsStart!");
         resetLiteSyncConnector();
         return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
@@ -127,7 +127,7 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
 }
 
 void VfsMac::stopImpl(bool unregister) {
-    LOG_DEBUG(logger(), "stop - syncDbId = " << _vfsSetupParams.syncDbId);
+    LOG_DEBUG(logger(), "stop - syncDbId = " << _vfsSetupParams._syncDbId);
 
     if (unregister) {
         if (!_connector) {
@@ -135,7 +135,7 @@ void VfsMac::stopImpl(bool unregister) {
             return;
         }
 
-        if (!_connector->vfsStop(_vfsSetupParams.syncDbId)) {
+        if (!_connector->vfsStop(_vfsSetupParams._syncDbId)) {
             LOG_WARN(logger(), "Error in vfsStop!");
             return;
         }
@@ -153,8 +153,8 @@ void VfsMac::dehydrate(const SyncPath &absoluteFilepathStd) {
     }
 
     QString relativePath =
-            QStringView(absoluteFilepath).mid(static_cast<qsizetype>(_vfsSetupParams.localPath.string().size())).toUtf8();
-    _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
+            QStringView(absoluteFilepath).mid(static_cast<qsizetype>(_vfsSetupParams._localPath.string().size())).toUtf8();
+    _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
 void VfsMac::hydrate(const SyncPath &pathStd) {
@@ -165,8 +165,8 @@ void VfsMac::hydrate(const SyncPath &pathStd) {
         LOG_WARN(logger(), "Error in vfsHydratePlaceHolder!");
     }
 
-    QString relativePath = QStringView(path).mid(static_cast<qsizetype>(_vfsSetupParams.localPath.string().size())).toUtf8();
-    _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
+    QString relativePath = QStringView(path).mid(static_cast<qsizetype>(_vfsSetupParams._localPath.string().size())).toUtf8();
+    _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
 }
 
 ExitInfo VfsMac::forceStatus(const SyncPath &pathStd, bool isSyncing, int progress, bool isHydrated /*= false*/) {
@@ -232,7 +232,7 @@ ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
         return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
-    SyncPath fullPath(_vfsSetupParams.localPath / relativeLocalPath);
+    SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, false); !exitInfo) {
         return exitInfo;
     }
@@ -266,14 +266,14 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
         LOGW_DEBUG(logger(), L"dehydratePlaceholder - file " << Utility::formatSyncPath(path));
     }
 
-    SyncPath fullPath(_vfsSetupParams.localPath / path);
+    SyncPath fullPath(_vfsSetupParams._localPath / path);
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
 
     // Check file status
     SyncFileStatus status;
-    _syncFileStatus(_vfsSetupParams.syncDbId, path, status);
+    _syncFileStatus(_vfsSetupParams._syncDbId, path, status);
     if (status == SyncFileStatus::Unknown) {
         // The file is not synchronized, do nothing
         LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatSyncPath(fullPath));
@@ -454,7 +454,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
 
 void VfsMac::resetLiteSyncConnector() {
     try {
-        _connector->resetConnector(logger(), _vfsSetupParams.executeCommand);
+        _connector->resetConnector(logger(), _vfsSetupParams._executeCommand);
     } catch (const std::runtime_error &) {
         LOG_WARN(logger(), "Error resetting LiteSyncExtConnector");
     }
@@ -507,7 +507,7 @@ void VfsMac::cancelHydrate(const SyncPath &filePathStd) {
 }
 
 ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated) {
-    SyncPath filePath(_vfsSetupParams.localPath / initFilePathStd);
+    SyncPath filePath(_vfsSetupParams._localPath / initFilePathStd);
 
     bool isPlaceholder = false;
     bool isHydrated = false;
@@ -523,7 +523,7 @@ ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &
 }
 
 ExitInfo VfsMac::setPinState(const SyncPath &fileRelativePathStd, PinState state) {
-    SyncPath fullPath(_vfsSetupParams.localPath / fileRelativePathStd);
+    SyncPath fullPath(_vfsSetupParams._localPath / fileRelativePathStd);
 
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
@@ -542,7 +542,7 @@ ExitInfo VfsMac::setPinState(const SyncPath &fileRelativePathStd, PinState state
 
 PinState VfsMac::pinState(const SyncPath &relativePathStd) {
     // Read pin state from file attributes
-    SyncPath fullPath(_vfsSetupParams.localPath / relativePathStd);
+    SyncPath fullPath(_vfsSetupParams._localPath / relativePathStd);
     std::string pinState;
     if (!_connector->vfsGetPinState(Path2QStr(fullPath), pinState)) {
         return PinState::Unknown;
@@ -663,7 +663,7 @@ bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
         // New file
         return true;
     }
-    SyncPath fileRelativePath = CommonUtility::relativePath(_vfsSetupParams.localPath, fullPath);
+    SyncPath fileRelativePath = CommonUtility::relativePath(_vfsSetupParams._localPath, fullPath);
 
     if (status == SyncFileStatus::Ignored) {
         exclude(fullPath);
@@ -715,10 +715,10 @@ bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
                 bool syncing;
-                _syncFileSyncing(_vfsSetupParams.syncDbId, fileRelativePath, syncing);
+                _syncFileSyncing(_vfsSetupParams._syncDbId, fileRelativePath, syncing);
                 if (!syncing) {
                     // Set hydrating indicator (avoid double hydration)
-                    _setSyncFileSyncing(_vfsSetupParams.syncDbId, fileRelativePath, true);
+                    _setSyncFileSyncing(_vfsSetupParams._syncDbId, fileRelativePath, true);
 
                     // Add file path to hydration queue
                     _workerInfo[workerHydration]._mutex.lock();

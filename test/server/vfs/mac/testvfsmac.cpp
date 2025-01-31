@@ -28,9 +28,9 @@ namespace KDC {
 
 void TestVfsMac::setUp() {
     VfsSetupParams vfsSetupParams;
-    vfsSetupParams.syncDbId = 1;
-    vfsSetupParams.localPath = "/";
-    vfsSetupParams.targetPath = "/";
+    vfsSetupParams._syncDbId = 1;
+    vfsSetupParams._localPath = "/";
+    vfsSetupParams._targetPath = "/";
     vfsSetupParams._logger = Log::instance()->getLogger();
     _vfs = std::make_unique<VfsMac>(vfsSetupParams);
 }

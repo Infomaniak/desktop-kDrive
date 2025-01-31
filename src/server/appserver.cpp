@@ -3497,16 +3497,16 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
         // Create VFS instance
         VfsSetupParams vfsSetupParams;
-        vfsSetupParams.syncDbId = sync.dbId();
+        vfsSetupParams._syncDbId = sync.dbId();
 #ifdef Q_OS_WIN
-        vfsSetupParams.driveId = drive.driveId();
-        vfsSetupParams.userId = user.userId();
+        vfsSetupParams._driveId = drive.driveId();
+        vfsSetupParams._userId = user.userId();
 #endif
-        vfsSetupParams.localPath = sync.localPath();
-        vfsSetupParams.targetPath = sync.targetPath();
+        vfsSetupParams._localPath = sync.localPath();
+        vfsSetupParams._targetPath = sync.targetPath();
         connect(this, &AppServer::socketApiExecuteCommandDirect, _socketApi.data(), &SocketApi::executeCommandDirect);
-        vfsSetupParams.executeCommand = [this](const char *command) { emit socketApiExecuteCommandDirect(QString(command)); };
-        vfsSetupParams.logger = _logger;
+        vfsSetupParams._executeCommand = [this](const char *command) { emit socketApiExecuteCommandDirect(QString(command)); };
+        vfsSetupParams._logger = _logger;
         QString error;
         std::shared_ptr vfsPtr = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
         if (!vfsPtr) {
