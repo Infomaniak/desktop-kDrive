@@ -106,9 +106,8 @@ void TestIntegration::setUp() {
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
-
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
-                                         KDRIVE_VERSION_STRING);
+ 
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
 
     // Insert items to blacklist
@@ -947,7 +946,7 @@ void TestIntegration::testEditDeleteConflict2() {
 
     // Init: create a folder and duplicate an existing file inside it
     SyncName dirName = Str("test_dir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
-    CreateDirJob initCreateDirJob(_syncPal->vfs(), _driveDbId, dirName, testExecutorFolderRemoteId, dirName);
+    CreateDirJob initCreateDirJob(nullptr, _driveDbId, dirName, testExecutorFolderRemoteId, dirName);
     initCreateDirJob.runSynchronously();
 
     // Extract dir ID
@@ -2089,11 +2088,11 @@ void TestIntegration::testMoveMoveCycleConflict() {
     SyncName testDirB = Str("testMoveMoveDestConflictB_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
 
     // Create folders
-    CreateDirJob initCreateDirJobA(_syncPal->vfs(), _driveDbId, testDirA, testExecutorFolderRemoteId, testDirA);
+    CreateDirJob initCreateDirJobA(nullptr, _driveDbId, testDirA, testExecutorFolderRemoteId, testDirA);
     initCreateDirJobA.runSynchronously();
     NodeId testDirRemoteIdA = initCreateDirJobA.nodeId();
 
-    CreateDirJob initCreateDirJobB(_syncPal->vfs(), _driveDbId, testDirB, testExecutorFolderRemoteId, testDirB);
+    CreateDirJob initCreateDirJobB(nullptr, _driveDbId, testDirB, testExecutorFolderRemoteId, testDirB);
     initCreateDirJobB.runSynchronously();
     NodeId testDirRemoteIdB = initCreateDirJobB.nodeId();
 
