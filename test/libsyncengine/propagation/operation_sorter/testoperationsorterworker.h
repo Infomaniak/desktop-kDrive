@@ -46,6 +46,8 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture {
         void setUp() override;
         void tearDown() override;
 
+        void setupInitialSituation();
+
         void testMoveFirstAfterSecond();
         void testFixDeleteBeforeMove();
         void testFixMoveBeforeCreate();

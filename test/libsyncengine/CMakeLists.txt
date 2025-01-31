@@ -16,6 +16,7 @@ set(testsyncengine_SRCS
         # Mocks
         ../mocks/libsyncengine/vfs/mockvfs.h
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
+        ../test_classes/testinitialsituationgenerator.h ../test_classes/testinitialsituationgenerator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         olddb/testoldsyncdb.h olddb/testoldsyncdb.cpp
