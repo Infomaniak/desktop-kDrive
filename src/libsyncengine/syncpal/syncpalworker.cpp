@@ -74,6 +74,7 @@ void SyncPalWorker::execute() {
         // Exit
         exitCode = ExitCode::Ok;
         setDone(exitCode);
+        return;
     }
 
     // Sync loop
