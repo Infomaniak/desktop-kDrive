@@ -22,6 +22,8 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 
+#include <algorithm>
+
 using namespace CppUnit;
 
 namespace KDC {

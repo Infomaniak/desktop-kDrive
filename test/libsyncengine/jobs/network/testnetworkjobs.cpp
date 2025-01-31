@@ -67,7 +67,6 @@ static const NodeId pictureDirRemoteId = "56851"; // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373"; // test_ci/test_pictures/picture-1.jpg
 static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test_download.txt
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
-static const NodeId testAliasRemoteId = "2016113"; // test_ci/test_networkjobs/test_alias.log
 static const NodeId testAliasDnDRemoteId = "2023013"; // test_ci/test_networkjobs/test_alias_dnd
 static const NodeId testAliasGoodRemoteId = "2017813"; // test_ci/test_networkjobs/test_alias_good.log
 static const NodeId testAliasCorruptedRemoteId = "2017817"; // test_ci/test_networkjobs/test_alias_corrupted.log

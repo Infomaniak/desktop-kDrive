@@ -75,14 +75,13 @@
 #define RESTART_SYNCS_INTERVAL 15000 // ms
 #define START_SYNCPALS_TRIALS 12
 #define START_SYNCPALS_RETRY_INTERVAL 5000 // ms
-#define START_SYNCPALS_TIME_GAP 5000 // ms
+#define START_SYNCPALS_TIME_GAP 5 // sec
 
 namespace KDC {
 
 std::unordered_map<int, std::shared_ptr<SyncPal>> AppServer::_syncPalMap;
 std::unordered_map<int, std::shared_ptr<KDC::Vfs>> AppServer::_vfsMap;
 std::vector<AppServer::Notification> AppServer::_notifications;
-std::chrono::time_point<std::chrono::steady_clock> AppServer::_lastSyncPalStart = std::chrono::steady_clock::now();
 
 namespace {
 
@@ -357,7 +356,7 @@ AppServer::AppServer(int &argc, char **argv) :
     sentry::Handler::captureMessage(sentry::Level::Info, "kDrive started", "kDrive started");
 
     // Start syncs
-    QTimer::singleShot(0, [=]() { startSyncPals(); });
+    QTimer::singleShot(0, [=, this]() { startSyncPals(); });
 
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
@@ -974,7 +973,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             const bool resumedByUser = exitCode == ExitCode::Ok;
 
             exitCode = initSyncPal(sync, std::unordered_set<NodeId>(), std::unordered_set<NodeId>(), std::unordered_set<NodeId>(),
-                                   true, resumedByUser, false);
+                                   true, std::chrono::seconds(0), resumedByUser, false);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                 addError(Error(errId(), exitCode, exitCause));
@@ -994,7 +993,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << ExitCode::Ok;
 
-            QTimer::singleShot(100, [=]() {
+            QTimer::singleShot(100, [=, this]() {
                 // Stop SyncPal
                 ExitCode exitCode = stopSyncPal(syncDbId, true);
                 if (exitCode != ExitCode::Ok) {
@@ -1043,56 +1042,77 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << isRunning;
             break;
         }
-        case RequestNum::SYNC_ADD: {
+        case RequestNum::SYNC_ADD:
+        case RequestNum::SYNC_ADD2: {
             int userDbId = 0;
             int accountId = 0;
             int driveId = 0;
+            int driveDbId = 0;
             QString localFolderPath;
             QString serverFolderPath;
             QString serverFolderNodeId;
             bool liteSync = false;
             QSet<QString> blackList;
             QSet<QString> whiteList;
-            QDataStream paramsStream(params);
-            paramsStream >> userDbId;
-            paramsStream >> accountId;
-            paramsStream >> driveId;
-            paramsStream >> localFolderPath;
-            paramsStream >> serverFolderPath;
-            paramsStream >> serverFolderNodeId;
-            paramsStream >> liteSync;
-            paramsStream >> blackList;
-            paramsStream >> whiteList;
+            if (num == RequestNum::SYNC_ADD) {
+                ArgsWriter(params).write(userDbId, accountId, driveId, localFolderPath, serverFolderPath, serverFolderNodeId,
+                                         liteSync, blackList, whiteList);
+            } else {
+                ArgsWriter(params).write(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, blackList,
+                                         whiteList);
+            }
 
             // Add sync in DB
             bool showInNavigationPane = false;
 #ifdef Q_OS_WIN
             showInNavigationPane = _navigationPaneHelper->showInExplorerNavigationPane();
 #endif
-            AccountInfo accountInfo;
-            DriveInfo driveInfo;
+
+            ExitCode exitCode = ExitCode::Ok;
             SyncInfo syncInfo;
-            ExitCode exitCode =
-                    ServerRequests::addSync(userDbId, accountId, driveId, localFolderPath, serverFolderPath, serverFolderNodeId,
-                                            liteSync, showInNavigationPane, accountInfo, driveInfo, syncInfo);
-            if (exitCode != ExitCode::Ok) {
-                LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
-                                           << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
-                                           << L" localFolderPath=" << QStr2WStr(localFolderPath).c_str() << L" serverFolderPath="
-                                           << QStr2WStr(serverFolderPath).c_str() << L" serverFolderNodeId="
-                                           << serverFolderNodeId.toStdWString().c_str() << L" liteSync=" << liteSync
-                                           << L" showInNavigationPane=" << showInNavigationPane);
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
-                resultStream << toInt(exitCode);
-                break;
+            if (num == RequestNum::SYNC_ADD) {
+                AccountInfo accountInfo;
+                DriveInfo driveInfo;
+
+                exitCode = ServerRequests::addSync(userDbId, accountId, driveId, localFolderPath, serverFolderPath,
+                                                   serverFolderNodeId, liteSync, showInNavigationPane, accountInfo, driveInfo,
+                                                   syncInfo);
+
+                if (exitCode != ExitCode::Ok) {
+                    LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
+                                               << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
+                                               << L" localFolderPath=" << QStr2WStr(localFolderPath).c_str()
+                                               << L" serverFolderPath=" << QStr2WStr(serverFolderPath).c_str()
+                                               << L" serverFolderNodeId=" << serverFolderNodeId.toStdWString().c_str()
+                                               << L" liteSync=" << liteSync << L" showInNavigationPane=" << showInNavigationPane);
+                    addError(Error(errId(), exitCode, ExitCause::Unknown));
+                    resultStream << toInt(exitCode);
+                    break;
+                }
+
+                if (accountInfo.dbId() != 0) {
+                    sendAccountAdded(accountInfo);
+                }
+
+                if (driveInfo.dbId() != 0) {
+                    sendDriveAdded(driveInfo);
+                }
+            } else {
+                exitCode = ServerRequests::addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync,
+                                                   showInNavigationPane, syncInfo);
+
+                if (exitCode != ExitCode::Ok) {
+                    LOGW_WARN(_logger, L"Error in Requests::addSync for driveDbId="
+                                               << driveDbId << L" localFolderPath="
+                                               << Path2WStr(QStr2Path(localFolderPath)).c_str() << L" serverFolderPath="
+                                               << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" liteSync=" << liteSync
+                                               << L" showInNavigationPane=" << showInNavigationPane);
+                    addError(Error(errId(), exitCode, ExitCause::Unknown));
+                    resultStream << toInt(exitCode);
+                    break;
+                }
             }
 
-            if (accountInfo.dbId() != 0) {
-                sendAccountAdded(accountInfo);
-            }
-            if (driveInfo.dbId() != 0) {
-                sendDriveAdded(driveInfo);
-            }
             sendSyncAdded(syncInfo);
 
             resultStream << toInt(exitCode);
@@ -1100,10 +1120,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 resultStream << syncInfo.dbId();
             }
 
-            QTimer::singleShot(100, this, [=]() {
+            QTimer::singleShot(100, this, [=, this]() {
                 Sync sync;
                 ServerRequests::syncInfoToSync(syncInfo, sync);
 
+                // Check if sync is valid
                 ExitCode exitCode = checkIfSyncIsValid(sync);
                 ExitCause exitCause = ExitCause::Unknown;
                 if (exitCode != ExitCode::Ok) {
@@ -1117,7 +1138,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
+                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, std::chrono::seconds(0), false, true);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " code=" << exitCode);
                     addError(Error(errId(), exitCode, exitCause));
@@ -1148,70 +1169,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     }
 
                     sendSyncRemoved(syncInfo.dbId());
-                }
-
-                Utility::restartFinderExtension();
-            });
-            break;
-        }
-        case RequestNum::SYNC_ADD2: {
-            int driveDbId = 0;
-            QString localFolderPath;
-            QString serverFolderPath;
-            QString serverFolderNodeId;
-            bool liteSync = false;
-            QSet<QString> blackList;
-            QSet<QString> whiteList;
-            ArgsWriter(params).write(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, blackList,
-                                     whiteList);
-
-            // Add sync in DB
-            bool showInNavigationPane = false;
-#ifdef Q_OS_WIN
-            showInNavigationPane = _navigationPaneHelper->showInExplorerNavigationPane();
-#endif
-            SyncInfo syncInfo;
-            ExitCode exitCode = ServerRequests::addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId,
-                                                        liteSync, showInNavigationPane, syncInfo);
-            if (exitCode != ExitCode::Ok) {
-                LOGW_WARN(_logger, L"Error in Requests::addSync for driveDbId="
-                                           << driveDbId << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath)).c_str()
-                                           << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str()
-                                           << L" liteSync=" << liteSync << L" showInNavigationPane=" << showInNavigationPane);
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
-                resultStream << toInt(exitCode);
-                break;
-            }
-
-            sendSyncAdded(syncInfo);
-
-            resultStream << toInt(exitCode);
-            if (exitCode == ExitCode::Ok) {
-                resultStream << syncInfo.dbId();
-            }
-
-            QTimer::singleShot(100, this, [=]() {
-                Sync sync;
-                ServerRequests::syncInfoToSync(syncInfo, sync);
-
-                // Check if sync is valid
-                ExitCode exitCode = checkIfSyncIsValid(sync);
-                ExitCause exitCause = ExitCause::Unknown;
-                if (exitCode != ExitCode::Ok) {
-                    addError(Error(sync.dbId(), errId(), exitCode, exitCause));
-                    return;
-                }
-
-                if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
-                    LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
-                    return;
-                }
-
-                // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
-                if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
-                    addError(Error(errId(), exitCode, exitCause));
                 }
 
                 Utility::restartFinderExtension();
@@ -1608,7 +1565,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE: {
             resultStream << ExitCode::Ok;
 
-            QTimer::singleShot(100, [=]() {
+            QTimer::singleShot(100, [=, this]() {
                 for (auto &syncPalMapElt: _syncPalMap) {
                     if (!syncPalMapElt.second) continue;
                     if (_socketApi) {
@@ -2030,7 +1987,7 @@ void AppServer::startSyncPals() {
         ExitCode exitCode = startSyncs(exitCause);
         if (exitCode != ExitCode::Ok) {
             if (exitCode == ExitCode::SystemError && exitCause == ExitCause::Unknown) {
-                QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=]() { startSyncPals(); });
+                QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=, this]() { startSyncPals(); });
             }
         }
     }
@@ -2651,6 +2608,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
         return ExitCode::DbError;
     }
 
+    std::chrono::seconds startDelay{0};
     for (Account &account: accountList) {
         // Load drive list
         std::vector<Drive> driveList;
@@ -2724,7 +2682,8 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                 const bool start = !user.keychainKey().empty();
 
                 // Create and start SyncPal
-                exitCode = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, false, false);
+                startDelay += std::chrono::seconds(START_SYNCPALS_TIME_GAP);
+                exitCode = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, startDelay, false, false);
                 if (exitCode != ExitCode::Ok) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " code=" << exitCode);
                     addError(Error(sync.dbId(), errId(), exitCode, ExitCause::Unknown));
@@ -3311,16 +3270,8 @@ ExitCode AppServer::updateAllUsersInfo() {
 
 ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList,
                                 const std::unordered_set<NodeId> &undecidedList, const std::unordered_set<NodeId> &whiteList,
-                                bool start, bool resumedByUser, bool firstInit) {
+                                bool start, const std::chrono::seconds startDelay, bool resumedByUser, bool firstInit) {
     ExitCode exitCode;
-
-    std::chrono::duration<double, std::milli> elapsed_ms = std::chrono::steady_clock::now() - _lastSyncPalStart;
-    if (elapsed_ms.count() < START_SYNCPALS_TIME_GAP) {
-        // Shifts the start of the next sync
-        Utility::msleep(START_SYNCPALS_TIME_GAP - static_cast<int>(elapsed_ms.count()));
-    }
-    _lastSyncPalStart = std::chrono::steady_clock::now();
-
     if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
         // Create SyncPal
         try {
@@ -3388,7 +3339,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
             _syncPalMap[sync.dbId()]->unpause();
         } else if (!_syncPalMap[sync.dbId()]->isRunning()) {
             // Start SyncPal
-            _syncPalMap[sync.dbId()]->start();
+            _syncPalMap[sync.dbId()]->start(startDelay);
         }
     }
 
@@ -3401,7 +3352,8 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
 }
 
 ExitCode AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                                const QSet<QString> &whiteList, bool start, bool resumedByUser, bool firstInit) {
+                                const QSet<QString> &whiteList, bool start, const std::chrono::seconds startDelay,
+                                bool resumedByUser, bool firstInit) {
     ExitCode exitCode;
 
     std::unordered_set<NodeId> blackList2;
@@ -3419,7 +3371,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
         whiteList2.insert(nodeId.toStdString());
     }
 
-    exitCode = initSyncPal(sync, blackList2, undecidedList2, whiteList2, start, resumedByUser, firstInit);
+    exitCode = initSyncPal(sync, blackList2, undecidedList2, whiteList2, start, startDelay, resumedByUser, firstInit);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in initSyncPal");
         return exitCode;
@@ -3685,7 +3637,7 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             return exitInfo;
         }
 
-        QTimer::singleShot(100, this, [=]() {
+        QTimer::singleShot(100, this, [=, this]() {
             if (newMode != VirtualFileMode::Off) {
                 // Clear file system
                 _vfsMap[sync.dbId()]->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
