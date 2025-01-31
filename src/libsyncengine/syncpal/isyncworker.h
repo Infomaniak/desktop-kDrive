@@ -32,7 +32,7 @@ namespace KDC {
 class ISyncWorker {
     public:
         ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                    std::chrono::seconds startDelay = std::chrono::seconds(0), bool testing = false);
+                    const std::chrono::seconds startDelay = std::chrono::seconds(0), bool testing = false);
         virtual ~ISyncWorker();
 
         virtual void start();

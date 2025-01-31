@@ -37,9 +37,8 @@
 namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                             std::chrono::seconds startDelay) :
-    ISyncWorker(syncPal, name, shortName, startDelay),
-    _step(SyncStep::Idle), _pauseTime(std::chrono::time_point<std::chrono::system_clock>()) {}
+                             const std::chrono::seconds startDelay) :
+    ISyncWorker(syncPal, name, shortName, startDelay) {}
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);

@@ -29,7 +29,7 @@ namespace KDC {
 class SyncPalWorker : public ISyncWorker {
     public:
         SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                      std::chrono::seconds startDelay);
+                      const std::chrono::seconds startDelay);
 
         void execute() override;
         inline SyncStep step() const { return _step; }
@@ -37,8 +37,8 @@ class SyncPalWorker : public ISyncWorker {
         static std::string stepName(SyncStep step);
 
     private:
-        SyncStep _step;
-        std::chrono::time_point<std::chrono::system_clock> _pauseTime;
+        SyncStep _step{SyncStep::Idle};
+        std::chrono::time_point<std::chrono::system_clock> _pauseTime{std::chrono::time_point<std::chrono::system_clock>()};
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],

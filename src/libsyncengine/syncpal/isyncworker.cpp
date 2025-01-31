@@ -23,7 +23,7 @@
 namespace KDC {
 
 ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                         std::chrono::seconds startDelay, bool testing /*= false*/) :
+                         const std::chrono::seconds startDelay, bool testing /*= false*/) :
     _logger(Log::instance()->getLogger()),
     _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName), _startDelay(startDelay) {}
 

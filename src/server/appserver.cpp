@@ -3268,7 +3268,7 @@ ExitCode AppServer::updateAllUsersInfo() {
 
 ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList,
                                 const std::unordered_set<NodeId> &undecidedList, const std::unordered_set<NodeId> &whiteList,
-                                bool start, std::chrono::seconds startDelay, bool resumedByUser, bool firstInit) {
+                                bool start, const std::chrono::seconds startDelay, bool resumedByUser, bool firstInit) {
     ExitCode exitCode;
     if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
         // Create SyncPal
@@ -3350,8 +3350,8 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
 }
 
 ExitCode AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                                const QSet<QString> &whiteList, bool start, std::chrono::seconds startDelay, bool resumedByUser,
-                                bool firstInit) {
+                                const QSet<QString> &whiteList, bool start, const std::chrono::seconds startDelay,
+                                bool resumedByUser, bool firstInit) {
     ExitCode exitCode;
 
     std::unordered_set<NodeId> blackList2;

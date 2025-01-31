@@ -576,7 +576,7 @@ void SyncPal::resetSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects done");
 }
 
-void SyncPal::createWorkers(std::chrono::seconds startDelay) {
+void SyncPal::createWorkers(const std::chrono::seconds startDelay) {
     LOG_SYNCPAL_DEBUG(_logger, "Create workers");
 #if defined(_WIN32)
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
@@ -1202,7 +1202,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
     return ExitCode::Ok;
 }
 
-void SyncPal::start(std::chrono::seconds startDelay) {
+void SyncPal::start(const std::chrono::seconds startDelay) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal start");
 
     // Load VFS mode

@@ -133,11 +133,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList = std::unordered_set<NodeId>(),
                              const std::unordered_set<NodeId> &undecidedList = std::unordered_set<NodeId>(),
                              const std::unordered_set<NodeId> &whiteList = std::unordered_set<NodeId>(), bool start = true,
-                             std::chrono::seconds startDelay = std::chrono::seconds(0), bool resumedByUser = false,
+                             const std::chrono::seconds startDelay = std::chrono::seconds(0), bool resumedByUser = false,
                              bool firstInit = false);
         ExitCode initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
                              const QSet<QString> &whiteList, bool start = true,
-                             std::chrono::seconds startDelay = std::chrono::seconds(0), bool resumedByUser = false,
+                             const std::chrono::seconds startDelay = std::chrono::seconds(0), bool resumedByUser = false,
                              bool firstInit = false);
         ExitCode stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
