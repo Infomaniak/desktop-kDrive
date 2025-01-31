@@ -19,7 +19,7 @@
 #include "testincludes.h"
 #include "remotetemporarydirectory.h"
 
-#include "../../src/libsyncengine/jobs/network/API_v2/createdirjob.h"
+#include "../../src/libsyncengine/jobs/network/API_v2/createdirjobremoteonly.h"
 #include "../../src/libsyncengine/jobs/network/API_v2/deletejob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
@@ -39,7 +39,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
         _dirName = Str("kdrive_") + Str2SyncName(testType) + Str("_unit_tests_") + Str2SyncName(woss.str() + "___" + suffix);
 
         // Create remote test dir
-        CreateDirJob job(nullptr, _driveDbId, parentId, _dirName);
+        CreateDirJobRemoteOnly job(_driveDbId, parentId, _dirName);
         job.runSynchronously();
         if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist) && retry > 0) {
             retry--;

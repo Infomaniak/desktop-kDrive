@@ -41,6 +41,7 @@ set(syncengine_SRCS
     jobs/network/API_v2/getfileinfojob.h jobs/network/API_v2/getfileinfojob.cpp
     jobs/network/API_v2/deletejob.h jobs/network/API_v2/deletejob.cpp
     jobs/network/API_v2/createdirjob.h jobs/network/API_v2/createdirjob.cpp
+    jobs/network/API_v2/createdirjobremoteonly.h
     jobs/network/API_v2/movejob.h jobs/network/API_v2/movejob.cpp
     jobs/network/API_v2/renamejob.h jobs/network/API_v2/renamejob.cpp
     jobs/network/API_v2/duplicatejob.h jobs/network/API_v2/duplicatejob.cpp

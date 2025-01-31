@@ -41,7 +41,7 @@
 #include "jobs/network/API_v2/getthumbnailjob.h"
 #include "jobs/network/getavatarjob.h"
 #include "jobs/network/API_v2/getdriveslistjob.h"
-#include "jobs/network/API_v2/createdirjob.h"
+#include "jobs/network/API_v2/createdirjobremoteonly.h"
 #include "jobs/network/API_v2/getsizejob.h"
 #include "jobs/jobmanager.h"
 #include "libsyncengine/olddb/oldsyncdb.h"
@@ -1016,10 +1016,10 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
 
 ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
     // Get drive data
-    std::shared_ptr<CreateDirJob> job = nullptr;
+    std::shared_ptr<CreateDirJobRemoteOnly> job = nullptr;
     try {
-        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
-                                             QStr2SyncName(dirName));
+        job = std::make_shared<CreateDirJobRemoteOnly>(driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
+                                                       QStr2SyncName(dirName));
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
