@@ -17,6 +17,8 @@
  */
 
 #include "testoperationsorterworker.h"
+
+#include "test_classes/testinitialsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
 #include <memory>
@@ -38,6 +40,8 @@ void TestOperationSorterWorker::setUp() {
     _syncPal->createSharedObjects();
 
     _syncPal->_operationsSorterWorker = std::make_shared<OperationSorterWorker>(_syncPal, "Operation Sorter", "OPSO");
+
+    setupInitialSituation();
 }
 
 void TestOperationSorterWorker::tearDown() {
@@ -46,36 +50,46 @@ void TestOperationSorterWorker::tearDown() {
     _syncPal->syncDb()->close();
 }
 
-void TestOperationSorterWorker::testMoveFirstAfterSecond() {
-    const auto nodeA =
-            std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, "a",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr);
-    const auto nodeB =
-            std::make_shared<Node>(ReplicaSide::Local, Str("B"), NodeType::Directory, OperationType::None, "b",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr);
-    const auto nodeC =
-            std::make_shared<Node>(ReplicaSide::Local, Str("C"), NodeType::Directory, OperationType::None, "c",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr);
-    const auto op1 = std::make_shared<SyncOperation>();
-    const auto op2 = std::make_shared<SyncOperation>();
-    const auto op3 = std::make_shared<SyncOperation>();
-    op1->setAffectedNode(nodeA);
-    op2->setAffectedNode(nodeB);
-    op3->setAffectedNode(nodeC);
-    _syncPal->_syncOps->pushOp(op1);
-    _syncPal->_syncOps->pushOp(op2);
-    _syncPal->_syncOps->pushOp(op3);
+void TestOperationSorterWorker::setupInitialSituation() {
+    // Initial situation
+    // .
+    // ├── A
+    // │   └── AA
+    // │       └── AAA
+    // ├── B
+    // └── C
 
-    // Move op2 after op1 -> nothing happens, op2 is already after op1.
-    _syncPal->_operationsSorterWorker->moveFirstAfterSecond(op2, op1);
-    CPPUNIT_ASSERT_EQUAL(op1->id(), _syncPal->_syncOps->opSortedList().front());
+    TestInitialSituationGenerator gen(_syncPal);
+    gen.generateInitialSituation(R"({"a":{"aa":{"aaa":1}},"b":0,"c":0})");
+}
+
+void TestOperationSorterWorker::testMoveFirstAfterSecond() {
+    const auto nodeA = _syncPal->updateTree(ReplicaSide::Local)
+                               ->getNodeById(TestInitialSituationGenerator::generateId(ReplicaSide::Local, "a"));
+    const auto nodeB = _syncPal->updateTree(ReplicaSide::Local)
+                               ->getNodeById(TestInitialSituationGenerator::generateId(ReplicaSide::Local, "b"));
+    const auto nodeC = _syncPal->updateTree(ReplicaSide::Local)
+                               ->getNodeById(TestInitialSituationGenerator::generateId(ReplicaSide::Local, "c"));
+    const auto opA = std::make_shared<SyncOperation>();
+    const auto opB = std::make_shared<SyncOperation>();
+    const auto opC = std::make_shared<SyncOperation>();
+    opA->setAffectedNode(nodeA);
+    opB->setAffectedNode(nodeB);
+    opC->setAffectedNode(nodeC);
+    _syncPal->_syncOps->pushOp(opA);
+    _syncPal->_syncOps->pushOp(opB);
+    _syncPal->_syncOps->pushOp(opC);
+
+    // Move opB after opA -> nothing happens, opB is already after opA.
+    _syncPal->_operationsSorterWorker->moveFirstAfterSecond(opB, opA);
+    CPPUNIT_ASSERT_EQUAL(opA->id(), _syncPal->_syncOps->opSortedList().front());
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->_operationsSorterWorker->hasOrderChanged());
 
-    // Move op1 after op2.
-    _syncPal->_operationsSorterWorker->moveFirstAfterSecond(op1, op2);
-    CPPUNIT_ASSERT_EQUAL(op2->id(), _syncPal->_syncOps->opSortedList().front());
+    // Move opA after opB.
+    _syncPal->_operationsSorterWorker->moveFirstAfterSecond(opA, opB);
+    CPPUNIT_ASSERT_EQUAL(opB->id(), _syncPal->_syncOps->opSortedList().front());
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
-    CPPUNIT_ASSERT_EQUAL(op3->id(), _syncPal->_syncOps->opSortedList().back());
+    CPPUNIT_ASSERT_EQUAL(opC->id(), _syncPal->_syncOps->opSortedList().back());
 }
 
 void TestOperationSorterWorker::testFixDeleteBeforeMove() {
