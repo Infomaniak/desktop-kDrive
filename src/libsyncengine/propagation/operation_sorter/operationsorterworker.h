@@ -89,6 +89,8 @@ class OperationSorterWorker final : public OperationProcessor {
         bool hasParentWithHigherIndex(const std::unordered_map<UniqueId, int> &indexMap, SyncOpPtr op, int createOpIndex,
                                       SyncOpPtr &ancestorOp, int &depth);
 
+        bool getIdFromDb(ReplicaSide side, const SyncPath &parentPath, NodeId &id) const;
+
         friend class TestOperationSorterWorker;
 };
 } // namespace KDC

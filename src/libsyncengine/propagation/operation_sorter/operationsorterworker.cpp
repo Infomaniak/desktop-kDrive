@@ -422,33 +422,17 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
             const auto nodeParentId = node->parentNode()->id();
             const auto otherNodeParentId = otherNode->parentNode()->id();
 
-            bool found = false;
-            std::optional<NodeId> nodeOriginParentId;
-            if (!_syncPal->_syncDb->id(node->side(), nodeOriginPath->parent_path(), nodeOriginParentId, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
-                return;
-            }
-            if (!found) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Node not found for path = " << Path2WStr(nodeOriginPath->parent_path()).c_str());
-                break;
-            }
-            std::optional<NodeId> otherNodeOriginParentId;
-            if (!_syncPal->_syncDb->id(otherNode->side(), otherNodeOriginPath->parent_path(), otherNodeOriginParentId, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
-                return;
-            }
-            if (!found) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Node not found for path = " << Path2WStr(otherNodeOriginPath->parent_path()).c_str());
-                break;
-            }
+            NodeId nodeOriginParentId;
+            if (!getIdFromDb(node->side(), nodeOriginPath->parent_path(), nodeOriginParentId)) continue;
+            NodeId otherNodeOriginParentId;
+            if (!getIdFromDb(otherNode->side(), otherNodeOriginPath->parent_path(), otherNodeOriginParentId)) continue;
 
             if (nodeParentId == otherNodeOriginParentId && nodePath.filename() == otherNodeOriginPath->filename()) {
                 // move only if op is before otherMoveOp
                 moveFirstAfterSecond(op, otherOp);
+                continue;
             }
-            else if (nodeOriginParentId == otherNodeParentId && nodeOriginPath->filename() == otherNodePath.filename()) {
+            if (nodeOriginParentId == otherNodeParentId && nodeOriginPath->filename() == otherNodePath.filename()) {
                 // move only if otherMoveOp is before op
                 moveFirstAfterSecond(otherOp, op);
             }
@@ -792,6 +776,21 @@ void OperationSorterWorker::addPairToReorderings(SyncOpPtr op, SyncOpPtr opOnFir
         }
     }
     _reorderings.push_back(pair);
+}
+
+bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &parentPath, NodeId &id) const {
+    bool found = false;
+    std::optional<NodeId> tmpId;
+    if (!_syncPal->_syncDb->id(side, parentPath, tmpId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
+        return false;
+    }
+    if (!found || !tmpId) {
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found for path = " << Path2WStr(parentPath).c_str());
+        return false;
+    }
+    id = tmpId.value();
+    return true;
 }
 
 } // namespace KDC
