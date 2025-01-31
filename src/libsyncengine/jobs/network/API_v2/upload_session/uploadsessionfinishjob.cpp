@@ -38,7 +38,7 @@ UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, con
 UploadSessionFinishJob::~UploadSessionFinishJob() {
     if (!_vfs) return;
     if (const ExitInfo exitInfo = _vfs->forceStatus(_filePath, false, 0, true); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath) << L" : " << exitInfo);
+        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_filePath) << L": " << exitInfo);
     }
 }
 

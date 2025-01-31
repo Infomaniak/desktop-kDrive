@@ -46,11 +46,11 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncP
 UploadJob::~UploadJob() {
     if (!_vfs || isAborted()) return;
     if (ExitInfo exitInfo = _vfs->forceStatus(_filePath, false, 100, true); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath) << L" : " << exitInfo);
+        LOGW_WARN(_logger, L"Error in vfsForceStatus - " << Utility::formatSyncPath(_filePath) << L": " << exitInfo);
     }
 
     if (ExitInfo exitInfo = _vfs->setPinState(_filePath, PinState::AlwaysLocal); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsSetPinState - path=" << Path2WStr(_filePath) << L": " << exitInfo);
+        LOGW_WARN(_logger, L"Error in vfsSetPinState - " << Utility::formatSyncPath(_filePath) << L": " << exitInfo);
     }
 }
 
