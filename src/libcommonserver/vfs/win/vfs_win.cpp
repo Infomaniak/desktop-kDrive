@@ -39,7 +39,7 @@ namespace KDC {
 VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
-    sentry::Handler::init(vfsSetupParams._sentryHandler);
+    sentry::Handler::init(vfsSetupParams.sentryHandler);
     TraceCbk debugCallback = std::bind(&VfsWin::debugCbk, this, std::placeholders::_1, std::placeholders::_2);
 
     Utility::setLogger(logger());
@@ -79,40 +79,40 @@ VirtualFileMode VfsWin::mode() const {
 }
 
 ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
-    LOG_DEBUG(logger(), "startImpl: syncDbId=" << _vfsSetupParams._syncDbId);
+    LOG_DEBUG(logger(), "startImpl: syncDbId=" << _vfsSetupParams.syncDbId);
 
     wchar_t clsid[39] = L"";
     unsigned long clsidSize = sizeof(clsid);
-    if (vfsStart(std::to_wstring(_vfsSetupParams._driveId).c_str(), std::to_wstring(_vfsSetupParams._userId).c_str(),
-                 std::to_wstring(_vfsSetupParams._syncDbId).c_str(), _vfsSetupParams._localPath.filename().native().c_str(),
-                 _vfsSetupParams._localPath.lexically_normal().native().c_str(), clsid, &clsidSize) != S_OK) {
-        LOG_WARN(logger(), "Error in vfsStart: syncDbId=" << _vfsSetupParams._syncDbId);
+    if (vfsStart(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.userId).c_str(),
+                 std::to_wstring(_vfsSetupParams.syncDbId).c_str(), _vfsSetupParams.localPath.filename().native().c_str(),
+                 _vfsSetupParams.localPath.lexically_normal().native().c_str(), clsid, &clsidSize) != S_OK) {
+        LOG_WARN(logger(), "Error in vfsStart: syncDbId=" << _vfsSetupParams.syncDbId);
         return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
     }
 
-    _vfsSetupParams._namespaceCLSID = Utility::ws2s(std::wstring(clsid));
+    _vfsSetupParams.namespaceCLSID = Utility::ws2s(std::wstring(clsid));
 
     return ExitCode::Ok;
 }
 
 void VfsWin::stopImpl(bool unregister) {
-    LOG_DEBUG(logger(), "stop: syncDbId=" << _vfsSetupParams._syncDbId);
+    LOG_DEBUG(logger(), "stop: syncDbId=" << _vfsSetupParams.syncDbId);
 
-    if (vfsStop(std::to_wstring(_vfsSetupParams._driveId).c_str(), std::to_wstring(_vfsSetupParams._syncDbId).c_str(),
+    if (vfsStop(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
                 unregister) != S_OK) {
-        LOG_WARN(logger(), "Error in vfsStop: syncDbId=" << _vfsSetupParams._syncDbId);
+        LOG_WARN(logger(), "Error in vfsStop: syncDbId=" << _vfsSetupParams.syncDbId);
     }
 
-    LOG_DEBUG(logger(), "stop done: syncDbId=" << _vfsSetupParams._syncDbId);
+    LOG_DEBUG(logger(), "stop done: syncDbId=" << _vfsSetupParams.syncDbId);
 }
 
 void VfsWin::dehydrate(const SyncPath &path) {
     LOGW_DEBUG(logger(), L"dehydrate: " << Utility::formatSyncPath(path));
-    SyncPath relativePath = CommonUtility::relativePath(_vfsSetupParams._localPath, path);
+    SyncPath relativePath = CommonUtility::relativePath(_vfsSetupParams.localPath, path);
 
     // Check file status
     SyncFileStatus status;
-    _syncFileStatus(_vfsSetupParams._syncDbId, relativePath, status);
+    _syncFileStatus(_vfsSetupParams.syncDbId, relativePath, status);
     if (status == SyncFileStatus::Unknown) {
         // The file is not synchronized, do nothing
         LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatSyncPath(path));
@@ -124,34 +124,34 @@ void VfsWin::dehydrate(const SyncPath &path) {
         LOGW_WARN(logger(), L"Error in vfsDehydratePlaceHolder: " << Utility::formatSyncPath(path));
     }
 
-    _setSyncFileSyncing(_vfsSetupParams._syncDbId, relativePath, false);
+    _setSyncFileSyncing(_vfsSetupParams.syncDbId, relativePath, false);
 }
 
 void VfsWin::hydrate(const SyncPath &pathStd) {
     QString path = SyncName2QStr(pathStd.native());
     LOGW_DEBUG(logger(), L"hydrate: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
 
-    if (vfsHydratePlaceHolder(std::to_wstring(_vfsSetupParams._driveId).c_str(),
-                              std::to_wstring(_vfsSetupParams._syncDbId).c_str(),
+    if (vfsHydratePlaceHolder(std::to_wstring(_vfsSetupParams.driveId).c_str(),
+                              std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
                               QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsHydratePlaceHolder: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
     }
 
-    QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
-    _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
+    QString relativePath = QStringView(path).mid(_vfsSetupParams.localPath.native().size() + 1).toUtf8();
+    _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
 }
 
 void VfsWin::cancelHydrate(const SyncPath &pathStd) {
     LOGW_DEBUG(logger(), L"cancelHydrate: " << Utility::formatSyncPath(pathStd));
     const QString path = SyncName2QStr(pathStd.native());
-    if (vfsCancelFetch(std::to_wstring(_vfsSetupParams._driveId).c_str(), std::to_wstring(_vfsSetupParams._syncDbId).c_str(),
+    if (vfsCancelFetch(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
                        QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCancelFetch: " << Utility::formatSyncPath(QStr2Path(path)).c_str());
         return;
     }
 
-    QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
-    _setSyncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(relativePath), false);
+    QString relativePath = QStringView(path).mid(_vfsSetupParams.localPath.native().size() + 1).toUtf8();
+    _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
 }
 
 void VfsWin::exclude(const SyncPath &pathStd) {
@@ -185,7 +185,7 @@ ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime
     LOGW_DEBUG(logger(), L"updateMetadata: " << Utility::formatSyncPath(QStr2Path(filePath)).c_str() << L" creationTime="
                                              << creationTime << L" modtime=" << modtime);
 
-    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(filePath));
+    SyncPath fullPath(_vfsSetupParams.localPath / QStr2Path(filePath));
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
@@ -220,7 +220,7 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
         return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
-    SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
+    SyncPath fullPath(_vfsSetupParams.localPath / relativeLocalPath);
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, false); !exitInfo) {
         return exitInfo;
     }
@@ -239,7 +239,7 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
 
     if (vfsCreatePlaceHolder(Utility::s2ws(item.remoteNodeId().value()).c_str(),
                              relativeLocalPath.lexically_normal().native().c_str(),
-                             _vfsSetupParams._localPath.lexically_normal().native().c_str(), &findData) != S_OK) {
+                             _vfsSetupParams.localPath.lexically_normal().native().c_str(), &findData) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCreatePlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
         return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
                                   // NotFound as this make no sense in the context of a create
@@ -258,7 +258,7 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
 
 ExitInfo VfsWin::dehydratePlaceholder(const SyncPath &path) {
     LOGW_DEBUG(logger(), L"dehydratePlaceholder: " << Utility::formatSyncPath(path));
-    SyncPath fullPath(_vfsSetupParams._localPath / path);
+    SyncPath fullPath(_vfsSetupParams.localPath / path);
 
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
@@ -422,8 +422,8 @@ ExitInfo VfsWin::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
         return handleVfsError(fullPath);
     }
 
-    if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams._driveId).c_str(),
-                             std::to_wstring(_vfsSetupParams._syncDbId).c_str(), fullPath.lexically_normal().native().c_str(),
+    if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams.driveId).c_str(),
+                             std::to_wstring(_vfsSetupParams.syncDbId).c_str(), fullPath.lexically_normal().native().c_str(),
                              fullTmpPath.lexically_normal().native().c_str(), received, &canceled, &finished) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(fullPath).c_str());
         return handleVfsError(fullPath);
@@ -495,7 +495,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, bool isSyncing, in
 
 ExitInfo VfsWin::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated) {
     QString initFilePath = SyncName2QStr(initFilePathStd.native());
-    SyncPath filePath(_vfsSetupParams._localPath / initFilePathStd.native());
+    SyncPath filePath(_vfsSetupParams.localPath / initFilePathStd.native());
 
     if (vfsGetPlaceHolderStatus(filePath.lexically_normal().native().c_str(), nullptr, &isDehydrated, nullptr) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsGetPlaceHolderStatus: " << Utility::formatSyncPath(filePath).c_str());
@@ -510,7 +510,7 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
     return ExitCode::Ok;
 
     QString relativePath = SyncName2QStr(relativePathStd.native());
-    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
+    SyncPath fullPath(_vfsSetupParams.localPath / QStr2Path(relativePath));
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
@@ -550,7 +550,7 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
 
 PinState VfsWin::pinState(const SyncPath &relativePathStd) {
     //  Read pin state from file attributes
-    SyncPath fullPath(_vfsSetupParams._localPath / relativePathStd.native());
+    SyncPath fullPath(_vfsSetupParams.localPath / relativePathStd.native());
     VfsPinState vfsPinState;
     vfsGetPinState(fullPath.lexically_normal().native().c_str(), &vfsPinState);
     PinState state;
@@ -601,7 +601,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
         }
         return false;
     }
-    SyncPath fileRelativePath = CommonUtility::relativePath(_vfsSetupParams._localPath, fullPath);
+    SyncPath fileRelativePath = CommonUtility::relativePath(_vfsSetupParams.localPath, fullPath);
 
     switch (status) {
         case SyncFileStatus::Conflict:
@@ -650,7 +650,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
             }
 
             bool syncing = false;
-            _syncFileSyncing(_vfsSetupParams._syncDbId, fileRelativePath, syncing);
+            _syncFileSyncing(_vfsSetupParams.syncDbId, fileRelativePath, syncing);
 
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
@@ -660,7 +660,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated && !syncing) {
                 // Set hydrating indicator (avoid double hydration)
-                _setSyncFileSyncing(_vfsSetupParams._syncDbId, fileRelativePath, true);
+                _setSyncFileSyncing(_vfsSetupParams.syncDbId, fileRelativePath, true);
 
                 // Add file path to hydration queue
                 _workerInfo[workerHydration]._mutex.lock();
