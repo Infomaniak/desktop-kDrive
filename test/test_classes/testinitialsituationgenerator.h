@@ -62,9 +62,9 @@ class TestInitialSituationGenerator {
         [[nodiscard]] std::shared_ptr<Node> getNode(ReplicaSide side, const NodeId &rawId) const;
         bool getDbNode(const NodeId &rawId, DbNode &dbNode) const;
 
-        static NodeId generateId(ReplicaSide side, const NodeId &rawId);
-
     private:
+        [[nodiscard]] NodeId generateId(ReplicaSide side, const NodeId &rawId) const;
+
         void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
         void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
 

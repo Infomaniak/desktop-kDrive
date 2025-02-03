@@ -151,12 +151,6 @@ class UpdateTreeWorker : public ISyncWorker {
          */
         bool integrityCheck();
 
-        /**
-         * Draw the update tree in the log file for debugging purpose
-         */
-        void drawUpdateTree();
-        void drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth = 0);
-
         friend class TestUpdateTreeWorker;
 };
 

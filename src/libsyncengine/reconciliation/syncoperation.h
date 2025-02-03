@@ -87,7 +87,7 @@ class SyncOperation {
         bool _isBreakingCycleOp{false};
 
         UniqueId _id = -1;
-        UniqueId _parentId = -1; // ID of that parent operation i.e. the operation that must be completed before starting this one
+        UniqueId _parentId = -1; // ID of the parent operation i.e. the operation that must be completed before starting this one
 
         static UniqueId _nextId;
 };

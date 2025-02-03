@@ -36,6 +36,8 @@ void TestInitialSituationGenerator::generateInitialSituation(const std::string &
     }
 
     addItem(obj);
+
+    _syncpal->updateTree(ReplicaSide::Local)->drawUpdateTree();
 }
 
 std::shared_ptr<Node> TestInitialSituationGenerator::getNode(const ReplicaSide side, const NodeId &rawId) const {
@@ -50,7 +52,7 @@ bool TestInitialSituationGenerator::getDbNode(const NodeId &rawId, DbNode &dbNod
     return found;
 }
 
-NodeId TestInitialSituationGenerator::generateId(const ReplicaSide side, const NodeId &rawId) {
+NodeId TestInitialSituationGenerator::generateId(const ReplicaSide side, const NodeId &rawId) const {
     return side == ReplicaSide::Local ? "l_" + rawId : "r_" + rawId;
 }
 
