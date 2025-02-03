@@ -24,6 +24,30 @@ namespace KDC {
 
 class SyncPal;
 
+/**
+ * @brief This class aims to provide a simple and efficient way to generate a data structure (Db and update trees) for testing.
+ * The structure is provided as a JSON file. For example, the following JSON :
+ * {
+ *    "a":
+ *    {
+ *        "aa":
+ *        {
+ *            "aaa": 1
+ *        }
+ *    },
+ *    "b": 0,
+ *    "c": 0
+ * }
+ * will generate this tree:
+ * .
+ * ├── A
+ * │   └── AA
+ * │       └── AAA
+ * ├── B
+ * └── C
+ *
+ * where "AAA" is a file, and the other nodes are directories.
+ */
 class TestInitialSituationGenerator {
     public:
         explicit TestInitialSituationGenerator(const std::shared_ptr<SyncPal> &syncpal) : _syncpal(syncpal) {}
