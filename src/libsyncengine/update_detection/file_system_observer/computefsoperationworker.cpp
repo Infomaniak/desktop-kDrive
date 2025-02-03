@@ -144,19 +144,22 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     bool remoteItemUnsynced = false;
     bool movedIntoUnsyncedFolder = false;
-    if (side == ReplicaSide::Remote) {
-        // In case of a move inside an excluded folder, the item must be removed in this sync
-        if (isInUnsyncedList(nodeId, ReplicaSide::Remote)) {
-            remoteItemUnsynced = true;
-            if (parentId != snapshot->parentId(nodeId)) {
-                movedIntoUnsyncedFolder = true;
+    const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
+    if (nodeExistsInSnapshot) {
+        if (side == ReplicaSide::Remote) {
+            // In case of a move inside an excluded folder, the item must be removed in this sync
+            if (isInUnsyncedList(nodeId, ReplicaSide::Remote)) {
+                remoteItemUnsynced = true;
+                if (parentId != snapshot->parentId(nodeId)) {
+                    movedIntoUnsyncedFolder = true;
+                }
             }
+        } else if (isInUnsyncedList(nodeId, ReplicaSide::Local)) {
+            return ExitCode::Ok;
         }
-    } else if (isInUnsyncedList(nodeId, ReplicaSide::Local)) {
-        return ExitCode::Ok;
     }
 
-    if (!snapshot->exists(nodeId) || movedIntoUnsyncedFolder) {
+    if (!nodeExistsInSnapshot || movedIntoUnsyncedFolder) {
         bool isInDeletedFolder = false;
         if (!checkIfPathIsInDeletedFolder(dbPath, isInDeletedFolder)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::checkIfPathIsInDeletedFolder: " << Utility::formatSyncPath(dbPath));
@@ -203,9 +206,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                 return ExitCode::Ok;
             }
 
-            if (!snapshot->exists(nodeId)) {
+            if (!nodeExistsInSnapshot) {
                 bool exists = false;
-
                 if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError));
