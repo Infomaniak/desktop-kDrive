@@ -16,12 +16,15 @@
 
 #pragma once
 
+#include "db/dbnode.h"
+#include "update_detection/update_detector/node.h"
 #include "utility/types.h"
 
 #include <Poco/JSON/Object.h>
 
 namespace KDC {
 
+class Node;
 class SyncPal;
 
 /**
@@ -50,18 +53,23 @@ class SyncPal;
  */
 class TestInitialSituationGenerator {
     public:
+        TestInitialSituationGenerator() = default;
         explicit TestInitialSituationGenerator(const std::shared_ptr<SyncPal> &syncpal) : _syncpal(syncpal) {}
 
+        void setSyncpal(const std::shared_ptr<SyncPal> &syncpal) { _syncpal = syncpal; }
         void generateInitialSituation(const std::string &jsonInputStr);
+
+        [[nodiscard]] std::shared_ptr<Node> getNode(ReplicaSide side, const NodeId &rawId) const;
+        bool getDbNode(const NodeId &rawId, DbNode &dbNode) const;
 
         static NodeId generateId(ReplicaSide side, const NodeId &rawId);
 
     private:
         void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
-        void addItem(NodeType itemType, const std::string &id, const std::string &parentId);
+        void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
 
         void insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
-        void insertInUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId);
+        void insertInUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
         void insertInUpdateTrees(ReplicaSide side, NodeType itemType, const NodeId &id, const NodeId &parentId) const;
 
         std::shared_ptr<SyncPal> _syncpal;
