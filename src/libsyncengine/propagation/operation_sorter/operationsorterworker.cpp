@@ -137,8 +137,9 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
             }
 
             if (const auto moveNodeParentId = moveNode->parentNode()->id();
-                deleteNodeParentId.value() != moveNodeParentId.value())
+                deleteNodeParentId.value() != moveNodeParentId.value()) {
                 continue;
+            }
 
             if (deleteNode->name() == moveNode->name()) {
                 // move only if moveOp is before deleteOp
@@ -181,7 +182,9 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
                 continue;
             }
 
-            if (const auto createParentId = *createNode->parentNode()->id(); moveNodeOriginParentId != createParentId) continue;
+            if (const auto createParentId = *createNode->parentNode()->id(); moveNodeOriginParentId != createParentId) {
+                continue;
+            }
 
             if (moveNode->moveOrigin()->filename() == createNode->name()) {
                 // move only if createOp is before moveOp
@@ -260,7 +263,9 @@ void OperationSorterWorker::fixCreateBeforeMove() {
             }
 
             std::optional<NodeId> moveNodeParentId = moveNode->parentNode()->id();
-            if (!moveNodeParentId.has_value()) continue;
+            if (!moveNodeParentId.has_value()) {
+                continue;
+            }
 
             if (*moveNodeParentId == *createNode->id()) {
                 // move only if moveOp is before createOp
@@ -276,67 +281,60 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
     const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
     const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
     for (const auto &deleteOpId: deleteOps) {
-        SyncOpPtr deleteOp = _unsortedList.getOp(deleteOpId);
-
-        std::shared_ptr<Node> deleteNode = deleteOp->affectedNode();
+        const auto deleteOp = _unsortedList.getOp(deleteOpId);
+        const auto deleteNode = deleteOp->affectedNode();
         if (!deleteNode->id().has_value()) {
             LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(deleteNode->name()).c_str());
             continue;
         }
 
         for (const auto &createOpId: createOps) {
-            SyncOpPtr createOp = _unsortedList.getOp(createOpId);
+            const auto createOp = _unsortedList.getOp(createOpId);
             if (createOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
 
-            std::shared_ptr<Node> createNode = createOp->affectedNode();
+            const auto createNode = createOp->affectedNode();
             if (!createNode->id().has_value()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->name()).c_str());
                 continue;
             }
 
+            // TODO : to be removed?? This should never happen since Delete-Create on the same node is transformed into Edit
+            // operation.
+            // NodeId deleteNodeId = deleteNode->id().value(); if (createNode->id().value() ==
+            // deleteNode->id().value()) {
+            //     if (!deleteNode->previousId().has_value()) {
+            //         LOGW_SYNCPAL_WARN(_logger, L"Node without previousId: " << SyncName2WStr(deleteNode->name()).c_str());
+            //         continue;
+            //     }
+            //
+            //     deleteNodeId = deleteNode->previousId().value();
+            // }
+
             bool found = false;
-            NodeId deleteNodeId = deleteNode->id().value();
-            if (createNode->id().value() == deleteNode->id().value()) {
-                if (!deleteNode->previousId().has_value()) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Node without previousId: " << SyncName2WStr(deleteNode->name()).c_str());
-                    continue;
-                }
-
-                deleteNodeId = deleteNode->previousId().value();
-            }
-
-            SyncPath deletePath;
-            if (!_syncPal->_syncDb->path(deleteNode->side(), deleteNodeId, deletePath, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-                return;
-            }
-            if (!found) {
-                LOGW_SYNCPAL_INFO(_logger, L"Node not found for id = " << Utility::s2ws(*deleteNode->id()).c_str()
-                                                                       << L" and name="
-                                                                       << SyncName2WStr(deleteNode->name()).c_str());
-                continue;
-            }
-
-            std::optional<NodeId> deleteParentId;
-            if (!_syncPal->_syncDb->id(deleteNode->side(), deletePath.parent_path(), deleteParentId, found)) {
+            std::optional<NodeId> deleteNodeParentId;
+            if (!_syncPal->_syncDb->id(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
                 return;
             }
             if (!found) {
-                LOGW_SYNCPAL_INFO(_logger, L"Node not found for path = " << Path2WStr(deletePath.parent_path()).c_str());
+                LOGW_SYNCPAL_INFO(_logger,
+                                  L"Node not found for path = " << Path2WStr(deleteNode->getPath().parent_path()).c_str());
                 break;
             }
 
-            if (createNode->parentNode() != nullptr) {
-                std::optional<NodeId> createParentId = createNode->parentNode()->id();
-                if (deleteParentId == createParentId) {
-                    if (createNode->name() == deleteNode->name()) {
-                        // move only if createOp is before op
-                        moveFirstAfterSecond(createOp, deleteOp);
-                    }
-                }
+            if (!createNode->parentNode()) {
+                continue;
+            }
+
+            if (const auto createNodeParentId = createNode->parentNode()->id(); deleteNodeParentId != createNodeParentId) {
+                continue;
+            }
+
+            if (createNode->name() == deleteNode->name()) {
+                // move only if createOp is before deleteOp
+                moveFirstAfterSecond(createOp, deleteOp);
             }
         }
     }
