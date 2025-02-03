@@ -220,204 +220,37 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->_syncOps->opSortedList().back());
 }
 
-void TestOperationSorterWorker::testFixCreateBeforeMoveBis() {
-    DbNodeId dbNodeIdDirA;
-
-    bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir A"), Str("Dir A"), "dA", "rdA", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDirA, constraintError);
-
-    std::shared_ptr<Node> rootNode(
-            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""),
-                     NodeType::Directory, OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(),
-                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr));
-    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir A"),
-                                         NodeType::Directory, OperationType::Move, "dA", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
-                                             NodeType::Directory, OperationType::None,
-                                             _syncPal->syncDb()->rootNode().nodeIdRemote(), testhelpers::defaultTime,
-                                             testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr));
-    std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir A"),
-                                          NodeType::Directory, OperationType::None, "rdA", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rrootNode));
-
-
-    CPPUNIT_ASSERT(rootNode->insertChildren(nodeA));
-
-    // Rename Dir A -> Dir B
-    nodeA->setMoveOrigin("Dir A");
-    nodeA->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
-    nodeA->setName(Str("Dir B"));
-
-    // Create Dir A
-    std::shared_ptr<Node> nodeABis(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir A"),
-                                            NodeType::Directory, OperationType::Create, "dABis", testhelpers::defaultTime,
-                                            testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-
-    SyncOpPtr op1 = std::make_shared<SyncOperation>();
-    SyncOpPtr op2 = std::make_shared<SyncOperation>();
-    op1->setAffectedNode(nodeA);
-    op1->setTargetSide(nodeA->side());
-    op1->setType(OperationType::Move);
-    op2->setAffectedNode(nodeABis);
-    op2->setTargetSide(nodeABis->side());
-    op2->setType(OperationType::Create);
-
-    _syncPal->_syncOps->pushOp(op2);
-    _syncPal->_syncOps->pushOp(op1);
-    _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
-
-    _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
-    CPPUNIT_ASSERT(_syncPal->_syncOps->_opSortedList.back() == op2->id());
-    _syncPal->_syncOps->_opSortedList.pop_back();
-    CPPUNIT_ASSERT(_syncPal->_syncOps->_opSortedList.back() == op1->id());
-}
-
+// delete before create, e.g. user deletes object "x" and then creates a new object at "x".
 void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
-    DbNodeId dbNodeIdDir1;
-    DbNodeId dbNodeIdDir11;
-    DbNodeId dbNodeIdDir111;
-    DbNodeId dbNodeIdFile1111;
-    DbNodeId dbNodeIdDir2;
-    DbNodeId dbNodeIdDir3;
+    const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
 
-    bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", testhelpers::defaultTime,
-                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "r111", testhelpers::defaultTime,
-                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
-    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", testhelpers::defaultTime,
-                        testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, "cs 1.1.1");
-    _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    // Create another AAA
+    _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "aaa2", "aa");
+    const auto nodeAAA2 = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa2");
+    nodeAAA2->insertChangeEvent(OperationType::Create);
+    nodeAAA2->setName("AAA");
+    const auto createOp = std::make_shared<SyncOperation>();
+    createOp->setType(OperationType::Create);
+    createOp->setAffectedNode(nodeAAA2);
+    createOp->setNewName("AAA");
+    createOp->setTargetSide(ReplicaSide::Remote);
+    _syncPal->_syncOps->pushOp(createOp);
 
-    std::shared_ptr<Node> rootNode(
-            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""),
-                     NodeType::Directory, OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(),
-                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr));
-    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1"),
-                                         NodeType::Directory, OperationType::None, "d1", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1.1"),
-                                          NodeType::Directory, OperationType::None, "11", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, node1));
-    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1.1.1"),
-                                           NodeType::Directory, OperationType::None, "111", testhelpers::defaultTime,
-                                           testhelpers::defaultTime, testhelpers::defaultFileSize, node11));
-    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSide::Local)->side(),
-                                            Str("File 1.1.1.1"), NodeType::File, OperationType::None, "1111",
-                                            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                            node111));
-    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 2"),
-                                         NodeType::Directory, OperationType::None, "2", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 3"),
-                                         NodeType::Directory, OperationType::None, "3", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
-                                             NodeType::Directory, OperationType::None,
-                                             _syncPal->syncDb()->rootNode().nodeIdRemote(), testhelpers::defaultTime,
-                                             testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr));
-    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1"),
-                                          NodeType::Directory, OperationType::None, "r1", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rrootNode));
-    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1.1"),
-                                           NodeType::Directory, OperationType::None, "r11", testhelpers::defaultTime,
-                                           testhelpers::defaultTime, testhelpers::defaultFileSize, rNode1));
-    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1.1.1"),
-                                            NodeType::Directory, OperationType::None, "r111", testhelpers::defaultTime,
-                                            testhelpers::defaultTime, testhelpers::defaultFileSize, rNode11));
-    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSide::Remote)->side(),
-                                             Str("File 1.1.1.1"), NodeType::File, OperationType::None, "r1111",
-                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                             rNode111));
-    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 2"),
-                                          NodeType::Directory, OperationType::None, "r2", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rrootNode));
-    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 3"),
-                                          NodeType::Directory, OperationType::None, "r3", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rrootNode));
+    // Delete original AAA
+    nodeAAA->insertChangeEvent(OperationType::Delete);
+    _initialSituationGenerator.removeFromUpdateTree(ReplicaSide::Local, "aaa");
+    const auto deleteOp = std::make_shared<SyncOperation>();
+    deleteOp->setType(OperationType::Delete);
+    deleteOp->setAffectedNode(nodeAAA);
+    deleteOp->setTargetSide(ReplicaSide::Remote);
+    _syncPal->_syncOps->pushOp(deleteOp);
 
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("d1", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("Dir 1"),
-                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                                                      testhelpers::defaultFileSize, false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("11", "d1", Str("Dir 1.1"), testhelpers::defaultTime,
-                                                      testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                                                      false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("111", "11", Str("Dir 1.1.1"), testhelpers::defaultTime,
-                                                      testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                                                      false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("1111c", "111", Str("File 1.1.1.1"), testhelpers::defaultTime,
-                                                      testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                                                      false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("2", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("Dir 2"),
-                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                                                      testhelpers::defaultFileSize, false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("3", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("Dir 3"),
-                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                                                      testhelpers::defaultFileSize, false, true, true));
-
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r1", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("Dir 1"),
-                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                                                       testhelpers::defaultFileSize, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r11", "r1", Str("Dir 1.1"), testhelpers::defaultTime,
-                                                       testhelpers::defaultTime, NodeType::Directory,
-                                                       testhelpers::defaultFileSize, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r111", "r11", Str("Dir 1.1.1"), testhelpers::defaultTime,
-                                                       testhelpers::defaultTime, NodeType::Directory,
-                                                       testhelpers::defaultFileSize, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r1111", "r111", Str("File 1.1.1.1"), testhelpers::defaultTime,
-                                                       testhelpers::defaultTime, NodeType::Directory,
-                                                       testhelpers::defaultFileSize, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r2", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("Dir 2"),
-                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                                                       testhelpers::defaultFileSize, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r3", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("Dir 3"),
-                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                                                       testhelpers::defaultFileSize, false, true, true));
-
-    std::shared_ptr<Node> node1111C(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("File 1.1.1.1"),
-                                             NodeType::File, OperationType::Create, "1111c", testhelpers::defaultTime,
-                                             testhelpers::defaultTime, testhelpers::defaultFileSize, node111));
-
-    SyncOpPtr op1 = std::make_shared<SyncOperation>();
-    SyncOpPtr op2 = std::make_shared<SyncOperation>();
-    SyncOpPtr op3 = std::make_shared<SyncOperation>();
-    SyncOpPtr op4 = std::make_shared<SyncOperation>();
-    SyncOpPtr op5 = std::make_shared<SyncOperation>();
-    op1->setAffectedNode(node1111);
-    op1->setTargetSide(node1111->side());
-    op1->setType(OperationType::Delete);
-    op2->setAffectedNode(node1111C);
-    op2->setTargetSide(node1111C->side());
-    op2->setType(OperationType::Create);
-    op3->setAffectedNode(node3);
-    op4->setAffectedNode(node1);
-    op5->setAffectedNode(node2);
-
-    _syncPal->_syncOps->pushOp(op5);
-    _syncPal->_syncOps->pushOp(op2);
-    _syncPal->_syncOps->pushOp(op4);
-    _syncPal->_syncOps->pushOp(op3);
-    _syncPal->_syncOps->pushOp(op1);
     _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
-
     _syncPal->_operationsSorterWorker->fixDeleteBeforeCreate();
-    CPPUNIT_ASSERT(_syncPal->_syncOps->_opSortedList.back() == op2->id());
-    _syncPal->_syncOps->_opSortedList.pop_back();
-    CPPUNIT_ASSERT(_syncPal->_syncOps->_opSortedList.back() == op1->id());
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    CPPUNIT_ASSERT_EQUAL(deleteOp->id(), _syncPal->_syncOps->opSortedList().front());
+    CPPUNIT_ASSERT_EQUAL(createOp->id(), _syncPal->_syncOps->opSortedList().back());
 }
 
 void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
