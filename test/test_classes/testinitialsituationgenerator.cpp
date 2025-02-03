@@ -25,6 +25,8 @@
 namespace KDC {
 
 void TestInitialSituationGenerator::generateInitialSituation(const std::string &jsonInputStr) {
+    if (!_syncpal) throw std::runtime_error("Invalid SyncPal pointer!");
+
     Poco::JSON::Object::Ptr obj;
     try {
         Poco::JSON::Parser parser;
@@ -34,6 +36,18 @@ void TestInitialSituationGenerator::generateInitialSituation(const std::string &
     }
 
     addItem(obj);
+}
+
+std::shared_ptr<Node> TestInitialSituationGenerator::getNode(const ReplicaSide side, const NodeId &rawId) const {
+    return _syncpal->updateTree(side)->getNodeById(generateId(side, rawId));
+}
+
+bool TestInitialSituationGenerator::getDbNode(const NodeId &rawId, DbNode &dbNode) const {
+    bool found = false;
+    if (!_syncpal->syncDb()->node(ReplicaSide::Local, generateId(ReplicaSide::Local, rawId), dbNode, found)) {
+        return false;
+    }
+    return found;
 }
 
 NodeId TestInitialSituationGenerator::generateId(const ReplicaSide side, const NodeId &rawId) {
@@ -55,12 +69,12 @@ void TestInitialSituationGenerator::addItem(Poco::JSON::Object::Ptr obj, const N
     }
 }
 
-void TestInitialSituationGenerator::addItem(NodeType itemType, const NodeId &id, const NodeId &parentId) {
+void TestInitialSituationGenerator::addItem(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
     insertInDb(itemType, id, parentId);
     insertInUpdateTrees(itemType, id, parentId);
 }
 
-void TestInitialSituationGenerator::insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const {
+void TestInitialSituationGenerator::insertInDb(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
     DbNode parentNode;
     if (parentId.empty()) {
         parentNode = _syncpal->syncDb()->rootNode();
@@ -81,7 +95,7 @@ void TestInitialSituationGenerator::insertInDb(NodeType itemType, const NodeId &
     _syncpal->syncDb()->insertNode(dbNode);
 }
 
-void TestInitialSituationGenerator::insertInUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId) {
+void TestInitialSituationGenerator::insertInUpdateTrees(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
         insertInUpdateTrees(side, itemType, id, parentId);
     }
