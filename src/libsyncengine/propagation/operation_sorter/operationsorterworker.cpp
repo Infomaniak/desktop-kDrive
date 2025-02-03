@@ -237,31 +237,34 @@ void OperationSorterWorker::fixCreateBeforeMove() {
     const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
     const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
     for (const auto &createOpId: createOps) {
-        SyncOpPtr createOp = _unsortedList.getOp(createOpId);
+        const auto createOp = _unsortedList.getOp(createOpId);
         if (createOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
-        if (!createOp->affectedNode()->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createOp->affectedNode()->name()).c_str());
+        const auto createNode = createOp->affectedNode();
+        if (!createNode->id().has_value()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->name()).c_str());
             continue;
         }
 
         for (const auto &moveOpId: moveOps) {
-            SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+            const auto moveOp = _unsortedList.getOp(moveOpId);
             if (moveOp->targetSide() != createOp->targetSide()) {
                 continue;
             }
-            std::shared_ptr<Node> moveNode = moveOp->affectedNode();
-            if (moveNode->parentNode() != nullptr) {
-                std::optional<NodeId> moveDestParentId = moveNode->parentNode()->id();
-                if (moveDestParentId) {
-                    if (*moveDestParentId == *createOp->affectedNode()->id()) {
-                        // move only if moveOp is before op
-                        moveFirstAfterSecond(moveOp, createOp);
-                        continue;
-                    }
-                }
+
+            const auto moveNode = moveOp->affectedNode();
+            if (!moveNode->parentNode()) {
+                continue;
+            }
+
+            std::optional<NodeId> moveNodeParentId = moveNode->parentNode()->id();
+            if (!moveNodeParentId.has_value()) continue;
+
+            if (*moveNodeParentId == *createNode->id()) {
+                // move only if moveOp is before createOp
+                moveFirstAfterSecond(moveOp, createOp);
             }
         }
     }
