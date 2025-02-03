@@ -162,20 +162,18 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
     const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
     const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
     for (const auto &moveOpId: moveOps) {
-        SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+        const auto moveOp = _unsortedList.getOp(moveOpId);
+        const auto moveNode = moveOp->affectedNode();
 
         for (const auto &createOpId: createOps) {
-            SyncOpPtr createOp = _unsortedList.getOp(createOpId);
+            const auto createOp = _unsortedList.getOp(createOpId);
             if (createOp->targetSide() != moveOp->targetSide()) {
                 continue;
             }
 
-            bool found;
-            std::shared_ptr<Node> moveNode = moveOp->affectedNode();
-            std::optional<NodeId> sourceParentId;
-            // get with path or with idb
-            // TODO : check if it's better with moveOriginParentId
-            if (!_syncPal->_syncDb->id(moveNode->side(), moveNode->moveOrigin()->parent_path(), sourceParentId, found)) {
+            bool found = false;
+            std::optional<NodeId> moveNodeOriginParentId;
+            if (!_syncPal->_syncDb->id(moveNode->side(), moveNode->moveOrigin()->parent_path(), moveNodeOriginParentId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
                 return;
             }
@@ -185,32 +183,17 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
                 break;
             }
 
-            std::shared_ptr<Node> createNode = createOp->affectedNode();
-            if (createNode->parentNode() != nullptr) {
-                if (!createNode->parentNode()->id().has_value()) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->parentNode()->name()).c_str());
-                    continue;
-                }
-
-                NodeId createParentId = *createNode->parentNode()->id();
-                if (sourceParentId == createParentId) {
-                    if (moveNode->name() == createNode->name()) {
-                        // move only if createOp is before op
-                        moveFirstAfterSecond(createOp, moveOp);
-                        continue;
-                    }
-                }
+            const auto createNode = createOp->affectedNode();
+            if (!createNode->parentNode()->id().has_value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->parentNode()->name()).c_str());
+                continue;
             }
 
-            std::shared_ptr<Node> correspondingMoveNode = correspondingNodeInOtherTree(moveNode);
-            if (correspondingMoveNode) {
-                if (correspondingMoveNode->name() == createOp->affectedNode()->name()) {
-                    moveFirstAfterSecond(createOp, moveOp);
-                    continue;
-                }
-            } else {
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << SyncName2WStr(moveNode->name()).c_str());
-                continue;
+            if (const auto createParentId = *createNode->parentNode()->id(); moveNodeOriginParentId != createParentId) continue;
+
+            if (moveNode->moveOrigin()->filename() == createNode->name()) {
+                // move only if createOp is before op
+                moveFirstAfterSecond(createOp, moveOp);
             }
         }
     }

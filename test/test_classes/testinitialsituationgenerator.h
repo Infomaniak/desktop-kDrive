@@ -62,6 +62,8 @@ class TestInitialSituationGenerator {
         [[nodiscard]] std::shared_ptr<Node> getNode(ReplicaSide side, const NodeId &rawId) const;
         bool getDbNode(const NodeId &rawId, DbNode &dbNode) const;
 
+        void insertInUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
+
     private:
         [[nodiscard]] NodeId generateId(ReplicaSide side, const NodeId &rawId) const;
 
@@ -69,7 +71,7 @@ class TestInitialSituationGenerator {
         void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
 
         void insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
-        void insertInUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
+
         void insertInUpdateTrees(ReplicaSide side, NodeType itemType, const NodeId &id, const NodeId &parentId) const;
 
         std::shared_ptr<SyncPal> _syncpal;
