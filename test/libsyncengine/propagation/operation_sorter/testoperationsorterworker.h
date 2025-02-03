@@ -19,6 +19,8 @@
 #pragma once
 
 #include "testincludes.h"
+#include "test_classes/testinitialsituationgenerator.h"
+
 #include <propagation/operation_sorter/operationsorterworker.h>
 
 namespace KDC {
@@ -26,7 +28,7 @@ namespace KDC {
 class TestOperationSorterWorker final : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestOperationSorterWorker);
         CPPUNIT_TEST(testMoveFirstAfterSecond);
-        // CPPUNIT_TEST(testFixDeleteBeforeMove);
+        CPPUNIT_TEST(testFixDeleteBeforeMove);
         // CPPUNIT_TEST(testFixMoveBeforeCreate);
         // CPPUNIT_TEST(testFixMoveBeforeDelete);
         // CPPUNIT_TEST(testFixCreateBeforeMove);
@@ -46,8 +48,6 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture {
         void setUp() override;
         void tearDown() override;
 
-        void setupInitialSituation();
-
         void testMoveFirstAfterSecond();
         void testFixDeleteBeforeMove();
         void testFixMoveBeforeCreate();
@@ -66,6 +66,8 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture {
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
+
+        TestInitialSituationGenerator _initialSituationGenerator;
 };
 
 } // namespace KDC

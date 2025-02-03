@@ -112,56 +112,45 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
     if (deleteOps.empty() || moveOps.empty()) return;
 
     for (const auto &deleteOpId: deleteOps) {
-        SyncOpPtr deleteOp = _unsortedList.getOp(deleteOpId);
-
-        std::shared_ptr<Node> deleteNode = deleteOp->affectedNode();
+        const auto deleteOp = _unsortedList.getOp(deleteOpId);
+        const auto deleteNode = deleteOp->affectedNode();
         if (!deleteNode->id().has_value()) {
             LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(deleteNode->name()).c_str());
             continue;
         }
 
-        SyncPath path;
+        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
         bool found = false;
-        if (!_syncPal->_syncDb->path(deleteNode->side(), *deleteNode->id(), path, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-            return;
-        }
-        if (!found) {
-            LOGW_SYNCPAL_INFO(_logger, L"Node not found for id = " << Utility::s2ws(*deleteNode->id()).c_str() << L" and name="
-                                                                   << SyncName2WStr(deleteNode->name()).c_str());
-            break;
-        }
-
-        std::optional<NodeId> deleteParentNodeId;
-        if (!_syncPal->_syncDb->id(deleteNode->side(), path.parent_path(), deleteParentNodeId, found)) {
+        std::optional<NodeId> deleteNodeParentId;
+        if (!_syncPal->_syncDb->id(deleteNode->side(), deleteNodeParentPath.parent_path(), deleteNodeParentId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
             return;
         }
         if (!found) {
-            LOGW_SYNCPAL_INFO(_logger, L"Node not found for path = " << Path2WStr(path.parent_path()).c_str());
+            LOGW_SYNCPAL_INFO(_logger, L"Node not found for path = " << Path2WStr(deleteNodeParentPath.parent_path()).c_str());
             break;
         }
 
         for (const auto &moveOpId: moveOps) {
-            SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+            const auto moveOp = _unsortedList.getOp(moveOpId);
             if (moveOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
 
-            // get the parent of the op nodes list
-            std::shared_ptr<Node> moveNode = moveOp->affectedNode();
+            const auto moveNode = moveOp->affectedNode();
             if (!moveNode->parentNode()->id().has_value()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNode->parentNode()->name()).c_str());
                 continue;
             }
 
-            NodeId moveParentNodeId = *moveNode->parentNode()->id();
-            if (deleteParentNodeId == moveParentNodeId) {
-                if (deleteNode->name() == moveNode->name()) {
-                    // move only if moveOp is before op
-                    // moveOp depends on op
-                    moveFirstAfterSecond(moveOp, deleteOp);
-                }
+            if (const auto moveNodeParentId = moveNode->parentNode()->id();
+                deleteNodeParentId.value() != moveNodeParentId.value())
+                continue;
+
+            if (deleteNode->name() == moveNode->name()) {
+                // move only if moveOp is before op
+                // moveOp depends on op
+                moveFirstAfterSecond(moveOp, deleteOp);
             }
         }
     }
