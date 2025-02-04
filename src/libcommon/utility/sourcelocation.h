@@ -38,7 +38,7 @@ class SourceLocation {
     public:
         constexpr SourceLocation() = default;
 #ifdef SRC_LOC_AVALAIBALE
-        [[nodiscard]] static constexpr SourceLocation currentLoc(
+        [[nodiscard]] static consteval SourceLocation currentLoc(
                 const std::source_location& loc = std::source_location::current()) {
             SourceLocation result;
             result._line = loc.line();
