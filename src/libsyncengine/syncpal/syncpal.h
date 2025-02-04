@@ -102,8 +102,9 @@ struct SyncPalInfo {
 
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
-        SyncPal(const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
-        SyncPal(const int syncDbId, const std::string &version);
+        SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
+                const bool hasFullyCompleted);
+        SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
         ExitCode setTargetNodeId(const std::string &targetNodeId);
@@ -116,7 +117,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _sendSignal = sendSignal;
         }
 
-        inline void setVfsPtr(const std::shared_ptr<Vfs> &vfs) { _vfs = vfs; }
+        inline std::shared_ptr<Vfs> vfs() { return _vfs; }
 
         // SyncPalInfo
         [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
@@ -178,23 +179,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void addError(const Error &error);
         void addCompletedItem(int syncDbId, const SyncFileItem &item);
-
-        bool vfsIsExcluded(const SyncPath &itemPath, bool &isExcluded);
-        bool vfsExclude(const SyncPath &itemPath);
-        bool vfsPinState(const SyncPath &itemPath, PinState &pinState);
-        ExitInfo vfsSetPinState(const SyncPath &itemPath, PinState pinState);
-        ExitInfo vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress);
-        ExitInfo vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        ExitInfo vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item);
-        ExitInfo vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                   const int64_t size, const NodeId &id);
-        ExitInfo vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
-                                      bool &finished);
-        bool vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status);
-        ExitInfo vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false);
-        bool vfsCleanUpStatuses();
-        bool vfsClearFileAttributes(const SyncPath &path);
-        bool vfsCancelHydrate(const SyncPath &path);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -263,7 +247,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::function<void(const Error &error)> _addError;
         std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SignalNum sigId, int syncDbId, const SigValueType &val)> _sendSignal;
-        std::shared_ptr<Vfs> _vfs;
+        const std::shared_ptr<Vfs> _vfs;
 
         // DB
         std::shared_ptr<SyncDb> _syncDb{nullptr};
