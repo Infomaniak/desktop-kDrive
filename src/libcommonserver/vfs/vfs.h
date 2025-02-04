@@ -20,6 +20,7 @@
 
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/log/sentry/handler.h"
 #include "libsyncengine/progress/syncfileitem.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/vfs/workerinfo.h"
@@ -45,14 +46,17 @@ constexpr short workerDehydration = 1;
 namespace KDC {
 
 struct VfsSetupParams {
-        int _syncDbId;
-        int _driveId;
-        int _userId;
-        SyncPath _localPath;
-        SyncPath _targetPath;
-        std::string _namespaceCLSID;
-        ExecuteCommand _executeCommand;
-        log4cplus::Logger _logger;
+        VfsSetupParams() = default;
+        VfsSetupParams(const log4cplus::Logger &logger) : logger(logger) {}
+        int syncDbId;
+        int driveId;
+        int userId;
+        SyncPath localPath;
+        SyncPath targetPath;
+        std::string namespaceCLSID;
+        ExecuteCommand executeCommand;
+        log4cplus::Logger logger;
+        std::shared_ptr<sentry::Handler> sentryHandler;
 };
 
 struct VfsStatus {
@@ -283,7 +287,7 @@ class Vfs : public QObject {
         virtual bool isExcluded(const SyncPath &filePath) = 0;
 
 
-        virtual bool fileStatusChanged(const SyncPath &systemFileName, KDC::SyncFileStatus fileStatus) = 0;
+        virtual bool fileStatusChanged(const SyncPath &systemFileName, SyncFileStatus fileStatus) = 0;
 
         virtual void convertDirContentToPlaceholder(const QString &, bool) {}
 
@@ -291,8 +295,8 @@ class Vfs : public QObject {
 
         void setExtendedLog(bool extendedLog) { _extendedLog = extendedLog; }
 
-        const std::string &namespaceCLSID() const { return _vfsSetupParams._namespaceCLSID; }
-        void setNamespaceCLSID(const std::string &CLSID) { _vfsSetupParams._namespaceCLSID = CLSID; }
+        const std::string &namespaceCLSID() { return _vfsSetupParams.namespaceCLSID; }
+        void setNamespaceCLSID(const std::string &CLSID) { _vfsSetupParams.namespaceCLSID = CLSID; }
 
         virtual void dehydrate(const SyncPath &path) = 0;
         virtual void hydrate(const SyncPath &path) = 0;
@@ -330,7 +334,7 @@ class Vfs : public QObject {
 
         virtual void stopImpl(bool unregister) = 0;
 
-        log4cplus::Logger logger() const { return _vfsSetupParams._logger; }
+        log4cplus::Logger logger() const { return _vfsSetupParams.logger; }
 
 
         /* Handle a VFS error by logging it and returning an ExitInfo with the appropriate error code.
@@ -384,7 +388,7 @@ class VfsOff : public Vfs {
 
     public:
         explicit VfsOff(QObject *parent = nullptr);
-        VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
+        VfsOff(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
         ~VfsOff() override;
 
@@ -406,13 +410,17 @@ class VfsOff : public Vfs {
 
         ExitInfo setPinState(const SyncPath &, PinState) override { return ExitCode::Ok; }
         PinState pinState(const SyncPath &) override { return PinState::AlwaysLocal; }
-        ExitInfo status(const SyncPath &, VfsStatus &) override { return ExitCode::Ok; }
+        ExitInfo status(const SyncPath &, VfsStatus &vfsStatus) override {
+            vfsStatus.isPlaceholder = false;
+            vfsStatus.isHydrated = true;
+            return ExitCode::Ok;
+        }
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
         void exclude(const SyncPath &) override { /*VfsOff*/ }
         bool isExcluded(const SyncPath &) override { return false; }
-        bool fileStatusChanged(const SyncPath &, SyncFileStatus) final { return true; }
+        bool fileStatusChanged(const SyncPath &, const SyncFileStatus) override { return true; }
 
         void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
         void dehydrate(const SyncPath &) override { /*VfsOff*/ }

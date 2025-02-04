@@ -19,8 +19,6 @@
 #pragma once
 
 #include "utility/types.h"
-#include "vfs/vfs.h"
-
 #include <Poco/Runnable.h>
 
 #include <log4cplus/logger.h>
@@ -73,30 +71,6 @@ class AbstractJob : public Poco::Runnable {
         inline bool isExtendedLog() const { return _isExtendedLog; }
         inline bool isRunning() const { return _isRunning; }
 
-        inline void setVfsUpdateFetchStatusCallback(
-                const std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> &callback) noexcept {
-            _vfsUpdateFetchStatus = callback;
-        }
-        inline void setVfsSetPinStateCallback(const std::function<ExitInfo(const SyncPath &, PinState)> &callback) noexcept {
-            _vfsSetPinState = callback;
-        }
-        inline void setVfsForceStatusCallback(
-                const std::function<ExitInfo(const SyncPath &, const VfsStatus &)> &callback) noexcept {
-            _vfsForceStatus = callback;
-        }
-        inline void setVfsStatusCallback(
-                const std::function<ExitInfo(const SyncPath &, VfsStatus &vfsStatus)> &callback) noexcept {
-            _vfsStatus = callback;
-        }
-        inline void setVfsUpdateMetadataCallback(
-                const std::function<ExitInfo(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &)>
-                        &callback) noexcept {
-            _vfsUpdateMetadata = callback;
-        }
-        inline void setVfsCancelHydrateCallback(const std::function<bool(const SyncPath &)> &callback) noexcept {
-            _vfsCancelHydrate = callback;
-        }
-
         virtual void abort();
         bool isAborted() const;
 
@@ -109,16 +83,6 @@ class AbstractJob : public Poco::Runnable {
         log4cplus::Logger _logger;
         ExitCode _exitCode = ExitCode::Unknown;
         ExitCause _exitCause = ExitCause::Unknown;
-
-        std::function<ExitInfo(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled, bool &finished)>
-                _vfsUpdateFetchStatus;
-        std::function<ExitInfo(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState;
-        std::function<ExitInfo(const SyncPath &path, const VfsStatus &vfsStatus)> _vfsForceStatus;
-        std::function<ExitInfo(const SyncPath &path, VfsStatus &vfsStatus)> _vfsStatus;
-        std::function<ExitInfo(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
-                               const NodeId &id)>
-                _vfsUpdateMetadata;
-        std::function<bool(const SyncPath &path)> _vfsCancelHydrate;
 
     private:
         virtual void run() final;

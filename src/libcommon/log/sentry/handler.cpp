@@ -223,7 +223,9 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     // Sentry init
     sentry_options_t *options = sentry_options_new();
     sentry_options_set_dsn(options, ((appType == AppType::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(__x86_64__)
+    // TODO: On Linux arm64, Sentry is built with breakpad instead of crashpad_handler until support of Ubuntu 20.04 is
+    // discontinued
     const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
 #endif
 
@@ -232,7 +234,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 #if defined(Q_OS_WIN)
     sentry_options_set_handler_pathw(options, appWorkingPath.c_str());
     sentry_options_set_database_pathw(options, appSupportPath.c_str());
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_MAC) || defined(__x86_64__)
     sentry_options_set_handler_path(options, appWorkingPath.c_str());
     sentry_options_set_database_path(options, appSupportPath.c_str());
 #endif
@@ -266,15 +268,24 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     }
 
 #ifdef NDEBUG
-    sentry_options_set_traces_sample_rate(options, 0.001); // 0.1% of traces will be sent to sentry.
+    sentry_options_set_traces_sample_rate(options, 0.1); // 0.1% of traces will be sent to sentry.
 #else
     sentry_options_set_traces_sample_rate(options, 1);
 #endif
     sentry_options_set_max_spans(options, 1000); // Maximum number of spans per transaction
 
     // Init sentry
-    ASSERT(sentry_init(options) == 0);
+    int res = sentry_init(options);
+    std::cerr << "sentry_init returned " << res << std::endl;
+    ASSERT(res == 0);
     _instance->_isSentryActivated = true;
+}
+
+void Handler::init(const std::shared_ptr<Handler> &initializedHandler) {
+    if (_instance) {
+        return;
+    }
+    _instance = initializedHandler;
 }
 
 void Handler::setAuthenticatedUser(const SentryUser &user) {
@@ -288,8 +299,8 @@ void Handler::setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level) 
     _globalConfidentialityLevel = level;
 }
 
-void Handler::_captureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
-                              const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
+void Handler::privateCaptureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
+                                    const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
     if (!_isSentryActivated) return;
 
     std::scoped_lock lock(_mutex);

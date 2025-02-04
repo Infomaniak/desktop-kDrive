@@ -143,7 +143,8 @@ class ExecutorWorker : public OperationProcessor {
         void increaseErrorCount(SyncOpPtr syncOp);
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
-        void logCorrespondingNodeErrorMsg(const SyncOpPtr syncOp);
+
+        bool deleteOpNodes(const SyncOpPtr syncOp);
 
         void setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status);
 

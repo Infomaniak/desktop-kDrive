@@ -90,7 +90,7 @@ class LiteSyncExtConnector {
         QHash<QString, QSet<QString>> _syncingFolders;
         std::mutex _mutex;
 
-        bool sendStatusToFinder(const QString &path, bool isSyncing, int progress, bool isHydrated);
+        bool sendStatusToFinder(const QString &path, const VfsStatus &vfsStatus);
 };
 
 } // namespace KDC

@@ -41,8 +41,8 @@ void Vfs::starVfsWorkers() {
     // !!! Disabled for testing because no QEventLoop !!!
     if (qApp) {
         // Start worker threads
-        for (int i = 0; i < nbWorkers; i++) {
-            for (int j = 0; j < s_nb_threads[i]; j++) {
+        for (size_t i = 0; i < nbWorkers; i++) {
+            for (size_t j = 0; j < s_nb_threads[i]; j++) {
                 auto *workerThread = new QtLoggingThread();
                 _workerInfo[i]._threadList.append(workerThread);
                 auto *worker = new VfsWorker(this, i, j, logger());
@@ -192,12 +192,12 @@ void VfsWorker::start() {
 
 VfsOff::VfsOff(QObject *parent) : Vfs(VfsSetupParams(), parent) {}
 
-VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
+VfsOff::VfsOff(const VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
 VfsOff::~VfsOff() = default;
 
 ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus) {
-    const SyncPath fullPath(_vfsSetupParams._localPath / pathStd);
+    const SyncPath fullPath(_vfsSetupParams.localPath / pathStd);
     if (const ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
@@ -205,7 +205,7 @@ ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
     QString status = vfsStatus.isSyncing ? "SYNC" : "OK";
     QString path = SyncName2QStr(pathStd.native());
-    _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
+    _vfsSetupParams.executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
 
     return ExitCode::Ok;
 }

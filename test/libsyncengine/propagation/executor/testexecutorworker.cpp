@@ -68,9 +68,10 @@ void TestExecutorWorker::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(_sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
+                                         KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
-    _syncPal->createWorkers();
+    _syncPal->createWorkers(std::chrono::seconds(0));
     _syncPal->syncDb()->setAutoDelete(true);
 
     _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
@@ -86,6 +87,17 @@ void TestExecutorWorker::tearDown() {
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
+    // Setup a syncpal using MockVfs
+    _syncPal->stop();
+    std::shared_ptr<MockVfs> mockVfs = std::make_shared<MockVfs>();
+    _syncPal = std::make_shared<SyncPal>(mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
+    _syncPal->syncDb()->setAutoDelete(true);
+
+    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
+
+
     //   Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
     opPtr->setTargetSide(ReplicaSide::Remote);
@@ -93,9 +105,6 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
                                              OperationType::None, "1234", testhelpers::defaultTime, testhelpers::defaultTime,
                                              testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
-
-    auto mockVfs = std::make_shared<MockVfs>();
-    _syncPal->setVfsPtr(mockVfs);
     // A hydrated placeholder.
     {
         constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = true, .isSyncing = false, .progress = 0};
@@ -327,7 +336,7 @@ void TestExecutorWorker::testTerminatedJobsQueue() {
     t4.join(); // Wait for all threads to finish.
 }
 
-void TestExecutorWorker::propagateConflictToDbAndTree() {
+void TestExecutorWorker::testPropagateConflictToDbAndTree() {
     bool propagateChange = false;
     const auto syncOp = generateSyncOperation(1, Str("test"));
 
@@ -386,12 +395,25 @@ void TestExecutorWorker::propagateConflictToDbAndTree() {
     CPPUNIT_ASSERT_EQUAL(false, propagateChange);
 }
 
-void TestExecutorWorker::testLogCorrespondingNodeErrorMsg() {
-    SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
-    _executorWorker->logCorrespondingNodeErrorMsg(op);
+void TestExecutorWorker::testDeleteOpNodes() {
+    const auto syncOp = generateSyncOperation(1, Str("test"));
+    syncOp->setTargetSide(ReplicaSide::Remote);
 
-    op->setCorrespondingNode(nullptr);
-    _executorWorker->logCorrespondingNodeErrorMsg(op);
+    {
+        _syncPal->updateTree(ReplicaSide::Local)->insertNode(syncOp->affectedNode());
+        _syncPal->updateTree(ReplicaSide::Remote)->insertNode(syncOp->correspondingNode());
+        CPPUNIT_ASSERT(_executorWorker->deleteOpNodes(syncOp));
+        CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*syncOp->affectedNode()->id()));
+        CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(*syncOp->correspondingNode()->id()));
+    }
+
+    {
+        // No corresponding node
+        syncOp->setCorrespondingNode(nullptr);
+        _syncPal->updateTree(ReplicaSide::Local)->insertNode(syncOp->affectedNode());
+        CPPUNIT_ASSERT(_executorWorker->deleteOpNodes(syncOp));
+        CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*syncOp->affectedNode()->id()));
+    }
 }
 
 void TestExecutorWorker::testFixModificationDate() {
