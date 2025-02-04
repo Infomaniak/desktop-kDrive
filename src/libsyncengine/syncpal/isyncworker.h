@@ -32,7 +32,7 @@ namespace KDC {
 class ISyncWorker {
     public:
         ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                    const std::chrono::seconds startDelay = std::chrono::seconds(0), bool testing = false);
+                    const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool testing = false);
         virtual ~ISyncWorker();
 
         virtual void start();
@@ -62,6 +62,10 @@ class ISyncWorker {
         bool _testing{false};
 
     protected:
+        //! Wait for a delay. Allows to postpone the start of the worker to smooth the load.
+        /*!
+          \return true if no stop occurred, false otherwise.
+        */
         bool sleepUntilStartDelay();
         void setPauseDone();
         void setUnpauseDone();
