@@ -63,7 +63,7 @@ class OperationSorterWorker final : public OperationProcessor {
          */
         void fixDeleteBeforeCreate();
         /**
-         * @brief move before move (occupation), e.g. user moves file “a“ to “temp“ and then moves file “b“ to “a“.
+         * @brief move before move (occupation), e.g. user moves file “a“ to “temp“ and then moves file “b“ to “a“. test
          */
         void fixMoveBeforeMoveOccupied();
         /**
