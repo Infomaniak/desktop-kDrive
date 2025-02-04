@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ class SourceLocation {
     public:
         constexpr SourceLocation() = default;
 #ifdef SRC_LOC_AVALAIBALE
-        [[nodiscard]] static consteval SourceLocation currentLoc(
+        [[nodiscard]] static constexpr SourceLocation currentLoc(
                 const std::source_location& loc = std::source_location::current()) {
             SourceLocation result;
             result._line = loc.line();
@@ -51,7 +51,7 @@ class SourceLocation {
         // It is not as accurate as std::source_location but it is better than nothing.
         // void foo(SourceLocation loc = currentLoc()) -> loc will be evaluated at the definition site instead of the call site.
 #define currentLoc() currentLocCompatibility(__LINE__, __FILE__)
-        [[nodiscard]] static consteval SourceLocation currentLocCompatibility(uint32_t line, const char* file) {
+        [[nodiscard]] static constexpr SourceLocation currentLocCompatibility(uint32_t line, const char* file) {
             SourceLocation result;
             result._line = line;
             result._fileName = file;
