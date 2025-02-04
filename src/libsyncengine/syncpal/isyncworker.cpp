@@ -112,20 +112,20 @@ void ISyncWorker::waitForExit() {
     }
 }
 
-bool ISyncWorker::sleepUntilStartDelay() {
+void ISyncWorker::sleepUntilStartDelay(bool &awakenByStop) {
+    awakenByStop = false;
     if (_startDelay.count()) {
         auto delay = _startDelay;
         while (delay.count()) {
             // Manage stop
             if (stopAsked()) {
-                return false;
+                awakenByStop = true;
+                return;
             }
             std::this_thread::sleep_for(std::chrono::seconds(1));
             delay -= std::chrono::seconds(1);
         }
     }
-
-    return true;
 }
 
 void ISyncWorker::setPauseDone() {

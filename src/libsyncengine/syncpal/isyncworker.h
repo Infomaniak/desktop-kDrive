@@ -64,9 +64,9 @@ class ISyncWorker {
     protected:
         //! Wait for a delay. Allows to postpone the start of the worker to smooth the load.
         /*!
-          \return true if no stop occurred, false otherwise.
+          \param awakenByStop will be true if a stop of the worker has been requested, false otherwise.
         */
-        bool sleepUntilStartDelay();
+        void sleepUntilStartDelay(bool &awakenByStop);
         void setPauseDone();
         void setUnpauseDone();
         void setExitCause(ExitCause cause) { _exitCause = cause; }

@@ -70,7 +70,10 @@ void SyncPalWorker::execute() {
     }
     perfMonitor.stop();
 
-    if (!sleepUntilStartDelay()) {
+    // Wait before really starting
+    bool awakenByStop = false;
+    sleepUntilStartDelay(awakenByStop);
+    if (awakenByStop) {
         // Exit
         exitCode = ExitCode::Ok;
         setDone(exitCode);

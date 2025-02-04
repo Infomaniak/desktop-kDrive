@@ -287,7 +287,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void freeSharedObjects();
         void initSharedObjects();
         void resetSharedObjects();
-        void createWorkers(const std::chrono::seconds &startDelay);
+        void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
