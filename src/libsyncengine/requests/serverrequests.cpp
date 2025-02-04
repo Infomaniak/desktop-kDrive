@@ -1018,7 +1018,7 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;
     try {
-        job = std::make_shared<CreateDirJob>(driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
+        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
                                              QStr2SyncName(dirName));
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),

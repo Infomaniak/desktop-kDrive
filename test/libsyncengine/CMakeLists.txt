@@ -7,11 +7,14 @@ find_package(log4cplus 2.1.0 REQUIRED)
 set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 
 set(testsyncengine_SRCS
+        # Utility
         ../test.cpp
         test.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
+        # Mocks
+        ../mocks/libsyncengine/vfs/mockvfs.h
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
