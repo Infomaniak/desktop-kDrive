@@ -36,9 +36,9 @@
 
 namespace KDC {
 
-SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName), _step(SyncStep::Idle),
-    _pauseTime(std::chrono::time_point<std::chrono::system_clock>()) {}
+SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
+                             const std::chrono::seconds &startDelay) :
+    ISyncWorker(syncPal, name, shortName, startDelay) {}
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -60,6 +60,7 @@ void SyncPalWorker::execute() {
             setDone(exitCode);
             return;
         }
+
         if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
             // Reset nodes syncing flag
             if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
@@ -69,7 +70,18 @@ void SyncPalWorker::execute() {
     }
     perfMonitor.stop();
 
+    // Wait before really starting
+    bool awakenByStop = false;
+    sleepUntilStartDelay(awakenByStop);
+    if (awakenByStop) {
+        // Exit
+        exitCode = ExitCode::Ok;
+        setDone(exitCode);
+        return;
+    }
+
     // Sync loop
+    LOG_SYNCPAL_DEBUG(_logger, "Start sync loop");
     bool isFSOInProgress[2] = {false, false};
     std::shared_ptr<ISyncWorker> fsoWorkers[2] = {_syncPal->_localFSObserverWorker, _syncPal->_remoteFSObserverWorker};
     bool isStepInProgress = false;
