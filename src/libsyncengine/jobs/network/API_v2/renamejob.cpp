@@ -21,23 +21,25 @@
 
 namespace KDC {
 
-RenameJob::RenameJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &absoluteFinalPath) :
+RenameJob::RenameJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId,
+                     const SyncPath &absoluteFinalPath) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteFileId(remoteFileId),
-    _absoluteFinalPath(absoluteFinalPath) {
+    _absoluteFinalPath(absoluteFinalPath), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
 RenameJob::~RenameJob() {
-    if (_vfsForceStatus && _vfsStatus && !_absoluteFinalPath.empty()) {
+    if (!_absoluteFinalPath.empty() && _vfs) {
         bool isPlaceholder = false;
         bool isHydrated = false;
         bool isSyncing = false;
         int progress = 0;
-        if (ExitInfo exitInfo = _vfsStatus(_absoluteFinalPath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+        if (const ExitInfo exitInfo = _vfs->status(_absoluteFinalPath, isPlaceholder, isHydrated, isSyncing, progress);
+            !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
 
-        if (ExitInfo exitInfo = _vfsForceStatus(_absoluteFinalPath, false, 0, isHydrated); !exitInfo) {
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_absoluteFinalPath, false, 0, isHydrated); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
     }
