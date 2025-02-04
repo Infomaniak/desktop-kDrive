@@ -471,7 +471,7 @@ void SyncPal::resetSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects done");
 }
 
-void SyncPal::createWorkers() {
+void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
     LOG_SYNCPAL_DEBUG(_logger, "Create workers");
 #if defined(_WIN32)
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
@@ -499,7 +499,7 @@ void SyncPal::createWorkers() {
     _operationsSorterWorker =
             std::shared_ptr<OperationSorterWorker>(new OperationSorterWorker(shared_from_this(), "Operation Sorter", "OPSO"));
     _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(shared_from_this(), "Executor", "EXEC"));
-    _syncPalWorker = std::shared_ptr<SyncPalWorker>(new SyncPalWorker(shared_from_this(), "Main", "MAIN"));
+    _syncPalWorker = std::shared_ptr<SyncPalWorker>(new SyncPalWorker(shared_from_this(), "Main", "MAIN", startDelay));
 
     _tmpBlacklistManager = std::shared_ptr<TmpBlacklistManager>(new TmpBlacklistManager(shared_from_this()));
 }
@@ -1060,7 +1060,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
     return ExitCode::Ok;
 }
 
-void SyncPal::start() {
+void SyncPal::start(const std::chrono::seconds &startDelay) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal start");
 
     // Load VFS mode
@@ -1086,7 +1086,7 @@ void SyncPal::start() {
     createSharedObjects();
 
     // Create workers
-    createWorkers();
+    createWorkers(startDelay);
 
     // Reset paused flag
     ExitCode exitCode = setSyncPaused(false);
