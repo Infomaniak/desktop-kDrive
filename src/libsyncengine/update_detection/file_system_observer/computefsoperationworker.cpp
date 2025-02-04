@@ -34,7 +34,8 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> sync
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(nullptr, name, shortName, true), _syncDb(testSyncDb) {}
+    ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true),
+    _syncDb(testSyncDb) {}
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
