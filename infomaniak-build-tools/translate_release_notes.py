@@ -98,7 +98,7 @@ def split_os(lang, fullName):
             for line in lines:
                 if any(os_note in line for os_note in os_list):
                     if (f"<li>{os_name}" in line):
-                        f.write(f"\t\t<li>{line[line.find('-') + 2:]}")
+                        f.write(f"\t<li>{line[line.find('-') + 2:]}")
                 else:
                     f.write(line)
 
