@@ -18,7 +18,6 @@
 
 #include "webview.h"
 #include "../parameterscache.h"
-#include "../custommessagebox.h"
 #include "ui_webview.h"
 #include "libcommon/utility/utility.h"
 
@@ -129,6 +128,9 @@ void WebView::loadFinished(bool ok) {
 
 void WebView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode) {
     qCInfo(lcWizardWebiew()) << terminationStatus << " code=" << exitCode;
+    // Trick to force size update
+    const auto height = contentsRect().height();
+    (void) height;
 }
 
 WebView::~WebView() {
