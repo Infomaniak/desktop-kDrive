@@ -104,16 +104,9 @@ int CustomDialog::execAndMoveToCenter(const QWidget *parent) {
 
 void CustomDialog::forceRedraw() {
 #ifdef Q_OS_WINDOWS
-    // Windows hack
-    QTimer::singleShot(0, this, [=]() {
-        if (geometry().height() > windowMinimumSize.height()) {
-            setGeometry(geometry() + QMargins(0, 0, 0, -1));
-            setMinimumHeight(windowMinimumSize.height());
-        } else {
-            setMinimumHeight(windowMinimumSize.height() + 1);
-            setGeometry(geometry() + QMargins(0, 0, 0, 1));
-        }
-    });
+    // Trick to force size update
+    const auto height = _layout->contentsRect().height();
+    (void) height;
 #endif
 }
 
