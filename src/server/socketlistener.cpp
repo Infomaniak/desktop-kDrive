@@ -19,7 +19,10 @@
 #include "socketlistener.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
+
 #include <log4cplus/loggingmacros.h>
+
+#include <QStringRef>
 
 namespace KDC {
 
@@ -38,6 +41,16 @@ SocketListener::SocketListener(QIODevice *socket) : socket(socket) {
     _threadId = std::this_thread::get_id();
 }
 
+QString truncateMessageWithImageContent(const QString &message) {
+    if (QStringRef(&message).startsWith("GET_THUMBNAIL")) {
+        static const qsizetype maxLogMessageSize = 80;
+        return message.left(maxLogMessageSize) + " (truncated)";
+    }
+
+    return message;
+}
+
+
 void SocketListener::sendMessage(const QString &message, bool doWait) const {
     assert(_threadId == std::this_thread::get_id() && "SocketListener::sendMessage should only be called from the main thread");
 
@@ -46,8 +59,11 @@ void SocketListener::sendMessage(const QString &message, bool doWait) const {
         return;
     }
 
+    const QString truncatedLogMessage = truncateMessageWithImageContent(message);
+
     LOGW_INFO(KDC::Log::instance()->getLogger(),
-              L"Sending SocketAPI message --> " << message.toStdWString().c_str() << L" to " << socket);
+              L"Sending SocketAPI message --> " << truncatedLogMessage.toStdWString() << L" to " << socket);
+
     QString localMessage = message;
     if (!localMessage.endsWith(QLatin1Char('\n'))) {
         localMessage.append(QLatin1Char('\n'));
@@ -59,8 +75,7 @@ void SocketListener::sendMessage(const QString &message, bool doWait) const {
         socket->waitForBytesWritten(1000);
     }
     if (sent != bytesToSend.length()) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"Could not send all data on socket for " << localMessage.toStdWString().c_str());
+        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Could not send all data on socket for " << localMessage.toStdWString());
     }
 }
 
