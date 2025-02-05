@@ -941,4 +941,14 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
 }
 
 #endif
+
+QString CommonUtility::truncateLongLogMessage(const QString &message) {
+    if (static const qsizetype maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
+        return message.left(maxLogMessageSize) + " (truncated)";
+    }
+
+    return message;
+}
+
+
 } // namespace KDC

@@ -18,6 +18,7 @@
 
 #include "socketlistener.h"
 #include "libcommonserver/log/log.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -39,14 +40,6 @@ SocketListener::SocketListener(QIODevice *socket) : socket(socket) {
     _threadId = std::this_thread::get_id();
 }
 
-QString truncateLongLogMessage(const QString &message) {
-    if (static const qsizetype maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
-        return message.left(maxLogMessageSize) + " (truncated)";
-    }
-
-    return message;
-}
-
 
 void SocketListener::sendMessage(const QString &message, bool doWait) const {
     assert(_threadId == std::this_thread::get_id() && "SocketListener::sendMessage should only be called from the main thread");
@@ -56,7 +49,7 @@ void SocketListener::sendMessage(const QString &message, bool doWait) const {
         return;
     }
 
-    const QString truncatedLogMessage = truncateLongLogMessage(message);
+    const QString truncatedLogMessage = CommonUtility::truncateLongLogMessage(message);
 
     LOGW_INFO(KDC::Log::instance()->getLogger(),
               L"Sending SocketAPI message --> " << truncatedLogMessage.toStdWString() << L" to " << socket);
