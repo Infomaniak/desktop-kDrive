@@ -1,6 +1,6 @@
 project(server)
 
-find_package(Qt6 REQUIRED COMPONENTS Network Svg Core5Compat)
+find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML)
 find_package(sentry REQUIRED)
 
@@ -188,7 +188,7 @@ target_link_libraries(updater
     ${updater_DEPS})
 
 target_link_libraries(${APPLICATION_EXECUTABLE}
-    Qt6::Svg Qt6::Core5Compat
+    Qt6::Svg
     sentry::sentry
     updater)
 

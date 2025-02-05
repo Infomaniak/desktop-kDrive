@@ -22,8 +22,6 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#include <QStringRef>
-
 namespace KDC {
 
 BloomFilter::BloomFilter() : hashBits(NumBits) {}
@@ -41,9 +39,8 @@ SocketListener::SocketListener(QIODevice *socket) : socket(socket) {
     _threadId = std::this_thread::get_id();
 }
 
-QString truncateMessageWithImageContent(const QString &message) {
-    if (QStringRef(&message).startsWith("GET_THUMBNAIL")) {
-        static const qsizetype maxLogMessageSize = 80;
+QString truncateLongLogMessage(const QString &message) {
+    if (static const qsizetype maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
         return message.left(maxLogMessageSize) + " (truncated)";
     }
 
@@ -59,7 +56,7 @@ void SocketListener::sendMessage(const QString &message, bool doWait) const {
         return;
     }
 
-    const QString truncatedLogMessage = truncateMessageWithImageContent(message);
+    const QString truncatedLogMessage = truncateLongLogMessage(message);
 
     LOGW_INFO(KDC::Log::instance()->getLogger(),
               L"Sending SocketAPI message --> " << truncatedLogMessage.toStdWString() << L" to " << socket);
