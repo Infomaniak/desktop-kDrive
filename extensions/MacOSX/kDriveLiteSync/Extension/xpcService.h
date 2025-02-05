@@ -48,5 +48,6 @@
 - (BOOL)fetchFile:(NSString *)filePath pid:(pid_t)pid;
 - (BOOL)fetchThumbnail:(NSString *)filePath pid:(pid_t)pid;
 - (BOOL)isDirectory:(NSString *)path error:(NSError *_Nullable *_Nullable)error;
+- (BOOL)sendMoveNotification:(NSString *)filePath toTrash:(BOOL)toTrash;
 
 @end
