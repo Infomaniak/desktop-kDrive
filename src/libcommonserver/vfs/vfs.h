@@ -63,7 +63,7 @@ struct VfsStatus {
         bool isPlaceholder{false};
         bool isHydrated{false};
         bool isSyncing{false};
-        int64_t progress{0};
+        int16_t progress{0};
 };
 
 /** Interface describing how to deal with virtual/placeholder files.

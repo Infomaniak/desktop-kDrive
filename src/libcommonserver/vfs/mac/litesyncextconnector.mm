@@ -778,7 +778,7 @@ bool LiteSyncExtConnector::vfsStart(int syncDbId, const QString &folderPath, boo
     isPlaceholder = vfsStatus.isPlaceholder;
     isSyncing = vfsStatus.isSyncing;
 
-    if (!sendStatusToFinder(folderPath, VfsStatus({.isHydrated = vfsStatus.isHydrated, .isSyncing = vfsStatus.isSyncing, .progress = vfsStatus.isSyncing ? 100 : 0}))) {
+    if (!sendStatusToFinder(folderPath, VfsStatus({.isHydrated = vfsStatus.isHydrated, .isSyncing = vfsStatus.isSyncing, .progress = static_cast<int16_t>(vfsStatus.isSyncing ? 100 : 0)}))) {
         LOGW_WARN(_logger, L"Error in sendStatusToFinder: " << Utility::formatPath(folderPath));
         return false;
     }
@@ -1235,7 +1235,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
         } else {
             // Set status
-            VfsStatus vfsStatus = {.isSyncing = true, .progress = static_cast<int>(ceil(float(completed) / fileSize * 100))};
+            VfsStatus vfsStatus = {.isSyncing = true, .progress = static_cast<int16_t>(ceil(float(completed) / fileSize * 100))};
             if (!vfsSetStatus(filePath, localSyncPath, vfsStatus)) {
                 return false;
             }
@@ -1286,7 +1286,7 @@ bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, VfsStat
     vfsStatus.isSyncing = value.starts_with(litesync_attrs::statusHydrating);
 
     if (vfsStatus.isSyncing) {
-        vfsStatus.progress = std::stoi(value.substr(litesync_attrs::statusHydrating.length()));
+        vfsStatus.progress = static_cast<int16_t>(std::stoi(value.substr(litesync_attrs::statusHydrating.length())));
     }
 
     return true;
@@ -1391,7 +1391,7 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
     auto roundedProgress = vfsStatus.progress;
     if (vfsStatus.isSyncing) {
         int64_t stepWidth = 100 / SYNC_STEPS;
-        roundedProgress = static_cast<int>(ceil(float(vfsStatus.progress) / stepWidth) * stepWidth);
+        roundedProgress = static_cast<int16_t>(ceil(float(vfsStatus.progress) / stepWidth) * stepWidth);
     }
 
     if (vfsStatus.isSyncing != currentVfsStatus.isSyncing || roundedProgress != currentVfsStatus.progress || vfsStatus.isHydrated != currentVfsStatus.isHydrated) {

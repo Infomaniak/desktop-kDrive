@@ -538,7 +538,7 @@ void TestNetworkJobs::testDownloadAborted() {
 
     CPPUNIT_ASSERT(forceStatusCalled);
     CPPUNIT_ASSERT(!vfsStatusRes.isSyncing);
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), vfsStatusRes.progress);
+    CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(0), vfsStatusRes.progress);
     CPPUNIT_ASSERT(!vfsStatusRes.isHydrated);
     CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
 }

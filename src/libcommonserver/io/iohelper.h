@@ -377,7 +377,7 @@ struct IoHelper {
          \param isHydrated true if the file is hydrated.
          \return the 'status' extended attribute value.
          */
-        static std::string statusXAttr(const bool isSyncing, const int64_t progress, const bool isHydrated) {
+        static std::string statusXAttr(const bool isSyncing, const int16_t progress, const bool isHydrated) {
             return (isSyncing ? std::string(litesync_attrs::statusHydrating) + std::to_string(progress)
                               : (isHydrated ? std::string(litesync_attrs::statusOffline)
                                             : std::string(litesync_attrs::statusOnline)));
