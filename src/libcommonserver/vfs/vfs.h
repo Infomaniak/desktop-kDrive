@@ -65,8 +65,14 @@ struct VfsStatus {
         bool isSyncing{false};
         int16_t progress{0};
 
-        VfsStatus() = default;
-        VfsStatus(const VfsStatus &other) = default;
+        VfsStatus &operator=(const VfsStatus &other) {
+            if (this == &other) return *this;
+            isPlaceholder = other.isPlaceholder;
+            isHydrated = other.isHydrated;
+            isSyncing = other.isSyncing;
+            progress = other.progress;
+            return *this;
+        }
 };
 
 /** Interface describing how to deal with virtual/placeholder files.
