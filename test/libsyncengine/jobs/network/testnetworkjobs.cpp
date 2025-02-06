@@ -516,9 +516,7 @@ void TestNetworkJobs::testDownloadAborted() {
     vfs->setForceStatusMock(
             [&forceStatusCalled, &vfsStatusRes]([[maybe_unused]] const SyncPath &path, const VfsStatus &vfsStatus) -> ExitInfo {
                 forceStatusCalled = true;
-                vfsStatusRes.isSyncing = vfsStatus.isSyncing;
-                vfsStatusRes.progress = vfsStatus.progress;
-                vfsStatusRes.isHydrated = vfsStatus.isHydrated;
+                vfsStatusRes = vfsStatus;
                 return ExitCode::Ok;
             });
 

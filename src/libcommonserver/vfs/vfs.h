@@ -64,6 +64,9 @@ struct VfsStatus {
         bool isHydrated{false};
         bool isSyncing{false};
         int16_t progress{0};
+
+        VfsStatus() = default;
+        VfsStatus(const VfsStatus &other) = default;
 };
 
 /** Interface describing how to deal with virtual/placeholder files.
