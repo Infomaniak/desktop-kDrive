@@ -16,4 +16,4 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
-$PSScriptRoot/build-drive.ps1 -ext -upload
+& $PSScriptRoot/"build-drive.ps1" -ext -upload
