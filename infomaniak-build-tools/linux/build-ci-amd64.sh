@@ -68,7 +68,7 @@ done
 
 
 if [[ $build_type == "release" ]]; then
-    build_type="Release"
+    build_type="RelWithDebInfo"
 elif [[ $build_type == "debug" ]]; then
     build_type="Debug"
 fi
@@ -115,7 +115,7 @@ cmake -B$build_dir -H$BASEPATH \
     -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
     -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
     -DQT_FEATURE_neon=OFF \
-    -DCMAKE_BUILDTYPE=$BUILDTYPE \
+    -DCMAKE_BUILD_TYPE=$build_type \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBIN_INSTALL_DIR=$build_dir/client \

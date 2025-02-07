@@ -312,9 +312,9 @@ podman pull --arch [arch] ghcr.io/infomaniak/kdrive-desktop-linux:latest
 
 ## Building
 
-You can start a Linux build with the script located in `infomaniak-build-tools/linux/build-drive-[arch].sh`  
+You can start a Linux build with the script located in `infomaniak-build-tools/linux/build-release-[arch].sh`  
 The script will start a podman machine from the image pulled using the command above, and run the appimage-build script for the chosen architecture. 
 
-If you do not want to build through podman, you can adapt the `appimage-build-[arch].sh` script to your environment
+If you do not want to build through podman, you can adapt the `release-appimage-build-[arch].sh` script to your environment
 
 The generated AppImage file will be located in the `build-linux-[arch]` directory.

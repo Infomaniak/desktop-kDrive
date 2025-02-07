@@ -19,18 +19,30 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Release notes - kDrive 3.6.9</h1>
+<h1>Release notes - kDrive 3.6.8</h1>
+<h2><b>New features</b></h2>
+  <ul>
+    <li>Allow the user to receive Beta versions of the app.</li>
+  </ul>
+<h2><b>Optimizations</b></h2>
+  <ul>
+    <li>Fine tune some database requests.</li>
+    <li>Keep items path in cache to reduce the number of database requests.</li>
+  </ul>
 <h2><b>Bug fixes</b></h2>
   <ul>
-    <li>Fixed a bug leading to the very first operation generated after app start up being ignored.</li>
-    <li>Fixed of a sync loop after folders move and/or rename.</li>
-    <li>macOS - Fixed issue following the upload of an alias directly in the web application.</li>
-    <li>Win - Fixed file status in Windows Explorer.</li>
-    <li>macOS - Fixed file status in Finder</li>
-    <li>Improve error message if a download fails due to lack of local space.</li>
-    <li>macOS - Fixed thumbnails.</li>
-    <li>Client starts faster when a lot of syncs are configured.</li>
-    <li>Linux - Fixed release notes link.</li>
+    <li>Fixed synchronization issues with items whose name contains `:`.</li>
+    <li>Fixed memory leaks.</li>
+    <li>Enhance handling of file access errors.</li>
+    <li>Fixed a bug where a folder could be synchronized locally but not its content.</li>
+    <li>Fixed updater behavior in case of error.</li>
+    <li>Fixed a crash due to concurrent access.</li>
+    <li>Fixed a bug causing the blacklisting of items.</li>
+    <li>Fixed a migration issue.</li>
+    <li>Fixed a crash when removing a sync before it has started.</li>
+    <li>Linux - Fixed synchronization issues with big files.</li>
+    <li>Win - Handle errors when trashing an item.</li>
+    <li>macOS - Fixed a bug where a file's status could be set to "online only" before it was fully synced.</li>
   </ul>
 </body>
 </html>
