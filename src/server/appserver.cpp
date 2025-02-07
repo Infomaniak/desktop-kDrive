@@ -93,9 +93,9 @@ static const char optionsC[] =
         "  --synthesis          : show the Synthesis window (if the application is running).\n";
 }
 
-static const QString showSynthesisMsg = "showSynthesis";
-static const QString showSettingsMsg = "showSettings";
-static const QString restartClientMsg = "restartClient";
+static constexpr char showSynthesisMsg[] = "showSynthesis";
+static constexpr char showSettingsMsg[] = "showSettings";
+static constexpr char restartClientMsg[] = "restartClient";
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
@@ -1879,8 +1879,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
             using namespace std::chrono;
-            if (duration_cast<seconds>(system_clock::now() - _lastClientRestartByUserTimeStamp).count() <
-                10 /*seconds*/) {
+            if (duration_cast<seconds>(system_clock::now() - _lastClientRestartByUserTimeStamp).count() < 10 /*seconds*/) {
                 if (!_appStartPTraceStopped) { // If the client never started, we abort the AppStart pTrace
                     sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
                     _appStartPTraceStopped = true;
@@ -2216,7 +2215,11 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
         showSettings();
     } else if (message == restartClientMsg) {
         _lastClientRestartByUserTimeStamp = std::chrono::system_clock::now();
-        startClient();
+        if (!startClient()) {
+            LOG_ERROR(_logger, "Failed to start the client");
+        }
+    } else {
+        LOG_WARN(_logger, "Unknown message received from another kDrive process: '" << message.toStdString() << "'");
     }
 }
 
