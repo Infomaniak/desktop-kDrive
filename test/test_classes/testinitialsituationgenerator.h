@@ -68,19 +68,20 @@ class TestInitialSituationGenerator {
          * @param side Replica side for the update tree (Local or Remote).
          * @param itemType Directory or File.
          * @param rawId File ID in lowercase.
-         * @param rawParentId Parent file ID in lowercase. If empty, the parent is the root node.
+         * @param parentRawId Parent file ID in lowercase. If empty, the parent is the root node.
          */
-        void insertInUpdateTree(ReplicaSide side, NodeType itemType, const NodeId &rawId, const NodeId &rawParentId) const;
+        void insertInUpdateTree(ReplicaSide side, NodeType itemType, const NodeId &rawId, const NodeId &parentRawId) const;
+        void moveNode(ReplicaSide side, const NodeId &rawId, const NodeId &newParentRawId) const;
         void removeFromUpdateTree(ReplicaSide side, const NodeId &rawId) const;
 
     private:
         [[nodiscard]] NodeId generateId(ReplicaSide side, const NodeId &rawId) const;
 
-        void addItem(Poco::JSON::Object::Ptr obj, const std::string &rawParentId = {});
-        void addItem(NodeType itemType, const std::string &rawId, const std::string &rawParentId) const;
+        void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentRawId = {});
+        void addItem(NodeType itemType, const std::string &rawId, const std::string &parentRawId) const;
 
-        void insertInDb(NodeType itemType, const NodeId &rawId, const NodeId &rawParentId) const;
-        void insertInAllUpdateTrees(NodeType itemType, const NodeId &rawId, const NodeId &rawParentId) const;
+        void insertInDb(NodeType itemType, const NodeId &rawId, const NodeId &parentRawId) const;
+        void insertInAllUpdateTrees(NodeType itemType, const NodeId &rawId, const NodeId &parentRawId) const;
 
         std::shared_ptr<SyncPal> _syncpal;
 };

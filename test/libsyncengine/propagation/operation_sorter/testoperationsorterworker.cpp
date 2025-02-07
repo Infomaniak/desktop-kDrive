@@ -88,6 +88,14 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
     const auto nodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
 
+    // Delete node A
+    nodeA->insertChangeEvent(OperationType::Delete);
+    _initialSituationGenerator.removeFromUpdateTree(ReplicaSide::Local, "a");
+    const auto deleteOp = std::make_shared<SyncOperation>();
+    deleteOp->setType(OperationType::Delete);
+    deleteOp->setAffectedNode(nodeA);
+    deleteOp->setTargetSide(ReplicaSide::Remote);
+
     // Rename B into A
     nodeB->insertChangeEvent(OperationType::Move);
     nodeB->setName("A");
@@ -96,15 +104,8 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     moveOp->setAffectedNode(nodeB);
     moveOp->setNewName("A");
     moveOp->setTargetSide(ReplicaSide::Remote);
-    _syncPal->_syncOps->pushOp(moveOp);
 
-    // Delete node A
-    nodeA->insertChangeEvent(OperationType::Delete);
-    _initialSituationGenerator.removeFromUpdateTree(ReplicaSide::Local, "a");
-    const auto deleteOp = std::make_shared<SyncOperation>();
-    deleteOp->setType(OperationType::Delete);
-    deleteOp->setAffectedNode(nodeA);
-    deleteOp->setTargetSide(ReplicaSide::Remote);
+    _syncPal->_syncOps->pushOp(moveOp);
     _syncPal->_syncOps->pushOp(deleteOp);
 
     _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
@@ -120,7 +121,16 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
     const auto nodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
 
-    // Create another A
+    // Move A to B/A
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, "a", "b");
+    nodeA->insertChangeEvent(OperationType::Move);
+    const auto moveOp = std::make_shared<SyncOperation>();
+    moveOp->setType(OperationType::Move);
+    moveOp->setAffectedNode(nodeA);
+    moveOp->setNewParentNode(nodeB);
+    moveOp->setTargetSide(ReplicaSide::Remote);
+
+    // Create A
     _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "a2", {});
     const auto nodeA2 = _initialSituationGenerator.getNode(ReplicaSide::Local, "a2");
     nodeA2->insertChangeEvent(OperationType::Create);
@@ -130,16 +140,8 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     createOp->setAffectedNode(nodeA2);
     createOp->setNewName("A");
     createOp->setTargetSide(ReplicaSide::Remote);
-    _syncPal->_syncOps->pushOp(createOp);
 
-    // Move A to B/A
-    nodeA->insertChangeEvent(OperationType::Move);
-    nodeA->setMoveOrigin("A");
-    const auto moveOp = std::make_shared<SyncOperation>();
-    moveOp->setType(OperationType::Move);
-    moveOp->setAffectedNode(nodeA);
-    moveOp->setNewParentNode(nodeB);
-    moveOp->setTargetSide(ReplicaSide::Remote);
+    _syncPal->_syncOps->pushOp(createOp);
     _syncPal->_syncOps->pushOp(moveOp);
 
     _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
@@ -155,6 +157,15 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
     const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
 
+    // Move A/AA/AAA to AAA
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, "aaa", "aa");
+    nodeAAA->insertChangeEvent(OperationType::Move);
+    const auto moveOp = std::make_shared<SyncOperation>();
+    moveOp->setType(OperationType::Move);
+    moveOp->setAffectedNode(nodeAAA);
+    moveOp->setNewParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    moveOp->setTargetSide(ReplicaSide::Remote);
+
     // Delete A
     nodeA->insertChangeEvent(OperationType::Delete);
     _initialSituationGenerator.removeFromUpdateTree(ReplicaSide::Local, "a");
@@ -162,16 +173,8 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     deleteOp->setType(OperationType::Delete);
     deleteOp->setAffectedNode(nodeA);
     deleteOp->setTargetSide(ReplicaSide::Remote);
-    _syncPal->_syncOps->pushOp(deleteOp);
 
-    // Move A/AA/AAA to AAA
-    nodeAAA->insertChangeEvent(OperationType::Move);
-    nodeAAA->setMoveOrigin("A/AA/AAA");
-    const auto moveOp = std::make_shared<SyncOperation>();
-    moveOp->setType(OperationType::Move);
-    moveOp->setAffectedNode(nodeAAA);
-    moveOp->setNewParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    moveOp->setTargetSide(ReplicaSide::Remote);
+    _syncPal->_syncOps->pushOp(deleteOp);
     _syncPal->_syncOps->pushOp(moveOp);
 
     _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
@@ -186,31 +189,27 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
 void TestOperationSorterWorker::testFixCreateBeforeMove() {
     const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
 
-    // Move A to D/A
-    nodeA->insertChangeEvent(OperationType::Move);
-    nodeA->setMoveOrigin("A");
-    const auto moveOp = std::make_shared<SyncOperation>();
-    moveOp->setType(OperationType::Move);
-    moveOp->setAffectedNode(nodeA);
-    moveOp->setTargetSide(ReplicaSide::Remote);
-    _syncPal->_syncOps->pushOp(moveOp);
-
     // Create D
     _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "d", {});
     const auto nodeD = _initialSituationGenerator.getNode(ReplicaSide::Local, "d");
     nodeD->insertChangeEvent(OperationType::Create);
-    nodeD->setName("D");
     const auto createOp = std::make_shared<SyncOperation>();
     createOp->setType(OperationType::Create);
     createOp->setAffectedNode(nodeD);
     createOp->setNewName("D");
     createOp->setTargetSide(ReplicaSide::Remote);
-    _syncPal->_syncOps->pushOp(createOp);
 
-    nodeA->setParentNode(nodeD);
-    (void) nodeD->insertChildren(nodeA);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(nodeA);
+    // Move A to D/A
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, "a", "d");
+    nodeA->insertChangeEvent(OperationType::Move);
+    const auto moveOp = std::make_shared<SyncOperation>();
+    moveOp->setType(OperationType::Move);
+    moveOp->setAffectedNode(nodeA);
+    moveOp->setTargetSide(ReplicaSide::Remote);
     moveOp->setNewParentNode(nodeD);
+
+    _syncPal->_syncOps->pushOp(moveOp);
+    _syncPal->_syncOps->pushOp(createOp);
 
     _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixCreateBeforeMove();
@@ -224,7 +223,15 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
 void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
 
-    // Create another AAA
+    // Delete AAA
+    nodeAAA->insertChangeEvent(OperationType::Delete);
+    _initialSituationGenerator.removeFromUpdateTree(ReplicaSide::Local, "aaa");
+    const auto deleteOp = std::make_shared<SyncOperation>();
+    deleteOp->setType(OperationType::Delete);
+    deleteOp->setAffectedNode(nodeAAA);
+    deleteOp->setTargetSide(ReplicaSide::Remote);
+
+    // Create AAA
     _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "aaa2", "aa");
     const auto nodeAAA2 = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa2");
     nodeAAA2->insertChangeEvent(OperationType::Create);
@@ -234,15 +241,8 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     createOp->setAffectedNode(nodeAAA2);
     createOp->setNewName("AAA");
     createOp->setTargetSide(ReplicaSide::Remote);
-    _syncPal->_syncOps->pushOp(createOp);
 
-    // Delete original AAA
-    nodeAAA->insertChangeEvent(OperationType::Delete);
-    _initialSituationGenerator.removeFromUpdateTree(ReplicaSide::Local, "aaa");
-    const auto deleteOp = std::make_shared<SyncOperation>();
-    deleteOp->setType(OperationType::Delete);
-    deleteOp->setAffectedNode(nodeAAA);
-    deleteOp->setTargetSide(ReplicaSide::Remote);
+    _syncPal->_syncOps->pushOp(createOp);
     _syncPal->_syncOps->pushOp(deleteOp);
 
     _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
@@ -253,66 +253,41 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     CPPUNIT_ASSERT_EQUAL(createOp->id(), _syncPal->_syncOps->opSortedList().back());
 }
 
+// move before move (occupation), e.g. user moves file "a" to "temp" and then moves file "b" to "a".
 void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
-    // Setup DB
-    const DbNode dbNodeA(_syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", testhelpers::defaultTime,
-                         testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(dbNodeA);
-    const DbNode dbNodeB(_syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", testhelpers::defaultTime,
-                         testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(dbNodeB);
+    const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
+    const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    const auto nodeC = _initialSituationGenerator.getNode(ReplicaSide::Local, "c");
 
-    // Setup update tree
-    const auto nodeA = std::make_shared<Node>(ReplicaSide::Local, Str("A_old"), NodeType::File, OperationType::None, "la",
-                                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                              _syncPal->updateTree(ReplicaSide::Local)->rootNode(), Str("A"),
-                                              _syncPal->syncDb()->rootNode().nodeId());
-    const auto nodeB = std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::File, OperationType::None, "lb",
-                                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                              _syncPal->updateTree(ReplicaSide::Local)->rootNode(), Str("B"),
-                                              _syncPal->syncDb()->rootNode().nodeId());
+    // Move A/AA/AAA to AAA
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, "aaa", {});
+    nodeAAA->insertChangeEvent(OperationType::Move);
+    const auto moveOp = std::make_shared<SyncOperation>();
+    moveOp->setType(OperationType::Move);
+    moveOp->setAffectedNode(nodeAAA);
+    moveOp->setTargetSide(ReplicaSide::Remote);
+    moveOp->setNewParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
 
-    // Setup operations
-    const auto opA = std::make_shared<SyncOperation>();
-    opA->setAffectedNode(nodeA);
-    opA->setNewName(Str("A_old"));
-    opA->setTargetSide(ReplicaSide::Remote);
-    opA->setType(OperationType::Move);
+    // Move C to A/AA/AAA
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, "c", "aa");
+    nodeC->insertChangeEvent(OperationType::Move);
+    nodeC->setName("AAA");
+    const auto moveOp2 = std::make_shared<SyncOperation>();
+    moveOp2->setType(OperationType::Move);
+    moveOp2->setAffectedNode(nodeC);
+    moveOp2->setNewName("AAA");
+    moveOp2->setTargetSide(ReplicaSide::Remote);
+    moveOp2->setNewParentNode(nodeAA);
 
-    const auto opB = std::make_shared<SyncOperation>();
-    opB->setAffectedNode(nodeB);
-    opB->setNewName(Str("A"));
-    opB->setTargetSide(ReplicaSide::Remote);
-    opB->setType(OperationType::Move);
+    _syncPal->_syncOps->pushOp(moveOp2);
+    _syncPal->_syncOps->pushOp(moveOp);
 
-    {
-        // Test operations already in the correct order
-        _syncPal->_syncOps->pushOp(opA);
-        _syncPal->_syncOps->pushOp(opB);
-        _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+    _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
 
-        _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
-        CPPUNIT_ASSERT_EQUAL(opB->id(), _syncPal->_syncOps->_opSortedList.back());
-        CPPUNIT_ASSERT(!_syncPal->_operationsSorterWorker->hasOrderChanged());
-
-        _syncPal->_syncOps->clear();
-        _syncPal->_operationsSorterWorker->_unsortedList.clear();
-        _syncPal->_syncOps->_opSortedList.clear();
-    }
-    {
-        // Test operations not in the correct order
-        _syncPal->_syncOps->pushOp(opB);
-        _syncPal->_syncOps->pushOp(opA);
-        _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
-
-        _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
-        CPPUNIT_ASSERT_EQUAL(opB->id(), _syncPal->_syncOps->_opSortedList.back());
-        CPPUNIT_ASSERT(_syncPal->_operationsSorterWorker->hasOrderChanged());
-
-        _syncPal->_syncOps->clear();
-        _syncPal->_operationsSorterWorker->_unsortedList.clear();
-        _syncPal->_syncOps->_opSortedList.clear();
-    }
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->_syncOps->opSortedList().front());
+    CPPUNIT_ASSERT_EQUAL(moveOp2->id(), _syncPal->_syncOps->opSortedList().back());
 }
 
 void TestOperationSorterWorker::testFixCreateBeforeCreate() {
