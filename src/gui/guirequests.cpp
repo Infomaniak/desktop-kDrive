@@ -1190,7 +1190,7 @@ ExitCode GuiRequests::askForStatus() {
 
 ExitCode GuiRequests::checkCommStatus() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_CHECKCOMMSTATUS, {}, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_CHECKCOMMSTATUS, {}, results, COMM_LONG_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
