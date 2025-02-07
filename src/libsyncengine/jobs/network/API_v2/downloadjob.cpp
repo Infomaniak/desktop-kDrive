@@ -158,7 +158,18 @@ void DownloadJob::runJob() noexcept {
             return;
         }
 
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, true, 0, false); !exitInfo) {
+        bool dummyIsPlaceHolder = false;
+        bool dummyIsSyncing = false;
+        int dummyProgress = 0;
+         if (const ExitInfo exitInfo = _vfs->status(_localpath, dummyIsPlaceHolder, _isHydrated, dummyIsSyncing, dummyProgress);
+            !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+            _exitCode = exitInfo.code();
+            _exitCause = exitInfo.cause();
+            return;
+        }  
+
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, true, 0, _isHydrated); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
             _exitCode = exitInfo.code();
             _exitCause = exitInfo.cause();
@@ -191,15 +202,6 @@ bool DownloadJob::handleResponse(std::istream &is) {
         // Read link data
         getStringFromStream(is, linkData);
         isLink = true;
-    }
-
-    bool dummyIsPlaceHolder = false;
-    bool dummyIsSyncing = false;
-    int dummyProgress = 0;
-    if (_vfs) {
-        _vfs->status(_localpath, dummyIsPlaceHolder, _isHydrated, dummyIsSyncing, dummyProgress);
-    } else {
-        _isHydrated = true;
     }
 
     // Process download
