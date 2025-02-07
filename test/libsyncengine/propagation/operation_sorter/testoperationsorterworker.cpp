@@ -21,6 +21,9 @@
 #include "test_classes/testinitialsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
+#include "test_classes/testinitialsituationgenerator.h"
+#include "test_utility/testhelpers.h"
+
 using namespace CppUnit;
 
 namespace KDC {
