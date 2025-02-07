@@ -281,16 +281,6 @@
     return TRUE;
 }
 
-- (BOOL)sendMoveNotification:(NSString *)filePath toTrash:(BOOL)toTrash
-{
-    // Ask to the app to notify the user
-    if (toTrash)
-        [self sendMessage:filePath query:@"NOTIFY_TRASH" oneApp:TRUE];
-    else
-        [self sendMessage:filePath query:@"NOTIFY_MOVE" oneApp:TRUE];
-    return TRUE;
-}
-
 // XPCServiceProxyDelegate protocol implementation
 - (void)registerFolder:(NSString *)appId folderPath:(NSString *)path
 {

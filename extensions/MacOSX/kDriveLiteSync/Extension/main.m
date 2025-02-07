@@ -181,9 +181,8 @@ static BOOL processAuthOpen(const es_message_t *msg, BOOL *thumbnail)
 }
 
 // Filter auth rename events
-static BOOL processAuthRename(const es_message_t *msg, BOOL *toTrash)
+static BOOL processAuthRename(const es_message_t *msg)
 {
-    toTrash = false;
     if (msg->process->is_es_client) {
         return FALSE;
     }
@@ -211,12 +210,12 @@ static BOOL processAuthRename(const es_message_t *msg, BOOL *toTrash)
         return FALSE;
     }
     
-    // Check that the destination is the Trash
     NSString *destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
+    
+    // Check that the destination is the Trash
     if ([destinationPath hasSuffix:@".Trash"]) {
         NSLog(@"[KD] Moving monitored file %s to trash.", filePath.UTF8String);
-        *toTrash = true;
-        return TRUE;
+        return FALSE;
     }
     
     // Check that the destination is not monitored
@@ -268,17 +267,14 @@ static void handleAuthOpenWorker(es_client_t *client, es_message_t *msg)
 
 static void handleAuthRenameWorker(es_client_t *client, es_message_t *msg)
 {
-    BOOL toTrash = FALSE;
-    if (processAuthRename(msg, &toTrash)) {
+    es_auth_result_t res = ES_AUTH_RESULT_ALLOW;
+    if (processAuthRename(msg)) {
         NSString *filePath = [NSString stringWithUTF8String:msg->event.rename.source->path.data];
-        NSLog(@"[KD] File %s removed from sync", filePath.UTF8String);
-        
-        if (![g_xpcService sendMoveNotification:filePath toTrash:toTrash]) {
-            NSLog(@"[KD] ERROR: sendMoveNotification() failed");
-        }
+        NSLog(@"[KD] Denying move operation on file %s.", filePath.UTF8String);
+        res = ES_AUTH_RESULT_DENY;
     }
 
-    es_respond_auth_result(client, msg, ES_AUTH_RESULT_ALLOW, true);
+    es_respond_auth_result(client, msg, res, true);
 }
 
 static void handleAuthOpen(es_client_t *client, const es_message_t *msg)
