@@ -1405,7 +1405,7 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
                 return ExitCode::DataError;
             }
 
-            path = localPath;
+            path = _side == ReplicaSide::Local ? localPath : remotePath;
             break;
         } else {
             names.push_back(tmpNode->name());
