@@ -512,18 +512,13 @@ void TestNetworkJobs::testDownloadAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    bool isSyncingRes = false;
-    int progressRes = 0;
-    bool isHydratedRes = false;
-    vfs->setForceStatusMock([&forceStatusCalled, &isSyncingRes, &progressRes, &isHydratedRes](
-                                    [[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
-                                    [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
-        forceStatusCalled = true;
-        isSyncingRes = isSyncing;
-        progressRes = progress;
-        isHydratedRes = isHydrated;
-        return ExitCode::Ok;
-    });
+    VfsStatus vfsStatusRes;
+    vfs->setForceStatusMock(
+            [&forceStatusCalled, &vfsStatusRes]([[maybe_unused]] const SyncPath &path, const VfsStatus &vfsStatus) -> ExitInfo {
+                forceStatusCalled = true;
+                vfsStatusRes = vfsStatus;
+                return ExitCode::Ok;
+            });
 
     std::shared_ptr<DownloadJob> job =
             std::make_shared<DownloadJob>(vfs, _driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
@@ -540,9 +535,9 @@ void TestNetworkJobs::testDownloadAborted() {
     job.reset();
 
     CPPUNIT_ASSERT(forceStatusCalled);
-    CPPUNIT_ASSERT(!isSyncingRes);
-    CPPUNIT_ASSERT_EQUAL(0, progressRes);
-    CPPUNIT_ASSERT(!isHydratedRes);
+    CPPUNIT_ASSERT(!vfsStatusRes.isSyncing);
+    CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(0), vfsStatusRes.progress);
+    CPPUNIT_ASSERT(!vfsStatusRes.isHydrated);
     CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
 }
 
@@ -937,11 +932,11 @@ void TestNetworkJobs::testUploadAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock([&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
-                                                 [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
-        forceStatusCalled = true;
-        return ExitCode::Ok;
-    });
+    vfs->setForceStatusMock(
+            [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
+                forceStatusCalled = true;
+                return ExitCode::Ok;
+            });
 
     auto job =
             std::make_shared<UploadJob>(vfs, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
@@ -1124,11 +1119,11 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock([&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
-                                                 [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
-        forceStatusCalled = true;
-        return ExitCode::Ok;
-    });
+    vfs->setForceStatusMock(
+            [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
+                forceStatusCalled = true;
+                return ExitCode::Ok;
+            });
 
     auto DriveUploadSessionJob = std::make_shared<DriveUploadSession>(
             vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1);
@@ -1160,11 +1155,11 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock([&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] bool isSyncing,
-                                                 [[maybe_unused]] int progress, [[maybe_unused]] bool isHydrated) -> ExitInfo {
-        forceStatusCalled = true;
-        return ExitCode::Ok;
-    });
+    vfs->setForceStatusMock(
+            [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
+                forceStatusCalled = true;
+                return ExitCode::Ok;
+            });
 
     auto DriveUploadSessionJob =
             std::make_shared<DriveUploadSession>(vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),

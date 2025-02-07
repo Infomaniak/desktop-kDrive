@@ -55,17 +55,17 @@ class SYNCENGINEVFS_EXPORT VfsWin : public Vfs {
         void clearFileAttributes(const SyncPath &path) override;
 
         ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
-                                   bool &finished) override;
-        ExitInfo forceStatus(const SyncPath &absolutePath, bool isSyncing, int progress, bool isHydrated = false) override;
+                                   bool &finished) final;
+        ExitInfo forceStatus(const SyncPath &absolutePath, const VfsStatus &vfsStatus) final;
 
         ExitInfo isDehydratedPlaceholder(const SyncPath &filePath, bool &isDehydrated) override;
 
-        ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) override;
-        PinState pinState(const SyncPath &relativePath) override;
-        ExitInfo status(const SyncPath &, bool &, bool &, bool &, int &) override;
-        ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; };
-        ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
-        ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
+        ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) final;
+        PinState pinState(const SyncPath &relativePath) final;
+        ExitInfo status(const SyncPath &, VfsStatus &) final;
+        ExitInfo setThumbnail(const SyncPath &, const QPixmap &) final { return ExitCode::Ok; };
+        ExitInfo setAppExcludeList() final { return ExitCode::Ok; }
+        ExitInfo getFetchingAppList(QHash<QString, QString> &) final { return ExitCode::Ok; }
 
         bool isExcluded(const SyncPath &) override { return false; }
         virtual bool setCreationDate(const QString &, time_t) { return false; }

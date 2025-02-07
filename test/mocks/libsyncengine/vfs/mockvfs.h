@@ -25,7 +25,7 @@
 namespace KDC {
 
 template<class T>
-concept VfsDerived = std::is_base_of_v<KDC::Vfs, T>;
+concept VfsDerived = std::is_base_of_v<Vfs, T>;
 
 /* MockVfs
  *
@@ -59,9 +59,8 @@ class MockVfs : public T {
                                       : T::updateFetchStatus(path, path2, received, canceled, finished);
         }
 
-        ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) override {
-            return _forceStatus ? _forceStatus(path, isSyncing, progress, isHydrated)
-                                : T::forceStatus(path, isSyncing, progress, isHydrated);
+        ExitInfo forceStatus(const SyncPath &path, const VfsStatus &vfsStatus) override {
+            return _forceStatus ? _forceStatus(path, vfsStatus) : T::forceStatus(path, vfsStatus);
         }
 
         ExitInfo isDehydratedPlaceholder(const SyncPath &path, bool &isDehydrated) override {
@@ -69,13 +68,12 @@ class MockVfs : public T {
                                             : T::isDehydratedPlaceholder(path, isDehydrated);
         }
 
-        ExitInfo setPinState(const SyncPath &path, KDC::PinState state) override {
+        ExitInfo setPinState(const SyncPath &path, PinState state) override {
             return _setPinState ? _setPinState(path, state) : T::setPinState(path, state);
         }
-        KDC::PinState pinState(const SyncPath &path) override { return _pinState ? _pinState(path) : T::pinState(path); }
-        ExitInfo status(const SyncPath &path, bool &isPlaceHolder, bool &isHydrated, bool &isSyncing, int &progress) override {
-            return _status ? _status(path, isPlaceHolder, isHydrated, isSyncing, progress)
-                           : T::status(path, isPlaceHolder, isHydrated, isSyncing, progress);
+        PinState pinState(const SyncPath &path) override { return _pinState ? _pinState(path) : T::pinState(path); }
+        ExitInfo status(const SyncPath &path, VfsStatus &vfsStatus) override {
+            return _status ? _status(path, vfsStatus) : T::status(path, vfsStatus);
         }
         ExitInfo setThumbnail(const SyncPath &path, const QPixmap &pixmap) override {
             return _setThumbnail ? _setThumbnail(path, pixmap) : T::setThumbnail(path, pixmap);
@@ -86,7 +84,8 @@ class MockVfs : public T {
         }
         void exclude(const SyncPath &path) override { return _exclude ? _exclude(path) : T::exclude(path); }
         bool isExcluded(const SyncPath &path) override { return _isExcluded ? _isExcluded(path) : T::isExcluded(path); }
-        bool fileStatusChanged(const SyncPath &path, KDC::SyncFileStatus status) final {
+
+        bool fileStatusChanged(const SyncPath &path, SyncFileStatus status) final {
             return _fileStatusChanged ? _fileStatusChanged(path, status) : T::fileStatusChanged(path, status);
         }
 
@@ -121,7 +120,7 @@ class MockVfs : public T {
                 std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> updateFetchStatus) {
             _updateFetchStatus = updateFetchStatus;
         }
-        void setForceStatusMock(std::function<ExitInfo(const SyncPath &, bool, int, bool)> forceStatus) {
+        void setForceStatusMock(std::function<ExitInfo(const SyncPath &, const VfsStatus &)> forceStatus) {
             _forceStatus = forceStatus;
         }
         void setIsDehydratedPlaceholderMock(std::function<ExitInfo(const SyncPath &, bool &)> isDehydratedPlaceholder) {
@@ -131,7 +130,7 @@ class MockVfs : public T {
             _setPinState = setPinState;
         }
         void setPinStateMock(std::function<KDC::PinState(const SyncPath &)> pinState) { _pinState = pinState; }
-        void setStatusMock(std::function<ExitInfo(const SyncPath &, bool &, bool &, bool &, int &)> status) { _status = status; }
+        void setStatusMock(std::function<ExitInfo(const SyncPath &, const VfsStatus &)> status) { _status = status; }
         void setSetThumbnailMock(std::function<ExitInfo(const SyncPath &, const QPixmap &)> setThumbnail) {
             _setThumbnail = setThumbnail;
         }
@@ -184,17 +183,17 @@ class MockVfs : public T {
         std::function<ExitInfo(const SyncPath &)> _dehydratePlaceholder;
         std::function<ExitInfo(const SyncPath &, const SyncFileItem &)> _convertToPlaceholder;
         std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> _updateFetchStatus;
-        std::function<ExitInfo(const SyncPath &, bool, int, bool)> _forceStatus;
+        std::function<ExitInfo(const SyncPath &, const VfsStatus &)> _forceStatus;
         std::function<ExitInfo(const SyncPath &, bool &)> _isDehydratedPlaceholder;
-        std::function<ExitInfo(const SyncPath &, KDC::PinState)> _setPinState;
-        std::function<KDC::PinState(const SyncPath &)> _pinState;
-        std::function<ExitInfo(const SyncPath &, bool &, bool &, bool &, int &)> _status;
+        std::function<ExitInfo(const SyncPath &, PinState)> _setPinState;
+        std::function<PinState(const SyncPath &)> _pinState;
+        std::function<ExitInfo(const SyncPath &, VfsStatus &)> _status;
         std::function<ExitInfo(const SyncPath &, const QPixmap &)> _setThumbnail;
         std::function<ExitInfo()> _setAppExcludeList;
         std::function<ExitInfo(QHash<QString, QString> &)> _getFetchingAppList;
         std::function<void(const SyncPath &)> _exclude;
         std::function<bool(const SyncPath &)> _isExcluded;
-        std::function<bool(const SyncPath &, KDC::SyncFileStatus)> _fileStatusChanged;
+        std::function<bool(const SyncPath &, SyncFileStatus)> _fileStatusChanged;
         std::function<void(const SyncPath &)> _clearFileAttributes;
         std::function<void(const SyncPath &)> _dehydrate;
         std::function<void(const SyncPath &)> _hydrate;

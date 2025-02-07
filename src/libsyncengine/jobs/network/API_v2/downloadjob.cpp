@@ -73,7 +73,7 @@ DownloadJob::~DownloadJob() {
         }
 
         // TODO: usefull ?
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, false, 0, false); !exitInfo) {
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus()); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
@@ -86,7 +86,8 @@ DownloadJob::~DownloadJob() {
             LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok); !exitInfo) {
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus({.isHydrated = _exitCode == ExitCode::Ok}));
+            !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
         }
     }
@@ -106,7 +107,7 @@ bool DownloadJob::canRun() {
     }
 
     // Check that we can create the item here
-    bool exists;
+    bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_localpath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath, ioError));
@@ -158,7 +159,7 @@ void DownloadJob::runJob() noexcept {
             return;
         }
 
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, true, 0, false); !exitInfo) {
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus({.isSyncing = true})); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
             _exitCode = exitInfo.code();
             _exitCause = exitInfo.cause();
@@ -193,11 +194,10 @@ bool DownloadJob::handleResponse(std::istream &is) {
         isLink = true;
     }
 
-    bool dummyIsPlaceHolder = false;
-    bool dummyIsSyncing = false;
-    int dummyProgress = 0;
     if (_vfs) {
-        _vfs->status(_localpath, dummyIsPlaceHolder, _isHydrated, dummyIsSyncing, dummyProgress);
+        VfsStatus vfsStatus;
+        _vfs->status(_localpath, vfsStatus);
+        _isHydrated = vfsStatus.isHydrated;
     } else {
         _isHydrated = true;
     }
