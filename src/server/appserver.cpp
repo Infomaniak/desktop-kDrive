@@ -1879,7 +1879,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
             using namespace std::chrono;
-            if (duration_cast<seconds>(system_clock::now().time_since_epoch()).count() - _lastClientRestartByUser < 10 /*seconds*/) {
+            if (duration_cast<seconds>(std::chrono::system_clock::now() - _lastClientRestartByUserTimeStamp).count() <
+                10 /*seconds*/) {
                 if (!_appStartPTraceStopped) { // If the client never started, we abort the AppStart pTrace
                     sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
                     _appStartPTraceStopped = true;
@@ -2214,8 +2215,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
     } else if (message == showSettingsMsg) {
         showSettings();
     } else if (message == restartClientMsg) {
-        using namespace std::chrono;
-        _lastClientRestartByUser = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+        _lastClientRestartByUserTimeStamp = std::chrono::system_clock::now();
         startClient();
     }
 }
