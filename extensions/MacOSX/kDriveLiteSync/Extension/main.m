@@ -90,7 +90,7 @@ static BOOL processAuthOpen(const es_message_t *msg, BOOL *thumbnail)
     if (msg->process->is_es_client) {
         return FALSE;
     }
-        
+    
     // Check open flag
     if ((msg->event.open.fflag & O_DIRECTORY)
         || (msg->event.open.fflag & O_SYMLINK)
@@ -210,9 +210,17 @@ static BOOL processAuthRename(const es_message_t *msg)
         return FALSE;
     }
     
-    // Check that the destination is the Trash
     NSString *destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
-    if ([destinationPath hasSuffix:@".Trash"]){
+    
+    // Check that the destination is the Trash
+    if ([destinationPath hasSuffix:@".Trash"]) {
+        NSLog(@"[KD] Moving monitored file %s to trash.", filePath.UTF8String);
+        return FALSE;
+    }
+    
+    // Check that the destination is not monitored
+    if (!(g_xpcService && [g_xpcService isFileMonitored:destinationPath])) {
+        NSLog(@"[KD] Moving monitored file %s to %s, outside of sync folder.", filePath.UTF8String, destinationPath.UTF8String);
         return TRUE;
     }
     
@@ -259,13 +267,14 @@ static void handleAuthOpenWorker(es_client_t *client, es_message_t *msg)
 
 static void handleAuthRenameWorker(es_client_t *client, es_message_t *msg)
 {
+    es_auth_result_t res = ES_AUTH_RESULT_ALLOW;
     if (processAuthRename(msg)) {
-        NSLog(@"[KD] Move file %s to trash asked by %s",
-              msg->event.rename.source->path.data,
-              msg->process->signing_id.data);
+        NSString *filePath = [NSString stringWithUTF8String:msg->event.rename.source->path.data];
+        NSLog(@"[KD] Denying move operation on file %s.", filePath.UTF8String);
+        res = ES_AUTH_RESULT_DENY;
     }
 
-    es_respond_auth_result(client, msg, ES_AUTH_RESULT_ALLOW, true);
+    es_respond_auth_result(client, msg, res, true);
 }
 
 static void handleAuthOpen(es_client_t *client, const es_message_t *msg)
@@ -336,7 +345,7 @@ int main(int argc, char *argv[])
     NSLog(@"[KD] Subscribe to events");
     es_event_type_t events[] = {
         ES_EVENT_TYPE_AUTH_OPEN,
-        //ES_EVENT_TYPE_AUTH_RENAME
+        ES_EVENT_TYPE_AUTH_RENAME
     };
     
     es_return_t ret = es_subscribe(g_client, events, (sizeof(events) / sizeof((events)[0])));
