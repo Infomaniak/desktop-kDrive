@@ -31,15 +31,7 @@ DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const
 
 DuplicateJob::~DuplicateJob() {
     if (!_absoluteFinalPath.empty() && _vfs) {
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        if (ExitInfo exitInfo = _vfs->status(_absoluteFinalPath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
-        }
-
-        if (ExitInfo exitInfo = _vfs->forceStatus(_absoluteFinalPath, false, 0, false); !exitInfo) {
+        if (const auto exitInfo = _vfs->forceStatus(_absoluteFinalPath, VfsStatus()); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
     }
@@ -50,10 +42,8 @@ bool DuplicateJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    NodeId res;
     if (jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-        if (dataObj) {
+        if (Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey)) {
             if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
                 return false;
             }

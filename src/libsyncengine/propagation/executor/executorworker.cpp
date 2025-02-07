@@ -712,16 +712,13 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const Sync
             return ExitCode::Ok;
         }
 
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        if (ExitInfo exitInfo = _syncPal->vfs()->status(path, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+        VfsStatus vfsStatus;
+        if (ExitInfo exitInfo = _syncPal->vfs()->status(path, vfsStatus); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(path) << L" " << exitInfo);
             return exitInfo;
         }
 
-        if (isPlaceholder && !isHydrated && !isSyncing) {
+        if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated && !vfsStatus.isSyncing) {
             LOGW_SYNCPAL_INFO(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(path));
             isDehydratedPlaceholder = true;
         }
@@ -955,27 +952,26 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
                                                   bool &isSyncing) {
     ignoreItem = false;
 
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    int progress = 0;
-    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+    VfsStatus vfsStatus;
+    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
         return exitInfo;
     }
+    isSyncing = vfsStatus.isSyncing;
 
     switch (syncOp->targetSide()) {
         case ReplicaSide::Remote:
-            if (isPlaceholder && !isHydrated) {
+            if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
                 ignoreItem = true;
                 return fixModificationDate(syncOp, absolutePath);
             }
             break;
         case ReplicaSide::Local:
-            if (isPlaceholder && !isSyncing) {
-                if (!isHydrated) {
+            if (vfsStatus.isPlaceholder && !isSyncing) {
+                if (!vfsStatus.isHydrated) {
                     // Update metadata
                     std::string error;
-                    if (ExitInfo exitInfo = _syncPal->vfs()->updateMetadata(
+                    if (const auto exitInfo = _syncPal->vfs()->updateMetadata(
                                 absolutePath,
                                 syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
                                 syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
@@ -1150,12 +1146,11 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
     job->setAffectedFilePath(relativeDestLocalFilePath);
     job->runSynchronously();
 
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    bool isSyncing = false;
-    int progress = 0;
-    _syncPal->vfs()->status(absoluteOriginLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress);
-    _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, false, 100, isHydrated);
+    VfsStatus vfsStatus;
+    _syncPal->vfs()->status(absoluteOriginLocalFilePath, vfsStatus);
+    vfsStatus.isSyncing = false;
+    vfsStatus.progress = 100;
+    _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, vfsStatus);
 
     if (job->exitCode() == ExitCode::Ok && syncOp->conflict().type() != ConflictType::None) {
         // Conflict fixing job finished successfully
@@ -1252,18 +1247,13 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
     if (syncOp->targetSide() == ReplicaSide::Local) {
         bool isDehydratedPlaceholder = false;
         if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-            bool isPlaceholder = false;
-            bool isHydrated = false;
-            bool isSyncing = false;
-            int progress = 0;
-            if (ExitInfo exitInfo =
-                        _syncPal->vfs()->status(absoluteLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress);
-                !exitInfo) {
+            VfsStatus vfsStatus;
+            if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
                 LOGW_SYNCPAL_WARN(
                         _logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absoluteLocalFilePath) << L" : " << exitInfo);
                 return exitInfo;
             }
-            isDehydratedPlaceholder = isPlaceholder && !isHydrated;
+            isDehydratedPlaceholder = vfsStatus.isPlaceholder && !vfsStatus.isHydrated;
         }
 
         NodeId remoteNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";

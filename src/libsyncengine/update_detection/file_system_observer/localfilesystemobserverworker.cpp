@@ -250,11 +250,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
             if (!changed) {
 #ifdef _WIN32
-                bool isPlaceholder = false;
-                bool isHydrated = false;
-                bool isSyncing = false;
-                int progress = 0;
-                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress);
+                VfsStatus vfsStatus;
+                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus);
                     !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
@@ -263,8 +260,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 }
 
                 PinState pinState = _syncPal->vfs()->pinState(absolutePath);
-                if (isPlaceholder) {
-                    if ((isHydrated && pinState == PinState::OnlineOnly) || (!isHydrated && pinState == PinState::AlwaysLocal)) {
+                if (vfsStatus.isPlaceholder) {
+                    if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) || (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                         // Change status in order to start hydration/dehydration
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
                         if (!_syncPal->vfs()->fileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
@@ -508,16 +505,13 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
 }
 
 bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absolutePath) {
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    bool isSyncing = false;
-    int progress = 0;
-    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+    VfsStatus vfsStatus;
+    if (const auto exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); !exitInfo) {
         LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
         return exitInfo;
     }
 
-    return !isPlaceholder || (isHydrated && !isSyncing);
+    return !vfsStatus.isPlaceholder || (vfsStatus.isHydrated && !vfsStatus.isSyncing);
 }
 
 #ifdef __APPLE__
@@ -525,20 +519,16 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
 ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal,
                                                     bool &valid) const {
     // If the item is a dehydrated placeholder, only metadata update are possible
-
-    bool isPlaceholder = false;
-    bool isHydrated = false;
-    bool isSyncing = false;
-    int progress = 0;
-    if (!_syncPal->vfs()->status(path.native(), isPlaceholder, isHydrated, isSyncing, progress)) {
+    VfsStatus vfsStatus;
+    if (!_syncPal->vfs()->status(path.native(), vfsStatus)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::vfsStatus");
         return ExitCode::SystemError;
     }
 
-    if (isPlaceholder && !isHydrated) {
+    if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
         // Check if it is a metadata update
-        DbNodeId dbNodeId;
-        bool found;
+        DbNodeId dbNodeId = 0;
+        bool found = false;
         if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return ExitCode::DbError;

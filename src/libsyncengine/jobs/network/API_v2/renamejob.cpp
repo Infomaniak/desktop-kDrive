@@ -30,16 +30,14 @@ RenameJob::RenameJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeI
 
 RenameJob::~RenameJob() {
     if (!_absoluteFinalPath.empty() && _vfs) {
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        if (const ExitInfo exitInfo = _vfs->status(_absoluteFinalPath, isPlaceholder, isHydrated, isSyncing, progress);
-            !exitInfo) {
+        VfsStatus vfsStatus;
+        if (const ExitInfo exitInfo = _vfs->status(_absoluteFinalPath, vfsStatus); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
 
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_absoluteFinalPath, false, 0, isHydrated); !exitInfo) {
+        vfsStatus.isSyncing = false;
+        vfsStatus.progress = 0;
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_absoluteFinalPath, vfsStatus); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
     }

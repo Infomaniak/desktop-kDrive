@@ -36,12 +36,6 @@ using namespace Windows::Security::Cryptography;
 #define REGKEY_NAMESPACECLSID L"NamespaceCLSID"
 #define REGKEY_AUMID L"AUMID"
 
-// Package family name, see FileExplorerExtensionPackage / Package.appxmanifest
-/// EV (Extended Validation) certificate AUMID : use this certificate to build a release version
-// #define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_dbrs6rk4qqhna!App"
-/// Virtual certificate AUMID : use this certificate in debug mode and to build a version for testing purpose
-#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_csy8f8zhvqa20!App" // virtual
-
 std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID,
                                                        DWORD *namespaceCLSIDSize) {
     std::wstring syncRootID;
@@ -177,17 +171,21 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 // Create AMUID key
                 std::wstring name(REGKEY_AUMID);
                 std::wstring value;
-#ifdef _DEBUG
+
                 DWORD aumidValueSize = 65535;
                 std::wstring aumidValue;
                 aumidValue.resize(aumidValueSize);
-                aumidValueSize = GetEnvironmentVariableW(L"KDRIVEEXT_DEBUG_AUMID", &aumidValue[0], aumidValueSize);
+                LPCWSTR aumidEnvVarName = nullptr;
+#ifdef _DEBUG
+                aumidEnvVarName = L"KDC_VIRTUAL_AUMID";
+#else
+                aumidEnvVarName = L"KDC_PHYSICAL_AUMID";
+#endif
+                aumidValueSize = GetEnvironmentVariableW(aumidEnvVarName, &aumidValue[0], aumidValueSize);
                 aumidValue.resize(aumidValueSize);
                 value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
                 TRACE_INFO(L"AUMID value: %s", aumidValue.c_str());
-#else
-                value = REGVALUE_AUMID;
-#endif
+
                 if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(),
                                   (DWORD) (value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
                     TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
