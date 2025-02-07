@@ -82,8 +82,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         void clearSyncNodes();
         void sendShowSettingsMsg();
         void sendShowSynthesisMsg();
+        void sendRestartClientMsg();
+
         void clearKeychainKeys();
-        void showAlreadyRunning();
 
         void showHint(std::string errorHint);
         bool startClient();
