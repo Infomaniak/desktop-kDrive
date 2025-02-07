@@ -38,7 +38,8 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driv
 
 DriveUploadSession::~DriveUploadSession() {
     if (!_vfs || isAborted()) return;
-    if (ExitInfo exitInfo = _vfs->forceStatus(getFilePath(), false, 100, true); !exitInfo) {
+    constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 100});
+    if (const auto exitInfo = _vfs->forceStatus(getFilePath(), vfsStatus); !exitInfo) {
         LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()) << L": " << exitInfo);
     }
 }
