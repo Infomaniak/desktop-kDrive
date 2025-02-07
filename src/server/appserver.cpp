@@ -1878,8 +1878,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
-            if (static bool appStartPTraceStopped = false; !appStartPTraceStopped) {
-                appStartPTraceStopped = true;
+            using namespace std::chrono;
+            if (duration_cast<seconds>(system_clock::now().time_since_epoch()).count() - _lastClientRestartByUser < 10 /*seconds*/) {
+                if (!_appStartPTraceStopped) { // If the client never started, we abort the AppStart pTrace
+                    sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
+                    _appStartPTraceStopped = true;
+                }
+                sentry::Handler::captureMessage(sentry::Level::Info, "kDrive client restarted by user",
+                                                "A user has restarted the kDrive client");
+            }
+
+            if (!_appStartPTraceStopped) {
+                _appStartPTraceStopped = true;
                 sentry::pTraces::basic::AppStart().stop();
             }
             break;
@@ -2204,6 +2214,8 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
     } else if (message == showSettingsMsg) {
         showSettings();
     } else if (message == restartClientMsg) {
+        using namespace std::chrono;
+        _lastClientRestartByUser = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
         startClient();
     }
 }
@@ -3077,8 +3089,6 @@ void AppServer::sendShowSynthesisMsg() {
 }
 
 void AppServer::sendRestartClientMsg() {
-    sentry::Handler::captureMessage(sentry::Level::Info, "Manual kDrive client restart requested",
-                                    "A client start the app while the server is already running. Trying to restart the client.");
     sendMessage(restartClientMsg);
 }
 
