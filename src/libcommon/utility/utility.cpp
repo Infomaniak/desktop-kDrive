@@ -503,7 +503,7 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
     return languageCode.compare(englishCode) == 0;
 }
 
-bool CommonUtility::isLanguageSupported(const QString &languageCode) {
+bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
     static const std::unordered_set<QString> supportedLanguages = {englishCode, frenchCode, germanCode, italianCode, spanishCode};
     return supportedLanguages.contains(languageCode);
 }
@@ -513,7 +513,7 @@ QString CommonUtility::languageCode(const Language language) {
         case Language::Default: {
             const auto systemLanguages = QLocale::system().uiLanguages();
             if (systemLanguages.empty()) break;
-            if (const auto systemLanguage = systemLanguages.first().left(2); isLanguageSupported(systemLanguage))
+            if (const auto systemLanguage = systemLanguages.first().left(2); isSupportedLanguage(systemLanguage))
                 return systemLanguage;
             break;
         }

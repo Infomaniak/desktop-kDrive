@@ -89,7 +89,7 @@ struct COMMON_EXPORT CommonUtility {
         static QStringList languageCodeList(Language enforcedLocale);
         static void setupTranslations(QCoreApplication *app, Language enforcedLocale);
         static bool languageCodeIsEnglish(const QString &languageCode);
-        static bool isLanguageSupported(const QString &languageCode);
+        static bool isSupportedLanguage(const QString &languageCode);
 
         // Color threshold check
         static bool colorThresholdCheck(int red, int green, int blue);
