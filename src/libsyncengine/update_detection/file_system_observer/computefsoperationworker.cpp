@@ -112,8 +112,7 @@ void ComputeFSOperationWorker::execute() {
 }
 
 
-ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode,
-                                                         const SyncPath &localDbPath, const SyncPath &remoteDbPath) {
+ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &dbPath) {
     assert(side != ReplicaSide::Unknown);
 
     const NodeId &nodeId = dbNode.nodeId(side);
@@ -123,15 +122,14 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::DataError;
     }
 
-    const SyncTime dbLastModified = dbNode.lastModified(side);
-    const SyncName dbName = dbNode.name(side);
-    const SyncPath &dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
+    const auto dbLastModified = dbNode.lastModified(side);
+    const auto dbName = dbNode.name(side);
     const auto snapshot = _syncPal->snapshotCopy(side);
-    std::shared_ptr<FSOperationSet> opSet = _syncPal->operationSet(side);
+    const auto opSet = _syncPal->operationSet(side);
 
-    NodeId parentId;
+    NodeId parentNodeid;
     bool parentNodeIsFoundInDb = false;
-    if (!_syncDb->parent(side, nodeId, parentId, parentNodeIsFoundInDb)) {
+    if (!_syncDb->parent(side, nodeId, parentNodeid, parentNodeIsFoundInDb)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
         setExitCause(ExitCause::DbAccessError);
         return ExitCode::DbError;
@@ -150,7 +148,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             // In case of a move inside an excluded folder, the item must be removed in this sync
             if (isInUnsyncedList(nodeId, ReplicaSide::Remote)) {
                 remoteItemUnsynced = true;
-                if (parentId != snapshot->parentId(nodeId)) {
+                if (parentNodeid != snapshot->parentId(nodeId)) {
                     movedIntoUnsyncedFolder = true;
                 }
             }
@@ -172,14 +170,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
                 // Can happen only on local side
                 if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)) {
-                    // Blacklist node
-                    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(localDbPath); !exitInfo) {
-                        return exitInfo;
-                    }
-
-                    // Update unsynced list cache
-                    updateUnsyncedList();
-                    return ExitCode::Ok;
+                    return blacklistItem(dbPath);
                 } else {
                     return exitInfo;
                 }
@@ -208,10 +199,14 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
             if (!nodeExistsInSnapshot) {
                 bool exists = false;
-                if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
+                IoError ioError = IoError::Success;
+                if (!IoHelper::checkIfPathExists(localPath, exists, ioError)) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError));
                     return ExitCode::SystemError;
+                }
+                if (ioError == IoError::AccessDenied) {
+                    return blacklistItem(dbPath);
                 }
                 checkTemplate = exists;
             }
@@ -228,7 +223,9 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
                                                    << Utility::formatIoError(dbPath, ioError));
                 return ExitCode::SystemError;
             }
-
+            if (ioError == IoError::AccessDenied) {
+                return blacklistItem(dbPath);
+            }
             if (isExcluded) {
                 // The item is excluded
                 return ExitCode::Ok;
@@ -298,7 +295,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     const auto snapshotName = snapshot->name(nodeId);
-    const bool movedOrRenamed = dbName != snapshotName || parentId != snapshot->parentId(nodeId);
+    const bool movedOrRenamed = dbName != snapshotName || parentNodeid != snapshot->parentId(nodeId);
     if (movedOrRenamed) {
         FSOpPtr fsOp = nullptr;
         if (isInUnsyncedList(snapshot, nodeId, side)) {
@@ -382,7 +379,8 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         }
 
         for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
-            if (const auto inferExitCode = inferChangeFromDbNode(side, dbNode, localDbPath, remoteDbPath);
+            if (const auto inferExitCode =
+                        inferChangeFromDbNode(side, dbNode, side == ReplicaSide::Local ? localDbPath : remoteDbPath);
                 inferExitCode != ExitCode::Ok) {
                 return inferExitCode;
             }
@@ -983,6 +981,17 @@ void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const Syn
             _syncPal->addError(err);
         }
     }
+}
+
+ExitInfo ComputeFSOperationWorker::blacklistItem(const SyncPath &relativeLocalPath) {
+    // Blacklist node
+    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalPath); !exitInfo) {
+        return exitInfo;
+    }
+
+    // Update unsynced list cache
+    updateUnsyncedList();
+    return ExitCode::Ok;
 }
 
 } // namespace KDC
