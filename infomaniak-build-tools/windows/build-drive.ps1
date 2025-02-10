@@ -305,8 +305,7 @@ $cmake = ('cmake {0}'-f($args -Join ' '))
 
 Write-Host $cmake
 Invoke-Expression $cmake
-
-$buildArgs += @('--build', $buildPath, '--target all install')
+$buildArgs += @('--build', $buildPath, '--parallel', 12, -- /p:CL_MPcount=4,   '--target all install')
 $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
 
 Write-Host $buildCall
