@@ -33,6 +33,7 @@ class AbstractPTrace {
         virtual void start() { (void) _start(); }
         virtual void stop(const PTraceStatus status = PTraceStatus::Ok) { _stop(status); }
         virtual void restart() { _restart(); }
+
     protected:
         explicit AbstractPTrace(const PTraceDescriptor &info) : _pTraceInfo(info) {};
         explicit AbstractPTrace(const PTraceDescriptor &info, const int dbId) : _pTraceInfo(info), _syncDbId(dbId) {};

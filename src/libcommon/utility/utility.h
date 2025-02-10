@@ -142,6 +142,9 @@ struct COMMON_EXPORT CommonUtility {
         static bool isLikeFileNotFoundError(DWORD dwError) noexcept { return utility_base::isLikeFileNotFoundError(dwError); };
 #endif
 
+        static QString truncateLongLogMessage(const QString &message);
+
+
     private:
         static std::mutex _generateRandomStringMutex;
 

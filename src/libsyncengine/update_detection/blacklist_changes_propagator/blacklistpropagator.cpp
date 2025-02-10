@@ -203,7 +203,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
                 LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
                                    L"Cancel hydration: " << Utility::formatSyncPath(absolutePath).c_str());
-                _syncPal->vfsCancelHydrate(dirIt->path());
+                _syncPal->vfs()->cancelHydrate(dirIt->path());
             }
         } catch (std::filesystem::filesystem_error &e) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
@@ -215,7 +215,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         }
 
         LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancel hydration: " << Utility::formatSyncPath(absolutePath).c_str());
-        _syncPal->vfsCancelHydrate(absolutePath);
+        _syncPal->vfs()->cancelHydrate(absolutePath);
     }
 
     // Remove item from filesystem

@@ -20,14 +20,16 @@
 
 #include "abstracttokennetworkjob.h"
 #include "../networkjobsparams.h"
+#include <libcommonserver/vfs/vfs.h>
 
 namespace KDC {
 
 class DownloadJob : public AbstractTokenNetworkJob {
     public:
-        DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
-                    SyncTime creationTime, SyncTime modtime, bool isCreate);
-        DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize);
+        DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
+                    int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate);
+        DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
+                    int64_t expectedSize);
         ~DownloadJob() override;
 
         inline const NodeId &remoteNodeId() const { return _remoteFileId; }
@@ -79,6 +81,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
         bool _responseHandlingCanceled = false;
 
         NodeId _localNodeId;
+        const std::shared_ptr<Vfs> _vfs;
+        bool _isHydrated = false;
 };
 
 } // namespace KDC
