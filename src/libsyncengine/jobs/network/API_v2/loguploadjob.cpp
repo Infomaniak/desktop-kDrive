@@ -333,7 +333,8 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
             continue;
         }
 
-        if (!includeArchivedLogs && !entry.path().filename().string().starts_with(logFileDate) && entry.path().filename().extension() != ".log"){
+        if (!includeArchivedLogs && !entry.path().filename().string().starts_with(logFileDate) &&
+            entry.path().filename().extension() != ".log") {
             LOG_INFO(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string().c_str());
             continue;
         }
@@ -528,14 +529,14 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
         canceledByUser = notifyLogUploadProgress(LogUploadState::Uploading, 100).code() == ExitCode::OperationCanceled;
     };
     uploadSessionLog->setAdditionalCallback(uploadSessionLogFinisCallback);
-    //(void) uploadSessionLog->runSynchronously();
+    (void) uploadSessionLog->runSynchronously();
     if (canceledByUser) {
         return {ExitCode::OperationCanceled, ExitCause::Unknown};
     }
 
     if (const ExitInfo jobExitInfo = uploadSessionLog->exitInfo(); !jobExitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << jobExitInfo);
-       // return jobExitInfo;
+        return jobExitInfo;
     }
     return ExitCode::Ok;
 }

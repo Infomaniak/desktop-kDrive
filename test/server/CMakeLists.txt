@@ -42,7 +42,6 @@ set(testserver_SRCS
     ../test.cpp
 
     test.cpp
-    logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
     workers/testworkers.h workers/testworkers.cpp

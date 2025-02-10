@@ -253,7 +253,7 @@ void DebuggingDialog::initUI() {
     CustomCheckBox *heavyLogCheckBox = new CustomCheckBox();
     heavyLogCheckBox->setObjectName("heavyLogCheckBox");
     heavyLogCheckBox->setText(tr("Share only the last kDrive session"));
-    heavyLogCheckBox->setChecked(true);
+    heavyLogCheckBox->setChecked(false);
     heavyLogCheckBox->setToolTip(heavyLogCheckBoxToolTip);
     heavyLogCheckBox->setToolTipDuration(20000);
     heavyLogCheckBoxVBox->addWidget(heavyLogCheckBox);
@@ -740,7 +740,9 @@ void DebuggingDialog::onLogUploadStatusUpdated(LogUploadState state, int progres
             setlogUploadInfo(state);
             _logUploadInfoWidget->show();
             _cancelLogUploadButton->hide();
+            _cancelLogUploadButton->setEnabled(false);
             displayHeavyLogBox();
+            repaint();
             break;
         default:
             break;
