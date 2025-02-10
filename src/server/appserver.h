@@ -110,7 +110,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsConnectionDone{false};
         bool _crashRecovered{false};
         bool _appStartPTraceStopped{false};
-        std::chrono::system_clock::time_point _lastClientRestartByUserTimeStamp;
+        bool _clientManuallyRestarted{false};
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;

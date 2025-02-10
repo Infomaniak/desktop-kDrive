@@ -1879,10 +1879,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
             using namespace std::chrono;
-            if (duration_cast<seconds>(system_clock::now() - _lastClientRestartByUserTimeStamp).count() < 10 /*seconds*/) {
-                // If the client initially started by the server never sends the UTILITY_DISPLAY_CLIENT_REPORT,  
+            if (_clientManuallyRestarted) {
+                // If the client initially started by the server never sends the UTILITY_DISPLAY_CLIENT_REPORT,
                 // we consider the client's startup aborted, and the user was forced to manually start the client again.
-                if (!_appStartPTraceStopped) { 
+                if (!_appStartPTraceStopped) {
                     sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
                     _appStartPTraceStopped = true;
                 }
@@ -2216,7 +2216,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
     } else if (message == showSettingsMsg) {
         showSettings();
     } else if (message == restartClientMsg) {
-        _lastClientRestartByUserTimeStamp = std::chrono::system_clock::now();
+        _clientManuallyRestarted = true;
         if (!startClient()) {
             LOG_ERROR(_logger, "Failed to start the client");
         }
