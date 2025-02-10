@@ -24,6 +24,9 @@
 
 namespace KDC {
 
+static constexpr std::string localIdSuffix = "l_";
+static constexpr std::string remoteIdSuffix = "r_";
+
 void TestInitialSituationGenerator::generateInitialSituation(const std::string &jsonInputStr) {
     if (!_syncpal) throw std::runtime_error("Invalid SyncPal pointer!");
 
@@ -52,8 +55,9 @@ bool TestInitialSituationGenerator::getDbNode(const NodeId &rawId, DbNode &dbNod
     return found;
 }
 
-void TestInitialSituationGenerator::insertInUpdateTree(const ReplicaSide side, const NodeType itemType, const NodeId &rawId,
-                                                       const NodeId &parentRawId) const {
+std::shared_ptr<Node> TestInitialSituationGenerator::insertInUpdateTree(const ReplicaSide side, const NodeType itemType,
+                                                                        const NodeId &rawId,
+                                                                        const NodeId &parentRawId /*= ""*/) const {
     const auto parentNode = parentRawId.empty() ? _syncpal->updateTree(side)->rootNode()
                                                 : _syncpal->updateTree(side)->getNodeById(generateId(side, parentRawId));
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
@@ -62,6 +66,7 @@ void TestInitialSituationGenerator::insertInUpdateTree(const ReplicaSide side, c
                                    testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode);
     _syncpal->updateTree(side)->insertNode(node);
     (void) parentNode->insertChildren(node);
+    return node;
 }
 
 void TestInitialSituationGenerator::moveNode(const ReplicaSide side, const NodeId &rawId, const NodeId &newParentRawId) const {
@@ -80,7 +85,8 @@ void TestInitialSituationGenerator::removeFromUpdateTree(const ReplicaSide side,
 }
 
 NodeId TestInitialSituationGenerator::generateId(const ReplicaSide side, const NodeId &rawId) const {
-    return side == ReplicaSide::Local ? "l_" + rawId : "r_" + rawId;
+    if (rawId.starts_with(localIdSuffix) || rawId.starts_with(remoteIdSuffix)) return rawId;
+    return side == ReplicaSide::Local ? localIdSuffix + rawId : remoteIdSuffix + rawId;
 }
 
 void TestInitialSituationGenerator::addItem(Poco::JSON::Object::Ptr obj, const NodeId &parentRawId /*= {}*/) {
@@ -127,7 +133,7 @@ void TestInitialSituationGenerator::insertInDb(const NodeType itemType, const No
 void TestInitialSituationGenerator::insertInAllUpdateTrees(const NodeType itemType, const NodeId &rawId,
                                                            const NodeId &parentRawId) const {
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
-        insertInUpdateTree(side, itemType, rawId, parentRawId);
+        (void) insertInUpdateTree(side, itemType, rawId, parentRawId);
     }
 }
 

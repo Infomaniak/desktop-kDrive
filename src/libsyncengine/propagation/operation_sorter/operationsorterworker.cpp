@@ -45,7 +45,7 @@ void OperationSorterWorker::execute() {
 void OperationSorterWorker::sortOperations() {
     _syncPal->_syncOps->startUpdate();
     // Keep a copy of the unsorted list
-    _unsortedList = *_syncPal->_syncOps;
+    // _unsortedList = *_syncPal->_syncOps;
     std::list<SyncOperationList> completeCycles;
     _hasOrderChanged = true;
     while (_hasOrderChanged) {
@@ -100,12 +100,12 @@ void OperationSorterWorker::sortOperations() {
 
 void OperationSorterWorker::fixDeleteBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeMove");
-    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> deleteOps = _syncPal->_syncOps->opListIdByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     if (deleteOps.empty() || moveOps.empty()) return;
 
     for (const auto &deleteOpId: deleteOps) {
-        const auto deleteOp = _unsortedList.getOp(deleteOpId);
+        const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
         const auto deleteNode = deleteOp->affectedNode();
         if (!deleteNode->id().has_value()) {
             LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(deleteNode->name()).c_str());
@@ -125,7 +125,7 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
         }
 
         for (const auto &moveOpId: moveOps) {
-            const auto moveOp = _unsortedList.getOp(moveOpId);
+            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
             if (moveOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
@@ -152,14 +152,14 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
 
 void OperationSorterWorker::fixMoveBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeCreate");
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
-    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
     for (const auto &moveOpId: moveOps) {
-        const auto moveOp = _unsortedList.getOp(moveOpId);
+        const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
         const auto moveNode = moveOp->affectedNode();
 
         for (const auto &createOpId: createOps) {
-            const auto createOp = _unsortedList.getOp(createOpId);
+            const auto createOp = _syncPal->_syncOps->getOp(createOpId);
             if (createOp->targetSide() != moveOp->targetSide()) {
                 continue;
             }
@@ -197,10 +197,10 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
 
 void OperationSorterWorker::fixMoveBeforeDelete() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeDelete");
-    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> deleteOps = _syncPal->_syncOps->opListIdByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     for (const auto &deleteOpId: deleteOps) {
-        const auto deleteOp = _unsortedList.getOp(deleteOpId);
+        const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
         if (deleteOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
@@ -212,7 +212,7 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
         }
 
         for (const auto &moveOpId: moveOps) {
-            const auto moveOp = _unsortedList.getOp(moveOpId);
+            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
             if (moveOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
@@ -237,10 +237,10 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
 
 void OperationSorterWorker::fixCreateBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixCreateBeforeMove");
-    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     for (const auto &createOpId: createOps) {
-        const auto createOp = _unsortedList.getOp(createOpId);
+        const auto createOp = _syncPal->_syncOps->getOp(createOpId);
         if (createOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
@@ -252,7 +252,7 @@ void OperationSorterWorker::fixCreateBeforeMove() {
         }
 
         for (const auto &moveOpId: moveOps) {
-            const auto moveOp = _unsortedList.getOp(moveOpId);
+            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
             if (moveOp->targetSide() != createOp->targetSide()) {
                 continue;
             }
@@ -278,10 +278,10 @@ void OperationSorterWorker::fixCreateBeforeMove() {
 
 void OperationSorterWorker::fixDeleteBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeCreate");
-    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
-    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
+    const std::unordered_set<UniqueId> deleteOps = _syncPal->_syncOps->opListIdByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
     for (const auto &deleteOpId: deleteOps) {
-        const auto deleteOp = _unsortedList.getOp(deleteOpId);
+        const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
         const auto deleteNode = deleteOp->affectedNode();
         if (!deleteNode->id().has_value()) {
             LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(deleteNode->name()).c_str());
@@ -289,7 +289,7 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
         }
 
         for (const auto &createOpId: createOps) {
-            const auto createOp = _unsortedList.getOp(createOpId);
+            const auto createOp = _syncPal->_syncOps->getOp(createOpId);
             if (createOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
@@ -343,11 +343,11 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
 
 void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveOccupied");
-    for (const auto opIds = _unsortedList.opListIdByType(OperationType::Move); const auto &opId: opIds) {
-        const auto op = _unsortedList.getOp(opId);
+    for (const auto opIds = _syncPal->_syncOps->opListIdByType(OperationType::Move); const auto &opId: opIds) {
+        const auto op = _syncPal->_syncOps->getOp(opId);
 
-        for (const auto &moveOpId: opIds) {
-            const auto otherOp = _unsortedList.getOp(moveOpId);
+        for (const auto &otherOpId: opIds) {
+            const auto otherOp = _syncPal->_syncOps->getOp(otherOpId);
             if (op == otherOp || otherOp->targetSide() != op->targetSide()) {
                 continue;
             }
@@ -369,7 +369,7 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
             if (!getIdFromDb(otherNode->side(), otherNodeOriginPath->parent_path(), otherNodeOriginParentId)) continue;
 
             if (nodeParentId == otherNodeOriginParentId && nodePath.filename() == otherNodeOriginPath->filename()) {
-                // move only if op is before otherMoveOp
+                // move only if op is before otherOp
                 moveFirstAfterSecond(op, otherOp);
             }
         }
@@ -377,52 +377,69 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveOccupied");
 }
 
-class SyncOpDepthCmp {
-    public:
-        bool operator()(const std::tuple<SyncOpPtr, SyncOpPtr, int> &a, const std::tuple<SyncOpPtr, SyncOpPtr, int> &b) {
-            if (std::get<2>(a) == std::get<2>(b)) {
-                // If depth are equal, put op to move with lowest ID first
-                return std::get<0>(a)->id() > std::get<0>(b)->id();
-            }
-            return std::get<2>(a) < std::get<2>(b);
-        }
-};
+// class SyncOpDepthCmp {
+//     public:
+//         bool operator()(const std::tuple<SyncOpPtr, SyncOpPtr, int> &a, const std::tuple<SyncOpPtr, SyncOpPtr, int> &b) {
+//             if (std::get<2>(a) == std::get<2>(b)) {
+//                 // If depth are equal, put op to move with lowest ID first
+//                 return std::get<0>(a)->id() > std::get<0>(b)->id();
+//             }
+//             return std::get<2>(a) < std::get<2>(b);
+//         }
+// };
 
 void OperationSorterWorker::fixCreateBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixCreateBeforeCreate");
-    std::priority_queue<std::tuple<SyncOpPtr, SyncOpPtr, int>, std::vector<std::tuple<SyncOpPtr, SyncOpPtr, int>>, SyncOpDepthCmp>
-            opsToMove;
+    for (const auto opIds = _syncPal->_syncOps->opListIdByType(OperationType::Create); const auto &opId: opIds) {
+        const auto op = _syncPal->_syncOps->getOp(opId);
 
-    std::unordered_map<UniqueId, int> indexMap;
-    _syncPal->_syncOps->getMapIndexToOp(indexMap, OperationType::Create);
+        for (const auto &otherOpId: opIds) {
+            const auto otherOp = _syncPal->_syncOps->getOp(otherOpId);
+            if (otherOp->nodeType() != NodeType::Directory || op == otherOp || otherOp->targetSide() != op->targetSide()) {
+                continue;
+            }
 
-    for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
-        SyncOpPtr createOp = _syncPal->_syncOps->getOp(opId);
-        int createOpIndex = indexMap[opId];
-        SyncOpPtr ancestorOp = nullptr;
-        int relativeDepth = 0;
-        if (hasParentWithHigherIndex(indexMap, createOp, createOpIndex, ancestorOp, relativeDepth)) {
-            opsToMove.push(std::make_tuple(createOp, ancestorOp, relativeDepth));
+            if (op->affectedNode()->getPath().parent_path() == otherOp->affectedNode()->getPath()) {
+                // move only if op is before otherOp
+                moveFirstAfterSecond(op, otherOp);
+            }
         }
     }
 
-    while (!opsToMove.empty()) {
-        std::tuple<SyncOpPtr, SyncOpPtr, int> opTuple = opsToMove.top();
-        moveFirstAfterSecond(std::get<0>(opTuple), std::get<1>(opTuple));
-        opsToMove.pop();
-    }
+    // std::priority_queue<std::tuple<SyncOpPtr, SyncOpPtr, int>, std::vector<std::tuple<SyncOpPtr, SyncOpPtr, int>>,
+    // SyncOpDepthCmp>
+    //         opsToMove;
+    //
+    // std::unordered_map<UniqueId, int> indexMap;
+    // _syncPal->_syncOps->getMapIndexToOp(indexMap, OperationType::Create);
+    //
+    // for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
+    //     SyncOpPtr createOp = _syncPal->_syncOps->getOp(opId);
+    //     int createOpIndex = indexMap[opId];
+    //     SyncOpPtr ancestorOp = nullptr;
+    //     int relativeDepth = 0;
+    //     if (hasParentWithHigherIndex(indexMap, createOp, createOpIndex, ancestorOp, relativeDepth)) {
+    //         opsToMove.push(std::make_tuple(createOp, ancestorOp, relativeDepth));
+    //     }
+    // }
+    //
+    // while (!opsToMove.empty()) {
+    //     std::tuple<SyncOpPtr, SyncOpPtr, int> opTuple = opsToMove.top();
+    //     moveFirstAfterSecond(std::get<0>(opTuple), std::get<1>(opTuple));
+    //     opsToMove.pop();
+    // }
     LOG_SYNCPAL_DEBUG(_logger, "End fixCreateBeforeCreate");
 }
 
 void OperationSorterWorker::fixEditBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
-    const std::unordered_set<UniqueId> editOps = _unsortedList.opListIdByType(OperationType::Edit);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> editOps = _syncPal->_syncOps->opListIdByType(OperationType::Edit);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     for (const auto &editOpId: editOps) {
-        SyncOpPtr editOp = _unsortedList.getOp(editOpId);
+        SyncOpPtr editOp = _syncPal->_syncOps->getOp(editOpId);
 
         for (const auto &moveOpId: moveOps) {
-            SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+            SyncOpPtr moveOp = _syncPal->_syncOps->getOp(moveOpId);
             if (moveOp->targetSide() != editOp->targetSide() || moveOp->affectedNode()->id() != editOp->affectedNode()->id()) {
                 continue;
             }
@@ -474,9 +491,9 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
 
 void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveHierarchyFlip");
-    std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
+    std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     for (const auto &xOpId: moveOps) {
-        SyncOpPtr xOp = _unsortedList.getOp(xOpId);
+        SyncOpPtr xOp = _syncPal->_syncOps->getOp(xOpId);
         if (xOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
@@ -489,7 +506,7 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
         SyncPath xSourcePath = *xNode->moveOrigin();
 
         for (const auto &yOpId: moveOps) {
-            SyncOpPtr yOp = _unsortedList.getOp(yOpId);
+            SyncOpPtr yOp = _syncPal->_syncOps->getOp(yOpId);
             if (yOp->affectedNode()->type() != NodeType::Directory || xOp == yOp || xOp->targetSide() != yOp->targetSide()) {
                 continue;
             }

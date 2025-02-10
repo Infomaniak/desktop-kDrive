@@ -69,8 +69,15 @@ class TestInitialSituationGenerator {
          * @param itemType Directory or File.
          * @param rawId File ID in lowercase.
          * @param parentRawId Parent file ID in lowercase. If empty, the parent is the root node.
+         * @return A pointer to the generated node.
          */
-        void insertInUpdateTree(ReplicaSide side, NodeType itemType, const NodeId &rawId, const NodeId &parentRawId) const;
+        [[nodiscard]] std::shared_ptr<Node> insertInUpdateTree(ReplicaSide side, NodeType itemType, const NodeId &rawId,
+                                                               const NodeId &parentRawId = "") const;
+        [[nodiscard]] std::shared_ptr<Node> insertInUpdateTree(const ReplicaSide side, const NodeType itemType,
+                                                               const NodeId &rawId,
+                                                               const std::shared_ptr<Node> parentNode) const {
+            return insertInUpdateTree(side, itemType, rawId, parentNode ? *parentNode->id() : "");
+        }
         void moveNode(ReplicaSide side, const NodeId &rawId, const NodeId &newParentRawId) const;
         void removeFromUpdateTree(ReplicaSide side, const NodeId &rawId) const;
 

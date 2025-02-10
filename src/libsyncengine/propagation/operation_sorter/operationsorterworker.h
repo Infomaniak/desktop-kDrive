@@ -23,7 +23,6 @@
 #include "reconciliation/syncoperation.h"
 
 #include <list>
-#include <map>
 
 namespace KDC {
 
@@ -36,7 +35,7 @@ class OperationSorterWorker final : public OperationProcessor {
         [[nodiscard]] bool hasOrderChanged() const { return _hasOrderChanged; }
 
     private:
-        SyncOperationList _unsortedList;
+        // SyncOperationList _unsortedList;
 
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> _reorderings;
         bool _hasOrderChanged{false};

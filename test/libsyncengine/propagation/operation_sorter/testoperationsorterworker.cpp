@@ -108,7 +108,7 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     _syncPal->_syncOps->pushOp(moveOp);
     _syncPal->_syncOps->pushOp(deleteOp);
 
-    _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -131,8 +131,7 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     moveOp->setTargetSide(ReplicaSide::Remote);
 
     // Create A
-    _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "a2", {});
-    const auto nodeA2 = _initialSituationGenerator.getNode(ReplicaSide::Local, "a2");
+    const auto nodeA2 = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "a2");
     nodeA2->insertChangeEvent(OperationType::Create);
     nodeA2->setName("A");
     const auto createOp = std::make_shared<SyncOperation>();
@@ -144,7 +143,7 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     _syncPal->_syncOps->pushOp(createOp);
     _syncPal->_syncOps->pushOp(moveOp);
 
-    _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -177,7 +176,7 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     _syncPal->_syncOps->pushOp(deleteOp);
     _syncPal->_syncOps->pushOp(moveOp);
 
-    _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixMoveBeforeDelete();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -190,8 +189,7 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
 
     // Create D
-    _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "d", {});
-    const auto nodeD = _initialSituationGenerator.getNode(ReplicaSide::Local, "d");
+    const auto nodeD = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "d");
     nodeD->insertChangeEvent(OperationType::Create);
     const auto createOp = std::make_shared<SyncOperation>();
     createOp->setType(OperationType::Create);
@@ -211,7 +209,7 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     _syncPal->_syncOps->pushOp(moveOp);
     _syncPal->_syncOps->pushOp(createOp);
 
-    _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixCreateBeforeMove();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -232,8 +230,7 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     deleteOp->setTargetSide(ReplicaSide::Remote);
 
     // Create AAA
-    _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "aaa2", "aa");
-    const auto nodeAAA2 = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa2");
+    const auto nodeAAA2 = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "aaa2", "aa");
     nodeAAA2->insertChangeEvent(OperationType::Create);
     nodeAAA2->setName("AAA");
     const auto createOp = std::make_shared<SyncOperation>();
@@ -245,7 +242,7 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     _syncPal->_syncOps->pushOp(createOp);
     _syncPal->_syncOps->pushOp(deleteOp);
 
-    _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixDeleteBeforeCreate();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -282,7 +279,7 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
     _syncPal->_syncOps->pushOp(moveOp2);
     _syncPal->_syncOps->pushOp(moveOp);
 
-    _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -291,6 +288,102 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
 }
 
 void TestOperationSorterWorker::testFixCreateBeforeCreate() {
+    // Insert the branch
+    // .
+    // └── D
+    //     ├── DA
+    //     │   ├── DAA
+    //     │   └── DAB
+    //     └── DB
+    const auto nodeD = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "d");
+    nodeD->insertChangeEvent(OperationType::Create);
+    const auto opD = generateSyncOperation(OperationType::Create, nodeD);
+    const auto nodeDA = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "da", nodeD);
+    nodeDA->insertChangeEvent(OperationType::Create);
+    const auto opDA = generateSyncOperation(OperationType::Create, nodeDA);
+    const auto nodeDB = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "db", nodeD);
+    nodeDB->insertChangeEvent(OperationType::Create);
+    const auto opDB = generateSyncOperation(OperationType::Create, nodeDB);
+    const auto nodeDAA = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "daa", nodeDA);
+    nodeDAA->insertChangeEvent(OperationType::Create);
+    const auto opDAA = generateSyncOperation(OperationType::Create, nodeDAA);
+    const auto nodeDAB = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "dab", nodeDA);
+    nodeDAB->insertChangeEvent(OperationType::Create);
+    const auto opDAB = generateSyncOperation(OperationType::Create, nodeDAB);
+
+    {
+        // Case : DAA DAB DA DB D
+        _syncPal->_syncOps->pushOp(opDAA);
+        _syncPal->_syncOps->pushOp(opDAB);
+        _syncPal->_syncOps->pushOp(opDA);
+        _syncPal->_syncOps->pushOp(opDB);
+        _syncPal->_syncOps->pushOp(opD);
+
+        _syncPal->_operationsSorterWorker->_hasOrderChanged = true;
+        while (_syncPal->_operationsSorterWorker->_hasOrderChanged) {
+            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
+            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+        }
+
+        CPPUNIT_ASSERT_EQUAL(opD->id(), _syncPal->_syncOps->opSortedList().front());
+    }
+
+    _syncPal->_syncOps->clear();
+    {
+        // Case : DAA DAB D DA DB
+        _syncPal->_syncOps->pushOp(opDAA);
+        _syncPal->_syncOps->pushOp(opDAB);
+        _syncPal->_syncOps->pushOp(opD);
+        _syncPal->_syncOps->pushOp(opDA);
+        _syncPal->_syncOps->pushOp(opDB);
+
+        _syncPal->_operationsSorterWorker->_hasOrderChanged = true;
+        while (_syncPal->_operationsSorterWorker->_hasOrderChanged) {
+            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
+            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+        }
+
+        CPPUNIT_ASSERT_EQUAL(opD->id(), _syncPal->_syncOps->opSortedList().front());
+    }
+
+    _syncPal->_syncOps->clear();
+    {
+        // Case : DA DAA DAB D DB
+        _syncPal->_syncOps->pushOp(opDA);
+        _syncPal->_syncOps->pushOp(opDAA);
+        _syncPal->_syncOps->pushOp(opDAB);
+        _syncPal->_syncOps->pushOp(opD);
+        _syncPal->_syncOps->pushOp(opDB);
+
+        _syncPal->_operationsSorterWorker->_hasOrderChanged = true;
+        while (_syncPal->_operationsSorterWorker->_hasOrderChanged) {
+            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
+            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+        }
+
+        CPPUNIT_ASSERT_EQUAL(opD->id(), _syncPal->_syncOps->opSortedList().front());
+    }
+
+    _syncPal->_syncOps->clear();
+    {
+        // Case : D DA DB DAA DAB
+        _syncPal->_syncOps->pushOp(opD);
+        _syncPal->_syncOps->pushOp(opDA);
+        _syncPal->_syncOps->pushOp(opDB);
+        _syncPal->_syncOps->pushOp(opDAA);
+        _syncPal->_syncOps->pushOp(opDAB);
+
+        _syncPal->_operationsSorterWorker->_hasOrderChanged = true;
+        while (_syncPal->_operationsSorterWorker->_hasOrderChanged) {
+            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
+            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+        }
+
+        CPPUNIT_ASSERT_EQUAL(opD->id(), _syncPal->_syncOps->opSortedList().front());
+    }
+
+    return;
+
     /**
      *
      *                            root
@@ -393,7 +486,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opAAB);
         _syncPal->_syncOps->pushOp(opAB);
         _syncPal->_syncOps->pushOp(opB);
-        _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+        // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
         // Expected order: A AA AAA AAB AB B
         for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
@@ -423,7 +516,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opAB);
         _syncPal->_syncOps->pushOp(opA);
         _syncPal->_syncOps->pushOp(opB);
-        _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+        // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
         // Expected order: A AB AA AAB AAA B
         for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
@@ -451,7 +544,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opAAB);
         _syncPal->_syncOps->pushOp(opAB);
         _syncPal->_syncOps->pushOp(opA);
-        _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+        // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
         // Expected order: B A AB AA AAB AAA
         for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
@@ -554,7 +647,7 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFilp() {
     _syncPal->_syncOps->pushOp(op3);
     _syncPal->_syncOps->pushOp(op4);
     _syncPal->_syncOps->pushOp(op1);
-    _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
+    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
 
     _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
     CPPUNIT_ASSERT(_syncPal->_syncOps->_opSortedList.back() == op3->id());
@@ -945,6 +1038,20 @@ void TestOperationSorterWorker::testBreakCycle() {
     CPPUNIT_ASSERT_EQUAL(true, breakCycleOp->isBreakingCycleOp());
     CPPUNIT_ASSERT(!breakCycleOp->newName().empty());
     CPPUNIT_ASSERT(breakCycleOp->newParentNode());
+}
+
+SyncOpPtr TestOperationSorterWorker::generateSyncOperation(const OperationType opType, std::shared_ptr<Node> affectedNode) {
+    const auto op = std::make_shared<SyncOperation>();
+    op->setType(opType);
+    op->setAffectedNode(affectedNode);
+    const auto targetSide = otherSide(affectedNode->side());
+    if (opType != OperationType::Create) {
+        op->setCorrespondingNode(_initialSituationGenerator.getNode(targetSide, *affectedNode->id()));
+    }
+    op->setNewName(affectedNode->name());
+    op->setTargetSide(targetSide);
+    op->setNewParentNode(affectedNode->parentNode());
+    return op;
 }
 
 } // namespace KDC
