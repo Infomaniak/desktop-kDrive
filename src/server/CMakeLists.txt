@@ -37,8 +37,6 @@ endif()
 set(server_SRCS
     ../libcommonserver/commserver.h ../libcommonserver/commserver.cpp
     navigationpanehelper.h navigationpanehelper.cpp
-    logarchiver/logarchiver.h logarchiver/logarchiver.cpp
-    logarchiver/logarchiverhelper.h logarchiver/logarchiverhelper.cpp
     socketapi.h socketapi.cpp
     socketlistener.h socketlistener.cpp
     appserver.h appserver.cpp

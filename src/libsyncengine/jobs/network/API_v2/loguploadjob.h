@@ -17,12 +17,19 @@
  */
 
 #pragma once
-#include "libcommon/utility/types.h"
+
+#include "abstracttokennetworkjob.h"
+#include <chrono>
 
 namespace KDC {
 
-class LogArchiver {
+class LogUploadJob : public AbstractJob, public std::enable_shared_from_this<LogUploadJob> {
     public:
+        LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback);
+
+        void runJob() override;
+        void abort() override;
+        static void cancelUpload();
         /*! Returns the estimated size of the log files in bytes.
          * Actual size may be different due to compression.
          * \param size The estimated size of the log files in bytes.
@@ -42,27 +49,40 @@ class LogArchiver {
          * \param test If true, the archive will be generated with test.zip name.
          * \return The exit code of the operation.
          */
-        static ExitCode generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputDir,
-                                                   const std::function<bool(int)> &progressCallback, SyncPath &archivePath,
-                                                   ExitCause &exitCause, bool test = false);
+        ExitCode generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputDir,
+                                            const std::function<bool(int)> &progressCallback, SyncPath &archivePath,
+                                            ExitCause &exitCause, bool test = false);
 
     private:
-        friend class TestLogArchiver;
-        static ExitCode copyLogsTo(const SyncPath &outputPath, bool includeArchivedLogs, ExitCause &exitCause);
-        static ExitCode copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause);
-
-        /*! Compresses the log files in the given directory.
-         * This method will not create an archive, it will only compress the files in the directory.
-         * The compressed files will have the same name as the original files with the .gz extension.
-         * \param directoryToCompress The directory containing the log files to compress.
-         * \param progressCallback The callback to be called with the progress percentage, the callback retruns false if the user
-         *      cancels the operation (else true).
-         * \param exitCause The exit cause to be filled in case of error. If no error occurred,
-         *      it will be set to ExitCause::Unknown;
-         * \return The exit code of the operation.
+        static std::mutex _runningJobMutex;
+        static std::shared_ptr<LogUploadJob> _runningJob;
+        bool _includeArchivedLog;
+        SyncPath _tmpJobWorkingDir;
+        std::function<void(LogUploadState, int)> _progressCallback;
+        std::chrono::time_point<std::chrono::system_clock> _lastProgressUpdateTimeStamp;
+        LogUploadState _previousState{LogUploadState::None};
+        int _previousProgress{-1};
+        ExitInfo init();
+        ExitInfo archive(SyncPath &generatedArchivePath);
+        ExitInfo upload(const SyncPath &archivePath);
+        void finalize();
+        bool canRun() override;
+        /* Return the path to a temporary directory where the job can work.
+         * The directory will be created if it does not exist.
+         * The caller is responsible for deleting the directory when it is no longer needed.
+         * The directory will be created in the log directory.
+         * ie: /.../kDrive-logdir/tmpLogArchive_XXXXXX
          */
-        static ExitCode compressLogFiles(const SyncPath &directoryToCompress, const std::function<bool(int)> &progressCallback,
-                                         ExitCause &exitCause);
+        ExitInfo getTmpJobWorkingDir(SyncPath &tmpJobWorkingDir) const;
+
+        // Generate the archive name based on the drive IDs and the current date and time.
+        ExitInfo getArchiveName(SyncName &archiveName) const;
+
+        ExitInfo copyLogsTo(const SyncPath &outputPath, bool includeArchivedLogs) const;
+        ExitInfo copyParmsDbTo(const SyncPath &outputPath) const;
+
+        ExitInfo generateArchive(const SyncPath &directoryToCompress, const SyncPath &destPath,
+                                 const SyncName &archiveNameWithoutExtension, SyncPath &finalPath);
 
         /*! Generates a file containing the user description.
          * The file will contain: Current OS, current architecture, current version, current user(s), current drive(s).
@@ -71,8 +91,15 @@ class LogArchiver {
          *      ExitCause::Unknown;
          * \return The exit code of the operation.
          */
-        static ExitCode generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);
+        ExitInfo generateUserDescriptionFile(const SyncPath &outputPath) const;
 
+
+        // Update the log upload state in the database (appstate table).
+        void updateLogUploadState(LogUploadState newState) const;
+
+        ExitInfo notifyLogUploadProgress(LogUploadState newState, int progressPercent);
+        // Handle job failure.
+        void handleJobFailure(const ExitInfo &exitInfo, bool clearTmpDir = false);
         [[nodiscard]] static bool getFileSize(const SyncPath &path, uint64_t &size);
 };
 

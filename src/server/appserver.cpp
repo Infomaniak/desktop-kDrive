@@ -22,7 +22,7 @@
 #include "libcommonserver/vfs/vfs.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
-#include "logarchiver/logarchiverhelper.h"
+#include "libsyncengine/jobs/network/API_v2/loguploadjob.h"
 #include "keychainmanager/keychainmanager.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
@@ -379,6 +379,11 @@ AppServer::AppServer(int &argc, char **argv) :
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
+
+    for (int i = 0; i < 1000; i++) {
+        LOGW_DEBUG(_logger,
+                   L".........................................................................................................");
+    }
 }
 
 AppServer::~AppServer() {
@@ -1882,7 +1887,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE: {
             uint64_t logSize = 0;
             IoError ioError = IoError::Success;
-            bool res = LogArchiver::getLogDirEstimatedSize(logSize, ioError);
+            bool res = LogUploadJob::getLogDirEstimatedSize(logSize, ioError);
             if (!res || ioError != IoError::Success) {
                 LOG_WARN(_logger,
                          "Error in LogArchiver::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError).c_str());
@@ -1902,13 +1907,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> includeArchivedLogs;
             resultStream << ExitCode::Ok; // Return immediately, progress and error will be report via addError and signal
 
-            std::thread uploadLogThread([this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); });
-            uploadLogThread.detach();
+            uploadLog(includeArchivedLogs);
             break;
         }
         case RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT: {
             resultStream << ExitCode::Ok; // Return immediately, progress and error will be report via addError and signal
-            QTimer::singleShot(100, [this]() { cancelLogUpload(); });
+            QTimer::singleShot(100, [this]() { LogUploadJob::cancelUpload(); });
             break;
         }
         case RequestNum::UTILITY_CRASH: {
@@ -2093,86 +2097,23 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
     }
 }
 
-void AppServer::cancelLogUpload() {
-    ExitCause exitCause = ExitCause::Unknown;
-    ExitCode exitCode = LogArchiverHelper::cancelLogToSupport(exitCause);
-    if (exitCause == ExitCause::OperationCanceled) {
-        LOG_WARN(_logger, "Operation already canceled");
-        sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
-        return;
-    }
-
-    if (exitCode == ExitCode::InvalidOperation) {
-        LOG_WARN(_logger, "Cannot cancel the log upload operation (not started or already finished)");
-        AppStateValue logUploadState = LogUploadState::None;
-        if (bool found = false;
-            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadState, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        }
-
-        AppStateValue logUploadPercent = int();
-        if (bool found = false;
-            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadPercent, logUploadPercent, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        }
-        sendLogUploadStatusUpdated(std::get<LogUploadState>(logUploadState), std::get<int>(logUploadPercent));
-        return;
-    }
-
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport: code=" << exitCode << " cause=" << exitCause);
-        addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
-        sendLogUploadStatusUpdated(LogUploadState::Failed, 0); // Considered as a failure, in case the operation was not
-                                                               // canceled, the gui will receive updated status quickly.
-        return;
-    }
-    sendLogUploadStatusUpdated(LogUploadState::CancelRequested, 0);
-}
-
-ExitInfo AppServer::uploadLog(bool includeArchivedLogs) {
-    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::None, found) ||
-                            !found) { // Reset status
-        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-    }
-    sendLogUploadStatusUpdated(LogUploadState::Archiving, 0); // Send progress to the client
-
+void AppServer::uploadLog(const bool includeArchivedLogs) {
     /* See AppStateKey::LogUploadState for status values
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
-    LogUploadState previousStatus = LogUploadState::None;
-    int previousProgress = 0;
-    std::function<bool(LogUploadState, int)> progressFunc = [this, &previousStatus, &previousProgress](LogUploadState status,
-                                                                                                       int progress) {
-        AppStateValue appStateValue = LogUploadState::None;
-        if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) ||
-                                !found) { // Check if the user canceled the upload
-            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        }
-        LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
-
-        bool canceled = logUploadState == LogUploadState::Canceled || logUploadState == LogUploadState::CancelRequested;
-        if (!canceled && (status != previousStatus || progress != previousProgress)) {
-            sendLogUploadStatusUpdated(status, progress); // Send progress to the client
-            LOG_DEBUG(_logger, "Log transfert progress : " << static_cast<int>(status) << " | " << progress << " %");
-        }
-        previousProgress = progress;
-        previousStatus = status;
-        return !canceled;
+    const std::function<void(LogUploadState, int)> jobProgressCallBack = [this](LogUploadState status, int progress) {
+        sendLogUploadStatusUpdated(status, progress); // Send progress to the client
     };
+    const auto logUploadJob = std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack);
 
-    ExitCause exitCause = ExitCause::Unknown;
-    ExitCode exitCode = LogArchiverHelper::sendLogToSupport(includeArchivedLogs, progressFunc, exitCause);
-
-    if (exitCause == ExitCause::OperationCanceled) {
-        LOG_DEBUG(_logger, "Log transfert canceled");
-        sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
-        return {exitCode, exitCause};
-    } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: code=" << exitCode << " cause=" << exitCause);
-        addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
-    }
-    sendLogUploadStatusUpdated(exitCode == ExitCode::Ok ? LogUploadState::Success : LogUploadState::Failed, 0);
-    return {exitCode, exitCause};
+    const std::function<void(UniqueId)> jobResultCallback = [this, logUploadJob](const UniqueId id) {
+        if (const ExitInfo exitInfo = logUploadJob->exitInfo(); !exitInfo && exitInfo.code() != ExitCode::OperationCanceled) {
+            LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: " << exitInfo);
+            addError(Error(errId(), ExitCode::LogUploadFailed, ExitCause::Unknown));
+            addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
+        }
+    };
+    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH, jobResultCallback);
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {

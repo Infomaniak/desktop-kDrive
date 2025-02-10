@@ -1,0 +1,611 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "loguploadjob.h"
+#include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
+
+#include "libcommonserver/commonserverlib.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/log/log.h"
+
+#include "libparms/db/user.h"
+#include "libparms/db/parmsdb.h"
+#include "libparms/db/drive.h"
+
+#include "requests/parameterscache.h"
+
+#include "upload_session/loguploadsession.h"
+
+#include <fstream>
+#include <zip.h>
+
+namespace KDC {
+
+std::mutex LogUploadJob::_runningJobMutex = std::mutex();
+std::shared_ptr<LogUploadJob> LogUploadJob::_runningJob = nullptr;
+
+LogUploadJob::LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback) :
+    _includeArchivedLog(includeArchivedLog), _progressCallback(progressCallback) {
+    if (!_progressCallback) {
+        _progressCallback = [](LogUploadState, int) { return true; };
+    }
+}
+
+void LogUploadJob::abort() {
+    AbstractJob::abort();
+    AppStateValue appStateValue = LogUploadState::None;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
+    }
+    const LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
+
+    if (logUploadState == LogUploadState::CancelRequested || logUploadState == LogUploadState::Canceled) {
+        LOG_INFO(Log::instance()->getLogger(), "The operation is already canceled");
+        return;
+    }
+
+    if (logUploadState != LogUploadState::Uploading && logUploadState != LogUploadState::Archiving) {
+        LOG_INFO(Log::instance()->getLogger(), "The operation is not in progress");
+        return;
+    }
+
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::CancelRequested, found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
+
+    if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::CancelRequested, 0); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::notifyLogUploadProgress: " << exitInfo);
+    }
+}
+
+void LogUploadJob::cancelUpload() {
+    std::scoped_lock lock(_runningJobMutex);
+    if (_runningJob) {
+        LOG_INFO(Log::instance()->getLogger(), "Cancelling log uplaod job.");
+        _runningJob->abort();
+        return;
+    }
+    LOG_WARN(Log::instance()->getLogger(), "No log upload in progress, unable to cancel the job.");
+}
+
+bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
+    const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
+    bool result = false;
+    for (int i = 0; i < 2; i++) { // Retry once in case a log file is archived/created during the first iteration
+        result = IoHelper::getDirectorySize(logPath, size, ioError);
+        if (ioError == IoError::Success) {
+            size = static_cast<uint64_t>(static_cast<double>(size) *
+                                         0.8); // The compressed logs will be smaller than the original ones. We estimate at worst
+                                               // 80% of the original size.
+            return true;
+        }
+    }
+    LOGW_WARN(Log::instance()->getLogger(),
+              L"Error in LogArchiver::getLogDirEstimatedSize: " << Utility::formatIoError(logPath, ioError).c_str());
+
+    return result;
+}
+
+void LogUploadJob::runJob() {
+    if (!canRun()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "LogUploadJob job cannot run.");
+        _exitCode = ExitCode::Ok;
+        _exitCause = ExitCause::Unknown;
+        return;
+    }
+
+    if (const ExitInfo exitInfo = init(); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::init: " << exitInfo);
+        handleJobFailure(exitInfo);
+        return;
+    }
+
+    SyncPath generatedArchivePath;
+    if (const ExitInfo exitInfo = archive(generatedArchivePath); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::archive: " << exitInfo);
+        handleJobFailure(exitInfo);
+        return;
+    }
+
+    // Save the path of the generated archive, so the user can attach it to the support request if the upload fails
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, generatedArchivePath.string(), found) ||
+        !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
+
+    if (const ExitInfo exitInfo = upload(generatedArchivePath); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::sendLogToSupport: " << exitInfo);
+        handleJobFailure(exitInfo, false);
+        return;
+    }
+
+    finalize();
+}
+
+ExitInfo LogUploadJob::init() {
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::None, found) ||
+                            !found) { // Reset status
+        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        // Do not return here because it is not a critical error, especially in this context where we are trying to send logs
+    }
+
+    // Ensure that the UI is aware that we are archiving the logs
+    if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Archiving, 0); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::notifyLogUploadProgress: " << exitInfo);
+        return exitInfo;
+    }
+
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string(""), found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        // Do not return here because it is not a critical error, especially in this context where we are trying to send logs
+    }
+
+    if (const ExitInfo exitInfo = getTmpJobWorkingDir(_tmpJobWorkingDir); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::getTmpJobWorkingDir: " << exitInfo);
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
+void LogUploadJob::finalize() {
+    std::string uploadDate = "";
+    const std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    std::ostringstream woss;
+    woss << std::put_time(&tm, "%m,%d,%y,%H,%M,%S");
+    uploadDate = woss.str();
+
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState " << AppStateKey::LastSuccessfulLogUploadDate);
+    }
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string{}, found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState " << AppStateKey::LastLogUploadArchivePath);
+    }
+
+    IoError ioError = IoError::Success;
+    IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
+    if (ioError != IoError::Success) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
+    }
+
+    notifyLogUploadProgress(LogUploadState::Success, 100);
+    _exitCode = ExitCode::Ok;
+    _exitCause = ExitCause::Unknown;
+    _runningJob.reset();
+}
+
+bool LogUploadJob::canRun() {
+    std::scoped_lock lock(_runningJobMutex);
+    if (_runningJob) {
+        LOG_WARN(Log::instance()->getLogger(), "Another log upload job is already running");
+        return false;
+    }
+
+    _runningJob = shared_from_this();
+    return true;
+}
+
+ExitInfo LogUploadJob::archive(SyncPath &generatedArchivePath) {
+    if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Archiving, 0); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::notifyLogUploadProgress: " << exitInfo);
+        return exitInfo;
+    }
+
+    if (const ExitInfo exitInfo = copyLogsTo(_tmpJobWorkingDir, _includeArchivedLog); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to copy logs to tmp folder: " << exitInfo);
+        return exitInfo;
+    }
+
+    if (const ExitInfo exitInfo = copyParmsDbTo(_tmpJobWorkingDir); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to copy parms.db to tmp folder: " << exitInfo);
+        return exitInfo;
+    }
+
+    if (const ExitInfo exitInfo = generateUserDescriptionFile(_tmpJobWorkingDir); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to generate user description file: " << exitInfo);
+        return exitInfo;
+    }
+
+    SyncName archiveName;
+    if (const ExitInfo exitInfo = getArchiveName(archiveName); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::getArchiveName: " << exitInfo);
+        return exitInfo;
+    }
+
+    if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Archiving, 10); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::notifyLogUploadProgress: " << exitInfo);
+        return exitInfo;
+    }
+
+    const SyncPath archivePath = _tmpJobWorkingDir.parent_path() / archiveName;
+
+    if (const ExitInfo exitInfo =
+                generateArchive(_tmpJobWorkingDir, _tmpJobWorkingDir.parent_path(), archiveName, generatedArchivePath);
+        !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to generate archive: " << exitInfo);
+        return exitInfo;
+    }
+
+    if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Archiving, 100); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::notifyLogUploadProgress: " << exitInfo);
+        return exitInfo;
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo LogUploadJob::getTmpJobWorkingDir(SyncPath &tmpJobWorkingDir) const {
+    // Get the log directory path
+    const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
+    tmpJobWorkingDir = logPath / ("tmpLogArchive_" + CommonUtility::generateRandomStringAlphaNum(10));
+
+    // Create tmp folder
+    if (IoError ioError = IoError::Unknown;
+        !IoHelper::createDirectory(tmpJobWorkingDir, ioError) && ioError != IoError::DirectoryExists) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::createDirectory: " << Utility::formatIoError(tmpJobWorkingDir, ioError));
+        switch (ioError) {
+            case IoError::DiskFull:
+                return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+            case IoError::AccessDenied:
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            default:
+                return ExitCode::SystemError;
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo LogUploadJob::getArchiveName(SyncName &archiveName) const {
+    // Generate archive name: <drive id 1>-<drive id 2>...-<drive id N>-yyyyMMdd-HHmmss.zip
+    std::string archiveNameStr;
+    std::vector<Drive> driveList;
+    try {
+        if (!ParmsDb::instance()->selectAllDrives(driveList)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
+            return {ExitCode::DbError, ExitCause::DbAccessError};
+        }
+
+        if (driveList.empty()) {
+            LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
+            return {ExitCode::InvalidToken, ExitCause::LoginError}; // Currently, we can't send logs if no drive is found
+        }
+    } catch (const std::runtime_error &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in generateLogsSupportArchive: error=" << e.what());
+        return {ExitCode::DbError, ExitCause::DbAccessError};
+    }
+
+    for (const auto &drive: driveList) {
+        archiveNameStr += std::to_string(drive.driveId()) + "-";
+    }
+
+    const std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    std::ostringstream woss;
+    woss << std::put_time(&tm, "%Y%m%d_%H%M%S");
+    archiveNameStr += woss.str();
+
+    archiveName = Str2SyncName(archiveNameStr);
+    return ExitCode::Ok;
+}
+
+ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool includeArchivedLogs) const {
+    const SyncPath logFilePath = Log::instance()->getLogFilePath();
+    const SyncPath logDirPath = logFilePath.parent_path();
+    const std::string logFileDate = logFilePath.filename().string().substr(0, 14);
+    IoError ioError = IoError::Success;
+    IoHelper::DirectoryIterator dir;
+    if (!IoHelper::getDirectoryIterator(logDirPath, false, ioError, dir)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError).c_str());
+        return ExitCode::SystemError;
+    }
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.is_directory()) {
+            LOG_INFO(Log::instance()->getLogger(), "Ignoring temp directory " << entry.path().filename().string().c_str());
+            continue;
+        }
+
+        if (!includeArchivedLogs && !entry.path().filename().string().starts_with(logFileDate) && entry.path().filename().extension() != ".log"){
+            LOG_INFO(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string().c_str());
+            continue;
+        }
+
+        if (!IoHelper::copyFileOrDirectory(entry.path(), outputPath / entry.path().filename(), ioError)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
+            if (ioError == IoError::DiskFull) {
+                return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+            }
+            return ExitCode::SystemError;
+        }
+    }
+
+    if (!endOfDirectory) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError).c_str());
+        return ExitCode::SystemError;
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo LogUploadJob::copyParmsDbTo(const SyncPath &outputPath) const {
+    const SyncPath parmsDbName = ".parms.db";
+    const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
+    DirectoryEntry entryParmsDb;
+    IoError ioError = IoError::Unknown;
+    if (!IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {
+        LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Creating ");
+
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
+        if (ioError == IoError::NoSuchFileOrDirectory) {
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        } else {
+            return ExitCode::SystemError;
+        }
+    }
+
+    if (!IoHelper::copyFileOrDirectory(parmsDbPath, outputPath, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
+
+        if (ioError == IoError::DiskFull) {
+            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+        }
+        return ExitCode::SystemError;
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) const {
+    const std::string osName = CommonUtility::platformName().toStdString();
+    const std::string osArch = CommonUtility::platformArch().toStdString();
+    const std::string appVersion = CommonUtility::userAgentString();
+
+    std::ofstream file((outputPath / "user_description.txt").string());
+    if (!file.is_open()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Unable to create : " << Utility::formatSyncPath(outputPath).c_str());
+        return ExitCode::Ok; // We don't want to stop the process if we can't create the file
+    }
+    file << "OS Name: " << osName << std::endl;
+    file << "OS Architecture: " << osArch << std::endl;
+    file << "App Version: " << appVersion << std::endl;
+    file << "User ID(s): ";
+
+    std::vector<User> userList;
+    try {
+        if (ParmsDb::instance()->selectAllUsers(userList)) {
+            for (const User &user: userList) {
+                file << user.userId() << " | ";
+            }
+            file << std::endl;
+        } else {
+            file << "Unable to retrieve user ID(s)" << std::endl;
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+        }
+
+        file << "Drive ID(s): ";
+        std::vector<Drive> driveList;
+        if (ParmsDb::instance()->selectAllDrives(driveList)) {
+            for (const Drive &drive: driveList) {
+                file << drive.driveId() << " | ";
+            }
+            file << std::endl;
+        } else {
+            file << "Unable to retrieve drive ID(s)" << std::endl;
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+        }
+    } catch (const std::runtime_error &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in generateUserDescriptionFile: error=" << e.what());
+        file << "Unable to retrieve user ID(s): error=" << e.what() << std::endl;
+        file << "Drive ID(s): Unable to retrieve drive ID(s): error=" << e.what() << std::endl;
+    }
+
+    file.close();
+    if (file.bad()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in file.close() for " << Utility::formatSyncPath(outputPath).c_str());
+        // We don't want to stop the process if we can't close the file
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo LogUploadJob::generateArchive(const SyncPath &directoryToCompress, const SyncPath &destPath,
+                                       const SyncName &archiveNameWithoutExtension, SyncPath &finalPath) {
+    // Generate the archive
+    const SyncPath archivePath = destPath / (archiveNameWithoutExtension + Str2SyncName(".zip"));
+    int err = 0;
+    zip_t *archive = zip_open(archivePath.string().c_str(), ZIP_CREATE | ZIP_EXCL, &err);
+    if (err != ZIP_ER_OK) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in zip_open: " << zip_strerror(archive));
+        return ExitCode::SystemError;
+    }
+
+    IoHelper::DirectoryIterator dir;
+    IoError ioError = IoError::Unknown;
+    if (!IoHelper::getDirectoryIterator(directoryToCompress, false, ioError, dir)) {
+        return ExitCode::SystemError;
+    }
+
+    bool endOfDirectory = false;
+    DirectoryEntry entry;
+    int progress = 10;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Archiving, std::min(++progress, 90)); !exitInfo) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::notifyLogUploadProgress: " << exitInfo);
+            return exitInfo;
+        }
+
+        const std::string entryPath = entry.path().string();
+        zip_source_t *source = zip_source_file(archive, entryPath.c_str(), 0, ZIP_LENGTH_TO_END);
+        if (source == nullptr) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in zip_source_file: " << zip_strerror(archive));
+            return ExitCode::SystemError;
+        }
+
+        const std::string entryName = entry.path().filename().string();
+        if (zip_file_add(archive, entryName.c_str(), source, ZIP_FL_OVERWRITE) < 0) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in zip_file_add: " << zip_strerror(archive));
+            return ExitCode::SystemError;
+        }
+    }
+
+    if (!endOfDirectory) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError));
+        return ExitCode::SystemError;
+    }
+
+    if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Archiving, 90); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::notifyLogUploadProgress: " << exitInfo);
+        return exitInfo;
+    }
+
+    // Close the archive
+    if (zip_close(archive) < 0) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in zip_close: " << zip_strerror(archive));
+        return ExitCode::SystemError;
+    }
+    finalPath = archivePath;
+    return ExitCode::Ok;
+}
+
+ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
+    // Upload archive
+    if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Uploading, 0); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::notifyLogUploadProgress: " << exitInfo);
+        return exitInfo;
+    }
+
+    std::shared_ptr<LogUploadSession> uploadSessionLog = nullptr;
+    try {
+        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
+        return ExitCode::SystemError;
+    };
+
+    bool canceledByUser = false;
+    const std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
+            [&uploadSessionLog, &canceledByUser, this](UniqueId, int percent) { // Progress callback
+                if (notifyLogUploadProgress(LogUploadState::Uploading, percent).code() == ExitCode::OperationCanceled) {
+                    uploadSessionLog->abort();
+                    canceledByUser = true;
+                }
+            };
+    uploadSessionLog->setProgressPercentCallback(progressCallbackUploadingWrapper);
+
+    const std::function<void(uint64_t)> uploadSessionLogFinisCallback = [&canceledByUser, this](uint64_t) {
+        canceledByUser = notifyLogUploadProgress(LogUploadState::Uploading, 100).code() == ExitCode::OperationCanceled;
+    };
+    uploadSessionLog->setAdditionalCallback(uploadSessionLogFinisCallback);
+    //(void) uploadSessionLog->runSynchronously();
+    if (canceledByUser) {
+        return {ExitCode::OperationCanceled, ExitCause::Unknown};
+    }
+
+    if (const ExitInfo jobExitInfo = uploadSessionLog->exitInfo(); !jobExitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << jobExitInfo);
+       // return jobExitInfo;
+    }
+    return ExitCode::Ok;
+}
+
+void LogUploadJob::updateLogUploadState(LogUploadState newState) const {
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
+}
+
+ExitInfo LogUploadJob::notifyLogUploadProgress(const LogUploadState newState, const int progressPercent) {
+    AppStateValue appStateValue = LogUploadState::None;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) ||
+                            !found) { // Check if the user canceled the upload
+        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+    }
+    const LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
+    const bool canceled = logUploadState == LogUploadState::Canceled || logUploadState == LogUploadState::CancelRequested ||
+                          newState == LogUploadState::Canceled || newState == LogUploadState::CancelRequested;
+
+    if (newState != _previousState || progressPercent != _previousProgress) {
+        LOG_DEBUG(_logger, "Log transfert progress: " << newState << " | " << progressPercent << " %");
+        if (_progressCallback && (_lastProgressUpdateTimeStamp + std::chrono::seconds(1) < std::chrono::system_clock::now() ||
+                                  newState != _previousState || progressPercent - _previousProgress > 10)) {
+            _lastProgressUpdateTimeStamp = std::chrono::system_clock::now();
+            _previousProgress = progressPercent;
+            _previousState = newState;
+            _progressCallback(newState, progressPercent);
+        }
+    }
+
+    return canceled ? ExitCode::OperationCanceled : ExitCode::Ok;
+}
+
+void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTmpDir) {
+    const LogUploadState logUploadState =
+            exitInfo.code() == ExitCode::OperationCanceled ? LogUploadState::Canceled : LogUploadState::Failed;
+    updateLogUploadState(logUploadState);
+    (void) notifyLogUploadProgress(logUploadState, 0);
+    if (clearTmpDir || exitInfo.code() == ExitCode::OperationCanceled) {
+        IoError ioError = IoError::Success;
+        (void) IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
+        if (ioError != IoError::Success) {
+            LOGW_INFO(Log::instance()->getLogger(),
+                      L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
+        }
+    }
+
+    _runningJob.reset();
+    _exitCode = exitInfo.code();
+    _exitCause = exitInfo.cause();
+}
+
+bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {
+    size = 0;
+
+    IoError ioError = IoError::Unknown;
+    if (!IoHelper::getFileSize(path, size, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError).c_str());
+        return false;
+    }
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Unable to read file size for " << Utility::formatIoError(path, ioError).c_str());
+        return false;
+    }
+
+    return true;
+}
+
+} // namespace KDC
