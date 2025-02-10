@@ -53,8 +53,7 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          set COVFILE=%cd%\src\test.cov  
-          call "cov01.exe" -1
+          call "cov01.exe" -0
 
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
@@ -62,7 +61,6 @@ jobs:
       - name: Execute tests
         run: |
           $env:COVFILE="$pwd\src\test.cov"
-          & "cov01.exe" "-1" # coverage on
           ./infomaniak-build-tools/run-tests.ps1
 
       - name: Compute code coverage
