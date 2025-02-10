@@ -84,16 +84,13 @@ WebView::WebView(QWidget *parent) : QWidget(parent), _ui(new Ui::WebView) {
      * code from: http://code.qt.io/cgit/qt/qtbase.git/tree/src/network/access/qhttpnetworkconnection.cpp
      */
     {
-        Language language = ParametersCache::instance()->parametersInfo().language();
-        QString languageCode = CommonUtility::languageCode(language);
-        QString userLanguage = languageCode.replace(QChar::fromLatin1('_'), QChar::fromLatin1('-'));
+        const auto language = ParametersCache::instance()->parametersInfo().language();
+        const auto languageCode = CommonUtility::languageCode(language);
         QString acceptLanguage;
-        if (userLanguage == QLatin1String("C")) {
+        if (languageCode == QLatin1String("C") || CommonUtility::languageCodeIsEnglish(languageCode)) {
             acceptLanguage = QString::fromLatin1("en,*");
-        } else if (userLanguage.startsWith(QLatin1String("en-"))) {
-            acceptLanguage = userLanguage + QLatin1String(",*");
         } else {
-            acceptLanguage = userLanguage + QLatin1String(",en,*");
+            acceptLanguage = languageCode + QLatin1String(",en,*");
         }
         _profile->setHttpAcceptLanguage(acceptLanguage);
     }

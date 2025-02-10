@@ -34,6 +34,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testSourceLocation);
         CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
         CPPUNIT_TEST(testLanguageCode);
+        CPPUNIT_TEST(testIsSupportedLanguage);
 #ifdef _WIN32
         CPPUNIT_TEST(testGetLastErrorMessage);
 #endif
@@ -49,6 +50,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testSourceLocation();
         void testGenerateRandomStringAlphaNum();
         void testLanguageCode();
+        void testIsSupportedLanguage();
 #ifdef _WIN32
         void testGetLastErrorMessage();
 #endif

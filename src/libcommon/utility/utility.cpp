@@ -409,18 +409,6 @@ QString applicationTrPath() {
 #endif
 }
 
-QString substLang(const QString &lang) {
-    // Map the more appropriate script codes
-    // to country codes as used by Qt and
-    // transifex translation conventions.
-
-    // Simplified Chinese
-    if (lang == QLatin1String("zh_Hans")) return QLatin1String("zh_CN");
-    // Traditional Chinese
-    if (lang == QLatin1String("zh_Hant")) return QLatin1String("zh_TW");
-    return lang;
-}
-
 void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language enforcedLocale) {
     QStringList uiLanguages = languageCodeList(enforcedLocale);
 
@@ -443,7 +431,6 @@ void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language
 
     foreach (QString lang, uiLanguages) {
         lang.replace(QLatin1Char('-'), QLatin1Char('_')); // work around QTBUG-25973
-        lang = substLang(lang);
         const QString trPath = applicationTrPath();
         const QString trFile = QLatin1String("client_") + lang;
         if (translator->load(trFile, trPath) || lang.startsWith(QLatin1String("en"))) {
@@ -516,8 +503,20 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
     return languageCode.compare(englishCode) == 0;
 }
 
+bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
+    static const std::unordered_set<QString> supportedLanguages = {englishCode, frenchCode, germanCode, italianCode, spanishCode};
+    return supportedLanguages.contains(languageCode);
+}
+
 QString CommonUtility::languageCode(const Language language) {
     switch (language) {
+        case Language::Default: {
+            const auto systemLanguages = QLocale::system().uiLanguages();
+            if (systemLanguages.empty()) break;
+            if (const auto systemLanguage = systemLanguages.first().left(2); isSupportedLanguage(systemLanguage))
+                return systemLanguage;
+            break;
+        }
         case Language::French:
             return frenchCode;
         case Language::German:
@@ -527,7 +526,6 @@ QString CommonUtility::languageCode(const Language language) {
         case Language::Spanish:
             return spanishCode;
         case Language::English:
-        case Language::Default:
             break;
     }
     return englishCode; // Return english by default.
