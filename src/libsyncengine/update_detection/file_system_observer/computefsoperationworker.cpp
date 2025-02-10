@@ -112,7 +112,7 @@ void ComputeFSOperationWorker::execute() {
 }
 
 
-ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &dbPath) {
+ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode) {
     assert(side != ReplicaSide::Unknown);
 
     const NodeId &nodeId = dbNode.nodeId(side);
@@ -140,6 +140,23 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::DataError;
     }
 
+    // Load DB path
+    SyncPath localDbPath;
+    SyncPath remoteDbPath;
+    bool dbPathsAreFound = false;
+    if (!_syncDb->path(dbNode.nodeId(), localDbPath, remoteDbPath, dbPathsAreFound)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
+        setExitCause(ExitCause::DbAccessError);
+        return ExitCode::DbError;
+    }
+    if (!dbPathsAreFound) {
+        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbNode.nodeId());
+        setExitCause(ExitCause::DbEntryNotFound);
+        return ExitCode::DataError;
+    }
+    auto dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
+
+    // Detect DELETE
     bool remoteItemUnsynced = false;
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
@@ -254,6 +271,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::Ok;
     }
 
+    // Load snapshot path
     SyncPath snapshotPath;
     if (bool ignore = false; !snapshot->path(nodeId, snapshotPath, ignore)) {
         if (ignore) {
@@ -270,10 +288,14 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         // OS might fail to notify all delete events, therefore we check that the file still exists.
         SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
         bool exists = false;
-        if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+        IoError ioError = IoError::Success;
+        if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
             LOGW_SYNCPAL_WARN(_logger,
                               L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError));
             return ExitCode::SystemError;
+        }
+        if (ioError == IoError::AccessDenied) {
+            return blacklistItem(dbPath);
         }
         if (!exists) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - "
@@ -285,6 +307,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::Ok;
     }
 
+    // Detect EDIT
     const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
     if (snapshotLastModified != dbLastModified && dbNode.type() == NodeType::File) {
         // Edit operation
@@ -294,6 +317,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         logOperationGeneration(snapshot->side(), fsOp);
     }
 
+    // Detect MOVE
     const auto snapshotName = snapshot->name(nodeId);
     const bool movedOrRenamed = dbName != snapshotName || parentNodeid != snapshot->parentId(nodeId);
     if (movedOrRenamed) {
@@ -364,24 +388,8 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
 
         dbIdIt = remainingDbIds.erase(dbIdIt);
 
-        SyncPath localDbPath;
-        SyncPath remoteDbPath;
-        bool dbPathsAreFound = false;
-        if (!_syncDb->path(dbId, localDbPath, remoteDbPath, dbPathsAreFound)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-            setExitCause(ExitCause::DbAccessError);
-            return ExitCode::DbError;
-        }
-        if (!dbPathsAreFound) {
-            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbId);
-            setExitCause(ExitCause::DbEntryNotFound);
-            return ExitCode::DataError;
-        }
-
         for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
-            if (const auto inferExitCode =
-                        inferChangeFromDbNode(side, dbNode, side == ReplicaSide::Local ? localDbPath : remoteDbPath);
-                inferExitCode != ExitCode::Ok) {
+            if (const auto inferExitCode = inferChangeFromDbNode(side, dbNode); inferExitCode != ExitCode::Ok) {
                 return inferExitCode;
             }
         }
