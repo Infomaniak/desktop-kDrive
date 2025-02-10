@@ -49,7 +49,7 @@
 #include <log/sentry/handler.h>
 
 #define CONNECTION_TRIALS 3
-#define CHECKCOMMSTATUS_TRIALS 3 // 3 minutes
+#define CHECKCOMMSTATUS_TRIALS 3
 
 namespace KDC {
 
