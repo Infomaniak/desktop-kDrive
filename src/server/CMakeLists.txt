@@ -162,8 +162,7 @@ endif()
 
 if(UNIX AND NOT APPLE)
     set(PC_HEADER_FILES
-        # libsecret (must be compiled before Qt includes)
-        "$<$<COMPILE_LANGUAGE:CXX>:<libsecret/secret.h$<ANGLE-R>>"
+        "$<$<COMPILE_LANGUAGE:CXX>:<gio/gio.h$<ANGLE-R>>"
 )
 endif()
 
