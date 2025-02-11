@@ -80,6 +80,12 @@ void TestInitialSituationGenerator::moveNode(const ReplicaSide side, const NodeI
     (void) newParentNode->insertChildren(node);
 }
 
+void TestInitialSituationGenerator::editNode(const ReplicaSide side, const NodeId &rawId) const {
+    const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, rawId));
+    auto lastModifiedDate = node->lastmodified().value();
+    node->setLastModified(++lastModifiedDate);
+}
+
 void TestInitialSituationGenerator::removeFromUpdateTree(const ReplicaSide side, const NodeId &rawId) const {
     (void) _syncpal->updateTree(side)->deleteNode(rawId);
 }

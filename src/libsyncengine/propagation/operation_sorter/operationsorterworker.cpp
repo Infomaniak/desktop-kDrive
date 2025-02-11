@@ -400,27 +400,6 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "End fixCreateBeforeCreate");
 }
 
-void OperationSorterWorker::fixEditBeforeMove() {
-    LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
-    const std::unordered_set<UniqueId> editOps = _syncPal->_syncOps->opListIdByType(OperationType::Edit);
-    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
-    for (const auto &editOpId: editOps) {
-        SyncOpPtr editOp = _syncPal->_syncOps->getOp(editOpId);
-
-        for (const auto &moveOpId: moveOps) {
-            SyncOpPtr moveOp = _syncPal->_syncOps->getOp(moveOpId);
-            if (moveOp->targetSide() != editOp->targetSide() || moveOp->affectedNode()->id() != editOp->affectedNode()->id()) {
-                continue;
-            }
-
-            // Since in case of move op, the node contains already the new name
-            // we always want to execute move operation first
-            moveFirstAfterSecond(editOp, moveOp);
-        }
-    }
-    LOG_SYNCPAL_DEBUG(_logger, "End fixEditBeforeMove");
-}
-
 bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap,
                                                      const SyncOpPtr &op, SyncOpPtr &ancestorOpWithHighestDistance,
                                                      int32_t &relativeDepth) const {
@@ -452,6 +431,27 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
     }
 
     return ancestorOpWithHighestDistance != nullptr;
+}
+
+void OperationSorterWorker::fixEditBeforeMove() {
+    LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
+    const std::unordered_set<UniqueId> editOps = _syncPal->_syncOps->opListIdByType(OperationType::Edit);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
+    for (const auto &editOpId: editOps) {
+        const auto editOp = _syncPal->_syncOps->getOp(editOpId);
+
+        for (const auto &moveOpId: moveOps) {
+            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
+            if (moveOp->targetSide() != editOp->targetSide() || moveOp->affectedNode()->id() != editOp->affectedNode()->id()) {
+                continue;
+            }
+
+            // Since in case of move op, the node already contains the new name
+            // we always want to execute move operation first
+            moveFirstAfterSecond(editOp, moveOp);
+        }
+    }
+    LOG_SYNCPAL_DEBUG(_logger, "End fixEditBeforeMove");
 }
 
 void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {

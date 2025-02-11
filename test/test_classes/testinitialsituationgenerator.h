@@ -79,6 +79,7 @@ class TestInitialSituationGenerator {
             return insertInUpdateTree(side, itemType, rawId, parentNode ? *parentNode->id() : "");
         }
         void moveNode(ReplicaSide side, const NodeId &rawId, const NodeId &newParentRawId) const;
+        void editNode(ReplicaSide side, const NodeId &rawId) const;
         void removeFromUpdateTree(ReplicaSide side, const NodeId &rawId) const;
 
     private:

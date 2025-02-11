@@ -35,6 +35,7 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture {
         CPPUNIT_TEST(testFixDeleteBeforeCreate);
         CPPUNIT_TEST(testFixMoveBeforeMoveOccupied);
         CPPUNIT_TEST(testFixCreateBeforeCreate);
+        CPPUNIT_TEST(testFixEditBeforeMove);
         // // CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFilp);
         // CPPUNIT_TEST(testFixImpossibleFirstMoveOp);
         // CPPUNIT_TEST(testFindCompleteCycles);
@@ -55,6 +56,7 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture {
         void testFixDeleteBeforeCreate();
         void testFixMoveBeforeMoveOccupied();
         void testFixCreateBeforeCreate();
+        void testFixEditBeforeMove();
         void testFixMoveBeforeMoveParentChildFilp();
         void testFixImpossibleFirstMoveOp();
         void testFindCompleteCycles();
@@ -63,8 +65,7 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture {
         void testBreakCycle();
 
     private:
-        SyncOpPtr generateSyncOperation(OperationType opType, std::shared_ptr<Node> affectedNode);
-        void generateManyOps();
+        SyncOpPtr generateSyncOperation(OperationType opType, const std::shared_ptr<Node> &affectedNode);
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         TestInitialSituationGenerator _initialSituationGenerator;

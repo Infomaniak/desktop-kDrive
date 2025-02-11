@@ -281,7 +281,7 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
     CPPUNIT_ASSERT_EQUAL(moveOp2->id(), _syncPal->_syncOps->opSortedList().back());
 }
 
-bool isFirstBeforeSecond(const std::shared_ptr<SyncOperationList> list, SyncOpPtr first, SyncOpPtr second) {
+bool isFirstBeforeSecond(const std::shared_ptr<SyncOperationList> &list, const SyncOpPtr &first, const SyncOpPtr &second) {
     for (const auto &opId: list->opSortedList()) {
         if (opId == first->id()) {
             return true;
@@ -418,6 +418,28 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAA));
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAB));
     }
+}
+
+void TestOperationSorterWorker::testFixEditBeforeMove() {
+    const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+
+    // Move A/AA/AAA to AAA
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeAAA->id(), {});
+    nodeAAA->insertChangeEvent(OperationType::Move);
+    const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAA);
+
+    // Edit AAA
+    _initialSituationGenerator.editNode(ReplicaSide::Local, *nodeAAA->id());
+    const auto editOp = generateSyncOperation(OperationType::Edit, nodeAAA);
+
+    _syncPal->_syncOps->pushOp(editOp);
+    _syncPal->_syncOps->pushOp(moveOp);
+
+    _syncPal->_operationsSorterWorker->fixEditBeforeMove();
+
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
+    CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->_syncOps->opSortedList().front());
+    CPPUNIT_ASSERT_EQUAL(editOp->id(), _syncPal->_syncOps->opSortedList().back());
 }
 
 void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
@@ -805,7 +827,8 @@ void TestOperationSorterWorker::testBreakCycle() {
     CPPUNIT_ASSERT(breakCycleOp->newParentNode());
 }
 
-SyncOpPtr TestOperationSorterWorker::generateSyncOperation(const OperationType opType, std::shared_ptr<Node> affectedNode) {
+SyncOpPtr TestOperationSorterWorker::generateSyncOperation(const OperationType opType,
+                                                           const std::shared_ptr<Node> &affectedNode) {
     const auto op = std::make_shared<SyncOperation>();
     op->setType(opType);
     op->setAffectedNode(affectedNode);
