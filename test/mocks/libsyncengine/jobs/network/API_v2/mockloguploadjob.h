@@ -20,7 +20,7 @@
 
 #include "testincludes.h"
 #include "utility/types.h"
-#include <libsyncengine\jobs\network\API_v2\loguploadjob.h>
+#include "libsyncengine/jobs/network/API_v2/loguploadjob.h"
 
 namespace KDC {
 class MockLogUploadJob : public LogUploadJob {
