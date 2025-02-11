@@ -69,7 +69,13 @@ endif()
 add_library(${libcommonserver_NAME} STATIC ${libcommonserver_SRCS})
 
 # Precompiled headers
-set(PC_HEADER_FILES
+if(WIN32)
+    set(PC_HEADER_FILES
+        "$<$<COMPILE_LANGUAGE:CXX>:<windows.h$<ANGLE-R>>"
+)
+endif()
+
+list(APPEND PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<sys/stat.h$<ANGLE-R>>"

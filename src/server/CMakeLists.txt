@@ -154,6 +154,12 @@ else()
 endif()
 
 # Precompiled headers
+if(WIN32)
+    set(PC_HEADER_FILES
+        "$<$<COMPILE_LANGUAGE:CXX>:<windows.h$<ANGLE-R>>"
+)
+endif()
+
 if(UNIX AND NOT APPLE)
     set(PC_HEADER_FILES
         # libsecret (must be compiled before Qt includes)

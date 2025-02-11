@@ -63,7 +63,13 @@ endif()
 add_library(${libcommon_NAME} STATIC ${libcommon_SRCS})
 
 # Precompiled headers
-set(PC_HEADER_FILES
+if(WIN32)
+    set(PC_HEADER_FILES
+        "$<$<COMPILE_LANGUAGE:CXX>:<windows.h$<ANGLE-R>>"
+)
+endif()
+
+list(APPEND PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
     # Qt
