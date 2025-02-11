@@ -35,8 +35,6 @@ class OperationSorterWorker final : public OperationProcessor {
         [[nodiscard]] bool hasOrderChanged() const { return _hasOrderChanged; }
 
     private:
-        // SyncOperationList _unsortedList;
-
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> _reorderings;
         bool _hasOrderChanged{false};
 
@@ -86,8 +84,21 @@ class OperationSorterWorker final : public OperationProcessor {
         void moveFirstAfterSecond(SyncOpPtr opFirst, SyncOpPtr opSecond);
         void addPairToReorderings(SyncOpPtr op, std::shared_ptr<SyncOperation> opOnFirstDepends);
 
-        bool hasParentWithHigherIndex(const std::unordered_map<UniqueId, int> &indexMap, SyncOpPtr op, int createOpIndex,
-                                      SyncOpPtr &ancestorOp, int &depth);
+        /**
+         * @brief Check if a CREATE operation has a parent CREATE operation with higher index in the sorted operation list. Higher
+         * index means positioned further in the list and, therefor, the parent operation would be processed after the child
+         * operation.
+         * @param opIdToIndexMap A map giving the correspondence between an operation ID and its position in the sorted operation
+         * list.
+         * @param op The child operation to be compared.
+         * @param ancestorOpWithHighestDistance The ancestor operation, positioned further the op in the sorted list, with the
+         * highest distance.
+         * @param relativeDepth The distance between the child node and the ancestor node in a tree. For example, in the path
+         * A/AA/AAA/AAAA, the distance between A and AA is 1, the distance between A and AAAA is 3.
+         * @return
+         */
+        bool hasParentWithHigherIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap, const SyncOpPtr &op,
+                                      SyncOpPtr &ancestorOpWithHighestDistance, int32_t &relativeDepth) const;
 
         bool getIdFromDb(ReplicaSide side, const SyncPath &parentPath, NodeId &id) const;
 

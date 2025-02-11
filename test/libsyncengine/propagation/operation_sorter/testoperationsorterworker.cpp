@@ -108,7 +108,6 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     _syncPal->_syncOps->pushOp(moveOp);
     _syncPal->_syncOps->pushOp(deleteOp);
 
-    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixDeleteBeforeMove();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -143,7 +142,6 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     _syncPal->_syncOps->pushOp(createOp);
     _syncPal->_syncOps->pushOp(moveOp);
 
-    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixMoveBeforeCreate();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -176,7 +174,6 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     _syncPal->_syncOps->pushOp(deleteOp);
     _syncPal->_syncOps->pushOp(moveOp);
 
-    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixMoveBeforeDelete();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -209,7 +206,6 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     _syncPal->_syncOps->pushOp(moveOp);
     _syncPal->_syncOps->pushOp(createOp);
 
-    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixCreateBeforeMove();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -242,7 +238,6 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     _syncPal->_syncOps->pushOp(createOp);
     _syncPal->_syncOps->pushOp(deleteOp);
 
-    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixDeleteBeforeCreate();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
@@ -279,12 +274,23 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
     _syncPal->_syncOps->pushOp(moveOp2);
     _syncPal->_syncOps->pushOp(moveOp);
 
-    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
     _syncPal->_operationsSorterWorker->fixMoveBeforeMoveOccupied();
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasOrderChanged());
     CPPUNIT_ASSERT_EQUAL(moveOp->id(), _syncPal->_syncOps->opSortedList().front());
     CPPUNIT_ASSERT_EQUAL(moveOp2->id(), _syncPal->_syncOps->opSortedList().back());
+}
+
+bool isFirstBeforeSecond(const std::shared_ptr<SyncOperationList> list, SyncOpPtr first, SyncOpPtr second) {
+    for (const auto &opId: list->opSortedList()) {
+        if (opId == first->id()) {
+            return true;
+        }
+        if (opId == second->id()) {
+            return false;
+        }
+    }
+    return false;
 }
 
 void TestOperationSorterWorker::testFixCreateBeforeCreate() {
@@ -311,6 +317,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
     nodeDAB->insertChangeEvent(OperationType::Create);
     const auto opDAB = generateSyncOperation(OperationType::Create, nodeDAB);
 
+    _syncPal->_syncOps->clear();
     {
         // Case : DAA DAB DA DB D
         _syncPal->_syncOps->pushOp(opDAA);
@@ -319,13 +326,34 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opDB);
         _syncPal->_syncOps->pushOp(opD);
 
+        // Test hasParentWithHigherIndex
+        std::unordered_map<UniqueId, int32_t> opIdToIndexMap;
+        _syncPal->_syncOps->getOpIdToIndexMap(opIdToIndexMap, OperationType::Create);
+        SyncOpPtr ancestorOpWithHighestDistance;
+        int32_t relativeDepth = 0;
+        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasParentWithHigherIndex(
+                                           opIdToIndexMap, opDAA, ancestorOpWithHighestDistance, relativeDepth));
+        CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestDistance->id());
+        CPPUNIT_ASSERT_EQUAL(2, relativeDepth);
+        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasParentWithHigherIndex(
+                                           opIdToIndexMap, opDA, ancestorOpWithHighestDistance, relativeDepth));
+        CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestDistance->id());
+        CPPUNIT_ASSERT_EQUAL(1, relativeDepth);
+        CPPUNIT_ASSERT_EQUAL(false, _syncPal->_operationsSorterWorker->hasParentWithHigherIndex(
+                                            opIdToIndexMap, opD, ancestorOpWithHighestDistance, relativeDepth));
+        CPPUNIT_ASSERT(!ancestorOpWithHighestDistance);
+        CPPUNIT_ASSERT_EQUAL(0, relativeDepth);
+
         _syncPal->_operationsSorterWorker->_hasOrderChanged = true;
         while (_syncPal->_operationsSorterWorker->_hasOrderChanged) {
             _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
             _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
         }
 
-        CPPUNIT_ASSERT_EQUAL(opD->id(), _syncPal->_syncOps->opSortedList().front());
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAB));
     }
 
     _syncPal->_syncOps->clear();
@@ -343,7 +371,10 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
             _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
         }
 
-        CPPUNIT_ASSERT_EQUAL(opD->id(), _syncPal->_syncOps->opSortedList().front());
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAB));
     }
 
     _syncPal->_syncOps->clear();
@@ -361,7 +392,10 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
             _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
         }
 
-        CPPUNIT_ASSERT_EQUAL(opD->id(), _syncPal->_syncOps->opSortedList().front());
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAB));
     }
 
     _syncPal->_syncOps->clear();
@@ -379,280 +413,11 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
             _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
         }
 
-        CPPUNIT_ASSERT_EQUAL(opD->id(), _syncPal->_syncOps->opSortedList().front());
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opDA, opDAB));
     }
-
-    return;
-
-    /**
-     *
-     *                            root
-     *                        _____|_____
-     *                       |          |
-     *                       A          B
-     *                  _____|_____
-     *                 |          |
-     *                AA         AB
-     *           _____|_____
-     *          |          |
-     *         AAA        AAB
-     */
-
-    DbNodeId dbNodeIdDirA;
-    DbNodeId dbNodeIdDirB;
-    DbNodeId dbNodeIdDirAA;
-    DbNodeId dbNodeIdDirAB;
-    DbNodeId dbNodeIdDirAAA;
-    DbNodeId dbNodeIdDirAAB;
-
-    bool constraintError = false;
-    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
-    DbNode nodeDirB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
-    DbNode nodeDirAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", testhelpers::defaultTime, testhelpers::defaultTime,
-                     testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirAA, dbNodeIdDirAA, constraintError);
-    DbNode nodeDirAB(0, dbNodeIdDirA, Str("AB"), Str("AB"), "lab", "rab", testhelpers::defaultTime, testhelpers::defaultTime,
-                     testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirAB, dbNodeIdDirAB, constraintError);
-    DbNode nodeDirAAA(0, dbNodeIdDirAA, Str("AAA"), Str("AAA"), "laaa", "raaa", testhelpers::defaultTime,
-                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirAAA, dbNodeIdDirAAA, constraintError);
-    DbNode nodeDirAAB(0, dbNodeIdDirAA, Str("AAB"), Str("AAB"), "laab", "raab", testhelpers::defaultTime,
-                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirAAB, dbNodeIdDirAAB, constraintError);
-
-    std::shared_ptr<Node> rootNode(
-            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""),
-                     NodeType::Directory, OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(),
-                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr));
-    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"),
-                                         NodeType::Directory, OperationType::Create, "a", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-    std::shared_ptr<Node> nodeB(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("B"),
-                                         NodeType::Directory, OperationType::Create, "b", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-    std::shared_ptr<Node> nodeAA(new Node(dbNodeIdDirAA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AA"),
-                                          NodeType::Directory, OperationType::Create, "aa", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, nodeA));
-    std::shared_ptr<Node> nodeAB(new Node(dbNodeIdDirAB, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AB"),
-                                          NodeType::Directory, OperationType::Create, "ab", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, nodeA));
-    std::shared_ptr<Node> nodeAAA(new Node(dbNodeIdDirAAA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AAA"),
-                                           NodeType::File, OperationType::Create, "aaa", testhelpers::defaultTime,
-                                           testhelpers::defaultTime, testhelpers::defaultFileSize, nodeAA));
-    std::shared_ptr<Node> nodeAAB(new Node(dbNodeIdDirAAB, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AAB"),
-                                           NodeType::File, OperationType::Create, "aab", testhelpers::defaultTime,
-                                           testhelpers::defaultTime, testhelpers::defaultFileSize, nodeAA));
-
-    SyncOpPtr opA = std::make_shared<SyncOperation>();
-    opA->setAffectedNode(nodeA);
-    opA->setTargetSide(nodeA->side());
-    opA->setType(OperationType::Create);
-
-    SyncOpPtr opB = std::make_shared<SyncOperation>();
-    opB->setAffectedNode(nodeB);
-    opB->setTargetSide(nodeB->side());
-    opB->setType(OperationType::Create);
-
-    SyncOpPtr opAA = std::make_shared<SyncOperation>();
-    opAA->setAffectedNode(nodeAA);
-    opAA->setTargetSide(nodeAA->side());
-    opAA->setType(OperationType::Create);
-
-    SyncOpPtr opAB = std::make_shared<SyncOperation>();
-    opAB->setAffectedNode(nodeAB);
-    opAB->setTargetSide(nodeAB->side());
-    opAB->setType(OperationType::Create);
-
-    SyncOpPtr opAAA = std::make_shared<SyncOperation>();
-    opAAA->setAffectedNode(nodeAAA);
-    opAAA->setTargetSide(nodeAAA->side());
-    opAAA->setType(OperationType::Create);
-
-    SyncOpPtr opAAB = std::make_shared<SyncOperation>();
-    opAAB->setAffectedNode(nodeAAB);
-    opAAB->setTargetSide(nodeAAB->side());
-    opAAB->setType(OperationType::Create);
-
-    // Case 1 : A AAA AA AAB AB B
-    {
-        _syncPal->_syncOps->pushOp(opA);
-        _syncPal->_syncOps->pushOp(opAAA);
-        _syncPal->_syncOps->pushOp(opAA);
-        _syncPal->_syncOps->pushOp(opAAB);
-        _syncPal->_syncOps->pushOp(opAB);
-        _syncPal->_syncOps->pushOp(opB);
-        // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
-        // Expected order: A AA AAA AAB AB B
-        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
-            SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-        }
-
-        std::vector<SyncOpPtr> expectedRes = {opA, opAA, opAAA, opAAB, opAB, opB};
-
-        _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-
-        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
-            SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-        }
-
-        size_t index = 0;
-        std::list<UniqueId>::iterator it = _syncPal->_syncOps->_opSortedList.begin();
-        for (; it != _syncPal->_syncOps->_opSortedList.end(); it++) {
-            CPPUNIT_ASSERT(*it == expectedRes[index++]->id());
-        }
-    }
-
-    // Case 2 : AAA AAB AA AB A B
-    _syncPal->_syncOps->clear();
-    {
-        _syncPal->_syncOps->pushOp(opAAA);
-        _syncPal->_syncOps->pushOp(opAAB);
-        _syncPal->_syncOps->pushOp(opAA);
-        _syncPal->_syncOps->pushOp(opAB);
-        _syncPal->_syncOps->pushOp(opA);
-        _syncPal->_syncOps->pushOp(opB);
-        // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
-        // Expected order: A AB AA AAB AAA B
-        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
-            SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-        }
-        std::vector<SyncOpPtr> expectedRes = {opA, opAB, opAA, opAAB, opAAA, opB};
-
-        _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-
-        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
-            SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-        }
-
-        size_t index = 0;
-        for (auto it = _syncPal->_syncOps->_opSortedList.begin(); it != _syncPal->_syncOps->_opSortedList.end(); ++it) {
-            CPPUNIT_ASSERT(*it == expectedRes[index++]->id());
-        }
-    }
-
-    // Case 3 : AA AAA B AAB AB A
-    _syncPal->_syncOps->clear();
-    {
-        _syncPal->_syncOps->pushOp(opAA);
-        _syncPal->_syncOps->pushOp(opAAA);
-        _syncPal->_syncOps->pushOp(opB);
-        _syncPal->_syncOps->pushOp(opAAB);
-        _syncPal->_syncOps->pushOp(opAB);
-        _syncPal->_syncOps->pushOp(opA);
-        // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
-        // Expected order: B A AB AA AAB AAA
-        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
-            SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-        }
-        std::vector<SyncOpPtr> expectedRes = {opB, opA, opAB, opAA, opAAB, opAAA};
-
-        _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-
-        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
-            SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-        }
-
-        size_t index = 0;
-        for (auto it = _syncPal->_syncOps->_opSortedList.begin(); it != _syncPal->_syncOps->_opSortedList.end(); ++it) {
-            CPPUNIT_ASSERT(*it == expectedRes[index++]->id());
-        }
-    }
-}
-
-void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFilp() {
-    DbNodeId dbNodeIdDir1;
-    DbNodeId dbNodeIdDir11;
-    DbNodeId dbNodeIdDir2;
-    DbNodeId dbNodeIdDir3;
-
-    bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", testhelpers::defaultTime,
-                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-
-    std::shared_ptr<Node> rootNode(
-            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""),
-                     NodeType::Directory, OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(),
-                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr));
-    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1"),
-                                         NodeType::Directory, OperationType::Create, "d1", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1.1"),
-                                          NodeType::Directory, OperationType::Create, "11", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, node1));
-    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 2"),
-                                         NodeType::Directory, OperationType::None, "2", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 3"),
-                                         NodeType::Directory, OperationType::None, "3", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, rootNode));
-    std::shared_ptr<Node> rrootNode(
-            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""),
-                     NodeType::Directory, OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(),
-                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, nullptr));
-    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1"),
-                                          NodeType::Directory, OperationType::None, "r1", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rrootNode));
-    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1.1"),
-                                           NodeType::Directory, OperationType::None, "r11", testhelpers::defaultTime,
-                                           testhelpers::defaultTime, testhelpers::defaultFileSize, rNode1));
-    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 2"),
-                                          NodeType::Directory, OperationType::None, "r2", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rrootNode));
-    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 3"),
-                                          NodeType::Directory, OperationType::None, "r3", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rrootNode));
-
-    rootNode->deleteChildren(node1);
-    node1->deleteChildren(node11);
-    CPPUNIT_ASSERT(node1->setParentNode(node11));
-    CPPUNIT_ASSERT(node11->insertChildren(node1));
-    node1->insertChangeEvent(OperationType::Move);
-    node1->setMoveOrigin("Dir 1");
-    node1->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
-    CPPUNIT_ASSERT(rootNode->insertChildren(node11));
-    CPPUNIT_ASSERT(node11->setParentNode(rootNode));
-    node11->insertChangeEvent(OperationType::Move);
-    node11->setMoveOrigin("Dir 1/Dir 1.1");
-    node11->setMoveOriginParentDbId(dbNodeIdDir1);
-
-    SyncOpPtr op1 = std::make_shared<SyncOperation>();
-    SyncOpPtr op2 = std::make_shared<SyncOperation>();
-    SyncOpPtr op3 = std::make_shared<SyncOperation>();
-    SyncOpPtr op4 = std::make_shared<SyncOperation>();
-    op1->setAffectedNode(node11);
-    op1->setTargetSide(node11->side());
-    op1->setType(OperationType::Move);
-    op2->setAffectedNode(node2);
-    op3->setAffectedNode(node1);
-    op3->setTargetSide(node1->side());
-    op3->setType(OperationType::Move);
-    op4->setAffectedNode(node3);
-
-    _syncPal->_syncOps->pushOp(op2);
-    _syncPal->_syncOps->pushOp(op3);
-    _syncPal->_syncOps->pushOp(op4);
-    _syncPal->_syncOps->pushOp(op1);
-    // _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
-
-    _syncPal->_operationsSorterWorker->fixMoveBeforeMoveHierarchyFlip();
-    CPPUNIT_ASSERT(_syncPal->_syncOps->_opSortedList.back() == op3->id());
-    _syncPal->_syncOps->_opSortedList.pop_back();
-    CPPUNIT_ASSERT(_syncPal->_syncOps->_opSortedList.back() == op1->id());
 }
 
 void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {

@@ -115,9 +115,9 @@ class SyncOperationList : public SharedObject {
         [[nodiscard]] size_t size() const { return _allOps.size(); }
         [[nodiscard]] int isEmpty() const { return _allOps.empty(); }
         void clear();
-        void operator=(SyncOperationList const &other);
+        SyncOperationList &operator=(SyncOperationList const &other);
 
-        void getMapIndexToOp(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
+        void getOpIdToIndexMap(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
 
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;
