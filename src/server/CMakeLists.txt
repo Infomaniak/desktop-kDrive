@@ -1,4 +1,5 @@
-project(server)
+cmake_minimum_required(VERSION 3.16)
+project(server LANGUAGES C CXX OBJC OBJCXX)
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML)
@@ -147,6 +148,19 @@ else()
     )
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
 endif()
+
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
+    # Qt
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qtimer.h$<ANGLE-R>>"
+    # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+)
+
+target_precompile_headers(${APPLICATION_EXECUTABLE} PRIVATE ${PC_HEADER_FILES})
 
 if (APPLE)
     set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES

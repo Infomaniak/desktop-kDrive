@@ -1,4 +1,5 @@
-project(libsyncengine)
+cmake_minimum_required(VERSION 3.16)
+project(libsyncengine LANGUAGES C CXX OBJC OBJCXX)
 
 find_package(Poco 1.13.3 REQUIRED Foundation Net NetSSL JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
@@ -143,6 +144,28 @@ endif ()
 
 # Target
 add_library(${libsyncengine_NAME} STATIC ${syncengine_SRCS})
+
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<cstdint$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<list$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<map$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<mutex$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<queue$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<unordered_map$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<unordered_set$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<vector$<ANGLE-R>>"
+    # Poco
+    "$<$<COMPILE_LANGUAGE:CXX>:<Poco/JSON/Parser.h$<ANGLE-R>>"
+    # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/logger.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+)
+
+target_precompile_headers(${libsyncengine_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libsyncengine_NAME} PROPERTIES
         VERSION ${KDRIVE_VERSION}

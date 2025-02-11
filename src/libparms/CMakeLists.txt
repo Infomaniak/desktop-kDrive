@@ -1,4 +1,5 @@
-project(libparms)
+cmake_minimum_required(VERSION 3.16)
+project(libparms LANGUAGES C CXX OBJC OBJCXX)
 
 find_package(Poco 1.13.3 REQUIRED Foundation)
 
@@ -26,6 +27,14 @@ endif()
 
 # Target
 add_library(${libparms_NAME} STATIC ${parms_SRCS})
+
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
+)
+
+target_precompile_headers(${libparms_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libparms_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}

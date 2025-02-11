@@ -1,4 +1,5 @@
-project(libcommon)
+cmake_minimum_required(VERSION 3.16)
+project(libcommon LANGUAGES C CXX OBJC OBJCXX)
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
@@ -56,6 +57,18 @@ endif()
 
 # Target
 add_library(${libcommon_NAME} STATIC ${libcommon_SRCS})
+
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
+    # Qt
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdatastream.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qlist.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstring.h$<ANGLE-R>>"
+)
+
+target_precompile_headers(${libcommon_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libcommon_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}

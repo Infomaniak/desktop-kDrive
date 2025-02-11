@@ -1,4 +1,5 @@
-project(libcommonserver)
+cmake_minimum_required(VERSION 3.16)
+project(libcommonserver LANGUAGES C CXX OBJC OBJCXX)
 
 find_package(Qt6 REQUIRED Core)
 find_package(SQLite3 3.8.0 REQUIRED)
@@ -62,6 +63,23 @@ endif()
 
 # Target
 add_library(${libcommonserver_NAME} STATIC ${libcommonserver_SRCS})
+
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<sys/stat.h$<ANGLE-R>>"
+    # Qt
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qmutex.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qobject.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qwaitcondition.h$<ANGLE-R>>"
+    # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/logger.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+)
+
+target_precompile_headers(${libcommonserver_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libcommonserver_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}
