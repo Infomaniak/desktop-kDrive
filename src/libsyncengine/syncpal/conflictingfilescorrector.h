@@ -19,10 +19,8 @@
 #pragma once
 
 #include "jobs/abstractpropagatorjob.h"
-
 #include "syncpal/syncpal.h"
-
-#include <db/error.h>
+#include "db/error.h"
 
 #include <vector>
 
