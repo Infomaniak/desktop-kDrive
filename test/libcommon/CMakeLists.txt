@@ -1,4 +1,9 @@
-project(testcommon)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(testcommon LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(testcommon LANGUAGES C CXX)
+endif()
 
 find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.0 REQUIRED)
@@ -25,6 +30,20 @@ else ()
 endif ()
 
 add_executable(${testcommon_NAME} ${testcommon_SRCS})
+
+# Precompiled headers
+if(WIN32)
+    set(PC_HEADER_FILES
+        "$<$<COMPILE_LANGUAGE:CXX>:<windows.h$<ANGLE-R>>"
+)
+endif()
+
+list(APPEND PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
+)
+
+target_precompile_headers(${testcommon_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${testcommon_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
