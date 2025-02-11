@@ -181,9 +181,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendQuit(); // Ask client to quit
 
         void uploadLog(bool includeArchivedLogs);
-        
-        // See types.h -> AppStateKey for the possible values of status
-
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();

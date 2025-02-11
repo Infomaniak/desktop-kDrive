@@ -740,9 +740,7 @@ void DebuggingDialog::onLogUploadStatusUpdated(LogUploadState state, int progres
             setlogUploadInfo(state);
             _logUploadInfoWidget->show();
             _cancelLogUploadButton->hide();
-            _cancelLogUploadButton->setEnabled(false);
             displayHeavyLogBox();
-            repaint();
             break;
         default:
             break;

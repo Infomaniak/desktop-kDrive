@@ -377,11 +377,6 @@ AppServer::AppServer(int &argc, char **argv) :
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
-
-    for (int i = 0; i < 1000; i++) {
-        LOGW_DEBUG(_logger,
-                   L".........................................................................................................");
-    }
 }
 
 AppServer::~AppServer() {
@@ -1866,7 +1861,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT: {
             resultStream << ExitCode::Ok; // Return immediately, progress and error will be report via addError and signal
-            QTimer::singleShot(100, [this]() { LogUploadJob::cancelUpload(); });
+            LogUploadJob::cancelUpload();
             break;
         }
         case RequestNum::UTILITY_CRASH: {
