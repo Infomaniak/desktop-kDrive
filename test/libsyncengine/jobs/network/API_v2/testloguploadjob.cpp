@@ -50,7 +50,8 @@ void TestLogUploadJob::testLogUploadJobWithOldSessions() {
     createFakeOldSessionFile(4);
     insertUserInDb();
     int previousProgress = 0;
-    const std::function<void(LogUploadState, int)> dummyCallback = [&previousProgress](LogUploadState state, int progress) {
+    const std::function<void(LogUploadState, int)> dummyCallback = [&previousProgress]([[maybe_unused]] LogUploadState state,
+                                                                                       int progress) {
         CPPUNIT_ASSERT_GREATEREQUAL(previousProgress, progress);
         previousProgress = progress;
     };
@@ -82,7 +83,8 @@ void TestLogUploadJob::testLogUploadJobWithoutOldSessions() {
     createFakeOldSessionFile(4);
     insertUserInDb();
     int previousProgress = 0;
-    const std::function<void(LogUploadState, int)> dummyCallback = [&previousProgress](LogUploadState state, int progress) {
+    const std::function<void(LogUploadState, int)> dummyCallback = [&previousProgress]([[maybe_unused]] LogUploadState state,
+                                                                                       int progress) {
         CPPUNIT_ASSERT_GREATEREQUAL(previousProgress, progress);
         previousProgress = progress;
     };
@@ -123,9 +125,10 @@ void TestLogUploadJob::testLogUploadJobArchiveNotDeletedInCaseOfUploadError() {
     }
     CPPUNIT_ASSERT_MESSAGE("Archive file found before the test", !archiveFound);
 
-    const std::function<void(LogUploadState, int)> dummyCallback = [](LogUploadState state, int progress) {};
+    const std::function<void(LogUploadState, int)> dummyCallback = []([[maybe_unused]] LogUploadState state,
+                                                                      [[maybe_unused]] int progress) {};
     auto job1 = std::make_shared<MockLogUploadJob>(false, dummyCallback);
-    job1->setUploadMock([](const SyncPath &path) -> ExitInfo { return ExitCode::SystemError; });
+    job1->setUploadMock([]([[maybe_unused]] const SyncPath &path) -> ExitInfo { return ExitCode::SystemError; });
     job1->runSynchronously();
 
     allFiles.clear();
@@ -148,12 +151,12 @@ void TestLogUploadJob::testLogUploadSingleConcurrentJob() {
     insertUserInDb();
     const std::function<void(LogUploadState, int)> dummyCallback = [](LogUploadState, int) {};
     auto job1 = std::make_shared<MockLogUploadJob>(true, dummyCallback);
-    job1->setArchiveMock([](SyncPath &path) -> ExitInfo { return ExitCode::Ok; });
-    job1->setUploadMock([&job1Mutex](const SyncPath &path) -> ExitInfo {
+    job1->setArchiveMock([] [[maybe_unused]] (SyncPath & path) -> ExitInfo { return ExitCode::Ok; });
+    job1->setUploadMock([&job1Mutex]([[maybe_unused]] const SyncPath &path) -> ExitInfo {
         std::scoped_lock lock(job1Mutex);
         return ExitCode::Ok;
     });
-    std::jthread t1([&job1]() { job1->runSynchronously(); });
+    std::thread t1([&job1]() { job1->runSynchronously(); });
     int counter = 0;
     while (!job1->isRunning()) {
         Utility::msleep(10);
@@ -163,11 +166,11 @@ void TestLogUploadJob::testLogUploadSingleConcurrentJob() {
     // Start a second job that should not run if the first one is running
     auto job2 = std::make_shared<MockLogUploadJob>(true, dummyCallback);
     bool job2Runned = false;
-    job2->setArchiveMock([&job2Runned](SyncPath &path) -> ExitInfo {
+    job2->setArchiveMock([&job2Runned]([[maybe_unused]] SyncPath &path) -> ExitInfo {
         job2Runned = true;
         return ExitCode::Ok;
     });
-    job2->setUploadMock([](const SyncPath &path) -> ExitInfo { return ExitCode::Ok; });
+    job2->setUploadMock([]([[maybe_unused]] const SyncPath &path) -> ExitInfo { return ExitCode::Ok; });
     job2->runSynchronously();
 
     CPPUNIT_ASSERT(job1->isRunning()); // Job1 is still running
@@ -183,9 +186,10 @@ void TestLogUploadJob::testLogUploadSingleConcurrentJob() {
 }
 
 void TestLogUploadJob::testLogUploadJobWithoutConnectedUser() {
-    const std::function<void(LogUploadState, int)> dummyCallback = [](LogUploadState state, int progress) {};
+    const std::function<void(LogUploadState, int)> dummyCallback = []([[maybe_unused]] LogUploadState state,
+                                                                      [[maybe_unused]] int progress) {};
     auto job1 = std::make_shared<MockLogUploadJob>(true, dummyCallback);
-    job1->setUploadMock([](const SyncPath &path) -> ExitInfo { return ExitCode::Ok; });
+    job1->setUploadMock([]([[maybe_unused]] const SyncPath &path) -> ExitInfo { return ExitCode::Ok; });
     job1->runSynchronously();
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidToken, ExitCause::LoginError), job1->exitInfo());
