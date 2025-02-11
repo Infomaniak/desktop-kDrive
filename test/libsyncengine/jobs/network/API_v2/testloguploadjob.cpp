@@ -151,7 +151,7 @@ void TestLogUploadJob::testLogUploadSingleConcurrentJob() {
     insertUserInDb();
     const std::function<void(LogUploadState, int)> dummyCallback = [](LogUploadState, int) {};
     auto job1 = std::make_shared<MockLogUploadJob>(true, dummyCallback);
-    job1->setArchiveMock([] [[maybe_unused]] (SyncPath & path) -> ExitInfo { return ExitCode::Ok; });
+    job1->setArchiveMock([]([[maybe_unused]] SyncPath &path) -> ExitInfo { return ExitCode::Ok; });
     job1->setUploadMock([&job1Mutex]([[maybe_unused]] const SyncPath &path) -> ExitInfo {
         std::scoped_lock lock(job1Mutex);
         return ExitCode::Ok;
