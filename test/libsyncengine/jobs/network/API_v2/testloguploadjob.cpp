@@ -32,9 +32,12 @@ namespace KDC {
 void TestLogUploadJob::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up TestLogUploadJob");
     deleteFakeFiles();
+
+    bool parmsDbExist = std::filesystem::exists(CommonUtility::getAppSupportDir() / ".parms.db");
+  
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, parmsDbExist);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 }
 
