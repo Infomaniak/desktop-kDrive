@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(libsyncengine LANGUAGES C CXX OBJC OBJCXX)
+if(APPLE)
+    project(libsyncengine LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(libsyncengine LANGUAGES C CXX)
+endif()
 
 find_package(Poco 1.13.3 REQUIRED Foundation Net NetSSL JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)

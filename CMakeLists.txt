@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 set(CMAKE_CXX_STANDARD 20)
-enable_language(OBJC)
-enable_language(OBJCXX)
+if(APPLE)
+    enable_language(OBJC)
+    enable_language(OBJCXX)
+endif()
 
 project(client)
 

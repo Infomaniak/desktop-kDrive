@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(libcommon LANGUAGES C CXX OBJC OBJCXX)
+if(APPLE)
+    project(libcommon LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(libcommon LANGUAGES C CXX)
+endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)

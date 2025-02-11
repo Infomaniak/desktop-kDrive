@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(libcommonserver LANGUAGES C CXX OBJC OBJCXX)
+if(APPLE)
+    project(libcommonserver LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(libcommonserver LANGUAGES C CXX)
+endif()
 
 find_package(Qt6 REQUIRED Core)
 find_package(SQLite3 3.8.0 REQUIRED)

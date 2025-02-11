@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(libparms LANGUAGES C CXX OBJC OBJCXX)
+if(APPLE)
+    project(libparms LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(libparms LANGUAGES C CXX)
+endif()
 
 find_package(Poco 1.13.3 REQUIRED Foundation)
 

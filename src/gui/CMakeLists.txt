@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(gui LANGUAGES C CXX OBJC OBJCXX)
+if(APPLE)
+    project(gui LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(gui LANGUAGES C CXX)
+endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Sql Widgets SvgWidgets WebEngineWidgets)
 find_package(Qt6LinguistTools)
