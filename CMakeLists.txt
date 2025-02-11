@@ -175,6 +175,10 @@ if (UNIX)
     endif()
 endif()
 
+if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+endif()
+
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts")
 endif()
