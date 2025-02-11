@@ -157,6 +157,8 @@ endif()
 set(PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
+    # libsecret
+    "$<$<COMPILE_LANGUAGE:CXX>:<libsecret/secret.h$<ANGLE-R>>"
     # Qt
     "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qtimer.h$<ANGLE-R>>"
