@@ -154,11 +154,16 @@ else()
 endif()
 
 # Precompiled headers
-set(PC_HEADER_FILES
+if(UNIX AND NOT APPLE)
+    set(PC_HEADER_FILES
+        # libsecret (must be compiled before Qt includes)
+        "$<$<COMPILE_LANGUAGE:CXX>:<libsecret/secret.h$<ANGLE-R>>"
+)
+endif()
+
+list(APPEND PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
-    # libsecret
-    "$<$<COMPILE_LANGUAGE:CXX>:<libsecret/secret.h$<ANGLE-R>>"
     # Qt
     "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qtimer.h$<ANGLE-R>>"
