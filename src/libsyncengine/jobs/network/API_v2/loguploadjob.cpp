@@ -118,8 +118,7 @@ void LogUploadJob::runJob() {
         return;
     }
 
-    SyncPath generatedArchivePath;
-    if (const ExitInfo exitInfo = archive(generatedArchivePath); !exitInfo) {
+    if (const ExitInfo exitInfo = archive(_generatedArchivePath); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::archive: " << exitInfo);
         handleJobFailure(exitInfo);
         return;
@@ -127,12 +126,12 @@ void LogUploadJob::runJob() {
 
     // Save the path of the generated archive, so the user can attach it to the support request if the upload fails
     if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, generatedArchivePath.string(), found) ||
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, _generatedArchivePath.string(), found) ||
         !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
 
-    if (const ExitInfo exitInfo = upload(generatedArchivePath); !exitInfo) {
+    if (const ExitInfo exitInfo = upload(_generatedArchivePath); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::sendLogToSupport: " << exitInfo);
         handleJobFailure(exitInfo, false);
         return;
@@ -192,6 +191,12 @@ void LogUploadJob::finalize() {
                   L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
     }
 
+    IoHelper::deleteItem(_generatedArchivePath, ioError);
+    if (ioError != IoError::Success) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_generatedArchivePath, ioError));
+    }
+
     notifyLogUploadProgress(LogUploadState::Success, 100);
     _exitCode = ExitCode::Ok;
     _exitCause = ExitCause::Unknown;
@@ -199,7 +204,7 @@ void LogUploadJob::finalize() {
 }
 
 bool LogUploadJob::canRun() {
-    std::scoped_lock lock(_runningJobMutex);
+    const std::scoped_lock lock(_runningJobMutex);
     if (_runningJob) {
         LOG_WARN(Log::instance()->getLogger(), "Another log upload job is already running");
         return false;
@@ -584,6 +589,13 @@ void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTm
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
         }
+    }
+
+    IoError ioError = IoError::Success;
+    IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
+    if (ioError != IoError::Success) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
     }
 
     _runningJob.reset();

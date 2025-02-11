@@ -38,35 +38,24 @@ class LogUploadJob : public AbstractJob, public std::enable_shared_from_this<Log
          */
         static bool getLogDirEstimatedSize(uint64_t &size, IoError &ioError);
 
-        /*! Generates a support archive containing the logs and the parms.db file.
-         * \param includeArchivedLogs If true, the archived logs from previous sessions will be included.
-         * \param outputDir The path of the directory where the archive will be generated.
-         * \param progressCallback The callback to be called with the progress percentage, the callback retruns false if the user
-         *      cancels the operation (else true).
-         * \param archivePath The path to the generated archive.
-         * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to
-         *      ExitCause::Unknown;
-         * \param test If true, the archive will be generated with test.zip name.
-         * \return The exit code of the operation.
-         */
-        ExitCode generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputDir,
-                                            const std::function<bool(int)> &progressCallback, SyncPath &archivePath,
-                                            ExitCause &exitCause, bool test = false);
-
+    protected:
+        virtual ExitInfo init();
+        virtual ExitInfo archive(SyncPath &generatedArchivePath);
+        virtual ExitInfo upload(const SyncPath &archivePath);
+        virtual void finalize();
+        bool canRun() override;
     private:
         static std::mutex _runningJobMutex;
         static std::shared_ptr<LogUploadJob> _runningJob;
         bool _includeArchivedLog;
         SyncPath _tmpJobWorkingDir;
+        SyncPath _generatedArchivePath;
+
         std::function<void(LogUploadState, int)> _progressCallback;
         std::chrono::time_point<std::chrono::system_clock> _lastProgressUpdateTimeStamp;
         LogUploadState _previousState{LogUploadState::None};
         int _previousProgress{-1};
-        ExitInfo init();
-        ExitInfo archive(SyncPath &generatedArchivePath);
-        ExitInfo upload(const SyncPath &archivePath);
-        void finalize();
-        bool canRun() override;
+        
         /* Return the path to a temporary directory where the job can work.
          * The directory will be created if it does not exist.
          * The caller is responsible for deleting the directory when it is no longer needed.
@@ -98,6 +87,7 @@ class LogUploadJob : public AbstractJob, public std::enable_shared_from_this<Log
         void updateLogUploadState(LogUploadState newState) const;
 
         ExitInfo notifyLogUploadProgress(LogUploadState newState, int progressPercent);
+
         // Handle job failure.
         void handleJobFailure(const ExitInfo &exitInfo, bool clearTmpDir = false);
         [[nodiscard]] static bool getFileSize(const SyncPath &path, uint64_t &size);
