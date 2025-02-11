@@ -435,12 +435,11 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
 
 void OperationSorterWorker::fixEditBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
-    const std::unordered_set<UniqueId> editOps = _syncPal->_syncOps->opListIdByType(OperationType::Edit);
-    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
-    for (const auto &editOpId: editOps) {
+    const auto moveOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Move);
+    for (const auto editOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Edit); const auto &editOpId: editOpIds) {
         const auto editOp = _syncPal->_syncOps->getOp(editOpId);
 
-        for (const auto &moveOpId: moveOps) {
+        for (const auto &moveOpId: moveOpIds) {
             const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
             if (moveOp->targetSide() != editOp->targetSide() || moveOp->affectedNode()->id() != editOp->affectedNode()->id()) {
                 continue;
@@ -456,42 +455,34 @@ void OperationSorterWorker::fixEditBeforeMove() {
 
 void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveHierarchyFlip");
-    std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
-    for (const auto &xOpId: moveOps) {
-        SyncOpPtr xOp = _syncPal->_syncOps->getOp(xOpId);
-        if (xOp->affectedNode()->type() != NodeType::Directory) {
+    for (const auto moveOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Move); const auto &opIdX: moveOpIds) {
+        const auto opX = _syncPal->_syncOps->getOp(opIdX);
+        if (opX->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
-        std::shared_ptr<Node> xNode = xOp->affectedNode();
-        SyncPath xDestPath = xNode->getPath();
-        if (!xNode->moveOrigin().has_value()) {
+        const auto nodeX = opX->affectedNode();
+        if (!nodeX->moveOrigin().has_value()) {
             continue;
         }
-        SyncPath xSourcePath = *xNode->moveOrigin();
+        const auto nodeOriginPathX = *nodeX->moveOrigin();
+        const auto nodeDestinationPathX = nodeX->getPath();
 
-        for (const auto &yOpId: moveOps) {
-            SyncOpPtr yOp = _syncPal->_syncOps->getOp(yOpId);
-            if (yOp->affectedNode()->type() != NodeType::Directory || xOp == yOp || xOp->targetSide() != yOp->targetSide()) {
+        for (const auto &opIdY: moveOpIds) {
+            const auto opY = _syncPal->_syncOps->getOp(opIdY);
+            if (opY->affectedNode()->type() != NodeType::Directory || opX == opY || opX->targetSide() != opY->targetSide()) {
                 continue;
             }
 
-            std::shared_ptr<Node> yNode = yOp->affectedNode();
-            SyncPath yDestPath = yNode->getPath();
-            if (!yNode->moveOrigin().has_value()) {
+            const auto nodeY = opY->affectedNode();
+            if (!nodeY->moveOrigin().has_value()) {
                 continue;
             }
-            SyncPath ySourcePath = *yNode->moveOrigin();
 
-            bool isXBelowY = Utility::isDescendantOrEqual(xDestPath.lexically_normal(),
-                                                          SyncPath(yDestPath.native() + Str("/")).lexically_normal());
-            if (isXBelowY) {
-                bool isYBelowXInDb = Utility::isDescendantOrEqual(ySourcePath.lexically_normal(),
-                                                                  SyncPath(xSourcePath.native() + Str("/")).lexically_normal());
-                if (isYBelowXInDb) {
-                    moveFirstAfterSecond(xOp, yOp);
-                }
-            }
+            if (!Utility::isDescendantOrEqual(nodeDestinationPathX, nodeY->getPath())) continue;
+            if (!Utility::isDescendantOrEqual(*nodeY->moveOrigin(), nodeOriginPathX)) continue;
+
+            moveFirstAfterSecond(opX, opY);
         }
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveHierarchyFlip");
