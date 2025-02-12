@@ -18,6 +18,7 @@
 
 #include "testoperationsorterworker.h"
 
+#include "propagation/operation_sorter/cyclefinder.h"
 #include "test_classes/testinitialsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
@@ -47,9 +48,10 @@ void TestOperationSorterWorker::setUp() {
     // │       ├── AAA
     // │       └── AAB
     // ├── B
-    // └── C
+    // ├── C
+    // └── D
     _initialSituationGenerator.setSyncpal(_syncPal);
-    _initialSituationGenerator.generateInitialSituation(R"({"a":{"aa":{"aaa":1,"aab":0}},"b":0,"c":0})");
+    _initialSituationGenerator.generateInitialSituation(R"({"a":{"aa":{"aaa":1,"aab":0}},"b":0,"c":0,"d":0})");
 }
 
 void TestOperationSorterWorker::tearDown() {
@@ -496,72 +498,127 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
 }
 
 void TestOperationSorterWorker::testFindCompleteCycles() {
-    DbNodeId dbNodeIdA;
-    DbNodeId dbNodeIdB;
-    DbNodeId dbNodeIdC;
-    DbNodeId dbNodeIdD;
+    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
+    nodeA->insertChangeEvent(OperationType::Move);
+    nodeA->setName("A*");
+    const auto opA = generateSyncOperation(OperationType::Move, nodeA);
 
-    bool constraintError = false;
-    DbNode nodeDirn(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirn, dbNodeIdA, constraintError);
-    DbNode nodeDirt(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirt, dbNodeIdB, constraintError);
-    DbNode nodeDirq(0, _syncPal->syncDb()->rootNode().nodeId(), Str("C"), Str("C"), "lc", "rc", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirq, dbNodeIdC, constraintError);
-    DbNode nodeDire(0, _syncPal->syncDb()->rootNode().nodeId(), Str("D"), Str("D"), "ld", "rd", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDire, dbNodeIdD, constraintError);
+    const auto nodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
+    nodeB->insertChangeEvent(OperationType::Move);
+    nodeB->setName("B*");
+    const auto opB = generateSyncOperation(OperationType::Move, nodeB);
 
-    std::shared_ptr<Node> nodeA(new Node(dbNodeIdA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"),
-                                         NodeType::Directory, OperationType::None, "a", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                         _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    std::shared_ptr<Node> nodeB(new Node(dbNodeIdB, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("B"),
-                                         NodeType::Directory, OperationType::None, "b", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                         _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    std::shared_ptr<Node> nodeC(new Node(dbNodeIdC, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("C"),
-                                         NodeType::Directory, OperationType::None, "c", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                         _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    std::shared_ptr<Node> nodeD(new Node(dbNodeIdD, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("D"),
-                                         NodeType::Directory, OperationType::None, "d", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                         _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    const auto nodeC = _initialSituationGenerator.getNode(ReplicaSide::Local, "c");
+    nodeC->insertChangeEvent(OperationType::Move);
+    nodeC->setName("C*");
+    const auto opC = generateSyncOperation(OperationType::Move, nodeC);
 
-    SyncOpPtr opA = std::make_shared<SyncOperation>();
-    opA->setAffectedNode(nodeA);
-    opA->setNewName(Str("A*"));
-    SyncOpPtr opB = std::make_shared<SyncOperation>();
-    opB->setAffectedNode(nodeB);
-    opB->setNewName(Str("B*"));
-    SyncOpPtr opC = std::make_shared<SyncOperation>();
-    opC->setAffectedNode(nodeC);
-    opC->setNewName(Str("C*"));
-    SyncOpPtr opD = std::make_shared<SyncOperation>();
-    opD->setAffectedNode(nodeD);
-    opD->setNewName(Str("D*"));
+    const auto nodeD = _initialSituationGenerator.getNode(ReplicaSide::Local, "d");
+    nodeD->insertChangeEvent(OperationType::Move);
+    nodeD->setName("D*");
+    const auto opD = generateSyncOperation(OperationType::Move, nodeD);
 
-    _syncPal->_operationsSorterWorker->_reorderings = {{opB, opC}, {opD, opA}, {opA, opB}, {opC, opD}};
-    std::list<SyncOperationList> cycles = _syncPal->_operationsSorterWorker->findCompleteCycles();
-    CPPUNIT_ASSERT(cycles.size() == 1);
-    CPPUNIT_ASSERT(cycles.back()._opSortedList.back() == opD->id());
-    cycles.back()._opSortedList.pop_back();
-    CPPUNIT_ASSERT(cycles.back()._opSortedList.back() == opC->id());
-    cycles.back()._opSortedList.pop_back();
-    CPPUNIT_ASSERT(cycles.back()._opSortedList.back() == opB->id());
-    cycles.back()._opSortedList.pop_back();
-    CPPUNIT_ASSERT(cycles.back()._opSortedList.back() == opA->id());
+    const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
+    nodeAA->insertChangeEvent(OperationType::Move);
+    nodeAA->setName("AA*");
+    const auto opAA = generateSyncOperation(OperationType::Move, nodeAA);
 
-    _syncPal->_operationsSorterWorker->_reorderings = {{opB, opA}, {opA, opC}, {opC, opA}};
-    cycles = _syncPal->_operationsSorterWorker->findCompleteCycles();
-    CPPUNIT_ASSERT(cycles.size() == 1);
-    CPPUNIT_ASSERT(cycles.back()._opSortedList.back() == opC->id());
-    cycles.back()._opSortedList.pop_back();
-    CPPUNIT_ASSERT(cycles.back()._opSortedList.back() == opA->id());
+    {
+        // No cycle
+        _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opC}, {opC, opD}};
+        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+        cycleFinder.findCompleteCycle();
+        CPPUNIT_ASSERT_EQUAL(false, cycleFinder.hasCompleteCycle());
+        CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+    }
+
+    {
+        // A cycle, the order in which reorderings are found follow the order of the operations in the cycle
+        _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opC}, {opC, opD}, {opD, opA}};
+        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+        cycleFinder.findCompleteCycle();
+        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+        CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+        const std::vector<UniqueId> expectedOpIdsInCycle = {opA->id(), opB->id(), opC->id(), opD->id()};
+        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
+            ++i;
+        }
+    }
+
+    {
+        // A cycle, the order in which reorderings are found follow the order of the operations in the cycle but with other
+        // operations that are not in the cycle chain.
+        _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opAA}, {opB, opC}, {opC, opD}, {opD, opA}};
+        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+        cycleFinder.findCompleteCycle();
+        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+        CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+        const std::vector<UniqueId> expectedOpIdsInCycle = {opA->id(), opB->id(), opC->id(), opD->id()};
+        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
+            ++i;
+        }
+    }
+
+    {
+        // Cycle, the order in which reorderings are found DO NOT follow the order of the operations in the cycle.
+        _syncPal->_operationsSorterWorker->_reorderings = {{opB, opC}, {opD, opA}, {opA, opB}, {opC, opD}};
+        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+        cycleFinder.findCompleteCycle();
+        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+        CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+        const std::vector<UniqueId> expectedOpIdsInCycle = {opB->id(), opC->id(), opD->id(), opA->id()};
+        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
+            ++i;
+        }
+    }
+
+    {
+        // Cycle, the order in which reorderings are found DO NOT follow the order of the operations in the cycle but with other
+        // operations that are not in the cycle chain.
+        _syncPal->_operationsSorterWorker->_reorderings = {{opB, opC}, {opD, opA}, {opA, opAA}, {opA, opB}, {opC, opD}};
+        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+        cycleFinder.findCompleteCycle();
+        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+        CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+        const std::vector<UniqueId> expectedOpIdsInCycle = {opB->id(), opC->id(), opD->id(), opA->id()};
+        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
+            ++i;
+        }
+    }
+
+    {
+        // A cycle hidden within a chain
+        _syncPal->_operationsSorterWorker->_reorderings = {{opB, opA}, {opA, opC}, {opC, opA}};
+        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+        cycleFinder.findCompleteCycle();
+        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+        CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+
+        const std::vector<UniqueId> expectedOpIdsInCycle = {opA->id(), opC->id()};
+        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
+            ++i;
+        }
+    }
+
+    {
+        // 2 cycles
+        _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opA}, {opB, opC}, {opC, opD}, {opD, opA}};
+        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+        cycleFinder.findCompleteCycle();
+        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+        CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+
+        const std::vector<UniqueId> expectedOpIdsInCycle = {opA->id(), opB->id()};
+        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
+            ++i;
+        }
+    }
 }
 
 void TestOperationSorterWorker::testBreakCycleEx1() {

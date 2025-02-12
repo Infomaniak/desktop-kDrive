@@ -18,6 +18,7 @@
 
 #include "operationsorterworker.h"
 
+#include "cyclefinder.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
@@ -44,7 +45,8 @@ void OperationSorterWorker::execute() {
 
 void OperationSorterWorker::sortOperations() {
     _syncPal->_syncOps->startUpdate();
-    std::list<SyncOperationList> completeCycles;
+    SyncOperationList completeCycle;
+    bool cycleFound = false;
     _hasOrderChanged = true;
     while (_hasOrderChanged) {
         if (stopAsked()) {
@@ -68,29 +70,27 @@ void OperationSorterWorker::sortOperations() {
         fixEditBeforeMove();
         fixMoveBeforeMoveHierarchyFlip();
 
-        completeCycles = findCompleteCycles();
-        if (!completeCycles.empty()) {
+        CycleFinder cycleFinder(_reorderings);
+        cycleFinder.findCompleteCycle();
+        if (cycleFinder.hasCompleteCycle()) {
+            completeCycle = cycleFinder.completeCycle();
+            cycleFound = true;
             break;
         }
     }
 
-    if (!completeCycles.empty()) {
-        if (const auto resolutionOperation = std::make_shared<SyncOperation>();
-            breakCycle(completeCycles.front(), resolutionOperation)) {
+    if (cycleFound) {
+        if (const auto resolutionOperation = std::make_shared<SyncOperation>(); breakCycle(completeCycle, resolutionOperation)) {
             _syncPal->_syncOps->setOpList({resolutionOperation});
-
             _hasOrderChanged = true;
-
             // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOps
             _syncPal->setRestart(true);
-
             return;
         }
     }
 
     if (const auto reshuffledOps = fixImpossibleFirstMoveOp(); reshuffledOps && !reshuffledOps->isEmpty()) {
         *_syncPal->_syncOps = *reshuffledOps;
-
         // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOps
         _syncPal->setRestart(true);
     }
@@ -640,12 +640,12 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renam
     return true;
 }
 
-void OperationSorterWorker::moveFirstAfterSecond(SyncOpPtr opFirst, SyncOpPtr opSecond) {
+void OperationSorterWorker::moveFirstAfterSecond(const SyncOpPtr &opFirst, const SyncOpPtr &opSecond) {
     std::list<UniqueId>::const_iterator firstIt;
     std::list<UniqueId>::const_iterator secondIt;
     bool firstFound = false;
     for (auto it = _syncPal->_syncOps->opSortedList().begin(); it != _syncPal->_syncOps->opSortedList().end(); ++it) {
-        SyncOpPtr op = _syncPal->_syncOps->getOp(*it);
+        const auto op = _syncPal->_syncOps->getOp(*it);
         if (op == opSecond) {
             if (firstFound) {
                 secondIt = it;
@@ -674,15 +674,16 @@ void OperationSorterWorker::moveFirstAfterSecond(SyncOpPtr opFirst, SyncOpPtr op
         _syncPal->_syncOps->deleteOp(firstIt);
         _syncPal->_syncOps->insertOp(++secondIt, opFirst);
         _hasOrderChanged = true;
-        addPairToReorderings(opSecond, opFirst);
+        addPairToReorderings(opFirst, opSecond);
     }
 }
 
-void OperationSorterWorker::addPairToReorderings(SyncOpPtr op, SyncOpPtr opOnFirstDepends) {
-    const auto pair = std::make_pair(op, opOnFirstDepends);
+void OperationSorterWorker::addPairToReorderings(const SyncOpPtr &op1, const SyncOpPtr &op2 /*opOnFirstDepends*/) {
+    const auto pair = std::make_pair(op1, op2);
     for (auto const &opPair: _reorderings) {
+        // Check that the pair does not already exist in the list
         if (opPair == pair) {
-            return;
+            return; // Usefull?
         }
     }
     _reorderings.push_back(pair);

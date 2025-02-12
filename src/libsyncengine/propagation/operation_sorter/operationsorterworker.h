@@ -81,8 +81,18 @@ class OperationSorterWorker final : public OperationProcessor {
         std::optional<SyncOperationList> fixImpossibleFirstMoveOp();
         std::list<SyncOperationList> findCompleteCycles();
         bool breakCycle(SyncOperationList &cycle, SyncOpPtr renameResolutionOp);
-        void moveFirstAfterSecond(SyncOpPtr opFirst, SyncOpPtr opSecond);
-        void addPairToReorderings(SyncOpPtr op, std::shared_ptr<SyncOperation> opOnFirstDepends);
+        /**
+         * @brief Move `opFirst` immediately after `opSecond` in the sorted operation list.
+         * @param opFirst The operation to be moved.
+         * @param opSecond The operation that must be executed before `opFirst`.
+         */
+        void moveFirstAfterSecond(const SyncOpPtr &opFirst, const SyncOpPtr &opSecond);
+        /**
+         * @brief Insert `op` and `parentOp` inside a list of re-ordered nodes.
+         * @param op1 A permuted operation.
+         * @param op2 The associated permuted operation.
+         */
+        void addPairToReorderings(const SyncOpPtr &op1, const SyncOpPtr &op2);
 
         /**
          * @brief Check if a CREATE operation has a parent CREATE operation with higher index in the sorted operation list. Higher
