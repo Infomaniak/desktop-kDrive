@@ -158,15 +158,30 @@ set(PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:<map$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<mutex$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<optional$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<queue$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<thread$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<unordered_map$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<unordered_set$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<vector$<ANGLE-R>>"
     # Poco
+    "$<$<COMPILE_LANGUAGE:CXX>:<Poco/JSON/Object.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<Poco/JSON/Parser.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<Poco/ThreadPool.h$<ANGLE-R>>"
     # log4cplus
     "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/logger.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+    # kDrive
+    "$<$<COMPILE_LANGUAGE:CXX>:db/syncdb.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:requests/parameterscache.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:syncpal/syncpal.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/io/iohelper.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libparms/db/parmsdb.h>"
 )
 
 target_precompile_headers(${libsyncengine_NAME} PRIVATE ${PC_HEADER_FILES})

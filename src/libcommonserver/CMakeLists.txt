@@ -69,24 +69,37 @@ endif()
 add_library(${libcommonserver_NAME} STATIC ${libcommonserver_SRCS})
 
 # Precompiled headers
-if(WIN32)
-    set(PC_HEADER_FILES
-        "$<$<COMPILE_LANGUAGE:CXX>:<windows.h$<ANGLE-R>>"
-)
-endif()
-
-list(APPEND PC_HEADER_FILES
+set(PC_HEADER_FILES
     # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<deque$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<iostream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<sstream$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<sys/stat.h$<ANGLE-R>>"
     # Qt
     "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qfile.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qlist.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qmutex.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qobject.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstring.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qthread.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qwaitcondition.h$<ANGLE-R>>"
     # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/fileappender.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/logger.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+    # sqlite
+    "$<$<COMPILE_LANGUAGE:CXX>:<sqlite3.h$<ANGLE-R>>"
+    # kDrive
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/io/iohelper.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
 )
 
 target_precompile_headers(${libcommonserver_NAME} PRIVATE ${PC_HEADER_FILES})

@@ -154,12 +154,6 @@ else()
 endif()
 
 # Precompiled headers
-if(WIN32)
-    set(PC_HEADER_FILES
-        "$<$<COMPILE_LANGUAGE:CXX>:<windows.h$<ANGLE-R>>"
-)
-endif()
-
 if(UNIX AND NOT APPLE)
     set(PC_HEADER_FILES
         "$<$<COMPILE_LANGUAGE:CXX>:<gio/gio.h$<ANGLE-R>>"
@@ -171,9 +165,16 @@ list(APPEND PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
     # Qt
     "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qfileinfo.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstandardpaths.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qtimer.h$<ANGLE-R>>"
     # log4cplus
     "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+    # kDrive
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
 )
 
 target_precompile_headers(${APPLICATION_EXECUTABLE} PRIVATE ${PC_HEADER_FILES})

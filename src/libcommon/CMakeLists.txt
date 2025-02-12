@@ -63,19 +63,27 @@ endif()
 add_library(${libcommon_NAME} STATIC ${libcommon_SRCS})
 
 # Precompiled headers
-if(WIN32)
-    set(PC_HEADER_FILES
-        "$<$<COMPILE_LANGUAGE:CXX>:<windows.h$<ANGLE-R>>"
-)
-endif()
-
-list(APPEND PC_HEADER_FILES
+set(PC_HEADER_FILES
     # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<random$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<sstream$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
     # Qt
+    "$<$<COMPILE_LANGUAGE:CXX>:<qcolor.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qcoreapplication.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qdatastream.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qimage.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qlist.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qstring.h$<ANGLE-R>>"
+    # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+    # sentry
+    "$<$<COMPILE_LANGUAGE:CXX>:<sentry.h$<ANGLE-R>>"
+    # kDrive
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
 )
 
 target_precompile_headers(${libcommon_NAME} PRIVATE ${PC_HEADER_FILES})

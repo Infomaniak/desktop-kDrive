@@ -46,13 +46,7 @@ endif ()
 add_executable(${testcommonserver_NAME} ${testcommonserver_SRCS})
 
 # Precompiled headers
-if(WIN32)
-    set(PC_HEADER_FILES
-        "$<$<COMPILE_LANGUAGE:CXX>:<windows.h$<ANGLE-R>>"
-)
-endif()
-
-list(APPEND PC_HEADER_FILES
+set(PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
 )
