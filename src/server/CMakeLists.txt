@@ -171,6 +171,8 @@ list(APPEND PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
     # Qt
     "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qfileinfo.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstandardpaths.h$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<qtimer.h$<ANGLE-R>>"
     # log4cplus
     "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
