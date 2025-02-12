@@ -60,8 +60,8 @@ void TestLogUploadJob::testLogUploadJobWithOldSessions() {
     };
     auto job1 = std::make_shared<MockLogUploadJob>(true, dummyCallback);
     job1->setUploadMock([this](const SyncPath &path) -> ExitInfo {
-        std::unordered_set<SyncPath> expectedFiles = {Str2SyncName(".parms.db"), Str2SyncName("user_description.txt")};
-        std::unordered_set<SyncPath> unexpectedFiles;
+        std::set<SyncPath> expectedFiles = {Str2SyncName(".parms.db"), Str2SyncName("user_description.txt")};
+        std::set<SyncPath> unexpectedFiles;
         getLogDirInfo(expectedFiles, expectedFiles, unexpectedFiles);
         checkArchiveContent(path, expectedFiles);
         return ExitCode::Ok;
@@ -69,7 +69,7 @@ void TestLogUploadJob::testLogUploadJobWithOldSessions() {
 
     job1->runSynchronously();
 
-    std::unordered_set<SyncPath> allFiles;
+    std::set<SyncPath> allFiles;
     getLogDirInfo(allFiles, allFiles, allFiles);
     for (const SyncPath &file: allFiles) {
         if (file.string().find("tmpLogArchive") != std::string::npos) {
@@ -93,14 +93,14 @@ void TestLogUploadJob::testLogUploadJobWithoutOldSessions() {
     };
     auto job1 = std::make_shared<MockLogUploadJob>(false, dummyCallback);
     job1->setUploadMock([this](const SyncPath &path) -> ExitInfo {
-        std::unordered_set<SyncPath> expectedFiles = {Str2SyncName(".parms.db"), Str2SyncName("user_description.txt")};
-        std::unordered_set<SyncPath> unexpectedFiles;
+        std::set<SyncPath> expectedFiles = {Str2SyncName(".parms.db"), Str2SyncName("user_description.txt")};
+        std::set<SyncPath> unexpectedFiles;
         getLogDirInfo(expectedFiles, unexpectedFiles, unexpectedFiles);
         checkArchiveContent(path, expectedFiles); // Will CPPUNIT_ASSERT if the archive is not valid
         return ExitCode::Ok;
     });
     job1->runSynchronously();
-    std::unordered_set<SyncPath> allFiles;
+    std::set<SyncPath> allFiles;
     getLogDirInfo(allFiles, allFiles, allFiles);
     for (const SyncPath &file: allFiles) {
         if (file.string().find("tmpLogArchive") != std::string::npos) {
@@ -115,7 +115,7 @@ void TestLogUploadJob::testLogUploadJobWithoutOldSessions() {
 void TestLogUploadJob::testLogUploadJobArchiveNotDeletedInCaseOfUploadError() {
     insertUserInDb();
     // Ensure their is not already a zip file in the log directory (should be deleted by the teardown)
-    std::unordered_set<SyncPath> allFiles;
+    std::set<SyncPath> allFiles;
     getLogDirInfo(allFiles, allFiles, allFiles);
     bool archiveFound = false;
     for (const SyncPath &file: allFiles) {
@@ -198,7 +198,7 @@ void TestLogUploadJob::testLogUploadJobWithoutConnectedUser() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidToken, ExitCause::LoginError), job1->exitInfo());
 }
 
-void TestLogUploadJob::checkArchiveContent(const SyncPath &archivePath, const std::unordered_set<SyncPath> &expectedFiles) {
+void TestLogUploadJob::checkArchiveContent(const SyncPath &archivePath, const std::set<SyncPath> &expectedFiles) {
     // Check the validity of the archive
     CPPUNIT_ASSERT(std::filesystem::exists(archivePath));
 
@@ -220,9 +220,9 @@ void TestLogUploadJob::checkArchiveContent(const SyncPath &archivePath, const st
                                  numFiles);
 }
 
-void TestLogUploadJob::getLogDirInfo(std::unordered_set<SyncPath> &activeSessionFiles,
-                                     std::unordered_set<SyncPath> &archivedSessionFiles,
-                                     std::unordered_set<SyncPath> &otherFiles) {
+void TestLogUploadJob::getLogDirInfo(std::set<SyncPath> &activeSessionFiles,
+                                     std::set<SyncPath> &archivedSessionFiles,
+                                     std::set<SyncPath> &otherFiles) {
     const SyncPath currentLogFile = Log::instance()->getLogFilePath();
     const SyncPath logDir = currentLogFile.parent_path();
     const std::string logFileDate = currentLogFile.filename().string().substr(0, 14);

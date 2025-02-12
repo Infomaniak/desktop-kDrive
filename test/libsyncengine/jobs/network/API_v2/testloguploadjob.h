@@ -44,9 +44,9 @@ class TestLogUploadJob : public CppUnit::TestFixture {
         void testLogUploadSingleConcurrentJob();
         void testLogUploadJobWithoutConnectedUser();
     private:
-        void checkArchiveContent(const SyncPath &archivePath, const std::unordered_set<SyncPath> &expectedFiles);
-        void getLogDirInfo(std::unordered_set<SyncPath> &activeSessionFiles, std::unordered_set<SyncPath> &archivedSessionFiles,
-                           std::unordered_set<SyncPath> &otherFiles);
+        void checkArchiveContent(const SyncPath &archivePath, const std::set<SyncPath> &expectedFiles);
+        void getLogDirInfo(std::set<SyncPath> &activeSessionFiles, std::set<SyncPath> &archivedSessionFiles,
+                           std::set<SyncPath> &otherFiles);
         void insertUserInDb();
 
         void createFakeActiveSessionFile(int newNbActiveSessionFiles);
