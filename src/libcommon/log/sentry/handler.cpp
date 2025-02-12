@@ -252,14 +252,15 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 
     // Set the environment
     isSet = false;
-    if (std::string environment = CommonUtility::envVarValue("KDRIVE_SENTRY_ENVIRONMENT", isSet); !isSet) {
+    if (std::string environment = CommonUtility::envVarValue("KDRIVE_SENTRY_ENVIRONMENT", isSet);
+        !isSet && environment != "disable") {
         // TODO: When the intern/beta update channel will be available, we will have to create a new environment for each.
 #ifdef NDEBUG
         sentry_options_set_environment(options, "production");
 #else
         sentry_options_set_environment(options, "dev_unknown");
 #endif
-    } else if (environment.empty()) { // Disable sentry
+    } else if (environment.empty() || environment == "disable") {
         _instance->_isSentryActivated = false;
         return;
     } else {
