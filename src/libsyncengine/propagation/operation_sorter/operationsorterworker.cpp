@@ -81,7 +81,7 @@ void OperationSorterWorker::sortOperations() {
 
             _hasOrderChanged = true;
 
-            // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOrderedOps
+            // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOps
             _syncPal->setRestart(true);
 
             return;
@@ -91,7 +91,7 @@ void OperationSorterWorker::sortOperations() {
     if (const auto reshuffledOps = fixImpossibleFirstMoveOp(); reshuffledOps && !reshuffledOps->isEmpty()) {
         *_syncPal->_syncOps = *reshuffledOps;
 
-        // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOrderedOps
+        // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOps
         _syncPal->setRestart(true);
     }
 }
@@ -493,67 +493,69 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
         return std::nullopt;
     }
 
-    UniqueId opId1 = _syncPal->_syncOps->opSortedList().front();
-    SyncOpPtr o1 = _syncPal->_syncOps->getOp(opId1);
-    // check if o1 is move-directory operation
-    if (o1->type() != OperationType::Move && o1->affectedNode()->type() != NodeType::Directory) {
-        return std::nullopt;
+    const auto firstOp = _syncPal->_syncOps->getOp(_syncPal->_syncOps->opSortedList().front());
+    const auto node = firstOp->affectedNode();
+    // Check if firstOp is move-directory operation.
+    if (firstOp->type() != OperationType::Move || node->type() != NodeType::Directory) {
+        return std::nullopt; // firstOp is possible
     }
 
-    // computes paths
-    // impossible move if dest = source + "/"
-    SyncPath source = (o1->affectedNode()->moveOrigin().has_value() ? o1->affectedNode()->moveOrigin().value() : "");
-    SyncPath dest = o1->affectedNode()->getPath();
-    if (!Utility::isDescendantOrEqual(dest.lexically_normal(), SyncPath(source.native() + Str("/")).lexically_normal())) {
-        return std::nullopt;
+    // firstOp is an impossible move if dest starts with source + "/".
+    if (!node->moveOrigin().has_value()) return std::nullopt; // Should never happen
+    const auto originPath = *node->moveOrigin();
+    const auto destinationPath = node->getPath();
+    if (!Utility::isDescendantOrEqual(node->getPath(), *node->moveOrigin())) {
+        return std::nullopt; // firstOp is possible
     }
 
-    std::shared_ptr<Node> correspondingDestinationParentNode = correspondingNodeInOtherTree(o1->affectedNode()->parentNode());
-    std::shared_ptr<Node> correspondingSourceNode = correspondingNodeInOtherTree(o1->affectedNode());
+    const auto correspondingDestinationParentNode = correspondingNodeInOtherTree(node->parentNode());
+    const auto correspondingSourceNode = correspondingNodeInOtherTree(node);
     if (correspondingDestinationParentNode == nullptr || correspondingSourceNode == nullptr) {
-        return std::nullopt;
+        return std::nullopt; // Should never happen
     }
 
     std::list<std::shared_ptr<Node>> moveDirectoryList;
-    // Traverse updatetree from source to dest
-    std::shared_ptr<Node> tmpNode = correspondingSourceNode;
-    while (tmpNode->parentNode() != nullptr && tmpNode != correspondingDestinationParentNode) {
+    // Traverse update tree, starting from the corresponding destination parent directory node, up to the corresponding source
+    // node.
+    std::shared_ptr<Node> tmpNode = correspondingDestinationParentNode;
+    while (tmpNode->parentNode() != nullptr && tmpNode != correspondingSourceNode) {
         tmpNode = tmpNode->parentNode();
-        // storing all move-directory nodes
+        // Storing all move-directory nodes
         if (tmpNode->type() == NodeType::Directory && tmpNode->hasChangeEvent(OperationType::Move)) {
             moveDirectoryList.push_back(tmpNode);
         }
     }
 
-    // look for oFirst the operation in moveDirectoryList which come first in _sortedOps
-    bool found = false;
-    SyncOpPtr oFirst;
-    for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
-        SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-        for (auto n: moveDirectoryList) {
-            if (op->affectedNode() == n) {
-                oFirst = op;
-                found = true;
-                break;
+    // Find the operation in moveDirectoryList which come first in _sortedOps
+    std::unordered_map<UniqueId, int32_t> opIdToIndexMap;
+    _syncPal->_syncOps->getOpIdToIndexMap(opIdToIndexMap, OperationType::Move);
+
+    int32_t lowestIndex = INT32_MAX;
+    SyncOpPtr selectedOp = nullptr;
+    for (const auto &n: moveDirectoryList) {
+        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromNodeId(*n->id()); const auto opId: opIds) {
+            const auto op = _syncPal->_syncOps->getOp(opId);
+            if (op->type() != OperationType::Move) continue;
+
+            if (const auto currentIndex = opIdToIndexMap[opId]; currentIndex < lowestIndex) {
+                lowestIndex = currentIndex;
+                selectedOp = op;
             }
-        }
-        if (found) {
-            break;
         }
     }
 
-    // make filtered version of sortedOps
-    ReplicaSide targetReplica = correspondingDestinationParentNode->side();
+    // Make a list of all operations on target replica up to selectedOp
+    const auto targetReplica = correspondingDestinationParentNode->side();
     SyncOperationList reshuffledOps;
     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-        // we include the oFirst op
-        if (op == oFirst) {
+        // Include selectedOp
+        if (op == selectedOp) {
             reshuffledOps.pushOp(op);
             break;
         }
-        // op that affect the targetReplica or both
-        if (op->targetSide() == targetReplica || op->omit()) {
+        // Operations that affect the targetReplica or both (omit flag)
+        if (op->affectedNode()->side() == targetReplica || op->omit()) {
             reshuffledOps.pushOp(op);
         }
     }

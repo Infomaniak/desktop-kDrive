@@ -44,11 +44,12 @@ void TestOperationSorterWorker::setUp() {
     // .
     // ├── A
     // │   └── AA
-    // │       └── AAA
+    // │       ├── AAA
+    // │       └── AAB
     // ├── B
     // └── C
     _initialSituationGenerator.setSyncpal(_syncPal);
-    _initialSituationGenerator.generateInitialSituation(R"({"a":{"aa":{"aaa":1}},"b":0,"c":0})");
+    _initialSituationGenerator.generateInitialSituation(R"({"a":{"aa":{"aaa":1,"aab":0}},"b":0,"c":0})");
 }
 
 void TestOperationSorterWorker::tearDown() {
@@ -426,122 +427,72 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip() {
 }
 
 void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
-    /*
-    // initial situation
+    // Initial situation
+    // .
+    // ├── A(a)
+    // │   └── AA(aa)
+    // │       ├── AAA(aaa)
+    // │       └── AAB(aab)
+    // ├── B(b)
+    // └── C(c)
 
-    //            S
-    //           / \
-    //         /    \
-    //        N      T
-    //               |
-    //               Q
-    //               |
-    //               E
-    */
+    // Final situation local
+    // .
+    // ├── A(a)
+    // │   └── AA(aa)
+    // │       └── AAA(aaa)
+    // ├── B(aab)
+    // │   └── B*(b)
+    // └── C(c)
+    const auto lNodeAAB = _initialSituationGenerator.getNode(ReplicaSide::Local, "aab");
+    const auto lNodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
 
-    DbNodeId dbNodeIdDirn;
-    DbNodeId dbNodeIdDirt;
-    DbNodeId dbNodeIdDirq;
-    DbNodeId dbNodeIdDire;
+    // Move B to A/AA/AAB/B*
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, *lNodeB->id(), *lNodeAAB->id());
+    lNodeB->insertChangeEvent(OperationType::Move);
+    lNodeB->setName("B*");
+    const auto lMoveOpB = generateSyncOperation(OperationType::Move, lNodeB);
 
-    bool constraintError = false;
-    DbNode nodeDirn(0, _syncPal->syncDb()->rootNode().nodeId(), Str("n"), Str("n"), "n", "re", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirn, dbNodeIdDirn, constraintError);
-    DbNode nodeDirt(0, dbNodeIdDirn, Str("t"), Str("t"), "t", "rq", testhelpers::defaultTime, testhelpers::defaultTime,
-                    testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirt, dbNodeIdDirt, constraintError);
-    DbNode nodeDirq(0, dbNodeIdDirt, Str("q"), Str("q"), "q", "rt", testhelpers::defaultTime, testhelpers::defaultTime,
-                    testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirq, dbNodeIdDirq, constraintError);
-    DbNode nodeDire(0, dbNodeIdDirq, Str("e"), Str("e"), "e", "rn", testhelpers::defaultTime, testhelpers::defaultTime,
-                    testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDire, dbNodeIdDire, constraintError);
+    // Move A/AA/AAB to B
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, *lNodeAAB->id(), {});
+    lNodeAAB->insertChangeEvent(OperationType::Move);
+    lNodeAAB->setName("B");
+    const auto lMoveOpAAB = generateSyncOperation(OperationType::Move, lNodeAAB);
 
-    std::shared_ptr<Node> nodeN(new Node(dbNodeIdDirn, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("n"),
-                                         NodeType::Directory, OperationType::None, "n", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                         _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    std::shared_ptr<Node> nodeT(new Node(dbNodeIdDirt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("t"),
-                                         NodeType::Directory, OperationType::None, "t", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                         _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    std::shared_ptr<Node> nodeQ(new Node(dbNodeIdDirq, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("q"),
-                                         NodeType::Directory, OperationType::None, "q", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, nodeT));
-    std::shared_ptr<Node> nodeE(new Node(dbNodeIdDire, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("e"),
-                                         NodeType::Directory, OperationType::None, "e", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, nodeQ));
-    std::shared_ptr<Node> rNodeN(new Node(dbNodeIdDirn, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("n"),
-                                          NodeType::Directory, OperationType::None, "rn", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                          _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-    std::shared_ptr<Node> rNodeT(new Node(dbNodeIdDirt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("t"),
-                                          NodeType::Directory, OperationType::None, "rt", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                          _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-    std::shared_ptr<Node> rNodeQ(new Node(dbNodeIdDirq, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("q"),
-                                          NodeType::Directory, OperationType::None, "rq", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rNodeT));
-    std::shared_ptr<Node> rNodeE(new Node(dbNodeIdDire, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("e"),
-                                          NodeType::Directory, OperationType::None, "re", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rNodeQ));
+    // Final situation remote
+    // .
+    // ├── B(b)
+    // │   └── A*(a)
+    // │       └── AA(aa)
+    // │           ├── AAA*(aaa)
+    // │           └── AAB(aab)
+    // └── C*(c)
+    const auto rNodeA = _initialSituationGenerator.getNode(ReplicaSide::Remote, "a");
+    const auto rNodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Remote, "aaa");
+    const auto rNodeB = _initialSituationGenerator.getNode(ReplicaSide::Remote, "b");
+    const auto rNodeC = _initialSituationGenerator.getNode(ReplicaSide::Remote, "c");
 
-    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeN);
-    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeT);
-    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeQ);
-    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeE);
+    // Move A to B/A*
+    _initialSituationGenerator.moveNode(ReplicaSide::Remote, *rNodeA->id(), *rNodeB->id());
+    rNodeA->insertChangeEvent(OperationType::Move);
+    rNodeA->setName("A*");
+    const auto rMoveOpA = generateSyncOperation(OperationType::Move, rNodeA);
 
-    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeN);
-    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeT);
-    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeQ);
-    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeE);
+    // Move C to C*
+    rNodeC->insertChangeEvent(OperationType::Move);
+    rNodeC->setName("C*");
+    const auto rMoveOpC = generateSyncOperation(OperationType::Move, rNodeC);
 
-    // local changes
-    nodeQ->deleteChildren(nodeE);
-    nodeE->insertChangeEvent(OperationType::Move);
-    nodeE->setName(Str("n"));
-    nodeE->setMoveOrigin("t/q/e");
-    nodeE->setMoveOriginParentDbId(dbNodeIdDirq);
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeE));
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(nodeN);
-    CPPUNIT_ASSERT(nodeE->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    CPPUNIT_ASSERT(nodeE->insertChildren(nodeN));
-    nodeN->insertChangeEvent(OperationType::Move);
-    CPPUNIT_ASSERT(nodeN->setParentNode(nodeE));
-    nodeN->setName(Str("g"));
-    nodeN->setMoveOrigin("n");
-    nodeN->setMoveOriginParentDbId(dbNodeIdDirn);
+    // Move A/AA/AAA to A/AA/AAA*
+    rNodeAAA->insertChangeEvent(OperationType::Move);
+    rNodeAAA->setName("AAA*");
+    const auto rMoveOpAAA = generateSyncOperation(OperationType::Move, rNodeAAA);
 
-    // remote changes
-    CPPUNIT_ASSERT(rNodeT->setParentNode(rNodeN));
-    CPPUNIT_ASSERT(rNodeN->insertChildren(rNodeT));
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeT);
-    rNodeT->insertChangeEvent(OperationType::Move);
-
-    SyncOpPtr op1 = std::make_shared<SyncOperation>();
-    SyncOpPtr op2 = std::make_shared<SyncOperation>();
-    SyncOpPtr op3 = std::make_shared<SyncOperation>();
-    op1->setType(OperationType::Move);
-    op1->setTargetSide(ReplicaSide::Local);
-    op1->setAffectedNode(nodeN);
-    op1->setNewName(Str("g"));
-    op1->setNewParentNode(nodeE);
-    op1->setType(OperationType::Move);
-    op2->setTargetSide(ReplicaSide::Local);
-    op2->setAffectedNode(nodeE);
-    op2->setNewName(Str("n"));
-    op2->setNewParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    op3->setType(OperationType::Move);
-    op3->setTargetSide(ReplicaSide::Remote);
-    op3->setAffectedNode(rNodeT);
-    op3->setNewName(Str("w"));
-
-    _syncPal->_syncOps->setOpList({op1, op2, op3});
-    const auto reshuffledOp = _syncPal->_operationsSorterWorker->fixImpossibleFirstMoveOp();
-    CPPUNIT_ASSERT(reshuffledOp);
-    CPPUNIT_ASSERT(reshuffledOp->_opSortedList.size() == 1);
-    CPPUNIT_ASSERT(reshuffledOp->_opSortedList.back() == op3->id());
+    _syncPal->_syncOps->setOpList({lMoveOpB, lMoveOpAAB, rMoveOpC, rMoveOpA, rMoveOpAAA});
+    const auto reshuffledOp1 = _syncPal->_operationsSorterWorker->fixImpossibleFirstMoveOp();
+    CPPUNIT_ASSERT(reshuffledOp1);
+    CPPUNIT_ASSERT(reshuffledOp1->_opSortedList.size() == 2);
+    CPPUNIT_ASSERT(reshuffledOp1->_opSortedList.back() == rMoveOpA->id());
 }
 
 void TestOperationSorterWorker::testFindCompleteCycles() {

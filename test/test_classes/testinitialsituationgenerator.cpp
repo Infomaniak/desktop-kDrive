@@ -55,15 +55,15 @@ bool TestInitialSituationGenerator::getDbNode(const NodeId &rawId, DbNode &dbNod
     return found;
 }
 
-std::shared_ptr<Node> TestInitialSituationGenerator::insertInUpdateTree(const ReplicaSide side, const NodeType itemType,
-                                                                        const NodeId &rawId,
-                                                                        const NodeId &parentRawId /*= ""*/) const {
+std::shared_ptr<Node> TestInitialSituationGenerator::insertInUpdateTree(
+        const ReplicaSide side, const NodeType itemType, const NodeId &rawId, const NodeId &parentRawId /*= ""*/,
+        const std::optional<DbNodeId> dbNodeId /*= std::nullopt*/) const {
     const auto parentNode = parentRawId.empty() ? _syncpal->updateTree(side)->rootNode()
                                                 : _syncpal->updateTree(side)->getNodeById(generateId(side, parentRawId));
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
     const auto node =
-            std::make_shared<Node>(side, Utility::toUpper(rawId), itemType, OperationType::None, generateId(side, rawId),
-                                   testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode);
+            std::make_shared<Node>(dbNodeId, side, Utility::toUpper(rawId), itemType, OperationType::None,
+                                   generateId(side, rawId), testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode);
     _syncpal->updateTree(side)->insertNode(node);
     (void) parentNode->insertChildren(node);
     return node;
@@ -111,11 +111,12 @@ void TestInitialSituationGenerator::addItem(Poco::JSON::Object::Ptr obj, const N
 }
 
 void TestInitialSituationGenerator::addItem(const NodeType itemType, const NodeId &rawId, const NodeId &parentRawId) const {
-    insertInDb(itemType, rawId, parentRawId);
-    insertInAllUpdateTrees(itemType, rawId, parentRawId);
+    const DbNodeId dbNodeId = insertInDb(itemType, rawId, parentRawId);
+    insertInAllUpdateTrees(itemType, rawId, parentRawId, dbNodeId);
 }
 
-void TestInitialSituationGenerator::insertInDb(const NodeType itemType, const NodeId &rawId, const NodeId &parentRawId) const {
+DbNodeId TestInitialSituationGenerator::insertInDb(const NodeType itemType, const NodeId &rawId,
+                                                   const NodeId &parentRawId) const {
     DbNode parentNode;
     if (parentRawId.empty()) {
         parentNode = _syncpal->syncDb()->rootNode();
@@ -133,13 +134,15 @@ void TestInitialSituationGenerator::insertInDb(const NodeType itemType, const No
     const DbNode dbNode(parentNode.nodeId(), Utility::toUpper(rawId), Utility::toUpper(rawId),
                         generateId(ReplicaSide::Local, rawId), generateId(ReplicaSide::Remote, rawId), testhelpers::defaultTime,
                         testhelpers::defaultTime, testhelpers::defaultTime, itemType, size, std::nullopt);
-    _syncpal->syncDb()->insertNode(dbNode);
+    DbNodeId dbNodeId = 0;
+    _syncpal->syncDb()->insertNode(dbNode, dbNodeId);
+    return dbNodeId;
 }
 
 void TestInitialSituationGenerator::insertInAllUpdateTrees(const NodeType itemType, const NodeId &rawId,
-                                                           const NodeId &parentRawId) const {
+                                                           const NodeId &parentRawId, const DbNodeId dbNodeId) const {
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
-        (void) insertInUpdateTree(side, itemType, rawId, parentRawId);
+        (void) insertInUpdateTree(side, itemType, rawId, parentRawId, dbNodeId);
     }
 }
 

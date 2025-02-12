@@ -117,7 +117,7 @@ void SyncOperationList::getOpIdToIndexMap(std::unordered_map<UniqueId, int32_t> 
         const auto syncOp = getOp(opId);
         if (!syncOp) continue;
         if (typeFilter != OperationType::None && syncOp->type() != typeFilter) continue;
-        map.insert({syncOp->id(), index++});
+        (void) map.insert({syncOp->id(), index++});
     }
 }
 
