@@ -20,7 +20,7 @@
 
 #include "libcommon/utility/types.h"
 #include "abstracttokennetworkjob.h"
-#include <libcommonserver/vfs/vfs.h>
+#include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
 
