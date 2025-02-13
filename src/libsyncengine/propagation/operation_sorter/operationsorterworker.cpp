@@ -392,8 +392,9 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
 
     while (!opsToMove.empty()) {
         const auto [op, ancestorOp, depth] = opsToMove.top();
-        LOGW_SYNCPAL_DEBUG(_logger, L"op: " << op->affectedNode()->name() << L", ancestorOp: " << ancestorOp->affectedNode()->name()
-                                          << L", depth; " << depth);
+        LOGW_SYNCPAL_DEBUG(_logger, L"op: " << Utility::formatSyncName(op->affectedNode()->name()) << L", ancestorOp: "
+                                            << Utility::formatSyncName(ancestorOp->affectedNode()->name()) << L", depth; "
+                                            << depth);
         moveFirstAfterSecond(op, ancestorOp);
         opsToMove.pop();
     }
