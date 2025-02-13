@@ -340,10 +340,12 @@ bool Db::init(const std::string &version) {
             queryFree(SELECT_VERSION_REQUEST_ID);
 
             // Upgrade DB
-            LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << _fromVersion << " to " << version);
-            if (!upgrade(_fromVersion, version)) {
-                LOG_WARN(_logger, "Error in Db::upgrade");
-                return false;
+            if (CommonUtility::isVersionLower(_fromVersion, version)) {
+                LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << _fromVersion << " to " << version);
+                if (!upgrade(_fromVersion, version)) {
+                    LOG_WARN(_logger, "Error in Db::upgrade");
+                    return false;
+                }
             }
 
             // Update version
