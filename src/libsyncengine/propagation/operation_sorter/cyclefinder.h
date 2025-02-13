@@ -24,13 +24,18 @@ namespace KDC {
 
 class CycleFinder {
     public:
-        explicit CycleFinder(const std::list<std::pair<SyncOpPtr, SyncOpPtr>>& reorderings) : _reorderings(reorderings) {};
+        explicit CycleFinder(const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &reorderings) : _reorderings(reorderings) {};
 
         void findCompleteCycle();
-        [[nodiscard]] const SyncOperationList& completeCycle() const { return _completeCycle; }
+        [[nodiscard]] const SyncOperationList &completeCycle() const { return _completeCycle; }
         [[nodiscard]] bool hasCompleteCycle() const { return _cycleFound; }
 
     private:
+        bool findNextItemInChain(const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &list, const SyncOpPtr &startOp,
+                                 std::list<std::pair<SyncOpPtr, SyncOpPtr>> &pairsInCycles, SyncOpPtr &nextOp);
+        void removeLastItemFromChain(std::list<std::pair<SyncOpPtr, SyncOpPtr>> &list,
+                                     std::list<std::pair<SyncOpPtr, SyncOpPtr>> &pairsInCycles, SyncOpPtr &nextOp);
+
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> _reorderings;
         SyncOperationList _completeCycle;
         bool _cycleFound{false};

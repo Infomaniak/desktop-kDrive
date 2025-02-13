@@ -33,10 +33,10 @@ void CycleFinder::findCompleteCycle() {
         const auto startOp = pair.first;
         auto nextOp = pair.second;
 
-        SyncOperationList currentCycle;
-        (void) currentCycle.pushOp(startOp);
+        _completeCycle.clear();
+        (void) _completeCycle.pushOp(startOp);
         LOGW_INFO(Log::instance()->getLogger(), L"Start op is " << Utility::formatSyncName(startOp->affectedNode()->name()));
-        logCycle(currentCycle);
+        logCycle(_completeCycle);
 
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> pairsInCycles;
         pairsInCycles.push_back(pair);
@@ -44,58 +44,72 @@ void CycleFinder::findCompleteCycle() {
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> list = _reorderings;
         (void) list.remove(pair);
 
-        while (!list.empty()) {
-            bool nextFound = false;
-            for (const auto &otherPair: list) {
-                if (otherPair.first == nextOp) {
-                    // Next item in chain found.
-                    if (!currentCycle.pushOp(nextOp)) {
-                        LOGW_INFO(Log::instance()->getLogger(), L"Op " << Utility::formatSyncName(nextOp->affectedNode()->name())
-                                                                       << L" is already in the current chain");
-                        break;
-                    }
-                    LOGW_INFO(Log::instance()->getLogger(),
-                              L"Adding pair " << Utility::formatSyncName(otherPair.first->affectedNode()->name()) << L" / "
-                                              << Utility::formatSyncName(otherPair.second->affectedNode()->name())
-                                              << L" to cycle");
-                    logCycle(currentCycle);
-
-                    nextOp = otherPair.second;
-                    pairsInCycles.push_back(otherPair);
-                    nextFound = true;
-
-                    if (nextOp == startOp) {
-                        // A cycle has been found!
-                        pairsInCycles.push_back(otherPair);
-                        LOG_INFO(Log::instance()->getLogger(), "Cycle found!");
-                        logCycle(currentCycle);
-
-                        _completeCycle = currentCycle;
-                        _cycleFound = true;
-                        // Return now. There might be other cycles, but since they will be solved one by one, we do not need to
-                        // find them all.
-                        return;
-                    }
-                }
-            }
-
-            if (!nextFound) {
+        while (!list.empty() && !pairsInCycles.empty() && !_cycleFound) {
+            if (!findNextItemInChain(list, startOp, pairsInCycles, nextOp)) {
                 // We reach the end of a chain without finding a cycle. Remove last item in chain to explore other potential
                 // branches.
-                LOGW_INFO(Log::instance()->getLogger(),
-                          L"Removing pair " << Utility::formatSyncName(pairsInCycles.back().first->affectedNode()->name())
-                                            << L" / "
-                                            << Utility::formatSyncName(pairsInCycles.back().second->affectedNode()->name()));
-                (void) list.remove(pairsInCycles.back());
-                pairsInCycles.pop_back();
-                if (list.empty() || pairsInCycles.empty()) break;
-
-                currentCycle.popOp();
-                logCycle(currentCycle);
-
-                nextOp = pairsInCycles.back().second;
+                removeLastItemFromChain(list, pairsInCycles, nextOp);
             }
         }
+        if (_cycleFound) {
+            // Return now. There might be other cycles, but since they will be solved one by one, we do not need to
+            // find them all.
+            break;
+        }
+    }
+
+    if (!_cycleFound) {
+        _completeCycle.clear();
+    }
+}
+
+bool CycleFinder::findNextItemInChain(const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &list, const SyncOpPtr &startOp,
+                                      std::list<std::pair<SyncOpPtr, SyncOpPtr>> &pairsInCycles, SyncOpPtr &nextOp) {
+    bool nextFound = false;
+    for (const auto &otherPair: list) {
+        if (otherPair.first == nextOp) {
+            // Next item in chain found.
+            if (!_completeCycle.pushOp(nextOp)) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Op " << Utility::formatSyncName(nextOp->affectedNode()->name())
+                                                               << L" is already in the current chain");
+                break;
+            }
+            LOGW_INFO(Log::instance()->getLogger(),
+                      L"Adding pair " << Utility::formatSyncName(otherPair.first->affectedNode()->name()) << L" / "
+                                      << Utility::formatSyncName(otherPair.second->affectedNode()->name()) << L" to cycle");
+            logCycle(_completeCycle);
+
+            nextOp = otherPair.second;
+            pairsInCycles.push_back(otherPair);
+            nextFound = true;
+
+            if (nextOp == startOp) {
+                // A cycle has been found!
+                pairsInCycles.push_back(otherPair);
+                LOG_INFO(Log::instance()->getLogger(), "Cycle found!");
+                logCycle(_completeCycle);
+
+                _cycleFound = true;
+                return true;
+            }
+        }
+    }
+
+    return nextFound;
+}
+
+void CycleFinder::removeLastItemFromChain(std::list<std::pair<SyncOpPtr, SyncOpPtr>> &list,
+                                          std::list<std::pair<SyncOpPtr, SyncOpPtr>> &pairsInCycles, SyncOpPtr &nextOp) {
+    LOGW_INFO(Log::instance()->getLogger(),
+              L"Removing pair " << Utility::formatSyncName(pairsInCycles.back().first->affectedNode()->name()) << L" / "
+                                << Utility::formatSyncName(pairsInCycles.back().second->affectedNode()->name()));
+    (void) list.remove(pairsInCycles.back());
+    pairsInCycles.pop_back();
+    _completeCycle.popOp();
+    logCycle(_completeCycle);
+
+    if (!pairsInCycles.empty()) {
+        nextOp = pairsInCycles.back().second;
     }
 }
 
