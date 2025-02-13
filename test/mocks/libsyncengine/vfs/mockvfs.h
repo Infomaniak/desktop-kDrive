@@ -20,7 +20,7 @@
 
 #include "testincludes.h"
 #include "utility/types.h"
-#include <libcommonserver/vfs/vfs.h>
+#include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
 
