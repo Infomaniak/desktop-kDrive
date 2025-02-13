@@ -24,8 +24,8 @@
 
 namespace KDC {
 
-static constexpr std::string localIdSuffix = "l_";
-static constexpr std::string remoteIdSuffix = "r_";
+static const std::string localIdSuffix = "l_";
+static const std::string remoteIdSuffix = "r_";
 
 void TestInitialSituationGenerator::generateInitialSituation(const std::string &jsonInputStr) {
     if (!_syncpal) throw std::runtime_error("Invalid SyncPal pointer!");
@@ -62,8 +62,8 @@ std::shared_ptr<Node> TestInitialSituationGenerator::insertInUpdateTree(
                                                 : _syncpal->updateTree(side)->getNodeById(generateId(side, parentRawId));
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
     const auto node =
-            std::make_shared<Node>(dbNodeId, side, Utility::toUpper(rawId), itemType, OperationType::None,
-                                   generateId(side, rawId), testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode);
+            std::make_shared<Node>(dbNodeId, side, Str2SyncName(Utility::toUpper(rawId)), itemType, OperationType::None,
+                                   generateId(side, rawId), testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode, std::nullopt, std::nullopt);
     _syncpal->updateTree(side)->insertNode(node);
     (void) parentNode->insertChildren(node);
     return node;
@@ -131,9 +131,9 @@ DbNodeId TestInitialSituationGenerator::insertInDb(const NodeType itemType, cons
     }
 
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
-    const DbNode dbNode(parentNode.nodeId(), Utility::toUpper(rawId), Utility::toUpper(rawId),
+    const DbNode dbNode(parentNode.nodeId(), Str2SyncName(Utility::toUpper(rawId)), Str2SyncName(Utility::toUpper(rawId)),
                         generateId(ReplicaSide::Local, rawId), generateId(ReplicaSide::Remote, rawId), testhelpers::defaultTime,
-                        testhelpers::defaultTime, testhelpers::defaultTime, itemType, size, std::nullopt);
+                        testhelpers::defaultTime, testhelpers::defaultTime, itemType, size);
     DbNodeId dbNodeId = 0;
     _syncpal->syncDb()->insertNode(dbNode, dbNodeId);
     return dbNodeId;

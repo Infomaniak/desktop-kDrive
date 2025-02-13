@@ -23,7 +23,7 @@ void logCycle(SyncOperationList &currentCycle) {
     for (const auto &opId: currentCycle.opSortedList()) {
         const auto op = currentCycle.getOp(opId);
         str += op->affectedNode()->name();
-        str += " ";
+        str += Str(" ");
     }
     LOGW_INFO(Log::instance()->getLogger(), L"Chain is now: " << Utility::formatSyncName(str));
 }
