@@ -281,7 +281,6 @@
     return TRUE;
 }
 
-
 // XPCServiceProxyDelegate protocol implementation
 - (void)registerFolder:(NSString *)appId folderPath:(NSString *)path
 {
