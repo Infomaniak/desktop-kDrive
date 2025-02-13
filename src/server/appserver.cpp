@@ -93,8 +93,10 @@ static const char optionsC[] =
         "  --synthesis          : show the Synthesis window (if the application is running).\n";
 }
 
-static const QString showSynthesisMsg = "showSynthesis";
-static const QString showSettingsMsg = "showSettings";
+static constexpr char showSynthesisMsg[] = "showSynthesis";
+static constexpr char showSettingsMsg[] = "showSettings";
+static constexpr char restartClientMsg[] = "restartClient";
+
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
 // Helpers for displaying messages. Note that there is no console on Windows.
@@ -1876,8 +1878,20 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
-            if (static bool appStartPTraceStopped = false; !appStartPTraceStopped) {
-                appStartPTraceStopped = true;
+            using namespace std::chrono;
+            if (_clientManuallyRestarted) {
+                // If the client initially started by the server never sends the UTILITY_DISPLAY_CLIENT_REPORT,
+                // we consider the client's startup aborted, and the user was forced to manually start the client again.
+                if (!_appStartPTraceStopped) {
+                    sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
+                    _appStartPTraceStopped = true;
+                }
+                sentry::Handler::captureMessage(sentry::Level::Info, "kDrive client restarted by user",
+                                                "A user has restarted the kDrive client");
+            }
+
+            if (!_appStartPTraceStopped) {
+                _appStartPTraceStopped = true;
                 sentry::pTraces::basic::AppStart().stop();
             }
             break;
@@ -2201,6 +2215,13 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
         showSynthesis();
     } else if (message == showSettingsMsg) {
         showSettings();
+    } else if (message == restartClientMsg) {
+        _clientManuallyRestarted = true;
+        if (!startClient()) {
+            LOG_ERROR(_logger, "Failed to start the client");
+        }
+    } else {
+        LOG_WARN(_logger, "Unknown message received from another kDrive process: '" << message.toStdString() << "'");
     }
 }
 
@@ -3072,6 +3093,10 @@ void AppServer::sendShowSynthesisMsg() {
     sendMessage(showSynthesisMsg);
 }
 
+void AppServer::sendRestartClientMsg() {
+    sendMessage(restartClientMsg);
+}
+
 void AppServer::showSettings() {
     int id = 0;
     CommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SETTINGS, QByteArray(), id);
@@ -3105,10 +3130,6 @@ void AppServer::clearKeychainKeys() {
     for (const auto &user: userList) {
         KeyChainManager::instance()->deleteToken(user.keychainKey());
     }
-}
-
-void AppServer::showAlreadyRunning() {
-    QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application is already running!"), QMessageBox::Ok);
 }
 
 ExitCode AppServer::sendShowFileNotification(int syncDbId, const QString &filename, const QString &renameTarget,

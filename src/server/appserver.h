@@ -82,8 +82,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         void clearSyncNodes();
         void sendShowSettingsMsg();
         void sendShowSynthesisMsg();
+        void sendRestartClientMsg();
+
         void clearKeychainKeys();
-        void showAlreadyRunning();
 
         void showHint(std::string errorHint);
         bool startClient();
@@ -108,6 +109,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsActivationDone{false};
         bool _vfsConnectionDone{false};
         bool _crashRecovered{false};
+        bool _appStartPTraceStopped{false};
+        bool _clientManuallyRestarted{false};
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
