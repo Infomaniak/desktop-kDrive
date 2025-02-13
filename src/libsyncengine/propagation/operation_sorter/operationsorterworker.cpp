@@ -33,6 +33,7 @@ void OperationSorterWorker::execute() {
 
     const auto start = std::chrono::steady_clock::now();
 
+    _reorderings.clear();
     _syncPal->_syncOps->startUpdate();
     sortOperations();
 

@@ -18,14 +18,13 @@
 
 namespace KDC {
 
-void logCycle(SyncOperationList &currentCycle) {
+void logCycle(const SyncOperationList &currentCycle) {
     SyncName str;
     for (const auto &opId: currentCycle.opSortedList()) {
-        const auto op = currentCycle.getOp(opId);
-        str += op->affectedNode()->name();
         str += Str(" ");
+        str += std::to_string(opId);
     }
-    LOGW_INFO(Log::instance()->getLogger(), L"Chain is now: " << Utility::formatSyncName(str));
+    LOG_INFO(Log::instance()->getLogger(), "Chain is now:" << str);
 }
 
 void CycleFinder::findCompleteCycle() {
@@ -35,7 +34,7 @@ void CycleFinder::findCompleteCycle() {
 
         _completeCycle.clear();
         (void) _completeCycle.pushOp(startOp);
-        LOGW_INFO(Log::instance()->getLogger(), L"Start op is " << Utility::formatSyncName(startOp->affectedNode()->name()));
+        LOG_INFO(Log::instance()->getLogger(), "Start op is " << startOp->id());
         logCycle(_completeCycle);
 
         std::list<std::pair<SyncOpPtr, SyncOpPtr>> pairsInCycles;
@@ -70,13 +69,11 @@ bool CycleFinder::findNextItemInChain(const std::list<std::pair<SyncOpPtr, SyncO
         if (otherPair.first == nextOp) {
             // Next item in chain found.
             if (!_completeCycle.pushOp(nextOp)) {
-                LOGW_INFO(Log::instance()->getLogger(), L"Op " << Utility::formatSyncName(nextOp->affectedNode()->name())
-                                                               << L" is already in the current chain");
+                LOG_INFO(Log::instance()->getLogger(), "Op " << nextOp->id() << " is already in the current chain");
                 break;
             }
-            LOGW_INFO(Log::instance()->getLogger(),
-                      L"Adding pair " << Utility::formatSyncName(otherPair.first->affectedNode()->name()) << L" / "
-                                      << Utility::formatSyncName(otherPair.second->affectedNode()->name()) << L" to cycle");
+            LOG_INFO(Log::instance()->getLogger(),
+                     "Adding pair " << otherPair.first->id() << " / " << otherPair.second->id() << " to cycle");
             logCycle(_completeCycle);
 
             nextOp = otherPair.second;
@@ -100,9 +97,8 @@ bool CycleFinder::findNextItemInChain(const std::list<std::pair<SyncOpPtr, SyncO
 
 void CycleFinder::removeLastItemFromChain(std::list<std::pair<SyncOpPtr, SyncOpPtr>> &list,
                                           std::list<std::pair<SyncOpPtr, SyncOpPtr>> &pairsInCycles, SyncOpPtr &nextOp) {
-    LOGW_INFO(Log::instance()->getLogger(),
-              L"Removing pair " << Utility::formatSyncName(pairsInCycles.back().first->affectedNode()->name()) << L" / "
-                                << Utility::formatSyncName(pairsInCycles.back().second->affectedNode()->name()));
+    LOG_INFO(Log::instance()->getLogger(),
+             "Removing pair " << pairsInCycles.back().first->id() << " / " << pairsInCycles.back().second->id());
     (void) list.remove(pairsInCycles.back());
     pairsInCycles.pop_back();
     _completeCycle.popOp();
