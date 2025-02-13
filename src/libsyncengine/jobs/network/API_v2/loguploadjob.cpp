@@ -79,7 +79,7 @@ void LogUploadJob::abort() {
 void LogUploadJob::cancelUpload() {
     std::scoped_lock lock(_runningJobMutex);
     if (_runningJob) {
-        LOG_INFO(Log::instance()->getLogger(), "Cancelling log uplaod job.");
+        LOG_INFO(Log::instance()->getLogger(), "Cancelling log upload job.");
         _runningJob->abort();
         return;
     }
@@ -154,7 +154,7 @@ ExitInfo LogUploadJob::init() {
     }
 
     if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string(""), found) || !found) {
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string{}, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         // Do not return here because it is not a critical error, especially in this context where we are trying to send logs
     }
@@ -168,7 +168,7 @@ ExitInfo LogUploadJob::init() {
 }
 
 void LogUploadJob::finalize() {
-    std::string uploadDate = "";
+    std::string uploadDate;
     const std::time_t now = std::time(nullptr);
     const std::tm tm = *std::localtime(&now);
     std::ostringstream woss;
@@ -399,7 +399,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
 
     std::ofstream file((outputPath / "user_description.txt").string());
     if (!file.is_open()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Unable to create : " << Utility::formatSyncPath(outputPath).c_str());
+        LOGW_WARN(Log::instance()->getLogger(), L"Unable to create : " << Utility::formatSyncPath(outputPath));
         return ExitCode::Ok; // We don't want to stop the process if we can't create the file
     }
     file << "OS Name: " << osName << std::endl;
@@ -438,7 +438,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
 
     file.close();
     if (file.bad()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in file.close() for " << Utility::formatSyncPath(outputPath).c_str());
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in file.close() for " << Utility::formatSyncPath(outputPath));
         // We don't want to stop the process if we can't close the file
     }
 
@@ -609,12 +609,12 @@ bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {
     IoError ioError = IoError::Unknown;
     if (!IoHelper::getFileSize(path, size, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError).c_str());
+                  L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError)));
         return false;
     }
     if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Unable to read file size for " << Utility::formatIoError(path, ioError).c_str());
+                  L"Unable to read file size for " << Utility::formatIoError(path, ioError));
         return false;
     }
 
