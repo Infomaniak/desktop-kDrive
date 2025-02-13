@@ -1079,7 +1079,7 @@ void ParametersDialog::onDebugReporterDone(bool retCode, const QString &debugId)
             retCode ? tr("Transmission done!<br>Please refer to identifier <b>%1</b> in bug reports.").arg(debugId)
                     : tr("Transmission failed!\nPlease, use the following link to send the logs to the support: <a "
                          "style=\"%1\" href=\"%2\">%2</a>")
-                              .arg(CommonUtility::linkStyle, swistranferUrl),
+                              .arg(CommonUtility::linkStyle(), swistranferUrl),
             QMessageBox::Ok, this);
 
     if (retCode) {

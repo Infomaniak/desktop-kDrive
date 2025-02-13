@@ -746,6 +746,8 @@ std::string toString(const DistributionChannel e) {
             return "Beta";
         case DistributionChannel::Internal:
             return "Internal";
+        case DistributionChannel::Legacy:
+            return "Legacy";
         case DistributionChannel::Unknown:
             return "Unknown";
         default:

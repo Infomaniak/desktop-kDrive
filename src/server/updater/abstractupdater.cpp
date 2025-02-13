@@ -27,7 +27,13 @@
 
 namespace KDC {
 
-AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_unique<UpdateChecker>()) {
+AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_shared<UpdateChecker>()) {
+    const std::function callback = [this] { onAppVersionReceived(); };
+    _updateChecker->setCallback(callback);
+}
+
+AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker>& updateChecker) {
+    _updateChecker = updateChecker;
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);
 }
@@ -63,6 +69,8 @@ void AbstractUpdater::onAppVersionReceived() {
     } else {
         LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
     }
+
+    sentry::Handler::instance()->setDistributionChannel(currentVersionedChannel());
 }
 
 void AbstractUpdater::skipVersion(const std::string& skippedVersion) {
@@ -91,6 +99,38 @@ bool AbstractUpdater::isVersionSkipped(const std::string& version) {
         return true;
     }
     return false;
+}
+
+DistributionChannel AbstractUpdater::currentVersionedChannel() const {
+    const std::unordered_map<DistributionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
+    if (allVersions.empty()) return DistributionChannel::Unknown;
+    std::string currentVersion = CommonUtility::currentVersion();
+    if (allVersions.contains(DistributionChannel::Prod) &&
+        allVersions.at(DistributionChannel::Prod).fullVersion() == currentVersion) {
+        return DistributionChannel::Prod;
+    }
+
+    if (allVersions.contains(DistributionChannel::Next) &&
+        allVersions.at(DistributionChannel::Next).fullVersion() == currentVersion) {
+        return DistributionChannel::Next;
+    }
+
+    if (allVersions.contains(DistributionChannel::Beta) &&
+        allVersions.at(DistributionChannel::Beta).fullVersion() == currentVersion) {
+        return DistributionChannel::Beta;
+    }
+
+    if (allVersions.contains(DistributionChannel::Internal) &&
+        allVersions.at(DistributionChannel::Internal).fullVersion() == currentVersion) {
+        return DistributionChannel::Internal;
+    }
+
+    if (allVersions.contains(DistributionChannel::Prod) &&
+        CommonUtility::isVersionLower(currentVersion, allVersions.at(DistributionChannel::Prod).fullVersion())) {
+        return DistributionChannel::Legacy;
+    }
+
+    return DistributionChannel::Unknown;
 }
 
 void AbstractUpdater::setState(const UpdateState newState) {

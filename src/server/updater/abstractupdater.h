@@ -67,7 +67,15 @@ class AbstractUpdater {
 
         void setCurrentChannel(const DistributionChannel currentChannel) { _currentChannel = currentChannel; }
 
+        /* Get the channel of the currently installed version.
+         * If multiple channels are available, the order priority is:
+         * Production > Next > Beta > Internal
+         */
+        [[nodiscard]] DistributionChannel currentVersionedChannel() const;
+
     protected:
+        explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker);
+
         void setState(UpdateState newState);
 
         DistributionChannel _currentChannel{DistributionChannel::Unknown};
@@ -75,7 +83,7 @@ class AbstractUpdater {
     private:
         void onAppVersionReceived();
 
-        std::unique_ptr<UpdateChecker> _updateChecker;
+        std::shared_ptr<UpdateChecker> _updateChecker;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
 };

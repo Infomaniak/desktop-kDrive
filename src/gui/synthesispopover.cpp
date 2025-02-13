@@ -1545,7 +1545,7 @@ void SynthesisPopover::retranslateUi() {
                 _defaultTextLabel->setText(
                         tr("You can synchronize files <a style=\"%1\" href=\"%2\">from your computer</a>"
                            " or on <a style=\"%1\" href=\"%3\">kdrive.infomaniak.com</a>.")
-                                .arg(CommonUtility::linkStyle, _localFolderUrl.toString(), _remoteFolderUrl.toString()));
+                                .arg(CommonUtility::linkStyle(), _localFolderUrl.toString(), _remoteFolderUrl.toString()));
                 break;
         }
     }

@@ -607,7 +607,7 @@ void PreferencesWidget::retranslateUi() const {
     _moveToTrashDisclaimerLabel->setText(tr("Some files or folders may not be moved to the computer's trash."));
     _moveToTrashTipsLabel->setText(tr("You can always retrieve already synced files from the kDrive web application trash."));
     _moveToTrashKnowMoreLabel->setText(
-            tr(R"(<a style="%1" href="%2">Learn more</a>)").arg(CommonUtility::linkStyle, LEARNMORE_MOVE_TO_TRASH_URL));
+            tr(R"(<a style="%1" href="%2">Learn more</a>)").arg(CommonUtility::linkStyle(), LEARNMORE_MOVE_TO_TRASH_URL));
     _languageSelectorComboBox->blockSignals(true); // To avoid triggering more LanguageChange events
     _languageSelectorComboBox->clear();
     _languageSelectorComboBox->addItem(tr("Default"), toInt(Language::Default));
@@ -627,7 +627,7 @@ void PreferencesWidget::retranslateUi() const {
     _advancedLabel->setText(tr("Advanced"));
     _debuggingLabel->setText(tr("Debugging information"));
     _debuggingFolderLabel->setText(
-            tr(R"(<a style="%1" href="%2">Open debugging folder</a>)").arg(CommonUtility::linkStyle, debuggingFolderLink));
+            tr(R"(<a style="%1" href="%2">Open debugging folder</a>)").arg(CommonUtility::linkStyle(), debuggingFolderLink));
     _filesToExcludeLabel->setText(tr("Files to exclude"));
     _proxyServerLabel->setText(tr("Proxy server"));
 #ifdef Q_OS_MAC

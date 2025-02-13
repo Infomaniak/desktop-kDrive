@@ -96,7 +96,7 @@ FileErrorItemWidget::FileErrorItemWidget(const SynchronizedItem &item, const Dri
     _pathLabel->setObjectName("filePathLabel");
     QString filePath = driveInfo.name() + dirSeparator + fileInfo.path();
     GuiUtility::makePrintablePath(filePath);
-    _pathLabel->setText(QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, filePath));
+    _pathLabel->setText(QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle(), filePath));
     _pathLabel->setWordWrap(true);
     _pathLabel->setContextMenuPolicy(Qt::PreventContextMenu);
     hBoxFilePath->addWidget(_pathLabel);

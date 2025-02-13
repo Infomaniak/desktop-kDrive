@@ -279,6 +279,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     std::cerr << "sentry_init returned " << res << std::endl;
     ASSERT(res == 0);
     _instance->_isSentryActivated = true;
+    _instance->setDistributionChannel(DistributionChannel::Unknown);
 }
 
 void Handler::init(const std::shared_ptr<Handler> &initializedHandler) {
@@ -327,6 +328,10 @@ void Handler::setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLim
 void Handler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) {
     assert(minUploadIntervalOnRateLimit > 0 && "Min upload interval on rate limit must be greater than 0");
     _sentryMinUploadIntervalOnRateLimit = std::max(1, minUploadIntervalOnRateLimit);
+}
+
+void Handler::setTag(const std::string &key, const std::string &value) {
+    sentry_set_tag(key.c_str(), value.c_str());
 }
 
 sentry_value_t Handler::toSentryValue(const SentryUser &user) const {
@@ -442,6 +447,10 @@ void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
         eventFile << eventStr << std::endl;
         eventFile.close();
     }
+}
+
+void Handler::setDistributionChannel(const DistributionChannel channel) {
+    setTag("distribution_channel", toString(channel));
 }
 
 Handler::~Handler() {

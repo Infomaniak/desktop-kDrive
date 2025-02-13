@@ -504,7 +504,7 @@ enum class UpdateState {
 };
 std::string toString(UpdateState e);
 
-enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
+enum class DistributionChannel { Prod, Next, Beta, Internal, Legacy, Unknown };
 std::string toString(DistributionChannel e);
 
 enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };

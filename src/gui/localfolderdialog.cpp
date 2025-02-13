@@ -186,7 +186,7 @@ void LocalFolderDialog::updateUI() {
         QDir dir(_localFolderPath);
         _folderNameLabel->setText(dir.dirName());
         _folderPathLabel->setText(
-                QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle).arg(_localFolderPath));
+                QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle()).arg(_localFolderPath));
     }
     _folderSelectionWidget->setVisible(!ok);
     _folderSelectedWidget->setVisible(ok);
@@ -208,7 +208,7 @@ void LocalFolderDialog::updateUI() {
                 _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync.<br>
 Please select another folder. If you continue Lite Sync will be disabled.<br>
 <a style="%1" href="%2">Learn more</a>)")
-                                               .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
+                                               .arg(CommonUtility::linkStyle(), KDC::GuiUtility::learnMoreLink));
                 _warningWidget->setVisible(true);
             } else {
                 _warningWidget->setVisible(false);

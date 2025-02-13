@@ -122,7 +122,7 @@ void TestLog::testExpiredLogFiles(void) {
     }
 
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file SHOULD be deleted now.
-    appender->setExpire(CommonUtility::logsPurgeRate * 24 * 3600);
+    appender->setExpire(CommonUtility::logsPurgeRate() * 24 * 3600);
 }
 
 int TestLog::countFilesInDirectory(const SyncPath &directory) const {

@@ -84,7 +84,7 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
     _versionsInfo.clear();
     LOG_INFO(Log::instance()->getLogger(), "App version info received");
 
-    auto job = JobManager::instance()->getJob(jobId);
+    const auto job = JobManager::instance()->getJob(jobId);
     const auto getAppVersionJobPtr = std::dynamic_pointer_cast<GetAppVersionJob>(job);
     if (!getAppVersionJobPtr) {
         LOG_ERROR(Log::instance()->getLogger(), "Could not cast job pointer.");

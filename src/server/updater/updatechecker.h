@@ -86,6 +86,7 @@ class UpdateChecker {
         AllVersionsInfo _versionsInfo;
         bool _isVersionReceived{false};
 
+        friend class MockUpdateChecker;
         friend class TestUpdateChecker;
 };
 

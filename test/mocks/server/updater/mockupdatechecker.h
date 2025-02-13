@@ -19,24 +19,25 @@
 #pragma once
 
 #include "testincludes.h"
-#include "server/updater/abstractupdater.h"
+#include "utility/types.h"
+#include "server/updater/updatechecker.h"
+#include "mocks/libsyncengine/jobs/network/mockgetappversionjob.h"
 
 namespace KDC {
 
-class TestAbstractUpdater final : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestAbstractUpdater);
-        CPPUNIT_TEST(testSkipUnskipVersion);
-        CPPUNIT_TEST(testIsVersionSkipped);
-        CPPUNIT_TEST(testCurrentVersionedChannel);
-        CPPUNIT_TEST_SUITE_END();
-
+class MockUpdateChecker : public UpdateChecker {
     public:
-        void setUp() override;
+        using UpdateChecker::UpdateChecker;
+        void setUpdateShoudBeAvailable(const bool val) { _updateShouldBeAvailable = val; }
+        void setAllVersionInfo(const AllVersionsInfo &versionInfo) { _versionsInfo = versionInfo; }
 
-    protected:
-        void testSkipUnskipVersion();
-        void testIsVersionSkipped();
-        void testCurrentVersionedChannel();
+    private:
+        ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
+            static const std::string appUid = "1234567890";
+            job = std::make_shared<MockGetAppVersionJob>(CommonUtility::platform(), appUid, _updateShouldBeAvailable);
+            return ExitCode::Ok;
+        }
+
+        bool _updateShouldBeAvailable{false};
 };
-
 } // namespace KDC

@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
     std::cout << "kDrive server starting" << std::endl;
 
     // Working dir;
-    KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
+    KDC::CommonUtility::setAppWorkingDir(KDC::SyncPath(argv[0]).parent_path());
 #ifdef __unix__
     const std::string value = KDC::CommonUtility::envVarValue("APPIMAGE");
     if (!value.empty()) {

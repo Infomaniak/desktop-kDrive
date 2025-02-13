@@ -19,24 +19,28 @@
 #pragma once
 
 #include "testincludes.h"
+#include "utility/types.h"
 #include "server/updater/abstractupdater.h"
 
 namespace KDC {
 
-class TestAbstractUpdater final : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestAbstractUpdater);
-        CPPUNIT_TEST(testSkipUnskipVersion);
-        CPPUNIT_TEST(testIsVersionSkipped);
-        CPPUNIT_TEST(testCurrentVersionedChannel);
-        CPPUNIT_TEST_SUITE_END();
-
+class MockUpdater : public AbstractUpdater {
     public:
-        void setUp() override;
+        MockUpdater(const std::shared_ptr<UpdateChecker> &customUpdateChecker = std::make_shared<UpdateChecker>()) :
+            AbstractUpdater(customUpdateChecker) {}
 
-    protected:
-        void testSkipUnskipVersion();
-        void testIsVersionSkipped();
-        void testCurrentVersionedChannel();
+        void startInstaller() override {
+            if (_startInstallerMock) _startInstallerMock();
+        }
+        void onUpdateFound() override {
+            if (_quitCallback) _quitCallback();
+        }
+
+        void setStartInstallerMock(std::function<void()> startInstallerMock) { _startInstallerMock = startInstallerMock; }
+        void setQuitCallback(std::function<void()> quitCallback) { _quitCallback = quitCallback; }
+
+    private:
+        std::function<void()> _startInstallerMock;
+        std::function<void()> _quitCallback;
 };
-
 } // namespace KDC

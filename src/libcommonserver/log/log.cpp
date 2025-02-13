@@ -83,7 +83,7 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
     // Set purge rate
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get())
-            ->setExpire(purgeOldLogs ? CommonUtility::logsPurgeRate * 24 * 3600 : 0);
+            ->setExpire(purgeOldLogs ? CommonUtility::logsPurgeRate() * 24 * 3600 : 0);
 
     return true;
 }
@@ -91,7 +91,7 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
 Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
     // Instantiate an appender object
     CustomRollingFileAppender *rfAppender =
-            new CustomRollingFileAppender(filePath, CommonUtility::logMaxSize, Log::rfMaxBackupIdx, true, true);
+            new CustomRollingFileAppender(filePath, CommonUtility::logMaxSize(), Log::rfMaxBackupIdx, true, true);
 
     // Unicode management
     std::locale loc(std::locale(), new std::codecvt_utf8<wchar_t>);

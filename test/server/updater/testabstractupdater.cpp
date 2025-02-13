@@ -20,7 +20,12 @@
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
+#include "libsyncengine/jobs/jobmanager.h"
 #include "version.h"
+
+#include "mocks/server/updater/mockupdater.h"
+#include "mocks/server/updater/mockupdatechecker.h"
+#include "mocks/libcommon/utility/mockcommonutility.h"
 
 namespace KDC {
 
@@ -97,4 +102,52 @@ void TestAbstractUpdater::testIsVersionSkipped() {
     CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 }
 
+void TestAbstractUpdater::testCurrentVersionedChannel() {
+    auto updateChecker = std::make_shared<MockUpdateChecker>();
+    MockUpdater updater(updateChecker);
+
+    AllVersionsInfo testVersions;
+    testVersions[DistributionChannel::Next].tag = "10.0.0";
+    testVersions[DistributionChannel::Next].buildVersion = 20210101;
+
+    testVersions[DistributionChannel::Prod].tag = "9.0.0";
+    testVersions[DistributionChannel::Prod].buildVersion = 20210101;
+
+    testVersions[DistributionChannel::Beta].tag = "11.0.0";
+    testVersions[DistributionChannel::Beta].buildVersion = 20210101;
+
+    testVersions[DistributionChannel::Internal].tag = "11.0.1";
+    testVersions[DistributionChannel::Internal].buildVersion = 20210101;
+    updateChecker->setAllVersionInfo(testVersions);
+
+    auto commonUtility = std::make_shared<MockCommonUtility>();
+    CommonUtility::setCustomCommonUtility(commonUtility);
+
+    std::string version;
+    commonUtility->setCurrentVersionMock([&version]() -> const std::string& { return version; });
+
+    // Check Next version
+    version = "10.0.0.20210101";
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Next, updater.currentVersionedChannel());
+
+    // Check Prod version
+    version = "9.0.0.20210101";
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Prod, updater.currentVersionedChannel());
+
+    // Check Beta version
+    version = "11.0.0.20210101";
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Beta, updater.currentVersionedChannel());
+
+    // Check Internal version
+    version = "11.0.1.20210101";
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Internal, updater.currentVersionedChannel());
+
+    // Check Legacy version
+    version = "8.0.0.20210101";
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Legacy, updater.currentVersionedChannel());
+
+    // Check Unknown version (higher than prod)
+    version = "9.0.0.20210102";
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, updater.currentVersionedChannel());
+}
 } // namespace KDC

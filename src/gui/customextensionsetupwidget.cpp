@@ -205,15 +205,15 @@ void CustomExtensionSetupWidget::setupDescription() {
     if (macOs15orLater) {
         step11Label->setText(tr("Open your Mac's <b>General settings</b> or "
                                 " <a style=\"%1\" href=\"%2\">click here</a>")
-                                     .arg(CommonUtility::linkStyle, clickHereLinkGeneral));
+                                     .arg(CommonUtility::linkStyle(), clickHereLinkGeneral));
     } else if (macOs13orLater) {
         step11Label->setText(tr("Open your Mac's <b>Privacy & Security settings</b> or "
                                 " <a style=\"%1\" href=\"%2\">click here</a>")
-                                     .arg(CommonUtility::linkStyle, clickHereLinkSecurity));
+                                     .arg(CommonUtility::linkStyle(), clickHereLinkSecurity));
     } else {
         step11Label->setText(tr("Open your Mac's <b>Security & Privacy settings</b> or "
                                 " <a style=\"%1\" href=\"%2\">click here</a>")
-                                     .arg(CommonUtility::linkStyle, clickHereLinkSecurity));
+                                     .arg(CommonUtility::linkStyle(), clickHereLinkSecurity));
     }
     step11Label->setWordWrap(true);
     step11HBox->addWidget(step11Label);
@@ -341,11 +341,11 @@ void CustomExtensionSetupWidget::setupDescription() {
     if (macOs13orLater) {
         step21Label->setText(tr(R"(Go to <b>"Privacy & Security"</b> section and click on <b>"Full Disk Access"</b> or)"
                                 R"( <a style="%1" href="%2">click here</a>)")
-                                     .arg(CommonUtility::linkStyle, clickHereLinkFullDiskAccess));
+                                     .arg(CommonUtility::linkStyle(), clickHereLinkFullDiskAccess));
     } else {
         step21Label->setText(tr(R"(Still in the Security & Privacy settings, open the <b>"Privacy"</b> tab or)"
                                 R"( <a style="%1" href="%2">click here</a>)")
-                                     .arg(CommonUtility::linkStyle, clickHereLinkFullDiskAccess));
+                                     .arg(CommonUtility::linkStyle(), clickHereLinkFullDiskAccess));
     }
     step21Label->setWordWrap(true);
     step21HBox->addWidget(step21Label);
