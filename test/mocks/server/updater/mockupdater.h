@@ -37,7 +37,7 @@ class MockUpdater : public AbstractUpdater {
         }
 
         void setStartInstallerMock(std::function<void()> startInstallerMock) { _startInstallerMock = startInstallerMock; }
-        void setQuitCallback(std::function<void()> quitCallback) { _quitCallback = quitCallback; }
+        void setQuitCallback(const std::function<void()>& quitCallback) { _quitCallback = quitCallback; }
 
     private:
         std::function<void()> _startInstallerMock;

@@ -42,10 +42,10 @@ namespace KDC {
 enum class IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
 
 struct CommonUtilityBase {
-        virtual const QString linkStyle();
+        virtual QString linkStyle();
 
-        virtual const int logsPurgeRate(); // Delay after which the logs are purged, expressed in days
-        virtual const int logMaxSize();
+        virtual int logsPurgeRate(); // Delay after which the logs are purged, expressed in days
+        virtual int logMaxSize();
 
         virtual QString getIconPath(IconType iconType);
 
