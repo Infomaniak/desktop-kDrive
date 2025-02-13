@@ -42,6 +42,7 @@ namespace KDC {
 enum class IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
 
 struct CommonUtilityBase {
+        virtual ~CommonUtilityBase() = default;
         virtual QString linkStyle();
 
         virtual int logsPurgeRate(); // Delay after which the logs are purged, expressed in days
@@ -72,17 +73,17 @@ struct CommonUtilityBase {
         virtual std::string appStateKeyToString(const AppStateKey &appStateValue) noexcept;
 
         virtual bool compressFile(const std::wstring &originalName, const std::wstring &targetName,
-                          const std::function<bool(int)> &progressCallback = nullptr);
+                                  const std::function<bool(int)> &progressCallback = nullptr);
         virtual bool compressFile(const std::string &originalName, const std::string &targetName,
-                          const std::function<bool(int)> &progressCallback = nullptr);
+                                  const std::function<bool(int)> &progressCallback = nullptr);
         virtual bool compressFile(const QString &originalName, const QString &targetName,
-                          const std::function<bool(int)> &progressCallback = nullptr);
+                                  const std::function<bool(int)> &progressCallback = nullptr);
 
-        virtual const QString englishCode() { return "en"; }
-        virtual const QString frenchCode() { return "fr"; }
-        virtual const QString germanCode() { return "de"; }
-        virtual const QString spanishCode() { return "es"; }
-        virtual const QString italianCode() { return "it"; }
+        virtual QString englishCode() { return "en"; }
+        virtual QString frenchCode() { return "fr"; }
+        virtual QString germanCode() { return "de"; }
+        virtual QString spanishCode() { return "es"; }
+        virtual QString italianCode() { return "it"; }
         virtual QString languageCode(Language language);
         virtual QStringList languageCodeList(Language enforcedLocale);
         virtual void setupTranslations(QCoreApplication *app, Language enforcedLocale);
@@ -127,7 +128,9 @@ struct CommonUtilityBase {
         virtual void writeSignalFile(AppType appType, SignalType signalType) noexcept;
         virtual void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
-        virtual bool isLikeFileNotFoundError(const std::error_code &ec) noexcept { return utility_base::isLikeFileNotFoundError(ec); };
+        virtual bool isLikeFileNotFoundError(const std::error_code &ec) noexcept {
+            return utility_base::isLikeFileNotFoundError(ec);
+        };
 
 
 #ifdef _WIN32

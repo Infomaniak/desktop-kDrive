@@ -120,7 +120,7 @@ class MockCommonUtility : public CommonUtilityBase, std::enable_shared_from_this
             return CommonUtilityBase().appStateValueToString(appStateValue, value);
         }
 
-        std::string appStateKeyToString(const AppStateKey &appStateValue) override noexcept {
+        std::string appStateKeyToString(const AppStateKey &appStateValue) noexcept override {
             if (_appStateKeyToString) return _appStateKeyToString(appStateValue);
             return CommonUtilityBase().appStateKeyToString(appStateValue);
         }
@@ -276,20 +276,20 @@ class MockCommonUtility : public CommonUtilityBase, std::enable_shared_from_this
             if (_handleSignals) _handleSignals(sigHandler);
             CommonUtilityBase().handleSignals(sigHandler);
         }
-        SyncPath signalFilePath(AppType appType, SignalCategory signalCategory) override override {
+        SyncPath signalFilePath(AppType appType, SignalCategory signalCategory) override {
             if (_signalFilePath) return _signalFilePath(appType, signalCategory);
             return CommonUtilityBase().signalFilePath(appType, signalCategory);
         }
-        void writeSignalFile(AppType appType, SignalType signalType) override noexcept {
+        void writeSignalFile(AppType appType, SignalType signalType) noexcept override {
             if (_writeSignalFile) _writeSignalFile(appType, signalType);
             CommonUtilityBase().writeSignalFile(appType, signalType);
         }
-        void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) override noexcept {
+        void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept override {
             if (_clearSignalFile) _clearSignalFile(appType, signalCategory, signalType);
             CommonUtilityBase().clearSignalFile(appType, signalCategory, signalType);
         }
 
-        bool isLikeFileNotFoundError(const std::error_code &ec) override noexcept {
+        bool isLikeFileNotFoundError(const std::error_code &ec) noexcept override {
             if (_isLikeFileNotFoundError) return _isLikeFileNotFoundError(ec);
             return CommonUtilityBase().isLikeFileNotFoundError(ec);
         }
@@ -309,7 +309,7 @@ class MockCommonUtility : public CommonUtilityBase, std::enable_shared_from_this
             if (_getLastErrorMessage) return _getLastErrorMessage();
             return CommonUtilityBase().getLastErrorMessage();
         }
-        bool isLikeFileNotFoundError(DWORD dwError) override noexcept {
+        bool isLikeFileNotFoundError(DWORD dwError) noexcept override  {
             if (_isLikeFileNotFoundError2) return _isLikeFileNotFoundError2(dwError);
             return CommonUtilityBase().isLikeFileNotFoundError(dwError);
         }
@@ -341,7 +341,7 @@ class MockCommonUtility : public CommonUtilityBase, std::enable_shared_from_this
         void setPlatformNameMock(std::function<QString()> platformName) { _platformName = platformName; }
         void setPlatformMock(std::function<Platform()> platform) { _platform = platform; }
         void setPlatformArchMock(std::function<QString()> platformArch) { _platformArch = platformArch; }
-        void setUserAgentStringMock(std::function<const std::string&()> userAgentString) { _userAgentString = userAgentString; }
+        void setUserAgentStringMock(std::function<const std::string &()> userAgentString) { _userAgentString = userAgentString; }
         void setCurrentVersionMock(std::function<const std::string &()> currentVersion) { _currentVersion = currentVersion; }
         void setToQByteArrayMock(std::function<QByteArray(qint32)> toQByteArray) { _toQByteArray = toQByteArray; }
         void setToIntMock(std::function<int(QByteArray)> toInt) { _toInt = toInt; }

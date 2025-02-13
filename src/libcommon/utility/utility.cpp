@@ -173,15 +173,15 @@ QString CommonUtilityBase::fileSystemName(const QString &dirPath) {
     return QString();
 }
 
-const QString CommonUtilityBase::linkStyle() {
+QString CommonUtilityBase::linkStyle() {
     return QString("color:#0098FF; font-weight:450; text-decoration:none;");
 }
 
-const int CommonUtilityBase::logsPurgeRate() {
+int CommonUtilityBase::logsPurgeRate() {
     return 7; // days
 }
 
-const int CommonUtilityBase::logMaxSize() {
+int CommonUtilityBase::logMaxSize() {
     return 500 * 1024 * 1024; // MB
 }
 
