@@ -69,6 +69,7 @@ class TestInitialSituationGenerator {
          * @param itemType Directory or File.
          * @param rawId File ID in lowercase.
          * @param parentRawId Parent file ID in lowercase. If empty, the parent is the root node.
+         * @param dbNodeId DB ID of the node to insert.
          * @return A pointer to the generated node.
          */
         [[nodiscard]] std::shared_ptr<Node> insertInUpdateTree(ReplicaSide side, NodeType itemType, const NodeId &rawId,

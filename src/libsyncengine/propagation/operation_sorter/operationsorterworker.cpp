@@ -563,7 +563,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     return reshuffledOps;
 }
 
-bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renameResolutionOp) {
+bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, const SyncOpPtr &renameResolutionOp) {
     SyncOpPtr matchOp;
     // Look for delete operation in the cycle
     if (!cycle.opListIdByType(OperationType::Delete).empty()) {
@@ -584,7 +584,7 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renam
     renameResolutionOp->setType(OperationType::Move);
     renameResolutionOp->setOmit(matchOp->omit());
     // Find the corresponding node of `matchOp`
-    std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(matchOp->affectedNode());
+    const auto correspondingNode = correspondingNodeInOtherTree(matchOp->affectedNode());
     if (!correspondingNode) {
         LOG_SYNCPAL_WARN(_logger, "Error in correspondingNode with id = " << matchOp->affectedNode()->id()->c_str()
                                                                           << " - idDb = " << *matchOp->affectedNode()->idb());

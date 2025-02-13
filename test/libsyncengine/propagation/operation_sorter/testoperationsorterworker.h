@@ -27,21 +27,21 @@ namespace KDC {
 
 class TestOperationSorterWorker final : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestOperationSorterWorker);
-        // CPPUNIT_TEST(testMoveFirstAfterSecond);
-        // CPPUNIT_TEST(testFixDeleteBeforeMove);
-        // CPPUNIT_TEST(testFixMoveBeforeCreate);
-        // CPPUNIT_TEST(testFixMoveBeforeDelete);
-        // CPPUNIT_TEST(testFixCreateBeforeMove);
-        // CPPUNIT_TEST(testFixDeleteBeforeCreate);
-        // CPPUNIT_TEST(testFixMoveBeforeMoveOccupied);
-        // CPPUNIT_TEST(testFixCreateBeforeCreate);
-        // CPPUNIT_TEST(testFixEditBeforeMove);
-        // CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip);
-        // CPPUNIT_TEST(testFixImpossibleFirstMoveOp);
+        CPPUNIT_TEST(testMoveFirstAfterSecond);
+        CPPUNIT_TEST(testFixDeleteBeforeMove);
+        CPPUNIT_TEST(testFixMoveBeforeCreate);
+        CPPUNIT_TEST(testFixMoveBeforeDelete);
+        CPPUNIT_TEST(testFixCreateBeforeMove);
+        CPPUNIT_TEST(testFixDeleteBeforeCreate);
+        CPPUNIT_TEST(testFixMoveBeforeMoveOccupied);
+        CPPUNIT_TEST(testFixCreateBeforeCreate);
+        CPPUNIT_TEST(testFixEditBeforeMove);
+        CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip);
+        CPPUNIT_TEST(testFixImpossibleFirstMoveOp);
         CPPUNIT_TEST(testFindCompleteCycles);
+        CPPUNIT_TEST(testBreakCycle);
         // // CPPUNIT_TEST(testBreakCycleEx1);
         // // CPPUNIT_TEST(testBreakCycleEx2);
-        // CPPUNIT_TEST(testBreakCycle);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -60,9 +60,9 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture {
         void testFixMoveBeforeMoveParentChildFlip();
         void testFixImpossibleFirstMoveOp();
         void testFindCompleteCycles();
+        void testBreakCycle();
         void testBreakCycleEx1();
         void testBreakCycleEx2();
-        void testBreakCycle();
 
     private:
         SyncOpPtr generateSyncOperation(OperationType opType, const std::shared_ptr<Node> &affectedNode);
