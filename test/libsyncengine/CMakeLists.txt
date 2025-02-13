@@ -1,4 +1,9 @@
-project(testsyncengine)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(testsyncengine LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(testsyncengine LANGUAGES C CXX)
+endif()
 
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
@@ -74,6 +79,14 @@ else()
 endif ()
 
 add_executable(${testsyncengine_NAME} ${testsyncengine_SRCS})
+
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"
+)
+
+target_precompile_headers(${testsyncengine_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${testsyncengine_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
