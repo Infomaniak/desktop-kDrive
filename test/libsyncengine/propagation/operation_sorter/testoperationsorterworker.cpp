@@ -93,7 +93,6 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
 
     // Delete node A
     nodeA->insertChangeEvent(OperationType::Delete);
-    _initialSituationGenerator.removeFromUpdateTree(ReplicaSide::Local, "a");
     const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
 
     // Rename B into A
@@ -149,7 +148,6 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
 
     // Delete A
     nodeA->insertChangeEvent(OperationType::Delete);
-    _initialSituationGenerator.removeFromUpdateTree(ReplicaSide::Local, "a");
     const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
 
     _syncPal->_syncOps->pushOp(deleteOp);
@@ -192,7 +190,6 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
 
     // Delete AAA
     nodeAAA->insertChangeEvent(OperationType::Delete);
-    _initialSituationGenerator.removeFromUpdateTree(ReplicaSide::Local, "aaa");
     const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeAAA);
 
     // Create AAA
@@ -637,20 +634,15 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
 
 void TestOperationSorterWorker::testBreakCycle() {
     // Initial situation
-    //
-    //       Root
-    //        |
-    //        A (a)
+    // .
+    // └── A(a)
     const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
     const auto correspondingNodeA = _initialSituationGenerator.getNode(ReplicaSide::Remote, "a");
 
     // Final situation
-    //
-    //       Root
-    //        |
-    //        A (a2)
-    //        |
-    //        A* (a)
+    // .
+    // └── A(a2)
+    //     └── A*(a)
 
     // Create a new node A(a2)
     const auto nodeA2 = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "a_new");
@@ -665,8 +657,8 @@ void TestOperationSorterWorker::testBreakCycle() {
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeA);
 
     SyncOperationList cycle;
-    cycle.pushOp(moveOp);
     cycle.pushOp(createOp);
+    cycle.pushOp(moveOp);
 
     const auto breakCycleOp = std::make_shared<SyncOperation>();
     _syncPal->_operationsSorterWorker->breakCycle(cycle, breakCycleOp);
@@ -679,137 +671,46 @@ void TestOperationSorterWorker::testBreakCycle() {
     CPPUNIT_ASSERT(breakCycleOp->newParentNode());
 }
 
-void TestOperationSorterWorker::testBreakCycleEx1() {
-    DbNodeId dbNodeIdDirA;
+void TestOperationSorterWorker::testBreakCycle2() {
+    // Initial situation
+    // .
+    // └── A(a)
+    //     └── AA(aa)
+    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
+    const auto correspondingNodeA = _initialSituationGenerator.getNode(ReplicaSide::Remote, "a");
 
-    bool constraintError = false;
-    const DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", testhelpers::defaultTime,
-                          testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
+    // Final situation
+    // .
+    // └── A(aa)
 
-    // initial situation
+    // Move A(a)/AA(aa) to A(aa)
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeAA->id(), {});
+    nodeAA->setChangeEvents(OperationType::Move);
+    nodeAA->setName("A");
+    const auto moveOp = generateSyncOperation(OperationType::Move, nodeAA);
 
-    //        S
-    //        |
-    //        A
+    // Delete A(a)
+    nodeA->setChangeEvents(OperationType::Delete);
+    const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
 
-    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"), NodeType::File,
-                                         OperationType::None, "A", testhelpers::defaultTime, testhelpers::defaultTime,
-                                         testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"),
-                                          NodeType::File, OperationType::None, "rA", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                          _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-
-    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
-    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
-
-    std::shared_ptr<Node> nodeNewA(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"),
-                                            NodeType::Directory, OperationType::None, "newA", testhelpers::defaultTime,
-                                            testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                            _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    CPPUNIT_ASSERT(nodeNewA->insertChildren(nodeA));
-    CPPUNIT_ASSERT(nodeA->setParentNode(nodeNewA));
-    nodeA->setName(Str("subpath"));
-    nodeA->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
-    nodeA->setMoveOrigin("A");
-
-    SyncOpPtr op1 = std::make_shared<SyncOperation>();
-    SyncOpPtr op2 = std::make_shared<SyncOperation>();
-    op1->setAffectedNode(nodeA);
-    op1->setTargetSide(ReplicaSide::Local);
-    op1->setType(OperationType::Move);
-    op1->setNewName(Str("subpath"));
-    op1->setNewParentNode(nodeNewA);
-    op2->setAffectedNode(nodeNewA);
-    op2->setTargetSide(ReplicaSide::Local);
-    op2->setType(OperationType::Create);
-
-    const auto resolutionOp = std::make_shared<SyncOperation>();
     SyncOperationList cycle;
-    cycle.setOpList({op1, op2});
-    _syncPal->_operationsSorterWorker->breakCycle(cycle, resolutionOp);
-    CPPUNIT_ASSERT(resolutionOp->type() == OperationType::Move);
-    CPPUNIT_ASSERT(resolutionOp->targetSide() == ReplicaSide::Remote);
-    CPPUNIT_ASSERT(resolutionOp->affectedNode()->id() == "rA");
-    CPPUNIT_ASSERT(resolutionOp->affectedNode()->idb() == op1->affectedNode()->idb());
-}
+    cycle.pushOp(deleteOp);
+    cycle.pushOp(moveOp);
 
-void TestOperationSorterWorker::testBreakCycleEx2() {
-    DbNodeId dbNodeIdDirA;
-    DbNodeId dbNodeIdDirB;
+    const auto breakCycleOp = std::make_shared<SyncOperation>();
+    _syncPal->_operationsSorterWorker->breakCycle(cycle, breakCycleOp);
 
-    bool constraintError = false;
-    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
-    DbNode nodeDirB(0, dbNodeIdDirA, Str("B"), Str("B"), "B", "rB", testhelpers::defaultTime, testhelpers::defaultTime,
-                    testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
-
-    // initial situation
-
-    //        S
-    //        |
-    //        A
-    //        |
-    //        B
-    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"),
-                                         NodeType::Directory, OperationType::None, "A", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                         _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    std::shared_ptr<Node> nodeB(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("B"),
-                                         NodeType::Directory, OperationType::None, "B", testhelpers::defaultTime,
-                                         testhelpers::defaultTime, testhelpers::defaultFileSize, nodeA));
-    std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"),
-                                          NodeType::Directory, OperationType::None, "rA", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                          _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-    std::shared_ptr<Node> rNodeB(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"),
-                                          NodeType::Directory, OperationType::None, "rB", testhelpers::defaultTime,
-                                          testhelpers::defaultTime, testhelpers::defaultFileSize, rNodeA));
-
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
-    CPPUNIT_ASSERT(nodeA->insertChildren(nodeB));
-    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
-    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeB);
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
-    CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeB));
-    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
-    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeB);
-
-    nodeA->insertChangeEvent(OperationType::Delete);
-    nodeA->deleteChildren(nodeB);
-    nodeB->insertChangeEvent(OperationType::Move);
-    nodeB->setName(Str("A"));
-    CPPUNIT_ASSERT(nodeB->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    nodeB->setMoveOrigin("A/B");
-    nodeB->setMoveOriginParentDbId(dbNodeIdDirA);
-
-    SyncOpPtr op1 = std::make_shared<SyncOperation>();
-    SyncOpPtr op2 = std::make_shared<SyncOperation>();
-    op1->setAffectedNode(nodeA);
-    op1->setType(OperationType::Delete);
-    op1->setTargetSide(op1->affectedNode()->side());
-    op2->setAffectedNode(nodeB);
-    op2->setType(OperationType::Move);
-    op2->setNewName(Str("A"));
-    op2->setNewParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    op2->setTargetSide(op2->affectedNode()->side());
-
-    SyncOpPtr resolutionOp = std::make_shared<SyncOperation>();
-    SyncOperationList cycle;
-    cycle.setOpList({op1, op2});
-    _syncPal->_operationsSorterWorker->breakCycle(cycle, resolutionOp);
-    CPPUNIT_ASSERT(resolutionOp->type() == OperationType::Move);
-    CPPUNIT_ASSERT(resolutionOp->targetSide() == ReplicaSide::Remote);
-    CPPUNIT_ASSERT(resolutionOp->affectedNode()->id() == "rA");
-    CPPUNIT_ASSERT(resolutionOp->affectedNode()->type() == NodeType::Directory);
-    CPPUNIT_ASSERT(resolutionOp->affectedNode()->idb() == op1->affectedNode()->idb());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, breakCycleOp->targetSide());
+    CPPUNIT_ASSERT_EQUAL(nodeA, breakCycleOp->affectedNode());
+    CPPUNIT_ASSERT_EQUAL(correspondingNodeA, breakCycleOp->correspondingNode());
+    CPPUNIT_ASSERT_EQUAL(true, breakCycleOp->isBreakingCycleOp());
+    CPPUNIT_ASSERT(!breakCycleOp->newName().empty());
+    CPPUNIT_ASSERT(breakCycleOp->newParentNode());
 }
 
 SyncOpPtr TestOperationSorterWorker::generateSyncOperation(const OperationType opType,
-                                                           const std::shared_ptr<Node> &affectedNode) {
+                                                           const std::shared_ptr<Node> &affectedNode) const {
     const auto op = std::make_shared<SyncOperation>();
     op->setType(opType);
     op->setAffectedNode(affectedNode);
