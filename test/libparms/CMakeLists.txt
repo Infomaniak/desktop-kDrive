@@ -1,4 +1,9 @@
-project(testparms)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(testparms LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(testparms LANGUAGES C CXX)
+endif()
 
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
