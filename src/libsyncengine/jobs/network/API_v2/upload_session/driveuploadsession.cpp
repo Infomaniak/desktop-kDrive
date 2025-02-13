@@ -20,27 +20,27 @@
 #include "utility/utility.h"
 
 namespace KDC {
-DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
-                                       const NodeId &fileId, SyncTime modtime, bool liteSyncActivated,
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
+                                       const SyncPath &filepath, const NodeId &fileId, SyncTime modtime, bool liteSyncActivated,
                                        uint64_t nbParalleleThread /*= 1*/) :
-    DriveUploadSession(driveDbId, syncDb, filepath, SyncName(), fileId, modtime, liteSyncActivated, nbParalleleThread) {
+    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, modtime, liteSyncActivated, nbParalleleThread) {
     _fileId = fileId;
 }
 
-DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
-                                       const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
-                                       bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/) :
+DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, int driveDbId, std::shared_ptr<SyncDb> syncDb,
+                                       const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
+                                       SyncTime modtime, bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/) :
     AbstractUploadSession(filepath, filename, nbParalleleThread), _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime),
-    _remoteParentDirId(remoteParentDirId) {
+    _remoteParentDirId(remoteParentDirId), _vfs(vfs) {
     (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
 }
 
 DriveUploadSession::~DriveUploadSession() {
-    if (_vfsForceStatus) {
-        if (ExitInfo exitInfo = _vfsForceStatus(getFilePath(), false, 100, true); !exitInfo) {
-            LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()) << L" : " << exitInfo);
-        }
+    if (!_vfs || isAborted()) return;
+    constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 100});
+    if (const auto exitInfo = _vfs->forceStatus(getFilePath(), vfsStatus); !exitInfo) {
+        LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()) << L": " << exitInfo);
     }
 }
 
@@ -65,7 +65,7 @@ std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const 
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
-    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
+    return std::make_shared<UploadSessionFinishJob>(_vfs, UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
                                                     getTotalChunkHash(), getTotalChunks(), _modtimeIn);
 }
 
@@ -111,10 +111,4 @@ bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessi
 
     return true;
 }
-
-void DriveUploadSession::abort() {
-    AbstractUploadSession::abort();
-    setVfsForceStatusCallback(nullptr);
-}
-
 } // namespace KDC

@@ -45,14 +45,14 @@ class VfsMac : public Vfs {
         bool socketApiPinStateActionsShown() const override { return true; }
 
         ExitInfo updateMetadata(const SyncPath &absoluteFilePath, time_t creationTime, time_t modtime, int64_t size,
-                            const NodeId &fileId) override;
+                                const NodeId &fileId) override;
 
         ExitInfo createPlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) override;
         ExitInfo dehydratePlaceholder(const SyncPath &path) override;
         ExitInfo convertToPlaceholder(const SyncPath &path, const SyncFileItem &item) override;
         ExitInfo updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
-                               bool &finished) override;
-        ExitInfo forceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false) override;
+                                   bool &finished) override;
+        ExitInfo forceStatus(const SyncPath &path, const VfsStatus &vfsStatus) override;
         bool cleanUpStatuses() override;
         void clearFileAttributes(const SyncPath &path) override;
 
@@ -60,7 +60,7 @@ class VfsMac : public Vfs {
 
         ExitInfo setPinState(const SyncPath &fileRelativePath, PinState state) override;
         PinState pinState(const SyncPath &relativePath) override;
-        ExitInfo status(const SyncPath &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) override;
+        ExitInfo status(const SyncPath &filePath, VfsStatus &vfsStatus) override;
         void exclude(const SyncPath &path) override;
         bool isExcluded(const SyncPath &filePath) override;
         ExitInfo setThumbnail(const SyncPath &absoluteFilePath, const QPixmap &pixmap) override;
@@ -68,9 +68,9 @@ class VfsMac : public Vfs {
         ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) override;
         bool fileStatusChanged(const SyncPath &path, SyncFileStatus status) override;
 
-        void dehydrate(const SyncPath &path) final;
-        void hydrate(const SyncPath &path) final;
-        void cancelHydrate(const SyncPath &path) final;
+        void dehydrate(const SyncPath &path) override;
+        void hydrate(const SyncPath &path) override;
+        void cancelHydrate(const SyncPath &path) override;
 
         void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
 
