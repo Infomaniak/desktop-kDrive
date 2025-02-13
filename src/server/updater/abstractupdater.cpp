@@ -70,7 +70,7 @@ void AbstractUpdater::onAppVersionReceived() {
         LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
     }
 
-    sentry::Handler::instance()->setDistributionChannel(currentVersionedChannel());
+    sentry::Handler::instance()->setDistributionChannel(currentVersionChannel());
 }
 
 void AbstractUpdater::skipVersion(const std::string& skippedVersion) {
@@ -101,7 +101,7 @@ bool AbstractUpdater::isVersionSkipped(const std::string& version) {
     return false;
 }
 
-DistributionChannel AbstractUpdater::currentVersionedChannel() const {
+DistributionChannel AbstractUpdater::currentVersionChannel() const {
     const std::unordered_map<DistributionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
     if (allVersions.empty()) return DistributionChannel::Unknown;
     std::string currentVersion = CommonUtility::currentVersion();

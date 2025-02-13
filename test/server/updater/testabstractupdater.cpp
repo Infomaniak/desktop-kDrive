@@ -128,26 +128,26 @@ void TestAbstractUpdater::testCurrentVersionedChannel() {
 
     // Check Next version
     version = "10.0.0.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Next, updater.currentVersionedChannel());
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Next, updater.currentVersionChannel());
 
     // Check Prod version
     version = "9.0.0.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Prod, updater.currentVersionedChannel());
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Prod, updater.currentVersionChannel());
 
     // Check Beta version
     version = "11.0.0.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Beta, updater.currentVersionedChannel());
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Beta, updater.currentVersionChannel());
 
     // Check Internal version
     version = "11.0.1.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Internal, updater.currentVersionedChannel());
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Internal, updater.currentVersionChannel());
 
     // Check Legacy version
     version = "8.0.0.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Legacy, updater.currentVersionedChannel());
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Legacy, updater.currentVersionChannel());
 
     // Check Unknown version (higher than prod)
     version = "9.0.0.20210102";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, updater.currentVersionedChannel());
+    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, updater.currentVersionChannel());
 }
 } // namespace KDC

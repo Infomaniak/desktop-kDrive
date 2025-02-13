@@ -68,10 +68,10 @@ class AbstractUpdater {
         void setCurrentChannel(const DistributionChannel currentChannel) { _currentChannel = currentChannel; }
 
         /* Get the channel of the currently installed version.
-         * If multiple channels are available, the order priority is:
+         * If multiple channels refer to the current version, the closest to the production channel is returned.
          * Production > Next > Beta > Internal
          */
-        [[nodiscard]] DistributionChannel currentVersionedChannel() const;
+        [[nodiscard]] DistributionChannel currentVersionChannel() const;
 
     protected:
         explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker);
