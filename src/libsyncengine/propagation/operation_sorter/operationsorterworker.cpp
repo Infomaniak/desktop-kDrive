@@ -563,40 +563,6 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     return reshuffledOps;
 }
 
-std::list<SyncOperationList> OperationSorterWorker::findCompleteCycles() {
-    std::list<SyncOperationList> completeCycles;
-
-    for (auto &pair: _reorderings) {
-        std::list<std::pair<SyncOpPtr, SyncOpPtr>> l1;
-        std::list<SyncOpPtr> l2;
-        l1 = _reorderings;
-        l1.remove(pair);
-        l2.push_back(pair.first);
-        l2.push_back(pair.second);
-        SyncOpPtr opToFind = pair.first;
-        SyncOpPtr opTmp = l2.back();
-        for (auto it = l1.begin(); it != l1.end(); ++it) {
-            if (SyncOpPtr opF = it->first; opF == opTmp) {
-                l2.push_back(it->second);
-                opTmp = l2.back();
-                if (it->second == opToFind) {
-                    break;
-                }
-                it = l1.erase(it);
-            }
-        }
-
-        if (l2.front() == l2.back()) {
-            l2.pop_back();
-            SyncOperationList cycle;
-            cycle.setOpList(l2);
-            completeCycles.push_back(cycle);
-            break;
-        }
-    }
-    return completeCycles;
-}
-
 bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renameResolutionOp) {
     SyncOpPtr matchOp;
     // Look for delete operation in the cycle

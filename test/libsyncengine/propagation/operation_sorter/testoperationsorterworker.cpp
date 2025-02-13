@@ -491,10 +491,10 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     const auto rMoveOpAAA = generateSyncOperation(OperationType::Move, rNodeAAA);
 
     _syncPal->_syncOps->setOpList({lMoveOpB, lMoveOpAAB, rMoveOpC, rMoveOpA, rMoveOpAAA});
-    const auto reshuffledOp1 = _syncPal->_operationsSorterWorker->fixImpossibleFirstMoveOp();
-    CPPUNIT_ASSERT(reshuffledOp1);
-    CPPUNIT_ASSERT(reshuffledOp1->_opSortedList.size() == 2);
-    CPPUNIT_ASSERT(reshuffledOp1->_opSortedList.back() == rMoveOpA->id());
+    const auto reshuffledOp = _syncPal->_operationsSorterWorker->fixImpossibleFirstMoveOp();
+    CPPUNIT_ASSERT(reshuffledOp);
+    CPPUNIT_ASSERT(reshuffledOp->_opSortedList.size() == 2);
+    CPPUNIT_ASSERT(reshuffledOp->_opSortedList.back() == rMoveOpA->id());
 }
 
 void TestOperationSorterWorker::testFindCompleteCycles() {
@@ -523,102 +523,122 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
     nodeAA->setName("AA*");
     const auto opAA = generateSyncOperation(OperationType::Move, nodeAA);
 
-    {
-        // No cycle
-        _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opC}, {opC, opD}};
-        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
-        cycleFinder.findCompleteCycle();
-        CPPUNIT_ASSERT_EQUAL(false, cycleFinder.hasCompleteCycle());
-        CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
-    }
+    const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    nodeAAA->insertChangeEvent(OperationType::Move);
+    nodeAAA->setName("AAA*");
+    const auto opAAA = generateSyncOperation(OperationType::Move, nodeAAA);
 
-    {
-        // A cycle, the order in which reorderings are found follow the order of the operations in the cycle
-        _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opC}, {opC, opD}, {opD, opA}};
-        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
-        cycleFinder.findCompleteCycle();
-        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
-        CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
-        const std::vector<UniqueId> expectedOpIdsInCycle = {opA->id(), opB->id(), opC->id(), opD->id()};
-        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
-            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
-            ++i;
+    auto start = std::chrono::steady_clock::now();
+    for (int test = 1; test <= 10000; test++) {
+        LOG_INFO(Log::instance()->getLogger(), "**************************************************");
+        {
+            // No cycle
+            _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opC}, {opC, opD}};
+            CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+            cycleFinder.findCompleteCycle();
+
+            CPPUNIT_ASSERT_EQUAL(false, cycleFinder.hasCompleteCycle());
+            CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+        }
+
+        LOG_INFO(Log::instance()->getLogger(), "**************************************************");
+        {
+            // A cycle, the order in which reorderings are found follow the order of the operations in the cycle
+            _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opC}, {opC, opD}, {opD, opA}};
+            CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+            cycleFinder.findCompleteCycle();
+
+            CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+            CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+            const std::vector expectedOpIdsInCycle = {opA->id(), opB->id(), opC->id(), opD->id()};
+            for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+                CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i++], id);
+            }
+        }
+
+        LOG_INFO(Log::instance()->getLogger(), "**************************************************");
+        {
+            // A cycle, the order in which reorderings are found follow the order of the operations in the cycle but with other
+            // operations that are not in the cycle chain.
+            _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB},   {opB, opAA},  {opB, opAAA}, {opB, opC},
+                                                               {opC, opAA},  {opC, opAAA}, {opC, opD},   {opD, opAA},
+                                                               {opA, opAAA}, {opD, opA},   {opA, opAA},  {opA, opAAA}};
+            CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+            cycleFinder.findCompleteCycle();
+
+            CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+            CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+            const std::vector expectedOpIdsInCycle = {opA->id(), opB->id(), opC->id(), opD->id()};
+            for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+                CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i++], id);
+            }
+        }
+
+        LOG_INFO(Log::instance()->getLogger(), "**************************************************");
+        {
+            // Cycle, the order in which reorderings are found DO NOT follow the order of the operations in the cycle.
+            _syncPal->_operationsSorterWorker->_reorderings = {{opB, opC}, {opD, opA}, {opA, opB}, {opC, opD}};
+            CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+            cycleFinder.findCompleteCycle();
+
+            CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+            CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+            const std::vector expectedOpIdsInCycle = {opB->id(), opC->id(), opD->id(), opA->id()};
+            for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+                CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i++], id);
+            }
+        }
+
+        LOG_INFO(Log::instance()->getLogger(), "**************************************************");
+        {
+            // Cycle, the order in which reorderings are found DO NOT follow the order of the operations in the cycle and with
+            // other operations that are not in the cycle chain.
+            _syncPal->_operationsSorterWorker->_reorderings = {{opB, opC},   {opD, opA}, {opA, opAA},
+                                                               {opA, opAAA}, {opA, opB}, {opC, opD}};
+            CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+            cycleFinder.findCompleteCycle();
+
+            CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+            CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+            const std::vector expectedOpIdsInCycle = {opB->id(), opC->id(), opD->id(), opA->id()};
+            for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+                CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i++], id);
+            }
+        }
+
+        LOG_INFO(Log::instance()->getLogger(), "**************************************************");
+        {
+            // A cycle hidden within a chain
+            _syncPal->_operationsSorterWorker->_reorderings = {{opB, opA}, {opA, opC}, {opC, opA}};
+            CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+            cycleFinder.findCompleteCycle();
+
+            CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+            CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+            const std::vector expectedOpIdsInCycle = {opA->id(), opC->id()};
+            for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+                CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i++], id);
+            }
+        }
+
+        LOG_INFO(Log::instance()->getLogger(), "**************************************************");
+        {
+            // 2 cycles
+            _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opA}, {opB, opC}, {opC, opD}, {opD, opA}};
+            CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
+            cycleFinder.findCompleteCycle();
+
+            CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
+            CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
+            const std::vector expectedOpIdsInCycle = {opA->id(), opB->id()};
+            for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
+                CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i++], id);
+            }
         }
     }
 
-    {
-        // A cycle, the order in which reorderings are found follow the order of the operations in the cycle but with other
-        // operations that are not in the cycle chain.
-        _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opAA}, {opB, opC}, {opC, opD}, {opD, opA}};
-        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
-        cycleFinder.findCompleteCycle();
-        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
-        CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
-        const std::vector<UniqueId> expectedOpIdsInCycle = {opA->id(), opB->id(), opC->id(), opD->id()};
-        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
-            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
-            ++i;
-        }
-    }
-
-    {
-        // Cycle, the order in which reorderings are found DO NOT follow the order of the operations in the cycle.
-        _syncPal->_operationsSorterWorker->_reorderings = {{opB, opC}, {opD, opA}, {opA, opB}, {opC, opD}};
-        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
-        cycleFinder.findCompleteCycle();
-        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
-        CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
-        const std::vector<UniqueId> expectedOpIdsInCycle = {opB->id(), opC->id(), opD->id(), opA->id()};
-        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
-            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
-            ++i;
-        }
-    }
-
-    {
-        // Cycle, the order in which reorderings are found DO NOT follow the order of the operations in the cycle but with other
-        // operations that are not in the cycle chain.
-        _syncPal->_operationsSorterWorker->_reorderings = {{opB, opC}, {opD, opA}, {opA, opAA}, {opA, opB}, {opC, opD}};
-        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
-        cycleFinder.findCompleteCycle();
-        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
-        CPPUNIT_ASSERT_EQUAL(4, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
-        const std::vector<UniqueId> expectedOpIdsInCycle = {opB->id(), opC->id(), opD->id(), opA->id()};
-        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
-            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
-            ++i;
-        }
-    }
-
-    {
-        // A cycle hidden within a chain
-        _syncPal->_operationsSorterWorker->_reorderings = {{opB, opA}, {opA, opC}, {opC, opA}};
-        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
-        cycleFinder.findCompleteCycle();
-        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
-        CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
-
-        const std::vector<UniqueId> expectedOpIdsInCycle = {opA->id(), opC->id()};
-        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
-            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
-            ++i;
-        }
-    }
-
-    {
-        // 2 cycles
-        _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opA}, {opB, opC}, {opC, opD}, {opD, opA}};
-        CycleFinder cycleFinder(_syncPal->_operationsSorterWorker->_reorderings);
-        cycleFinder.findCompleteCycle();
-        CPPUNIT_ASSERT_EQUAL(true, cycleFinder.hasCompleteCycle());
-        CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
-
-        const std::vector<UniqueId> expectedOpIdsInCycle = {opA->id(), opB->id()};
-        for (int i = 0; const auto &id: cycleFinder.completeCycle().opSortedList()) {
-            CPPUNIT_ASSERT_EQUAL(expectedOpIdsInCycle[i], id);
-            ++i;
-        }
-    }
+    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
+    LOG_INFO(Log::instance()->getLogger(), "Test took: " << elapsed_seconds.count() << "s");
 }
 
 void TestOperationSorterWorker::testBreakCycleEx1() {

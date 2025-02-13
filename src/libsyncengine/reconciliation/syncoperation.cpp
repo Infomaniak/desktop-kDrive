@@ -61,11 +61,22 @@ SyncOpPtr SyncOperationList::getOp(const UniqueId id) {
     return opIt == _allOps.end() ? nullptr : opIt->second;
 }
 
-void SyncOperationList::pushOp(SyncOpPtr op) {
-    _allOps.insert({op->id(), op});
+bool SyncOperationList::pushOp(SyncOpPtr op) {
+    const auto [it, inserted] = _allOps.try_emplace(op->id(), op);
+    if (!inserted) return false;
     _opSortedList.push_back(op->id());
     _opListByType[op->type()].insert(op->id());
     _node2op[*op->affectedNode()->id()].push_back(op->id());
+    return true;
+}
+
+void SyncOperationList::popOp() {
+    const auto opId = _opSortedList.back();
+    const auto op = getOp(opId);
+    _opSortedList.pop_back();
+    _opListByType[op->type()].erase(opId);
+    _node2op[*op->affectedNode()->id()].pop_back();
+    _allOps.erase(opId);
 }
 
 void SyncOperationList::insertOp(const std::list<UniqueId>::const_iterator pos, SyncOpPtr op) {
