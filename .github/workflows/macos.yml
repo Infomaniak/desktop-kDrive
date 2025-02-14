@@ -23,11 +23,6 @@ jobs:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
 
     steps:
-      - name: Grant empty trash script execute permission
-        run : chmod +x ./infomaniak-build-tools/empty_drive_trash.sh
-      - name: Empty drive's trash
-        run : ./infomaniak-build-tools/empty_drive_trash.sh
-
       - name: Clean-up XCode DerivedData
         run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
         
@@ -36,6 +31,11 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           submodules: recursive
+
+      - name: Grant empty trash script execute permission
+        run : chmod +x ./infomaniak-build-tools/empty_drive_trash.sh
+      - name: Empty drive's trash
+        run : ./infomaniak-build-tools/empty_drive_trash.sh
 
       - name: Unlock keychain to use the certificate
         run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
