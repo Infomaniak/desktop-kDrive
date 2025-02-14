@@ -19,9 +19,9 @@
 namespace KDC {
 
 void logCycle(const SyncOperationList &currentCycle) {
-    SyncName str;
+    std::string str;
     for (const auto &opId: currentCycle.opSortedList()) {
-        str += Str(" ");
+        str += " ";
         str += std::to_string(opId);
     }
     LOG_INFO(Log::instance()->getLogger(), "Chain is now:" << str);
