@@ -23,6 +23,9 @@ jobs:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
 
     steps:
+      - name: Empty drive's trash
+        run : ./infomaniak-build-tools/empty_drive_trash.sh
+
       - name: Clean-up XCode DerivedData
         run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
         
