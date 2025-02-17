@@ -4165,12 +4165,13 @@ void AppServer::onRestartSyncs() {
     }
 #endif
 
-    for (const auto &syncPalMapElt: _syncPalMap) {
-        if (!syncPalMapElt.second) continue;
+    for (const auto &[syncId, syncPtr]: _syncPalMap) {
+        if (!syncPtr) continue;
         std::chrono::time_point<std::chrono::system_clock> pauseTime;
-        if (syncPalMapElt.second->isPaused(pauseTime) && pauseTime + std::chrono::minutes(1) < std::chrono::system_clock::now()) {
-            LOG_INFO(_logger, "Try to resume SyncPal with syncDbId=" << syncPalMapElt.first);
-            syncPalMapElt.second->unpause();
+        if ((syncPtr->isPaused(pauseTime) || syncPtr->pauseAsked()) &&
+            pauseTime + std::chrono::minutes(1) < std::chrono::system_clock::now()) {
+            LOG_INFO(_logger, "Try to resume SyncPal with syncDbId=" << syncId);
+            syncPtr->unpause();
         }
     }
 }

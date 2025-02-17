@@ -36,8 +36,6 @@ class ISyncWorker {
         virtual ~ISyncWorker();
 
         virtual void start();
-        virtual void pause();
-        virtual void unpause();
         virtual void stop();
 
         // Will not return until the internal thread has exited
@@ -46,9 +44,6 @@ class ISyncWorker {
         inline std::string name() const { return _name; }
 
         inline bool isRunning() const { return _isRunning; }
-        inline bool isPaused() const { return _isPaused; }
-        inline bool pauseAsked() const { return _pauseAsked; }
-        inline bool unpauseAsked() const { return _unpauseAsked; }
         inline bool stopAsked() const { return _stopAsked; }
         inline ExitCode exitCode() const { return _exitCode; }
         inline ExitCause exitCause() const { return _exitCause; }
@@ -67,8 +62,6 @@ class ISyncWorker {
           \param awakenByStop will be true if a stop of the worker has been requested, false otherwise.
         */
         void sleepUntilStartDelay(bool &awakenByStop);
-        void setPauseDone();
-        void setUnpauseDone();
         void setExitCause(ExitCause cause) { _exitCause = cause; }
         void setDone(ExitCode code);
 
@@ -86,9 +79,6 @@ class ISyncWorker {
         std::unique_ptr<std::thread> _thread;
         bool _stopAsked{false};
         bool _isRunning{false};
-        bool _pauseAsked{false};
-        bool _unpauseAsked{false};
-        bool _isPaused{false};
         ExitCode _exitCode{ExitCode::Unknown};
         ExitCause _exitCause{ExitCause::Unknown};
 };

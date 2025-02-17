@@ -1181,6 +1181,10 @@ bool SyncPal::isPaused(std::chrono::time_point<std::chrono::system_clock> &pause
     return false;
 }
 
+bool SyncPal::pauseAsked() const {
+    return _syncPalWorker && _syncPalWorker->pauseAsked();
+}
+
 bool SyncPal::isIdle() const {
     if (_syncPalWorker) {
         return (_syncPalWorker->step() == SyncStep::Idle && !restart());

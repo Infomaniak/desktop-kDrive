@@ -171,6 +171,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void unpause();
 
         bool isPaused(std::chrono::time_point<std::chrono::system_clock> &pauseTime) const;
+        bool pauseAsked() const;
         bool isIdle() const;
         bool isRunning() const;
 
