@@ -150,7 +150,7 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bo
     return true;
 }
 
-bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found) {
+bool ParmsDb::selectAppState(const AppStateKey key, AppStateValue &value, bool &found) {
     const std::scoped_lock lock(_mutex);
     found = false;
     std::string valueStr;
@@ -177,7 +177,12 @@ bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found)
     return true;
 };
 
-bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &found) {
+bool ParmsDb::selectAppState(const AppStateKey key, AppStateValue &value) {
+    bool found = false;
+    return selectAppState(key, value, found) && found;
+}
+
+bool ParmsDb::updateAppState(const AppStateKey key, const AppStateValue &value, bool &found) {
     AppStateValue existingValue;
     int errId = 0;
 
