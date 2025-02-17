@@ -549,9 +549,8 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
     return ExitCode::Ok;
 }
 
-void LogUploadJob::updateLogUploadState(LogUploadState newState) const {
-    if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
+void LogUploadJob::updateLogUploadState(const LogUploadState newState) const {
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, newState, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
 }
@@ -612,7 +611,7 @@ bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {
     IoError ioError = IoError::Unknown;
     if (!IoHelper::getFileSize(path, size, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError)));
+                  L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError));
         return false;
     }
     if (ioError != IoError::Success) {
