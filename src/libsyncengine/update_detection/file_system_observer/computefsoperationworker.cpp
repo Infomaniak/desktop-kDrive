@@ -112,7 +112,8 @@ void ComputeFSOperationWorker::execute() {
 }
 
 
-ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode) {
+ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode,
+                                                         const SyncPath &localDbPath, const SyncPath &remoteDbPath) {
     assert(side != ReplicaSide::Unknown);
 
     const NodeId &nodeId = dbNode.nodeId(side);
@@ -124,6 +125,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     const auto dbLastModified = dbNode.lastModified(side);
     const auto dbName = dbNode.name(side);
+    const auto &dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
     const auto snapshot = _syncPal->snapshotCopy(side);
     const auto opSet = _syncPal->operationSet(side);
 
@@ -139,22 +141,6 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         setExitCause(ExitCause::DbEntryNotFound);
         return ExitCode::DataError;
     }
-
-    // Load DB path
-    SyncPath localDbPath;
-    SyncPath remoteDbPath;
-    bool dbPathsAreFound = false;
-    if (!_syncDb->path(dbNode.nodeId(), localDbPath, remoteDbPath, dbPathsAreFound)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-        setExitCause(ExitCause::DbAccessError);
-        return ExitCode::DbError;
-    }
-    if (!dbPathsAreFound) {
-        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbNode.nodeId());
-        setExitCause(ExitCause::DbEntryNotFound);
-        return ExitCode::DataError;
-    }
-    auto dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
 
     // Detect DELETE
     bool remoteItemUnsynced = false;
@@ -186,11 +172,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             bool isExcluded = false;
             if (const ExitInfo exitInfo = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); !exitInfo) {
                 // Can happen only on local side
-                if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)) {
-                    return blacklistItem(dbPath);
-                } else {
-                    return exitInfo;
-                }
+                return ExitCode::SystemError;
             }
 
             if (isExcluded) return ExitCode::Ok; // Never generate operation on excluded file
@@ -217,13 +199,10 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             if (!nodeExistsInSnapshot) {
                 bool exists = false;
                 IoError ioError = IoError::Success;
-                if (!IoHelper::checkIfPathExists(localPath, exists, ioError)) {
+                if (!IoHelper::checkIfPathExists(localPath, exists, ioError) || ioError == IoError::AccessDenied) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError));
                     return ExitCode::SystemError;
-                }
-                if (ioError == IoError::AccessDenied) {
-                    return blacklistItem(dbPath);
                 }
                 checkTemplate = exists;
             }
@@ -233,16 +212,14 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             IoError ioError = IoError::Success;
             bool warn = false;
             bool isExcluded = false;
-            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), dbPath, warn,
-                                                                                       isExcluded, ioError);
-            if (!success) {
+            if (!ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), dbPath, warn, isExcluded,
+                                                                       ioError) ||
+                ioError == IoError::AccessDenied) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
                                                    << Utility::formatIoError(dbPath, ioError));
                 return ExitCode::SystemError;
             }
-            if (ioError == IoError::AccessDenied) {
-                return blacklistItem(dbPath);
-            }
+
             if (isExcluded) {
                 // The item is excluded
                 return ExitCode::Ok;
@@ -289,13 +266,10 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         SyncPath absolutePath = _syncPal->localPath() / snapshotPath;
         bool exists = false;
         IoError ioError = IoError::Success;
-        if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+        if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError) || ioError == IoError::AccessDenied) {
             LOGW_SYNCPAL_WARN(_logger,
                               L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError));
             return ExitCode::SystemError;
-        }
-        if (ioError == IoError::AccessDenied) {
-            return blacklistItem(dbPath);
         }
         if (!exists) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - "
@@ -373,9 +347,9 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             return ExitCode::DbError;
         }
         if (!dbNodeIsFound) {
-            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbId);
-            setExitCause(ExitCause::DbEntryNotFound);
-            return ExitCode::DataError;
+            // The node is not anymore in the DB (one of its parents has been blacklisted)
+            ++dbIdIt;
+            continue;
         }
 
         if (dbNode.nodeIdLocal()) localIdsSet.insert(*dbNode.nodeIdLocal());
@@ -388,8 +362,32 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
 
         dbIdIt = remainingDbIds.erase(dbIdIt);
 
+        SyncPath localDbPath;
+        SyncPath remoteDbPath;
+        bool dbPathsAreFound = false;
+        if (!_syncDb->path(dbId, localDbPath, remoteDbPath, dbPathsAreFound)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
+            setExitCause(ExitCause::DbAccessError);
+            return ExitCode::DbError;
+        }
+        if (!dbPathsAreFound) {
+            LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbId);
+            setExitCause(ExitCause::DbEntryNotFound);
+            return ExitCode::DataError;
+        }
+
         for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
-            if (const auto inferExitCode = inferChangeFromDbNode(side, dbNode); inferExitCode != ExitCode::Ok) {
+            if (const auto inferExitCode = inferChangeFromDbNode(side, dbNode, localDbPath, remoteDbPath);
+                inferExitCode != ExitCode::Ok) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in ComputeFSOperationWorker::inferChangeFromDbNode: side="
+                                                   << side << L" " << Utility::formatSyncPath(localDbPath) << L" code="
+                                                   << inferExitCode);
+                if (side == ReplicaSide::Local && inferExitCode == ExitCode::SystemError) {
+                    if (const ExitInfo exitInfo = blacklistItem(localDbPath); !exitInfo) {
+                        LOG_SYNCPAL_WARN(_logger, "Error in ComputeFSOperationWorker::blacklistItem");
+                    }
+                    break;
+                }
                 return inferExitCode;
             }
         }
@@ -992,8 +990,9 @@ void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const Syn
 }
 
 ExitInfo ComputeFSOperationWorker::blacklistItem(const SyncPath &relativeLocalPath) {
-    // Blacklist node
+    // Blacklist item
     if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalPath); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::handleAccessDeniedItem: " << Utility::formatSyncPath(relativeLocalPath));
         return exitInfo;
     }
 
