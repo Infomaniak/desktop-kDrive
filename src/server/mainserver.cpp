@@ -69,13 +69,14 @@ int main(int argc, char **argv) {
     std::cout << "kDrive server starting" << std::endl;
 
     // Working dir;
-    KDC::CommonUtility::setAppWorkingDir(KDC::SyncPath(argv[0]).parent_path());
+    const KDC::SyncPath appWorkingDir = KDC::SyncPath(argv[0]).parent_path();
 #ifdef __unix__
     const std::string value = KDC::CommonUtility::envVarValue("APPIMAGE");
     if (!value.empty()) {
-        KDC::CommonUtility::_workingDirPath /= "usr/bin";
+        appWorkingDir /= "usr/bin";
     }
 #endif
+    KDC::CommonUtility::setAppWorkingDir(appWorkingDir);
 
     KDC::sentry::Handler::init(KDC::AppType::Server);
     KDC::sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::sentry::ConfidentialityLevel::Authenticated);
