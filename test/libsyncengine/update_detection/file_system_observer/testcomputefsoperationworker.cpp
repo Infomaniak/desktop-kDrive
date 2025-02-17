@@ -223,10 +223,18 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         std::filesystem::create_directory(_syncPal->localPath() / bNodePath, ec);
 
         IoError ioError = IoError::Success;
+        SyncPath bbNodePath = bNodePath / "BB";
+#ifdef _WIN32
+        {
+            std::ofstream ofs(_syncPal->localPath() / bbNodePath);
+            ofs << "Some content.\n";
+        }
+        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / bbNodePath, false, false, false, ioError) &&
+                       ioError == IoError::Success);
+#endif
+
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / bNodePath, false, false, false, ioError) &&
                        ioError == IoError::Success);
-
-        SyncPath bbNodePath = bNodePath / "BB";
 
         _syncPal->copySnapshots();
         _syncPal->computeFSOperationsWorker()->execute();
@@ -253,10 +261,19 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         std::filesystem::create_directory(_syncPal->localPath() / aNodePath, ec);
 
         IoError ioError = IoError::Success;
+        SyncPath aaNodePath = aNodePath / "AA";
+
+#ifdef _WIN32
+        {
+            std::ofstream ofs(_syncPal->localPath() / aaNodePath);
+            ofs << "Some content.\n";
+        }
+        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / aaNodePath, false, false, false, ioError) &&
+                       ioError == IoError::Success);
+#endif
+
         CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / aNodePath, false, false, false, ioError) &&
                        ioError == IoError::Success);
-
-        SyncPath aaNodePath = aNodePath / "AA";
 
         // Mock checkIfOkToDelete to simulate the Access Denied
         _syncPal->setComputeFSOperationsWorker(
