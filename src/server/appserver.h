@@ -82,8 +82,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         void clearSyncNodes();
         void sendShowSettingsMsg();
         void sendShowSynthesisMsg();
+        void sendRestartClientMsg();
+
         void clearKeychainKeys();
-        void showAlreadyRunning();
 
         void showHint(std::string errorHint);
         bool startClient();
@@ -93,7 +94,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         static std::unordered_map<int, std::shared_ptr<SyncPal>> _syncPalMap;
         static std::unordered_map<int, std::shared_ptr<Vfs>> _vfsMap;
         static std::vector<Notification> _notifications;
-        static std::chrono::time_point<std::chrono::steady_clock> _lastSyncPalStart;
 
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
         QScopedPointer<SocketApi> _socketApi;
@@ -109,6 +109,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsActivationDone{false};
         bool _vfsConnectionDone{false};
         bool _crashRecovered{false};
+        bool _appStartPTraceStopped{false};
+        bool _clientManuallyRestarted{false};
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
@@ -134,9 +136,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList = std::unordered_set<NodeId>(),
                              const std::unordered_set<NodeId> &undecidedList = std::unordered_set<NodeId>(),
                              const std::unordered_set<NodeId> &whiteList = std::unordered_set<NodeId>(), bool start = true,
-                             bool resumedByUser = false, bool firstInit = false);
+                             const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool resumedByUser = false,
+                             bool firstInit = false);
         ExitCode initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                             const QSet<QString> &whiteList, bool start = true, bool resumedByUser = false,
+                             const QSet<QString> &whiteList, bool start = true,
+                             const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool resumedByUser = false,
                              bool firstInit = false);
         ExitCode stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 

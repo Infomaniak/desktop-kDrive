@@ -79,19 +79,16 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             }
 
             // Check file system
-            bool isPlaceholder = false;
-            bool isHydrated = false;
-            bool isSyncing = false;
-            int progress = 0;
+            VfsStatus vfsStatus;
             assert(_vfs);
-            if (ExitInfo exitInfo = _vfs->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+            if (ExitInfo exitInfo = _vfs->status(absolutePath, vfsStatus); !exitInfo) {
                 LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
                 _exitCode = exitInfo.code();
                 _exitCause = exitInfo.cause();
                 return false;
             }
 
-            if (!dirIt->is_directory() && isPlaceholder && isHydrated) {
+            if (!dirIt->is_directory() && vfsStatus.isPlaceholder && vfsStatus.isHydrated) {
                 // Keep this file in file system
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)

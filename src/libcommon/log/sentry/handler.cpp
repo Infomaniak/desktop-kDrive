@@ -21,6 +21,7 @@
 #include "version.h"
 #include "utility/utility.h"
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -281,6 +282,13 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     _instance->_isSentryActivated = true;
 }
 
+void Handler::init(const std::shared_ptr<Handler> &initializedHandler) {
+    if (_instance) {
+        return;
+    }
+    _instance = initializedHandler;
+}
+
 void Handler::setAuthenticatedUser(const SentryUser &user) {
     std::scoped_lock lock(_mutex);
     _authenticatedUser = user;
@@ -292,8 +300,8 @@ void Handler::setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level) 
     _globalConfidentialityLevel = level;
 }
 
-void Handler::_captureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
-                              const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
+void Handler::privateCaptureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
+                                    const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
     if (!_isSentryActivated) return;
 
     std::scoped_lock lock(_mutex);
@@ -345,7 +353,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = std::min(storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago

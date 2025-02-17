@@ -99,15 +99,15 @@ void TestWorkers::setUp() {
 
     // Create VFS instance
     VfsSetupParams vfsSetupParams;
-    vfsSetupParams._syncDbId = _sync.dbId();
+    vfsSetupParams.syncDbId = _sync.dbId();
 #ifdef _WIN32
-    vfsSetupParams._driveId = drive.driveId();
-    vfsSetupParams._userId = user.userId();
+    vfsSetupParams.driveId = drive.driveId();
+    vfsSetupParams.userId = user.userId();
 #endif
-    vfsSetupParams._localPath = _sync.localPath();
-    vfsSetupParams._targetPath = _sync.targetPath();
-    vfsSetupParams._logger = _logger;
-    vfsSetupParams._executeCommand = [](const char *) {};
+    vfsSetupParams.localPath = _sync.localPath();
+    vfsSetupParams.targetPath = _sync.targetPath();
+    vfsSetupParams.logger = _logger;
+    vfsSetupParams.executeCommand = [](const char *) {};
 
 #if defined(__APPLE__)
     _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
@@ -122,12 +122,11 @@ void TestWorkers::setUp() {
 #endif
 
     // Setup SyncPal
-    _syncPal = std::make_shared<SyncPal>(_sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(_vfsPtr, _sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
-    _syncPal->createWorkers();
+    _syncPal->createWorkers(std::chrono::seconds(0));
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
-    _syncPal->setVfsPtr(_vfsPtr);
 
     // Setup SocketApi
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;

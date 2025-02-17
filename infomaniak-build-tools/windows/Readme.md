@@ -256,15 +256,18 @@ Add the path to the `Icoutils` folder to your `PATH` environment variable, e.g. 
 
 # Certificate Configuration
 
-To be able to sign executables, you need to have the Infomaniak certificate installed.  
-Once installed, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln`. Then follow the next steps:
+To be able to sign executables, you need to have one of two the Infomaniak certificates installed.
+We use the virtual certificate for `DEBUG` builds and the physical certificate (USB key) for release builds.
+ 
+Once the certificates are installed on your machine, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln` and follow the next steps 
+to create an environment variable for each certificate:
 - Select `FileExplorerExtensionPackage\Package.appxmanifest`.
 - Go to the `Packaging` tab.
 - Click on `Choose Certificate...` then `Select from store`.
-- Copy the `AUMID` (located at the end of the Family Name, after the underscore).
-- Create a new environment variable named `KDC_VIRTUAL_AUMID` with the copied `AUMID` as value.
-- Repeat the same steps using the USB certificate, in an environment variable named `KDC_PHYSICAL_AUMID`.
-- Update the `REGVALUE_AUMID` defined in `Vfs/cloudproviderregistrar.cpp` file if needed.
+- Copy the `AUMID` (located at the end of the `Family Name` field, after the underscore).
+- Create an environment variable named `KDC_VIRTUAL_AUMID` with the copied `AUMID` as value.
+- Repeat the same steps using the USB key certificate, in an environment variable named `KDC_PHYSICAL_AUMID`.
+
 
 # Build in Debug
 
@@ -358,6 +361,7 @@ Then click "Re-configure with Initial Parameters".
 ### Windows Extension
 
 To build in Debug mode, you'll need to build and deploy the Windows extension first.
+Check first your [certificates configuration](# Certificate Configuration) before following the next steps:
 
 1. Open the `kDriveExt` solution located at `F:\Projects\desktop-kDrive\extensions\windows\cfapi`.
 2. Navigate to the post-build events of the `Vfs` project: right click on the `Vfs` project and follow `Properties > Configuration properties > Build Events > Post-Build Event`.
@@ -365,7 +369,9 @@ To build in Debug mode, you'll need to build and deploy the Windows extension fi
 4. Modify `F:\Projects\` to match your actual path. The last two paths are outputs of the global projects; keep them for later steps.
 5. Save and close the properties window.
 
-Select `Debug x64` and deploy. Repeat the same steps for `Release x64`.
+Select `Debug x64` and deploy. 
+
+To build in Release mode, repeat the same steps for `Release x64`.
 
 Close the `kDriveExt` solution.
 

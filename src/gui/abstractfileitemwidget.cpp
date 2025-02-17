@@ -27,7 +27,7 @@
 #include <QPainterPath>
 #include <QDir>
 
-#include <utility/utility.h>
+#include "utility/utility.h"
 
 namespace KDC {
 

@@ -1,4 +1,9 @@
-project(gui)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(gui LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(gui LANGUAGES C CXX)
+endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Sql Widgets SvgWidgets WebEngineWidgets)
 find_package(Qt6LinguistTools)
@@ -230,6 +235,90 @@ else()
     endforeach()
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
 endif()
+
+# Precompiled headers
+if(WIN32)
+    set(PC_HEADER_FILES
+        "$<$<COMPILE_LANGUAGE:CXX>:<windows.h$<ANGLE-R>>"
+        "$<$<COMPILE_LANGUAGE:CXX>:<winbase.h$<ANGLE-R>>"
+)
+endif()
+
+list(APPEND PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<iostream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<map$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<sstream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<stdlib.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<time.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<unordered_map$<ANGLE-R>>"
+    # Qt
+    "$<$<COMPILE_LANGUAGE:CXX>:<qaction.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qapplication.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qboxlayout.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qbytearray.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qcolor.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdatetime.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdesktopservices.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdialog.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qevent.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qfile.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qfiledialog.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qfileinfo.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qgraphicseffect.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qheaderview.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qicon.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qlabel.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qlineedit.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qlist.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qlistwidget.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qloggingcategory.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qmenu.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qmessagebox.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qnetworkreply.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qobject.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qpainter.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qpainterpath.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qpoint.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qpointer.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qprocess.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qprogressbar.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qpushbutton.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qradiobutton.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qrect.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qscreen.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qscrollarea.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qscrollbar.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qsize.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qsizepolicy.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstackedwidget.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstandarditemmodel.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstring.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstringlist.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstyleoption.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qtableview.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qtimer.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qtreewidget.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qurl.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qvector.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qwidget.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qwidgetaction.h$<ANGLE-R>>"
+    # kDrive
+    "$<$<COMPILE_LANGUAGE:CXX>:gui/clientgui.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:gui/customdialog.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:gui/custommessagebox.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:gui/customtoolbutton.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:gui/guirequests.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:gui/guiutility.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:gui/parameterscache.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/theme/theme.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommongui/utility/utility.h>"
+)
+
+target_precompile_headers(${APPLICATION_CLIENT_EXECUTABLE} PRIVATE ${PC_HEADER_FILES})
 
 if (APPLE)
     set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
