@@ -177,7 +177,8 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        appPtr->showAlreadyRunning();
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Asking the running server to start a newClient.");
+        appPtr->sendRestartClientMsg();
         return 0;
     }
 

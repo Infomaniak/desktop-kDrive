@@ -1,4 +1,9 @@
-project(testserver)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(testserver LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(testserver LANGUAGES C CXX)
+endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
 find_package(Poco 1.13.3 REQUIRED XML Net)
