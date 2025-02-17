@@ -89,6 +89,8 @@ void LogUploadJob::cancelUpload() {
 bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
     bool result = false;
+    size = 0;
+    ioError = IoError::Unknown;
     for (int i = 0; i < 2; i++) { // Retry once in case a log file is archived/created during the first iteration
         result = IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoError::Success) {
@@ -97,6 +99,7 @@ bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
                                                // 80% of the original size.
             return true;
         }
+        Utility::msleep(100);
     }
     LOGW_WARN(Log::instance()->getLogger(),
               L"Error in LogArchiver::getLogDirEstimatedSize: " << Utility::formatIoError(logPath, ioError).c_str());

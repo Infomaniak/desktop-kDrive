@@ -1837,7 +1837,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE: {
             uint64_t logSize = 0;
             IoError ioError = IoError::Success;
-            bool res = LogUploadJob::getLogDirEstimatedSize(logSize, ioError);
+            const bool res = LogUploadJob::getLogDirEstimatedSize(logSize, ioError);
             if (!res || ioError != IoError::Success) {
                 LOG_WARN(_logger, "Error in LogArchiver::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError));
 
