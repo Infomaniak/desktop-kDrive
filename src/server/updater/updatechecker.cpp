@@ -114,7 +114,7 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
 
 ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) {
     AppStateValue appStateValue = "";
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
+    if (!ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
         return ExitCode::DbError;
     }

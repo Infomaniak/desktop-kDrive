@@ -57,7 +57,7 @@ bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionS
     (void) startJob;
 
     AppStateValue appStateValue = "";
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
+    if (!ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue)) {
         LOG_WARN(getLogger(), "Error in ParmsDb::selectAppState");
     }
 
