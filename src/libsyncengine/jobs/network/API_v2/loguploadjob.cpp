@@ -292,19 +292,14 @@ ExitInfo LogUploadJob::getArchiveName(SyncName &archiveName) const {
     // Generate archive name: <drive id 1>-<drive id 2>...-<drive id N>-yyyyMMdd-HHmmss.zip
     std::string archiveNameStr;
     std::vector<Drive> driveList;
-    try {
-        if (!ParmsDb::instance()->selectAllDrives(driveList)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
-            return {ExitCode::DbError, ExitCause::DbAccessError};
-        }
-
-        if (driveList.empty()) {
-            LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
-            return {ExitCode::InvalidToken, ExitCause::LoginError}; // Currently, we can't send logs if no drive is found
-        }
-    } catch (const std::runtime_error &e) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in generateLogsSupportArchive: error=" << e.what());
+    if (!ParmsDb::instance()->selectAllDrives(driveList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
         return {ExitCode::DbError, ExitCause::DbAccessError};
+    }
+
+    if (driveList.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
+        return {ExitCode::InvalidToken, ExitCause::LoginError}; // Currently, we can't send logs if no drive is found
     }
 
     for (const auto &drive: driveList) {
@@ -328,8 +323,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
     IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dir;
     if (!IoHelper::getDirectoryIterator(logDirPath, false, ioError, dir)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
         return ExitCode::SystemError;
     }
 
@@ -358,8 +352,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
     }
 
     if (!endOfDirectory) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
         return ExitCode::SystemError;
     }
 
@@ -411,33 +404,28 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     file << "User ID(s): ";
 
     std::vector<User> userList;
-    try {
-        if (ParmsDb::instance()->selectAllUsers(userList)) {
-            for (const User &user: userList) {
-                file << user.userId() << " | ";
-            }
-            file << std::endl;
-        } else {
-            file << "Unable to retrieve user ID(s)" << std::endl;
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+    if (ParmsDb::instance()->selectAllUsers(userList)) {
+        for (const User &user: userList) {
+            file << user.userId() << " | ";
         }
-
-        file << "Drive ID(s): ";
-        std::vector<Drive> driveList;
-        if (ParmsDb::instance()->selectAllDrives(driveList)) {
-            for (const Drive &drive: driveList) {
-                file << drive.driveId() << " | ";
-            }
-            file << std::endl;
-        } else {
-            file << "Unable to retrieve drive ID(s)" << std::endl;
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
-        }
-    } catch (const std::runtime_error &e) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in generateUserDescriptionFile: error=" << e.what());
-        file << "Unable to retrieve user ID(s): error=" << e.what() << std::endl;
-        file << "Drive ID(s): Unable to retrieve drive ID(s): error=" << e.what() << std::endl;
+        file << std::endl;
+    } else {
+        file << "Unable to retrieve user ID(s)" << std::endl;
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
     }
+
+    file << "Drive ID(s): ";
+    std::vector<Drive> driveList;
+    if (ParmsDb::instance()->selectAllDrives(driveList)) {
+        for (const Drive &drive: driveList) {
+            file << drive.driveId() << " | ";
+        }
+        file << std::endl;
+    } else {
+        file << "Unable to retrieve drive ID(s)" << std::endl;
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+    }
+
 
     file.close();
     if (file.bad()) {
