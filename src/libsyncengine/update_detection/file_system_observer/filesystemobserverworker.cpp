@@ -28,21 +28,33 @@ FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> sync
                                                    const std::string &shortName, const ReplicaSide side) :
     ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _snapshot(syncPal->snapshot(side)) {}
 
+
 void FileSystemObserverWorker::invalidateSnapshot() {
     if (!_snapshot->isValid()) return;
-    // The synchronisation will restart, even if there is no change in the file system and if the snapshot is not actually invalidated.
+
+    // The synchronisation will restart.
+    _syncPal->setRestart(true);
+
+    _snapshot->init();
+    _invalidateCounter = 0;
+    LOG_SYNCPAL_DEBUG(_logger, _snapshot->side() << " snapshot invalidated.");
+}
+
+void FileSystemObserverWorker::tryToInvalidateSnapshot() {
+    if (!_snapshot->isValid()) return;
+
+    // The synchronisation will restart, even if there is no change in the file system and if the snapshot is not actually
+    // invalidated.
     _syncPal->setRestart(true);
 
     _invalidateCounter++;
     if (_invalidateCounter < maxRetryBeforeInvalidation) {
         LOG_SYNCPAL_DEBUG(_logger, _snapshot->side()
-                                           << " snapshot is not invalidated. Invalidation count: " << _invalidateCounter);
+                                           << " snapshot is not invalidated yet. Invalidation count: " << _invalidateCounter);
         return;
     }
 
-    _snapshot->init();
-    _invalidateCounter = 0;
-    LOG_SYNCPAL_DEBUG(_logger, _snapshot->side() << " snapshot invalidated");
+    invalidateSnapshot();
 }
 
 void FileSystemObserverWorker::forceUpdate() {
