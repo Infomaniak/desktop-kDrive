@@ -101,7 +101,7 @@ void VersionWidget::showReleaseNotes() const {
 
     const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
     QString languageCode = CommonUtility::languageCode(appLanguage);
-    if (languageCode.isEmpty()) languageCode = CommonUtility::englishCode();
+    if (languageCode.isEmpty()) languageCode = CommonUtility::englishCode;
     QDesktopServices::openUrl(
             QUrl(QString("%1-%2-%3-%4.html")
                          .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), os, languageCode.left(2))));
@@ -150,7 +150,7 @@ void VersionWidget::onJoinBetaButtonClicked() {
 void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const {
     // Re-translate
     const QString releaseNoteLinkText =
-            tr(R"(<a style="%1" href="%2">Show release note</a>)").arg(CommonUtility::linkStyle(), releaseNoteLink);
+            tr(R"(<a style="%1" href="%2">Show release note</a>)").arg(CommonUtility::linkStyle, releaseNoteLink);
     _showReleaseNotesLabel->setText(releaseNoteLinkText);
 
     _versionLabel->setText(tr("Version"));
@@ -178,7 +178,7 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
         }
         case UpdateState::ManualUpdateAvailable: {
             statusString = tr(R"(An update is available: %1.<br>Please download it from <a style="%2" href="%3">here</a>.)")
-                                   .arg(versionStr, CommonUtility::linkStyle(), downloadPageLink);
+                                   .arg(versionStr, CommonUtility::linkStyle, downloadPageLink);
             showReleaseNote = true;
             break;
         }
@@ -260,7 +260,7 @@ void VersionWidget::initVersionInfoBloc(PreferencesBlocWidget *prefBloc) {
     verticalLayout->addWidget(_showReleaseNotesLabel);
 
     static const QString versionNumberLinkText =
-            tr(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle(), versionLink, KDRIVE_VERSION_STRING);
+            tr(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING);
     _versionNumberLabel = new QLabel(this);
     _versionNumberLabel->setContextMenuPolicy(Qt::PreventContextMenu);
     _versionNumberLabel->setText(versionNumberLinkText);

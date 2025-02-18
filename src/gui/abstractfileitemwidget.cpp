@@ -27,7 +27,7 @@
 #include <QPainterPath>
 #include <QDir>
 
-#include "utility/utility.h"
+#include <utility/utility.h>
 
 namespace KDC {
 
@@ -123,7 +123,7 @@ void AbstractFileItemWidget::setFilePath(const QString &filePath, NodeType type 
 }
 
 void AbstractFileItemWidget::setDriveName(const QString &driveName, const QString &localPath) {
-    QString str = QString("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle(), localPath, driveName);
+    QString str = QString("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle, localPath, driveName);
     _pathLabel->setText(str);
 }
 
@@ -197,7 +197,7 @@ void AbstractFileItemWidget::setPath(const QString &path) {
     GuiUtility::makePrintablePath(printablePath);
 
     printablePath = QDir::toNativeSeparators(printablePath);
-    QString pathStr = QString("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle(), path, printablePath);
+    QString pathStr = QString("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle, path, printablePath);
 
     _pathLabel->setText(pathStr);
     _pathLabel->setToolTip(path);

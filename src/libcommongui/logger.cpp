@@ -303,7 +303,7 @@ void Logger::slotWatchLogSize() {
         // Do not check log size from client
         _watchLogSizeTimer.stop();
     } else {
-        if (_logFile.size() > CommonUtility::logMaxSize()) {
+        if (_logFile.size() > CommonUtility::logMaxSize) {
             kdriveLog("Log too big, archiving current log and creating a new one.");
             emit logTooBig();
             enterNextLogFile();

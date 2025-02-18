@@ -119,13 +119,13 @@ void AboutDialog::initUI() {
 QString AboutDialog::aboutText() const {
     QString about;
     about = tr("Version %1. For more information visit <a style=\"%2\" href=\"%3\">%4</a><br><br>")
-                    .arg(KDC::CommonUtility::escape(KDRIVE_VERSION_STRING), CommonUtility::linkStyle(), domainLink,
+                    .arg(KDC::CommonUtility::escape(KDRIVE_VERSION_STRING), CommonUtility::linkStyle, domainLink,
                          "https://" KDRIVE_STRINGIFY(APPLICATION_DOMAIN));
     about += tr("Copyright 2019-%1 Infomaniak Network SA<br><br>").arg(QDate::currentDate().year());
     about += tr("Distributed by %1 and licensed under the <a style=\"%3\" href=\"%4\">%5</a>.<br><br>"
                 "%2 and the %2 logo are registered trademarks of %1.<br><br>")
                      .arg(KDC::CommonUtility::escape(APPLICATION_VENDOR), KDC::CommonUtility::escape(APPLICATION_NAME),
-                          CommonUtility::linkStyle(), gnuLink, "GNU Lesser General Public License (LGPL) Version 3.0");
+                          CommonUtility::linkStyle, gnuLink, "GNU Lesser General Public License (LGPL) Version 3.0");
 
     about += tr("<p><small>Built from <a style=\"color: #489EF3\" href=\"%1\">Git sources</a> on %2, %3 using Qt %4, "
                 "%5</small></p>")

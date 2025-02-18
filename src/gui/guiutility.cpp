@@ -310,7 +310,7 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
     QString text;
     if (statusInfo._disconnected) {
         text = QCoreApplication::translate("utility", "You are not connected anymore. <a style=\"%1\" href=\"%2\">Log in</a>")
-                       .arg(KDC::CommonUtility::linkStyle())
+                       .arg(KDC::CommonUtility::linkStyle)
                        .arg(loginLink);
     } else {
         switch (statusInfo._status) {
@@ -352,7 +352,7 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
             case KDC::SyncStatus::Error:
                 text = QCoreApplication::translate(
                                "utility", "Some files couldn't be synchronized. <a style=\"%1\" href=\"%2\">Learn more</a>")
-                               .arg(KDC::CommonUtility::linkStyle())
+                               .arg(KDC::CommonUtility::linkStyle)
                                .arg(learnMoreLink);
                 break;
             case KDC::SyncStatus::PauseAsked:

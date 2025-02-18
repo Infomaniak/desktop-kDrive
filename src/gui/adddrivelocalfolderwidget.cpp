@@ -257,7 +257,7 @@ void AddDriveLocalFolderWidget::updateUI() {
 
     const QDir dir(_localFolderPath);
     _folderNameLabel->setText(dir.dirName());
-    _folderPathLabel->setText(QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle(), _localFolderPath));
+    _folderPathLabel->setText(QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath));
 
     if (_localFolderPath != _defaultLocalFolderPath) {
         _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName()));
@@ -283,7 +283,7 @@ void AddDriveLocalFolderWidget::updateUI() {
                 _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync.<br> 
 Please select another folder. If you continue Lite Sync will be disabled.<br> 
 <a style="%1" href="%2">Learn more</a>)")
-                                               .arg(CommonUtility::linkStyle(), KDC::GuiUtility::learnMoreLink));
+                                               .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
                 _warningWidget->setVisible(true);
             } else {
                 _warningWidget->setVisible(false);

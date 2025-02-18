@@ -156,7 +156,7 @@ void FixConflictingFilesDialog::initUi() {
         keepRemoteDisclaimerLabel->setText(
                 tr("Your changes may be permanently deleted. They cannot be restored from the kDrive web application."));
         keepRemoteDisclaimerLearnMoreLabel->setText(
-                tr("<a style=%1 href=\"%2\">Learn more</a>").arg(CommonUtility::linkStyle(), LEARNMORE_MOVE_TO_TRASH_URL));
+                tr("<a style=%1 href=\"%2\">Learn more</a>").arg(CommonUtility::linkStyle, LEARNMORE_MOVE_TO_TRASH_URL));
         keepLocalDisclaimerLayout->addWidget(keepRemoteDisclaimerLearnMoreLabel);
     } else {
         keepRemoteDisclaimerLabel->setText(

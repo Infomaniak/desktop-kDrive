@@ -69,14 +69,13 @@ int main(int argc, char **argv) {
     std::cout << "kDrive server starting" << std::endl;
 
     // Working dir;
-    KDC::SyncPath appWorkingDir = KDC::SyncPath(argv[0]).parent_path();
+    KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
 #ifdef __unix__
     const std::string value = KDC::CommonUtility::envVarValue("APPIMAGE");
     if (!value.empty()) {
-        appWorkingDir /= "usr/bin";
+        KDC::CommonUtility::_workingDirPath /= "usr/bin";
     }
 #endif
-    KDC::CommonUtility::setAppWorkingDir(appWorkingDir);
 
     KDC::sentry::Handler::init(KDC::AppType::Server);
     KDC::sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::sentry::ConfidentialityLevel::Authenticated);
@@ -178,8 +177,7 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Asking the running server to start a newClient.");
-        appPtr->sendRestartClientMsg();
+        appPtr->showAlreadyRunning();
         return 0;
     }
 

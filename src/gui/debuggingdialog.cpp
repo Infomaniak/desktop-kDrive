@@ -113,7 +113,7 @@ void DebuggingDialog::initUI() {
     // Debug info main box | Link to debug folder
     _debuggingFolderLabel = new QLabel(_debuggingInfoMainWidget);
     _debuggingFolderLabel->setText(
-            tr("<a style=\"%1\" href=\"%2\">Open debugging folder</a>").arg(CommonUtility::linkStyle(), debuggingFolderLink));
+            tr("<a style=\"%1\" href=\"%2\">Open debugging folder</a>").arg(CommonUtility::linkStyle, debuggingFolderLink));
     _debuggingFolderLabel->setContentsMargins(boxHMargin, 0, 0, 10);
     mainLayout->addWidget(_debuggingFolderLabel);
     mainLayout->addSpacing(boxHSpacing);
@@ -205,7 +205,7 @@ void DebuggingDialog::initUI() {
     // Debug info main box | Delete logs | Main box | Checkbox
     _deleteLogsCheckBox = new CustomCheckBox();
     _deleteLogsCheckBox->setObjectName("deleteLogsCheckBox");
-    _deleteLogsCheckBox->setText(tr("Delete logs older than %1 days").arg(CommonUtility::logsPurgeRate()));
+    _deleteLogsCheckBox->setText(tr("Delete logs older than %1 days").arg(CommonUtility::logsPurgeRate));
     deleteLogsHBox->addWidget(_deleteLogsCheckBox);
 
     debuggingInfoMainHBox->addSpacing(boxHMargin);
@@ -493,11 +493,11 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
             errorLabel->setText(
                     tr("Share the folder with SwissTransfer <br>") +
                     tr(" 1. We automatically compressed your log <a style=\"%1\" href=\"%2\">here</a>.<br>")
-                            .arg(CommonUtility::linkStyle(), QString::fromStdString(archivePath.parent_path().string())) +
+                            .arg(CommonUtility::linkStyle, QString::fromStdString(archivePath.parent_path().string())) +
                     tr(" 2. Transfer the archive with <a style=\"%1\" href=\"%2\">swisstransfer.com</a><br>")
-                            .arg(CommonUtility::linkStyle(), "https://www.swisstransfer.com/") +
+                            .arg(CommonUtility::linkStyle, "https://www.swisstransfer.com/") +
                     tr(" 3. Share the link with <a style=\"%1\" href=\"%2\"> support@infomaniak.com </a><br>")
-                            .arg(CommonUtility::linkStyle(), "mailto:support@infomaniak.com"));
+                            .arg(CommonUtility::linkStyle, "mailto:support@infomaniak.com"));
             errorLabel->setToolTip(QString::fromStdString(archivePath.parent_path().string()));
             errorHBox->addWidget(errorLabel);
             connect(errorLabel, &QLabel::linkActivated, this, &DebuggingDialog::onLinkActivated);
