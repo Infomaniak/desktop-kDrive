@@ -401,8 +401,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     file << "App Version: " << appVersion << std::endl;
     file << "User ID(s): ";
 
-    std::vector<User> userList;
-    if (ParmsDb::instance()->selectAllUsers(userList)) {
+    if (std::vector<User> userList; ParmsDb::instance()->selectAllUsers(userList)) {
         for (const User &user: userList) {
             file << user.userId() << " | ";
         }
@@ -413,8 +412,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     }
 
     file << "Drive ID(s): ";
-    std::vector<Drive> driveList;
-    if (ParmsDb::instance()->selectAllDrives(driveList)) {
+    if (std::vector<Drive> driveList; ParmsDb::instance()->selectAllDrives(driveList)) {
         for (const Drive &drive: driveList) {
             file << drive.driveId() << " | ";
         }
@@ -440,8 +438,11 @@ ExitInfo LogUploadJob::generateArchive(const SyncPath &directoryToCompress, cons
     const SyncPath archivePath = destPath / (archiveNameWithoutExtension + Str2SyncName(".zip"));
     int err = 0;
     zip_t *archive = zip_open(archivePath.string().c_str(), ZIP_CREATE | ZIP_EXCL, &err);
-    if (err != ZIP_ER_OK) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in zip_open: " << zip_strerror(archive));
+    if (!archive || err != ZIP_ER_OK) {
+        zip_error_t error;
+        zip_error_init_with_code(&error, err);
+        LOG_WARN(Log::instance()->getLogger(), "Error in zip_open: " << zip_error_strerror(&error));
+        zip_error_fini(&error);
         return ExitCode::SystemError;
     }
 
