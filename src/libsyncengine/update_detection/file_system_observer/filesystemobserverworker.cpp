@@ -43,12 +43,13 @@ void FileSystemObserverWorker::invalidateSnapshot() {
 void FileSystemObserverWorker::tryToInvalidateSnapshot() {
     if (!_snapshot->isValid()) return;
 
-    // The synchronisation will restart, even if there is no change in the file system and if the snapshot is not actually
-    // invalidated.
-    _syncPal->setRestart(true);
-
     _invalidateCounter++;
     if (_invalidateCounter < maxRetryBeforeInvalidation) {
+        // The synchronisation will restart, even if
+        // - there is no change in the file system and
+        // - if the snapshot is not actually invalidated.
+        _syncPal->setRestart(true);
+
         LOG_SYNCPAL_DEBUG(_logger, _snapshot->side()
                                            << " snapshot is not invalidated yet. Invalidation count: " << _invalidateCounter);
         return;

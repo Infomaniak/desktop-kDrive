@@ -409,6 +409,9 @@ void TestNetworkJobs::testDownload() {
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
     {
+        const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
+        if (smallPartitionPath.empty()) return;
+
         // Not Enough disk space
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
@@ -422,7 +425,6 @@ void TestNetworkJobs::testDownload() {
         uploadJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
 
-        SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
         bool exist = false;
