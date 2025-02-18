@@ -23,8 +23,8 @@
 #include "libsyncengine/jobs/jobmanager.h"
 #include "version.h"
 
-#include "mocks/server/updater/mockupdater.h"
-#include "mocks/server/updater/mockupdatechecker.h"
+#include "mockupdater.h"
+#include "mockupdatechecker.h"
 
 namespace KDC {
 
@@ -120,6 +120,7 @@ void TestAbstractUpdater::testCurrentVersionedChannel() {
     updateChecker->setAllVersionInfo(testVersions);
 
     std::string version;
+    updater.setMockGetCurrentVersion([&version]() { return version; });
 
     // Check Next version
     version = "10.0.0.20210101";

@@ -18,7 +18,6 @@
 
 #include "abstractupdater.h"
 
-#include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
 #if defined(__APPLE__)
@@ -103,7 +102,7 @@ bool AbstractUpdater::isVersionSkipped(const std::string& version) {
 DistributionChannel AbstractUpdater::currentVersionChannel() const {
     const std::unordered_map<DistributionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
     if (allVersions.empty()) return DistributionChannel::Unknown;
-    std::string currentVersion = CommonUtility::currentVersion();
+    std::string currentVersion = getCurrentVersion();
     if (allVersions.contains(DistributionChannel::Prod) &&
         allVersions.at(DistributionChannel::Prod).fullVersion() == currentVersion) {
         return DistributionChannel::Prod;

@@ -22,7 +22,7 @@
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "requests/parameterscache.h"
-#include "mocks/server/updater/mockupdatechecker.h"
+#include "mockupdatechecker.h"
 #include "utility/utility.h"
 
 namespace KDC {

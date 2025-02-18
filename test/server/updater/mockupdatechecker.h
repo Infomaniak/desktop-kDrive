@@ -21,7 +21,7 @@
 #include "testincludes.h"
 #include "utility/types.h"
 #include "server/updater/updatechecker.h"
-#include "mocks/libsyncengine/jobs/network/mockgetappversionjob.h"
+#include "libsyncengine/jobs/network/mockgetappversionjob.h"
 
 namespace KDC {
 

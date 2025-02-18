@@ -43,9 +43,9 @@ else ()
 endif()
 
 set(testserver_SRCS
-    ../mocks/libsyncengine/jobs/network/mockgetappversionjob.h
-    ../mocks/server/updater/mockupdater.h
-    ../mocks/server/updater/mockupdatechecker.h
+    ../libsyncengine/jobs/network/mockgetappversionjob.h
+    updater/mockupdater.h
+    updater/mockupdatechecker.h
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
     ../test.cpp

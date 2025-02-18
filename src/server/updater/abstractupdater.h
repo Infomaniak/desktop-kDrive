@@ -20,6 +20,7 @@
 
 #include "updatechecker.h"
 #include "utility/types.h"
+#include "libcommon/utility/utility.h"
 
 #include <functional>
 
@@ -75,8 +76,8 @@ class AbstractUpdater {
 
     protected:
         explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker);
-
         void setState(UpdateState newState);
+        inline virtual std::string getCurrentVersion() const { return CommonUtility::currentVersion(); }
 
         DistributionChannel _currentChannel{DistributionChannel::Unknown};
 
