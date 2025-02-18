@@ -513,7 +513,7 @@ void TestNetworkJobs::testDownloadAborted() {
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
     VfsStatus vfsStatusRes;
-    vfs->setForceStatusMock(
+    vfs->setMockForceStatus(
             [&forceStatusCalled, &vfsStatusRes]([[maybe_unused]] const SyncPath &path, const VfsStatus &vfsStatus) -> ExitInfo {
                 forceStatusCalled = true;
                 vfsStatusRes = vfsStatus;
@@ -932,7 +932,7 @@ void TestNetworkJobs::testUploadAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock(
+    vfs->setMockForceStatus(
             [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
                 forceStatusCalled = true;
                 return ExitCode::Ok;
@@ -1119,7 +1119,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock(
+    vfs->setMockForceStatus(
             [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
                 forceStatusCalled = true;
                 return ExitCode::Ok;
@@ -1155,7 +1155,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock(
+    vfs->setMockForceStatus(
             [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
                 forceStatusCalled = true;
                 return ExitCode::Ok;
