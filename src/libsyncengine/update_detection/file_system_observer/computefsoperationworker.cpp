@@ -348,7 +348,7 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
         }
         if (!dbNodeIsFound) {
             // The node is not anymore in the DB (one of its parents has been blacklisted)
-            ++dbIdIt;
+            dbIdIt = remainingDbIds.erase(dbIdIt);
             continue;
         }
 
