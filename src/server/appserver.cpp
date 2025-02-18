@@ -2853,7 +2853,6 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
         timestampStr = std::to_string(selfRestarterNoCrashDetected);
     }
     bool found = false;
-    KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
     if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
     }
