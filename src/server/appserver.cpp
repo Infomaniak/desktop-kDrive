@@ -2072,8 +2072,7 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
     const std::function<void(UniqueId)> jobResultCallback = [this, logUploadJob](const UniqueId id) {
         if (const ExitInfo exitInfo = logUploadJob->exitInfo(); !exitInfo && exitInfo.code() != ExitCode::OperationCanceled) {
             LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: " << exitInfo);
-            addError(Error(errId(), ExitCode::LogUploadFailed, ExitCause::Unknown));
-            addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
+            addError(Error(errId(), ExitCode::LogUploadFailed, exitInfo.cause()));
         }
     };
     JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH, jobResultCallback);
