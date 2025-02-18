@@ -173,7 +173,6 @@ void TestComputeFSOperationWorker::setUp() {
     _syncPal->setComputeFSOperationsWorker(
             std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
     _syncPal->computeFSOperationsWorker()->setTesting(true);
-    _syncPal->setLocalPath(testhelpers::localTestDirPath);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 }
 
@@ -225,6 +224,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         IoError ioError = IoError::Success;
         SyncPath bbNodePath = bNodePath / "BB";
 #ifdef _WIN32
+        // NB: In Windows, it is possible to access a file that is located in a directory that is denied access.
         {
             std::ofstream ofs(_syncPal->localPath() / bbNodePath);
             ofs << "Some content.\n";
@@ -241,7 +241,6 @@ void TestComputeFSOperationWorker::testAccessDenied() {
 
         ExitCode exitCode = _syncPal->computeFSOperationsWorker()->exitCode();
         IoHelper::setRights(_syncPal->localPath() / bNodePath, true, true, true, ioError);
-        std::filesystem::remove_all(_syncPal->localPath() / bNodePath, ec);
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(bNodePath, ReplicaSide::Local));
@@ -264,6 +263,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         SyncPath aaNodePath = aNodePath / "AA";
 
 #ifdef _WIN32
+        // NB: In Windows, it is possible to access a file that is located in a directory that is denied access.
         {
             std::ofstream ofs(_syncPal->localPath() / aaNodePath);
             ofs << "Some content.\n";
@@ -285,7 +285,6 @@ void TestComputeFSOperationWorker::testAccessDenied() {
 
         ExitCode exitCode = _syncPal->computeFSOperationsWorker()->exitCode();
         IoHelper::setRights(_syncPal->localPath() / aNodePath, true, true, true, ioError);
-        std::filesystem::remove_all(_syncPal->localPath() / aNodePath, ec);
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(aNodePath, ReplicaSide::Local));
@@ -296,6 +295,9 @@ void TestComputeFSOperationWorker::testAccessDenied() {
 }
 
 void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings() {
+    // TODO: Use the default tmp directory
+    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+
     // Duplicated items with distinct encodings are not supported, and only one of them will be synced. We do not guarantee
     // that it will always be the same one.
     _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfc", "la", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
@@ -314,6 +316,9 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
 }
 
 void TestComputeFSOperationWorker::testMultipleOps() {
+    // TODO: Use the default tmp directory
+    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+
     // On local replica
     // Create operation
     _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime,
@@ -355,6 +360,9 @@ void TestComputeFSOperationWorker::testMultipleOps() {
 }
 
 void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
+    // TODO: Use the default tmp directory
+    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+
     // Add file in DB
     DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("test.lnk"), Str("test.lnk"), "ltest", "rtest",
                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0,
