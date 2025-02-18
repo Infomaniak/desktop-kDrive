@@ -102,7 +102,7 @@ bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
         Utility::msleep(100);
     }
     LOGW_WARN(Log::instance()->getLogger(),
-              L"Error in LogArchiver::getLogDirEstimatedSize: " << Utility::formatIoError(logPath, ioError).c_str());
+              L"Error in LogArchiver::getLogDirEstimatedSize: " << Utility::formatIoError(logPath, ioError));
 
     return result;
 }
@@ -329,7 +329,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
     IoHelper::DirectoryIterator dir;
     if (!IoHelper::getDirectoryIterator(logDirPath, false, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError).c_str());
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
         return ExitCode::SystemError;
     }
 
@@ -337,19 +337,19 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) {
-            LOG_INFO(Log::instance()->getLogger(), "Ignoring temp directory " << entry.path().filename().string().c_str());
+            LOG_INFO(Log::instance()->getLogger(), "Ignoring temp directory " << entry.path().filename().string());
             continue;
         }
 
         if (!includeArchivedLogs && !entry.path().filename().string().starts_with(logFileDate) &&
             entry.path().filename().extension() != ".log") {
-            LOG_INFO(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string().c_str());
+            LOG_INFO(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string());
             continue;
         }
 
         if (!IoHelper::copyFileOrDirectory(entry.path(), outputPath / entry.path().filename(), ioError)) {
             LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
+                      L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), ioError));
             if (ioError == IoError::DiskFull) {
                 return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
             }
@@ -359,7 +359,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
 
     if (!endOfDirectory) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError).c_str());
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
         return ExitCode::SystemError;
     }
 
@@ -375,7 +375,7 @@ ExitInfo LogUploadJob::copyParmsDbTo(const SyncPath &outputPath) const {
         LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Creating ");
 
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
+                  L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError));
         if (ioError == IoError::NoSuchFileOrDirectory) {
             return {ExitCode::SystemError, ExitCause::NotFound};
         } else {
@@ -385,7 +385,7 @@ ExitInfo LogUploadJob::copyParmsDbTo(const SyncPath &outputPath) const {
 
     if (!IoHelper::copyFileOrDirectory(parmsDbPath, outputPath, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
+                  L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(parmsDbPath, ioError));
 
         if (ioError == IoError::DiskFull) {
             return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
