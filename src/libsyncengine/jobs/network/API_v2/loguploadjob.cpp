@@ -365,8 +365,6 @@ ExitInfo LogUploadJob::copyParmsDbTo(const SyncPath &outputPath) const {
     DirectoryEntry entryParmsDb;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Creating ");
-
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError));
         if (ioError == IoError::NoSuchFileOrDirectory) {
