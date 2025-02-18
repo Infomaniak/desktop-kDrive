@@ -43,7 +43,6 @@ else ()
 endif()
 
 set(testserver_SRCS
-    ../mocks/libcommon/utility/mockcommonutility.h
     ../mocks/libsyncengine/jobs/network/mockgetappversionjob.h
     ../mocks/server/updater/mockupdater.h
     ../mocks/server/updater/mockupdatechecker.h
@@ -52,6 +51,7 @@ set(testserver_SRCS
     ../test.cpp
 
     test.cpp
+    logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
     workers/testworkers.h workers/testworkers.cpp

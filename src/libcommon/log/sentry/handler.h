@@ -72,6 +72,7 @@ class Handler {
         static void init(const std::shared_ptr<Handler> &initializedHandler);
         void setAuthenticatedUser(const SentryUser &user);
         void setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level);
+
         // Capture an event
         /*   If the same event has been captured more than 10 times in the last 10 minutes, it will be flagged as a rate
          * limited event. If a rate limited event is not seen for 10 minutes, it will be unflagged.

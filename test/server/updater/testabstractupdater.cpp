@@ -25,7 +25,6 @@
 
 #include "mocks/server/updater/mockupdater.h"
 #include "mocks/server/updater/mockupdatechecker.h"
-#include "mocks/libcommon/utility/mockcommonutility.h"
 
 namespace KDC {
 
@@ -120,11 +119,7 @@ void TestAbstractUpdater::testCurrentVersionedChannel() {
     testVersions[DistributionChannel::Internal].buildVersion = 20210101;
     updateChecker->setAllVersionInfo(testVersions);
 
-    auto commonUtility = std::make_shared<MockCommonUtility>();
-    CommonUtility::setCustomCommonUtility(commonUtility);
-
     std::string version;
-    commonUtility->setCurrentVersionMock([&version]() -> const std::string& { return version; });
 
     // Check Next version
     version = "10.0.0.20210101";
