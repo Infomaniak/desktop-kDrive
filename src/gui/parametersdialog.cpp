@@ -41,6 +41,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QLabel>
 #include <QLoggingCategory>
+#include <QOperatingSystemVersion>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
@@ -424,12 +425,23 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCaus
             return tr(
                     "There is not enough memory left on your machine.<br>"
                     "The synchronization has been stopped.");
-        case ExitCause::LiteSyncNotAllowed:
-            return tr("Unable to start synchronization (error %1).<br>"
-                      "You must allow:<br>"
-                      "- kDrive in System Settings >> Privacy & Security >> Security<br>"
-                      "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
-                    .arg(err);
+        case ExitCause::LiteSyncNotAllowed: {
+            int v = QOperatingSystemVersion::current().majorVersion();
+            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
+                QOperatingSystemVersion::current().majorVersion() >= 15) {
+                return tr("Unable to start synchronization (error %1).<br>"
+                          "You must allow:<br>"
+                          "- kDrive in System Settings >> General >> Login Items & Extensions >> Endpoint Security Extensions<br>"
+                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
+                        .arg(err);
+            } else {
+                return tr("Unable to start synchronization (error %1).<br>"
+                          "You must allow:<br>"
+                          "- kDrive in System Settings >> Privacy & Security >> Security<br>"
+                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
+                        .arg(err);
+            }
+        }
         case ExitCause::UnableToCreateVfs: {
             if (OldUtility::isWindows()) {
                 return tr("Unable to start Lite Sync plugin (error %1).<br>"
