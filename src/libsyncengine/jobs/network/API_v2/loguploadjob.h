@@ -25,7 +25,8 @@ namespace KDC {
 
 class LogUploadJob : public AbstractJob, public std::enable_shared_from_this<LogUploadJob> {
     public:
-        LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback);
+        LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
+                     const std::function<void(const Error &error)> &addErrorCallback);
 
         void runJob() override;
         void abort() override;
@@ -44,18 +45,21 @@ class LogUploadJob : public AbstractJob, public std::enable_shared_from_this<Log
         virtual ExitInfo upload(const SyncPath &archivePath);
         virtual void finalize();
         bool canRun() override;
+
     private:
         static std::mutex _runningJobMutex;
         static std::shared_ptr<LogUploadJob> _runningJob;
+
         bool _includeArchivedLog;
         SyncPath _tmpJobWorkingDir;
         SyncPath _generatedArchivePath;
 
         std::function<void(LogUploadState, int)> _progressCallback;
+        std::function<void(const Error &error)> _addErrorCallback;
         std::chrono::time_point<std::chrono::system_clock> _lastProgressUpdateTimeStamp;
         LogUploadState _previousState{LogUploadState::None};
         int _previousProgress{-1};
-        
+
         /* Return the path to a temporary directory where the job can work.
          * The directory will be created if it does not exist.
          * The caller is responsible for deleting the directory when it is no longer needed.
@@ -85,6 +89,9 @@ class LogUploadJob : public AbstractJob, public std::enable_shared_from_this<Log
 
         // Update the log upload state in the database (appstate table).
         void updateLogUploadState(LogUploadState newState) const;
+
+        LogUploadState getDbUploadState() const;
+        void updateDbUploadState(LogUploadState newState) const;
 
         ExitInfo notifyLogUploadProgress(LogUploadState newState, int progressPercent);
 

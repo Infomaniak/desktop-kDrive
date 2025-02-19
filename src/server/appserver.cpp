@@ -1808,9 +1808,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> key;
             paramsStream >> value;
 
-            bool found = true;
-            if (!ParmsDb::instance()->updateAppState(key, value.toStdString(), found) || !found) {
+            if (bool found = true; !ParmsDb::instance()->updateAppState(key, value.toStdString(), found)) {
                 LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+                addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+                resultStream << ExitCode::DbError;
+                break;
+            } else if (!found) {
+                LOG_WARN(_logger, key << " not found in appState table");
                 resultStream << ExitCode::DbError;
                 break;
             }
@@ -1825,8 +1829,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> key;
 
             AppStateValue appStateValue = std::string();
-            if (bool found = false; !ParmsDb::instance()->selectAppState(key, appStateValue, found) || !found) {
+            if (bool found = false; !ParmsDb::instance()->selectAppState(key, appStateValue, found)) {
                 LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+                addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+                resultStream << ExitCode::DbError;
+                break;
+            } else if (!found) {
+                LOG_WARN(_logger, key << " not found in appState table");
                 resultStream << ExitCode::DbError;
                 break;
             }
@@ -2048,15 +2057,18 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
     paramsStream << percent;
     CommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
 
-    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found) || !found) {
-        LOG_WARN(_logger, "Error in ParmsDb::updateAppState with key=" << static_cast<int>(AppStateKey::LogUploadState));
-        // Don't fail because it is not a critical error, especially in this context where we are trying to send logs
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in appState table");
     }
 
-    if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadPercent, std::to_string(percent), found) || !found) {
-        LOG_WARN(_logger, "Error in ParmsDb::updateAppState with key=" << static_cast<int>(AppStateKey::LogUploadPercent));
-        // Don't fail because it is not a critical error, especially in this context where we are trying to send logs
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadPercent, std::to_string(percent), found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(_logger, AppStateKey::LogUploadPercent << " not found in appState table");
     }
 }
 
@@ -2778,8 +2790,12 @@ void AppServer::logUsefulInformation() const {
 
     // Log app ID
     AppStateValue appStateValue = "";
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
+
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
     }
     const auto &appUid = std::get<std::string>(appStateValue);
     LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUid);
@@ -2851,7 +2867,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
     } else {
         timestampStr = std::to_string(selfRestarterNoCrashDetected);
     }
-    bool found = false;
+
     KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
     if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
@@ -2905,22 +2921,34 @@ bool AppServer::clientCrashedRecently(int seconds) {
 
 void AppServer::processInterruptedLogsUpload() {
     AppStateValue appStateValue = LogUploadState::None;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
+
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in appstate table. LogUploadSession might be in progress "
+                                                         "and will be cancelled by the backend after a timeout.");
+        return;
     }
 
     if (auto logUploadState = std::get<LogUploadState>(appStateValue);
         logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
         LOG_DEBUG(_logger, "App was closed during log upload, resetting upload status.");
         if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
+            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        } else if (!found) {
+            LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in appstate table.");
         }
     } else if (logUploadState ==
                LogUploadState::CancelRequested) { // If interrupted while cancelling, consider it has been cancelled
         if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Canceled, found) || !found) {
+            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Canceled, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        } else if (!found) {
+            LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in appstate table.");
         }
     }
 

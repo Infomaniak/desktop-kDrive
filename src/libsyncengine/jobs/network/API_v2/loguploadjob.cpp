@@ -41,20 +41,22 @@ namespace KDC {
 std::mutex LogUploadJob::_runningJobMutex = std::mutex();
 std::shared_ptr<LogUploadJob> LogUploadJob::_runningJob = nullptr;
 
-LogUploadJob::LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback) :
-    _includeArchivedLog(includeArchivedLog), _progressCallback(progressCallback) {
+LogUploadJob::LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
+                           const std::function<void(const Error &error)> &addErrorCallback) :
+    _includeArchivedLog(includeArchivedLog), _progressCallback(progressCallback), _addErrorCallback(addErrorCallback) {
     if (!_progressCallback) {
+        assert(_progressCallback && "progressCallback must be set");
         _progressCallback = [](LogUploadState, int) { return true; };
+    }
+    if (!_addErrorCallback) {
+        assert(_addErrorCallback && "addErrorCallback must be set");
+        _addErrorCallback = [](const Error &) { return true; };
     }
 }
 
 void LogUploadJob::abort() {
     AbstractJob::abort();
-    AppStateValue appStateValue = LogUploadState::None;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
-    }
-    const LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
+    const LogUploadState logUploadState = getDbUploadState();
 
     if (logUploadState == LogUploadState::CancelRequested || logUploadState == LogUploadState::Canceled) {
         LOG_INFO(Log::instance()->getLogger(), "The operation is already canceled");
@@ -66,11 +68,7 @@ void LogUploadJob::abort() {
         return;
     }
 
-    if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::CancelRequested, found) || !found) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-    }
-
+    updateDbUploadState(LogUploadState::CancelRequested);
     if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::CancelRequested, 0); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::notifyLogUploadProgress: " << exitInfo);
     }
@@ -129,9 +127,12 @@ void LogUploadJob::runJob() {
 
     // Save the path of the generated archive, so the user can attach it to the support request if the upload fails
     if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, _generatedArchivePath.string(), found) ||
-        !found) {
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, _generatedArchivePath.string(), found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in ParmsDb::updateAppState: " << AppStateKey::LastLogUploadArchivePath << " key not found");
     }
 
     if (const ExitInfo exitInfo = upload(_generatedArchivePath); !exitInfo) {
@@ -542,13 +543,35 @@ void LogUploadJob::updateLogUploadState(const LogUploadState newState) const {
     }
 }
 
-ExitInfo LogUploadJob::notifyLogUploadProgress(const LogUploadState newState, const int progressPercent) {
+LogUploadState LogUploadJob::getDbUploadState() const {
     AppStateValue appStateValue = LogUploadState::None;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) ||
-                            !found) { // Check if the user canceled the upload
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        return LogUploadState::None;
+    } else if (!found) {
+        LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in the database");
+        return LogUploadState::None;
     }
-    const LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
+
+    return std::get<LogUploadState>(appStateValue);
+}
+
+void LogUploadJob::updateDbUploadState(LogUploadState newState) const {
+    bool found = false;
+    if (!ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, newState, found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        return;
+    }
+    if (!found) {
+        LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in the database");
+        return;
+    }
+}
+
+ExitInfo LogUploadJob::notifyLogUploadProgress(const LogUploadState newState, const int progressPercent) {
+    const LogUploadState logUploadState = getDbUploadState();
     const bool canceled = logUploadState == LogUploadState::Canceled || logUploadState == LogUploadState::CancelRequested ||
                           newState == LogUploadState::Canceled || newState == LogUploadState::CancelRequested;
 
@@ -597,13 +620,11 @@ bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {
 
     IoError ioError = IoError::Unknown;
     if (!IoHelper::getFileSize(path, size, ioError)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError));
         return false;
     }
     if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Unable to read file size for " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(Log::instance()->getLogger(), L"Unable to read file size for " << Utility::formatIoError(path, ioError));
         return false;
     }
 

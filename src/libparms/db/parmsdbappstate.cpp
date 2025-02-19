@@ -163,7 +163,9 @@ bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found)
     }
 
     if (!found) {
-        LOG_WARN(_logger, "AppStateKey not found: " << static_cast<int>(key));
+        sentry::Handler::captureMessage(sentry::Level::Error, "Missing AppStateKey",
+                                        "AppStateKey::" + toString(key) + " not found in selectAppState.");
+        LOG_WARN(_logger, "AppStateKey not found: " << key);
         return true;
     }
     ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, valueStr))
@@ -186,7 +188,9 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
     }
 
     if (!found) {
-        LOG_WARN(_logger, "AppStateKey not found: " << CommonUtility::appStateKeyToString(key).c_str());
+        sentry::Handler::captureMessage(sentry::Level::Error, "Missing AppStateKey",
+                                        "AppStateKey::" + toString(key) + " not found in updateAppState.");
+        LOG_WARN(_logger, "AppStateKey not found: " << key);
         return true;
     }
 
