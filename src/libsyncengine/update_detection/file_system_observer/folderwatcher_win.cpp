@@ -32,7 +32,7 @@ FolderWatcher_win::FolderWatcher_win(LocalFileSystemObserverWorker *parent, cons
 
 void FolderWatcher_win::changesLost() {
     // Current snapshot needs to be invalidated
-    _parent->tryToInvalidateSnapshot();
+    _parent->invalidateSnapshot();
 }
 
 void FolderWatcher_win::changeDetected(const SyncPath &path, OperationType opType) {
