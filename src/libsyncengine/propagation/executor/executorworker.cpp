@@ -219,11 +219,15 @@ void ExecutorWorker::execute() {
 
     if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
         // If there are too many changes on the local filesystem, the OS stops sending events at some point.
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot is potentially invalid because of too many events. Forcing invalidation.");
+        LOG_SYNCPAL_INFO(_logger,
+                         "Local snapshot is potentially invalid because of too many file system events. Forcing invalidation.");
 
         _snapshotToInvalidate = true;
         LOG_SYNCPAL_INFO(_logger, "Invalidate local snapshot.");
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    } else if (_snapshotToInvalidate) {
+        LOG_SYNCPAL_INFO(_logger, "Try to invalidate local snapshot.");
+        _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     }
 
     _syncPal->vfs()->cleanUpStatuses();
@@ -322,7 +326,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate" << " " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate"
+                                              << " " << exitInfo);
             return exitInfo;
         }
 
@@ -408,8 +413,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger,
-                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
