@@ -95,10 +95,10 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
-                    if (fsoWorkers[index]->exitCode() == ExitCode::NetworkError) {
+                    if (fsoWorkers[index]->exitCode() == ExitCode::NetworkError && !pauseAsked()) {
                         pause();
                     }
-                } else {
+                } else if (!pauseAsked()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << index);
                     isFSOInProgress[index] = true;
                     fsoWorkers[index]->start();
@@ -120,6 +120,8 @@ void SyncPalWorker::execute() {
         while ((_pauseAsked || _isPaused) && _step == SyncStep::Idle) {
             if (!_isPaused) {
                 // Pause workers
+                _pauseAsked = false;
+                _isPaused = true;
                 LOG_SYNCPAL_INFO(_logger, "***** Pause");
             }
 
@@ -127,6 +129,8 @@ void SyncPalWorker::execute() {
 
             // Manage unpause
             if (_unpauseAsked) {
+                _isPaused = false;
+                _unpauseAsked = false;
                 LOG_SYNCPAL_INFO(_logger, "***** Resume");
             }
         }
@@ -237,6 +241,7 @@ void SyncPalWorker::pause() {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " is not running");
         return;
     }
+    _pauseTime = std::chrono::system_clock::now();
 
     if (_isPaused || _pauseAsked) {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " is already paused");
@@ -246,7 +251,6 @@ void SyncPalWorker::pause() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " pause");
     _pauseAsked = true;
     _unpauseAsked = false;
-    _pauseTime = std::chrono::system_clock::now();
 }
 
 void SyncPalWorker::unpause() {
@@ -264,6 +268,7 @@ void SyncPalWorker::unpause() {
 
     _unpauseAsked = true;
     _pauseAsked = false;
+    _syncPal->setRestart(true);
 }
 std::string SyncPalWorker::stepName(SyncStep step) {
     std::string name;
@@ -422,6 +427,7 @@ SyncStep SyncPalWorker::nextStep() const {
         case SyncStep::Idle:
             return (_syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote) &&
                     _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning() &&
+                    !_syncPal->_localFSObserverWorker->initializing() && !_syncPal->_remoteFSObserverWorker->initializing() &&
                     !_syncPal->_localFSObserverWorker->updating() && !_syncPal->_remoteFSObserverWorker->updating() &&
                     (_syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated() ||
                      _syncPal->restart()))

@@ -211,10 +211,7 @@ SyncStatus SyncPal::status() const {
             ASSERT(_localSnapshot)
             ASSERT(_remoteSnapshot)
 
-            if (_syncPalWorker->pauseAsked()) {
-                // Auto pausing after a NON fatal error (network, back...)
-                return SyncStatus::PauseAsked;
-            } else if (_syncPalWorker->isPaused()) {
+            if (_syncPalWorker->isPaused()) {
                 // Auto paused after a NON fatal error
                 return SyncStatus::Paused;
             } else if (_syncPalWorker->stopAsked()) {

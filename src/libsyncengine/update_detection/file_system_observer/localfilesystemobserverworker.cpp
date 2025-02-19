@@ -251,7 +251,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             if (!changed) {
 #ifdef _WIN32
                 VfsStatus vfsStatus;
-                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus);
+                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); 
                     !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
@@ -413,7 +413,7 @@ void LocalFileSystemObserverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
-
+    _initializing = true;
     auto timerStart = std::chrono::steady_clock::now();
 
     // Sync loop
@@ -461,7 +461,7 @@ void LocalFileSystemObserverWorker::execute() {
                 }
             }
         }
-
+        if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 

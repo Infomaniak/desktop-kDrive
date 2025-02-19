@@ -3348,7 +3348,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
 
     if (start && (resumedByUser || !sync.paused())) {
         std::chrono::time_point<std::chrono::system_clock> pauseTime;
-        if (_syncPalMap[sync.dbId()]->isPaused(pauseTime)) {
+        if (_syncPalMap[sync.dbId()]->isPaused(pauseTime) || _syncPalMap[sync.dbId()]->pauseAsked()) {
             // Unpause SyncPal
             _syncPalMap[sync.dbId()]->unpause();
         } else if (!_syncPalMap[sync.dbId()]->isRunning()) {

@@ -167,6 +167,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          */
         void start(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
         void stop(bool pausedByUser = false, bool quit = false, bool clear = false);
+
+
+        /* The synchronization will be paused once the ongoing sync reach the Idle state.
+         * It will automatically restart after one minute (triggered by the appserver).
+         *
+         * /!\ This pause mechanism is intended for internal use only, such as handling network disconnections.
+         * If the user pauses synchronization, use the stop() method instead.
+         */
         void pause();
         void unpause();
 
