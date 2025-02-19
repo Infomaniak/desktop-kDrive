@@ -410,6 +410,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     } else {
         file << "Unable to retrieve user ID(s)" << std::endl;
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
     }
 
     file << "Drive ID(s): ";
@@ -421,6 +422,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     } else {
         file << "Unable to retrieve drive ID(s)" << std::endl;
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
     }
 
 
