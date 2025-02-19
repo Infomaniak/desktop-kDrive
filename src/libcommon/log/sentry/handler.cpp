@@ -35,7 +35,7 @@ std::shared_ptr<Handler> Handler::_instance = nullptr;
 AppType Handler::_appType = AppType::None;
 bool Handler::_debugCrashCallback = false;
 bool Handler::_debugBeforeSendCallback = false;
-std::string Handler::_distributionChannelTag = "distribution_channel";
+const std::string Handler::_distributionChannelTag = "distribution_channel";
 /*
  *  sentry_value_t reader implementation - begin
  *  Used for debbuging
