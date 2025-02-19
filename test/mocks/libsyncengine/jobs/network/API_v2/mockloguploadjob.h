@@ -26,6 +26,8 @@ namespace KDC {
 class MockLogUploadJob : public LogUploadJob {
     public:
         using LogUploadJob::LogUploadJob;
+        MockLogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback) :
+            LogUploadJob(includeArchivedLog, progressCallback, [](const Error &) {}) {}
         void setInitMock(std::function<ExitInfo()> init) { _init = init; }
         ExitInfo init() override {
             if (_init) {

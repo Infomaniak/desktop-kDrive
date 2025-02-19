@@ -2079,7 +2079,7 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
     const std::function<void(LogUploadState, int)> jobProgressCallBack = [this](LogUploadState status, int progress) {
         sendLogUploadStatusUpdated(status, progress); // Send progress to the client
     };
-    const auto logUploadJob = std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack);
+    const auto logUploadJob = std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack, &addError);
 
     const std::function<void(UniqueId)> jobResultCallback = [this, logUploadJob](const UniqueId id) {
         if (const ExitInfo exitInfo = logUploadJob->exitInfo(); !exitInfo && exitInfo.code() != ExitCode::OperationCanceled) {
