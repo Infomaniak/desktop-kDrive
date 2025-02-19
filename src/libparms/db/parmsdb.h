@@ -128,7 +128,6 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
         bool selectAppState(AppStateKey key, AppStateValue &value, bool &found);
-        bool selectAppState(AppStateKey key, AppStateValue &value); // Will return false if not found
         bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found); // update or insert
 
     private:
