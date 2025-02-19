@@ -2836,8 +2836,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
         if (serverCrashedRecently()) {
             LOG_INFO(_logger, "Server crashed twice in a short time, exiting");
             QMessageBox::warning(nullptr, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
-            if (bool found = false;
-                !KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
+            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
                 LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
             }
             shouldQuit = true;
