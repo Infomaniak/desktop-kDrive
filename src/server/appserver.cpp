@@ -1825,7 +1825,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> key;
 
             AppStateValue appStateValue = std::string();
-            if (!ParmsDb::instance()->selectAppState(key, appStateValue)) {
+            if (bool found = false; !ParmsDb::instance()->selectAppState(key, appStateValue, found) || !found) {
                 LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
                 resultStream << ExitCode::DbError;
                 break;
@@ -2778,7 +2778,7 @@ void AppServer::logUsefulInformation() const {
 
     // Log app ID
     AppStateValue appStateValue = "";
-    if (!ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue)) {
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
     }
     const auto &appUid = std::get<std::string>(appStateValue);
@@ -2814,15 +2814,16 @@ bool AppServer::setupProxy() noexcept {
 }
 
 void AppServer::handleCrashRecovery(bool &shouldQuit) {
+    bool found = false;
     if (AppStateValue lastServerRestartDate = int64_t(0);
-        !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, lastServerRestartDate)) {
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, lastServerRestartDate, found) ||
+        !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
         shouldQuit = false;
     } else if (std::get<int64_t>(lastServerRestartDate) == selfRestarterDisableValue) {
         LOG_INFO(_logger, "Last session requested to not restart the server.");
         shouldQuit = _crashRecovered;
-        if (bool found = false;
-            !KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
         }
         return;
@@ -2852,6 +2853,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
         timestampStr = std::to_string(selfRestarterNoCrashDetected);
     }
     bool found = false;
+    KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
     if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
     }
@@ -2862,7 +2864,8 @@ bool AppServer::serverCrashedRecently(int seconds) {
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     AppStateValue appStateValue = int64_t(0);
-    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, appStateValue)) {
+    if (bool found = false;
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, appStateValue, found) || !found) {
         addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
@@ -2884,7 +2887,8 @@ bool AppServer::clientCrashedRecently(int seconds) {
 
     AppStateValue appStateValue = int64_t(0);
 
-    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue)) {
+    if (bool found = false;
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found) || !found) {
         addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
@@ -2902,7 +2906,7 @@ bool AppServer::clientCrashedRecently(int seconds) {
 
 void AppServer::processInterruptedLogsUpload() {
     AppStateValue appStateValue = LogUploadState::None;
-    if (!ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue)) {
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
     }
 
@@ -2922,7 +2926,7 @@ void AppServer::processInterruptedLogsUpload() {
     }
 
     appStateValue = "";
-    if (!ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue)) {
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
     }
 

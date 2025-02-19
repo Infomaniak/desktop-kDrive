@@ -51,7 +51,7 @@ LogUploadJob::LogUploadJob(bool includeArchivedLog, const std::function<void(Log
 void LogUploadJob::abort() {
     AbstractJob::abort();
     AppStateValue appStateValue = LogUploadState::None;
-    if (!ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue)) {
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
     }
     const LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
@@ -544,8 +544,8 @@ void LogUploadJob::updateLogUploadState(const LogUploadState newState) const {
 
 ExitInfo LogUploadJob::notifyLogUploadProgress(const LogUploadState newState, const int progressPercent) {
     AppStateValue appStateValue = LogUploadState::None;
-    if (!ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState,
-                                             appStateValue)) { // Check if the user canceled the upload
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) ||
+                            !found) { // Check if the user canceled the upload
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
     }
     const LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
@@ -597,11 +597,13 @@ bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {
 
     IoError ioError = IoError::Unknown;
     if (!IoHelper::getFileSize(path, size, ioError)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError));
         return false;
     }
     if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Unable to read file size for " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Unable to read file size for " << Utility::formatIoError(path, ioError));
         return false;
     }
 
