@@ -531,9 +531,9 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
 }
 
 void TestLocalFileSystemObserverWorker::testInvalidateSnapshot() {
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->isValid());
     _syncPal->_localFSObserverWorker->invalidateSnapshot();
-    CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
+    CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->isValid());
 }
 
 void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
