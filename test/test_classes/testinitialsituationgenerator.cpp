@@ -100,8 +100,7 @@ void TestInitialSituationGenerator::addItem(Poco::JSON::Object::Ptr obj, const N
     obj->getNames(keys);
 
     for (const auto &key: keys) {
-        const auto isFile = !obj->isObject(key) && obj->getValue<bool>(key);
-        addItem(isFile ? NodeType::File : NodeType::Directory, key, parentRawId);
+        addItem(!obj->isObject(key) ? NodeType::File : NodeType::Directory, key, parentRawId);
 
         if (obj->isObject(key)) {
             const auto &childObj = obj->getObject(key);

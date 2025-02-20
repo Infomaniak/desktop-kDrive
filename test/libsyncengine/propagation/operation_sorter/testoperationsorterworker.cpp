@@ -51,7 +51,7 @@ void TestOperationSorterWorker::setUp() {
     // ├── C
     // └── D
     _initialSituationGenerator.setSyncpal(_syncPal);
-    _initialSituationGenerator.generateInitialSituation(R"({"a":{"aa":{"aaa":1,"aab":0}},"b":0,"c":0,"d":0})");
+    _initialSituationGenerator.generateInitialSituation(R"({"a":{"aa":{"aaa":1,"aab":{}}},"b":{},"c":{},"d":{}})");
 }
 
 void TestOperationSorterWorker::tearDown() {
