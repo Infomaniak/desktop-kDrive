@@ -117,12 +117,13 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
             }
 
             const auto moveNode = moveOp->affectedNode();
-            if (!moveNode->parentNode()->id().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNode->parentNode()->name()));
+            const auto moveNodeParent = moveNode->parentNode();
+            if (!moveNodeParent->id().has_value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNodeParent->name()));
                 continue;
             }
 
-            if (const auto moveNodeParentId = moveNode->parentNode()->id(); deleteNodeParentId != moveNodeParentId.value()) {
+            if (const auto moveNodeParentId = moveNodeParent->id(); deleteNodeParentId != moveNodeParentId.value()) {
                 continue;
             }
 
@@ -153,12 +154,13 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
             if (!getIdFromDb(moveNode->side(), moveNode->moveOrigin()->parent_path(), moveNodeOriginParentId)) continue;
 
             const auto createNode = createOp->affectedNode();
-            if (!createNode->parentNode()->id().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->parentNode()->name()));
+            const auto createParentNode = createNode->parentNode();
+            if (!createParentNode->id().has_value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createParentNode->name()));
                 continue;
             }
 
-            if (const auto createParentId = *createNode->parentNode()->id(); moveNodeOriginParentId != createParentId) {
+            if (const auto createParentId = *createParentNode->id(); moveNodeOriginParentId != createParentId) {
                 continue;
             }
 
@@ -227,11 +229,13 @@ void OperationSorterWorker::fixCreateBeforeMove() {
             }
 
             const auto moveNode = moveOp->affectedNode();
-            if (!moveNode->parentNode()) {
+            const auto moveParentNode = moveNode->parentNode();
+            if (!moveParentNode->id().has_value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveParentNode->name()));
                 continue;
             }
 
-            std::optional<NodeId> moveNodeParentId = moveNode->parentNode()->id();
+            std::optional<NodeId> moveNodeParentId = moveParentNode->id();
             if (!moveNodeParentId.has_value()) {
                 continue;
             }
@@ -384,7 +388,10 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
     bool again = true;
     while (again) {
         again = false;
-        if (!parentNode->id().has_value()) break;
+        if (!parentNode->id().has_value()) {
+            LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
+            break;
+        }
 
         for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*parentNode->id());
              const auto &parentOpId: parentOpIdList) {
@@ -474,7 +481,11 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     }
 
     // firstOp is an impossible move if dest starts with source + "/".
-    if (!node->moveOrigin().has_value()) return std::nullopt; // Should never happen
+    if (!node->moveOrigin().has_value()) {
+        LOGW_SYNCPAL_ERROR(_logger, L"Missing origin path for node " << Utility::formatSyncName(node->name()) << L" ("
+                                                                     << Utility::s2ws(*node->id()) << L")");
+        return std::nullopt; // Should never happen
+    }
     const auto originPath = *node->moveOrigin();
     const auto destinationPath = node->getPath();
     if (!Utility::isDescendantOrEqual(node->getPath(), *node->moveOrigin())) {

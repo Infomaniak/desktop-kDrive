@@ -116,7 +116,7 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     const auto nodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
 
     // Move A to B/A
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, "a", "b");
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeB->id());
     nodeA->insertChangeEvent(OperationType::Move);
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeA);
 
@@ -142,7 +142,7 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
 
     // Move A/AA/AAA to AAA
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, "aaa", "");
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeAAA->id(), "");
     nodeAAA->insertChangeEvent(OperationType::Move);
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAA);
 
@@ -164,13 +164,13 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
 void TestOperationSorterWorker::testFixCreateBeforeMove() {
     const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
 
-    // Create D
-    const auto nodeD = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "d");
-    nodeD->insertChangeEvent(OperationType::Create);
-    const auto createOp = generateSyncOperation(OperationType::Create, nodeD);
+    // Create E
+    const auto nodeE = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "e");
+    nodeE->insertChangeEvent(OperationType::Create);
+    const auto createOp = generateSyncOperation(OperationType::Create, nodeE);
 
-    // Move A to D/A
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, "a", "d");
+    // Move A to E/A
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeE->id());
     nodeA->insertChangeEvent(OperationType::Move);
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeA);
 
@@ -186,6 +186,7 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
 
 // delete before create, e.g. user deletes object "x" and then creates a new object at "x".
 void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
+    const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
     const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
 
     // Delete AAA
@@ -193,7 +194,8 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeAAA);
 
     // Create AAA
-    const auto nodeAAA2 = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "aaa2", "aa");
+    const auto nodeAAA2 =
+            _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "aaa2", *nodeAA->id());
     nodeAAA2->insertChangeEvent(OperationType::Create);
     nodeAAA2->setName(Str("AAA"));
     const auto createOp = generateSyncOperation(OperationType::Create, nodeAAA2);
@@ -215,12 +217,12 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
     const auto nodeC = _initialSituationGenerator.getNode(ReplicaSide::Local, "c");
 
     // Move A/AA/AAA to AAA
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, "aaa", {});
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeAAA->id(), {});
     nodeAAA->insertChangeEvent(OperationType::Move);
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAA);
 
     // Move C to A/AA/AAA
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, "c", "aa");
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeC->id(), *nodeAA->id());
     nodeC->insertChangeEvent(OperationType::Move);
     nodeC->setName(Str("AAA"));
     const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeC);
@@ -394,7 +396,7 @@ void TestOperationSorterWorker::testFixEditBeforeMove() {
     CPPUNIT_ASSERT_EQUAL(editOp->id(), _syncPal->_syncOps->opSortedList().back());
 }
 
-// move before move (parent-child flip), e.g. user moves directory "A/B" to "C", then moves directory "A" to "C/A" (parent-child
+// move before move (parent-child flip), e.g. user moves directory "A/B" to "D", then moves directory "A" to "D/A" (parent-child
 // relationships are now flipped).
 void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip() {
     const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
@@ -521,7 +523,6 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
     nodeAAA->setName(Str("AAA*"));
     const auto opAAA = generateSyncOperation(OperationType::Move, nodeAAA);
 
-    LOG_INFO(Log::instance()->getLogger(), "**************************************************");
     {
         // No cycle
         _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opC}, {opC, opD}};
@@ -532,7 +533,6 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
         CPPUNIT_ASSERT_EQUAL(0, static_cast<int>(cycleFinder.completeCycle().opSortedList().size()));
     }
 
-    LOG_INFO(Log::instance()->getLogger(), "**************************************************");
     {
         // A cycle, the order in which reorderings are found follow the order of the operations in the cycle
         _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opC}, {opC, opD}, {opD, opA}};
@@ -547,7 +547,6 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
         }
     }
 
-    LOG_INFO(Log::instance()->getLogger(), "**************************************************");
     {
         // A cycle, the order in which reorderings are found follow the order of the operations in the cycle but with other
         // operations that are not in the cycle chain.
@@ -565,7 +564,6 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
         }
     }
 
-    LOG_INFO(Log::instance()->getLogger(), "**************************************************");
     {
         // Cycle, the order in which reorderings are found DO NOT follow the order of the operations in the cycle.
         _syncPal->_operationsSorterWorker->_reorderings = {{opB, opC}, {opD, opA}, {opA, opB}, {opC, opD}};
@@ -580,7 +578,6 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
         }
     }
 
-    LOG_INFO(Log::instance()->getLogger(), "**************************************************");
     {
         // Cycle, the order in which reorderings are found DO NOT follow the order of the operations in the cycle and with
         // other operations that are not in the cycle chain.
@@ -597,7 +594,6 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
         }
     }
 
-    LOG_INFO(Log::instance()->getLogger(), "**************************************************");
     {
         // A cycle hidden within a chain
         _syncPal->_operationsSorterWorker->_reorderings = {{opB, opA}, {opA, opC}, {opC, opA}};
@@ -612,7 +608,6 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
         }
     }
 
-    LOG_INFO(Log::instance()->getLogger(), "**************************************************");
     {
         // 2 cycles
         _syncPal->_operationsSorterWorker->_reorderings = {{opA, opB}, {opB, opA}, {opB, opC}, {opC, opD}, {opD, opA}};
