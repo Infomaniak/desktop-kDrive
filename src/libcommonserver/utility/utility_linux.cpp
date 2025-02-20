@@ -35,12 +35,6 @@
 
 namespace KDC {
 
-static bool init_private() {
-    return true;
-}
-
-static void free_private() {}
-
 static int moveItemToTrash_private(const SyncPath &itemPath) {
     std::string xdgDataHome, homePath, trashPath;
 
