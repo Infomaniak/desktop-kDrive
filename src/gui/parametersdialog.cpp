@@ -426,7 +426,6 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCaus
                     "There is not enough memory left on your machine.<br>"
                     "The synchronization has been stopped.");
         case ExitCause::LiteSyncNotAllowed: {
-            int v = QOperatingSystemVersion::current().majorVersion();
             if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
                 QOperatingSystemVersion::current().majorVersion() >= 15) {
                 return tr("Unable to start synchronization (error %1).<br>"
