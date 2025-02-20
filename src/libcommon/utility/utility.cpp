@@ -42,7 +42,6 @@
 #endif
 
 #include <QDir>
-#include <QFileInfo>
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QMimeDatabase>

@@ -18,9 +18,6 @@
 
 #include "filesystembase.h"
 
-#include <QDateTime>
-#include <QDir>
-#include <QUrl>
 #include <QFile>
 #include <QCoreApplication>
 

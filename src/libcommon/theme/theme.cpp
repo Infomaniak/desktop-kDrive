@@ -21,9 +21,9 @@
 #include "version.h"
 #include "libcommon/utility/utility.h"
 
-#include <QtCore>
-#include <QtGui>
-#include <QStyle>
+#include <QIcon>
+#include <QOperatingSystemVersion>
+#include <QPainter>
 #include <QSslSocket>
 
 namespace KDC {

@@ -17,6 +17,8 @@
  */
 #pragma once
 
+#include "sourcelocation.h"
+
 #include <string>
 #include <filesystem>
 #include <functional>
@@ -25,9 +27,9 @@
 #include <sstream>
 #include <unordered_set>
 #include <variant>
-#include <qdebug.h>
 #include <signal.h>
-#include "sourcelocation.h"
+
+#include <QDebug>
 
 namespace KDC {
 

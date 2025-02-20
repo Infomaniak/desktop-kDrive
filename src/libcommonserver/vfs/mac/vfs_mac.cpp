@@ -21,7 +21,6 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
-#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 
