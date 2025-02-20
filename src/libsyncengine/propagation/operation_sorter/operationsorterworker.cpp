@@ -183,6 +183,7 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
             continue;
         }
         const auto deleteNode = deleteOp->affectedNode();
+        const auto deleteNodePath = deleteNode->getPath();
 
         for (const auto &moveOpId: moveOps) {
             const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
@@ -195,9 +196,8 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
                 return;
             }
 
-            const auto deleteNodePath = deleteNode->getPath();
-            const auto moveNodeOriginPath = moveOp->affectedNode()->moveOrigin().value();
-            if (Utility::isDescendantOrEqual(moveNodeOriginPath, deleteNodePath)) {
+            if (const auto moveNodeOriginPath = moveOp->affectedNode()->moveOrigin().value();
+                Utility::isDescendantOrEqual(moveNodeOriginPath, deleteNodePath)) {
                 // move only if deleteOp is before moveOp
                 moveFirstAfterSecond(deleteOp, moveOp);
             }
@@ -256,6 +256,10 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
     for (const auto &deleteOpId: deleteOps) {
         const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
         const auto deleteNode = deleteOp->affectedNode();
+        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
+        NodeId deleteNodeParentId;
+        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) continue;
+
         for (const auto &createOpId: createOps) {
             const auto createOp = _syncPal->_syncOps->getOp(createOpId);
             if (createOp->targetSide() != deleteOp->targetSide()) {
@@ -275,9 +279,6 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
             //
             //     deleteNodeId = deleteNode->previousId().value();
             // }
-
-            NodeId deleteNodeParentId;
-            if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) continue;
 
             if (!createNode->parentNode()) {
                 continue;
@@ -300,6 +301,10 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveOccupied");
     for (const auto opIds = _syncPal->_syncOps->opListIdByType(OperationType::Move); const auto &opId: opIds) {
         const auto op = _syncPal->_syncOps->getOp(opId);
+        const auto node = op->affectedNode();
+        if (!node->parentNode()) continue;
+        const auto nodePath = node->getPath();
+        const auto nodeParentId = node->parentNode()->id();
 
         for (const auto &otherOpId: opIds) {
             const auto otherOp = _syncPal->_syncOps->getOp(otherOpId);
@@ -307,19 +312,13 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
                 continue;
             }
 
-            const auto node = op->affectedNode();
-            if (!node->parentNode()) continue;
-
             const auto otherNode = otherOp->affectedNode();
             if (!otherNode->moveOrigin().has_value()) {
                 LOG_SYNCPAL_WARN(_logger, "Missing origin path");
                 return;
             }
 
-            const auto nodePath = node->getPath();
             const auto otherNodeOriginPath = otherNode->moveOrigin();
-
-            const auto nodeParentId = node->parentNode()->id();
             NodeId otherNodeOriginParentId;
             if (!getIdFromDb(otherNode->side(), otherNodeOriginPath->parent_path(), otherNodeOriginParentId)) continue;
 
@@ -487,7 +486,6 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
         return std::nullopt; // Should never happen
     }
     const auto originPath = *node->moveOrigin();
-    const auto destinationPath = node->getPath();
     if (!Utility::isDescendantOrEqual(node->getPath(), *node->moveOrigin())) {
         return std::nullopt; // firstOp is possible
     }
@@ -495,6 +493,8 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     const auto correspondingDestinationParentNode = correspondingNodeInOtherTree(node->parentNode());
     const auto correspondingSourceNode = correspondingNodeInOtherTree(node);
     if (correspondingDestinationParentNode == nullptr || correspondingSourceNode == nullptr) {
+        LOGW_SYNCPAL_ERROR(_logger, L"Missing corresponding nodes for node " << Utility::formatSyncName(node->name()) << L" ("
+                                                                             << Utility::s2ws(*node->id()) << L")");
         return std::nullopt; // Should never happen
     }
 
