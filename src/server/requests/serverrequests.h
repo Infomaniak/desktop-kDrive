@@ -19,8 +19,6 @@
 #pragma once
 
 #include "syncenginelib.h"
-#include "../login/login.h"
-#include "../progress/syncfileitem.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
@@ -42,11 +40,12 @@
 #include "libparms/db/parameters.h"
 #include "libparms/db/exclusiontemplate.h"
 #include "libparms/db/exclusionapp.h"
+#include "libsyncengine/login/login.h"
+#include "libsyncengine/progress/syncfileitem.h"
 
 #include <QList>
 #include <QString>
 #include <QColor>
-
 
 namespace KDC {
 

@@ -126,7 +126,6 @@ set(syncengine_SRCS
     progress/progress.h progress/progress.cpp
     progress/progressinfo.h progress/progressinfo.cpp
     # Requests
-    requests/serverrequests.h requests/serverrequests.cpp
     requests/parameterscache.h requests/parameterscache.cpp
     requests/syncnodecache.h requests/syncnodecache.cpp
     requests/exclusiontemplatecache.h requests/exclusiontemplatecache.cpp

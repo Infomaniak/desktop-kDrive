@@ -41,7 +41,6 @@
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
 #include "requests/testexclusiontemplatecache.h"
-#include "requests/testserverrequests.h"
 
 #ifdef __APPLE__
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
@@ -83,7 +82,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 } // namespace KDC
 
 int main(int, char **) {

@@ -40,7 +40,7 @@ else()
 endif()
 
 set(server_SRCS
-    ../libcommonserver/commserver.h ../libcommonserver/commserver.cpp
+    commserver.h commserver.cpp
     navigationpanehelper.h navigationpanehelper.cpp
     logarchiver/logarchiver.h logarchiver/logarchiver.cpp
     logarchiver/logarchiverhelper.h logarchiver/logarchiverhelper.cpp
@@ -48,6 +48,7 @@ set(server_SRCS
     socketlistener.h socketlistener.cpp
     appserver.h appserver.cpp
     migration/migrationparams.h migration/migrationparams.cpp
+    requests/serverrequests.h requests/serverrequests.cpp
     app_resources.rc
 )
 

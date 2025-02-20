@@ -225,7 +225,7 @@ void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
 }
 
 void CommServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
-    QTimer::singleShot(0, this, [=]() { emit requestReceived(id, (RequestNum) num, params); });
+    QTimer::singleShot(0, this, [=, this]() { emit requestReceived(id, (RequestNum) num, params); });
 }
 
 void CommServer::onSendReply(int id, const QByteArray &result) {

@@ -20,6 +20,7 @@ set(server_SRCS
     ${server_srcs_path}/socketlistener.h ${server_srcs_path}/socketlistener.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
+    ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
 )
 
 if(APPLE)
@@ -45,6 +46,7 @@ endif()
 set(testserver_SRCS
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
+    ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
     ../test.cpp
 
     test.cpp
@@ -52,6 +54,7 @@ set(testserver_SRCS
     updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
     workers/testworkers.h workers/testworkers.cpp
+    requests/testserverrequests.h requests/testserverrequests.cpp
 )
 
 if(APPLE)
