@@ -212,8 +212,6 @@ class Handler {
 
         std::map<int /*syncDbId*/, std::map<PTraceName, pTraceId>> _pTraceNameToPTraceIdMap;
 
-        // Tags
-        static const std::string _distributionChannelTag;
         // Debug
         static AppType _appType;
         static bool _debugCrashCallback;

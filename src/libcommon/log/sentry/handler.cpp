@@ -35,7 +35,6 @@ std::shared_ptr<Handler> Handler::_instance = nullptr;
 AppType Handler::_appType = AppType::None;
 bool Handler::_debugCrashCallback = false;
 bool Handler::_debugBeforeSendCallback = false;
-const std::string Handler::_distributionChannelTag = "distribution_channel";
 /*
  *  sentry_value_t reader implementation - begin
  *  Used for debbuging
@@ -451,7 +450,36 @@ void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
 }
 
 void Handler::setDistributionChannel(const DistributionChannel channel) {
-    setTag(_distributionChannelTag, toString(channel));
+    // Editing the "distribution_channel" value implies reflecting the change in the Sentry project settings.
+    // (Settings > Projects > kdrive-[client/server] > Tags & Context).
+    // It is not recommended to change this value or the channelStr values, as some Sentry dashboards/alerts might rely
+    // on them and should be updated accordingly.
+
+    std::string channelStr;
+    switch (channel) {
+        case DistributionChannel::Prod:
+            channelStr = "Prod";
+            break;
+        case DistributionChannel::Next:
+            channelStr = "Next";
+            break;
+        case DistributionChannel::Beta:
+            channelStr = "Beta";
+            break;
+        case DistributionChannel::Internal:
+            channelStr = "Internal";
+            break;
+        case DistributionChannel::Legacy:
+            channelStr = "Legacy";
+            break;
+        case DistributionChannel::Unknown:
+            channelStr = "Unknown";
+            break;
+        default:
+            channelStr = "Error";
+            break;
+    }
+    setTag("distribution_channel", channelStr);
 }
 
 Handler::~Handler() {
