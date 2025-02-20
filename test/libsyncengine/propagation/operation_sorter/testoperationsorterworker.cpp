@@ -142,7 +142,7 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
 
     // Move A/AA/AAA to AAA
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, "aaa", "aa");
+    _initialSituationGenerator.moveNode(ReplicaSide::Local, "aaa", "");
     nodeAAA->insertChangeEvent(OperationType::Move);
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAA);
 
@@ -299,11 +299,10 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         CPPUNIT_ASSERT(!ancestorOpWithHighestDistance);
         CPPUNIT_ASSERT_EQUAL(0, relativeDepth);
 
-        _syncPal->_operationsSorterWorker->_hasOrderChanged = true;
-        while (_syncPal->_operationsSorterWorker->_hasOrderChanged) {
+        do {
             _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
             _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-        }
+        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
 
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDA));
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDB));
@@ -320,11 +319,10 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opDA);
         _syncPal->_syncOps->pushOp(opDB);
 
-        _syncPal->_operationsSorterWorker->_hasOrderChanged = true;
-        while (_syncPal->_operationsSorterWorker->_hasOrderChanged) {
+        do {
             _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
             _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-        }
+        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
 
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDA));
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDB));
@@ -341,11 +339,10 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opD);
         _syncPal->_syncOps->pushOp(opDB);
 
-        _syncPal->_operationsSorterWorker->_hasOrderChanged = true;
-        while (_syncPal->_operationsSorterWorker->_hasOrderChanged) {
+        do {
             _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
             _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-        }
+        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
 
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDA));
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDB));
@@ -362,11 +359,10 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opDAA);
         _syncPal->_syncOps->pushOp(opDAB);
 
-        _syncPal->_operationsSorterWorker->_hasOrderChanged = true;
-        while (_syncPal->_operationsSorterWorker->_hasOrderChanged) {
+        do {
             _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
             _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-        }
+        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
 
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDA));
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->_syncOps, opD, opDB));
