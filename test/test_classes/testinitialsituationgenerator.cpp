@@ -61,9 +61,9 @@ std::shared_ptr<Node> TestInitialSituationGenerator::insertInUpdateTree(
     const auto parentNode = parentRawId.empty() ? _syncpal->updateTree(side)->rootNode()
                                                 : _syncpal->updateTree(side)->getNodeById(generateId(side, parentRawId));
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
-    const auto node =
-            std::make_shared<Node>(dbNodeId, side, Str2SyncName(Utility::toUpper(rawId)), itemType, OperationType::None,
-                                   generateId(side, rawId), testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode, std::nullopt, std::nullopt);
+    const auto node = std::make_shared<Node>(dbNodeId, side, Str2SyncName(Utility::toUpper(rawId)), itemType, OperationType::None,
+                                             generateId(side, rawId), testhelpers::defaultTime, testhelpers::defaultTime, size,
+                                             parentNode, std::nullopt, std::nullopt);
     _syncpal->updateTree(side)->insertNode(node);
     (void) parentNode->insertChildren(node);
     return node;
@@ -115,6 +115,7 @@ void TestInitialSituationGenerator::addItem(const NodeType itemType, const NodeI
     insertInAllUpdateTrees(itemType, rawId, parentRawId, dbNodeId);
 }
 
+
 DbNodeId TestInitialSituationGenerator::insertInDb(const NodeType itemType, const NodeId &rawId,
                                                    const NodeId &parentRawId) const {
     DbNode parentNode;
@@ -135,7 +136,8 @@ DbNodeId TestInitialSituationGenerator::insertInDb(const NodeType itemType, cons
                         generateId(ReplicaSide::Local, rawId), generateId(ReplicaSide::Remote, rawId), testhelpers::defaultTime,
                         testhelpers::defaultTime, testhelpers::defaultTime, itemType, size);
     DbNodeId dbNodeId = 0;
-    _syncpal->syncDb()->insertNode(dbNode, dbNodeId);
+    bool constraintError = false;
+    _syncpal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
     return dbNodeId;
 }
 

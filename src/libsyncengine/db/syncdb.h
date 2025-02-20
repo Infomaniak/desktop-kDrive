@@ -43,8 +43,6 @@ class SyncDb : public Db {
 
         bool insertNode(const DbNode &node, DbNodeId &dbNodeId,
                         bool &constraintError); // The local and remote names of an inserted node are normalized.
-        bool insertNode(const DbNode &node); // The local and remote names of an inserted node are normalized.
-        bool insertNode(const DbNode &node, DbNodeId &dbNodeId); // The local and remote names of an inserted node are normalized.
         bool updateNode(const DbNode &node, bool &found);
         bool updateNodeStatus(DbNodeId nodeId, SyncFileStatus status, bool &found);
         bool updateNodesSyncing(bool syncing);
