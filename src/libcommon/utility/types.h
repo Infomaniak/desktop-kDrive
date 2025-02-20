@@ -17,10 +17,9 @@
  */
 #pragma once
 
-#include "sourcelocation.h"
-
 #include <QApplication> // /!\ Moc bug on Linux: filesystem must be included after QApplication
-#include <QDebug>
+
+#include "sourcelocation.h"
 
 #include <filesystem>
 #include <functional>
@@ -32,6 +31,8 @@
 #include <variant>
 
 #include <signal.h>
+
+#include <QDebug>
 
 namespace KDC {
 
