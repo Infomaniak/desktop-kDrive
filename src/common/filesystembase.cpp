@@ -18,8 +18,9 @@
 
 #include "filesystembase.h"
 
-#include <QFile>
 #include <QCoreApplication>
+#include <QFile>
+#include <QFileInfo>
 
 #include <sys/stat.h>
 #include <sys/types.h>

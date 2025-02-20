@@ -19,9 +19,6 @@
 
 #include "sourcelocation.h"
 
-#include <QApplication>
-#include <QDebug>
-
 #include <string>
 #include <filesystem>
 #include <functional>
@@ -31,6 +28,8 @@
 #include <unordered_set>
 #include <variant>
 #include <signal.h>
+
+#include <QDebug>
 
 namespace KDC {
 
