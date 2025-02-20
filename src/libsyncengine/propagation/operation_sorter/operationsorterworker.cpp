@@ -267,19 +267,6 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
             }
 
             const auto createNode = createOp->affectedNode();
-
-            // TODO : to be removed?? This should never happen since Delete-Create on the same node is transformed into Edit
-            // operation.
-            // NodeId deleteNodeId = deleteNode->id().value(); if (createNode->id().value() ==
-            // deleteNode->id().value()) {
-            //     if (!deleteNode->previousId().has_value()) {
-            //         LOGW_SYNCPAL_WARN(_logger, L"Node without previousId: " << SyncName2WStr(deleteNode->name()));
-            //         continue;
-            //     }
-            //
-            //     deleteNodeId = deleteNode->previousId().value();
-            // }
-
             if (!createNode->parentNode()) {
                 continue;
             }
