@@ -19,17 +19,19 @@
 
 #include "sourcelocation.h"
 
-#include <string>
+#include <QApplication> // /!\ Moc bug on Linux: filesystem must be included after QApplication
+#include <QDebug>
+
 #include <filesystem>
 #include <functional>
 #include <cctype>
 #include <optional>
 #include <sstream>
+#include <string>
 #include <unordered_set>
 #include <variant>
-#include <signal.h>
 
-#include <QDebug>
+#include <signal.h>
 
 namespace KDC {
 

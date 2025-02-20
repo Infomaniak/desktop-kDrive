@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
-#include "libsyncengine/progress/syncfileitem.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/vfs/workerinfo.h"
+#include "libsyncengine/progress/syncfileitem.h"
 
 #include <memory>
 #include <deque>
