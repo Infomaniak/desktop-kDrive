@@ -146,8 +146,16 @@ void VfsMac::dehydrate(const SyncPath &absoluteFilepathStd) {
     QString absoluteFilepath = SyncName2QStr(absoluteFilepathStd.native());
     LOGW_DEBUG(logger(), L"dehydrate - " << Utility::formatPath(absoluteFilepath).c_str());
 
-    // Dehydrate file
+    // Check file status
+    SyncFileStatus status;
+    _syncFileStatus(_vfsSetupParams.syncDbId, absoluteFilepathStd, status);
+    if (status == SyncFileStatus::Unknown) {
+        // The file is not synchronized, do nothing
+        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatSyncPath(absoluteFilepathStd));
+        return;
+    }
 
+    // Dehydrate file
     if (!_connector->vfsDehydratePlaceHolder(QDir::toNativeSeparators(absoluteFilepath), _localSyncPath)) {
         LOG_WARN(logger(), "Error in vfsDehydratePlaceHolder!");
     }
@@ -269,15 +277,6 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
     SyncPath fullPath(_vfsSetupParams.localPath / path);
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
-    }
-
-    // Check file status
-    SyncFileStatus status;
-    _syncFileStatus(_vfsSetupParams.syncDbId, path, status);
-    if (status == SyncFileStatus::Unknown) {
-        // The file is not synchronized, do nothing
-        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatSyncPath(fullPath));
-        return ExitCode::Ok;
     }
 
     // Check if the file is a placeholder
