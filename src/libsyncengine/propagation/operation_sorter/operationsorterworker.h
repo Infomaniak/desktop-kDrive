@@ -109,7 +109,7 @@ class OperationSorterWorker final : public OperationProcessor {
         bool hasParentWithHigherIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap, const SyncOpPtr &op,
                                       SyncOpPtr &ancestorOpWithHighestDistance, int32_t &relativeDepth) const;
 
-        bool getIdFromDb(ReplicaSide side, const SyncPath &parentPath, NodeId &id) const;
+        bool getIdFromDb(ReplicaSide side, const SyncPath &path, NodeId &id) const;
 
         friend class TestOperationSorterWorker;
 };

@@ -29,7 +29,7 @@ OperationSorterWorker::OperationSorterWorker(const std::shared_ptr<SyncPal> &syn
                                              const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
 
 void OperationSorterWorker::execute() {
-    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
     const auto start = std::chrono::steady_clock::now();
 
@@ -40,7 +40,7 @@ void OperationSorterWorker::execute() {
     const auto elapsed_seconds = std::chrono::steady_clock::now() - start;
     LOG_SYNCPAL_INFO(_logger, "Operation sorting finished in: " << elapsed_seconds.count() << "s");
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(ExitCode::Ok);
 }
 
@@ -107,16 +107,8 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
         const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
         const auto deleteNode = deleteOp->affectedNode();
         const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
-        bool found = false;
-        std::optional<NodeId> deleteNodeParentId;
-        if (!_syncPal->_syncDb->id(deleteNode->side(), deleteNodeParentPath.parent_path(), deleteNodeParentId, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
-            return;
-        }
-        if (!found) {
-            LOGW_SYNCPAL_INFO(_logger, L"Node not found for path = " << Path2WStr(deleteNodeParentPath.parent_path()).c_str());
-            break;
-        }
+        NodeId deleteNodeParentId;
+        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath.parent_path(), deleteNodeParentId)) continue;
 
         for (const auto &moveOpId: moveOps) {
             const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
@@ -126,12 +118,11 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
 
             const auto moveNode = moveOp->affectedNode();
             if (!moveNode->parentNode()->id().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNode->parentNode()->name()).c_str());
+                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNode->parentNode()->name()));
                 continue;
             }
 
-            if (const auto moveNodeParentId = moveNode->parentNode()->id();
-                deleteNodeParentId.value() != moveNodeParentId.value()) {
+            if (const auto moveNodeParentId = moveNode->parentNode()->id(); deleteNodeParentId != moveNodeParentId.value()) {
                 continue;
             }
 
@@ -158,21 +149,12 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
                 continue;
             }
 
-            bool found = false;
-            std::optional<NodeId> moveNodeOriginParentId;
-            if (!_syncPal->_syncDb->id(moveNode->side(), moveNode->moveOrigin()->parent_path(), moveNodeOriginParentId, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
-                return;
-            }
-            if (!found) {
-                LOGW_SYNCPAL_INFO(_logger,
-                                  L"Node not found for path = " << Path2WStr(moveNode->moveOrigin()->parent_path()).c_str());
-                break;
-            }
+            NodeId moveNodeOriginParentId;
+            if (!getIdFromDb(moveNode->side(), moveNode->moveOrigin()->parent_path(), moveNodeOriginParentId)) continue;
 
             const auto createNode = createOp->affectedNode();
             if (!createNode->parentNode()->id().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->parentNode()->name()).c_str());
+                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->parentNode()->name()));
                 continue;
             }
 
@@ -213,9 +195,7 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
 
             const auto deleteNodePath = deleteNode->getPath();
             const auto moveNodeOriginPath = moveOp->affectedNode()->moveOrigin().value();
-            const bool hasCommonAncestor =
-                    Utility::isDescendantOrEqual(moveNodeOriginPath.lexically_normal(), deleteNodePath.native());
-            if (hasCommonAncestor) {
+            if (Utility::isDescendantOrEqual(moveNodeOriginPath, deleteNodePath)) {
                 // move only if deleteOp is before moveOp
                 moveFirstAfterSecond(deleteOp, moveOp);
             }
@@ -236,7 +216,7 @@ void OperationSorterWorker::fixCreateBeforeMove() {
 
         const auto createNode = createOp->affectedNode();
         if (!createNode->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->name()).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->name()));
             continue;
         }
 
@@ -285,24 +265,15 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
             // NodeId deleteNodeId = deleteNode->id().value(); if (createNode->id().value() ==
             // deleteNode->id().value()) {
             //     if (!deleteNode->previousId().has_value()) {
-            //         LOGW_SYNCPAL_WARN(_logger, L"Node without previousId: " << SyncName2WStr(deleteNode->name()).c_str());
+            //         LOGW_SYNCPAL_WARN(_logger, L"Node without previousId: " << SyncName2WStr(deleteNode->name()));
             //         continue;
             //     }
             //
             //     deleteNodeId = deleteNode->previousId().value();
             // }
 
-            bool found = false;
-            std::optional<NodeId> deleteNodeParentId;
-            if (!_syncPal->_syncDb->id(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
-                return;
-            }
-            if (!found) {
-                LOGW_SYNCPAL_INFO(_logger,
-                                  L"Node not found for path = " << Path2WStr(deleteNode->getPath().parent_path()).c_str());
-                break;
-            }
+            NodeId deleteNodeParentId;
+            if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) continue;
 
             if (!createNode->parentNode()) {
                 continue;
@@ -550,15 +521,15 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     const auto targetReplica = correspondingDestinationParentNode->side();
     SyncOperationList reshuffledOps;
     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
-        SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
+        const auto op = _syncPal->_syncOps->getOp(opId);
         // Include selectedOp
         if (op == selectedOp) {
-            reshuffledOps.pushOp(op);
+            (void) reshuffledOps.pushOp(op);
             break;
         }
         // Operations that affect the targetReplica or both (omit flag)
         if (op->affectedNode()->side() == targetReplica || op->omit()) {
-            reshuffledOps.pushOp(op);
+            (void) reshuffledOps.pushOp(op);
         }
     }
 
@@ -602,9 +573,9 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, const SyncOpPtr
     renameResolutionOp->setNewName(correspondingNode->name() + Str("-") +
                                    Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
     // and we only execute Opr follow by restart sync
-    LOGW_SYNCPAL_INFO(_logger, L"Breaking cycle by renaming temporarily item "
-                                       << SyncName2WStr(correspondingNode->name()).c_str() << L" to "
-                                       << SyncName2WStr(renameResolutionOp->newName()).c_str());
+    LOGW_SYNCPAL_INFO(_logger, L"Breaking cycle by renaming temporarily item " << SyncName2WStr(correspondingNode->name())
+                                                                               << L" to "
+                                                                               << SyncName2WStr(renameResolutionOp->newName()));
     return true;
 }
 
@@ -632,11 +603,11 @@ void OperationSorterWorker::moveFirstAfterSecond(const SyncOpPtr &opFirst, const
     if (firstFound) {
         // make sure opSecond is executed after opFirst
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger,
-                               L"Operation " << opFirst->id() << L" (" << opFirst->type() << L" "
-                                             << Utility::formatSyncName(opFirst->affectedNode()->name()).c_str()
-                                             << L") moved after operation " << opSecond->id() << L" (" << opSecond->type() << L" "
-                                             << Utility::formatSyncName(opSecond->affectedNode()->name()).c_str() << L")");
+            LOGW_SYNCPAL_DEBUG(_logger, L"Operation " << opFirst->id() << L" (" << opFirst->type() << L" "
+                                                      << Utility::formatSyncName(opFirst->affectedNode()->name())
+                                                      << L") moved after operation " << opSecond->id() << L" ("
+                                                      << opSecond->type() << L" "
+                                                      << Utility::formatSyncName(opSecond->affectedNode()->name()) << L")");
         }
 
         _syncPal->_syncOps->deleteOp(firstIt);
@@ -657,15 +628,15 @@ void OperationSorterWorker::addPairToReorderings(const SyncOpPtr &op1, const Syn
     _reorderings.push_back(pair);
 }
 
-bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &parentPath, NodeId &id) const {
+bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &path, NodeId &id) const {
     bool found = false;
     std::optional<NodeId> tmpId;
-    if (!_syncPal->_syncDb->id(side, parentPath, tmpId, found)) {
+    if (!_syncPal->_syncDb->id(side, path, tmpId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return false;
     }
     if (!found || !tmpId) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found for path = " << Path2WStr(parentPath).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found for path = " << Path2WStr(path));
         return false;
     }
     id = tmpId.value();
