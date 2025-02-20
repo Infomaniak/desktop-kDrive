@@ -146,18 +146,16 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool remoteItemUnsynced = false;
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
-    if (nodeExistsInSnapshot) {
-        if (side == ReplicaSide::Remote) {
-            // In case of a move inside an excluded folder, the item must be removed in this sync
-            if (isInUnsyncedList(nodeId, ReplicaSide::Remote)) {
-                remoteItemUnsynced = true;
-                if (parentNodeid != snapshot->parentId(nodeId)) {
-                    movedIntoUnsyncedFolder = true;
-                }
+    if (side == ReplicaSide::Remote) {
+        // In case of a move inside an excluded folder, the item must be removed in this sync
+        if (isInUnsyncedList(nodeId, ReplicaSide::Remote)) {
+            remoteItemUnsynced = true;
+            if (nodeExistsInSnapshot && parentNodeid != snapshot->parentId(nodeId)) {
+                movedIntoUnsyncedFolder = true;
             }
-        } else if (isInUnsyncedList(nodeId, ReplicaSide::Local)) {
-            return ExitCode::Ok;
         }
+    } else if (isInUnsyncedList(nodeId, ReplicaSide::Local)) {
+        return ExitCode::Ok;
     }
 
     if (!nodeExistsInSnapshot || movedIntoUnsyncedFolder) {
