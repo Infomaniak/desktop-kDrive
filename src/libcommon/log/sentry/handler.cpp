@@ -458,7 +458,7 @@ void Handler::setDistributionChannel(const DistributionChannel channel) {
     std::string channelStr;
     switch (channel) {
         case DistributionChannel::Prod:
-            channelStr = "Prod";
+            channelStr = "Production";
             break;
         case DistributionChannel::Next:
             channelStr = "Next";
