@@ -1375,21 +1375,18 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 
-    localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
-    remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(remoteNodeId);
-
     // Blacklist the item
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
         if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
+            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
         }
     }
 
     if (!remoteNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
         if (!updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
+            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
         }
     }
 
