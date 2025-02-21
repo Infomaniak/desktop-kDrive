@@ -36,7 +36,7 @@ AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker>& updateChe
     _updateChecker->setCallback(callback);
 }
 
-ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel currentChannel, UniqueId* id /*= nullptr*/) {
+ExitCode AbstractUpdater::checkUpdateAvailable(const VersionChannel currentChannel, UniqueId* id /*= nullptr*/) {
     _currentChannel = currentChannel;
     setState(UpdateState::Checking);
     return _updateChecker->checkUpdateAvailability(id);
@@ -99,36 +99,36 @@ bool AbstractUpdater::isVersionSkipped(const std::string& version) {
     return false;
 }
 
-DistributionChannel AbstractUpdater::currentVersionChannel() const {
-    const std::unordered_map<DistributionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
-    if (allVersions.empty()) return DistributionChannel::Unknown;
+VersionChannel AbstractUpdater::currentVersionChannel() const {
+    const std::unordered_map<VersionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
+    if (allVersions.empty()) return VersionChannel::Unknown;
     std::string currentVersion = getCurrentVersion();
-    if (allVersions.contains(DistributionChannel::Prod) &&
-        allVersions.at(DistributionChannel::Prod).fullVersion() == currentVersion) {
-        return DistributionChannel::Prod;
+    if (allVersions.contains(VersionChannel::Prod) &&
+        allVersions.at(VersionChannel::Prod).fullVersion() == currentVersion) {
+        return VersionChannel::Prod;
     }
 
-    if (allVersions.contains(DistributionChannel::Next) &&
-        allVersions.at(DistributionChannel::Next).fullVersion() == currentVersion) {
-        return DistributionChannel::Next;
+    if (allVersions.contains(VersionChannel::Next) &&
+        allVersions.at(VersionChannel::Next).fullVersion() == currentVersion) {
+        return VersionChannel::Next;
     }
 
-    if (allVersions.contains(DistributionChannel::Beta) &&
-        allVersions.at(DistributionChannel::Beta).fullVersion() == currentVersion) {
-        return DistributionChannel::Beta;
+    if (allVersions.contains(VersionChannel::Beta) &&
+        allVersions.at(VersionChannel::Beta).fullVersion() == currentVersion) {
+        return VersionChannel::Beta;
     }
 
-    if (allVersions.contains(DistributionChannel::Internal) &&
-        allVersions.at(DistributionChannel::Internal).fullVersion() == currentVersion) {
-        return DistributionChannel::Internal;
+    if (allVersions.contains(VersionChannel::Internal) &&
+        allVersions.at(VersionChannel::Internal).fullVersion() == currentVersion) {
+        return VersionChannel::Internal;
     }
 
-    if (allVersions.contains(DistributionChannel::Prod) &&
-        CommonUtility::isVersionLower(currentVersion, allVersions.at(DistributionChannel::Prod).fullVersion())) {
-        return DistributionChannel::Legacy;
+    if (allVersions.contains(VersionChannel::Prod) &&
+        CommonUtility::isVersionLower(currentVersion, allVersions.at(VersionChannel::Prod).fullVersion())) {
+        return VersionChannel::Legacy;
     }
 
-    return DistributionChannel::Unknown;
+    return VersionChannel::Unknown;
 }
 
 void AbstractUpdater::setState(const UpdateState newState) {

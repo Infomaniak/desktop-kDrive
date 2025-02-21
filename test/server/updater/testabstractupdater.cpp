@@ -106,17 +106,17 @@ void TestAbstractUpdater::testCurrentVersionedChannel() {
     MockUpdater updater(updateChecker);
 
     AllVersionsInfo testVersions;
-    testVersions[DistributionChannel::Next].tag = "10.0.0";
-    testVersions[DistributionChannel::Next].buildVersion = 20210101;
+    testVersions[VersionChannel::Next].tag = "10.0.0";
+    testVersions[VersionChannel::Next].buildVersion = 20210101;
 
-    testVersions[DistributionChannel::Prod].tag = "9.0.0";
-    testVersions[DistributionChannel::Prod].buildVersion = 20210101;
+    testVersions[VersionChannel::Prod].tag = "9.0.0";
+    testVersions[VersionChannel::Prod].buildVersion = 20210101;
 
-    testVersions[DistributionChannel::Beta].tag = "11.0.0";
-    testVersions[DistributionChannel::Beta].buildVersion = 20210101;
+    testVersions[VersionChannel::Beta].tag = "11.0.0";
+    testVersions[VersionChannel::Beta].buildVersion = 20210101;
 
-    testVersions[DistributionChannel::Internal].tag = "11.0.1";
-    testVersions[DistributionChannel::Internal].buildVersion = 20210101;
+    testVersions[VersionChannel::Internal].tag = "11.0.1";
+    testVersions[VersionChannel::Internal].buildVersion = 20210101;
     updateChecker->setAllVersionInfo(testVersions);
 
     std::string version;
@@ -124,26 +124,26 @@ void TestAbstractUpdater::testCurrentVersionedChannel() {
 
     // Check Next version
     version = "10.0.0.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Next, updater.currentVersionChannel());
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Next, updater.currentVersionChannel());
 
     // Check Prod version
     version = "9.0.0.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Prod, updater.currentVersionChannel());
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Prod, updater.currentVersionChannel());
 
     // Check Beta version
     version = "11.0.0.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Beta, updater.currentVersionChannel());
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Beta, updater.currentVersionChannel());
 
     // Check Internal version
     version = "11.0.1.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Internal, updater.currentVersionChannel());
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Internal, updater.currentVersionChannel());
 
     // Check Legacy version
     version = "8.0.0.20210101";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Legacy, updater.currentVersionChannel());
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Legacy, updater.currentVersionChannel());
 
     // Check Unknown version (higher than prod)
     version = "9.0.0.20210102";
-    CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, updater.currentVersionChannel());
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
 }
 } // namespace KDC

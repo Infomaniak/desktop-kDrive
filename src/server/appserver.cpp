@@ -1948,14 +1948,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UPDATER_CHANGE_CHANNEL: {
-            auto channel = DistributionChannel::Unknown;
+            auto channel = VersionChannel::Unknown;
             QDataStream paramsStream(params);
             paramsStream >> channel;
             _updateManager->setDistributionChannel(channel);
             break;
         }
         case RequestNum::UPDATER_VERSION_INFO: {
-            auto channel = DistributionChannel::Unknown;
+            auto channel = VersionChannel::Unknown;
             QDataStream paramsStream(params);
             paramsStream >> channel;
             VersionInfo versionInfo = _updateManager->versionInfo(channel);

@@ -39,7 +39,7 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         testObj.setUpdateShoudBeAvailable(true);
         testObj.checkUpdateAvailability(&jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT(testObj.versionInfo(DistributionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 
     // Version is lower than current version
@@ -49,11 +49,11 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
         testObj.setUpdateShoudBeAvailable(false);
         testObj.checkUpdateAvailability(&jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT(testObj.versionInfo(DistributionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 }
 
-VersionInfo getVersionInfo(const DistributionChannel channel, const VersionValue versionNumber) {
+VersionInfo getVersionInfo(const VersionChannel channel, const VersionValue versionNumber) {
     VersionInfo versionInfo;
     versionInfo.channel = channel;
     versionInfo.tag = tag(versionNumber);
@@ -64,18 +64,18 @@ VersionInfo getVersionInfo(const DistributionChannel channel, const VersionValue
 
 void TestUpdateChecker::testVersionInfo() {
     UpdateChecker testObj;
-    testObj._prodVersionChannel = DistributionChannel::Prod;
+    testObj._prodVersionChannel = VersionChannel::Prod;
 
-    auto testFunc = [&testObj](const VersionValue expectedValue, const DistributionChannel expectedChannel,
-                               const DistributionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber,
+    auto testFunc = [&testObj](const VersionValue expectedValue, const VersionChannel expectedChannel,
+                               const VersionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber,
                                const CPPUNIT_NS::SourceLine &sourceline) {
         testObj._versionsInfo.clear();
-        testObj._versionsInfo.try_emplace(DistributionChannel::Prod,
-                                          getVersionInfo(DistributionChannel::Prod, versionsNumber[0]));
-        testObj._versionsInfo.try_emplace(DistributionChannel::Beta,
-                                          getVersionInfo(DistributionChannel::Beta, versionsNumber[1]));
-        testObj._versionsInfo.try_emplace(DistributionChannel::Internal,
-                                          getVersionInfo(DistributionChannel::Internal, versionsNumber[2]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Prod,
+                                          getVersionInfo(VersionChannel::Prod, versionsNumber[0]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Beta,
+                                          getVersionInfo(VersionChannel::Beta, versionsNumber[1]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Internal,
+                                          getVersionInfo(VersionChannel::Internal, versionsNumber[2]));
         const auto &versionInfo = testObj.versionInfo(selectedChannel);
         CPPUNIT_NS::assertEquals(expectedChannel, versionInfo.channel, sourceline, "");
         CPPUNIT_NS::assertEquals(tag(expectedValue), versionInfo.tag, sourceline, "");
@@ -84,39 +84,39 @@ void TestUpdateChecker::testVersionInfo() {
 
     // selected version: Prod
     /// versions values: Prod > Beta > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Prod, {High, Medium, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Prod, {High, Medium, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Internal > Beta > Prod
-    testFunc(Low, DistributionChannel::Prod, DistributionChannel::Prod, {Low, Medium, High}, CPPUNIT_SOURCELINE());
+    testFunc(Low, VersionChannel::Prod, VersionChannel::Prod, {Low, Medium, High}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Beta == Internal
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Prod, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Prod, VersionChannel::Prod, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
 
     // selected version: Beta
     /// versions values: Prod > Beta > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Beta, {High, Medium, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Beta, {High, Medium, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Internal > Beta > Prod
-    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Beta, {Low, Medium, High}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Beta, VersionChannel::Beta, {Low, Medium, High}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Beta == Internal
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Beta, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Prod, VersionChannel::Beta, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
 
     // selected version: Internal
     /// versions values: Prod > Beta > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Medium, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Internal, {High, Medium, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Internal > Beta > Prod
-    testFunc(High, DistributionChannel::Internal, DistributionChannel::Internal, {Low, Medium, High}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Internal, VersionChannel::Internal, {Low, Medium, High}, CPPUNIT_SOURCELINE());
     /// versions values: Beta > Prod > Internal
-    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Medium, High, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Beta, VersionChannel::Internal, {Medium, High, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Prod > Internal > Beta
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Low, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Internal, {High, Low, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Beta > Internal > Prod
-    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Low, High, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Beta, VersionChannel::Internal, {Low, High, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Beta == Internal
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Prod, VersionChannel::Internal, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
     /// versions values:  Beta == Prod > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, High, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Internal, {High, High, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Beta == Internal > Prod
-    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Internal, {Low, Medium, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Beta, VersionChannel::Internal, {Low, Medium, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Internal > Beta
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Low, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Prod, VersionChannel::Internal, {Medium, Low, Medium}, CPPUNIT_SOURCELINE());
 }
 
 } // namespace KDC

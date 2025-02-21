@@ -103,7 +103,7 @@ class Handler {
         // Print an event description into a file (for debugging)
         static void writeEvent(const std::string &eventStr, bool crash) noexcept;
 
-        void setDistributionChannel(DistributionChannel channel);
+        void setDistributionChannel(VersionChannel channel);
 
     protected:
         Handler() = default;

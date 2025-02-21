@@ -47,9 +47,9 @@ class UpdateChecker {
          * @return A reference to the found `VersionInfo` object. If not found, return a reference to default constructed, invalid
          * `VersionInfo`object.
          */
-        const VersionInfo &versionInfo(DistributionChannel choosedChannel);
+        const VersionInfo &versionInfo(VersionChannel choosedChannel);
 
-        [[nodiscard]] const std::unordered_map<DistributionChannel, VersionInfo> &versionsInfo() const { return _versionsInfo; }
+        [[nodiscard]] const std::unordered_map<VersionChannel, VersionInfo> &versionsInfo() const { return _versionsInfo; }
         [[nodiscard]] bool isVersionReceived() const { return _isVersionReceived; }
 
     private:
@@ -76,12 +76,12 @@ class UpdateChecker {
 #if defined(__APPLE__) || defined(_WIN32)
             return _versionsInfo.contains(_prodVersionChannel) ? _versionsInfo[_prodVersionChannel] : _defaultVersionInfo;
 #else
-            return _versionsInfo.contains(DistributionChannel::Prod) ? _versionsInfo[DistributionChannel::Prod] : _defaultVersionInfo;
+            return _versionsInfo.contains(VersionChannel::Prod) ? _versionsInfo[VersionChannel::Prod] : _defaultVersionInfo;
 #endif
         }
 
         std::function<void()> _callback = nullptr;
-        DistributionChannel _prodVersionChannel{DistributionChannel::Unknown};
+        VersionChannel _prodVersionChannel{VersionChannel::Unknown};
         const VersionInfo _defaultVersionInfo;
         AllVersionsInfo _versionsInfo;
         bool _isVersionReceived{false};

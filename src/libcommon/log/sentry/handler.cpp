@@ -279,7 +279,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     std::cerr << "sentry_init returned " << res << std::endl;
     ASSERT(res == 0);
     _instance->_isSentryActivated = true;
-    _instance->setDistributionChannel(DistributionChannel::Unknown);
+    _instance->setDistributionChannel(VersionChannel::Unknown);
 }
 
 void Handler::init(const std::shared_ptr<Handler> &initializedHandler) {
@@ -449,7 +449,7 @@ void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
     }
 }
 
-void Handler::setDistributionChannel(const DistributionChannel channel) {
+void Handler::setDistributionChannel(const VersionChannel channel) {
     // Editing the "distribution_channel" value implies reflecting the change in the Sentry project settings.
     // (Settings > Projects > kdrive-[client/server] > Tags & Context).
     // It is not recommended to change this value or the channelStr values, as some Sentry dashboards/alerts might rely
@@ -457,22 +457,22 @@ void Handler::setDistributionChannel(const DistributionChannel channel) {
 
     std::string channelStr;
     switch (channel) {
-        case DistributionChannel::Prod:
+        case VersionChannel::Prod:
             channelStr = "Production";
             break;
-        case DistributionChannel::Next:
+        case VersionChannel::Next:
             channelStr = "Next";
             break;
-        case DistributionChannel::Beta:
+        case VersionChannel::Beta:
             channelStr = "Beta";
             break;
-        case DistributionChannel::Internal:
+        case VersionChannel::Internal:
             channelStr = "Internal";
             break;
-        case DistributionChannel::Legacy:
+        case VersionChannel::Legacy:
             channelStr = "Legacy";
             break;
-        case DistributionChannel::Unknown:
+        case VersionChannel::Unknown:
             channelStr = "Unknown";
             break;
         default:
