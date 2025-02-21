@@ -374,8 +374,7 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
     bool again = true;
     while (again) {
         again = false;
-        if (!parentNode->id().has_value()) {
-            LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
+        if (!parentNode || parentNode == _syncPal->updateTree(parentNode->side())->rootNode()) {
             break;
         }
 
