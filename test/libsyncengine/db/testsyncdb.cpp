@@ -805,4 +805,8 @@ void TestSyncDb::testCorrespondingNodeId() {
     CPPUNIT_ASSERT(!_testObj->correspondingNodeId(ReplicaSide::Unknown, "id dir loc 1", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
 }
+
+void TestSyncDb::testDummyUpgrade() {
+    CPPUNIT_ASSERT(_testObj->upgrade("3.6.4 (build 20240112)", "3.6.4 (build 20240112)"));
+}
 } // namespace KDC

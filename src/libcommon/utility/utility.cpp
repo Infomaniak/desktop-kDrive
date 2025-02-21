@@ -28,8 +28,11 @@
 #include <sys/statvfs.h>
 #endif
 
-#include <random>
+#include <iostream>
+
 #include <fstream>
+#include <random>
+#include <regex>
 #include <sstream>
 #include <signal.h>
 
@@ -689,13 +692,36 @@ const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion) {
     if (version.empty()) return;
 
+    std::string versionDigits = version;
+
+    std::regex versionDigitsRegex(R"(^([0-9]+\.[0-9]+\.[0-9]+)\s\(build\s([0-9]{8})\)$)"); // Example: "3.6.9 (build 20250220)"
+    std::smatch words;
+    std::regex_match(versionDigits, words, versionDigitsRegex);
+
+    if (!words.empty()) {
+        for (const auto &w: words) std::cout << w << std::endl;
+        assert(words.size() == 3 && "Wrong version format.");
+        versionDigits = words[1].str() + "." + words[2].str(); // Example: "3.6.9.20250220"
+    }
+
+    std::cout << "Version digits : " << versionDigits << std::endl;
+
+    // Split `versionDigits` wrt the '.' delimiter
     std::string::size_type prevPos = 0;
     std::string::size_type pos = 0;
     do {
-        pos = version.find('.', prevPos);
-        tabVersion.push_back(std::stoi(version.substr(prevPos, pos - prevPos)));
+        pos = versionDigits.find('.', prevPos);
+        if (pos == std::string::npos) break;
+
+        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos, pos - prevPos)));
+        std::cout << "Int: " << tabVersion.back() << std::endl;
+
         prevPos = pos + 1;
-    } while (pos != std::string::npos);
+    } while (true);
+
+    if (prevPos < versionDigits.size()) {
+        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos)));
+    }
 }
 
 SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
