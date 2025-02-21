@@ -1139,6 +1139,13 @@ void SyncPal::unpause() {
     }
 }
 
+std::chrono::time_point<std::chrono::steady_clock> SyncPal::pauseTime() const {
+    if (_syncPalWorker) {
+        return _syncPalWorker->pauseTime();
+    }
+    return std::chrono::steady_clock::now();
+}
+
 void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     if (_syncPalWorker) {
         if (_syncPalWorker->isRunning()) {
@@ -1169,13 +1176,8 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     _syncDb->setAutoDelete(clear);
 }
 
-bool SyncPal::isPaused(std::chrono::time_point<std::chrono::system_clock> &pauseTime) const {
-    if (_syncPalWorker && _syncPalWorker->isPaused()) {
-        pauseTime = _syncPalWorker->pauseTime();
-        return true;
-    }
-
-    return false;
+bool SyncPal::isPaused() const {
+    return _syncPalWorker && _syncPalWorker->isPaused();
 }
 
 bool SyncPal::pauseAsked() const {

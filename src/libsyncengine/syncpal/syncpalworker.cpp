@@ -117,7 +117,9 @@ void SyncPalWorker::execute() {
         }
 
         // Manage pause
-        while ((_pauseAsked || _isPaused) && _step == SyncStep::Idle) {
+        while ((_pauseAsked || _isPaused) &&
+               (_step == SyncStep::Idle ||
+                _step == SyncStep::Propagation2)) { // Pause only if we are idle or in Propagation1 (just before the executor)
             if (!_isPaused) {
                 // Pause workers
                 _pauseAsked = false;
@@ -241,7 +243,7 @@ void SyncPalWorker::pause() {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " is not running");
         return;
     }
-    _pauseTime = std::chrono::system_clock::now();
+    _pauseTime = std::chrono::steady_clock::now();
 
     if (_isPaused || _pauseAsked) {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " is already paused");

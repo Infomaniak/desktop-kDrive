@@ -20,6 +20,19 @@ set(testsyncengine_SRCS
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
         # Mocks
         ../mocks/libsyncengine/vfs/mockvfs.h
+        syncpal/mocksyncpal.h
+        syncpal/mockrfsoworker.h
+        syncpal/mocklfsoworker_win.h
+        syncpal/mocklfsoworker_unix.h
+        syncpal/mockcomputefsoperationworker.h
+        syncpal/mockupdatetreeworker.h
+        syncpal/mockplatforminconsistencycheckerworker.h
+        syncpal/mockconflictfinderworker.h
+        syncpal/mockconflictresolverworker.h
+        syncpal/mockoperationgeneratorworker.h
+        syncpal/mockoperationsorterworker.h
+        syncpal/mockexecutorworker.h
+
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
@@ -56,6 +69,7 @@ set(testsyncengine_SRCS
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
+        syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
         requests/testserverrequests.h  requests/testserverrequests.cpp

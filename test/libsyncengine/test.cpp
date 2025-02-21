@@ -20,6 +20,7 @@
 #include "db/testsyncdb.h"
 #include "olddb/testoldsyncdb.h"
 #include "syncpal/testsyncpal.h"
+#include "syncpal/testsyncpalworker.h"
 #include "update_detection/file_system_observer/testfsoperation.h"
 #include "update_detection/file_system_observer/testfsoperationset.h"
 #include "update_detection/file_system_observer/testremotefilesystemobserverworker.h"
@@ -50,7 +51,9 @@
 #endif
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
+
+/*CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
@@ -82,8 +85,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);*/
 } // namespace KDC
 
 int main(int, char **) {

@@ -177,8 +177,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          */
         void pause();
         void unpause();
-
-        bool isPaused(std::chrono::time_point<std::chrono::system_clock> &pauseTime) const;
+        std::chrono::time_point<std::chrono::steady_clock> pauseTime() const;
+        bool isPaused() const;
         bool pauseAsked() const;
         bool isIdle() const;
         bool isRunning() const;
@@ -240,6 +240,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _computeFSOperationsWorker = worker;
         }
 
+    protected:
+        virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
+
     private:
         log4cplus::Logger _logger;
         SyncPalInfo _syncInfo;
@@ -296,7 +299,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void freeSharedObjects();
         void initSharedObjects();
         void resetSharedObjects();
-        void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
@@ -324,6 +326,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
 
+        // TODO : Refactor to not use friend classes (should be reserved for test purpose). 
         friend class SyncPalWorker;
         friend class FileSystemObserverWorker;
         friend class LocalFileSystemObserverWorker;
@@ -339,6 +342,20 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class OperationGeneratorWorker;
         friend class OperationSorterWorker;
         friend class ExecutorWorker;
+
+        friend class MockLocalFileSystemObserverWorker;
+        friend class MockLocalFileSystemObserverWorker_unix;
+        friend class MockLocalFileSystemObserverWorker_win;
+        friend class MockRemoteFileSystemObserverWorker;
+        friend class MockComputeFSOperationWorker;
+        friend class MockUpdateTreeWorker;
+        friend class MockPlatformInconsistencyCheckerWorker;
+        friend class MockOperationProcessor;
+        friend class MockConflictFinderWorker;
+        friend class MockConflictResolverWorker;
+        friend class MockOperationGeneratorWorker;
+        friend class MockOperationSorterWorker;
+        friend class MockExecutorWorker;
 
         friend class BlacklistPropagator;
         friend class ExcludeListPropagator;
@@ -360,6 +377,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestLocalJobs;
         friend class TestIntegration;
         friend class TestWorkers;
-};
+        friend class MockSyncPal;
+ };
 
 } // namespace KDC

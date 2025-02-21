@@ -1451,8 +1451,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QList<int> pausedSyncs;
             for (auto &syncPalMapElt: _syncPalMap) {
                 if (!syncPalMapElt.second) continue;
-                std::chrono::time_point<std::chrono::system_clock> pauseTime;
-                if (syncPalMapElt.second->driveDbId() == driveDbId && !syncPalMapElt.second->isPaused(pauseTime)) {
+                if (syncPalMapElt.second->driveDbId() == driveDbId && !syncPalMapElt.second->isPaused()) {
                     syncPalMapElt.second->pause();
                     pausedSyncs.push_back(syncPalMapElt.first);
                 }
@@ -3347,8 +3346,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
 #endif
 
     if (start && (resumedByUser || !sync.paused())) {
-        std::chrono::time_point<std::chrono::system_clock> pauseTime;
-        if (_syncPalMap[sync.dbId()]->isPaused(pauseTime) || _syncPalMap[sync.dbId()]->pauseAsked()) {
+        if (_syncPalMap[sync.dbId()]->isPaused() || _syncPalMap[sync.dbId()]->pauseAsked()) {
             // Unpause SyncPal
             _syncPalMap[sync.dbId()]->unpause();
         } else if (!_syncPalMap[sync.dbId()]->isRunning()) {
@@ -4167,11 +4165,11 @@ void AppServer::onRestartSyncs() {
 
     for (const auto &[syncId, syncPtr]: _syncPalMap) {
         if (!syncPtr) continue;
-        std::chrono::time_point<std::chrono::system_clock> pauseTime;
-        if ((syncPtr->isPaused(pauseTime) || syncPtr->pauseAsked()) &&
-            pauseTime + std::chrono::minutes(1) < std::chrono::system_clock::now()) {
-            LOG_INFO(_logger, "Try to resume SyncPal with syncDbId=" << syncId);
-            syncPtr->unpause();
+        std::chrono::time_point<std::chrono::steady_clock> pauseTime;
+        if (syncPtr->isPaused() || syncPtr->pauseAsked()) {
+            if (syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
+                syncPtr->unpause();
+            }
         }
     }
 }

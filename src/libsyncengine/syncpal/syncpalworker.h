@@ -37,12 +37,12 @@ class SyncPalWorker : public ISyncWorker {
         inline bool pauseAsked() const { return _pauseAsked; }
         void unpause();
         inline SyncStep step() const { return _step; }
-        inline std::chrono::time_point<std::chrono::system_clock> pauseTime() const { return _pauseTime; }
+        inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);
 
     private:
         SyncStep _step{SyncStep::Idle};
-        std::chrono::time_point<std::chrono::system_clock> _pauseTime{std::chrono::time_point<std::chrono::system_clock>()};
+        std::chrono::time_point<std::chrono::steady_clock> _pauseTime{std::chrono::time_point<std::chrono::steady_clock>()};
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
         bool _isPaused{false};
@@ -59,5 +59,7 @@ class SyncPalWorker : public ISyncWorker {
         void stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> fsoWorkers[2],
                                             std::shared_ptr<ISyncWorker> stepWorkers[2]);
         bool resetVfsFilesStatus();
+
+        friend class TestSyncPalWorker;
 };
 } // namespace KDC
