@@ -146,9 +146,12 @@ void VfsMac::dehydrate(const SyncPath &absoluteFilepathStd) {
     QString absoluteFilepath = SyncName2QStr(absoluteFilepathStd.native());
     LOGW_DEBUG(logger(), L"dehydrate - " << Utility::formatPath(absoluteFilepath).c_str());
 
+    QString relativePath =
+            QStringView(absoluteFilepath).mid(static_cast<qsizetype>(_vfsSetupParams.localPath.string().size())).toUtf8();
+
     // Check file status
     SyncFileStatus status;
-    _syncFileStatus(_vfsSetupParams.syncDbId, absoluteFilepathStd, status);
+    _syncFileStatus(_vfsSetupParams.syncDbId, QStr2Path(relativePath), status);
     if (status == SyncFileStatus::Unknown) {
         // The file is not synchronized, do nothing
         LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatSyncPath(absoluteFilepathStd));
@@ -160,8 +163,6 @@ void VfsMac::dehydrate(const SyncPath &absoluteFilepathStd) {
         LOG_WARN(logger(), "Error in vfsDehydratePlaceHolder!");
     }
 
-    QString relativePath =
-            QStringView(absoluteFilepath).mid(static_cast<qsizetype>(_vfsSetupParams.localPath.string().size())).toUtf8();
     _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
 }
 
