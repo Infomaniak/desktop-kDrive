@@ -432,7 +432,7 @@ bool SyncDb::prepare() {
 bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
     if (!CommonUtility::isVersionLower(fromVersion, toVersion)) return true;
 
-    LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << _fromVersion << " to " << toVersion);
+    LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
 
     const std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
 
