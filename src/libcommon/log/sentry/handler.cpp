@@ -35,7 +35,6 @@ std::shared_ptr<Handler> Handler::_instance = nullptr;
 AppType Handler::_appType = AppType::None;
 bool Handler::_debugCrashCallback = false;
 bool Handler::_debugBeforeSendCallback = false;
-
 /*
  *  sentry_value_t reader implementation - begin
  *  Used for debbuging
@@ -280,6 +279,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     std::cerr << "sentry_init returned " << res << std::endl;
     ASSERT(res == 0);
     _instance->_isSentryActivated = true;
+    _instance->setDistributionChannel(VersionChannel::Unknown);
 }
 
 void Handler::init(const std::shared_ptr<Handler> &initializedHandler) {
@@ -328,6 +328,10 @@ void Handler::setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLim
 void Handler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) {
     assert(minUploadIntervalOnRateLimit > 0 && "Min upload interval on rate limit must be greater than 0");
     _sentryMinUploadIntervalOnRateLimit = std::max(1, minUploadIntervalOnRateLimit);
+}
+
+void Handler::setTag(const std::string &key, const std::string &value) {
+    sentry_set_tag(key.c_str(), value.c_str());
 }
 
 sentry_value_t Handler::toSentryValue(const SentryUser &user) const {
@@ -443,6 +447,39 @@ void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
         eventFile << eventStr << std::endl;
         eventFile.close();
     }
+}
+
+void Handler::setDistributionChannel(const VersionChannel channel) {
+    // Editing the "distribution_channel" value implies reflecting the change in the Sentry project settings.
+    // (Settings > Projects > kdrive-[client/server] > Tags & Context).
+    // It is not recommended to change this value or the channelStr values, as some Sentry dashboards/alerts might rely
+    // on them and should be updated accordingly.
+
+    std::string channelStr;
+    switch (channel) {
+        case VersionChannel::Prod:
+            channelStr = "Production";
+            break;
+        case VersionChannel::Next:
+            channelStr = "Next";
+            break;
+        case VersionChannel::Beta:
+            channelStr = "Beta";
+            break;
+        case VersionChannel::Internal:
+            channelStr = "Internal";
+            break;
+        case VersionChannel::Legacy:
+            channelStr = "Legacy";
+            break;
+        case VersionChannel::Unknown:
+            channelStr = "Unknown";
+            break;
+        default:
+            channelStr = "Error";
+            break;
+    }
+    setTag("distribution_channel", channelStr);
 }
 
 Handler::~Handler() {

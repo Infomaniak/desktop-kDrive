@@ -128,8 +128,8 @@ struct GuiRequests {
         static ExitCode cancelLogUploadToSupport();
         static ExitCode crash();
 
-        static ExitCode changeDistributionChannel(DistributionChannel channel);
-        static ExitCode versionInfo(VersionInfo &versionInfo, DistributionChannel channel = DistributionChannel::Unknown);
+        static ExitCode changeDistributionChannel(VersionChannel channel);
+        static ExitCode versionInfo(VersionInfo &versionInfo, VersionChannel channel = VersionChannel::Unknown);
         static ExitCode updateState(UpdateState &state);
         static ExitCode startInstaller();
         static ExitCode skipUpdate(const std::string &version);

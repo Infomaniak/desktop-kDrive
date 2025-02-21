@@ -51,7 +51,7 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     QTimer::singleShot(3000, this, [this]() { setDistributionChannel(_currentChannel); });
 }
 
-void UpdateManager::setDistributionChannel(const DistributionChannel channel) {
+void UpdateManager::setDistributionChannel(const VersionChannel channel) {
     _currentChannel = channel;
     _updater->checkUpdateAvailable(channel);
     ParametersCache::instance()->parameters().setDistributionChannel(channel);
