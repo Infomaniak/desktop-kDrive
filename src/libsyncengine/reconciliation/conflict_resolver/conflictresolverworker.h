@@ -25,29 +25,37 @@
 
 namespace KDC {
 
-class ConflictResolverWorker : public OperationProcessor {
+class ConflictResolverWorker final : public OperationProcessor {
     public:
-        ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
+        ConflictResolverWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name, const std::string &shortName);
 
-        inline const std::unordered_map<DbNodeId, ReplicaSide> &registeredOrphans() const { return _registeredOrphans; }
+        [[nodiscard]] const std::unordered_map<DbNodeId, ReplicaSide> &registeredOrphans() const { return _registeredOrphans; }
 
     protected:
-        virtual void execute() override;
+        void execute() override;
 
     private:
         std::unordered_map<DbNodeId, ReplicaSide> _registeredOrphans; // key: DB node ID, value : winner side
 
         ExitCode generateOperations(const Conflict &conflict, bool &continueSolving);
 
+        ExitCode generateLocalRenameOperation(const Conflict &conflict, bool &continueSolving);
+        ExitCode generateEditDeleteConflictOperation(const Conflict &conflict);
+        ExitCode generateMoveDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
+        ExitCode generateMoveParentDeleteConflictOperation(const Conflict &conflict);
+        ExitCode generateCreateParentDeleteConflictOperation(const Conflict &conflict);
+        ExitCode generateMoveMoveSourceConflictOperation(const Conflict &conflict);
+        ExitCode generateMoveMoveCycleConflictOperation(const Conflict &conflict);
+
         /*
          * If return false, the file path is too long, the file needs to be moved to root directory
          */
-        bool generateConflictedName(const std::shared_ptr<Node> node, SyncName &newName, bool isOrphanNode = false) const;
+        bool generateConflictedName(const std::shared_ptr<Node> &node, SyncName &newName, bool isOrphanNode = false) const;
 
-        static void findAllChildNodes(const std::shared_ptr<Node> parentNode,
+        static void findAllChildNodes(const std::shared_ptr<Node> &parentNode,
                                       std::unordered_set<std::shared_ptr<Node>> &children);
-        ExitCode findAllChildNodeIdsFromDb(const std::shared_ptr<Node> parentNode, std::unordered_set<DbNodeId> &childrenDbIds);
-        ExitCode undoMove(const std::shared_ptr<Node> moveNode, SyncOpPtr moveOp);
+        ExitCode findAllChildNodeIdsFromDb(const std::shared_ptr<Node> &parentNode, std::unordered_set<DbNodeId> &childrenDbIds);
+        ExitCode undoMove(const std::shared_ptr<Node> &moveNode, const SyncOpPtr &moveOp);
 
         friend class TestConflictResolverWorker;
 };
