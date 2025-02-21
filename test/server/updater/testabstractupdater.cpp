@@ -20,7 +20,11 @@
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
+#include "libsyncengine/jobs/jobmanager.h"
 #include "version.h"
+
+#include "mockupdater.h"
+#include "mockupdatechecker.h"
 
 namespace KDC {
 
@@ -97,4 +101,49 @@ void TestAbstractUpdater::testIsVersionSkipped() {
     CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 }
 
+void TestAbstractUpdater::testCurrentVersionedChannel() {
+    auto updateChecker = std::make_shared<MockUpdateChecker>();
+    MockUpdater updater(updateChecker);
+
+    AllVersionsInfo testVersions;
+    testVersions[VersionChannel::Next].tag = "10.0.0";
+    testVersions[VersionChannel::Next].buildVersion = 20210101;
+
+    testVersions[VersionChannel::Prod].tag = "9.0.0";
+    testVersions[VersionChannel::Prod].buildVersion = 20210101;
+
+    testVersions[VersionChannel::Beta].tag = "11.0.0";
+    testVersions[VersionChannel::Beta].buildVersion = 20210101;
+
+    testVersions[VersionChannel::Internal].tag = "11.0.1";
+    testVersions[VersionChannel::Internal].buildVersion = 20210101;
+    updateChecker->setAllVersionInfo(testVersions);
+
+    std::string version;
+    updater.setMockGetCurrentVersion([&version]() { return version; });
+
+    // Check Next version
+    version = "10.0.0.20210101";
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Next, updater.currentVersionChannel());
+
+    // Check Prod version
+    version = "9.0.0.20210101";
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Prod, updater.currentVersionChannel());
+
+    // Check Beta version
+    version = "11.0.0.20210101";
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Beta, updater.currentVersionChannel());
+
+    // Check Internal version
+    version = "11.0.1.20210101";
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Internal, updater.currentVersionChannel());
+
+    // Check Legacy version
+    version = "8.0.0.20210101";
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Legacy, updater.currentVersionChannel());
+
+    // Check Unknown version (higher than prod)
+    version = "9.0.0.20210102";
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
+}
 } // namespace KDC
