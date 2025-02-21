@@ -26,6 +26,8 @@ namespace KDC {
 
 class TestSyncPalWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSyncPalWorker);
+        CPPUNIT_TEST(testInternalPause1);
+        CPPUNIT_TEST(testInternalPause2);
         CPPUNIT_TEST(testInternalPause3);
         CPPUNIT_TEST_SUITE_END();
 
@@ -50,11 +52,14 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
          */
         void testInternalPause1();
 
-        /* This test ensure that a RFSO network error while the synchronization is running lead to a pause state and
-         * that the synchronization is automatically restarted when the network is back.
+        /* This test ensure that a RFSO network error while the synchronization is running lead to a pause state when the
+         * synchronization reach the Idle state and that the synchronization is automatically restarted when the network is back.
          */
+        void testInternalPause2();
 
-
+        /* This test ensure that a network error in the executor worker while lead to a pause
+         * state.
+         */
         void testInternalPause3();
 
         void testStopDuringInternalPause();

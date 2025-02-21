@@ -23,7 +23,7 @@
 #include "update_detection/file_system_observer/computefsoperationworker.h"
 namespace KDC {
 
-class MockComputeFSOperationWorker : public ComputeFSOperationWorker {
+class MockComputeFSOperationWorkerTestSyncPalWorker : public ComputeFSOperationWorker {
     public:
         using ComputeFSOperationWorker::ComputeFSOperationWorker;
 

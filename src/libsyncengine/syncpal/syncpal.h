@@ -347,7 +347,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class MockLocalFileSystemObserverWorker_unix;
         friend class MockLocalFileSystemObserverWorker_win;
         friend class MockRemoteFileSystemObserverWorker;
-        friend class MockComputeFSOperationWorker;
+        friend class MockComputeFSOperationWorkerTestSyncPalWorker;
         friend class MockUpdateTreeWorker;
         friend class MockPlatformInconsistencyCheckerWorker;
         friend class MockOperationProcessor;

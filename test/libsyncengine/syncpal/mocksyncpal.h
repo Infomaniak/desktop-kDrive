@@ -59,8 +59,8 @@ class MockSyncPal : public SyncPal {
         std::shared_ptr<MockRemoteFileSystemObserverWorker> getMockRFSOWorker() {
             return std::static_pointer_cast<MockRemoteFileSystemObserverWorker>(_remoteFSObserverWorker);
         }
-        std::shared_ptr<MockComputeFSOperationWorker> getMockComputeFSOperationWorker() {
-            return std::static_pointer_cast<MockComputeFSOperationWorker>(_computeFSOperationsWorker);
+        std::shared_ptr<MockComputeFSOperationWorkerTestSyncPalWorker> getMockComputeFSOperationWorker() {
+            return std::static_pointer_cast<MockComputeFSOperationWorkerTestSyncPalWorker>(_computeFSOperationsWorker);
         }
         std::shared_ptr<MockUpdateTreeWorker> getMockLocalUpdateTreeWorker() {
             return std::static_pointer_cast<MockUpdateTreeWorker>(_localUpdateTreeWorker);
@@ -100,8 +100,8 @@ class MockSyncPal : public SyncPal {
 #endif
             _remoteFSObserverWorker = std::make_shared<MockRemoteFileSystemObserverWorker>(
                     shared_from_this(), "Mock Remote File System Observer", "M_RFSO");
-            _computeFSOperationsWorker =
-                    std::make_shared<MockComputeFSOperationWorker>(shared_from_this(), "Mock Compute FS Operations", "M_COOP");
+            _computeFSOperationsWorker = std::make_shared<MockComputeFSOperationWorkerTestSyncPalWorker>(
+                    shared_from_this(), "Mock Compute FS Operations", "M_COOP");
             _localUpdateTreeWorker = std::make_shared<MockUpdateTreeWorker>(shared_from_this(), "Mock Local Tree Updater",
                                                                             "M_LTRU", ReplicaSide::Local);
             _remoteUpdateTreeWorker = std::make_shared<MockUpdateTreeWorker>(shared_from_this(), "Mock Remote Tree Updater",
