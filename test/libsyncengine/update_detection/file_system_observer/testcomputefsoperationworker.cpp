@@ -19,12 +19,12 @@
 #include "testcomputefsoperationworker.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
+#include "syncpal/tmpblacklistmanager.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
 #include "test_utility/testhelpers.h"
-
-#include <update_detection/file_system_observer/computefsoperationworker.h>
 
 namespace KDC {
 
@@ -173,7 +173,7 @@ void TestComputeFSOperationWorker::setUp() {
     _syncPal->setComputeFSOperationsWorker(
             std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
     _syncPal->computeFSOperationsWorker()->setTesting(true);
-    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+    _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 }
 
 void TestComputeFSOperationWorker::tearDown() {
@@ -210,9 +210,96 @@ void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
     CPPUNIT_ASSERT_EQUAL(uint64_t(3), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
+void TestComputeFSOperationWorker::testAccessDenied() {
+    {
+        // BB (child of B) is deleted
+        // B access is denied
+        // Causes an Access Denied error in checkIfPathExists
+        _syncPal->_localSnapshot->removeItem("lbb");
+
+        SyncPath bNodePath = "B";
+        std::error_code ec;
+        std::filesystem::create_directory(_syncPal->localPath() / bNodePath, ec);
+
+        IoError ioError = IoError::Success;
+        SyncPath bbNodePath = bNodePath / "BB";
+#ifdef _WIN32
+        // NB: In Windows, it is possible to access a file that is located in a directory that is denied access.
+        {
+            std::ofstream ofs(_syncPal->localPath() / bbNodePath);
+            ofs << "Some content.\n";
+        }
+        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / bbNodePath, false, false, false, ioError) &&
+                       ioError == IoError::Success);
+#endif
+
+        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / bNodePath, false, false, false, ioError) &&
+                       ioError == IoError::Success);
+
+        _syncPal->copySnapshots();
+        _syncPal->computeFSOperationsWorker()->execute();
+
+        ExitCode exitCode = _syncPal->computeFSOperationsWorker()->exitCode();
+        IoHelper::setRights(_syncPal->localPath() / bNodePath, true, true, true, ioError);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+
+        CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(bNodePath, ReplicaSide::Local));
+        CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(bNodePath, ReplicaSide::Remote));
+        CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(bbNodePath, ReplicaSide::Local));
+        CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(bbNodePath, ReplicaSide::Remote));
+    }
+
+    {
+        // AA (child of A) is deleted and recreated with the same node ID after the snapshots are copied
+        // A access is denied
+        // Causes an Access Denied in checkIfOkToDelete
+        _syncPal->_localSnapshot->removeItem("laa");
+
+        SyncPath aNodePath = "A";
+        std::error_code ec;
+        std::filesystem::create_directory(_syncPal->localPath() / aNodePath, ec);
+
+        IoError ioError = IoError::Success;
+        SyncPath aaNodePath = aNodePath / "AA";
+
+#ifdef _WIN32
+        // NB: In Windows, it is possible to access a file that is located in a directory that is denied access.
+        {
+            std::ofstream ofs(_syncPal->localPath() / aaNodePath);
+            ofs << "Some content.\n";
+        }
+        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / aaNodePath, false, false, false, ioError) &&
+                       ioError == IoError::Success);
+#endif
+
+        CPPUNIT_ASSERT(IoHelper::setRights(_syncPal->localPath() / aNodePath, false, false, false, ioError) &&
+                       ioError == IoError::Success);
+
+        // Mock checkIfOkToDelete to simulate the Access Denied
+        _syncPal->setComputeFSOperationsWorker(
+                std::make_shared<MockComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
+        _syncPal->computeFSOperationsWorker()->setTesting(true);
+
+        _syncPal->copySnapshots();
+        _syncPal->computeFSOperationsWorker()->execute();
+
+        ExitCode exitCode = _syncPal->computeFSOperationsWorker()->exitCode();
+        IoHelper::setRights(_syncPal->localPath() / aNodePath, true, true, true, ioError);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+
+        CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(aNodePath, ReplicaSide::Local));
+        CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(aNodePath, ReplicaSide::Remote));
+        CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(aaNodePath, ReplicaSide::Local));
+        CPPUNIT_ASSERT(_syncPal->_tmpBlacklistManager->isTmpBlacklisted(aaNodePath, ReplicaSide::Remote));
+    }
+}
+
 void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings() {
-    // Duplicated items with distinct encodings are not supported, and only one of them will be synced. We do not guarantee that
-    // it will always be the same one.
+    // TODO: Use the default tmp directory
+    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+
+    // Duplicated items with distinct encodings are not supported, and only one of them will be synced. We do not guarantee
+    // that it will always be the same one.
     _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfc", "la", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
                                                       testhelpers::defaultTime, NodeType::File, 123, false, true, true));
     _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfd", "la", testhelpers::makeNfdSyncName(), testhelpers::defaultTime,
@@ -229,6 +316,9 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
 }
 
 void TestComputeFSOperationWorker::testMultipleOps() {
+    // TODO: Use the default tmp directory
+    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+
     // On local replica
     // Create operation
     _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime,
@@ -270,6 +360,9 @@ void TestComputeFSOperationWorker::testMultipleOps() {
 }
 
 void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
+    // TODO: Use the default tmp directory
+    _syncPal->setLocalPath(testhelpers::localTestDirPath);
+
     // Add file in DB
     DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("test.lnk"), Str("test.lnk"), "ltest", "rtest",
                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0,
@@ -360,6 +453,14 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
+}
+
+MockComputeFSOperationWorker::MockComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                                           const std::string &shortName) :
+    ComputeFSOperationWorker(syncPal, name, shortName) {}
+
+ExitInfo MockComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide, const SyncPath &, const NodeId &, bool &) {
+    return ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError);
 }
 
 } // namespace KDC

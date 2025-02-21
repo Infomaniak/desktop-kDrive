@@ -42,7 +42,7 @@
 #include <security.h>
 #include <winioctl.h>
 
-constexpr int MAX_GET_RIGHTS_DURATION_MS = 60;
+constexpr int MAX_GET_RIGHTS_DURATION_MS = 200;
 namespace KDC {
 
 namespace {
