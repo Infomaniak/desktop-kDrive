@@ -99,81 +99,81 @@ class MockVfs : public T {
         }
 
         // Mock functions setters
-        void setModeMock(std::function<VirtualFileMode()> mode) { _mode = mode; }
-        void setSocketApiPinStateActionsShownMock(std::function<bool()> socketApiPinStateActionsShown) {
+        void setMockMode(std::function<VirtualFileMode()> mode) { _mode = mode; }
+        void setMockSocketApiPinStateActionsShown(std::function<bool()> socketApiPinStateActionsShown) {
             _socketApiPinStateActionsShown = socketApiPinStateActionsShown;
         }
-        void setUpdateMetadataMock(
+        void setMockUpdateMetadata(
                 std::function<ExitInfo(const SyncPath &, time_t, time_t, int64_t, const NodeId &)> updateMetadata) {
             _updateMetadata = updateMetadata;
         }
-        void setCreatePlaceholderMock(std::function<ExitInfo(const SyncPath &, const SyncFileItem &)> createPlaceholder) {
+        void setMockCreatePlaceholder(std::function<ExitInfo(const SyncPath &, const SyncFileItem &)> createPlaceholder) {
             _createPlaceholder = createPlaceholder;
         }
-        void setDehydratePlaceholderMock(std::function<ExitInfo(const SyncPath &)> dehydratePlaceholder) {
+        void setMockDehydratePlaceholder(std::function<ExitInfo(const SyncPath &)> dehydratePlaceholder) {
             _dehydratePlaceholder = dehydratePlaceholder;
         }
-        void setConvertToPlaceholderMock(std::function<ExitInfo(const SyncPath &, const SyncFileItem &)> convertToPlaceholder) {
+        void setMockConvertToPlaceholder(std::function<ExitInfo(const SyncPath &, const SyncFileItem &)> convertToPlaceholder) {
             _convertToPlaceholder = convertToPlaceholder;
         }
-        void setUpdateFetchStatusMock(
+        void setMockUpdateFetchStatus(
                 std::function<ExitInfo(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> updateFetchStatus) {
             _updateFetchStatus = updateFetchStatus;
         }
-        void setForceStatusMock(std::function<ExitInfo(const SyncPath &, const VfsStatus &)> forceStatus) {
+        void setMockForceStatus(std::function<ExitInfo(const SyncPath &, const VfsStatus &)> forceStatus) {
             _forceStatus = forceStatus;
         }
-        void setIsDehydratedPlaceholderMock(std::function<ExitInfo(const SyncPath &, bool &)> isDehydratedPlaceholder) {
+        void setMockIsDehydratedPlaceholder(std::function<ExitInfo(const SyncPath &, bool &)> isDehydratedPlaceholder) {
             _isDehydratedPlaceholder = isDehydratedPlaceholder;
         }
-        void setSetPinStateMock(std::function<ExitInfo(const SyncPath &, KDC::PinState)> setPinState) {
+        void setMockSetPinState(std::function<ExitInfo(const SyncPath &, KDC::PinState)> setPinState) {
             _setPinState = setPinState;
         }
-        void setPinStateMock(std::function<KDC::PinState(const SyncPath &)> pinState) { _pinState = pinState; }
-        void setStatusMock(std::function<ExitInfo(const SyncPath &, const VfsStatus &)> status) { _status = status; }
-        void setSetThumbnailMock(std::function<ExitInfo(const SyncPath &, const QPixmap &)> setThumbnail) {
+        void setMockPinState(std::function<KDC::PinState(const SyncPath &)> pinState) { _pinState = pinState; }
+        void setMockStatus(std::function<ExitInfo(const SyncPath &, const VfsStatus &)> status) { _status = status; }
+        void setMockSetThumbnail(std::function<ExitInfo(const SyncPath &, const QPixmap &)> setThumbnail) {
             _setThumbnail = setThumbnail;
         }
-        void setSetAppExcludeListMock(std::function<ExitInfo()> setAppExcludeList) { _setAppExcludeList = setAppExcludeList; }
-        void setGetFetchingAppListMock(std::function<ExitInfo(QHash<QString, QString> &)> getFetchingAppList) {
+        void setMockSetAppExcludeList(std::function<ExitInfo()> setAppExcludeList) { _setAppExcludeList = setAppExcludeList; }
+        void setMockGetFetchingAppList(std::function<ExitInfo(QHash<QString, QString> &)> getFetchingAppList) {
             _getFetchingAppList = getFetchingAppList;
         }
-        void setExcludeMock(std::function<void(const SyncPath &)> exclude) { _exclude = exclude; }
-        void setIsExcludedMock(std::function<bool(const SyncPath &)> isExcluded) { _isExcluded = isExcluded; }
-        void setFileStatusChangedMock(std::function<bool(const SyncPath &, KDC::SyncFileStatus)> fileStatusChanged) {
+        void setMockExclude(std::function<void(const SyncPath &)> exclude) { _exclude = exclude; }
+        void setMockIsExcluded(std::function<bool(const SyncPath &)> isExcluded) { _isExcluded = isExcluded; }
+        void setMockFileStatusChanged(std::function<bool(const SyncPath &, KDC::SyncFileStatus)> fileStatusChanged) {
             _fileStatusChanged = fileStatusChanged;
         }
-        void setClearFileAttributesMock(std::function<void(const SyncPath &)> clearFileAttributes) {
+        void setMockClearFileAttributes(std::function<void(const SyncPath &)> clearFileAttributes) {
             _clearFileAttributes = clearFileAttributes;
         }
-        void setDehydrateMock(std::function<void(const SyncPath &)> dehydrate) { _dehydrate = dehydrate; }
-        void setHydrateMock(std::function<void(const SyncPath &)> hydrate) { _hydrate = hydrate; }
-        void setCancelHydrateMock(std::function<void(const SyncPath &)> cancelHydrate) { _cancelHydrate = cancelHydrate; }
+        void setMockDehydrate(std::function<void(const SyncPath &)> dehydrate) { _dehydrate = dehydrate; }
+        void setMockHydrate(std::function<void(const SyncPath &)> hydrate) { _hydrate = hydrate; }
+        void setMockCancelHydrate(std::function<void(const SyncPath &)> cancelHydrate) { _cancelHydrate = cancelHydrate; }
 
 
         // Mock functions resetters
-        void resetModeMock() { _mode = nullptr; }
-        void resetSocketApiPinStateActionsShownMock() { _socketApiPinStateActionsShown = nullptr; }
-        void resetUpdateMetadataMock() { _updateMetadata = nullptr; }
-        void resetCreatePlaceholderMock() { _createPlaceholder = nullptr; }
-        void resetDehydratePlaceholderMock() { _dehydratePlaceholder = nullptr; }
-        void resetConvertToPlaceholderMock() { _convertToPlaceholder = nullptr; }
-        void resetUpdateFetchStatusMock() { _updateFetchStatus = nullptr; }
-        void resetForceStatusMock() { _forceStatus = nullptr; }
-        void resetIsDehydratedPlaceholderMock() { _isDehydratedPlaceholder = nullptr; }
-        void resetSetPinStateMock() { _setPinState = nullptr; }
-        void resetPinStateMock() { _pinState = nullptr; }
-        void resetStatusMock() { _status = nullptr; }
-        void resetSetThumbnailMock() { _setThumbnail = nullptr; }
-        void resetSetAppExcludeListMock() { _setAppExcludeList = nullptr; }
-        void resetGetFetchingAppListMock() { _getFetchingAppList = nullptr; }
-        void resetExcludeMock() { _exclude = nullptr; }
-        void resetIsExcludedMock() { _isExcluded = nullptr; }
-        void resetFileStatusChangedMock() { _fileStatusChanged = nullptr; }
-        void resetClearFileAttributesMock() { _clearFileAttributes = nullptr; }
-        void resetDehydrateMock() { _dehydrate = nullptr; }
-        void resetHydrateMock() { _hydrate = nullptr; }
-        void resetCancelHydrateMock() { _cancelHydrate = nullptr; }
+        void resetMockMode() { _mode = nullptr; }
+        void resetMockSocketApiPinStateActionsShown() { _socketApiPinStateActionsShown = nullptr; }
+        void resetMockUpdateMetadata() { _updateMetadata = nullptr; }
+        void resetMockCreatePlaceholder() { _createPlaceholder = nullptr; }
+        void resetMockDehydratePlaceholder() { _dehydratePlaceholder = nullptr; }
+        void resetMockConvertToPlaceholder() { _convertToPlaceholder = nullptr; }
+        void resetMockUpdateFetchStatus() { _updateFetchStatus = nullptr; }
+        void resetMockForceStatus() { _forceStatus = nullptr; }
+        void resetMockIsDehydratedPlaceholder() { _isDehydratedPlaceholder = nullptr; }
+        void resetMockSetPinState() { _setPinState = nullptr; }
+        void resetMockPinState() { _pinState = nullptr; }
+        void resetMockStatus() { _status = nullptr; }
+        void resetMockSetThumbnail() { _setThumbnail = nullptr; }
+        void resetMockSetAppExcludeList() { _setAppExcludeList = nullptr; }
+        void resetMockGetFetchingAppList() { _getFetchingAppList = nullptr; }
+        void resetMockExclude() { _exclude = nullptr; }
+        void resetMockIsExcluded() { _isExcluded = nullptr; }
+        void resetMockFileStatusChanged() { _fileStatusChanged = nullptr; }
+        void resetMockClearFileAttributes() { _clearFileAttributes = nullptr; }
+        void resetMockDehydrate() { _dehydrate = nullptr; }
+        void resetMockHydrate() { _hydrate = nullptr; }
+        void resetMockCancelHydrate() { _cancelHydrate = nullptr; }
 
     private:
         std::function<VirtualFileMode()> _mode;

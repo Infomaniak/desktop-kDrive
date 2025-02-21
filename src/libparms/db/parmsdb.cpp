@@ -1220,7 +1220,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     parameters.setJobPoolCapacityFactor(intResult);
 
     ASSERT(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 29, intResult));
-    parameters.setDistributionChannel(static_cast<DistributionChannel>(intResult));
+    parameters.setDistributionChannel(static_cast<VersionChannel>(intResult));
 
     ASSERT(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 

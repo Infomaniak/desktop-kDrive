@@ -46,7 +46,7 @@ class MockVfs final : public VfsOff {
         bool vfsStatusIsHydrated = false;
         bool vfsStatusIsSyncing = false;
         bool vfsStatusIsPlaceholder = false;
-        int64_t vfsStatusProgress = 0;
+        int16_t vfsStatusProgress = 0;
         VfsSetupParams vfsSetupParams;
 };
 
