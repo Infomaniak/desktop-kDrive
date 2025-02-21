@@ -28,7 +28,6 @@
 #include <sys/statvfs.h>
 #endif
 
-#include <iostream>
 
 #include <fstream>
 #include <random>
@@ -699,12 +698,9 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
     std::regex_match(versionDigits, words, versionDigitsRegex);
 
     if (!words.empty()) {
-        for (const auto &w: words) std::cout << w << std::endl;
         assert(words.size() == 3 && "Wrong version format.");
         versionDigits = words[1].str() + "." + words[2].str(); // Example: "3.6.9.20250220"
     }
-
-    std::cout << "Version digits : " << versionDigits << std::endl;
 
     // Split `versionDigits` wrt the '.' delimiter
     std::string::size_type prevPos = 0;
@@ -714,8 +710,6 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
         if (pos == std::string::npos) break;
 
         tabVersion.push_back(std::stoi(versionDigits.substr(prevPos, pos - prevPos)));
-        std::cout << "Int: " << tabVersion.back() << std::endl;
-
         prevPos = pos + 1;
     } while (true);
 
