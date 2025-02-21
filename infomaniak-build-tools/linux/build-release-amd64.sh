@@ -20,7 +20,62 @@
 
 set -e
 
-src_dir=$PWD
+
+program_name="$(basename "$0")"
+
+
+function get_default_src_dir() {
+	if [[ -n $KDRIVE_SRC_DIR ]]; then
+	   echo $KDRIVE_SRC_DIR
+	elif [[ -d "$HOME/Projects/desktop-kDrive" ]]; then
+	   echo $HOME/Projects/desktop-kDrive
+	else
+	   echo $PWD
+    fi
+}
+
+src_dir=$(get_default_src_dir)
+
+function display_help {
+  echo "$program_name [-h] [-d git-directory]"
+  echo "  Build the Linux Amd64 release executables built inside <git-directory>/build-linux-amd64."
+  echo "where:"
+  echo "-h  Show this help text."
+  echo "-d <git-directory>" 
+  echo "  Set the path to the desktop-kDrive git directory. Defaults to '$src_dir'."
+}
+
+while :
+do
+    case "$1" in
+      -d | --git-directory)
+          src_dir="$2"
+          shift 2
+          ;;
+      -h | --help)
+          display_help 
+          exit 0
+          ;;
+      --) # End of all options
+          shift
+          break
+          ;;
+      -*)
+          echo "Error: Unknown option: $1" >&2
+          exit 1 
+          ;;
+      *)  # No more options
+          break
+          ;;
+    esac
+done
+
+if [ ! -d "$src_dir" ]; then
+    echo "Source directory does not exist: '$src_dir'"
+    exit 1
+fi
+
+
 build_dir="$src_dir/build-linux-amd64"
 app_dir="$build_dir/install"
 build_type="RelWithDebInfo"
