@@ -143,7 +143,7 @@ void mockSetSyncFileSyncing([[maybe_unused]]int syncDbId, [[maybe_unused]]const 
 void TestVfsMac::testDehydrate() {
     const SyncName filename = "test_file.txt";
 
-    // Create temp directory and file.
+    // Create temp directory containing a single file.
     const LocalTemporaryDirectory temporaryDirectory;
     const SyncPath path = temporaryDirectory.path() / filename;
     {
