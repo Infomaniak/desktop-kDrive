@@ -18,39 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-set -ex
 
-BUILDDIR="$PWD/build-linux"
-CLIENTDIR="$BUILDDIR/client"
-INSTALLDIR="$BUILDDIR/install"
-
-rm -Rf "${BUILDDIR}"
-mkdir -p "${BUILDDIR}"
-mkdir -p "${CLIENTDIR}"
-mkdir -p "${INSTALLDIR}"
-
-podman machine stop build_kdrive
-ulimit -n unlimited
-podman machine start build_kdrive
-podman run --rm -it \
-	--privileged \
-	--ulimit nofile=4000000:4000000 \
-	--volume $HOME/Projects/desktop-kDrive:/src \
-	--volume $HOME/Projects/desktop-kDrive/build-linux:/build \
-	--volume $HOME/Projects/desktop-kDrive/build-linux/install:/install \
-	--workdir "/src" \
-	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
-	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
-	--arch arm64 \
-	ghcr.io/infomaniak/kdrive-desktop-linux:arm64 /bin/bash -c "/src/infomaniak-build-tools/linux/release-appimage-build-arm64.sh"
-podman machine stop build_kdrive
-
-VERSION=$(grep "KDRIVE_VERSION_FULL" "$BUILDDIR/client/version.h" | awk '{print $3}')
-
-SUFFIX="master"
-
-echo $SUFFIX
-mv "${INSTALLDIR}/kDrive-${SUFFIX}-arm64.AppImage" $INSTALLDIR/kDrive-$VERSION-arm64.AppImage
-
-rm -Rf "${BUILDDIR}-arm64"
-mv "${BUILDDIR}" "${BUILDDIR}-arm64"
+script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+bash $script_directory_path/build-release-arm64-via-podman.sh
