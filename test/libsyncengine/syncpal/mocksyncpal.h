@@ -93,13 +93,13 @@ class MockSyncPal : public SyncPal {
             LOG_SYNCPAL_DEBUG(_logger, "Create workers");
 #if defined(_WIN32)
             _localFSObserverWorker = std::make_shared<MockLocalFileSystemObserverWorker_win>(
-                    shared_from_this(), "Local File System Observer", "M_LFSO");
+                    shared_from_this(), "Mock Local File System Observer", "M_LFSO");
 #else
             _localFSObserverWorker = std::make_shared<MockLocalFileSystemObserverWorker_unix>(
-                    shared_from_this(), "Local File System Observer", "M_LFSO");
+                    shared_from_this(), "Mock Local File System Observer", "M_LFSO");
 #endif
             _remoteFSObserverWorker = std::make_shared<MockRemoteFileSystemObserverWorker>(
-                    shared_from_this(), "Remote File System Observer", "M_RFSO");
+                    shared_from_this(), "Mock Remote File System Observer", "M_RFSO");
             _computeFSOperationsWorker =
                     std::make_shared<MockComputeFSOperationWorker>(shared_from_this(), "Mock Compute FS Operations", "M_COOP");
             _localUpdateTreeWorker = std::make_shared<MockUpdateTreeWorker>(shared_from_this(), "Mock Local Tree Updater",
