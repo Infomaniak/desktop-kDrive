@@ -18,7 +18,7 @@
 
 #include "testvfsmac.h"
 
-#include "vfs.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "io/iohelper.h"
 #include "log/log.h"
 #include "test_utility/localtemporarydirectory.h"
@@ -26,17 +26,10 @@
 
 namespace KDC {
 
-void TestVfsMac::setUp() {
-    VfsSetupParams vfsSetupParams;
-    vfsSetupParams.syncDbId = 1;
-    vfsSetupParams.localPath = "/";
-    vfsSetupParams.targetPath = "/";
-    vfsSetupParams._logger = Log::instance()->getLogger();
-    _vfs = std::make_unique<VfsMac>(vfsSetupParams);
-}
-
 void TestVfsMac::testStatus() {
     const SyncName filename = "test_file.txt";
+
+    auto vfs = std::make_shared<MockVfs<VfsMac>>(VfsSetupParams(Log::instance()->getLogger()));
 
     // A hydrated placeholder.
     {
@@ -52,16 +45,13 @@ void TestVfsMac::testStatus() {
         const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
         extConnector->vfsConvertToPlaceHolder(Path2QStr(path), true);
 
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        _vfs->status(Path2QStr(path), isPlaceholder, isHydrated, isSyncing, progress);
+        VfsStatus vfsStatus;
+        vfs->status(path, vfsStatus);
 
-        CPPUNIT_ASSERT(isPlaceholder);
-        CPPUNIT_ASSERT(isHydrated);
-        CPPUNIT_ASSERT(!isSyncing);
-        CPPUNIT_ASSERT_EQUAL(0, progress);
+        CPPUNIT_ASSERT(vfsStatus.isPlaceholder);
+        CPPUNIT_ASSERT(vfsStatus.isHydrated);
+        CPPUNIT_ASSERT(!vfsStatus.isSyncing);
+        CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(0), vfsStatus.progress);
     }
 
     // A dehydrated placeholder.
@@ -79,16 +69,13 @@ void TestVfsMac::testStatus() {
         extConnector->vfsCreatePlaceHolder(SyncName2QStr(filename), Path2QStr(temporaryDirectory.path()), &fileInfo);
         const SyncPath path = temporaryDirectory.path() / filename;
 
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        _vfs->status(Path2QStr(path), isPlaceholder, isHydrated, isSyncing, progress);
+        VfsStatus vfsStatus;
+        vfs->status(path, vfsStatus);
 
-        CPPUNIT_ASSERT(isPlaceholder);
-        CPPUNIT_ASSERT(!isHydrated);
-        CPPUNIT_ASSERT(!isSyncing);
-        CPPUNIT_ASSERT_EQUAL(0, progress);
+        CPPUNIT_ASSERT(vfsStatus.isPlaceholder);
+        CPPUNIT_ASSERT(!vfsStatus.isHydrated);
+        CPPUNIT_ASSERT(!vfsStatus.isSyncing);
+        CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(0), vfsStatus.progress);
     }
 
     // A partially hydrated placeholder (syncing item).
@@ -114,16 +101,13 @@ void TestVfsMac::testStatus() {
         IoError ioError = IoError::Unknown;
         IoHelper::setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "H30", ioError);
 
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        _vfs->status(Path2QStr(path), isPlaceholder, isHydrated, isSyncing, progress);
+        VfsStatus vfsStatus;
+        vfs->status(path, vfsStatus);
 
-        CPPUNIT_ASSERT(isPlaceholder);
-        CPPUNIT_ASSERT(!isHydrated);
-        CPPUNIT_ASSERT(isSyncing);
-        CPPUNIT_ASSERT_EQUAL(30, progress);
+        CPPUNIT_ASSERT(vfsStatus.isPlaceholder);
+        CPPUNIT_ASSERT(!vfsStatus.isHydrated);
+        CPPUNIT_ASSERT(vfsStatus.isSyncing);
+        CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(30), vfsStatus.progress);
     }
 
     // Not a placeholder.
@@ -138,17 +122,53 @@ void TestVfsMac::testStatus() {
             ofs.close();
         }
 
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        _vfs->status(Path2QStr(path), isPlaceholder, isHydrated, isSyncing, progress);
+        VfsStatus vfsStatus;
+        vfs->status(path, vfsStatus);
 
-        CPPUNIT_ASSERT(!isPlaceholder);
-        CPPUNIT_ASSERT(!isHydrated);
-        CPPUNIT_ASSERT(!isSyncing);
-        CPPUNIT_ASSERT_EQUAL(0, progress);
+        CPPUNIT_ASSERT(!vfsStatus.isPlaceholder);
+        CPPUNIT_ASSERT(!vfsStatus.isHydrated);
+        CPPUNIT_ASSERT(!vfsStatus.isSyncing);
+        CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(0), vfsStatus.progress);
     }
+}
+
+void mockSyncFileStatus([[maybe_unused]]int syncDbId, [[maybe_unused]]const SyncPath &path, SyncFileStatus &status) {
+    status = SyncFileStatus::Success;
+}
+
+void mockSetSyncFileSyncing([[maybe_unused]]int syncDbId, [[maybe_unused]]const SyncPath &path, [[maybe_unused]]bool syncing) {
+    // Do nothing
+}
+
+void TestVfsMac::testDehydrate() {
+    const SyncName filename = "test_file.txt";
+
+    // Create temp directory and file.
+    const LocalTemporaryDirectory temporaryDirectory;
+    const SyncPath path = temporaryDirectory.path() / filename;
+    {
+        std::ofstream ofs(path);
+        ofs << "abc";
+        ofs.close();
+    }
+    // Convert file to placeholder
+    const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
+    extConnector->vfsConvertToPlaceHolder(Path2QStr(path), true);
+
+    auto vfs = std::make_shared<MockVfs<VfsMac>>(VfsSetupParams(Log::instance()->getLogger()));
+    vfs->setSyncFileStatusCallback(&mockSyncFileStatus);
+    vfs->setSetSyncFileSyncingCallback(&mockSetSyncFileSyncing);
+
+    VfsStatus vfsStatus;
+    vfs->status(path, vfsStatus);
+    CPPUNIT_ASSERT(vfsStatus.isPlaceholder);
+    CPPUNIT_ASSERT(vfsStatus.isHydrated);
+
+    vfs->dehydratePlaceholder(path);
+
+    vfs->status(path, vfsStatus);
+    CPPUNIT_ASSERT(vfsStatus.isPlaceholder);
+    CPPUNIT_ASSERT(!vfsStatus.isHydrated);
 }
 
 } // namespace KDC

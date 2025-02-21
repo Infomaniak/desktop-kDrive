@@ -59,6 +59,7 @@ set(testserver_SRCS
 
 if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
+    list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
 endif()
 
 if (WIN32)

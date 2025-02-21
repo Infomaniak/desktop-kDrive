@@ -150,6 +150,10 @@ void VfsMac::dehydrate(const SyncPath &absoluteFilepathStd) {
             QStringView(absoluteFilepath).mid(static_cast<qsizetype>(_vfsSetupParams.localPath.string().size())).toUtf8();
 
     // Check file status
+    if (!_syncFileStatus) {
+        LOGW_DEBUG(logger(), L"Unable to check status for file" << Utility::formatSyncPath(absoluteFilepathStd));
+        return;
+    }
     SyncFileStatus status;
     _syncFileStatus(_vfsSetupParams.syncDbId, QStr2Path(relativePath), status);
     if (status == SyncFileStatus::Unknown) {
