@@ -186,7 +186,7 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
 
     // Rotate log file if needed before appending to it.
     if (out.tellp() > _maxFileSize) customRollover(true);
-                                           " - " + SyncName2Str(event.getMessage());
+
     try {
         RollingFileAppender::append(event);
     } catch (...) {
