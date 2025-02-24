@@ -55,6 +55,7 @@ class ISyncWorker {
         std::shared_ptr<SyncPal> _syncPal;
 
         bool _testing{false};
+        virtual void init() { /* Do nothing by default */ }
 
     protected:
         //! Wait for a delay. Allows to postpone the start of the worker to smooth the load.

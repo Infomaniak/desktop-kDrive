@@ -3309,7 +3309,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
 #endif
 
     if (start && (resumedByUser || !sync.paused())) {
-        if (_syncPalMap[sync.dbId()]->isPaused() || _syncPalMap[sync.dbId()]->pauseAsked()) {
+        if (_syncPalMap[sync.dbId()]->isPaused()) {
             // Unpause SyncPal
             _syncPalMap[sync.dbId()]->unpause();
         } else if (!_syncPalMap[sync.dbId()]->isRunning()) {
@@ -4128,13 +4128,10 @@ void AppServer::onRestartSyncs() {
 
     for (const auto &[syncId, syncPtr]: _syncPalMap) {
         if (!syncPtr) continue;
-        std::chrono::time_point<std::chrono::steady_clock> pauseTime;
-        if (syncPtr->isPaused() || syncPtr->pauseAsked()) {
-            if (syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
-                syncPtr->unpause();
-            }
+        if ((syncPtr->isPaused() || syncPtr->pauseAsked()) &&
+            syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
+            syncPtr->unpause();
         }
     }
 }
-
 } // namespace KDC

@@ -162,7 +162,7 @@ struct COMMON_EXPORT StdLoggingThread : public std::thread {
                         runFct(args...);
                         log4cplus::threadCleanup();
                     },
-                    args...) {}     
+                    args...) {}
 };
 
 struct COMMON_EXPORT QtLoggingThread : public QThread {

@@ -251,8 +251,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             if (!changed) {
 #ifdef _WIN32
                 VfsStatus vfsStatus;
-                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); 
-                    !exitInfo) {
+                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
                     invalidateSnapshot();
@@ -261,7 +260,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
                 PinState pinState = _syncPal->vfs()->pinState(absolutePath);
                 if (vfsStatus.isPlaceholder) {
-                    if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) || (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
+                    if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
+                        (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                         // Change status in order to start hydration/dehydration
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
                         if (!_syncPal->vfs()->fileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
@@ -413,7 +413,6 @@ void LocalFileSystemObserverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
-    _initializing = true;
     auto timerStart = std::chrono::steady_clock::now();
 
     // Sync loop
@@ -464,7 +463,6 @@ void LocalFileSystemObserverWorker::execute() {
         if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(exitCode);
 }

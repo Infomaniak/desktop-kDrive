@@ -33,7 +33,7 @@ class SyncPalWorker : public ISyncWorker {
 
         void execute() override;
         void stop() override;
-        void pause(); // The ongoing sync will be completed (unless it encounter an error) before pausing
+        void pause(); // The ongoing sync will be completed before pausing
         inline bool isPaused() const { return _isPaused; }
         inline bool pauseAsked() const { return _pauseAsked; }
         void unpause();

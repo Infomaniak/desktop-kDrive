@@ -47,14 +47,16 @@ class FileSystemObserverWorker : public ISyncWorker {
 
         std::list<std::pair<SyncPath, OperationType>> _pendingFileEvents;
 
-        bool _updating = false;
-        bool _initializing = true;
+        bool _updating{false};
+        bool _initializing{true};
         std::mutex _mutex;
 
         virtual ExitCode generateInitialSnapshot() = 0;
         virtual ExitCode processEvents() { return ExitCode::Ok; }
 
         [[nodiscard]] virtual bool isFolderWatcherReliable() const { return true; }
+
+        void init() override;
 
     private:
         [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;

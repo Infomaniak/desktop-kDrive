@@ -119,7 +119,7 @@ void SyncPalWorker::execute() {
         // Manage pause
         while ((_pauseAsked || _isPaused) &&
                (_step == SyncStep::Idle ||
-                _step == SyncStep::Propagation2)) { // Pause only if we are idle or in Propagation2 (just before the executor)
+                _step == SyncStep::Propagation2)) { // Pause only if we are idle or in Propagation2 (because it needs network)
             if (!_isPaused) {
                 // Pause workers
                 _pauseAsked = false;
@@ -277,6 +277,7 @@ void SyncPalWorker::unpause() {
     _pauseAsked = false;
     _syncPal->setRestart(true);
 }
+
 std::string SyncPalWorker::stepName(SyncStep step) {
     std::string name;
 

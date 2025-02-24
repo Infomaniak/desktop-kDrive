@@ -45,12 +45,13 @@ void ISyncWorker::start() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " start");
 
     _stopAsked = false;
-    _isRunning = true;
+    _exitCode = ExitCode::Unknown;
     _exitCause = ExitCause::Unknown;
 
-    _thread.reset(new std::thread(executeFunc, this));
+    init();
+    _isRunning = true;
+    _thread = (std::make_unique<std::thread>(executeFunc, this));
 }
-
 
 
 void ISyncWorker::stop() {
