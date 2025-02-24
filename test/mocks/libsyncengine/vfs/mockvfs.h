@@ -130,7 +130,7 @@ class MockVfs : public T {
             _setPinState = setPinState;
         }
         void setMockPinState(std::function<KDC::PinState(const SyncPath &)> pinState) { _pinState = pinState; }
-        void setMockStatus(std::function<ExitInfo(const SyncPath &, const VfsStatus &)> status) { _status = status; }
+        void setMockStatus(std::function<ExitInfo(const SyncPath &, VfsStatus &)> status) { _status = status; }
         void setMockSetThumbnail(std::function<ExitInfo(const SyncPath &, const QPixmap &)> setThumbnail) {
             _setThumbnail = setThumbnail;
         }
