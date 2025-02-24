@@ -302,7 +302,7 @@ enum class ConflictType {
 std::string toString(ConflictType e);
 
 static const std::unordered_set<ConflictType> conflictsWithLocalRename = { // All conflicts that rename the local file
-        ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
+        ConflictType::CreateCreate, ConflictType::EditEdit};
 
 inline bool isConflictsWithLocalRename(ConflictType type) {
     return conflictsWithLocalRename.contains(type);

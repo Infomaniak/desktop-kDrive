@@ -45,8 +45,9 @@ class ConflictResolverWorker final : public OperationProcessor {
         ExitCode checkForOrphanNodes(const Conflict &conflict, const std::shared_ptr<Node> &deleteNode);
         ExitCode generateMoveParentDeleteConflictOperation(const Conflict &conflict);
         ExitCode generateCreateParentDeleteConflictOperation(const Conflict &conflict);
-        ExitCode generateMoveMoveSourceConflictOperation(const Conflict &conflict);
-        ExitCode generateMoveMoveCycleConflictOperation(const Conflict &conflict);
+        ExitCode generateUndoMoveOperation(const Conflict &conflict, const std::shared_ptr<Node> &loserNode);
+
+        std::shared_ptr<Node> getLoserNode(const Conflict &conflict);
 
         /*
          * If return false, the file path is too long, the file needs to be moved to root directory

@@ -170,7 +170,7 @@ void TestConflictResolverWorker::testEditEdit() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
     const auto opId = _syncPal->_syncOps->opSortedList().front();
     const auto op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
@@ -206,9 +206,9 @@ void TestConflictResolverWorker::testMoveCreate() {
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
     const auto opId = _syncPal->_syncOps->opSortedList().front();
     const auto op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT_EQUAL(rNodeAA, op->newParentNode());
 }
 
 void TestConflictResolverWorker::testEditDelete1() {
@@ -760,6 +760,7 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     CPPUNIT_ASSERT(!op->newName().empty());
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+    CPPUNIT_ASSERT_EQUAL(lNodeAA, op->newParentNode());
 }
 
 void TestConflictResolverWorker::testMoveMoveCycle() {

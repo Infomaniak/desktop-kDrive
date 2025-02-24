@@ -61,9 +61,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     continueSolving = false;
     switch (conflict.type()) {
         case ConflictType::CreateCreate:
-        case ConflictType::EditEdit:
-        case ConflictType::MoveCreate:
-        case ConflictType::MoveMoveDest: {
+        case ConflictType::EditEdit: {
             res = generateLocalRenameOperation(conflict, continueSolving);
             break;
         }
@@ -83,12 +81,11 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             res = generateCreateParentDeleteConflictOperation(conflict);
             break;
         }
-        case ConflictType::MoveMoveSource: {
-            res = generateMoveMoveSourceConflictOperation(conflict);
-            break;
-        }
-        case ConflictType::MoveMoveCycle: {
-            res = generateMoveMoveCycleConflictOperation(conflict);
+        case ConflictType::MoveMoveSource:
+        case ConflictType::MoveMoveCycle:
+        case ConflictType::MoveCreate:
+        case ConflictType::MoveMoveDest: {
+            res = generateUndoMoveOperation(conflict, getLoserNode(conflict));
             break;
         }
         default: {
@@ -123,8 +120,7 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
                                              << Utility::s2ws(*op->correspondingNode()->id()) << L")");
 
     _syncPal->_syncOps->pushOp(op);
-
-    continueSolving = isConflictsWithLocalRename(conflict.type()); // solve them all in the same sync
+    continueSolving = true; // solve them all in the same sync
     return ExitCode::Ok;
 }
 
@@ -340,43 +336,34 @@ ExitCode ConflictResolverWorker::generateCreateParentDeleteConflictOperation(con
     return ExitCode::Ok;
 }
 
-ExitCode ConflictResolverWorker::generateMoveMoveSourceConflictOperation(const Conflict &conflict) {
+ExitCode ConflictResolverWorker::generateUndoMoveOperation(const Conflict &conflict, const std::shared_ptr<Node> &loserNode) {
+    // Undo move on the loser replica
+    const auto moveOp = std::make_shared<SyncOperation>();
+    if (const auto res = undoMove(loserNode, moveOp); res != ExitCode::Ok) {
+        return res;
+    }
+    moveOp->setConflict(conflict);
+    LOGW_SYNCPAL_INFO(_logger, L"Operation " << moveOp->type() << L" to be propagated on " << moveOp->targetSide()
+                                             << L" replica for item " << SyncName2WStr(moveOp->correspondingNode()->name())
+                                             << L" (" << Utility::s2ws(*moveOp->correspondingNode()->id()) << L")");
+    _syncPal->_syncOps->pushOp(moveOp);
+    return ExitCode::Ok;
+}
+
+std::shared_ptr<Node> ConflictResolverWorker::getLoserNode(const Conflict &conflict) {
     auto loserNode = conflict.localNode();
+    if (!loserNode->hasChangeEvent(OperationType::Move)) {
+        loserNode = conflict.remoteNode();
+    }
 
     // Check if this node is a registered orphan
-    if (_registeredOrphans.contains(*conflict.node()->idb())) {
+    if (conflict.type() == ConflictType::MoveMoveSource && _registeredOrphans.contains(*conflict.node()->idb())) {
         loserNode = _registeredOrphans.find(*conflict.node()->idb())->second == ReplicaSide::Local ? conflict.remoteNode()
                                                                                                    : conflict.localNode();
         LOGW_SYNCPAL_INFO(_logger, L"Undoing move operation on orphan node " << SyncName2WStr(loserNode->name()));
     }
 
-    // Undo move on the loser replica
-    auto moveOp = std::make_shared<SyncOperation>();
-    if (const auto res = undoMove(loserNode, moveOp); res != ExitCode::Ok) {
-        return res;
-    }
-    moveOp->setConflict(conflict);
-
-    LOGW_SYNCPAL_INFO(_logger, L"Operation " << moveOp->type() << L" to be propagated on " << moveOp->targetSide()
-                                             << L" replica for item " << SyncName2WStr(moveOp->correspondingNode()->name())
-                                             << L" (" << Utility::s2ws(*moveOp->correspondingNode()->id()) << L")");
-
-    _syncPal->_syncOps->pushOp(moveOp);
-    return ExitCode::Ok;
-}
-
-ExitCode ConflictResolverWorker::generateMoveMoveCycleConflictOperation(const Conflict &conflict) {
-    // Undo move on the local replica
-    auto moveOp = std::make_shared<SyncOperation>();
-    if (const auto res = undoMove(conflict.localNode(), moveOp); res != ExitCode::Ok) {
-        return res;
-    }
-    moveOp->setConflict(conflict);
-    LOGW_SYNCPAL_INFO(_logger, L"Operation " << moveOp->type() << L" to be propagated on " << moveOp->targetSide()
-                                             << L" replica for item " << SyncName2WStr(moveOp->correspondingNode()->name())
-                                             << L" (" << Utility::s2ws(*moveOp->correspondingNode()->id()) << L")");
-    _syncPal->_syncOps->pushOp(moveOp);
-    return ExitCode::Ok;
+    return loserNode;
 }
 
 bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> &node, SyncName &newName,
