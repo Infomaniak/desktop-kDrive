@@ -23,7 +23,6 @@
 #include "vfs/mac/testlitesyncextconnector.h"
 #include "vfs/mac/testvfsmac.h"
 #endif
-#include "logarchiver/testlogarchiver.h"
 #include "workers/testworkers.h"
 #include "updater/testabstractupdater.h"
 #include "updater/testupdatechecker.h"
@@ -34,7 +33,6 @@ namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
 #endif
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
