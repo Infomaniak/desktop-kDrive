@@ -21,6 +21,7 @@
 
 #ifdef __APPLE__
 #include "vfs/mac/testlitesyncextconnector.h"
+#include "vfs/mac/testvfsmac.h"
 #endif
 #include "workers/testworkers.h"
 #include "updater/testabstractupdater.h"
@@ -29,6 +30,7 @@
 namespace KDC {
 
 #ifdef __APPLE__
+CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
