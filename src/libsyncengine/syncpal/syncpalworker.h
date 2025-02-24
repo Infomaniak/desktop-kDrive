@@ -32,6 +32,7 @@ class SyncPalWorker : public ISyncWorker {
                       const std::chrono::seconds &startDelay);
 
         void execute() override;
+        void stop() override;
         void pause(); // The ongoing sync will be completed (unless it encounter an error) before pausing
         inline bool isPaused() const { return _isPaused; }
         inline bool pauseAsked() const { return _pauseAsked; }

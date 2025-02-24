@@ -55,9 +55,8 @@ RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
 
 void RemoteFileSystemObserverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
-
-    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
     _initializing = true;
+    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
     // Sync loop
     for (;;) {
         if (stopAsked()) {
@@ -80,10 +79,10 @@ void RemoteFileSystemObserverWorker::execute() {
             LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: code=" << exitCode);
             break;
         }
-        if(_initializing) _initializing = false;
+        if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-
+    _initializing = true;
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
     setDone(exitCode);
 }

@@ -19,10 +19,29 @@
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
+#include "syncpal/tmpblacklistmanager.h"
+#ifdef _WIN32
+#include "update_detection/file_system_observer/localfilesystemobserverworker_win.h"
+#else
+#include "update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
+#endif
+#include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
+#include "update_detection/update_detector/updatetreeworker.h"
+#include "update_detection/file_system_observer/computefsoperationworker.h"
+#include "reconciliation/conflict_finder/conflictfinderworker.h"
+#include "reconciliation/conflict_resolver/conflictresolverworker.h"
+#include "propagation/executor/executorworker.h"
+#include "reconciliation/operation_generator/operationgeneratorworker.h"
+#include "propagation/operation_sorter/operationsorterworker.h"
+#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerworker.h"
+#include "syncpal/syncpalworker.h"
 
 using namespace CppUnit;
 
 namespace KDC {
+
+template<class LFSOW>
+concept LFSOWorker = std::is_base_of_v<LocalFileSystemObserverWorker, LFSOW>;
 
 class TestSyncPalWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSyncPalWorker);
@@ -70,14 +89,36 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
 
         class TimeoutHelper {
             public:
+                /* Wait for condition() to return true,
+                 * Return false if timed out
+                 */
+                static bool waitFor(std::function<bool()> condition, const std::chrono::steady_clock::duration& duration,
+                                    const std::chrono::steady_clock::duration& loopWait) {
+                    TimeoutHelper timeout(duration, loopWait);
+                    while (!condition()) {
+                        if (timeout.timedOut()) return false;
+                    }
+                    return true;
+                }
+
+                /* Wait for condition() to return true, and run stateCheck() after each loop,
+                 * Return false if timed out
+                 */
+                static bool waitFor(std::function<bool()> condition, std::function<void()> stateCheck,
+                                    const std::chrono::steady_clock::duration& duration,
+                                    const std::chrono::steady_clock::duration& loopWait) {
+                    TimeoutHelper timeout(duration, loopWait);
+                    while (!condition()) {
+                        if (timeout.timedOut()) return false;
+                        stateCheck();
+                    }
+                    return true;
+                }
+
+            private:
                 TimeoutHelper(const std::chrono::steady_clock::duration& duration,
                               const std::chrono::steady_clock::duration& loopWait = std::chrono::milliseconds(0)) :
                     _duration(duration), _loopWait(loopWait) {
-                    _start = std::chrono::steady_clock::now();
-                }
-
-                void restart(const std::chrono::steady_clock::duration& duration = std::chrono::milliseconds(0)) {
-                    if (duration != std::chrono::milliseconds(0)) _duration = duration;
                     _start = std::chrono::steady_clock::now();
                 }
 
@@ -88,22 +129,148 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                     }
                     return result;
                 }
-                uint64_t elapsedMs() {
-                    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - _start)
-                            .count();
-                }
-                std::string elapsedStr() { return std::to_string(elapsedMs()) + "ms"; }
-
-                uint64_t remainingMs() {
-                    return std::chrono::duration_cast<std::chrono::milliseconds>(_duration -
-                                                                                 (std::chrono::steady_clock::now() - _start))
-                            .count();
-                }
-
-            private:
                 std::chrono::steady_clock::time_point _start;
                 std::chrono::steady_clock::duration _duration;
                 std::chrono::steady_clock::duration _loopWait;
+        };
+
+        // Mocks
+        class MockUpdateTreeWorker : public UpdateTreeWorker {
+            public:
+                using UpdateTreeWorker::UpdateTreeWorker;
+
+            private:
+                void execute() override {
+                    std::dynamic_pointer_cast<TestSyncPalWorker::MockSyncPal>(_syncPal)
+                            ->updateTree(ReplicaSide::Local)
+                            ->startUpdate();
+                    setDone(ExitCode::Ok);
+                }
+        };
+
+        class MockRemoteFileSystemObserverWorker : public RemoteFileSystemObserverWorker {
+            public:
+                using RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker;
+                void setNetworkAvailability(bool networkAvailable) { _networkAvailable = networkAvailable; }
+                void simulateFSEvent() {
+                    std::dynamic_pointer_cast<TestSyncPalWorker::MockSyncPal>(_syncPal)
+                            ->snapshot(ReplicaSide::Local)
+                            ->startUpdate();
+                }
+                void setLongPollDuration(std::chrono::steady_clock::duration duration) { _longPollDuration = duration; }
+
+            private:
+                bool _networkAvailable{true};
+                std::chrono::steady_clock::duration _longPollDuration = std::chrono::seconds(50);
+                ExitCode sendLongPoll(bool& changes) override;
+                ExitCode generateInitialSnapshot() override;
+        };
+
+        class MockComputeFSOperationWorkerTestSyncPalWorker : public ComputeFSOperationWorker {
+            public:
+                using ComputeFSOperationWorker::ComputeFSOperationWorker;
+
+            private:
+                void execute() override {
+                    std::dynamic_pointer_cast<TestSyncPalWorker::MockSyncPal>(_syncPal)
+                            ->operationSet(ReplicaSide::Local)
+                            ->startUpdate();
+                    setDone(ExitCode::Ok);
+                }
+        };
+
+        class MockConflictFinderWorker : public ConflictFinderWorker {
+            public:
+                using ConflictFinderWorker::ConflictFinderWorker;
+
+            private:
+                void execute() override { setDone(ExitCode::Ok); }
+        };
+
+        class MockConflictResolverWorker : public ConflictResolverWorker {
+            public:
+                using ConflictResolverWorker::ConflictResolverWorker;
+
+            private:
+                void execute() override { setDone(ExitCode::Ok); }
+        };
+
+        class MockExecutorWorker : public ExecutorWorker {
+            public:
+                using ExecutorWorker::ExecutorWorker;
+                void setMockExecuteCallback(std::function<ExitInfo()> callback) { _mockExecuteCallback = callback; }
+
+            private:
+                std::function<ExitInfo()> _mockExecuteCallback;
+                void execute() override {
+                    if (!_mockExecuteCallback) return setDone(ExitCode::Ok);
+                    ExitInfo exitInfo = _mockExecuteCallback();
+                    setExitCause(exitInfo.cause());
+                    setDone(exitInfo.code());
+                }
+        };
+
+
+#ifdef _WIN32
+        class MockLFSO : public LocalFileSystemObserverWorker_win {
+            public:
+                using LocalFileSystemObserverWorker_win::LocalFileSystemObserverWorker_win;
+#else
+        class MockLFSO : public LocalFileSystemObserverWorker_unix {
+            public:
+                using LocalFileSystemObserverWorker_win::LocalFileSystemObserverWorker_unix;
+#endif
+                void simulateFSEvent() { _snapshot->startUpdate(); }
+        };
+
+        class MockOperationGeneratorWorker : public OperationGeneratorWorker {
+            public:
+                using OperationGeneratorWorker::OperationGeneratorWorker;
+
+            private:
+                void execute() override { setDone(ExitCode::Ok); }
+        };
+
+        class MockOperationSorterWorker : public OperationSorterWorker {
+            public:
+                using OperationSorterWorker::OperationSorterWorker;
+
+            private:
+                void execute() override { setDone(ExitCode::Ok); }
+        };
+
+        class MockPlatformInconsistencyCheckerWorker : public PlatformInconsistencyCheckerWorker {
+            public:
+                using PlatformInconsistencyCheckerWorker::PlatformInconsistencyCheckerWorker;
+                void setMockExecuteCallback(std::function<ExitInfo()> callback) { _mockExecuteCallback = callback; }
+
+            private:
+                std::function<ExitInfo()> _mockExecuteCallback;
+                void execute() override {
+                    if (!_mockExecuteCallback) return setDone(ExitCode::Ok);
+                    ExitInfo exitInfo = _mockExecuteCallback();
+                    setExitCause(exitInfo.cause());
+                    setDone(exitInfo.code());
+                }
+        };
+
+        class MockSyncPal : public SyncPal {
+            public:
+                using SyncPal::SyncPal;
+                std::shared_ptr<MockLFSO> getMockLFSOWorker();
+                std::shared_ptr<TestSyncPalWorker::MockRemoteFileSystemObserverWorker> getMockRFSOWorker();
+                std::shared_ptr<MockPlatformInconsistencyCheckerWorker> getMockPlatformInconsistencyCheckerWorker();
+                std::shared_ptr<MockExecutorWorker> getMockExecutorWorker();
+                std::shared_ptr<SyncPalWorker> getSyncPalWorker() { return _syncPalWorker; }
+                std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const { return SyncPal::updateTree(side); }
+                std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const {
+                    return SyncPal::snapshot(side, copy);
+                }
+                std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const { return SyncPal::operationSet(side); }
+
+
+            private:
+                void createWorkers(const std::chrono::seconds& startDelay = std::chrono::seconds(0)) override;
         };
 };
 

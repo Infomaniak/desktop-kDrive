@@ -119,7 +119,7 @@ void SyncPalWorker::execute() {
         // Manage pause
         while ((_pauseAsked || _isPaused) &&
                (_step == SyncStep::Idle ||
-                _step == SyncStep::Propagation2)) { // Pause only if we are idle or in Propagation1 (just before the executor)
+                _step == SyncStep::Propagation2)) { // Pause only if we are idle or in Propagation2 (just before the executor)
             if (!_isPaused) {
                 // Pause workers
                 _pauseAsked = false;
@@ -236,6 +236,11 @@ void SyncPalWorker::execute() {
 
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " stoped");
     setDone(exitCode);
+}
+void SyncPalWorker::stop() {
+    _pauseAsked = false;
+    _unpauseAsked = true;
+    ISyncWorker::stop();
 }
 
 void SyncPalWorker::pause() {

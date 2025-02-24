@@ -243,8 +243,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
-    private:
-        log4cplus::Logger _logger;
         SyncPalInfo _syncInfo;
 
         std::shared_ptr<ExcludeListPropagator> _excludeListPropagator = nullptr;
@@ -326,7 +324,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
 
-        // TODO : Refactor to not use friend classes (should be reserved for test purpose). 
+    private:
+        log4cplus::Logger _logger;
+
+        // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
         friend class FileSystemObserverWorker;
         friend class LocalFileSystemObserverWorker;
@@ -378,6 +379,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestIntegration;
         friend class TestWorkers;
         friend class MockSyncPal;
- };
+};
 
 } // namespace KDC

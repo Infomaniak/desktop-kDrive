@@ -162,15 +162,7 @@ struct COMMON_EXPORT StdLoggingThread : public std::thread {
                         runFct(args...);
                         log4cplus::threadCleanup();
                     },
-                    args...) {}
-        template<class... Args>
-        explicit StdLoggingThread(const std::function<void(Args...)> &runFct, Args &&...args) :
-            std::thread(
-                    [=]() {
-                        runFct(args...);
-                        log4cplus::threadCleanup();
-                    },
-                    args...) {}
+                    args...) {}     
 };
 
 struct COMMON_EXPORT QtLoggingThread : public QThread {
