@@ -42,6 +42,7 @@ class ConflictResolverWorker final : public OperationProcessor {
         ExitCode generateLocalRenameOperation(const Conflict &conflict, bool &continueSolving);
         ExitCode generateEditDeleteConflictOperation(const Conflict &conflict);
         ExitCode generateMoveDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
+        ExitCode checkForOrphanNodes(const Conflict &conflict, const std::shared_ptr<Node> &deleteNode);
         ExitCode generateMoveParentDeleteConflictOperation(const Conflict &conflict);
         ExitCode generateCreateParentDeleteConflictOperation(const Conflict &conflict);
         ExitCode generateMoveMoveSourceConflictOperation(const Conflict &conflict);

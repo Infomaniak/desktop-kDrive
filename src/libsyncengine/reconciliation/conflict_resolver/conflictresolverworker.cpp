@@ -203,78 +203,28 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
         return ExitCode::Ok;
     }
 
-    if (deleteNode->type() == NodeType::Directory) {
-        // Get all children of the deleted node
-        std::unordered_set<std::shared_ptr<Node>> allDeletedChildNodes;
-        findAllChildNodes(deleteNode, allDeletedChildNodes);
-
-        std::unordered_set<DbNodeId> deletedChildNodeDbIds;
-        for (auto &childNode: allDeletedChildNodes) {
-            deletedChildNodeDbIds.insert(*childNode->idb());
-        }
-
-        // From the DB, get the list of all child nodes at the end of last sync.
-        std::unordered_set<DbNodeId> allChildNodeDbIds;
-        if (const auto res = findAllChildNodeIdsFromDb(deleteNode, allChildNodeDbIds); res != ExitCode::Ok) {
-            return res;
-        }
-
-        for (const auto &dbId: allChildNodeDbIds) {
-            if (deletedChildNodeDbIds.contains(dbId)) continue;
-
-            // This is an orphan node
-            bool found = false;
-            NodeId orphanNodeId;
-            if (!_syncPal->_syncDb->id(deleteNode->side(), dbId, orphanNodeId, found)) {
-                return ExitCode::DbError;
-            }
-            if (!found) {
-                LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node ID for dbId=" << dbId);
-                return ExitCode::DataError;
-            }
-
-            auto updateTree = _syncPal->updateTree(deleteNode->side());
-            auto orphanNode = updateTree->getNodeById(orphanNodeId);
-            auto correspondingOrphanNode = correspondingNodeInOtherTree(orphanNode);
-            if (!correspondingOrphanNode) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Failed to get corresponding node: " << SyncName2WStr(orphanNode->name()));
-                return ExitCode::DataError;
-            }
-
-            // Move operation in db. This is a temporary operation, orphan nodes will be then handled in "Move-Move
-            // (Source)" conflict in next sync iterations.
-            auto op = std::make_shared<SyncOperation>();
-            op->setType(OperationType::Move);
-            op->setAffectedNode(orphanNode);
-            orphanNode->setMoveOrigin(orphanNode->getPath());
-            op->setCorrespondingNode(correspondingOrphanNode);
-            op->setTargetSide(correspondingOrphanNode->side());
-            op->setOmit(true);
-            SyncName newName;
-            generateConflictedName(orphanNode, newName, true);
-            op->setNewName(newName);
-            op->setNewParentNode(_syncPal->updateTree(orphanNode->side())->rootNode());
-            op->setConflict(conflict);
-
-            LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated in DB only for orphan node "
-                                                     << SyncName2WStr(op->correspondingNode()->name()) << L" ("
-                                                     << Utility::s2ws(*op->correspondingNode()->id()) << L")");
-
-            _syncPal->_syncOps->pushOp(op);
-
-            // Register the orphan. Winner side is always the side with the DELETE operation.
-            _registeredOrphans.insert({dbId, deleteNode->side()});
-        }
-    }
+    if (const auto exitCode = checkForOrphanNodes(conflict, deleteNode); exitCode != ExitCode::Ok) return exitCode;
 
     // Generate a delete operation to remove entry from the DB only (not from the FS!)
     // The deleted file will be restored on next sync iteration
-    auto op = std::make_shared<SyncOperation>();
+    const auto op = std::make_shared<SyncOperation>();
     op->setType(OperationType::Delete);
     op->setAffectedNode(deleteNode);
     op->setCorrespondingNode(moveNode);
     op->setTargetSide(moveNode->side());
-    op->setOmit(true); // Target side does not matter when we remove only in DB
+
+    bool omit = true;
+    if (moveNode->side() == ReplicaSide::Local && _syncPal->vfsMode() != VirtualFileMode::Off) {
+        VfsStatus vfsStatus;
+        const auto moveNodeRelativePath = moveNode->getPath();
+        if (const auto exitInfo = _syncPal->vfs()->status(_syncPal->syncInfo().localPath / moveNodeRelativePath, vfsStatus);
+            exitInfo.code() != ExitCode::Ok) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to get VFS status for file " << Utility::formatSyncPath(moveNodeRelativePath));
+        }
+        omit = vfsStatus.isPlaceholder && (vfsStatus.isHydrated || vfsStatus.isSyncing);
+    }
+
+    op->setOmit(omit);
     op->setConflict(conflict);
 
     LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated in DB only for item "
@@ -282,6 +232,74 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
                                              << Utility::s2ws(*op->correspondingNode()->id()) << L")");
 
     _syncPal->_syncOps->pushOp(op);
+    return ExitCode::Ok;
+}
+
+ExitCode ConflictResolverWorker::checkForOrphanNodes(const Conflict &conflict, const std::shared_ptr<Node> &deleteNode) {
+    if (deleteNode->type() != NodeType::Directory) return ExitCode::Ok;
+
+    // Get all children of the deleted node
+    std::unordered_set<std::shared_ptr<Node>> allDeletedChildNodes;
+    findAllChildNodes(deleteNode, allDeletedChildNodes);
+
+    std::unordered_set<DbNodeId> deletedChildNodeDbIds;
+    for (auto &childNode: allDeletedChildNodes) {
+        deletedChildNodeDbIds.insert(*childNode->idb());
+    }
+
+    // From the DB, get the list of all child nodes at the end of last sync.
+    std::unordered_set<DbNodeId> allChildNodeDbIds;
+    if (const auto res = findAllChildNodeIdsFromDb(deleteNode, allChildNodeDbIds); res != ExitCode::Ok) {
+        return res;
+    }
+
+    for (const auto &dbId: allChildNodeDbIds) {
+        if (deletedChildNodeDbIds.contains(dbId)) continue;
+
+        // This is an orphan node
+        bool found = false;
+        NodeId orphanNodeId;
+        if (!_syncPal->_syncDb->id(deleteNode->side(), dbId, orphanNodeId, found)) {
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node ID for dbId=" << dbId);
+            return ExitCode::DataError;
+        }
+
+        auto updateTree = _syncPal->updateTree(deleteNode->side());
+        auto orphanNode = updateTree->getNodeById(orphanNodeId);
+        auto correspondingOrphanNode = correspondingNodeInOtherTree(orphanNode);
+        if (!correspondingOrphanNode) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Failed to get corresponding node: " << SyncName2WStr(orphanNode->name()));
+            return ExitCode::DataError;
+        }
+
+        // Move operation in db. This is a temporary operation, orphan nodes will be then handled in "Move-Move
+        // (Source)" conflict in next sync iterations.
+        auto op = std::make_shared<SyncOperation>();
+        op->setType(OperationType::Move);
+        op->setAffectedNode(orphanNode);
+        orphanNode->setMoveOrigin(orphanNode->getPath());
+        op->setCorrespondingNode(correspondingOrphanNode);
+        op->setTargetSide(correspondingOrphanNode->side());
+        op->setOmit(true);
+        SyncName newName;
+        generateConflictedName(orphanNode, newName, true);
+        op->setNewName(newName);
+        op->setNewParentNode(_syncPal->updateTree(orphanNode->side())->rootNode());
+        op->setConflict(conflict);
+
+        LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated in DB only for orphan node "
+                                                 << SyncName2WStr(op->correspondingNode()->name()) << L" ("
+                                                 << Utility::s2ws(*op->correspondingNode()->id()) << L")");
+
+        _syncPal->_syncOps->pushOp(op);
+
+        // Register the orphan. Winner side is always the side with the DELETE operation.
+        _registeredOrphans.insert({dbId, deleteNode->side()});
+    }
+
     return ExitCode::Ok;
 }
 

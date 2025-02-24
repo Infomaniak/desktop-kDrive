@@ -47,10 +47,10 @@ namespace KDC {
 
 struct VfsSetupParams {
         VfsSetupParams() = default;
-        VfsSetupParams(const log4cplus::Logger &logger) : logger(logger) {}
-        int syncDbId;
-        int driveId;
-        int userId;
+        explicit VfsSetupParams(const log4cplus::Logger &logger) : logger(logger) {}
+        int syncDbId{0};
+        int driveId{0};
+        int userId{0};
         SyncPath localPath;
         SyncPath targetPath;
         std::string namespaceCLSID;
