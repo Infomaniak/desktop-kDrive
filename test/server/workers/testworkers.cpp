@@ -107,6 +107,7 @@ void TestWorkers::setUp() {
     vfsSetupParams.localPath = _sync.localPath();
     vfsSetupParams.targetPath = _sync.targetPath();
     vfsSetupParams.logger = _logger;
+    vfsSetupParams.sentryHandler = sentry::Handler::instance();
     vfsSetupParams.executeCommand = [](const char *) {};
 
 #if defined(__APPLE__)

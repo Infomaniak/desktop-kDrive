@@ -93,13 +93,13 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
         _staffSelectionBox->insertItem(indexInternal, tr("Internal beta version"));
 
         switch (ParametersCache::instance()->parametersInfo().distributionChannel()) {
-            case DistributionChannel::Prod:
+            case VersionChannel::Prod:
                 _initialIndex = indexNo;
                 break;
-            case DistributionChannel::Beta:
+            case VersionChannel::Beta:
                 _initialIndex = indexBeta;
                 break;
-            case DistributionChannel::Internal:
+            case VersionChannel::Internal:
                 _initialIndex = indexInternal;
                 break;
             default:
@@ -178,18 +178,18 @@ void BetaProgramDialog::onAcknowledgment() {
     _saveButton->setEnabled(_acknowledgmentCheckbox->isChecked());
 }
 
-DistributionChannel toDistributionChannel(const int index) {
+VersionChannel toDistributionChannel(const int index) {
     switch (index) {
         case indexNo:
-            return DistributionChannel::Prod;
+            return VersionChannel::Prod;
         case indexBeta:
-            return DistributionChannel::Beta;
+            return VersionChannel::Beta;
         case indexInternal:
-            return DistributionChannel::Internal;
+            return VersionChannel::Internal;
         default:
             break;
     }
-    return DistributionChannel::Unknown;
+    return VersionChannel::Unknown;
 }
 
 void BetaProgramDialog::onSave() {
@@ -197,9 +197,9 @@ void BetaProgramDialog::onSave() {
         _newChannel = toDistributionChannel(_staffSelectionBox->currentIndex());
     } else {
         if (_isQuit) {
-            _newChannel = DistributionChannel::Prod;
+            _newChannel = VersionChannel::Prod;
         } else {
-            _newChannel = DistributionChannel::Beta;
+            _newChannel = VersionChannel::Beta;
         }
     }
 

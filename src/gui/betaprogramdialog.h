@@ -37,7 +37,7 @@ class BetaProgramDialog final : public CustomDialog {
     public:
         explicit BetaProgramDialog(bool isQuit, bool isStaff, QWidget *parent = nullptr);
 
-        [[nodiscard]] DistributionChannel selectedDistributionChannel() const { return _newChannel; }
+        [[nodiscard]] VersionChannel selectedDistributionChannel() const { return _newChannel; }
 
     private slots:
         void onAcknowledgment();
@@ -50,7 +50,7 @@ class BetaProgramDialog final : public CustomDialog {
 
         bool _isQuit{false};
         bool _isStaff{false};
-        DistributionChannel _newChannel{DistributionChannel::Unknown};
+        VersionChannel _newChannel{VersionChannel::Unknown};
         QCheckBox *_acknowledgmentCheckbox{nullptr};
         QFrame *_acknowledgmentFrame{nullptr};
         QLabel *_acknowledgmentLabel{nullptr};
