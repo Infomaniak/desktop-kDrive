@@ -15,7 +15,6 @@ set(testserver_NAME ${APPLICATION_NAME}_test_server)
 set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
-    ${server_srcs_path}/logarchiver/logarchiver.h ${server_srcs_path}/logarchiver/logarchiver.cpp
     ${server_srcs_path}/socketapi.h ${server_srcs_path}/socketapi.cpp
     ${server_srcs_path}/socketlistener.h ${server_srcs_path}/socketlistener.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -51,7 +50,6 @@ set(testserver_SRCS
     ../test.cpp
 
     test.cpp
-    logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
     workers/testworkers.h workers/testworkers.cpp
@@ -59,6 +57,7 @@ set(testserver_SRCS
 
 if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
+    list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
 endif()
 
 if (WIN32)
