@@ -57,11 +57,11 @@ void generateOrEditTestFile(const SyncPath& path) {
     testFile.close();
 }
 
-std::string loadEnvVariable(const std::string& key) {
+std::string loadEnvVariable(const std::string& key, bool mandatory) {
     const std::string val = KDC::CommonUtility::envVarValue(key);
     if (val.empty()) {
         std::cout << "Environment variables " << key << " is missing!" << std::endl;
-        throw std::runtime_error("Environment variables " + key + " is missing!");
+        if (mandatory) throw std::runtime_error("Environment variables " + key + " is missing!");
     }
     return val;
 }
@@ -78,6 +78,16 @@ void setModificationDate(const SyncPath& path, const std::chrono::time_point<std
     timeBuffer.modtime = timeInSeconds;
     _wutime(path.wstring().c_str(), &timeBuffer);
 }
+bool isRunningOnCI() {
+    static bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
+    return isRunningOnCI;
+}
+
+bool isNightlyTest() {
+    static bool isNightly = !loadEnvVariable("KDRIVE_TEST_CI_NIGHTLY", false).empty();
+    return isNightly;
+}
+
 #else
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
     struct stat fileStat;

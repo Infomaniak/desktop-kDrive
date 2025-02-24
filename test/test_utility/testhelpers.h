@@ -36,7 +36,7 @@ constexpr int64_t defaultFileSize = 1654788079;
 SyncName makeNfdSyncName();
 SyncName makeNfcSyncName();
 
-std::string loadEnvVariable(const std::string &key);
+std::string loadEnvVariable(const std::string &key, bool mandatory);
 struct TestVariables {
         std::string userId;
         std::string accountId;
@@ -47,17 +47,18 @@ struct TestVariables {
         SyncPath local8MoPartitionPath;
 
         TestVariables() {
-            userId = loadEnvVariable("KDRIVE_TEST_CI_USER_ID");
-            accountId = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID");
-            driveId = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
-            remoteDirId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID");
-            remotePath = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH");
-            apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
-            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH");
+            userId = loadEnvVariable("KDRIVE_TEST_CI_USER_ID", true);
+            accountId = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID", true);
+            driveId = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID", true);
+            remoteDirId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID", true);
+            remotePath = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH", true);
+            apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN", true);
+            local8MoPartitionPath = loadEnvVariable("KDRIVE_TEST_CI_8MO_PARTITION_PATH", true);
         }
 };
 
 void generateOrEditTestFile(const SyncPath &path);
 void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
-
+bool isRunningOnCI();
+bool isNightlyTest();
 } // namespace KDC::testhelpers
