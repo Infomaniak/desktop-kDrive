@@ -38,6 +38,7 @@
 #include "propagation/executor/testintegration.h"
 #include "propagation/executor/testexecutorworker.h"
 #include "jobs/network/testnetworkjobs.h"
+#include "jobs/network/API_v2/testloguploadjob.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
@@ -55,6 +56,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
 
 /*CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 
