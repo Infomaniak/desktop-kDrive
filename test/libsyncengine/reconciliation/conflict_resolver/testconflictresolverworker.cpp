@@ -17,9 +17,13 @@
  */
 
 #include "testconflictresolverworker.h"
-#include "requests/parameterscache.h"
+
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "test_utility/testhelpers.h"
+#if defined(__APPLE__)
+#include "vfs/mac/vfs_mac.h"
+#endif
 
 #include <memory>
 
@@ -33,25 +37,20 @@ void TestConflictResolverWorker::setUp() {
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath,
-                                         KDRIVE_VERSION_STRING, true);
+
+    _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    _syncPal = std::make_shared<SyncPal>(_mockVfs, syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
 
     _syncPal->_conflictResolverWorker = std::make_shared<ConflictResolverWorker>(_syncPal, "Conflict Resolver", "CORE");
 
-    /**
-     * Initial FS state:
-     *
-     *            root
-     *             |
-     *             A
-     *        _____|______
-     *       |           |
-     *      AA          AB
-     *      |
-     *     AAA
-     */
+    // Initial FS state:
+    // .
+    // └── A
+    //     ├── AA
+    //     │   └── AAA
+    //     └── AB
 
     // Setup DB
     DbNodeId dbNodeIdA;
@@ -516,7 +515,67 @@ void TestConflictResolverWorker::testMoveDelete5() {
 }
 
 void TestConflictResolverWorker::testMoveDeleteDehydratedPlaceholder() {
+    // Simulate move of A/AA/AAA to A on local replica
+    const auto lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
+    lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
+    lNodeAAA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->idb());
+    lNodeAAA->setChangeEvents(OperationType::Move);
 
+    // Simulate a delete of node AAA on remote replica
+    const auto rNodeAAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAAA");
+    rNodeAAA->setChangeEvents(OperationType::Delete);
+    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeAAA);
+
+    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveDelete);
+
+    // Since the methods needed for tests are mocked, we can put any VirtualFileMode type. It just needs to be different from
+    // VirtualFileMode::off
+    _syncPal->setVfsMode(VirtualFileMode::Mac);
+
+    {
+        _syncPal->_conflictQueue->push(conflict);
+
+        // Simulate a local dehydrate placeholder
+        auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = false;
+            vfsStatus.isSyncing = false;
+            vfsStatus.progress = 0;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
+
+        _syncPal->_conflictResolverWorker->execute();
+
+        const auto opId = _syncPal->_syncOps->opSortedList().front();
+        const auto op = _syncPal->_syncOps->getOp(opId);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+        CPPUNIT_ASSERT_EQUAL(false, op->omit());
+        CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+    }
+
+    _syncPal->_syncOps->clear();
+    {
+        _syncPal->_conflictQueue->push(conflict);
+
+        // Simulate a local syncing placeholder
+        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = false;
+            vfsStatus.isSyncing = true;
+            vfsStatus.progress = 30;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
+
+        _syncPal->_conflictResolverWorker->execute();
+
+        const auto opId = _syncPal->_syncOps->opSortedList().front();
+        const auto op = _syncPal->_syncOps->getOp(opId);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+        CPPUNIT_ASSERT_EQUAL(true, op->omit());
+        CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+    }
 }
 
 void TestConflictResolverWorker::testMoveParentDelete() {

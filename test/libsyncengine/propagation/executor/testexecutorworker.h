@@ -21,36 +21,36 @@
 #include "testincludes.h"
 #include "propagation/executor/executorworker.h"
 #include "test_utility/localtemporarydirectory.h"
-#include "libcommonserver/vfs/vfs.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 
 namespace KDC {
 
-class MockVfs final : public VfsOff {
-    public:
-        explicit MockVfs() : VfsOff(vfsSetupParams) {}
-        void setVfsStatusOutput(const VfsStatus &vfsStatus) {
-            vfsStatusIsHydrated = vfsStatus.isHydrated;
-            vfsStatusIsSyncing = vfsStatus.isSyncing;
-            vfsStatusIsPlaceholder = vfsStatus.isPlaceholder;
-            vfsStatusProgress = vfsStatus.progress;
-        }
-        ExitInfo status([[maybe_unused]] const SyncPath &filePath, VfsStatus &vfsStatus) override {
-            vfsStatus.isHydrated = vfsStatusIsHydrated;
-            vfsStatus.isSyncing = vfsStatusIsSyncing;
-            vfsStatus.isPlaceholder = vfsStatusIsPlaceholder;
-            vfsStatus.progress = vfsStatusProgress;
-            return ExitCode::Ok;
-        }
+// class MockVfs final : public VfsOff {
+//     public:
+//         explicit MockVfs() : VfsOff(vfsSetupParams) {}
+//         void setVfsStatusOutput(const VfsStatus &vfsStatus) {
+//             vfsStatusIsHydrated = vfsStatus.isHydrated;
+//             vfsStatusIsSyncing = vfsStatus.isSyncing;
+//             vfsStatusIsPlaceholder = vfsStatus.isPlaceholder;
+//             vfsStatusProgress = vfsStatus.progress;
+//         }
+//         ExitInfo status([[maybe_unused]] const SyncPath &filePath, VfsStatus &vfsStatus) override {
+//             vfsStatus.isHydrated = vfsStatusIsHydrated;
+//             vfsStatus.isSyncing = vfsStatusIsSyncing;
+//             vfsStatus.isPlaceholder = vfsStatusIsPlaceholder;
+//             vfsStatus.progress = vfsStatusProgress;
+//             return ExitCode::Ok;
+//         }
+//
+//     private:
+//         bool vfsStatusIsHydrated = false;
+//         bool vfsStatusIsSyncing = false;
+//         bool vfsStatusIsPlaceholder = false;
+//         int16_t vfsStatusProgress = 0;
+//         VfsSetupParams vfsSetupParams;
+// };
 
-    private:
-        bool vfsStatusIsHydrated = false;
-        bool vfsStatusIsSyncing = false;
-        bool vfsStatusIsPlaceholder = false;
-        int16_t vfsStatusProgress = 0;
-        VfsSetupParams vfsSetupParams;
-};
-
-class TestExecutorWorker : public CppUnit::TestFixture {
+class TestExecutorWorker final : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
         CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
         CPPUNIT_TEST(testFixModificationDate);
@@ -85,6 +85,7 @@ class TestExecutorWorker : public CppUnit::TestFixture {
                                                        const OperationType opType, const NodeType nodeType);
 
         std::shared_ptr<SyncPal> _syncPal;
+        std::shared_ptr<MockVfs<VfsOff>> _mockVfs;
         Sync _sync;
         std::shared_ptr<ExecutorWorker> _executorWorker;
         LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};

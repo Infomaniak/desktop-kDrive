@@ -19,6 +19,8 @@
 #pragma once
 
 #include "testincludes.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
+#include "vfs/mac/vfs_mac.h"
 
 #include <reconciliation/conflict_resolver/conflictresolverworker.h>
 
@@ -73,7 +75,8 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         void testMoveMoveCycle2();
 
     private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<SyncPal> _syncPal;
+        std::shared_ptr<MockVfs<VfsOff>> _mockVfs;
 };
 
 } // namespace KDC

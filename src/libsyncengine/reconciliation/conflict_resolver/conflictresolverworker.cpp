@@ -192,7 +192,7 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
     const auto deleteNode =
             conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
     const auto moveNode = conflict.node()->hasChangeEvent(OperationType::Move) ? conflict.node() : conflict.correspondingNode();
-    if (auto correspondingMoveNodeParent = correspondingNodeDirect(moveNode->parentNode());
+    if (const auto correspondingMoveNodeParent = correspondingNodeDirect(moveNode->parentNode());
         correspondingMoveNodeParent && correspondingMoveNodeParent->hasChangeEvent(OperationType::Delete) &&
         _syncPal->_conflictQueue->hasConflict(ConflictType::MoveParentDelete)) {
         // If the move operation happen within a directory that was deleted on the other replica,
@@ -244,7 +244,7 @@ ExitCode ConflictResolverWorker::checkForOrphanNodes(const Conflict &conflict, c
 
     std::unordered_set<DbNodeId> deletedChildNodeDbIds;
     for (auto &childNode: allDeletedChildNodes) {
-        deletedChildNodeDbIds.insert(*childNode->idb());
+        (void) deletedChildNodeDbIds.insert(*childNode->idb());
     }
 
     // From the DB, get the list of all child nodes at the end of last sync.
@@ -267,9 +267,9 @@ ExitCode ConflictResolverWorker::checkForOrphanNodes(const Conflict &conflict, c
             return ExitCode::DataError;
         }
 
-        auto updateTree = _syncPal->updateTree(deleteNode->side());
-        auto orphanNode = updateTree->getNodeById(orphanNodeId);
-        auto correspondingOrphanNode = correspondingNodeInOtherTree(orphanNode);
+        const auto updateTree = _syncPal->updateTree(deleteNode->side());
+        const auto orphanNode = updateTree->getNodeById(orphanNodeId);
+        const auto correspondingOrphanNode = correspondingNodeInOtherTree(orphanNode);
         if (!correspondingOrphanNode) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Failed to get corresponding node: " << SyncName2WStr(orphanNode->name()));
             return ExitCode::DataError;
@@ -277,7 +277,7 @@ ExitCode ConflictResolverWorker::checkForOrphanNodes(const Conflict &conflict, c
 
         // Move operation in db. This is a temporary operation, orphan nodes will be then handled in "Move-Move
         // (Source)" conflict in next sync iterations.
-        auto op = std::make_shared<SyncOperation>();
+        const auto op = std::make_shared<SyncOperation>();
         op->setType(OperationType::Move);
         op->setAffectedNode(orphanNode);
         orphanNode->setMoveOrigin(orphanNode->getPath());
@@ -285,7 +285,7 @@ ExitCode ConflictResolverWorker::checkForOrphanNodes(const Conflict &conflict, c
         op->setTargetSide(correspondingOrphanNode->side());
         op->setOmit(true);
         SyncName newName;
-        generateConflictedName(orphanNode, newName, true);
+        (void) generateConflictedName(orphanNode, newName, true);
         op->setNewName(newName);
         op->setNewParentNode(_syncPal->updateTree(orphanNode->side())->rootNode());
         op->setConflict(conflict);
@@ -297,7 +297,7 @@ ExitCode ConflictResolverWorker::checkForOrphanNodes(const Conflict &conflict, c
         _syncPal->_syncOps->pushOp(op);
 
         // Register the orphan. Winner side is always the side with the DELETE operation.
-        _registeredOrphans.insert({dbId, deleteNode->side()});
+        (void) _registeredOrphans.insert({dbId, deleteNode->side()});
     }
 
     return ExitCode::Ok;
