@@ -81,6 +81,10 @@ void TestUtility::testIsVersionLower() {
 
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("55.25.0", "55.55.0"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("55.75.0", "55.55.0"));
+
+    // With a build version
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("155.75.0 (build 20250221)", "155.75.0 (build 20250222)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 20240221)", "255.85.0 (build 20250222)"));
 }
 
 void TestUtility::testStringToAppStateValue() {
