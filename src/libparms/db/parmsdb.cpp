@@ -970,7 +970,13 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgrade(const std::string & /*fromVersion*/, const std::string & /*toVersion*/) {
+bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
+    if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
+        LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
+    } else {
+        LOG_INFO(_logger, "Apply generic upgrade fixes to " << dbType() << " DB version " << fromVersion);
+    }
+
     const std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
