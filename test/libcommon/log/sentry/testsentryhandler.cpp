@@ -20,6 +20,7 @@
 #include "testsentryhandler.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/log/log.h"
+#include "test_utility/testhelpers.h"
 
 #include <thread>
 
@@ -38,6 +39,8 @@ void MockTestSentryHandler::sendEventToSentry(const sentry::Level level, const s
 }
 
 void TestSentryHandler::testMultipleSendEventForTheSameEvent() {
+    if (!testhelpers::isNightlyTest()) return;
+
     MockTestSentryHandler mockSentryHandler;
 
     CPPUNIT_ASSERT_EQUAL(0, mockSentryHandler.sentryUploadedEventCount());

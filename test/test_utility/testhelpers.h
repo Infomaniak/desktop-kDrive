@@ -59,6 +59,6 @@ struct TestVariables {
 
 void generateOrEditTestFile(const SyncPath &path);
 void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
-bool isRunningOnCI();
-bool isNightlyTest();
+bool isRunningOnCI(bool print = true);
+bool isNightlyTest(bool print = true);
 } // namespace KDC::testhelpers

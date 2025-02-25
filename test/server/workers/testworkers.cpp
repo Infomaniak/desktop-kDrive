@@ -50,6 +50,10 @@ constexpr bool connectorsAreAlreadyInstalled = false;
 
 void TestWorkers::setUp() {
     TestBase::start();
+#ifdef _WIN32
+    if (!testhelpers::isNightlyTest(false)) return;
+#endif
+
     _logger = Log::instance()->getLogger();
 
     const testhelpers::TestVariables testVariables;
@@ -155,6 +159,9 @@ void TestWorkers::setUp() {
 }
 
 void TestWorkers::tearDown() {
+#ifdef _WIN32
+    if (!testhelpers::isNightlyTest()) return;
+#endif
     ParmsDb::instance()->close();
     ParmsDb::reset();
     if (_syncPal && _syncPal->syncDb()) {
@@ -169,6 +176,9 @@ void TestWorkers::tearDown() {
 }
 
 void TestWorkers::testStartVfs() {
+#ifdef _WIN32
+    if (!testhelpers::isNightlyTest()) return;
+#endif
 #if defined(__APPLE__)
     if (connectorsAreAlreadyInstalled) {
         // Make sure that Vfs is installed/activated/connected
@@ -190,6 +200,9 @@ void TestWorkers::testStartVfs() {
 }
 
 void TestWorkers::testCreatePlaceholder() {
+#ifdef _WIN32
+    if (!testhelpers::isNightlyTest()) return;
+#endif
     _syncPal->resetEstimateUpdates();
     ExitInfo exitInfo;
     // Progress not intialized
@@ -280,6 +293,9 @@ void TestWorkers::testCreatePlaceholder() {
 }
 
 void TestWorkers::testConvertToPlaceholder() {
+#ifdef _WIN32
+    if (!testhelpers::isNightlyTest()) return;
+#endif
     _syncPal->resetEstimateUpdates();
     ExitInfo exitInfo;
     // Progress not intialized

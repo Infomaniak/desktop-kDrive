@@ -392,8 +392,9 @@ void TestNetworkJobs::testDownload() {
 
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
-    {
-        // Not Enough disk space
+    if (testhelpers::isRunningOnCI()) {
+        // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
+
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");

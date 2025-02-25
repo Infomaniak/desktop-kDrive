@@ -33,7 +33,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCompressFile);
         CPPUNIT_TEST(testCurrentVersion);
         CPPUNIT_TEST(testSourceLocation);
-        // CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
+        CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
         CPPUNIT_TEST(testLanguageCode);
         CPPUNIT_TEST(testTruncateLongLogMessage);
 #ifdef _WIN32

@@ -36,8 +36,6 @@ class TestTypes : public CppUnit::TestFixture, public TestBase {
         void tearDown(void) override { TestBase::stop(); }
 
     protected:
-        std::chrono::steady_clock::time_point _start;
-
         void testOtherSide();
         void testStreamConversion();
         void testExitInfo();

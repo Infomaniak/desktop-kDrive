@@ -12,6 +12,7 @@ set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 
 set(testcommon_SRCS
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
+        ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
         ../test_utility/testbase.h
         ../test.cpp
 

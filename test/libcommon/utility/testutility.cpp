@@ -18,6 +18,7 @@
 
 #include "config.h"
 #include "testutility.h"
+#include "test_utility/testhelpers.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
@@ -338,6 +339,7 @@ void TestUtility::testSourceLocation() {
 }
 
 void TestUtility::testGenerateRandomStringAlphaNum() {
+    if (!testhelpers::isNightlyTest()) return;
     {
         int err = 0;
         std::set<std::string> results;
