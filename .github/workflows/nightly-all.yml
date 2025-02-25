@@ -189,6 +189,8 @@ jobs:
 
   kChat_notification:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    env:
+      KCHAT_WEBHOOK_URL: ${{ vars.KCHAT_WEBHOOK_URL }}
     needs: [ Windows, MacOS, Linux ]
     steps:
       - name: Checkout the PR
