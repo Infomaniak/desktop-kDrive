@@ -96,13 +96,13 @@ class TimeoutHelper {
             if (timeoutHelper.elapsed() < minimumDuration) {
                 std::cout << std::endl
                           << "Execution (" << timeoutHelper.elapsed().count() << "ms) time is less than minimum duration ("
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(minimumDuration) << "ms)" << std::endl;
+                          << std::chrono::duration_cast<std::chrono::milliseconds>(minimumDuration).count() << "ms)" << std::endl;
                 return false;
             }
             if (timeoutHelper.elapsed() > maximumDuration) {
                 std::cout << std::endl
                           << "Execution (" << timeoutHelper.elapsed().count() << "ms) time is more than maximum duration ("
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(maximumDuration) << "ms)" << std::endl;
+                          << std::chrono::duration_cast<std::chrono::milliseconds>(maximumDuration).count() << "ms)" << std::endl;
                 return false;
             }
 
@@ -112,7 +112,7 @@ class TimeoutHelper {
     private:
         TimeoutHelper(const std::chrono::steady_clock::duration& duration,
                       const std::chrono::steady_clock::duration& loopWait = std::chrono::milliseconds(0)) :
-            _duration(duration), _start(std::chrono::steady_clock::now()), _loopWait(loopWait) {}
+            _start(std::chrono::steady_clock::now()), _duration(duration), _loopWait(loopWait) {}
 
         bool timedOut();
         std::chrono::milliseconds elapsed() const {
