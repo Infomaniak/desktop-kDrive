@@ -29,6 +29,7 @@
 namespace KDC {
 
 void TestServerRequests::setUp() {
+    TestBase::start();
     const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
@@ -63,6 +64,7 @@ void TestServerRequests::setUp() {
 void TestServerRequests::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestServerRequests::testFixProxyConfig() {

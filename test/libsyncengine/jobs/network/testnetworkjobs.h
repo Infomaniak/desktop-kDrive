@@ -43,7 +43,7 @@ class MockIoHelperTestNetworkJobs : public IoHelper {
         }
 };
 
-class TestNetworkJobs : public CppUnit::TestFixture {
+class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestNetworkJobs);
         CPPUNIT_TEST(testCreateDir);

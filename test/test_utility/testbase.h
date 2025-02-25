@@ -16,28 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
+#pragma once
+#include <chrono>
 
-using namespace CppUnit;
-
-namespace KDC {
-
-class TestLiteSyncExtConnector : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestLiteSyncExtConnector);
-#ifdef __APPLE__
-        CPPUNIT_TEST(testGetVfsStatus);
-#endif
-        CPPUNIT_TEST_SUITE_END();
-
+class TestBase {
     public:
-        TestLiteSyncExtConnector();
-        void setUp(void);
-        void tearDown(void);
+        virtual void start(void) { _start = std::chrono::steady_clock::now(); }
+        virtual void stop(void) {
+            const auto duration =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - _start);
+            if (duration.count() > 0) std::cout << " (" << duration.count() << " ms)";
+        }
 
-    protected:
-#ifdef __APPLE__
-        void testGetVfsStatus(void);
-#endif
+    private:
+        std::chrono::steady_clock::time_point _start;
 };
-
-} // namespace KDC

@@ -49,6 +49,7 @@ constexpr bool connectorsAreAlreadyInstalled = false;
 #endif
 
 void TestWorkers::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
 
     const testhelpers::TestVariables testVariables;
@@ -164,6 +165,7 @@ void TestWorkers::tearDown() {
         _vfsPtr->stopImpl(true);
         _vfsPtr = nullptr;
     }
+    TestBase::stop();
 }
 
 void TestWorkers::testStartVfs() {

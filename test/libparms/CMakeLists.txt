@@ -13,6 +13,7 @@ set(testparms_NAME ${APPLICATION_NAME}_test_parms)
 
 set(testparms_SRCS
     ../test.cpp
+    ../test_utility/testbase.h
     test.cpp
     # Database
     db/testparmsdb.h db/testparmsdb.cpp

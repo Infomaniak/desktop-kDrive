@@ -15,6 +15,7 @@ set(testcommonserver_SRCS
         ../test_utility/localtemporarydirectory.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
         ../test_utility/timechecker.h
+        ../test_utility/testbase.h
         test.cpp
         # Utility
         utility/testutility.h utility/testutility.cpp

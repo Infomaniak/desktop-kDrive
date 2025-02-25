@@ -37,7 +37,6 @@ void MockTestSentryHandler::sendEventToSentry(const sentry::Level level, const s
     _sentryUploadedEventCount++;
 }
 
-
 void TestSentryHandler::testMultipleSendEventForTheSameEvent() {
     MockTestSentryHandler mockSentryHandler;
 

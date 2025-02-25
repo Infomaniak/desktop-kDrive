@@ -28,6 +28,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestUpdateTreeWorker::setUp() {
+    TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -60,6 +61,7 @@ void TestUpdateTreeWorker::tearDown() {
     // The singleton ParmsDb calls KDC::Log()->instance() in its destructor.
     // As the two singletons are instantiated in different translation units, the order of their destruction is unknown.
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestUpdateTreeWorker::setUpDbTree() {

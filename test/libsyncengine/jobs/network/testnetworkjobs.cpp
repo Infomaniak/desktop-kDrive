@@ -93,6 +93,7 @@ void createEmptyFile(const SyncPath &path) {
 } // namespace
 
 void TestNetworkJobs::setUp() {
+    TestBase::start();
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
     const testhelpers::TestVariables testVariables;
@@ -148,6 +149,7 @@ void TestNetworkJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     MockIoHelperTestNetworkJobs::resetStdFunctions();
+    TestBase::stop();
 }
 
 
