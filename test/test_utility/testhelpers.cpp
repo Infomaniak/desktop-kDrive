@@ -59,9 +59,9 @@ void generateOrEditTestFile(const SyncPath& path) {
 
 std::string loadEnvVariable(const std::string& key, bool mandatory) {
     const std::string val = KDC::CommonUtility::envVarValue(key);
-    if (val.empty()) {
+    if (val.empty() && mandatory) {
         std::cout << "Environment variables " << key << " is missing!" << std::endl;
-        if (mandatory) throw std::runtime_error("Environment variables " + key + " is missing!");
+        throw std::runtime_error("Environment variables " + key + " is missing!");
     }
     return val;
 }
