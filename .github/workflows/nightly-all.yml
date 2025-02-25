@@ -1,6 +1,7 @@
 name: Nightly tests kDrive desktop - All OS 
 
 on:
+    workflow_dispatch:  # Allows manual execution
     schedule:
         - cron: '0 0 * * *'
   
@@ -28,7 +29,7 @@ jobs:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ github.head_ref }}
+          ref: KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly
           submodules: recursive
         
       - name: Clean the log directory
@@ -104,7 +105,7 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ github.head_ref }}
+          ref: KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly
           submodules: recursive
 
       - name: Grant empty trash script execute permission
@@ -153,7 +154,7 @@ jobs:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ github.head_ref }}
+          ref: KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly
           submodules: recursive
 
       - name: Clean the log directory
