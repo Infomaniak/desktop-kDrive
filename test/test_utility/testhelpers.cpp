@@ -120,7 +120,7 @@ bool TimeoutHelper::waitFor(std::function<bool()> condition, std::function<void(
 bool TimeoutHelper::timedOut() {
     bool result = (_start + _duration) < std::chrono::steady_clock::now();
     if (!result && _loopWait != std::chrono::milliseconds(0)) {
-        Utility::msleep(std::chrono::duration_cast<std::chrono::milliseconds>(_loopWait).count());
+        Utility::msleep(static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(_loopWait).count()));
     }
     return result;
 }
