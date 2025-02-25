@@ -558,17 +558,6 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
     return true;
 }
 
-// bool SyncDb::insertNode(const DbNode &node) {
-//     DbNodeId dummyNodeId = 0;
-//     bool dummyConstraintError = false;
-//     return insertNode(node, dummyNodeId, dummyConstraintError);
-// }
-//
-// bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId) {
-//     bool dummyConstraintError = false;
-//     return insertNode(node, dbNodeId, dummyConstraintError);
-// }
-
 bool SyncDb::updateNode(const DbNode &node, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
