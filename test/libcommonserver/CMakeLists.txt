@@ -12,7 +12,7 @@ set(testcommonserver_NAME ${APPLICATION_NAME}_test_common_server)
 
 set(testcommonserver_SRCS
         ../test.cpp
-        ../test_utility/localtemporarydirectory.cpp
+        ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
         ../test_utility/timechecker.h
         ../test_utility/testbase.h
@@ -50,6 +50,9 @@ add_executable(${testcommonserver_NAME} ${testcommonserver_SRCS})
 set(PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
+    # cppunit
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/TestFixture.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/extensions/HelperMacros.h$<ANGLE-R>>"
 )
 
 target_precompile_headers(${testcommonserver_NAME} PRIVATE ${PC_HEADER_FILES})
