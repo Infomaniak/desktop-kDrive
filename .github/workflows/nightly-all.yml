@@ -13,14 +13,14 @@ env:
   KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
-  KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
   KDRIVE_TEST_CI_NIGHTLY : true
 
 jobs:
   Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
-
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -97,7 +97,8 @@ jobs:
 
   MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
-
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     steps:
       - name: Clean-up XCode DerivedData
         run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
@@ -149,7 +150,8 @@ jobs:
 
   Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
-
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
