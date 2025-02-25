@@ -75,7 +75,7 @@ void TestExecutorWorker::setUp() {
     _syncPal->createWorkers(std::chrono::seconds(0));
     _syncPal->syncDb()->setAutoDelete(true);
 
-    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
+    _executorWorker = std::make_shared<ExecutorWorker>(_syncPal, "Executor", "EXEC");
 }
 
 void TestExecutorWorker::tearDown() {
@@ -88,15 +88,7 @@ void TestExecutorWorker::tearDown() {
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
-    // Setup a syncpal using MockVfs
-    _syncPal->stop();
-    const auto mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
-    _syncPal = std::make_shared<SyncPal>(mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);
-    _syncPal->createSharedObjects();
-    _syncPal->createWorkers();
-    _syncPal->syncDb()->setAutoDelete(true);
-
-    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
+    _executorWorker = std::make_shared<ExecutorWorker>(_syncPal, "Executor", "EXEC");
 
 
     //   Setup dummy values. Test inputs are set in the callbacks defined below.
@@ -108,7 +100,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     opPtr->setAffectedNode(node);
     // A hydrated placeholder.
     {
-        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+        auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
             vfsStatus.isPlaceholder = true;
             vfsStatus.isHydrated = true;
             vfsStatus.isSyncing = false;
@@ -124,7 +116,7 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A dehydrated placeholder.
     {
-        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+        auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
             vfsStatus.isPlaceholder = true;
             vfsStatus.isHydrated = false;
             vfsStatus.isSyncing = false;
