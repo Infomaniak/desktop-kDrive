@@ -59,6 +59,23 @@ struct TestVariables {
 
 void generateOrEditTestFile(const SyncPath &path);
 void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
-bool isRunningOnCI(bool print = true);
-bool isNightlyTest(bool print = true);
+
+inline bool isRunningOnCI(bool print = true) {
+    static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
+    if (print && !isRunningOnCI) {
+        std::cout << " (Skiped CI only test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skiped CI only
+                                               // test) :  OK
+    }
+    return isRunningOnCI;
+}
+
+inline bool isNightlyTest(bool print = true) {
+    static const bool isNightly = !loadEnvVariable("KDRIVE_TEST_CI_NIGHTLY", false).empty();
+    if (print && !isNightly) {
+        std::cout << " (Skiped nightly test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skiped nightly
+                                               // test) :  OK
+    }
+    return isNightly;
+}
+
 } // namespace KDC::testhelpers

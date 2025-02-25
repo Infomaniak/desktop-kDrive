@@ -79,22 +79,6 @@ void setModificationDate(const SyncPath& path, const std::chrono::time_point<std
     _wutime(path.wstring().c_str(), &timeBuffer);
 }
 
-bool isRunningOnCI(bool print) {
-    static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
-    if (print && !isRunningOnCI) {
-        std::cout << " (Skiped CI only test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skiped CI only test) :  OK
-    }
-    return isRunningOnCI;
-}
-
-bool isNightlyTest(bool print) {
-    static const bool isNightly = !loadEnvVariable("KDRIVE_TEST_CI_NIGHTLY", false).empty();
-    if (print && !isNightly) {
-        std::cout << " (Skiped nightly test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skiped nightly test) :  OK
-    }
-    return isNightly;
-}
-
 #else
 void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
     struct stat fileStat;
