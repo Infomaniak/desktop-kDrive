@@ -32,6 +32,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateCreate);
         CPPUNIT_TEST(testEditEdit);
         CPPUNIT_TEST(testMoveCreate);
+        CPPUNIT_TEST(testMoveCreateDehydratedPlaceholder);
         CPPUNIT_TEST(testEditDelete1);
         CPPUNIT_TEST(testEditDelete2);
         CPPUNIT_TEST(testMoveDelete1);
@@ -41,10 +42,13 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testMoveDelete5);
         CPPUNIT_TEST(testMoveDeleteDehydratedPlaceholder);
         CPPUNIT_TEST(testMoveParentDelete);
+        CPPUNIT_TEST(testMoveParentDeleteDehydratedPlaceholder);
         CPPUNIT_TEST(testCreateParentDelete);
         CPPUNIT_TEST(testMoveMoveSource);
         CPPUNIT_TEST(testMoveMoveSourceWithOrphanNodes);
+        CPPUNIT_TEST(testMoveMoveSourceDehydratedPlaceholder);
         CPPUNIT_TEST(testMoveMoveDest);
+        CPPUNIT_TEST(testMoveMoveDestDehydratedPlaceholder);
         CPPUNIT_TEST(testMoveMoveCycle);
         CPPUNIT_TEST(testMoveMoveCycle2);
         CPPUNIT_TEST_SUITE_END();
@@ -57,6 +61,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         void testCreateCreate();
         void testEditEdit();
         void testMoveCreate();
+        void testMoveCreateDehydratedPlaceholder();
         void testEditDelete1();
         void testEditDelete2();
         // Move-Delete tests : see thesis (https://hal.science/hal-02319573/) section 5.5 for the detailed test case
@@ -67,10 +72,13 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         void testMoveDelete5();
         void testMoveDeleteDehydratedPlaceholder();
         void testMoveParentDelete();
+        void testMoveParentDeleteDehydratedPlaceholder();
         void testCreateParentDelete();
         void testMoveMoveSource();
         void testMoveMoveSourceWithOrphanNodes();
+        void testMoveMoveSourceDehydratedPlaceholder();
         void testMoveMoveDest();
+        void testMoveMoveDestDehydratedPlaceholder();
         void testMoveMoveCycle();
         void testMoveMoveCycle2();
 

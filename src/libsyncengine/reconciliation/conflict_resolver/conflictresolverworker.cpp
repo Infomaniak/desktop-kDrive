@@ -87,9 +87,9 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             break;
         }
         case ConflictType::MoveMoveSource:
+        case ConflictType::MoveMoveDest:
         case ConflictType::MoveMoveCycle:
-        case ConflictType::MoveCreate:
-        case ConflictType::MoveMoveDest: {
+        case ConflictType::MoveCreate: {
             res = generateUndoMoveOperation(conflict, getLoserNode(conflict));
             break;
         }

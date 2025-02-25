@@ -211,6 +211,53 @@ void TestConflictResolverWorker::testMoveCreate() {
     CPPUNIT_ASSERT_EQUAL(rNodeAA, op->newParentNode());
 }
 
+void TestConflictResolverWorker::testMoveCreateDehydratedPlaceholder() {
+    // Simulate move of A/AA/AAA to AAA on local replica
+    const auto lNodeAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA");
+    const auto lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
+    lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
+    lNodeAAA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->idb());
+    lNodeAAA->setChangeEvents(OperationType::Move);
+    lNodeAA->deleteChildren(lNodeAAA);
+    (void) _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(lNodeAAA);
+    lNodeAAA->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
+
+    // Simulate create of AAA on remote replica
+    const auto rNodeAAA2 =
+            std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AAA"), NodeType::File,
+                                   OperationType::Create, "rAAA2", testhelpers::defaultTime, testhelpers::defaultTime,
+                                   testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeAAA2));
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeAAA2);
+
+    const Conflict conflict(lNodeAAA, rNodeAAA2, ConflictType::MoveCreate);
+
+    // Since the methods needed for tests are mocked, we can put any VirtualFileMode type. It just needs to be different from
+    // VirtualFileMode::off
+    _syncPal->setVfsMode(VirtualFileMode::Mac);
+
+    _syncPal->_conflictQueue->push(conflict);
+
+    // Simulate a local dehydrate placeholder
+    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = false;
+        vfsStatus.isSyncing = false;
+        vfsStatus.progress = 0;
+        return ExitCode::Ok;
+    };
+    _mockVfs->setMockStatus(mockStatus);
+
+    _syncPal->_conflictResolverWorker->execute();
+
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT_EQUAL(false, op->omit());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+    CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->correspondingNode());
+}
+
 void TestConflictResolverWorker::testEditDelete1() {
     // Simulate edit of file AAA on local replica
     const auto lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
@@ -630,6 +677,52 @@ void TestConflictResolverWorker::testMoveParentDelete() {
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
 }
 
+void TestConflictResolverWorker::testMoveParentDeleteDehydratedPlaceholder() {
+    // Simulate move of A/AA/AAA to A/AB/AAA on local replica
+    const auto lNodeAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA");
+    const auto lNodeAB = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAB");
+    const auto lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
+    lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
+    lNodeAAA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA")->idb());
+    lNodeAAA->setChangeEvents(OperationType::Move);
+    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAB->insertChildren(lNodeAAA);
+    lNodeAAA->setParentNode(lNodeAB);
+
+    // Simulate delete of AA on remote replica
+    const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
+    const auto rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
+    rNodeA->deleteChildren(rNodeAA);
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->deleteNode(rNodeAA);
+
+    const Conflict conflict(lNodeAAA, rNodeAA, ConflictType::MoveParentDelete);
+
+    // Since the methods needed for tests are mocked, we can put any VirtualFileMode type. It just needs to be different from
+    // VirtualFileMode::off
+    _syncPal->setVfsMode(VirtualFileMode::Mac);
+
+    _syncPal->_conflictQueue->push(conflict);
+
+    // Simulate a local dehydrate placeholder
+    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = false;
+        vfsStatus.isSyncing = false;
+        vfsStatus.progress = 0;
+        return ExitCode::Ok;
+    };
+    _mockVfs->setMockStatus(mockStatus);
+
+    _syncPal->_conflictResolverWorker->execute();
+
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT_EQUAL(false, op->omit());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+    CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->correspondingNode());
+}
+
 void TestConflictResolverWorker::testCreateParentDelete() {
     // Simulate file creation on local replica
     const auto lNodeAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA");
@@ -748,6 +841,57 @@ void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
 }
 
+void TestConflictResolverWorker::testMoveMoveSourceDehydratedPlaceholder() {
+    // Simulate move of A/AA/AAA to A/AB/AAA on local replica
+    const auto lNodeAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA");
+    const auto lNodeAB = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAB");
+    const auto lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
+    lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
+    lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
+    lNodeAAA->setChangeEvents(OperationType::Move);
+    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAB->insertChildren(lNodeAAA);
+    lNodeAAA->setParentNode(lNodeAB);
+
+    // Simulate move of A/AA/AAA to A/AAA on remote replica
+    const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
+    const auto rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
+    const auto rNodeAAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAAA");
+    rNodeAAA->setMoveOrigin(rNodeAAA->getPath());
+    rNodeAAA->setMoveOriginParentDbId(rNodeAA->idb());
+    rNodeAAA->setChangeEvents(OperationType::Move);
+    rNodeAA->deleteChildren(rNodeAAA);
+    (void) rNodeA->insertChildren(rNodeAAA);
+    rNodeAAA->setParentNode(rNodeA);
+
+    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
+
+    // Since the methods needed for tests are mocked, we can put any VirtualFileMode type. It just needs to be different from
+    // VirtualFileMode::off
+    _syncPal->setVfsMode(VirtualFileMode::Mac);
+
+    _syncPal->_conflictQueue->push(conflict);
+
+    // Simulate a local dehydrate placeholder
+    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = false;
+        vfsStatus.isSyncing = false;
+        vfsStatus.progress = 0;
+        return ExitCode::Ok;
+    };
+    _mockVfs->setMockStatus(mockStatus);
+
+    _syncPal->_conflictResolverWorker->execute();
+
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT_EQUAL(false, op->omit());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+    CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->correspondingNode());
+}
+
 void TestConflictResolverWorker::testMoveMoveDest() {
     // Simulate move of node AAA to AB on local replica
     const auto lNodeAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA");
@@ -784,6 +928,58 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
     CPPUNIT_ASSERT_EQUAL(lNodeAA, op->newParentNode());
+}
+
+void TestConflictResolverWorker::testMoveMoveDestDehydratedPlaceholder() {
+    // Simulate move of A/AA/AAA to A/AB/AAA on local replica
+    const auto lNodeAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA");
+    const auto lNodeAB = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAB");
+    const auto lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
+    lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
+    lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
+    lNodeAAA->setChangeEvents(OperationType::Move);
+    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAB->insertChildren(lNodeAAA);
+    lNodeAAA->setParentNode(lNodeAB);
+
+    // Simulate move of A/AA to A/AB/AAA on remote replica
+    const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
+    const auto rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
+    const auto rNodeAB = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAB");
+    rNodeAA->setName(Str("AAA"));
+    rNodeAA->setMoveOrigin(rNodeAA->getPath());
+    rNodeAA->setMoveOriginParentDbId(rNodeA->idb());
+    rNodeAA->setChangeEvents(OperationType::Move);
+    rNodeAA->deleteChildren(rNodeAA);
+    (void) rNodeAB->insertChildren(rNodeAA);
+    rNodeAA->setParentNode(rNodeAB);
+
+    const Conflict conflict(lNodeAAA, rNodeAA, ConflictType::MoveMoveDest);
+
+    // Since the methods needed for tests are mocked, we can put any VirtualFileMode type. It just needs to be different from
+    // VirtualFileMode::off
+    _syncPal->setVfsMode(VirtualFileMode::Mac);
+
+    _syncPal->_conflictQueue->push(conflict);
+
+    // Simulate a local dehydrate placeholder
+    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = false;
+        vfsStatus.isSyncing = false;
+        vfsStatus.progress = 0;
+        return ExitCode::Ok;
+    };
+    _mockVfs->setMockStatus(mockStatus);
+
+    _syncPal->_conflictResolverWorker->execute();
+
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT_EQUAL(false, op->omit());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+    CPPUNIT_ASSERT_EQUAL(lNodeAAA, op->correspondingNode());
 }
 
 void TestConflictResolverWorker::testMoveMoveCycle() {
