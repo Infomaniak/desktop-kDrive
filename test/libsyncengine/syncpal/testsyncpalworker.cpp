@@ -340,7 +340,7 @@ std::shared_ptr<TestSyncPalWorker::MockLFSO> TestSyncPalWorker::MockSyncPal::get
 #else
 std::shared_ptr<TestSyncPalWorker::MockLFSO<LocalFileSystemObserverWorker_unix>>
 TestSyncPalWorker::MockSyncPal::getMockLFSOWorker() {
-    return std::dynamic_pointer_cast<MockLFSO<LocalFileSystemObserverWorker_unix²>>(_localFSObserverWorker);
+    return std::dynamic_pointer_cast<MockLFSO<LocalFileSystemObserverWorker_unix>>(_localFSObserverWorker);
 }
 #endif
 
