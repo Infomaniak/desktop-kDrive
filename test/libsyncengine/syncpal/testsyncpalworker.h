@@ -87,53 +87,6 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         bool _testEnded = false;
         std::vector<std::shared_ptr<std::thread>> _runningThreads;
 
-        class TimeoutHelper {
-            public:
-                /* Wait for condition() to return true,
-                 * Return false if timed out
-                 */
-                static bool waitFor(std::function<bool()> condition, const std::chrono::steady_clock::duration& duration,
-                                    const std::chrono::steady_clock::duration& loopWait) {
-                    TimeoutHelper timeout(duration, loopWait);
-                    while (!condition()) {
-                        if (timeout.timedOut()) return false;
-                    }
-                    return true;
-                }
-
-                /* Wait for condition() to return true, and run stateCheck() after each loop,
-                 * Return false if timed out
-                 */
-                static bool waitFor(std::function<bool()> condition, std::function<void()> stateCheck,
-                                    const std::chrono::steady_clock::duration& duration,
-                                    const std::chrono::steady_clock::duration& loopWait) {
-                    TimeoutHelper timeout(duration, loopWait);
-                    while (!condition()) {
-                        if (timeout.timedOut()) return false;
-                        stateCheck();
-                    }
-                    return true;
-                }
-
-            private:
-                TimeoutHelper(const std::chrono::steady_clock::duration& duration,
-                              const std::chrono::steady_clock::duration& loopWait = std::chrono::milliseconds(0)) :
-                    _duration(duration), _loopWait(loopWait) {
-                    _start = std::chrono::steady_clock::now();
-                }
-
-                bool timedOut() {
-                    bool result = (_start + _duration) < std::chrono::steady_clock::now();
-                    if (!result && _loopWait != std::chrono::milliseconds(0)) {
-                        Utility::msleep(std::chrono::duration_cast<std::chrono::milliseconds>(_loopWait).count());
-                    }
-                    return result;
-                }
-                std::chrono::steady_clock::time_point _start;
-                std::chrono::steady_clock::duration _duration;
-                std::chrono::steady_clock::duration _loopWait;
-        };
-
         // Mocks
         class MockUpdateTreeWorker : public UpdateTreeWorker {
             public:
