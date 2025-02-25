@@ -575,6 +575,29 @@ void TestConflictResolverWorker::testMoveDeleteDehydratedPlaceholder() {
         CPPUNIT_ASSERT_EQUAL(true, op->omit());
         CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
     }
+
+    _syncPal->_syncOps->clear();
+    {
+        _syncPal->_conflictQueue->push(conflict);
+
+        // Simulate a local hydrated placeholder
+        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = true;
+            vfsStatus.isSyncing = false;
+            vfsStatus.progress = 100;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
+
+        _syncPal->_conflictResolverWorker->execute();
+
+        const auto opId = _syncPal->_syncOps->opSortedList().front();
+        const auto op = _syncPal->_syncOps->getOp(opId);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+        CPPUNIT_ASSERT_EQUAL(true, op->omit());
+        CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+    }
 }
 
 void TestConflictResolverWorker::testMoveParentDelete() {

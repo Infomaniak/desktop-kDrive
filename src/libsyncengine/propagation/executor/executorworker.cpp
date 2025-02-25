@@ -1244,16 +1244,22 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
     std::shared_ptr<AbstractJob> job = nullptr;
     SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
     SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
+    bool isDehydratedPlaceholder = false;
     if (syncOp->targetSide() == ReplicaSide::Local) {
-        bool isDehydratedPlaceholder = false;
-        if (_syncPal->vfsMode() != VirtualFileMode::Off) {
+        if (_syncPal->vfsMode() != VirtualFileMode::Off && syncOp->localNode()->type() == NodeType::File) {
             VfsStatus vfsStatus;
             if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
                 LOGW_SYNCPAL_WARN(
                         _logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absoluteLocalFilePath) << L" : " << exitInfo);
                 return exitInfo;
             }
-            isDehydratedPlaceholder = vfsStatus.isPlaceholder && !vfsStatus.isHydrated;
+            isDehydratedPlaceholder = vfsStatus.isPlaceholder && !vfsStatus.isHydrated && !vfsStatus.isSyncing;
+        }
+
+        if (syncOp->isDehydratedPlaceholder() && !isDehydratedPlaceholder) {
+            LOGW_SYNCPAL_INFO(_logger,
+                              L"Placeholder is not dehydrated anymore " << Utility::formatSyncPath(absoluteLocalFilePath));
+            return ExitCode::DataError;
         }
 
         NodeId remoteNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";
@@ -1278,7 +1284,8 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
     // If affected node has both create and delete events (node deleted and re-created with same name), then do not check
     job->setBypassCheck((syncOp->affectedNode()->hasChangeEvent(OperationType::Create) &&
                          syncOp->affectedNode()->hasChangeEvent(OperationType::Delete)) ||
-                        syncOp->affectedNode()->isSharedFolder());
+                        syncOp->affectedNode()->isSharedFolder() ||
+                        (syncOp->conflict().type() != ConflictType::None && isDehydratedPlaceholder));
 
     job->setAffectedFilePath(relativeLocalFilePath);
     job->runSynchronously();
@@ -1714,7 +1721,7 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
             }
 
             // Do nothing about the move operation since the nodes will be
-            // remove from DB anyway
+            // removed from DB anyway
             propagateChange = false;
             break;
         }
@@ -2128,7 +2135,7 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 ExitInfo ExecutorWorker::propagateDeleteToDbAndTree(SyncOpPtr syncOp) {
     // avoids that the object(s) are detected again by compute_ops() on the next
     // sync iteration
-    if (ExitInfo exitInfo = deleteFromDb(syncOp->affectedNode()); !exitInfo) {
+    if (const auto exitInfo = deleteFromDb(syncOp->correspondingNode()); !exitInfo) {
         return exitInfo;
     }
 

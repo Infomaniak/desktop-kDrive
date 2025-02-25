@@ -39,6 +39,7 @@ class ConflictResolverWorker final : public OperationProcessor {
 
         ExitCode generateOperations(const Conflict &conflict, bool &continueSolving);
 
+        ExitCode handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving);
         ExitCode generateLocalRenameOperation(const Conflict &conflict, bool &continueSolving);
         ExitCode generateEditDeleteConflictOperation(const Conflict &conflict);
         ExitCode generateMoveDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
