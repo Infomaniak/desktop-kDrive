@@ -218,7 +218,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
 #else
         class MockLFSO : public LocalFileSystemObserverWorker_unix {
             public:
-                using LocalFileSystemObserverWorker_win::LocalFileSystemObserverWorker_unix;
+                using LocalFileSystemObserverWorker_unix::LocalFileSystemObserverWorker_unix;
 #endif
                 void simulateFSEvent() { _snapshot->startUpdate(); }
         };
