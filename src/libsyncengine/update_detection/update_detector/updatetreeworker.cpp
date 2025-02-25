@@ -48,41 +48,43 @@ void UpdateTreeWorker::execute() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
-    auto start = std::chrono::steady_clock::now();
+    const auto start = std::chrono::steady_clock::now();
 
     _updateTree->startUpdate();
 
     // Reset nodes working properties
-    for (const auto &nodeItem: _updateTree->nodes()) {
-        nodeItem.second->clearChangeEvents();
-        nodeItem.second->clearConflictAlreadyConsidered();
-        nodeItem.second->setInconsistencyType(InconsistencyType::None);
-        nodeItem.second->setPreviousId(std::nullopt);
+    for (const auto &[_, nodeItem]: _updateTree->nodes()) {
+        nodeItem->clearChangeEvents();
+        nodeItem->clearConflictAlreadyConsidered();
+        nodeItem->setInconsistencyType(InconsistencyType::None);
+        nodeItem->setPreviousId(std::nullopt);
     }
 
     _updateTree->previousIdSet().clear();
 
-    std::vector<stepptr> steptab = {&UpdateTreeWorker::step1MoveDirectory,   &UpdateTreeWorker::step2MoveFile,
-                                    &UpdateTreeWorker::step3DeleteDirectory, &UpdateTreeWorker::step4DeleteFile,
-                                    &UpdateTreeWorker::step5CreateDirectory, &UpdateTreeWorker::step6CreateFile,
-                                    &UpdateTreeWorker::step7EditFile,        &UpdateTreeWorker::step8CompleteUpdateTree};
+    const std::vector<stepptr> steptab = {&UpdateTreeWorker::step1MoveDirectory,   &UpdateTreeWorker::step2MoveFile,
+                                          &UpdateTreeWorker::step3DeleteDirectory, &UpdateTreeWorker::step4DeleteFile,
+                                          &UpdateTreeWorker::step5CreateDirectory, &UpdateTreeWorker::step6CreateFile,
+                                          &UpdateTreeWorker::step7EditFile,        &UpdateTreeWorker::step8CompleteUpdateTree};
 
-    for (auto stepn: steptab) {
+    for (const auto stepn: steptab) {
         exitCode = (this->*stepn)();
-        if (exitCode != ExitCode::Ok) {
-            setDone(exitCode);
-            return;
-        }
+        if (exitCode != ExitCode::Ok) break;
+
         if (stopAsked()) {
             setDone(ExitCode::Ok);
             return;
         }
     }
 
-    integrityCheck();
-    _updateTree->drawUpdateTree();
+    if (exitCode == ExitCode::Ok) {
+        if (!integrityCheck()) {
+            exitCode = ExitCode::DataError;
+        }
+        _updateTree->drawUpdateTree();
+    }
 
-    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
+    const auto elapsed_seconds = std::chrono::steady_clock::now() - start;
 
     if (exitCode == ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, "Update Tree " << _side << " updated in: " << elapsed_seconds.count() << "s");
@@ -1118,9 +1120,11 @@ bool UpdateTreeWorker::integrityCheck() {
             LOGW_SYNCPAL_WARN(_logger,
                               _side << L" update tree integrity check failed. A temporary node remains in the update tree: "
                                     << L" (node ID: '"
-                                    << Utility::s2ws(node.second->id().has_value() ? *node.second->id() : std::string()).c_str()
+                                    << Utility::s2ws(node.second->id().has_value() ? *node.second->id() : std::string())
                                     << L"', DB ID: '" << (node.second->idb().has_value() ? *node.second->idb() : -1)
                                     << L"', name: '" << SyncName2WStr(node.second->name()).c_str() << L"')");
+            sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::integrityCheck",
+                                            "A temporary node remains in the update tree");
             return false;
         }
     }
