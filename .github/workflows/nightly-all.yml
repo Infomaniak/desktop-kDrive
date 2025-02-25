@@ -184,3 +184,20 @@ jobs:
       - name: Clean-up generated code
         run : rm -rf build-linux
 
+      - name: Grant Notify script execute permission
+        run : chmod +x ./infomaniak-build-tools/notify_kchat.sh
+
+  kChat_notification:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    needs: [ Windows, MacOS, Linux ]
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly
+      - name: Grant Notify script execute permission
+        run : chmod +x ./infomaniak-build-tools/notify_kchat.sh
+      - name: Notify kChat
+        run: ./infomaniak-build-tools/notify_kchat.sh "[![Nightly tests kDrive desktop - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml)"
+
+

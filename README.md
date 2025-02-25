@@ -1,4 +1,5 @@
 # Infomaniak kDrive app
+[![Nightly tests kDrive desktop - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml)
 
 ## The Desktop application for [kDrive by Infomaniak](https://www.infomaniak.com/kdrive).
 ### Synchronise, share, collaborate.  The Swiss cloud that’s 100% secure.
