@@ -333,16 +333,9 @@ void TestSyncPalWorker::testInternalPause3() {
 
 
 // Mocks
-#ifdef _WIN32
 std::shared_ptr<TestSyncPalWorker::MockLFSO> TestSyncPalWorker::MockSyncPal::getMockLFSOWorker() {
     return std::dynamic_pointer_cast<MockLFSO>(_localFSObserverWorker);
 }
-#else
-std::shared_ptr<TestSyncPalWorker::MockLFSO<LocalFileSystemObserverWorker_unix>>
-TestSyncPalWorker::MockSyncPal::getMockLFSOWorker() {
-    return std::dynamic_pointer_cast<MockLFSO<LocalFileSystemObserverWorker_unix>>(_localFSObserverWorker);
-}
-#endif
 
 std::shared_ptr<TestSyncPalWorker::MockRemoteFileSystemObserverWorker> TestSyncPalWorker::MockSyncPal::getMockRFSOWorker() {
     return std::dynamic_pointer_cast<TestSyncPalWorker::MockRemoteFileSystemObserverWorker>(_remoteFSObserverWorker);
