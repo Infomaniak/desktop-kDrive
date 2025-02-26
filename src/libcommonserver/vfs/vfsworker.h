@@ -17,14 +17,10 @@
  */
 #pragma once
 
-#include <QApplication> // /!\ Moc bug on Linux: filesystem must be included after QApplication
-
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "vfs.h"
-
 #include <deque>
-
 #include <QObject>
 #include <QList>
 #include <QMutex>
