@@ -56,8 +56,8 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                                            << SyncName2WStr(conflict.correspondingNode()->name()) << L" ("
                                            << Utility::s2ws(*conflict.correspondingNode()->id()) << L")");
 
-    auto res = handleConflictOnDehydratedPlaceholder(conflict, continueSolving);
     continueSolving = false;
+    auto res = handleConflictOnDehydratedPlaceholder(conflict, continueSolving);
     if (res != ExitCode::Ok) {
         return res;
     }
