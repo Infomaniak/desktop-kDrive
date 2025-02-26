@@ -20,6 +20,7 @@
 
 #include "libcommon/info/nodeinfo.h"
 
+#include <QApplication>
 #include <QColor>
 #include <QLineEdit>
 #include <QNetworkReply>

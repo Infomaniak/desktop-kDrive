@@ -28,16 +28,16 @@
 #include "aboutdialog.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
+#include "common/utility.h"
 #include "languagechangefilter.h"
 #include "version.h"
 #include "config.h"
 #include "litesyncdialog.h"
 #include "enablestateholder.h"
+#include "libcommongui/logger.h"
 #include "guirequests.h"
-#include "common/utility.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
-#include "libcommongui/logger.h"
 
 #ifdef Q_OS_WIN
 #include "libcommon/info/parametersinfo.h"

@@ -16,35 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication> // /!\ Moc bug on Linux: filesystem must be included after QApplication
-
 #include "appserver.h"
+#include "libcommon/asserts.h"
+#include "common/utility.h"
+#include "libcommonserver/vfs/vfs.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
 #include "libsyncengine/jobs/network/API_v2/loguploadjob.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/serverrequests.h"
-#include "common/utility.h"
-#include "libcommon/asserts.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/driveinfo.h"
-#include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/userinfo.h"
+#include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/vfs/vfs.h"
-#include "libsyncengine/jobs/jobmanager.h"
-#include "libsyncengine/jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
+#include "libsyncengine/jobs/jobmanager.h"
+#include "libsyncengine/jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
 
 #include <iostream>
 #include <fstream>

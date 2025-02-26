@@ -24,6 +24,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 
+#include <QApplication>
 #include <QBitmap>
 #include <QClipboard>
 #include <QDesktopServices>

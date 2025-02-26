@@ -19,20 +19,19 @@
 #include "appclient.h"
 #include "guiutility.h"
 #include "config.h"
+#include "libcommon/asserts.h"
 #include "customproxystyle.h"
 #include "config.h"
 #include "guirequests.h"
 #include "parameterscache.h"
 #include "custommessagebox.h"
-#include "gui/updater/updatedialog.h"
-#include "log/sentry/handler.h"
-#include "libcommon/asserts.h"
+#include "libcommongui/logger.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
-#include "libcommongui/logger.h"
 #include "libcommongui/utility/utility.h"
+#include "gui/updater/updatedialog.h"
+#include "log/sentry/handler.h"
 
-#include <QApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QMenu>

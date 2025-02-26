@@ -25,6 +25,7 @@
 #include "parameterscache.h"
 #include "libcommon/utility/utility.h"
 
+#include <QApplication>
 #include <QBoxLayout>
 #include <QFile>
 #include <QFileInfo>

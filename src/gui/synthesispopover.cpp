@@ -32,6 +32,7 @@
 #include "guirequests.h"
 
 #include <QActionGroup>
+#include <QApplication>
 #include <QBoxLayout>
 #include <QDateTime>
 #include <QDesktopServices>
