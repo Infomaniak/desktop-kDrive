@@ -17,7 +17,11 @@
  */
 #pragma once
 
-#include <QApplication> // /!\ Moc bug on Linux: filesystem must be included after QApplication
+#ifdef __GNUC__
+// /!\ moc issue => filesystem must be included after QApplication
+// https://bugreports.qt.io/browse/QTBUG-73263
+#include <QApplication>
+#endif
 
 #include "sourcelocation.h"
 
