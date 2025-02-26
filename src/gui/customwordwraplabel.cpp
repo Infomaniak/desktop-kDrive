@@ -18,7 +18,6 @@
 
 #include "customwordwraplabel.h"
 
-#include <QApplication>
 #include <QRect>
 #include <QString>
 #include <QScreen>

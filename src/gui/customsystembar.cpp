@@ -21,7 +21,6 @@
 #include "common/utility.h"
 
 #include <QBoxLayout>
-#include <QApplication>
 #include <QIcon>
 #include <QStyle>
 

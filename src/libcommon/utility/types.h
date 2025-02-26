@@ -17,8 +17,6 @@
  */
 #pragma once
 
-#include <QApplication> // /!\ Moc bug on Linux: filesystem must be included after QApplication
-
 #include "sourcelocation.h"
 
 #include <filesystem>

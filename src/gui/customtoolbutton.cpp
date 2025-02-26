@@ -19,7 +19,6 @@
 #include "customtoolbutton.h"
 #include "guiutility.h"
 
-#include <QApplication>
 #include <QEvent>
 
 namespace KDC {

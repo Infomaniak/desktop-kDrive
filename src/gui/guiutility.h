@@ -19,11 +19,12 @@
 #ifndef GUIUTILITY_H
 #define GUIUTILITY_H
 
+#include <QApplication> // /!\ Moc bug on Linux: filesystem must be included after QApplication
+
 #include "common/utility.h"
 #include "info/syncinfoclient.h"
 #include "libcommon/utility/types.h"
 
-#include <QApplication>
 #include <QColor>
 #include <QIcon>
 #include <QPoint>

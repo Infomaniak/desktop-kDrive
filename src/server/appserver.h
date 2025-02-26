@@ -18,21 +18,20 @@
 
 #pragma once
 
+#include "config.h"
 #include "qtsingleapplication.h"
 #include "commserver.h"
 #include "syncpal/syncpal.h"
-#include "libcommonserver/vfs/vfs.h"
 #include "navigationpanehelper.h"
 #include "socketapi.h"
-#include "libparms/db/user.h"
-#include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
 #include "libcommon/info/driveinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
-#include "config.h"
+#include "libcommon/info/userinfo.h"
+#include "libcommonserver/vfs/vfs.h"
+#include "libparms/db/user.h"
 
-#include <QApplication>
 #include <QElapsedTimer>
 #include <QPointer>
 #include <QQueue>

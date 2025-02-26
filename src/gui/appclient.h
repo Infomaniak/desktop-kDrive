@@ -23,7 +23,6 @@
 #include "libcommongui/commclient.h"
 #include "config.h"
 
-#include <QApplication>
 #include <QElapsedTimer>
 #include <QPointer>
 #include <QQueue>
