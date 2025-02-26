@@ -56,10 +56,9 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                                            << SyncName2WStr(conflict.correspondingNode()->name()) << L" ("
                                            << Utility::s2ws(*conflict.correspondingNode()->id()) << L")");
 
-    auto res = ExitCode::Ok;
-
+    auto res = handleConflictOnDehydratedPlaceholder(conflict, continueSolving);
     continueSolving = false;
-    if (res = handleConflictOnDehydratedPlaceholder(conflict, continueSolving); res != ExitCode::Ok) {
+    if (res != ExitCode::Ok) {
         return res;
     }
     if (continueSolving) return ExitCode::Ok;
@@ -165,17 +164,18 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
 
 ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Conflict &conflict) {
     // Edit operation win
-    auto deleteNode = conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
-    auto editNode = conflict.node()->hasChangeEvent(OperationType::Edit) ? conflict.node() : conflict.correspondingNode();
+    const auto deleteNode =
+            conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
+    const auto editNode = conflict.node()->hasChangeEvent(OperationType::Edit) ? conflict.node() : conflict.correspondingNode();
     if (deleteNode->parentNode()->hasChangeEvent(OperationType::Delete)) {
         // Move the deleted node to root with a new name
-        auto moveOp = std::make_shared<SyncOperation>();
+        const auto moveOp = std::make_shared<SyncOperation>();
         moveOp->setType(OperationType::Move);
         moveOp->setAffectedNode(deleteNode);
         moveOp->setCorrespondingNode(editNode);
         moveOp->setTargetSide(editNode->side());
         SyncName newName;
-        generateConflictedName(conflict.localNode(), newName);
+        (void) generateConflictedName(conflict.localNode(), newName);
         moveOp->setNewName(newName);
         moveOp->setNewParentNode(_syncPal->updateTree(deleteNode->side())->rootNode());
         moveOp->setConflict(conflict);
@@ -188,7 +188,7 @@ ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Confl
 
         // Generate a delete operation to remove entry from the DB only (not from the FS!)
         // The deleted file will be restored on next sync iteration
-        auto deleteOp = std::make_shared<SyncOperation>();
+        const auto deleteOp = std::make_shared<SyncOperation>();
         deleteOp->setType(OperationType::Delete);
         deleteOp->setAffectedNode(deleteNode);
         deleteOp->setCorrespondingNode(editNode);
@@ -205,7 +205,7 @@ ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Confl
     } else {
         // Delete the edit node from DB
         // This will cause the file to be detected as new in the next sync iteration, thus it will be restored
-        auto deleteOp = std::make_shared<SyncOperation>();
+        const auto deleteOp = std::make_shared<SyncOperation>();
         deleteOp->setType(OperationType::Delete);
         deleteOp->setAffectedNode(editNode);
         deleteOp->setCorrespondingNode(deleteNode);
@@ -429,7 +429,7 @@ void ConflictResolverWorker::findAllChildNodes(const std::shared_ptr<Node> &pare
         if (childNode->type() == NodeType::Directory) {
             findAllChildNodes(childNode, children);
         }
-        children.insert(childNode);
+        (void) children.insert(childNode);
     }
 }
 
@@ -460,7 +460,7 @@ ExitCode ConflictResolverWorker::findAllChildNodeIdsFromDb(const std::shared_ptr
         }
 
         if (isAncestor) {
-            DbNodeId dbNodeId;
+            DbNodeId dbNodeId = 0;
             if (!_syncPal->_syncDb->dbId(parentNode->side(), nodeId, dbNodeId, found)) {
                 return ExitCode::DbError;
             }
@@ -469,7 +469,7 @@ ExitCode ConflictResolverWorker::findAllChildNodeIdsFromDb(const std::shared_ptr
                 return ExitCode::DataError;
             }
 
-            childrenDbIds.insert(dbNodeId);
+            (void) childrenDbIds.insert(dbNodeId);
         }
     }
     return ExitCode::Ok;
@@ -481,8 +481,8 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> &moveNode,
         return ExitCode::DataError;
     }
 
-    auto updateTree = _syncPal->updateTree(moveNode->side());
-    auto originParentNode = updateTree->getNodeByPath(moveNode->moveOrigin()->parent_path());
+    const auto updateTree = _syncPal->updateTree(moveNode->side());
+    const auto originParentNode = updateTree->getNodeByPath(moveNode->moveOrigin()->parent_path());
     auto originPath = moveNode->moveOrigin();
     bool undoPossible = true;
 
@@ -494,7 +494,8 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> &moveNode,
     if (isABelowB(originParentNode, moveNode) || originParentNode->hasChangeEvent(OperationType::Delete)) {
         undoPossible = false;
     } else {
-        if (auto potentialOriginNode = originParentNode->getChildExcept(originPath->filename().native(), OperationType::Delete);
+        if (const auto potentialOriginNode =
+                    originParentNode->getChildExcept(originPath->filename().native(), OperationType::Delete);
             potentialOriginNode && (potentialOriginNode->hasChangeEvent(OperationType::Create) ||
                                     potentialOriginNode->hasChangeEvent(OperationType::Move))) {
             undoPossible = false;
@@ -508,12 +509,12 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> &moveNode,
         // We cannot undo the move operation, so the file is moved under the root node instead.
         moveOp->setNewParentNode(_syncPal->updateTree(moveNode->side())->rootNode());
         SyncName newName;
-        generateConflictedName(moveNode, newName);
+        (void) generateConflictedName(moveNode, newName);
         moveOp->setNewName(newName);
     }
 
     moveOp->setType(OperationType::Move);
-    auto correspondingNode = correspondingNodeInOtherTree(moveNode);
+    const auto correspondingNode = correspondingNodeInOtherTree(moveNode);
     moveOp->setAffectedNode(correspondingNode);
     moveOp->setCorrespondingNode(moveNode);
     moveOp->setTargetSide(moveNode->side());
