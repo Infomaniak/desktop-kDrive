@@ -70,10 +70,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
                                       std::unordered_set<NodeId> &tmpTooBigList);
 
         void updateUnsyncedList();
-
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
-
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
+        ExitInfo blacklistItem(const SyncPath &relativeLocalPath);
 
         const std::shared_ptr<SyncDb> _syncDb;
         Sync _sync;

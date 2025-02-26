@@ -513,7 +513,7 @@ void TestNetworkJobs::testDownloadAborted() {
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
     VfsStatus vfsStatusRes;
-    vfs->setForceStatusMock(
+    vfs->setMockForceStatus(
             [&forceStatusCalled, &vfsStatusRes]([[maybe_unused]] const SyncPath &path, const VfsStatus &vfsStatus) -> ExitInfo {
                 forceStatusCalled = true;
                 vfsStatusRes = vfsStatus;
@@ -932,7 +932,7 @@ void TestNetworkJobs::testUploadAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock(
+    vfs->setMockForceStatus(
             [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
                 forceStatusCalled = true;
                 return ExitCode::Ok;
@@ -1119,7 +1119,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock(
+    vfs->setMockForceStatus(
             [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
                 forceStatusCalled = true;
                 return ExitCode::Ok;
@@ -1155,7 +1155,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     bool forceStatusCalled = false;
-    vfs->setForceStatusMock(
+    vfs->setMockForceStatus(
             [&forceStatusCalled]([[maybe_unused]] const SyncPath &path, [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo {
                 forceStatusCalled = true;
                 return ExitCode::Ok;
@@ -1199,10 +1199,10 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         GetAppVersionJob job(CommonUtility::platform(), appUid);
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Prod).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Internal).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Next).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Prod).isValid());
         CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
     }
     // With 1 user ID
@@ -1214,10 +1214,10 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         GetAppVersionJob job(CommonUtility::platform(), appUid, {user.userId()});
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(DistributionChannel::Prod).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Internal).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Next).isValid());
+        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Prod).isValid());
         CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
     }
     // // With several user IDs
@@ -1226,10 +1226,10 @@ void TestNetworkJobs::testGetAppVersionInfo() {
     //     GetAppVersionJob job(CommonUtility::platform(), appUid, {123, 456, 789});
     //     job.runSynchronously();
     //     CPPUNIT_ASSERT(!job.hasHttpError());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Internal).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Beta).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Next).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(DistributionChannel::Prod).isValid());
+    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Internal).isValid());
+    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Beta).isValid());
+    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Next).isValid());
+    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Prod).isValid());
     //     CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
     // }
 }
