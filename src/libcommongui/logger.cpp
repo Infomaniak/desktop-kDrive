@@ -24,8 +24,6 @@
 #include <QStringList>
 #include <QThread>
 #include <QMap>
-#include <QtGlobal>
-#include <qmetaobject.h>
 #include <QRegularExpression>
 #include <QLoggingCategory>
 

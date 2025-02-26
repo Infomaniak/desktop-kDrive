@@ -23,7 +23,6 @@
 #include "libcommon/info/nodeinfo.h"
 
 #include <QString>
-#include <QCoreApplication>
 
 static const QString dirSeparator = "/";
 

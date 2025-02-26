@@ -27,6 +27,7 @@
 #endif
 
 #include <QCollator>
+#include <QCoreApplication>
 #include <QThread>
 
 namespace KDC {

@@ -21,13 +21,13 @@
 #include "libcommongui/utility/utility.h"
 
 #include <QObject>
-#include <QList>
 #include <QDateTime>
 #include <QFile>
 #include <QTextStream>
-#include <qmutex.h>
-#include <chrono>
+#include <QMutex>
 #include <QTimer>
+
+#include <chrono>
 
 namespace KDC {
 

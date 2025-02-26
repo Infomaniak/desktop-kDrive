@@ -16,18 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "customrollingfileappender.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/utility/utility.h"
-
-#include <QString>
-#include <QFile>
-#include <QDir>
-#include <QFileInfo>
-#include <QDateTime>
-#include "config.h"
 
 /*****************************************/
 /********** namespace log4cplus **********/

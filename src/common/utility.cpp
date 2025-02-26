@@ -21,23 +21,9 @@
 #include "common/utility.h"
 
 // Note:  This file must compile without QtGui
-#include <QCoreApplication>
-#include <QSettings>
-#include <QTextStream>
 #include <QDir>
-#include <QFile>
-#include <QUrl>
-#include <QProcess>
-#include <QObject>
 #include <QDateTime>
-#include <QSysInfo>
-#include <QStandardPaths>
-#include <QStorageInfo>
-#include <QCollator>
-#include <QSysInfo>
 #include <QUuid>
-#include <QDataStream>
-#include <QRandomGenerator>
 
 #ifdef Q_OS_UNIX
 #include <sys/statvfs.h>
