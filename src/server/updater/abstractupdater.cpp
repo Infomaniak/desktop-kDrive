@@ -18,7 +18,6 @@
 
 #include "abstractupdater.h"
 
-#include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
 #if defined(__APPLE__)
@@ -27,12 +26,17 @@
 
 namespace KDC {
 
-AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_unique<UpdateChecker>()) {
+AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_shared<UpdateChecker>()) {
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);
 }
 
-ExitCode AbstractUpdater::checkUpdateAvailable(const DistributionChannel currentChannel, UniqueId* id /*= nullptr*/) {
+AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker>& updateChecker) : _updateChecker(updateChecker) {
+    const std::function callback = [this] { onAppVersionReceived(); };
+    _updateChecker->setCallback(callback);
+}
+
+ExitCode AbstractUpdater::checkUpdateAvailable(const VersionChannel currentChannel, UniqueId* id /*= nullptr*/) {
     _currentChannel = currentChannel;
     setState(UpdateState::Checking);
     return _updateChecker->checkUpdateAvailability(id);
@@ -63,6 +67,8 @@ void AbstractUpdater::onAppVersionReceived() {
     } else {
         LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
     }
+
+    sentry::Handler::instance()->setDistributionChannel(currentVersionChannel());
 }
 
 void AbstractUpdater::skipVersion(const std::string& skippedVersion) {
@@ -91,6 +97,38 @@ bool AbstractUpdater::isVersionSkipped(const std::string& version) {
         return true;
     }
     return false;
+}
+
+VersionChannel AbstractUpdater::currentVersionChannel() const {
+    const std::unordered_map<VersionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
+    if (allVersions.empty()) return VersionChannel::Unknown;
+    std::string currentVersion = getCurrentVersion();
+    if (allVersions.contains(VersionChannel::Prod) &&
+        allVersions.at(VersionChannel::Prod).fullVersion() == currentVersion) {
+        return VersionChannel::Prod;
+    }
+
+    if (allVersions.contains(VersionChannel::Next) &&
+        allVersions.at(VersionChannel::Next).fullVersion() == currentVersion) {
+        return VersionChannel::Next;
+    }
+
+    if (allVersions.contains(VersionChannel::Beta) &&
+        allVersions.at(VersionChannel::Beta).fullVersion() == currentVersion) {
+        return VersionChannel::Beta;
+    }
+
+    if (allVersions.contains(VersionChannel::Internal) &&
+        allVersions.at(VersionChannel::Internal).fullVersion() == currentVersion) {
+        return VersionChannel::Internal;
+    }
+
+    if (allVersions.contains(VersionChannel::Prod) &&
+        CommonUtility::isVersionLower(currentVersion, allVersions.at(VersionChannel::Prod).fullVersion())) {
+        return VersionChannel::Legacy;
+    }
+
+    return VersionChannel::Unknown;
 }
 
 void AbstractUpdater::setState(const UpdateState newState) {

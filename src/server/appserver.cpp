@@ -21,7 +21,7 @@
 #include "appserver.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
-#include "logarchiver/logarchiverhelper.h"
+#include "libsyncengine/jobs/network/API_v2/loguploadjob.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/serverrequests.h"
 #include "common/utility.h"
@@ -1810,9 +1810,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> key;
             paramsStream >> value;
 
-            bool found = true;
-            if (!ParmsDb::instance()->updateAppState(key, value.toStdString(), found) || !found) {
+            if (bool found = true; !ParmsDb::instance()->updateAppState(key, value.toStdString(), found)) {
                 LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+                addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+                resultStream << ExitCode::DbError;
+                break;
+            } else if (!found) {
+                LOG_WARN(_logger, key << " not found in appState table");
                 resultStream << ExitCode::DbError;
                 break;
             }
@@ -1827,8 +1831,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> key;
 
             AppStateValue appStateValue = std::string();
-            if (bool found = false; !ParmsDb::instance()->selectAppState(key, appStateValue, found) || !found) {
+            if (bool found = false; !ParmsDb::instance()->selectAppState(key, appStateValue, found)) {
                 LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+                addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+                resultStream << ExitCode::DbError;
+                break;
+            } else if (!found) {
+                LOG_WARN(_logger, key << " not found in appState table");
                 resultStream << ExitCode::DbError;
                 break;
             }
@@ -1841,7 +1850,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE: {
             uint64_t logSize = 0;
             IoError ioError = IoError::Success;
-            bool res = LogArchiver::getLogDirEstimatedSize(logSize, ioError);
+            const bool res = LogUploadJob::getLogDirEstimatedSize(logSize, ioError);
             if (!res || ioError != IoError::Success) {
                 LOG_WARN(_logger, "Error in LogArchiver::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError));
 
@@ -1860,13 +1869,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> includeArchivedLogs;
             resultStream << ExitCode::Ok; // Return immediately, progress and error will be report via addError and signal
 
-            std::thread uploadLogThread([this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); });
-            uploadLogThread.detach();
+            uploadLog(includeArchivedLogs);
             break;
         }
         case RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT: {
             resultStream << ExitCode::Ok; // Return immediately, progress and error will be report via addError and signal
-            QTimer::singleShot(100, [this]() { cancelLogUpload(); });
+            LogUploadJob::cancelUpload();
             break;
         }
         case RequestNum::UTILITY_CRASH: {
@@ -1950,14 +1958,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UPDATER_CHANGE_CHANNEL: {
-            auto channel = DistributionChannel::Unknown;
+            auto channel = VersionChannel::Unknown;
             QDataStream paramsStream(params);
             paramsStream >> channel;
             _updateManager->setDistributionChannel(channel);
             break;
         }
         case RequestNum::UPDATER_VERSION_INFO: {
-            auto channel = DistributionChannel::Unknown;
+            auto channel = VersionChannel::Unknown;
             QDataStream paramsStream(params);
             paramsStream >> channel;
             VersionInfo versionInfo = _updateManager->versionInfo(channel);
@@ -2051,98 +2059,37 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
     paramsStream << percent;
     CommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
 
-    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found) || !found) {
-        LOG_WARN(_logger, "Error in ParmsDb::updateAppState with key=" << static_cast<int>(AppStateKey::LogUploadState));
-        // Don't fail because it is not a critical error, especially in this context where we are trying to send logs
-    }
-
-    if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadPercent, std::to_string(percent), found) || !found) {
-        LOG_WARN(_logger, "Error in ParmsDb::updateAppState with key=" << static_cast<int>(AppStateKey::LogUploadPercent));
-        // Don't fail because it is not a critical error, especially in this context where we are trying to send logs
-    }
-}
-
-void AppServer::cancelLogUpload() {
-    ExitCause exitCause = ExitCause::Unknown;
-    ExitCode exitCode = LogArchiverHelper::cancelLogToSupport(exitCause);
-    if (exitCause == ExitCause::OperationCanceled) {
-        LOG_WARN(_logger, "Operation already canceled");
-        sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
-        return;
-    }
-
-    if (exitCode == ExitCode::InvalidOperation) {
-        LOG_WARN(_logger, "Cannot cancel the log upload operation (not started or already finished)");
-        AppStateValue logUploadState = LogUploadState::None;
-        if (bool found = false;
-            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadState, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        }
-
-        AppStateValue logUploadPercent = int();
-        if (bool found = false;
-            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadPercent, logUploadPercent, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        }
-        sendLogUploadStatusUpdated(std::get<LogUploadState>(logUploadState), std::get<int>(logUploadPercent));
-        return;
-    }
-
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport: code=" << exitCode << " cause=" << exitCause);
-        addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
-        sendLogUploadStatusUpdated(LogUploadState::Failed, 0); // Considered as a failure, in case the operation was not
-                                                               // canceled, the gui will receive updated status quickly.
-        return;
-    }
-    sendLogUploadStatusUpdated(LogUploadState::CancelRequested, 0);
-}
-
-ExitInfo AppServer::uploadLog(bool includeArchivedLogs) {
-    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::None, found) ||
-                            !found) { // Reset status
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in appState table");
     }
-    sendLogUploadStatusUpdated(LogUploadState::Archiving, 0); // Send progress to the client
 
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadPercent, std::to_string(percent), found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(_logger, AppStateKey::LogUploadPercent << " not found in appState table");
+    }
+}
+
+void AppServer::uploadLog(const bool includeArchivedLogs) {
     /* See AppStateKey::LogUploadState for status values
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
-    LogUploadState previousStatus = LogUploadState::None;
-    int previousProgress = 0;
-    std::function<bool(LogUploadState, int)> progressFunc = [this, &previousStatus, &previousProgress](LogUploadState status,
-                                                                                                       int progress) {
-        AppStateValue appStateValue = LogUploadState::None;
-        if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) ||
-                                !found) { // Check if the user canceled the upload
-            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        }
-        LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
-
-        bool canceled = logUploadState == LogUploadState::Canceled || logUploadState == LogUploadState::CancelRequested;
-        if (!canceled && (status != previousStatus || progress != previousProgress)) {
-            sendLogUploadStatusUpdated(status, progress); // Send progress to the client
-            LOG_DEBUG(_logger, "Log transfert progress : " << static_cast<int>(status) << " | " << progress << " %");
-        }
-        previousProgress = progress;
-        previousStatus = status;
-        return !canceled;
+    const std::function<void(LogUploadState, int)> jobProgressCallBack = [this](LogUploadState status, int progress) {
+        sendLogUploadStatusUpdated(status, progress); // Send progress to the client
     };
+    const auto logUploadJob = std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack, &addError);
 
-    ExitCause exitCause = ExitCause::Unknown;
-    ExitCode exitCode = LogArchiverHelper::sendLogToSupport(includeArchivedLogs, progressFunc, exitCause);
-
-    if (exitCause == ExitCause::OperationCanceled) {
-        LOG_DEBUG(_logger, "Log transfert canceled");
-        sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
-        return {exitCode, exitCause};
-    } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: code=" << exitCode << " cause=" << exitCause);
-        addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
-    }
-    sendLogUploadStatusUpdated(exitCode == ExitCode::Ok ? LogUploadState::Success : LogUploadState::Failed, 0);
-    return {exitCode, exitCause};
+    const std::function<void(UniqueId)> jobResultCallback = [this, logUploadJob](const UniqueId id) {
+        if (const ExitInfo exitInfo = logUploadJob->exitInfo(); !exitInfo && exitInfo.code() != ExitCode::OperationCanceled) {
+            LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: " << exitInfo);
+            addError(Error(errId(), ExitCode::LogUploadFailed, exitInfo.cause()));
+        }
+    };
+    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH, jobResultCallback);
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {
@@ -2845,8 +2792,12 @@ void AppServer::logUsefulInformation() const {
 
     // Log app ID
     AppStateValue appStateValue = "";
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
+
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
     }
     const auto &appUid = std::get<std::string>(appStateValue);
     LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUid);
@@ -2972,22 +2923,34 @@ bool AppServer::clientCrashedRecently(int seconds) {
 
 void AppServer::processInterruptedLogsUpload() {
     AppStateValue appStateValue = LogUploadState::None;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
+
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in appstate table. LogUploadSession might be in progress "
+                                                         "and will be cancelled by the backend after a timeout.");
+        return;
     }
 
     if (auto logUploadState = std::get<LogUploadState>(appStateValue);
         logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
         LOG_DEBUG(_logger, "App was closed during log upload, resetting upload status.");
         if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
+            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        } else if (!found) {
+            LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in appstate table.");
         }
     } else if (logUploadState ==
                LogUploadState::CancelRequested) { // If interrupted while cancelling, consider it has been cancelled
         if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Canceled, found) || !found) {
+            !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Canceled, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        } else if (!found) {
+            LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in appstate table.");
         }
     }
 

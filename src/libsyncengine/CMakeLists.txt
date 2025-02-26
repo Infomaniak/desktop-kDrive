@@ -68,6 +68,7 @@ set(syncengine_SRCS
     jobs/network/API_v2/postfilelinkjob.h jobs/network/API_v2/postfilelinkjob.cpp
     jobs/network/API_v2/getfilelinkjob.h jobs/network/API_v2/getfilelinkjob.cpp
     jobs/network/API_v2/getsizejob.h jobs/network/API_v2/getsizejob.cpp
+    jobs/network/API_v2/loguploadjob.h jobs/network/API_v2/loguploadjob.cpp
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp

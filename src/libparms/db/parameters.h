@@ -111,8 +111,8 @@ class PARMS_EXPORT Parameters {
         inline int jobPoolCapacityFactor() const { return _jobPoolCapacityFactor; }
         inline void setJobPoolCapacityFactor(const int jobPoolCapacityFactor) { _jobPoolCapacityFactor = jobPoolCapacityFactor; }
 
-        [[nodiscard]] DistributionChannel distributionChannel() const { return _distributionChannel; }
-        void setDistributionChannel(const DistributionChannel channel) { _distributionChannel = channel; }
+        [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
+        void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
 
         static int _uploadSessionParallelJobsDefault;
         static int _jobPoolCapacityFactorDefault;
@@ -142,7 +142,7 @@ class PARMS_EXPORT Parameters {
         int _maxAllowedCpu;
         int _uploadSessionParallelJobs;
         int _jobPoolCapacityFactor;
-        DistributionChannel _distributionChannel{DistributionChannel::Prod};
+        VersionChannel _distributionChannel{VersionChannel::Prod};
 };
 
 } // namespace KDC

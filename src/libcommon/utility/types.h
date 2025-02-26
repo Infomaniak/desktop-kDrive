@@ -507,14 +507,14 @@ enum class UpdateState {
 };
 std::string toString(UpdateState e);
 
-enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
-std::string toString(DistributionChannel e);
+enum class VersionChannel { Prod, Next, Beta, Internal, Legacy, Unknown };
+std::string toString(VersionChannel e);
 
 enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
 std::string toString(Platform e);
 
 struct VersionInfo {
-        DistributionChannel channel = DistributionChannel::Unknown;
+        VersionChannel channel = VersionChannel::Unknown;
         std::string tag; // Version number. Example: 3.6.4
         // std::string changeLog; // List of changes in this version, not used for now.
         uint64_t buildVersion{0}; // Example: 20240816
@@ -522,7 +522,7 @@ struct VersionInfo {
         std::string downloadUrl; // URL to download the version
 
         [[nodiscard]] bool isValid() const {
-            return channel != DistributionChannel::Unknown && !tag.empty() && buildVersion != 0 && !downloadUrl.empty();
+            return channel != VersionChannel::Unknown && !tag.empty() && buildVersion != 0 && !downloadUrl.empty();
         }
 
         [[nodiscard]] std::string fullVersion() const {
@@ -538,7 +538,7 @@ struct VersionInfo {
         }
 
         void clear() {
-            channel = DistributionChannel::Unknown;
+            channel = VersionChannel::Unknown;
             tag.clear();
             buildVersion = 0;
             buildMinOsVersion.clear();
@@ -565,7 +565,7 @@ struct VersionInfo {
             return out;
         }
 };
-using AllVersionsInfo = std::unordered_map<DistributionChannel, VersionInfo>;
+using AllVersionsInfo = std::unordered_map<VersionChannel, VersionInfo>;
 
 namespace sentry {
 enum class ConfidentialityLevel {

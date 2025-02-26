@@ -182,9 +182,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
-        // See types.h -> AppStateKey for the possible values of status
-        void cancelLogUpload();
-        ExitInfo uploadLog(bool includeArchivedLogs);
+        void uploadLog(bool includeArchivedLogs);
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();

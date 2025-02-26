@@ -19,18 +19,25 @@
 #pragma once
 
 #include "testincludes.h"
-#include "libcommonserver/vfs/mac/vfs_mac.h"
+#include "utility/types.h"
+#include "server/updater/updatechecker.h"
+#include "libsyncengine/jobs/network/mockgetappversionjob.h"
 
 namespace KDC {
 
-class TestVfsMac : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestVfsMac);
-        CPPUNIT_TEST(testStatus);
-        CPPUNIT_TEST(testDehydrate);
-        CPPUNIT_TEST_SUITE_END();
+class MockUpdateChecker : public UpdateChecker {
+    public:
+        using UpdateChecker::UpdateChecker;
+        void setUpdateShoudBeAvailable(const bool val) { _updateShouldBeAvailable = val; }
+        void setAllVersionInfo(const AllVersionsInfo &versionInfo) { _versionsInfo = versionInfo; }
 
-        void testStatus();
-        void testDehydrate();
+    private:
+        ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
+            static const std::string appUid = "1234567890";
+            job = std::make_shared<MockGetAppVersionJob>(CommonUtility::platform(), appUid, _updateShouldBeAvailable);
+            return ExitCode::Ok;
+        }
+
+        bool _updateShouldBeAvailable{false};
 };
-
 } // namespace KDC
