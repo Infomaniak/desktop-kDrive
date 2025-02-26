@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include <QApplication> // /!\ Moc bug on Linux: filesystem must be included after QApplication
-
 #include "utility/types.h"
 
 #include <QObject>
