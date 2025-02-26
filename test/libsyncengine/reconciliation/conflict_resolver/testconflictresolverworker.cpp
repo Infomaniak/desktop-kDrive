@@ -33,10 +33,10 @@ void TestConflictResolverWorker::setUp() {
     // Create SyncPal
     bool alreadyExists = false;
     const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
-    std::filesystem::remove(syncDbPath);
+    (void) std::filesystem::remove(syncDbPath);
 
     _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     _syncPal = std::make_shared<SyncPal>(_mockVfs, syncDbPath, KDRIVE_VERSION_STRING, true);
@@ -53,24 +53,24 @@ void TestConflictResolverWorker::setUp() {
     //     └── AB
 
     // Setup DB
-    DbNodeId dbNodeIdA;
-    DbNodeId dbNodeIdAA;
-    DbNodeId dbNodeIdAB;
-    DbNodeId dbNodeIdAAA;
+    DbNodeId dbNodeIdA = 0;
+    DbNodeId dbNodeIdAA = 0;
+    DbNodeId dbNodeIdAB = 0;
+    DbNodeId dbNodeIdAAA = 0;
 
     bool constraintError = false;
     const DbNode dbNodeA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", testhelpers::defaultTime,
                          testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(dbNodeA, dbNodeIdA, constraintError);
+    (void) _syncPal->syncDb()->insertNode(dbNodeA, dbNodeIdA, constraintError);
     const DbNode dbNodeAA(0, dbNodeIdA, Str("AA"), Str("AA"), "lAA", "rAA", testhelpers::defaultTime, testhelpers::defaultTime,
                           testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(dbNodeAA, dbNodeIdAA, constraintError);
+    (void) _syncPal->syncDb()->insertNode(dbNodeAA, dbNodeIdAA, constraintError);
     const DbNode dbNodeAB(0, dbNodeIdA, Str("AB"), Str("AB"), "lAB", "rAB", testhelpers::defaultTime, testhelpers::defaultTime,
                           testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(dbNodeAB, dbNodeIdAB, constraintError);
+    (void) _syncPal->syncDb()->insertNode(dbNodeAB, dbNodeIdAB, constraintError);
     const DbNode dbNodeAAA(0, dbNodeIdAA, Str("AAA"), Str("AAA"), "lAAA", "rAAA", testhelpers::defaultTime,
                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0, std::nullopt);
-    _syncPal->syncDb()->insertNode(dbNodeAAA, dbNodeIdAAA, constraintError);
+    (void) _syncPal->syncDb()->insertNode(dbNodeAAA, dbNodeIdAAA, constraintError);
 
     // Build update trees
     const auto lNodeA =
@@ -134,8 +134,8 @@ void TestConflictResolverWorker::testCreateCreate() {
                                                  testhelpers::defaultTime, testhelpers::defaultFileSize, lNodeAA);
     CPPUNIT_ASSERT(lNodeAA->insertChildren(lNodeAAB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeAAB);
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("lAAB", "lAA", Str("AAB.txt"), testhelpers::defaultTime,
-                                                      testhelpers::defaultTime, NodeType::File, 123, false, true, true));
+    (void) _syncPal->_localSnapshot->updateItem(SnapshotItem("lAAB", "lAA", Str("AAB.txt"), testhelpers::defaultTime,
+                                                             testhelpers::defaultTime, NodeType::File, 123, false, true, true));
 
     const auto rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
     const auto rNodeAAB = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAB.txt"),
@@ -143,8 +143,8 @@ void TestConflictResolverWorker::testCreateCreate() {
                                                  testhelpers::defaultTime, testhelpers::defaultFileSize, rNodeAA);
     CPPUNIT_ASSERT(rNodeAA->insertChildren(rNodeAAB));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeAAB);
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rAAB", "rAA", Str("AAB.txt"), testhelpers::defaultTime,
-                                                       testhelpers::defaultTime, NodeType::File, 123, false, true, true));
+    (void) _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rAAB", "rAA", Str("AAB.txt"), testhelpers::defaultTime,
+                                                              testhelpers::defaultTime, NodeType::File, 123, false, true, true));
 
     const Conflict conflict(lNodeAAB, rNodeAA, ConflictType::CreateCreate);
     _syncPal->_conflictQueue->push(conflict);
@@ -218,9 +218,9 @@ void TestConflictResolverWorker::testMoveCreateDehydratedPlaceholder() {
     lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
     lNodeAAA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->idb());
     lNodeAAA->setChangeEvents(OperationType::Move);
-    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAA->deleteChildren(lNodeAAA);
     (void) _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(lNodeAAA);
-    lNodeAAA->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    (void) lNodeAAA->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
 
     // Simulate create of AAA on remote replica
     const auto rNodeAAA2 =
@@ -239,7 +239,7 @@ void TestConflictResolverWorker::testMoveCreateDehydratedPlaceholder() {
     _syncPal->_conflictQueue->push(conflict);
 
     // Simulate a local dehydrate placeholder
-    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
         vfsStatus.isPlaceholder = true;
         vfsStatus.isHydrated = false;
         vfsStatus.isSyncing = false;
@@ -247,6 +247,7 @@ void TestConflictResolverWorker::testMoveCreateDehydratedPlaceholder() {
         return ExitCode::Ok;
     };
     _mockVfs->setMockStatus(mockStatus);
+
 
     _syncPal->_conflictResolverWorker->execute();
 
@@ -267,7 +268,7 @@ void TestConflictResolverWorker::testEditDelete1() {
     const auto rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
     const auto rNodeAAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAAA");
     rNodeAAA->setChangeEvents(OperationType::Delete);
-    rNodeAA->deleteChildren(rNodeAAA);
+    (void) rNodeAA->deleteChildren(rNodeAAA);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeAAA);
 
     const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
@@ -294,8 +295,8 @@ void TestConflictResolverWorker::testEditDelete2() {
     const auto rNodeAAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAAA");
     rNodeAA->setChangeEvents(OperationType::Delete);
     rNodeAAA->setChangeEvents(OperationType::Delete);
-    rNodeA->deleteChildren(rNodeAA);
-    rNodeAA->deleteChildren(rNodeAAA);
+    (void) rNodeA->deleteChildren(rNodeAA);
+    (void) rNodeAA->deleteChildren(rNodeAAA);
 
     const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
     _syncPal->_conflictQueue->push(conflict);
@@ -330,12 +331,12 @@ void TestConflictResolverWorker::testMoveDelete1() {
     // Simulate a delete of node AB on local replica
     const auto lNodeAB = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAB");
     lNodeAB->setChangeEvents(OperationType::Delete);
-    lNodeA->deleteChildren(lNodeA);
+    (void) lNodeA->deleteChildren(lNodeA);
 
     // Simulate a delete of node A on remote replica
     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
     rNodeA->setChangeEvents(OperationType::Delete);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
 
     const Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
@@ -387,7 +388,7 @@ void TestConflictResolverWorker::testMoveDelete2() {
     // Simulate a delete of node A on remote replica
     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
     rNodeA->setChangeEvents(OperationType::Delete);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
 
     const Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
@@ -431,7 +432,7 @@ void TestConflictResolverWorker::testMoveDelete3() {
     lNodeAB->setMoveOriginParentDbId(lNodeA->idb());
     lNodeAB->setChangeEvents(OperationType::Move);
     CPPUNIT_ASSERT(lNodeAB->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    lNodeA->deleteChildren(lNodeAB);
+    (void) lNodeA->deleteChildren(lNodeAB);
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(lNodeAB));
 
     // Simulate a delete of node A on remote replica
@@ -482,12 +483,12 @@ void TestConflictResolverWorker::testMoveDelete4() {
     rNodeAB->setMoveOrigin(rNodeAB->getPath());
     rNodeAB->setMoveOriginParentDbId(rNodeA->idb());
     CPPUNIT_ASSERT(rNodeAB->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-    rNodeA->deleteChildren(rNodeAB);
+    (void) rNodeA->deleteChildren(rNodeAB);
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeAB));
 
     // Simulate a delete of node A on remote replica
     rNodeA->setChangeEvents(OperationType::Delete);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
 
     const Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
@@ -540,13 +541,13 @@ void TestConflictResolverWorker::testMoveDelete5() {
     // Simulate a delete of node A on remote replica
     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
     rNodeA->setChangeEvents(OperationType::Delete);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
 
     const auto rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
 
-    Conflict conflict1(lNodeAA, rNodeAA, ConflictType::MoveDelete);
+    const Conflict conflict1(lNodeAA, rNodeAA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict1);
-    Conflict conflict2(lNodeAA, rNodeA, ConflictType::MoveParentDelete);
+    const Conflict conflict2(lNodeAA, rNodeA, ConflictType::MoveParentDelete);
     _syncPal->_conflictQueue->push(conflict2);
 
     // This should be treated as a Move-ParentDelete conflict, the Move-Delete conflict must be ignored.
@@ -555,8 +556,8 @@ void TestConflictResolverWorker::testMoveDelete5() {
     _syncPal->_conflictResolverWorker->execute();
 
     CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->opSortedList().size());
-    UniqueId opId = _syncPal->_syncOps->opSortedList().front();
-    auto syncOp = _syncPal->_syncOps->getOp(opId);
+    const auto opId = _syncPal->_syncOps->opSortedList().front();
+    const auto syncOp = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT_EQUAL(ConflictType::MoveParentDelete, syncOp->conflict().type());
 }
 
@@ -570,7 +571,7 @@ void TestConflictResolverWorker::testMoveDeleteDehydratedPlaceholder() {
     // Simulate a delete of node AAA on remote replica
     const auto rNodeAAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAAA");
     rNodeAAA->setChangeEvents(OperationType::Delete);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeAAA);
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeAAA);
 
     const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveDelete);
 
@@ -582,7 +583,7 @@ void TestConflictResolverWorker::testMoveDeleteDehydratedPlaceholder() {
         _syncPal->_conflictQueue->push(conflict);
 
         // Simulate a local dehydrate placeholder
-        auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+        auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
             vfsStatus.isPlaceholder = true;
             vfsStatus.isHydrated = false;
             vfsStatus.isSyncing = false;
@@ -605,7 +606,7 @@ void TestConflictResolverWorker::testMoveDeleteDehydratedPlaceholder() {
         _syncPal->_conflictQueue->push(conflict);
 
         // Simulate a local syncing placeholder
-        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
             vfsStatus.isPlaceholder = true;
             vfsStatus.isHydrated = false;
             vfsStatus.isSyncing = true;
@@ -628,7 +629,7 @@ void TestConflictResolverWorker::testMoveDeleteDehydratedPlaceholder() {
         _syncPal->_conflictQueue->push(conflict);
 
         // Simulate a local hydrated placeholder
-        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
             vfsStatus.isPlaceholder = true;
             vfsStatus.isHydrated = true;
             vfsStatus.isSyncing = false;
@@ -655,15 +656,15 @@ void TestConflictResolverWorker::testMoveParentDelete() {
     lNodeAAA->setChangeEvents(OperationType::Move);
     lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
-    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAA->deleteChildren(lNodeAAA);
     CPPUNIT_ASSERT(lNodeAB->insertChildren(lNodeAAA));
 
     // Simulate a delete of node A on remote replica
     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
     rNodeA->setChangeEvents(OperationType::Delete);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeAAA, rNodeA, ConflictType::MoveParentDelete);
+    const Conflict conflict(lNodeAAA, rNodeA, ConflictType::MoveParentDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -685,14 +686,14 @@ void TestConflictResolverWorker::testMoveParentDeleteDehydratedPlaceholder() {
     lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
     lNodeAAA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA")->idb());
     lNodeAAA->setChangeEvents(OperationType::Move);
-    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAA->deleteChildren(lNodeAAA);
     (void) lNodeAB->insertChildren(lNodeAAA);
-    lNodeAAA->setParentNode(lNodeAB);
+    (void) lNodeAAA->setParentNode(lNodeAB);
 
     // Simulate delete of AA on remote replica
     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
     const auto rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
-    rNodeA->deleteChildren(rNodeAA);
+    (void) rNodeA->deleteChildren(rNodeAA);
     (void) _syncPal->updateTree(ReplicaSide::Remote)->deleteNode(rNodeAA);
 
     const Conflict conflict(lNodeAAA, rNodeAA, ConflictType::MoveParentDelete);
@@ -704,7 +705,7 @@ void TestConflictResolverWorker::testMoveParentDeleteDehydratedPlaceholder() {
     _syncPal->_conflictQueue->push(conflict);
 
     // Simulate a local dehydrate placeholder
-    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
         vfsStatus.isPlaceholder = true;
         vfsStatus.isHydrated = false;
         vfsStatus.isSyncing = false;
@@ -731,14 +732,14 @@ void TestConflictResolverWorker::testCreateParentDelete() {
                                                  testhelpers::defaultTime, testhelpers::defaultFileSize, lNodeAA);
     CPPUNIT_ASSERT(lNodeAA->insertChildren(lNodeAAB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeAAB);
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("lAAB", "lAA", Str("AAB.txt"), testhelpers::defaultTime,
-                                                      testhelpers::defaultTime, NodeType::File, 123, false, true, true));
+    (void) _syncPal->_localSnapshot->updateItem(SnapshotItem("lAAB", "lAA", Str("AAB.txt"), testhelpers::defaultTime,
+                                                             testhelpers::defaultTime, NodeType::File, 123, false, true, true));
 
     // Simulate a delete of node AA on remote replica
     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
     const auto rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
     rNodeAA->setChangeEvents(OperationType::Delete);
-    rNodeA->deleteChildren(rNodeAA);
+    (void) rNodeA->deleteChildren(rNodeAA);
 
     const Conflict conflict(lNodeAAB, rNodeAA, ConflictType::CreateParentDelete);
     _syncPal->_conflictQueue->push(conflict);
@@ -760,7 +761,7 @@ void TestConflictResolverWorker::testMoveMoveSource() {
     lNodeAAA->setChangeEvents(OperationType::Move);
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     lNodeAAA->setMoveOrigin("A/AA/AAA");
-    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAA->deleteChildren(lNodeAAA);
     CPPUNIT_ASSERT(lNodeAB->insertChildren(lNodeAAA));
 
     // Simulate move of node AAA to A on remote replica
@@ -770,7 +771,7 @@ void TestConflictResolverWorker::testMoveMoveSource() {
     rNodeAAA->setChangeEvents(OperationType::Move);
     rNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     rNodeAAA->setMoveOrigin("A/AA/AAA");
-    rNodeAA->deleteChildren(lNodeAAA);
+    (void) rNodeAA->deleteChildren(lNodeAAA);
     CPPUNIT_ASSERT(rNodeA->insertChildren(lNodeAAA));
 
     const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
@@ -793,17 +794,17 @@ void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
 
     const auto lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
     lNodeAAA->setName(orphanName);
-    lNodeAAA->parentNode()->deleteChildren(lNodeAAA);
+    (void) lNodeAAA->parentNode()->deleteChildren(lNodeAAA);
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(lNodeAAA));
     CPPUNIT_ASSERT(lNodeAAA->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
 
     const auto rNodeAAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAAA");
     rNodeAAA->setName(orphanName);
-    rNodeAAA->parentNode()->deleteChildren(rNodeAAA);
+    (void) rNodeAAA->parentNode()->deleteChildren(rNodeAAA);
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeAAA));
     CPPUNIT_ASSERT(rNodeAAA->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
 
-    _syncPal->_conflictResolverWorker->_registeredOrphans.insert({*rNodeAAA->idb(), ReplicaSide::Remote});
+    (void) _syncPal->_conflictResolverWorker->_registeredOrphans.insert({*rNodeAAA->idb(), ReplicaSide::Remote});
 
     // Simulate move of node AAA to AB on local replica
     const auto lNodeAB = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAB");
@@ -813,7 +814,7 @@ void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
     lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
     CPPUNIT_ASSERT(lNodeAAA->setParentNode(lNodeAB));
     lNodeAAA->setName(Str("AAA"));
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(lNodeAAA);
+    (void) _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(lNodeAAA);
     CPPUNIT_ASSERT(lNodeAB->insertChildren(lNodeAAA));
 
     // Simulate move of node AAA to A on remote replica
@@ -824,7 +825,7 @@ void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
     rNodeAAA->setMoveOrigin(rNodeAAA->getPath());
     CPPUNIT_ASSERT(rNodeAAA->setParentNode(rNodeA));
     rNodeAAA->setName(Str("AAA"));
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeAAA);
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeAAA);
     CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeAAA));
 
     const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
@@ -849,9 +850,9 @@ void TestConflictResolverWorker::testMoveMoveSourceDehydratedPlaceholder() {
     lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     lNodeAAA->setChangeEvents(OperationType::Move);
-    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAA->deleteChildren(lNodeAAA);
     (void) lNodeAB->insertChildren(lNodeAAA);
-    lNodeAAA->setParentNode(lNodeAB);
+    (void) lNodeAAA->setParentNode(lNodeAB);
 
     // Simulate move of A/AA/AAA to A/AAA on remote replica
     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
@@ -860,9 +861,9 @@ void TestConflictResolverWorker::testMoveMoveSourceDehydratedPlaceholder() {
     rNodeAAA->setMoveOrigin(rNodeAAA->getPath());
     rNodeAAA->setMoveOriginParentDbId(rNodeAA->idb());
     rNodeAAA->setChangeEvents(OperationType::Move);
-    rNodeAA->deleteChildren(rNodeAAA);
+    (void) rNodeAA->deleteChildren(rNodeAAA);
     (void) rNodeA->insertChildren(rNodeAAA);
-    rNodeAAA->setParentNode(rNodeA);
+    (void) rNodeAAA->setParentNode(rNodeA);
 
     const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
 
@@ -873,7 +874,7 @@ void TestConflictResolverWorker::testMoveMoveSourceDehydratedPlaceholder() {
     _syncPal->_conflictQueue->push(conflict);
 
     // Simulate a local dehydrate placeholder
-    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
         vfsStatus.isPlaceholder = true;
         vfsStatus.isHydrated = false;
         vfsStatus.isSyncing = false;
@@ -901,7 +902,7 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     lNodeAAA->setMoveOrigin("A/AA/AAA");
     CPPUNIT_ASSERT(lNodeAAA->setParentNode(lNodeAB));
-    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAA->deleteChildren(lNodeAAA);
     CPPUNIT_ASSERT(lNodeAB->insertChildren(lNodeAAA));
 
     // Simulate move of node AA to AB, and rename AA to AAA, on remote replica
@@ -913,7 +914,7 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     rNodeAA->setMoveOrigin("A/AA");
     CPPUNIT_ASSERT(rNodeAA->setParentNode(rNodeAB));
     rNodeAA->setName(Str("AAA"));
-    rNodeA->deleteChildren(rNodeAA);
+    (void) rNodeA->deleteChildren(rNodeAA);
     CPPUNIT_ASSERT(rNodeAB->insertChildren(rNodeAA));
 
     const Conflict conflict(lNodeAAA, rNodeAA, ConflictType::MoveMoveDest);
@@ -938,9 +939,9 @@ void TestConflictResolverWorker::testMoveMoveDestDehydratedPlaceholder() {
     lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     lNodeAAA->setChangeEvents(OperationType::Move);
-    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAA->deleteChildren(lNodeAAA);
     (void) lNodeAB->insertChildren(lNodeAAA);
-    lNodeAAA->setParentNode(lNodeAB);
+    (void) lNodeAAA->setParentNode(lNodeAB);
 
     // Simulate move of A/AA to A/AB/AAA on remote replica
     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
@@ -950,9 +951,9 @@ void TestConflictResolverWorker::testMoveMoveDestDehydratedPlaceholder() {
     rNodeAA->setMoveOrigin(rNodeAA->getPath());
     rNodeAA->setMoveOriginParentDbId(rNodeA->idb());
     rNodeAA->setChangeEvents(OperationType::Move);
-    rNodeAA->deleteChildren(rNodeAA);
+    (void) rNodeAA->deleteChildren(rNodeAA);
     (void) rNodeAB->insertChildren(rNodeAA);
-    rNodeAA->setParentNode(rNodeAB);
+    (void) rNodeAA->setParentNode(rNodeAB);
 
     const Conflict conflict(lNodeAAA, rNodeAA, ConflictType::MoveMoveDest);
 
@@ -963,7 +964,7 @@ void TestConflictResolverWorker::testMoveMoveDestDehydratedPlaceholder() {
     _syncPal->_conflictQueue->push(conflict);
 
     // Simulate a local dehydrate placeholder
-    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+    auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
         vfsStatus.isPlaceholder = true;
         vfsStatus.isHydrated = false;
         vfsStatus.isSyncing = false;
@@ -991,7 +992,7 @@ void TestConflictResolverWorker::testMoveMoveCycle() {
     lNodeAA->setMoveOriginParentDbId(lNodeA->idb());
     lNodeAA->setMoveOrigin("A/AA");
     CPPUNIT_ASSERT(lNodeAA->setParentNode(lNodeAB));
-    lNodeA->deleteChildren(lNodeAA);
+    (void) lNodeA->deleteChildren(lNodeAA);
     CPPUNIT_ASSERT(lNodeAB->insertChildren(lNodeAA));
 
     // Simulate move of node AB to AA, on remote replica
@@ -1002,7 +1003,7 @@ void TestConflictResolverWorker::testMoveMoveCycle() {
     rNodeAB->setMoveOriginParentDbId(rNodeA->idb());
     rNodeAB->setMoveOrigin("A/AB");
     CPPUNIT_ASSERT(rNodeAB->setParentNode(rNodeAA));
-    rNodeA->deleteChildren(rNodeAB);
+    (void) rNodeA->deleteChildren(rNodeAB);
     CPPUNIT_ASSERT(rNodeAA->insertChildren(rNodeAB));
 
     const Conflict conflict(lNodeAA, rNodeAA, ConflictType::MoveMoveCycle);
@@ -1041,7 +1042,7 @@ void TestConflictResolverWorker::testMoveMoveCycle2() {
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     lNodeAAA->setMoveOrigin("A/AA/AAA");
     CPPUNIT_ASSERT(lNodeAAA->setParentNode(lNodeAB));
-    lNodeAA->deleteChildren(lNodeAAA);
+    (void) lNodeAA->deleteChildren(lNodeAAA);
     CPPUNIT_ASSERT(lNodeAB->insertChildren(lNodeAAA));
 
     // Simulate move of node AB to AAA, on remote replica
@@ -1053,7 +1054,7 @@ void TestConflictResolverWorker::testMoveMoveCycle2() {
     rNodeAB->setMoveOriginParentDbId(rNodeA->idb());
     rNodeAB->setMoveOrigin("A/AB");
     CPPUNIT_ASSERT(rNodeAB->setParentNode(rNodeAAA));
-    rNodeA->deleteChildren(rNodeAB);
+    (void) rNodeA->deleteChildren(rNodeAB);
     CPPUNIT_ASSERT(rNodeAAA->insertChildren(rNodeAB));
 
     const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveCycle);
