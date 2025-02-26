@@ -247,20 +247,7 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
     op->setAffectedNode(deleteNode);
     op->setCorrespondingNode(moveNode);
     op->setTargetSide(moveNode->side());
-
-    bool omit = true;
-    if (moveNode->side() == ReplicaSide::Local && _syncPal->vfsMode() != VirtualFileMode::Off) {
-        VfsStatus vfsStatus;
-        const auto moveNodeRelativePath = moveNode->getPath();
-        if (const auto exitInfo = _syncPal->vfs()->status(_syncPal->syncInfo().localPath / moveNodeRelativePath, vfsStatus);
-            exitInfo.code() != ExitCode::Ok) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to get VFS status for file " << Utility::formatSyncPath(moveNodeRelativePath));
-            return exitInfo;
-        }
-        omit = vfsStatus.isPlaceholder && (vfsStatus.isHydrated || vfsStatus.isSyncing);
-    }
-
-    op->setOmit(omit);
+    op->setOmit(true);
     op->setConflict(conflict);
 
     LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated in DB only for item "
