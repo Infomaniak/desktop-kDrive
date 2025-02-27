@@ -23,11 +23,11 @@ env:
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
-  KDRIVE_TEST_CI_EXTENDED_TEST: ${{ github.event_name == 'schedule' || startsWith(github.head_ref, 'release/')  && 'true' || 'false' }}
+  KDRIVE_TEST_CI_EXTENDED_TEST: ${{ github.event_name == 'schedule' || startsWith(github.head_ref, 'release/') }}
 
 jobs:
   ExtendedChecks:
-    if: KDRIVE_TEST_CI_EXTENDED_TEST == 'true'
+    if: github.event_name == 'schedule' || startsWith(github.head_ref, 'release/')
     runs-on: [ self-hosted, desktop-kdrive ]
     steps:
       - name: Extended checks
