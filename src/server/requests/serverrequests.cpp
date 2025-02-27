@@ -1490,14 +1490,18 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     Sync sync;
     sync.setDbId(syncDbId);
     sync.setDriveDbId(driveDbId);
-    sync.setLocalPath(QStr2Path(localFolderPath));
+    SyncName localPath = localFolderPath.toStdString();
+#ifdef __APPLE__
+    (void) Utility::normalizedSyncName(localFolderPath.toStdString(), localPath, Utility::UnicodeNormalization::NFD);
+#endif
+    sync.setLocalPath(localPath);
     sync.setTargetPath(QStr2Path(serverFolderPath));
     sync.setTargetNodeId(serverFolderNodeId.toStdString());
     sync.setPaused(false);
 
     // Check vfs support
-    QString fsName(KDC::CommonUtility::fileSystemName(SyncName2QStr(sync.localPath().native())));
-    bool supportVfs = (fsName == "NTFS" || fsName == "apfs");
+    const QString fsName(CommonUtility::fileSystemName(SyncName2QStr(sync.localPath().native())));
+    const auto supportVfs = (fsName == "NTFS" || fsName == "apfs");
     sync.setSupportVfs(supportVfs);
 
 #if defined(Q_OS_MAC)

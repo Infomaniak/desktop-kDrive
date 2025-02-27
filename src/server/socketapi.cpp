@@ -1030,9 +1030,9 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
     const QStringList files = argument.split(MSG_ARG_SEPARATOR);
 
     // Find the common sync
-    KDC::Sync sync;
+    Sync sync;
     for (const auto &file: qAsConst(files)) {
-        KDC::Sync tmpSync;
+        Sync tmpSync;
         if (!syncForPath(QStr2Path(file), tmpSync)) {
             return;
         }
