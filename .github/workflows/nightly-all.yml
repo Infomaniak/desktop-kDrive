@@ -6,10 +6,11 @@ on:
     # Runs every day at midnight
     schedule:
         - cron: '0 0 * * *'
-    # Runs on every push to a release branch
-    push:
-        branches:
-            - release/*
+    # Runs on PR to a release branch
+    pull_request: 
+      types: [synchronize, review_requested]
+      branches:
+        - release/*
   
 env:
   KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
