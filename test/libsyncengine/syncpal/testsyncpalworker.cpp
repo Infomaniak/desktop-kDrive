@@ -281,9 +281,9 @@ void TestSyncPalWorker::testInternalPause3() {
         }
         mockExecutorWorkerWaiting = true;
         while (!_testEnded && mockExecutorWorkerExitInfo == ExitInfo(ExitCode::Unknown, ExitCause::Unknown)) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(loopWait);
         }
-        auto returnValue = mockExecutorWorkerExitInfo;
+        auto returnValue = mockExecutorWorkerExitInfo.load();
         mockExecutorWorkerExitInfo = ExitInfo(ExitCode::Unknown, ExitCause::Unknown);
         mockExecutorWorkerWaiting = false;
         return returnValue;
@@ -295,7 +295,7 @@ void TestSyncPalWorker::testInternalPause3() {
 
     // Check that if a worker fails due to a network error, the synchronization is paused and then resumed at the same step.
     // Wait for the sync to reach ExecutorWorker
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&mockExecutorWorkerWaiting]() { return mockExecutorWorkerWaiting; },
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&mockExecutorWorkerWaiting]() { return mockExecutorWorkerWaiting.load(); },
                                           testTimeout, loopWait));
 
     CPPUNIT_ASSERT(!mockLfso->snapshot()->updated());
