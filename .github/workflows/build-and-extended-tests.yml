@@ -1,5 +1,4 @@
-name: Nightly tests kDrive desktop - All OS 
-
+name: Build and extended tests
 on:
     # Allows manual execution
     workflow_dispatch:  
@@ -9,6 +8,9 @@ on:
     # Runs on PR to a release branch
     pull_request: 
       types: [synchronize, review_requested]
+      branches:
+        - 'release/**'
+        - 'main' 
  
 concurrency:
   group: nighlty-${{ github.head_ref }}
@@ -23,18 +25,10 @@ env:
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
-  KDRIVE_TEST_CI_EXTENDED_TEST: ${{ github.event_name == 'schedule' || startsWith(github.head_ref, 'release/') }}
+  KDRIVE_TEST_CI_EXTENDED_TEST : true
 
 jobs:
-  ExtendedChecks:
-    if: github.event_name == 'schedule' || startsWith(github.head_ref, 'release/')
-    runs-on: [ self-hosted, desktop-kdrive ]
-    steps:
-      - name: Extended checks
-        run: |
-          echo "The job of this workflow will run the extended checks"
-
-  Windows:
+  Windows-extended-tests:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
@@ -112,7 +106,7 @@ jobs:
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
 
-  MacOS:
+  MacOS-extended-tests:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
@@ -165,7 +159,7 @@ jobs:
       - name: Clean-up generated code
         run : rm -rf build-macos
 
-  Linux:
+  Linux-extended-tests:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
@@ -202,7 +196,7 @@ jobs:
         run : rm -rf build-linux
 
   kChat_notification:
-    if: ${{ always() && (github.event_name == 'schedule' || startsWith(github.head_ref, 'release/')) }}
+    if: ${{ always() }}
     needs: [ Windows, MacOS, Linux ]
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
