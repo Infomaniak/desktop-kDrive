@@ -23,6 +23,7 @@
 #include "libcommonserver/network/proxy.h"
 #include "test_utility/testhelpers.h"
 #include <cstdlib>
+#include <atomic>
 
 
 using namespace CppUnit;
@@ -154,8 +155,7 @@ void TestSyncPalWorker::testInternalPause1() {
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // wait for automatic restart
             [&syncpalWorker]() { return syncpalWorker->_unpauseAsked; },
-                           [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); },
-                           testTimeout, loopWait));
+            [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Idle, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the automatic re-pause
             [&syncpalWorker]() { return syncpalWorker->isPaused(); },
@@ -280,10 +280,10 @@ void TestSyncPalWorker::testInternalPause3() {
             return ExitInfo(ExitCode::Ok, ExitCause::Unknown);
         }
         mockExecutorWorkerWaiting = true;
-        while (!_testEnded && mockExecutorWorkerExitInfo.load() == ExitInfo(ExitCode::Unknown, ExitCause::Unknown)) {
+        while (!_testEnded && mockExecutorWorkerExitInfo == ExitInfo(ExitCode::Unknown, ExitCause::Unknown)) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
-        auto returnValue = mockExecutorWorkerExitInfo.load();
+        auto returnValue = mockExecutorWorkerExitInfo;
         mockExecutorWorkerExitInfo = ExitInfo(ExitCode::Unknown, ExitCause::Unknown);
         mockExecutorWorkerWaiting = false;
         return returnValue;
@@ -294,7 +294,8 @@ void TestSyncPalWorker::testInternalPause3() {
     CPPUNIT_ASSERT(mockLfso->snapshot()->updated());
 
     // Check that if a worker fails due to a network error, the synchronization is paused and then resumed at the same step.
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&mockExecutorWorkerWaiting]() { return mockExecutorWorkerWaiting.load(); },
+    // Wait for the sync to reach ExecutorWorker
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&mockExecutorWorkerWaiting]() { return mockExecutorWorkerWaiting; },
                                           testTimeout, loopWait));
 
     CPPUNIT_ASSERT(!mockLfso->snapshot()->updated());
