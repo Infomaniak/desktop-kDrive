@@ -1490,7 +1490,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     Sync sync;
     sync.setDbId(syncDbId);
     sync.setDriveDbId(driveDbId);
-    SyncName localPath = localFolderPath.toStdString();
+    SyncName localPath = Str2SyncName(localFolderPath.toStdString());
 #ifdef __APPLE__
     (void) Utility::normalizedSyncName(localFolderPath.toStdString(), localPath, Utility::UnicodeNormalization::NFD);
 #endif
