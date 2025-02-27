@@ -1,5 +1,5 @@
 name: Nightly tests kDrive desktop - All OS 
-
+ 
 on:
     # Allows manual execution
     workflow_dispatch:  
