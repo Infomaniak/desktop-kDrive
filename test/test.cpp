@@ -21,7 +21,7 @@
 #include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
-
+#include "test_utility/testhelpers.h"
 #include <log4cplus/initializer.h>
 
 int runTestSuite(const std::string &logFileName) {
@@ -38,6 +38,11 @@ int runTestSuite(const std::string &logFileName) {
     woss << std::put_time(&tm, "%Y%m%d_%H%M");
     const KDC::SyncPath logFilePath = std::filesystem::temp_directory_path() / "kDrive-logdir" / (woss.str() + logFileName);
     KDC::Log::instance(Path2WStr(logFilePath));
+
+    if (KDC::testhelpers::isNightlyTest()) {
+        std::cout << "Running extended tests." << std::endl;
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Running extended tests.");
+    }
 
     // Informs test-listener about testresults
     CPPUNIT_NS::TestResult testresult;

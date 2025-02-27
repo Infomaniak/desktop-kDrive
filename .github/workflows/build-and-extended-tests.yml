@@ -40,7 +40,7 @@ jobs:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
           submodules: recursive
         
       - name: Clean the log directory
@@ -117,7 +117,7 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
           submodules: recursive
 
       - name: Grant empty trash script execute permission
@@ -167,7 +167,7 @@ jobs:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
           submodules: recursive
 
       - name: Clean the log directory
@@ -205,8 +205,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
   
       - name: Notify kChat (Success or Failure)
         run:
-          ./infomaniak-build-tools/notify_kchat.ps1 "[![Nightly tests kDrive desktop - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml/badge.svg?branch=${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }})](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml)"
+          ./infomaniak-build-tools/notify_kchat.ps1 "[![Nightly tests kDrive desktop - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-extended-tests.yml/badge.svg?branch=${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }})](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-extended-tests.yml)"

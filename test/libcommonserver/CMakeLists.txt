@@ -50,9 +50,6 @@ add_executable(${testcommonserver_NAME} ${testcommonserver_SRCS})
 set(PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
-    # cppunit
-    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/TestFixture.h$<ANGLE-R>>"
-    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/extensions/HelperMacros.h$<ANGLE-R>>"
 )
 
 target_precompile_headers(${testcommonserver_NAME} PRIVATE ${PC_HEADER_FILES})

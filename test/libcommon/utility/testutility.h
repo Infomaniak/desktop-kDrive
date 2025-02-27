@@ -46,8 +46,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void tearDown(void) override { TestBase::stop(); }
 
     protected:
-        std::chrono::steady_clock::time_point _start;
-
         void testGetAppSupportDir();
         void testIsVersionLower();
         void testStringToAppStateValue();
