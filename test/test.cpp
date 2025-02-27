@@ -39,7 +39,7 @@ int runTestSuite(const std::string &logFileName) {
     const KDC::SyncPath logFilePath = std::filesystem::temp_directory_path() / "kDrive-logdir" / (woss.str() + logFileName);
     KDC::Log::instance(Path2WStr(logFilePath));
 
-    if (KDC::testhelpers::isNightlyTest()) {
+    if (KDC::testhelpers::isExtendedTest()) {
         std::cout << "Running extended tests." << std::endl;
         LOG_INFO(KDC::Log::instance()->getLogger(), "Running extended tests.");
     }

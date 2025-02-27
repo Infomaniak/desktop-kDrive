@@ -1,5 +1,5 @@
 # Infomaniak kDrive app
-[![Extended tests - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-extended-tests.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-extended-tests.yml)
+[![Extended tests - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml)
 
 ## The Desktop application for [kDrive by Infomaniak](https://www.infomaniak.com/kdrive).
 ### Synchronise, share, collaborate.  The Swiss cloud that’s 100% secure.
