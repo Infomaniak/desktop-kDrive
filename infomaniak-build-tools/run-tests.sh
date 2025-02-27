@@ -1,5 +1,4 @@
 #! /bin/bash
-
 #
 # Infomaniak kDrive - Desktop
 # Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#!/bin/bash
 
 # Color coding
 RED='\033[0;31m'
