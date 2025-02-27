@@ -19,7 +19,7 @@
 #pragma once
 
 #include "qtsingleapplication.h"
-#include "libcommonserver/commserver.h"
+#include "commserver.h"
 #include "syncpal/syncpal.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "navigationpanehelper.h"

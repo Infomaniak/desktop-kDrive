@@ -26,8 +26,6 @@
 
 #include <QOperatingSystemVersion>
 #include <QPluginLoader>
-#include <QDir>
-#include <QFileInfo>
 
 #define MIN_WINDOWS10_MICROVERSION_FOR_CFAPI 16299 // Windows 10 version 1709
 
@@ -41,8 +39,8 @@ void Vfs::starVfsWorkers() {
     // !!! Disabled for testing because no QEventLoop !!!
     if (qApp) {
         // Start worker threads
-        for (short i = 0; i < nbWorkers; i++) {
-            for (int j = 0; j < s_nb_threads[i]; j++) {
+        for (size_t i = 0; i < nbWorkers; i++) {
+            for (size_t j = 0; j < s_nb_threads[i]; j++) {
                 auto *workerThread = new QtLoggingThread();
                 _workerInfo[i]._threadList.append(workerThread);
                 auto *worker = new VfsWorker(this, i, j, logger());
@@ -148,7 +146,7 @@ ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, con
     return ExitCode::Ok;
 }
 
-VfsWorker::VfsWorker(Vfs *vfs, short type, int num, log4cplus::Logger logger) :
+VfsWorker::VfsWorker(Vfs *vfs, size_t type, size_t num, log4cplus::Logger logger) :
     _vfs(vfs), _type(type), _num(num), _logger(logger) {}
 
 void VfsWorker::start() {

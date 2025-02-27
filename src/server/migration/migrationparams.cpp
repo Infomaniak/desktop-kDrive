@@ -36,9 +36,9 @@
 #include "keychainmanager/keychainmanager.h"
 #include "common/utility.h"
 #include "log/log.h"
+#include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
-#include "libsyncengine/requests/serverrequests.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "jobs/network/login/gettokenfromapppasswordjob.h"
 

@@ -20,8 +20,6 @@
 
 #include "libcommon/utility/types.h"
 
-#include <QString>
-
 namespace KDC {
 
 class ProxyConfig {

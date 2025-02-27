@@ -22,10 +22,8 @@
 #include "libcommon/utility/utility.h"
 
 #include <QHostAddress>
-#include <QLoggingCategory>
 #include <QJsonObject>
 #include <QJsonDocument>
-#include <QCoreApplication>
 #include <QTimer>
 
 namespace KDC {
