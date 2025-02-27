@@ -29,6 +29,10 @@ jobs:
   ExtendedChecks:
     if: env.KDRIVE_TEST_CI_EXTENDED_TEST == 'true'
     runs-on: [ self-hosted, desktop-kdrive ]
+    steps:
+      - name: Extended checks
+        run: |
+          echo "The job of this workflow will run the extended checks"
 
   Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
