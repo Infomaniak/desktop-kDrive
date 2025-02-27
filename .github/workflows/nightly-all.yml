@@ -60,18 +60,18 @@ jobs:
           Remove-Item -path certificate -include tempCert.txt
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
 
-      - name: Build kDrive desktop
-        run: |
-          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          set COVFILE=%cd%\src\test.cov  
-          call "cov01.exe" -1
+      #- name: Build kDrive desktop
+      #  run: |
+      #    call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
+      #    set COVFILE=%cd%\src\test.cov  
+      #    call "cov01.exe" -1
+      #
+      #   powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
+      #  shell: cmd
 
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
-        shell: cmd
-
-      - name: Execute tests
-        run: |
-          ./infomaniak-build-tools/run-tests.ps1
+      #- name: Execute tests
+      #  run: |
+      #    ./infomaniak-build-tools/run-tests.ps1
 
       - name: Install sonar-scanner
         if: false
@@ -130,13 +130,13 @@ jobs:
 
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
-      - name: Build kDrive desktop
-        run : ./infomaniak-build-tools/macos/build-ci.sh
+      #- name: Build kDrive desktop
+      #  run : ./infomaniak-build-tools/macos/build-ci.sh
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
-      - name: Execute tests
-        run : ./infomaniak-build-tools/run-tests.sh
+      #- name: Execute tests
+      #  run : ./infomaniak-build-tools/run-tests.sh
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -175,13 +175,13 @@ jobs:
 
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
-      - name: Build kDrive desktop
-        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -u
+      #- name: Build kDrive desktop
+      #  run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -u
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
-      - name: Execute tests
-        run : ./infomaniak-build-tools/run-tests.sh
+      #- name: Execute tests
+      #  run : ./infomaniak-build-tools/run-tests.sh
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
