@@ -10,8 +10,8 @@ on:
     pull_request: 
       types: [synchronize, review_requested]
       branches:
-        - release/*
-  
+        - 'release/**'
+ 
 env:
   KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
   KDRIVE_TEST_CI_ACCOUNT_ID: ${{ vars.KDRIVE_TEST_CI_ACCOUNT_ID }}
@@ -197,7 +197,7 @@ jobs:
   kChat_notification:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     env:
-      KCHAT_WEBHOOK_URL: ${{ vars.KCHAT_WEBHOOK_URL }}
+      KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
     needs: [ Windows, MacOS, Linux ]
     steps:
       - name: Checkout
