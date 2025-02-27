@@ -1,9 +1,15 @@
 name: Nightly tests kDrive desktop - All OS 
 
 on:
-    workflow_dispatch:  # Allows manual execution
+    # Allows manual execution
+    workflow_dispatch:  
+    # Runs every day at midnight
     schedule:
         - cron: '0 0 * * *'
+    # Runs on every push to a release branch
+    push:
+        branches:
+            - release/*
   
 env:
   KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -29,7 +35,7 @@ jobs:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
-          ref: KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }}
           submodules: recursive
         
       - name: Clean the log directory
@@ -106,7 +112,7 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v4.1.1
         with:
-          ref: KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }}
           submodules: recursive
 
       - name: Grant empty trash script execute permission
@@ -156,7 +162,7 @@ jobs:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
-          ref: KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }}
           submodules: recursive
 
       - name: Clean the log directory
@@ -193,13 +199,23 @@ jobs:
       KCHAT_WEBHOOK_URL: ${{ vars.KCHAT_WEBHOOK_URL }}
     needs: [ Windows, MacOS, Linux ]
     steps:
-      - name: Checkout the PR
+      - name: Checkout
         uses: actions/checkout@v4.1.1
         with:
-          ref: KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }}
+  
       - name: Grant Notify script execute permission
-        run : chmod +x ./infomaniak-build-tools/notify_kchat.sh
-      - name: Notify kChat
-        run: ./infomaniak-build-tools/notify_kchat.sh "[![Nightly tests kDrive desktop - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml)"
+        run: chmod +x ./infomaniak-build-tools/notify_kchat.sh
 
+      - name: Notify kChat (Success or Failure)
+        run: |
+          # If any of the needed jobs failed, prefix the message with @desktop-dev
+          MESSAGE="[![Nightly tests kDrive desktop - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml)"
+        
+          if [[ "${{ needs.Windows.result }}" == "failure" || "${{ needs.MacOS.result }}" == "failure" || "${{ needs.Linux.result }}" == "failure" ]]; then
+            MESSAGE="@desktop-dev $MESSAGE"
+          fi
+        
+          # Call the notify_kchat.sh script with the message
+          ./infomaniak-build-tools/notify_kchat.sh "$MESSAGE"
 
