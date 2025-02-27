@@ -17,17 +17,26 @@
  */
 #pragma once
 
-#include <string>
+#ifdef __GNUC__
+// /!\ moc issue => filesystem must be included after QApplication
+// https://bugreports.qt.io/browse/QTBUG-73263
+#include <QApplication>
+#endif
+
+#include "sourcelocation.h"
+
 #include <filesystem>
 #include <functional>
 #include <cctype>
 #include <optional>
 #include <sstream>
+#include <string>
 #include <unordered_set>
 #include <variant>
-#include <qdebug.h>
+
 #include <signal.h>
-#include "sourcelocation.h"
+
+#include <QDebug>
 
 namespace KDC {
 

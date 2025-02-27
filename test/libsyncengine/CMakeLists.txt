@@ -61,7 +61,6 @@ set(testsyncengine_SRCS
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
-        requests/testserverrequests.h  requests/testserverrequests.cpp
 )
 
 if (APPLE)

@@ -30,6 +30,7 @@
 #include <QLabel>
 #include <QLoggingCategory>
 #include <QProcessEnvironment>
+#include <QUrlQuery>
 
 namespace KDC {
 

@@ -40,12 +40,13 @@ else()
 endif()
 
 set(server_SRCS
-    ../libcommonserver/commserver.h ../libcommonserver/commserver.cpp
+    commserver.h commserver.cpp
     navigationpanehelper.h navigationpanehelper.cpp
     socketapi.h socketapi.cpp
     socketlistener.h socketlistener.cpp
     appserver.h appserver.cpp
     migration/migrationparams.h migration/migrationparams.cpp
+    requests/serverrequests.h requests/serverrequests.cpp
     app_resources.rc
 )
 

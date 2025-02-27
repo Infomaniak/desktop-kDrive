@@ -24,11 +24,7 @@
 #include <deque>
 
 #include <QByteArray>
-#include <QDataStream>
-#include <QMap>
 #include <QMutex>
-#include <QString>
-#include <QTcpServer>
 #include <QTcpSocket>
 #include <QWaitCondition>
 
