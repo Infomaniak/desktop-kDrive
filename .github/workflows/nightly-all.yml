@@ -211,11 +211,6 @@ jobs:
         run: |
           # If any of the needed jobs failed, prefix the message with @desktop-dev
           MESSAGE="[![Nightly tests kDrive desktop - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml)"
-        
-          if [[ "${{ needs.Windows.result }}" == "failure" || "${{ needs.MacOS.result }}" == "failure" || "${{ needs.Linux.result }}" == "failure" ]]; then
-            MESSAGE="@desktop-dev $MESSAGE"
-          fi
-        
           # Call the notify_kchat.sh script with the message
           ./infomaniak-build-tools/notify_kchat.ps1 "$MESSAGE"
 
