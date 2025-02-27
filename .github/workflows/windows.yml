@@ -25,7 +25,6 @@ env:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
-
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -62,6 +61,36 @@ jobs:
 
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-bin
+          path: build-windows/install/bin/*
+          retention-days: 3
+
+      - name: Clean-up generated code
+        run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
+
+  test-kDrive:
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    needs: build-kDrive
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+          submodules: recursive
+
+      - name: Create bin directory
+        run: |
+          mkdir -p build-windows/install/bin
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-bin
+          path: build-windows/install/bin/
 
       - name: Execute tests
         run: |
@@ -109,6 +138,3 @@ jobs:
           retention-days: 3
           overwrite: true
         if: always()
-
-      - name: Clean-up generated code
-        run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
