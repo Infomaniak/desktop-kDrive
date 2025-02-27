@@ -275,7 +275,8 @@ void TestSyncPalWorker::testInternalPause3() {
     const auto mockExecutorWorker = mockSyncPal->getMockExecutorWorker();
     std::atomic_bool mockExecutorWorkerWaiting = false;
     std::atomic<ExitInfo> mockExecutorWorkerExitInfo;
-    mockExecutorWorker->setMockExecuteCallback([&mockExecutorWorkerWaiting, &mockExecutorWorkerExitInfo, this]() -> ExitInfo {
+    mockExecutorWorker->setMockExecuteCallback(
+            [&mockExecutorWorkerWaiting, &mockExecutorWorkerExitInfo, this, loopWait]() -> ExitInfo {
         if (_testEnded) {
             return ExitInfo(ExitCode::Ok, ExitCause::Unknown);
         }
