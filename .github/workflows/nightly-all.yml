@@ -195,14 +195,12 @@ jobs:
       - name: Clean-up generated code
         run : rm -rf build-linux
 
-      - name: Grant Notify script execute permission
-        run : chmod +x ./infomaniak-build-tools/notify_kchat.sh
-
   kChat_notification:
+    if: ${{ always() }}
+    needs: [ Windows, MacOS, Linux ]
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
       KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
-    needs: [ Windows, MacOS, Linux ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4.1.1
