@@ -211,7 +211,7 @@ SyncName SqliteQuery::syncNameValue(int index) const {
     auto value = static_cast<const wchar_t *>(sqlite3_column_text16(_stmt.get(), index));
     return value ? value : SyncName();
 #else
-    const char *value = static_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
+    const char *value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
     return value ? SyncName(value) : SyncName();
 #endif
 }
