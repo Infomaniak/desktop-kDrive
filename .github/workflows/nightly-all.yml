@@ -209,5 +209,4 @@ jobs:
   
       - name: Notify kChat (Success or Failure)
         run:
-          ./infomaniak-build-tools/notify_kchat.ps1 "[![Nightly tests kDrive desktop - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml/badge.svg)](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml)"
-
+          ./infomaniak-build-tools/notify_kchat.ps1 "[![Nightly tests kDrive desktop - All OS](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml/badge.svg?branch=${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }})]((https://github.com/Infomaniak/desktop-kDrive/actions/workflows/nightly-all.yml)"
