@@ -2,6 +2,8 @@ name: Windows kDrive desktop CI
 
 on:
   pull_request:
+    branches-ignore:
+        - 'release/**'
     types: [synchronize, review_requested]
 
 concurrency:

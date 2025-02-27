@@ -6,11 +6,16 @@ on:
     # Runs every day at midnight
     schedule:
         - cron: '0 0 * * *'
-    # Runs on every push to a release branch
-    push:
-        branches:
-            - release/*
-  
+    # Runs on PR to a release branch
+    pull_request: 
+      types: [synchronize, review_requested]
+      branches:
+        - 'release/**'
+ 
+concurrency:
+  group: nighlty-${{ github.head_ref }}
+  cancel-in-progress: true
+
 env:
   KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
   KDRIVE_TEST_CI_ACCOUNT_ID: ${{ vars.KDRIVE_TEST_CI_ACCOUNT_ID }}
@@ -194,9 +199,9 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/notify_kchat.sh
 
   kChat_notification:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
-      KCHAT_WEBHOOK_URL: ${{ vars.KCHAT_WEBHOOK_URL }}
+      KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
     needs: [ Windows, MacOS, Linux ]
     steps:
       - name: Checkout
@@ -204,9 +209,6 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'KDESKTOP-1066-Activate-integration-test-with-a-CI-nightly' }}
   
-      - name: Grant Notify script execute permission
-        run: chmod +x ./infomaniak-build-tools/notify_kchat.sh
-
       - name: Notify kChat (Success or Failure)
         run: |
           # If any of the needed jobs failed, prefix the message with @desktop-dev
@@ -217,5 +219,5 @@ jobs:
           fi
         
           # Call the notify_kchat.sh script with the message
-          ./infomaniak-build-tools/notify_kchat.sh "$MESSAGE"
+          ./infomaniak-build-tools/notify_kchat.ps1 "$MESSAGE"
 

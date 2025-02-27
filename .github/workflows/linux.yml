@@ -2,6 +2,8 @@ name: Linux kDrive desktop CI on x64 Arch
 
 on:
   pull_request: 
+    branches-ignore:
+        - 'release/**'
     types: [synchronize, review_requested]
 
 concurrency:
