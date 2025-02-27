@@ -70,7 +70,7 @@ inline bool isRunningOnCI(bool print = true) {
 }
 
 inline bool isNightlyTest(bool print = true) {
-    static const bool isNightly = !loadEnvVariable("KDRIVE_TEST_CI_NIGHTLY", false).empty();
+    static const bool isNightly = !loadEnvVariable("KDRIVE_TEST_CI_EXTENDED_TEST", false).empty();
     if (print && !isNightly) {
         std::cout << " (Skipped, nightly test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skipped, nightly
                                                // test) :  OK
