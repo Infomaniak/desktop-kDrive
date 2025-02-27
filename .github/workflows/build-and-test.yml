@@ -27,7 +27,7 @@ env:
 
 jobs:
   ExtendedChecks:
-    if: ${{ env.KDRIVE_TEST_CI_EXTENDED_TEST == 'true' }}
+    if: ${{ $KDRIVE_TEST_CI_EXTENDED_TEST == 'true' }}
     runs-on: [ self-hosted, desktop-kdrive ]
     steps:
       - name: Extended checks
