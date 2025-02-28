@@ -315,6 +315,10 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
         case SyncStep::UpdateDetection2:
             workers[0] = _syncPal->_localUpdateTreeWorker;
             workers[1] = _syncPal->_remoteUpdateTreeWorker;
+            _syncPal->_localUpdateTree->clear(); // Rebuild update tree from scratch every time
+            _syncPal->_localUpdateTree->init();
+            _syncPal->_remoteUpdateTree->clear(); // Rebuild update tree from scratch every time
+            _syncPal->_remoteUpdateTree->init();
             inputSharedObject[0] = _syncPal->operationSet(ReplicaSide::Local);
             inputSharedObject[1] = _syncPal->operationSet(ReplicaSide::Remote);
             break;
