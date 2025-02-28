@@ -26,11 +26,19 @@ YELLOW='\033[0;33m'
 NC='\033[0m'
 
 if [ -z "$1" ]; then
-    echo -e "${RED}Error: No filename provided. Usage: $0 <filename>${NC}"
+    echo -e "${RED}Error: No path provided. Usage: $0 <dir path> <filename>${NC}"
     exit 1
 fi
 
-tester=$1
+if [ -z "$2" ]; then
+    echo -e "${RED}Error: No filename provided. Usage: $0 <dir path> <filename>${NC}"
+    exit 1
+fi
+
+
+
+dir=$1
+tester=$2
 
 if [ ! -f "$tester" ]; then
     echo -e "${RED}Error: File $tester does not exist.${NC}"
@@ -38,8 +46,8 @@ if [ ! -f "$tester" ]; then
 fi
 
 echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
+pushd $(dirname "$dir") 1>/dev/null
 chmod +x $tester
-pushd $(dirname "$tester") 1>/dev/null
 ./$(basename "$tester")
 
 if [ $? -ne 0 ]; then
