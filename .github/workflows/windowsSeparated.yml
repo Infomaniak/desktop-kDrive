@@ -64,14 +64,14 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-artifacts
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/install/*
+          name: windows-build-test_common
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/build/kDrive_test_common.exe
           retention-days: 3
           overwrite: true
         if: always()
 
-      - name: Clean-up generated code
-        run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
+      #- name: Clean-up generated code
+      #  run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
 
   test-common-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
@@ -81,20 +81,14 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-          submodules: recursive
-        
       - name: Clean the log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
-      - name: Download build artifacts
+      - name: Download test executable
         uses: actions/download-artifact@v4
         with:
-          name: windows-build-artifacts
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/install/
+          name: windows-test_common
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Execute tests
         run: |
@@ -102,7 +96,7 @@ jobs:
           $failures = @()
 
           $file = "kDrive_test_common.exe"
-          $path = "./build-windows/install/$file"
+          $path = "./build-windows/test/$file"
           Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
           & $path
           if ($LASTEXITCODE -ne 0) {
@@ -115,11 +109,11 @@ jobs:
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-tests-logs
+          name: windows-tests-logs-common
           path: C:/Windows/Temp/kDrive-logdir/*
           retention-days: 3
           overwrite: true
         if: always()
 
-      - name: Clean-up generated code
-        run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
+      - name: Clean-up
+        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
