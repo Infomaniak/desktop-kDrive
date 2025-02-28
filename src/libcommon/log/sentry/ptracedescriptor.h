@@ -71,7 +71,7 @@ struct PTraceDescriptor {
                          const PTraceName parentPTraceName = PTraceName::None, const double _customSampleRate = 1.0) :
             _pTraceName{pTraceName}, _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
             _pTraceDescription{std::move(pTraceDescription)}
-#ifdef DEBUG
+#if NDEBUG
             , _customSampleRate{_customSampleRate}
 #endif
         {}
