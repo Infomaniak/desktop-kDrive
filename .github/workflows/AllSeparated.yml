@@ -140,10 +140,9 @@ jobs:
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-common-files
+          name: linux-build-common-files
           path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/sync-exclude.lst
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test common executable
@@ -152,7 +151,6 @@ jobs:
           name: linux-build-test-common
           path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_common
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test common server executable
@@ -161,7 +159,6 @@ jobs:
           name: linux-build-test-common-server
           path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_common_server
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test server executable
@@ -170,7 +167,6 @@ jobs:
           name: linux-build-test-server
           path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_server
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test syncengine executable
@@ -179,7 +175,6 @@ jobs:
           name: linux-build-test-syncengine
           path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_syncengine
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test parms executable
@@ -188,7 +183,6 @@ jobs:
           name: linux-build-test-parms
           path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_parms
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean-up generated code
@@ -224,9 +218,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/litesync-exclude.lst
+          path: |
+              /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/sync-exclude.lst
+              /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*.dylib
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test common executable
@@ -235,7 +230,6 @@ jobs:
           name: macos-build-test-common
           path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test common server executable
@@ -244,7 +238,6 @@ jobs:
           name: macos-build-test-common-server
           path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common_server
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test server executable
@@ -253,7 +246,6 @@ jobs:
           name: macos-build-test-server
           path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_server
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test syncengine executable
@@ -262,7 +254,6 @@ jobs:
           name: macos-build-test-syncengine
           path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_syncengine
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Upload build test parms executable
@@ -271,7 +262,6 @@ jobs:
           name: macos-build-test-parms
           path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_parms
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean-up generated code
@@ -320,7 +310,6 @@ jobs:
           name: windows-logs-tests-common
           path: C:/Windows/Temp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean up
@@ -369,7 +358,6 @@ jobs:
           name: windows-logs-tests-common-server
           path: C:/Windows/Temp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean up
@@ -418,7 +406,6 @@ jobs:
           name: windows-logs-tests-server
           path: C:/Windows/Temp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean up
@@ -467,7 +454,6 @@ jobs:
           name: windows-logs-tests-syncengine
           path: C:/Windows/Temp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean up
@@ -516,7 +502,6 @@ jobs:
           name: windows-logs-tests-parms
           path: C:/Windows/Temp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean up
@@ -554,7 +539,6 @@ jobs:
           name: linux-tests-logs-tests-common
           path: /tmp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean up
@@ -592,7 +576,6 @@ jobs:
           name: linux-tests-logs-tests-common-server
           path: /tmp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean up
@@ -630,7 +613,6 @@ jobs:
           name: linux-tests-logs-tests-server
           path: /tmp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean up
@@ -668,7 +650,6 @@ jobs:
           name: linux-tests-logs-tests-syncengine
           path: /tmp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
       - name: Clean up
@@ -706,7 +687,6 @@ jobs:
           name: linux-tests-logs-tests-parms
           path: /tmp/kDrive-logdir/*
           retention-days: 3
-          overwrite: true
         if: always()
 
   test-common-MacOS:
@@ -745,7 +725,6 @@ jobs:
           name: macos-tests-logs-tests-common
           path: ${{ env.logdir_path }}/*
           retention-days: 3
-          overwrite: true
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
@@ -792,7 +771,6 @@ jobs:
           name: macos-tests-logs-tests-common-server
           path: ${{ env.logdir_path }}/*
           retention-days: 3
-          overwrite: true
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
@@ -839,7 +817,6 @@ jobs:
           name: macos-tests-logs-tests-server
           path: ${{ env.logdir_path }}/*
           retention-days: 3
-          overwrite: true
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
@@ -886,7 +863,6 @@ jobs:
           name: macos-tests-logs-tests-syncengine
           path: ${{ env.logdir_path }}/*
           retention-days: 3
-          overwrite: true
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
@@ -933,7 +909,6 @@ jobs:
           name: macos-tests-logs-tests-parms
           path: ${{ env.logdir_path }}/*
           retention-days: 3
-          overwrite: true
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
