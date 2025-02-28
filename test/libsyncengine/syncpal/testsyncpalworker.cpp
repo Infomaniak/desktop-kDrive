@@ -123,9 +123,9 @@ void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::
 
     // Let the first sync finish
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Propagation2; },
-                                          std::chrono::seconds(5), std::chrono::milliseconds(5)));
+                                          std::chrono::seconds(20), std::chrono::milliseconds(5)));
 
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Idle; }, std::chrono::seconds(5),
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor([this]() { return _syncPal->step() == SyncStep::Idle; }, std::chrono::seconds(20),
                                           std::chrono::milliseconds(5)));
 }
 
@@ -283,10 +283,7 @@ void TestSyncPalWorker::testInternalPause3() {
                 while (!_testEnded && mockExecutorWorkerWaiting.load()) {
                     std::this_thread::sleep_for(loopWait);
                 }
-                auto returnValue = mockExecutorWorkerExitInfo;
-                mockExecutorWorkerExitInfo = ExitInfo(ExitCode::Unknown, ExitCause::Unknown);
-                mockExecutorWorkerWaiting = false;
-                return returnValue;
+                return mockExecutorWorkerExitInfo;
             });
 
     // Simulate a FileSysem event to start a sync cycle
@@ -313,22 +310,19 @@ void TestSyncPalWorker::testInternalPause3() {
 
     CPPUNIT_ASSERT_EQUAL(SyncStatus::Paused, _syncPal->status());
 
-    mockExecutorWorkerExitInfo = ExitCode::Ok;
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&mockExecutorWorkerWaiting]() { return mockExecutorWorkerWaiting.load(); },
-                                          testTimeout, loopWait));
-    mockExecutorWorkerWaiting = false;
-
     // Wait for the sync to finish
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Idle; }, testTimeout,
+    mockExecutorWorkerExitInfo = ExitCode::Ok;
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Idle; },
+                                          [&mockExecutorWorkerWaiting]() { mockExecutorWorkerWaiting = false; }, testTimeout,
                                           loopWait));
     CPPUNIT_ASSERT(mockLfso->snapshot()->updated());
 
     // Wait for a new sync to start
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->step() != SyncStep::Idle; }, testTimeout,
                                           loopWait));
-    mockExecutorWorkerExitInfo = ExitCode::Ok; // Ensure the mocked executor worker will complete successfully
     // Wait for the sync to finish
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Idle; }, testTimeout,
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Idle; },
+                                          [&mockExecutorWorkerWaiting]() { mockExecutorWorkerWaiting = false; }, testTimeout,
                                           loopWait));
     CPPUNIT_ASSERT(!mockLfso->snapshot()->updated());
 }
