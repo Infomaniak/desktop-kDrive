@@ -192,7 +192,7 @@ void TestSyncPalWorker::testInternalPause2() {
     const auto mockPlatformInconsistencyChecker = mockSyncPal->getMockPlatformInconsistencyCheckerWorker();
     std::atomic_bool mockPlatformInconsistencyCheckerWaiting = false;
     mockPlatformInconsistencyChecker->setMockExecuteCallback(
-            [loopWait, &mockPlatformInconsistencyCheckerWaiting, &mockPlatformInconsistencyChecker, this]() -> ExitInfo {
+            [loopWait, &mockPlatformInconsistencyCheckerWaiting, this]() -> ExitInfo {
                 if (_testEnded) {
                     return ExitCode::Ok;
                 }
@@ -245,13 +245,12 @@ void TestSyncPalWorker::testInternalPause2() {
     // Wait for the sync to reach the propagation2 step where it can pause.
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the sync to finish
             [&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Propagation2; },
-            [&syncpalWorker, this]() { CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status()); }, testTimeout, loopWait));
+            [this]() { CPPUNIT_ASSERT_EQUAL(SyncStatus::Running, _syncPal->status()); }, testTimeout, loopWait));
 
     // Ensure the sync is paused when the propagation2 step is reached
     CPPUNIT_ASSERT(TimeoutHelper::waitFor( // Wait for the sync to finish
             [&syncpalWorker]() { return syncpalWorker->isPaused(); },
-            [&syncpalWorker, this]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout,
-            loopWait));
+            [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
 
     mockRfso->setNetworkAvailability(true);
 
@@ -270,25 +269,25 @@ void TestSyncPalWorker::testInternalPause3() {
     const auto mockLfso = mockSyncPal->getMockLFSOWorker();
     const auto mockRfso = mockSyncPal->getMockRFSOWorker();
     const auto syncpalWorker = mockSyncPal->getSyncPalWorker();
+    const auto mockExecutorWorker = mockSyncPal->getMockExecutorWorker();
 
     // Setup custom worker
-    const auto mockExecutorWorker = mockSyncPal->getMockExecutorWorker();
     std::atomic_bool mockExecutorWorkerWaiting = false;
-    std::atomic<ExitInfo> mockExecutorWorkerExitInfo;
+    ExitInfo mockExecutorWorkerExitInfo;
     mockExecutorWorker->setMockExecuteCallback(
             [&mockExecutorWorkerWaiting, &mockExecutorWorkerExitInfo, this, loopWait]() -> ExitInfo {
-        if (_testEnded) {
-            return ExitInfo(ExitCode::Ok, ExitCause::Unknown);
-        }
-        mockExecutorWorkerWaiting = true;
-        while (!_testEnded && mockExecutorWorkerExitInfo == ExitInfo(ExitCode::Unknown, ExitCause::Unknown)) {
-            std::this_thread::sleep_for(loopWait);
-        }
-        auto returnValue = mockExecutorWorkerExitInfo.load();
-        mockExecutorWorkerExitInfo = ExitInfo(ExitCode::Unknown, ExitCause::Unknown);
-        mockExecutorWorkerWaiting = false;
-        return returnValue;
-    });
+                if (_testEnded) {
+                    return ExitInfo(ExitCode::Ok, ExitCause::Unknown);
+                }
+                mockExecutorWorkerWaiting = true;
+                while (!_testEnded && mockExecutorWorkerWaiting.load()) {
+                    std::this_thread::sleep_for(loopWait);
+                }
+                auto returnValue = mockExecutorWorkerExitInfo;
+                mockExecutorWorkerExitInfo = ExitInfo(ExitCode::Unknown, ExitCause::Unknown);
+                mockExecutorWorkerWaiting = false;
+                return returnValue;
+            });
 
     // Simulate a FileSysem event to start a sync cycle
     mockLfso->simulateFSEvent();
@@ -306,13 +305,18 @@ void TestSyncPalWorker::testInternalPause3() {
 
     mockExecutorWorkerExitInfo =
             ExitInfo(ExitCode::NetworkError, ExitCause::Unknown); // Simulate a network error in the executor worker
+    mockExecutorWorkerWaiting = false; // Unlock the executor worker
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor(
             [&syncpalWorker]() { return syncpalWorker->isPaused(); },
             [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
 
     CPPUNIT_ASSERT_EQUAL(SyncStatus::Paused, _syncPal->status());
+
     mockExecutorWorkerExitInfo = ExitCode::Ok;
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&mockExecutorWorkerWaiting]() { return mockExecutorWorkerWaiting.load(); },
+                                          testTimeout, loopWait));
+    mockExecutorWorkerWaiting = false;
 
     CPPUNIT_ASSERT(TimeoutHelper::waitFor(
             [&syncpalWorker]() { return syncpalWorker->_unpauseAsked; },
