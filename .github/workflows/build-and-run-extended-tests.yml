@@ -197,7 +197,7 @@ jobs:
 
   kChat_notification:
     if: ${{ always() }}
-    needs: [ Windows, MacOS, Linux ]
+    needs: [ Windows-extended-tests, MacOS-extended-tests, Linux-extended-tests ]
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
       KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
