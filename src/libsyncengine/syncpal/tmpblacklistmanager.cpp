@@ -193,7 +193,7 @@ void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, ReplicaSide si
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, tmp);
 
     logMessage(L"Item added in tmp blacklist", nodeId, side);
-    removeFromDB(nodeId, side);
+    // removeFromDB(nodeId, side);
 }
 
 void TmpBlacklistManager::removeFromDB(const NodeId &nodeId, const ReplicaSide side) {
