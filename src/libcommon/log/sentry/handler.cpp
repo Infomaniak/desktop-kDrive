@@ -27,6 +27,7 @@
 #include <sstream>
 
 #include <asserts.h>
+#include <random>
 
 namespace KDC::sentry {
 
@@ -553,7 +554,7 @@ pTraceId Handler::startTransaction(const std::string &name, const std::string &d
     sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(name.c_str(), description.c_str());
     sentry_transaction_t *tx = sentry_transaction_start(tx_ctx, sentry_value_new_null());
     pTraceId traceId = makeUniquePTraceId();
-    auto [it, res] = _pTraces.try_emplace(traceId, traceId);
+    const auto [it, res] = _pTraces.try_emplace(traceId, traceId);
     if (!res) {
         assert(false && "Transaction already exists");
         return 0;
@@ -566,7 +567,7 @@ pTraceId Handler::startTransaction(const std::string &name, const std::string &d
 }
 
 pTraceId Handler::startSpan(const std::string &name, const std::string &description, const pTraceId &parentId) {
-    auto parentIt = _pTraces.find(parentId);
+    const auto parentIt = _pTraces.find(parentId);
     if (parentIt == _pTraces.end()) {
         assert(false && "Parent transaction/span does not exist");
         return 0;
@@ -603,6 +604,14 @@ pTraceId Handler::startSpan(const std::string &name, const std::string &descript
     return traceId;
 }
 
+bool Handler::checkCustomSampleRate(const PTraceDescriptor &pTraceInfo) const {
+    if (pTraceInfo._customSampleRate >= 1.0) return true;
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_real_distribution dis(0.0, 1.0);
+    return dis(gen) < pTraceInfo._customSampleRate;
+}
+
 pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) {
     if (!_isSentryActivated || pTraceInfo._pTraceName == PTraceName::None) return 0;
 
@@ -619,19 +628,25 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
 
         // Find the parent pTrace
         auto parentPTraceIt = pTraceMap.find(pTraceInfo._parentPTraceName);
-        if (parentPTraceIt == pTraceMap.end() || parentPTraceIt->second == 0) {
+        if (parentPTraceIt == pTraceMap.end()) {
             assert(false && "Parent transaction/span is not running.");
             return 0;
         }
 
-        const pTraceId &parentId = parentPTraceIt->second;
-
         // Start the span
-        newPTraceId = startSpan(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription, parentId);
+        if (const pTraceId &parentId = parentPTraceIt->second; parentId != 0 && checkCustomSampleRate(pTraceInfo)) {
+            newPTraceId = startSpan(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription, parentId);
+        } else {
+            newPTraceId = 0;
+        }
         _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] = newPTraceId;
     } else {
         // Start the transaction
-        newPTraceId = startTransaction(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription);
+        if (checkCustomSampleRate(pTraceInfo)) {
+            newPTraceId = startTransaction(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription);
+        } else {
+            newPTraceId = 0;
+        }
         _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] = newPTraceId;
     }
     return newPTraceId;
@@ -649,13 +664,13 @@ void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTrac
     auto &pTraceMap = pTraceMapIt->second;
 
     auto pTraceIt = pTraceMap.find(pTraceInfo._pTraceName);
-    if (pTraceIt == pTraceMap.end() || pTraceIt->second == 0) {
+    if (pTraceIt == pTraceMap.end()) {
         assert(false && "Transaction is not running");
         return;
     }
 
     stopPTrace(pTraceIt->second, status);
-    pTraceIt->second = 0;
+    pTraceMap.erase(pTraceIt);
 }
 
 } // namespace KDC::sentry
