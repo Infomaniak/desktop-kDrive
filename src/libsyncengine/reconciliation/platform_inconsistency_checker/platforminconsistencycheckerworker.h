@@ -35,17 +35,12 @@ class PlatformInconsistencyCheckerWorker : public OperationProcessor {
         ExitCode checkRemoteTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath);
         ExitCode checkLocalTree(std::shared_ptr<Node> localNode, const SyncPath &parentPath);
 
-        void blacklistNode(const std::shared_ptr<Node> node, const InconsistencyType inconsistencyType);
+        void ignoreNode(std::shared_ptr<Node> node, InconsistencyType inconsistencyType);
         bool checkPathAndName(std::shared_ptr<Node> remoteNode);
         void checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode);
 
         bool pathChanged(std::shared_ptr<Node> node) const;
-        void removeLocalNodeFromDb(std::shared_ptr<Node> localNode);
-        struct NodeIdPair {
-                NodeId remoteId;
-                NodeId localId; // Optional, only required if the file is already synchronized.
-        };
-        std::list<NodeIdPair> _idsToBeRemoved;
+        // void removeLocalNodeFromDb(std::shared_ptr<Node> localNode);
 
         friend class TestPlatformInconsistencyCheckerWorker;
 };

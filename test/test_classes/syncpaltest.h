@@ -28,17 +28,8 @@ class SyncPalTest final : public SyncPal {
         SyncPalTest(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted) :
             SyncPal(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath, version,
                     hasFullyCompleted) {}
-        SyncPalTest(int syncDbId, const std::string &version) :
+        SyncPalTest(const int syncDbId, const std::string &version) :
             SyncPal(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbId, version) {}
-
-    private:
-        // No implementation of the following methods in tests because `_tmpBlacklistManager` is not defined.
-        void increaseErrorCount(const NodeId & /*nodeId*/, NodeType /*type*/, const SyncPath & /*relativePath*/,
-                                ReplicaSide /*side*/) override {}
-        int getErrorCount(const NodeId & /*nodeId*/, ReplicaSide /*side*/) const noexcept override { return 0; }
-        void blacklistTemporarily(const NodeId & /*nodeId*/, const SyncPath & /*relativePath*/, ReplicaSide /*side*/) override {}
-        void refreshTmpBlacklist() override {}
-        void removeItemFromTmpBlacklist(const NodeId & /*nodeId*/, ReplicaSide /*side*/) override {}
 };
 
 } // namespace KDC

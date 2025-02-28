@@ -166,14 +166,13 @@ void ExecutorWorker::execute() {
             if (!executorExitInfo) {
                 executorExitInfo = handleExecutorError(syncOp, executorExitInfo);
                 if (!executorExitInfo) { // If the error is not handled, stop the execution
-                    increaseErrorCount(syncOp);
                     cancelAllOngoingJobs();
                     break;
-                } else { // If the error is handled, continue the execution
-                    if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
-                    continue;
                 }
+
+                // If the error is handled, continue the execution
                 if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
+                continue;
             }
 
             if (job) {
@@ -215,7 +214,7 @@ void ExecutorWorker::execute() {
     }
 
     _syncPal->_syncOps->clear();
-    _syncPal->_remoteFSObserverWorker->forceUpdate();
+    // _syncPal->_remoteFSObserverWorker->forceUpdate();
 
     if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
         // If there are too many changes on the local filesystem, the OS stops sending events at some point.
@@ -632,7 +631,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
                                                    << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
                                                    << exitInfo);
-                _syncPal->setRestart(true);
+                //_syncPal->setRestart(true);
 
                 if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->affectedNode())) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
@@ -1361,7 +1360,7 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
             }
         }
 
-        if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
+        if (const ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
             cancelAllOngoingJobs();
             return exitInfo;
         }
@@ -1421,8 +1420,6 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                         }
                     }
                 }
-            } else {
-                increaseErrorCount(syncOp);
             }
 
             // Delete job
@@ -1443,10 +1440,6 @@ ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPt
 
     if (jobExitCause == ExitCause::QuotaExceeded) {
         _syncPal->pause();
-    } else {
-        // The item should be temporarily blacklisted
-        _syncPal->blacklistTemporarily(syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(),
-                                       syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()));
     }
 
     // Clear update tree
@@ -2175,10 +2168,6 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
         if (code == NetworkErrorCode::destinationAlreadyExists) {
             // Folder is already there, ignore this error
         } else if (code == NetworkErrorCode::forbiddenError) {
-            // The item should be blacklisted
-            _syncPal->blacklistTemporarily(
-                    syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(),
-                    syncOp->affectedNode()->getPath(), ReplicaSide::Local);
             Error error(_syncPal->syncDbId(),
                         syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(), "",
                         syncOp->affectedNode()->type(), syncOp->affectedNode()->getPath(), ConflictType::None,
@@ -2281,18 +2270,6 @@ void ExecutorWorker::manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<Abs
     }
 }
 
-void ExecutorWorker::increaseErrorCount(SyncOpPtr syncOp) {
-    if (syncOp->affectedNode() && syncOp->affectedNode()->id().has_value()) {
-        _syncPal->increaseErrorCount(*syncOp->affectedNode()->id(), syncOp->affectedNode()->type(),
-                                     syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()));
-
-        // Clear update tree
-        if (!deleteOpNodes(syncOp)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
-        }
-    }
-}
-
 ExitInfo ExecutorWorker::getFileSize(const SyncPath &path, uint64_t &size) {
     IoError ioError = IoError::Unknown;
     if (!IoHelper::getFileSize(path, size, ioError)) {
@@ -2364,7 +2341,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         default: {
             break;
         }
-    };
+    }
     LOG_WARN(_logger, "Unhandled error in ExecutorWorker::handleExecutorError: " << opsExitInfo);
     return opsExitInfo;
 }
@@ -2380,8 +2357,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(SyncOpPtr syncOp, const E
             return exitInfo;
         }
     } else {
-        // Both local and remote item will be temporarily blacklisted
-        auto localNode = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
+        const auto localNode = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
         if (!localNode) return ExitCode::LogicError;
 
         const SyncPath relativeLocalFilePath = localNode->getPath();
@@ -2391,12 +2367,12 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(SyncOpPtr syncOp, const E
             return exitInfo;
         }
     }
-    _syncPal->setRestart(true);
+    //_syncPal->setRestart(true);
     return removeDependentOps(localBlacklistedNode, remoteBlacklistedNode, syncOp->type());
 }
 
 ExitInfo ExecutorWorker::handleOpsFileNotFound(SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
-    _syncPal->setRestart(true);
+    //_syncPal->setRestart(true);
     _syncPal->invalideSnapshots(); // There is a file/dir missing; we need to recompute the snapshot.
     return removeDependentOps(syncOp);
 }
@@ -2421,24 +2397,6 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, const Exit
             assert(syncOp->type() == OperationType::Move);
             assert(syncOp->correspondingNode());
             relativeLocalPath = syncOp->correspondingNode()->parentNode()->getPath() / syncOp->newName();
-        }
-
-        // Check if the local item is already blacklisted
-        if (_syncPal->isTmpBlacklisted(relativeLocalPath, ReplicaSide::Local)) {
-            LOGW_SYNCPAL_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath)
-                                                << L" is already blacklisted locally, blacklisting remote corresponding node.");
-            _syncPal->blacklistTemporarily(
-                    syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), relativeLocalPath,
-                    ReplicaSide::Remote);
-
-            // Clear update tree
-            if (!deleteOpNodes(syncOp)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
-                return ExitCode::DataError;
-            }
-
-            _syncPal->setRestart(true);
-            return removeDependentOps(syncOp);
         }
 
         // Check if we got the read right on the local item

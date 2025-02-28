@@ -41,6 +41,14 @@ SnapshotItem &SnapshotItem::operator=(const SnapshotItem &other) {
     return *this;
 }
 
+bool SnapshotItem::operator==(const SnapshotItem &other) const {
+    return _id == other.id() && _parentId == other.parentId() && _name == other.name() &&
+           _normalizedName == other.normalizedName() && _createdAt == other.createdAt() &&
+           /*_lastModified == other.lastModified() &&*/ _type == other.type() && _size == other.size() &&
+           _isLink == other.isLink() && _contentChecksum == other.contentChecksum() && _canWrite == other.canWrite() &&
+           _canShare == other.canShare() && _path == other.path();
+}
+
 void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     // Update all attributes but children list
     _id = other.id();

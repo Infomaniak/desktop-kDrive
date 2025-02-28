@@ -70,7 +70,7 @@ void OperationGeneratorWorker::execute() {
         std::shared_ptr<Node> currentNode = _queuedToExplore.front();
         _queuedToExplore.pop();
 
-        if (!currentNode) {
+        if (!currentNode || currentNode->ignored()) {
             continue;
         }
 

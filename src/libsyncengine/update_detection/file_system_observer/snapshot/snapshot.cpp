@@ -98,7 +98,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         }
     }
 
-    const SnapshotItem &prevItem = _items[newItem.id()];
+    const SnapshotItem prevItem = _items[newItem.id()];
 
     // Update parent's children lists
     bool parentChanged = false;
@@ -126,7 +126,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     // Update item
     _items[newItem.id()].copyExceptChildren(newItem);
 
-    if (parentChanged || !isOrphan(newItem.id())) {
+    if (!isOrphan(newItem.id()) && newItem != prevItem) {
         startUpdate();
     }
 

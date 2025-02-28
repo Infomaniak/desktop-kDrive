@@ -93,11 +93,9 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (opTypeFromOS == OperationType::Delete) {
             // Check if exists with same nodeId
             NodeId prevNodeId = _snapshot->itemId(relativePath);
-            bool existsWithSameId = false;
-            NodeId otherNodeId;
             if (!prevNodeId.empty()) {
-                if (_syncPal->isTmpBlacklisted(prevNodeId, ReplicaSide::Local))
-                    _syncPal->removeItemFromTmpBlacklist(relativePath);
+                bool existsWithSameId = false;
+                NodeId otherNodeId;
                 if (auto checkError = IoError::Success;
                     IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId,
                                                               checkError) &&
@@ -135,14 +133,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         bool isLink = false;
         if (exists) {
             nodeId = std::to_string(fileStat.inode);
-
-            if (_syncPal->isTmpBlacklisted(nodeId, ReplicaSide::Local)) {
-                _syncPal->removeItemFromTmpBlacklist(relativePath);
-                if (opTypeFromOS == OperationType::Edit) {
-                    NodeId itemId = _snapshot->itemId(relativePath);
-                    if (!itemId.empty()) _snapshot->setLastModified(itemId, 0);
-                }
-            }
 
             ItemType itemType;
             if (!IoHelper::getItemType(absolutePath, itemType)) {
@@ -206,8 +196,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 continue;
             }
 
-            _syncPal->removeItemFromTmpBlacklist(itemId, ReplicaSide::Local);
-
             if (_snapshot->removeItem(itemId)) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                   << L" (" << Utility::s2ws(itemId) << L")");
@@ -251,8 +239,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             if (!changed) {
 #ifdef _WIN32
                 VfsStatus vfsStatus;
-                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus);
-                    !exitInfo) {
+                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, vfsStatus); !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
                     invalidateSnapshot();
@@ -261,7 +248,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
                 PinState pinState = _syncPal->vfs()->pinState(absolutePath);
                 if (vfsStatus.isPlaceholder) {
-                    if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) || (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
+                    if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
+                        (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                         // Change status in order to start hydration/dehydration
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
                         if (!_syncPal->vfs()->fileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {

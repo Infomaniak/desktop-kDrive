@@ -49,7 +49,6 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
-#include "tmpblacklistmanager.h"
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 
@@ -248,17 +247,8 @@ SyncStep SyncPal::step() const {
     return (_syncPalWorker ? _syncPalWorker->step() : SyncStep::None);
 }
 
-ExitCode SyncPal::fileStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const {
-    if (_tmpBlacklistManager && _tmpBlacklistManager->isTmpBlacklisted(path, side)) {
-        if (path == Utility::sharedFolderName()) {
-            status = SyncFileStatus::Success;
-        } else {
-            status = SyncFileStatus::Ignored;
-        }
-        return ExitCode::Ok;
-    }
-
-    bool found;
+ExitCode SyncPal::fileStatus(const ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const {
+    bool found = false;
     if (!_syncDb->status(side, path, status, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::status");
         return ExitCode::DbError;
@@ -474,34 +464,26 @@ void SyncPal::resetSharedObjects() {
 void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
     LOG_SYNCPAL_DEBUG(_logger, "Create workers");
 #if defined(_WIN32)
-    _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-            new LocalFileSystemObserverWorker_win(shared_from_this(), "Local File System Observer", "LFSO"));
+    _localFSObserverWorker =
+            std::make_shared<LocalFileSystemObserverWorker_win>(shared_from_this(), "Local File System Observer", "LFSO");
 #else
-    _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-            new LocalFileSystemObserverWorker_unix(shared_from_this(), "Local File System Observer", "LFSO"));
+    _localFSObserverWorker = std::make_shared<FileSystemObserverWorker>(shared_from_this(), "Local File System Observer", "LFSO");
 #endif
-    _remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-            new RemoteFileSystemObserverWorker(shared_from_this(), "Remote File System Observer", "RFSO"));
-    _computeFSOperationsWorker = std::shared_ptr<ComputeFSOperationWorker>(
-            new ComputeFSOperationWorker(shared_from_this(), "Compute FS Operations", "COOP"));
-    _localUpdateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
-            new UpdateTreeWorker(shared_from_this(), "Local Tree Updater", "LTRU", ReplicaSide::Local));
-    _remoteUpdateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
-            new UpdateTreeWorker(shared_from_this(), "Remote Tree Updater", "RTRU", ReplicaSide::Remote));
-    _platformInconsistencyCheckerWorker = std::shared_ptr<PlatformInconsistencyCheckerWorker>(
-            new PlatformInconsistencyCheckerWorker(shared_from_this(), "Platform Inconsistency Checker", "PICH"));
-    _conflictFinderWorker =
-            std::shared_ptr<ConflictFinderWorker>(new ConflictFinderWorker(shared_from_this(), "Conflict Finder", "COFD"));
-    _conflictResolverWorker =
-            std::shared_ptr<ConflictResolverWorker>(new ConflictResolverWorker(shared_from_this(), "Conflict Resolver", "CORE"));
-    _operationsGeneratorWorker = std::shared_ptr<OperationGeneratorWorker>(
-            new OperationGeneratorWorker(shared_from_this(), "Operation Generator", "OPGE"));
-    _operationsSorterWorker =
-            std::shared_ptr<OperationSorterWorker>(new OperationSorterWorker(shared_from_this(), "Operation Sorter", "OPSO"));
-    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(shared_from_this(), "Executor", "EXEC"));
-    _syncPalWorker = std::shared_ptr<SyncPalWorker>(new SyncPalWorker(shared_from_this(), "Main", "MAIN", startDelay));
-
-    _tmpBlacklistManager = std::shared_ptr<TmpBlacklistManager>(new TmpBlacklistManager(shared_from_this()));
+    _remoteFSObserverWorker =
+            std::make_shared<RemoteFileSystemObserverWorker>(shared_from_this(), "Remote File System Observer", "RFSO");
+    _computeFSOperationsWorker = std::make_shared<ComputeFSOperationWorker>(shared_from_this(), "Compute FS Operations", "COOP");
+    _localUpdateTreeWorker =
+            std::make_shared<UpdateTreeWorker>(shared_from_this(), "Local Tree Updater", "LTRU", ReplicaSide::Local);
+    _remoteUpdateTreeWorker =
+            std::make_shared<UpdateTreeWorker>(shared_from_this(), "Remote Tree Updater", "RTRU", ReplicaSide::Remote);
+    _platformInconsistencyCheckerWorker =
+            std::make_shared<PlatformInconsistencyCheckerWorker>(shared_from_this(), "Platform Inconsistency Checker", "PICH");
+    _conflictFinderWorker = std::make_shared<ConflictFinderWorker>(shared_from_this(), "Conflict Finder", "COFD");
+    _conflictResolverWorker = std::make_shared<ConflictResolverWorker>(shared_from_this(), "Conflict Resolver", "CORE");
+    _operationsGeneratorWorker = std::make_shared<OperationGeneratorWorker>(shared_from_this(), "Operation Generator", "OPGE");
+    _operationsSorterWorker = std::make_shared<OperationSorterWorker>(shared_from_this(), "Operation Sorter", "OPSO");
+    _executorWorker = std::make_shared<ExecutorWorker>(shared_from_this(), "Executor", "EXEC");
+    _syncPalWorker = std::make_shared<SyncPalWorker>(shared_from_this(), "Main", "MAIN", startDelay);
 }
 
 void SyncPal::freeWorkers() {
@@ -518,7 +500,6 @@ void SyncPal::freeWorkers() {
     _operationsSorterWorker.reset();
     _executorWorker.reset();
     _syncPalWorker.reset();
-    _tmpBlacklistManager.reset();
 }
 
 ExitCode SyncPal::setSyncPaused(bool value) {
@@ -1296,39 +1277,6 @@ void SyncPal::fixNodeTableDeleteItemsWithNullParentNodeId() {
     }
 }
 
-void SyncPal::increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side) {
-    _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side);
-}
-
-int SyncPal::getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept {
-    return _tmpBlacklistManager->getErrorCount(nodeId, side);
-}
-
-void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {
-    _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
-}
-
-bool SyncPal::isTmpBlacklisted(const NodeId &nodeId, ReplicaSide side) const {
-    return _tmpBlacklistManager->isTmpBlacklisted(nodeId, side);
-}
-
-bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const {
-    return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
-}
-
-void SyncPal::refreshTmpBlacklist() {
-    _tmpBlacklistManager->refreshBlacklist();
-}
-
-void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
-    _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
-}
-
-void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
-    _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
-}
-
-
 ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause) {
     std::shared_ptr<Node> dummyNodePtr;
     return handleAccessDeniedItem(relativeLocalPath, dummyNodePtr, dummyNodePtr, cause);
@@ -1338,17 +1286,11 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
     if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
-        return ExitInfo(ExitCode::SystemError, ExitCause::SyncDirAccesError);
+        return {ExitCode::SystemError, ExitCause::SyncDirAccesError};
     }
-    Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
-                relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,
-                cause);
-    addError(error);
 
-    NodeId localNodeId = snapshot(ReplicaSide::Local)->itemId(relativeLocalPath);
-    if (localNodeId.empty()) {
-        SyncPath absolutePath = localPath() / relativeLocalPath;
-        if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
+    if (auto localNodeId = snapshot(ReplicaSide::Local)->itemId(relativeLocalPath); localNodeId.empty()) {
+        if (const auto absolutePath = localPath() / relativeLocalPath; !IoHelper::getNodeId(absolutePath, localNodeId)) {
             bool exists = false;
             IoError ioError = IoError::Success;
             if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
@@ -1364,31 +1306,10 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
         }
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativeLocalPath) << L" (NodeId: "
-                                         << Utility::s2ws(localNodeId)
-                                         << L" is blacklisted temporarily because of a denied access.");
-
-    NodeId remoteNodeId = snapshot(ReplicaSide::Remote)->itemId(relativeLocalPath);
-    if (bool found; remoteNodeId.empty() && !localNodeId.empty() &&
-                    !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
-        return {ExitCode::DbError, ExitCause::Unknown};
-    }
-
-    // Blacklist the item
-    if (!localNodeId.empty()) {
-        _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
-        if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
-            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
-        }
-    }
-
-    if (!remoteNodeId.empty()) {
-        _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
-        if (!updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
-            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
-        }
-    }
+    const Error error(syncDbId(), "", "", relativeLocalPath.extension() == SyncPath() ? NodeType::Directory : NodeType::File,
+                      relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,
+                      cause);
+    addError(error);
 
     return ExitCode::Ok;
 }

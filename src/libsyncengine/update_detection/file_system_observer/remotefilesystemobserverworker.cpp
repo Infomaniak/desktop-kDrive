@@ -635,7 +635,6 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
                                     actionInfo.actionCode != ActionCode::actionCodeCreate &&
                                     !_snapshot->exists(actionInfo.snapshotItem.id());
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
             _snapshot->updateItem(actionInfo.snapshotItem);
             if (exploreDir) {
                 // Retrieve all children
@@ -684,10 +683,9 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
         }
         case ActionCode::actionCodeMoveOut:
             // Ignore move out action if destination is inside the synced folder.
-            if (movedItems.find(actionInfo.snapshotItem.id()) != movedItems.end()) break;
+            if (movedItems.contains(actionInfo.snapshotItem.id())) break;
             [[fallthrough]];
         case ActionCode::actionCodeTrash:
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
             if (!_snapshot->removeItem(actionInfo.snapshotItem.id())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: "
                                                    << SyncName2WStr(actionInfo.snapshotItem.name()).c_str() << L" ("

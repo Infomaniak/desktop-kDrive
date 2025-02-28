@@ -92,6 +92,9 @@ class Node {
         }
         inline void setStatus(const NodeStatus &status) { _status = status; }
 
+        [[nodiscard]] bool ignored() const { return _ignored; }
+        void setIgnored(const bool ignored) { _ignored = ignored; }
+
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &children() { return _childrenById; }
         std::shared_ptr<Node> findChildren(const SyncName &name, const NodeId &nodeId = "");
         std::shared_ptr<Node> findChildrenById(const NodeId &nodeId);
@@ -126,7 +129,7 @@ class Node {
         friend class UpdateTree;
         // The node id should not be changed without also changing the map in the UpdateTree and the parent/child relationship in
         // other nodes
-        inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
+        void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
 
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSide::Unknown;
@@ -140,6 +143,7 @@ class Node {
         std::optional<SyncTime> _lastModified = std::nullopt;
         int64_t _size = 0;
         NodeStatus _status = NodeStatus::Unprocessed; // node was already processed during reconciliation
+        bool _ignored{false};
         std::unordered_map<NodeId, std::shared_ptr<Node>> _childrenById;
         std::shared_ptr<Node> _parentNode;
         // For moved items

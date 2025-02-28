@@ -118,8 +118,7 @@ set(syncengine_SRCS
     syncpal/syncpalworker.h syncpal/syncpalworker.cpp
     syncpal/virtualfilescleaner.h syncpal/virtualfilescleaner.cpp
     syncpal/excludelistpropagator.h syncpal/excludelistpropagator.cpp
-    syncpal/tmpblacklistmanager.h syncpal/tmpblacklistmanager.cpp
-    syncpal/conflictingfilescorrector.h syncpal/conflictingfilescorrector.cpp
+        syncpal/conflictingfilescorrector.h syncpal/conflictingfilescorrector.cpp
     # Progress Dispatcher
     progress/estimates.h
     progress/progressitem.h

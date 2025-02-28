@@ -131,16 +131,14 @@ class ExecutorWorker : public OperationProcessor {
         void cancelAllOngoingJobs(bool reschedule = false);
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
-        inline bool isLiteSyncActivated() { return _syncPal->vfsMode() != VirtualFileMode::Off; }
+        bool isLiteSyncActivated() const { return _syncPal->vfsMode() != VirtualFileMode::Off; }
 
-        inline std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) {
+        std::shared_ptr<UpdateTree> affectedUpdateTree(const SyncOpPtr &syncOp) const {
             return _syncPal->updateTree(otherSide(syncOp->targetSide()));
         }
-        inline std::shared_ptr<UpdateTree> targetUpdateTree(SyncOpPtr syncOp) {
+        std::shared_ptr<UpdateTree> targetUpdateTree(const SyncOpPtr &syncOp) const {
             return _syncPal->updateTree(syncOp->targetSide());
         }
-
-        void increaseErrorCount(SyncOpPtr syncOp);
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 

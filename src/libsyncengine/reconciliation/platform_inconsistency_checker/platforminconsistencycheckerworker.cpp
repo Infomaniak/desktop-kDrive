@@ -35,19 +35,8 @@ void PlatformInconsistencyCheckerWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
     auto start = std::chrono::steady_clock::now();
 
-    _idsToBeRemoved.clear();
-
     checkTree(ReplicaSide::Remote);
     checkTree(ReplicaSide::Local);
-
-    for (const auto &idItem: _idsToBeRemoved) {
-        if (!idItem.remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.remoteId));
-        }
-        if (!idItem.localId.empty() && !_syncPal->updateTree(ReplicaSide::Local)->deleteNode(idItem.localId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.localId));
-        }
-    }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     LOG_SYNCPAL_DEBUG(_logger, "Platform Inconsistency checked tree in: " << elapsed_seconds.count() << "s");
@@ -58,13 +47,13 @@ void PlatformInconsistencyCheckerWorker::execute() {
     setDone(ExitCode::Ok);
 }
 
-ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
-    std::shared_ptr<Node> node = _syncPal->updateTree(side)->rootNode();
+ExitCode PlatformInconsistencyCheckerWorker::checkTree(const ReplicaSide side) {
+    const std::shared_ptr<Node> node = _syncPal->updateTree(side)->rootNode();
     const SyncPath &parentPath = node->name();
     assert(side == ReplicaSide::Remote ||
            side == ReplicaSide::Local && "Invalid side in PlatformInconsistencyCheckerWorker::checkTree");
 
-    ExitCode exitCode = ExitCode::Unknown;
+    auto exitCode = ExitCode::Unknown;
     sentry::PTraceUPtr perfmonitor;
     if (side == ReplicaSide::Remote) {
         perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckLocalTree>(syncDbId());
@@ -134,7 +123,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
         return ExitCode::Ok;
     }
     if (pathChanged(localNode) && PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(localNode->name())) {
-        blacklistNode(localNode, InconsistencyType::NameLength);
+        ignoreNode(localNode, InconsistencyType::NameLength);
         return ExitCode::Ok;
     }
     auto it = localNode->children().begin();
@@ -159,60 +148,50 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
     return ExitCode::Ok;
 }
 
-void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Node> node,
-                                                       const InconsistencyType inconsistencyType) {
+void PlatformInconsistencyCheckerWorker::ignoreNode(const std::shared_ptr<Node> node, const InconsistencyType inconsistencyType) {
     // Local node needs to be excluded before call to blacklistTemporarily because
     // we need the DB entry to retrieve the corresponding node
-    NodeIdPair nodeIDs;
     const std::shared_ptr<Node> localNode = node->side() == ReplicaSide::Local ? node : correspondingNodeDirect(node);
     const std::shared_ptr<Node> remoteNode = node->side() == ReplicaSide::Remote ? node : correspondingNodeDirect(node);
 
-    if (localNode) {
-        const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        LOGW_SYNCPAL_INFO(_logger, L"Excluding local item with " << Utility::formatSyncPath(absoluteLocalPath) << L".");
-        PlatformInconsistencyCheckerUtility::renameLocalFile(
-                absoluteLocalPath, node->side() == ReplicaSide::Remote
-                                           ? PlatformInconsistencyCheckerUtility::SuffixType::Conflict
-                                           : PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+    // if (localNode) {
+    //     const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
+    //     LOGW_SYNCPAL_INFO(_logger, L"Excluding local item with " << Utility::formatSyncPath(absoluteLocalPath) << L".");
+    //     PlatformInconsistencyCheckerUtility::renameLocalFile(
+    //             absoluteLocalPath, node->side() == ReplicaSide::Remote
+    //                                        ? PlatformInconsistencyCheckerUtility::SuffixType::Conflict
+    //                                        : PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+    //
+    //     if (node->side() == ReplicaSide::Local) {
+    //         removeLocalNodeFromDb(localNode);
+    //     }
+    // }
 
-        if (node->side() == ReplicaSide::Local) {
-            removeLocalNodeFromDb(localNode);
-        }
-    }
-
-    if (node->side() == ReplicaSide::Remote) {
-        _syncPal->blacklistTemporarily(remoteNode->id().value(), remoteNode->getPath(), remoteNode->side());
-    }
-
-    Error error(_syncPal->syncDbId(), "", node->id().value(), node->type(), node->getPath(), ConflictType::None,
-                inconsistencyType);
+    const Error error(_syncPal->syncDbId(), "", node->id().value(), node->type(), node->getPath(), ConflictType::None,
+                      inconsistencyType);
     _syncPal->addError(error);
 
-    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting " << node->side() << L" item with " << Utility::formatSyncPath(node->getPath())
-                                                << L" because " << inconsistencyType << L".");
+    LOGW_SYNCPAL_INFO(_logger, L"Ignoring " << node->side() << L" item with " << Utility::formatSyncPath(node->getPath())
+                                            << L" because " << inconsistencyType << L".");
 
-    auto safeNodeId = [](const std::shared_ptr<Node> &unsafeNodePtr) {
-        return (unsafeNodePtr && unsafeNodePtr->id().has_value()) ? *unsafeNodePtr->id() : NodeId();
-    };
-    nodeIDs.remoteId = safeNodeId(remoteNode);
-    nodeIDs.localId = safeNodeId(localNode);
-    _idsToBeRemoved.emplace_back(nodeIDs);
+    if (localNode) localNode->setIgnored(true);
+    if (remoteNode) remoteNode->setIgnored(true);
 }
 
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
     const SyncPath relativePath = remoteNode->getPath();
     if (PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(remoteNode->name())) {
-        blacklistNode(remoteNode, InconsistencyType::ForbiddenChar);
+        ignoreNode(remoteNode, InconsistencyType::ForbiddenChar);
         return false;
     }
 
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
-        blacklistNode(remoteNode, InconsistencyType::ReservedName);
+        ignoreNode(remoteNode, InconsistencyType::ReservedName);
         return false;
     }
 
     if (PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(remoteNode->name())) {
-        blacklistNode(remoteNode, InconsistencyType::NameLength);
+        ignoreNode(remoteNode, InconsistencyType::NameLength);
         return false;
     }
 
@@ -244,7 +223,7 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
         auto insertInfo = processedNodesByName.insert({lowercaseName, currentChildNode});
         if (!insertInfo.second) {
             // Check if this node is a special folder
-            bool isSpecialFolder = currentChildNode->isCommonDocumentsFolder() || currentChildNode->isSharedFolder();
+            const bool isSpecialFolder = currentChildNode->isCommonDocumentsFolder() || currentChildNode->isSharedFolder();
 
             std::shared_ptr<Node> prevChildNode = insertInfo.first->second;
 
@@ -262,12 +241,10 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
 
             if (currentChildNode->hasChangeEvent() && !isSpecialFolder) {
                 // Blacklist the new one
-                blacklistNode(currentChildNode, InconsistencyType::Case);
-                continue;
+                ignoreNode(currentChildNode, InconsistencyType::Case);
             } else {
                 // Blacklist the previously discovered child
-                blacklistNode(prevChildNode, InconsistencyType::Case);
-                continue;
+                ignoreNode(prevChildNode, InconsistencyType::Case);
             }
         }
     }
@@ -280,28 +257,30 @@ bool PlatformInconsistencyCheckerWorker::pathChanged(std::shared_ptr<Node> node)
     return node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Move);
 }
 
-void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<Node> localNode) {
-    if (localNode && localNode->side() == ReplicaSide::Local) {
-        bool found = false;
-        DbNodeId dbId = -1;
-        const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, *localNode->id(), dbId, found)) {
-            LOGW_WARN(_logger, L"Failed to retrieve dbId for local node: " << Utility::formatSyncPath(absoluteLocalPath));
-        }
-        if (found && !_syncPal->syncDb()->deleteNode(dbId, found)) {
-            // Remove node (and childs by cascade) from DB if it exists (else ignore as it is already not in DB)
-            LOGW_WARN(_logger, L"Failed to delete node from DB: " << Utility::formatSyncPath(absoluteLocalPath));
-        }
-
-        if (!_syncPal->vfs()->fileStatusChanged(absoluteLocalPath, SyncFileStatus::Error)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(absoluteLocalPath));
-        }
-    } else {
-        const char *msg = localNode ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
-                                    : "localNode should not be null in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb";
-        LOG_WARN(_logger, msg);
-        assert(false);
-    }
-}
+// void PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb(std::shared_ptr<Node> localNode) {
+//     if (localNode && localNode->side() == ReplicaSide::Local) {
+//         bool found = false;
+//         DbNodeId dbId = -1;
+//         const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
+//         if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, *localNode->id(), dbId, found)) {
+//             LOGW_WARN(_logger, L"Failed to retrieve dbId for local node: " << Utility::formatSyncPath(absoluteLocalPath));
+//         }
+//         if (found && !_syncPal->syncDb()->deleteNode(dbId, found)) {
+//             // Remove node (and childs by cascade) from DB if it exists (else ignore as it is already not in DB)
+//             LOGW_WARN(_logger, L"Failed to delete node from DB: " << Utility::formatSyncPath(absoluteLocalPath));
+//         }
+//
+//         if (!_syncPal->vfs()->fileStatusChanged(absoluteLocalPath, SyncFileStatus::Error)) {
+//             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: " <<
+//             Utility::formatSyncPath(absoluteLocalPath));
+//         }
+//     } else {
+//         const char *msg = localNode ? "Invalid side in PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb"
+//                                     : "localNode should not be null in
+//                                     PlatformInconsistencyCheckerWorker::removeLocalNodeFromDb";
+//         LOG_WARN(_logger, msg);
+//         assert(false);
+//     }
+// }
 
 } // namespace KDC

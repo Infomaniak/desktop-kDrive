@@ -25,7 +25,6 @@
 #else
 #include "update_detection/file_system_observer/localfilesystemobserverworker_unix.h"
 #endif
-#include "syncpal/tmpblacklistmanager.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -83,7 +82,6 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->setLocalPath(_rootFolderPath);
-    _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
 #if defined(_WIN32)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(

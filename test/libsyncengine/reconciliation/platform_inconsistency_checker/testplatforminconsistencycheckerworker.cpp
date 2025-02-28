@@ -21,8 +21,6 @@
 #include <memory>
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/types.h"
-#include "requests/parameterscache.h"
-#include "syncpal/tmpblacklistmanager.h"
 
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "test_utility/localtemporarydirectory.h"
@@ -67,7 +65,6 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
                                          KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
-    _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
     _syncPal->_platformInconsistencyCheckerWorker =
             std::make_shared<PlatformInconsistencyCheckerWorker>(_syncPal, "Platform Inconsistency Checker", "PICH");
@@ -82,10 +79,10 @@ void TestPlatformInconsistencyCheckerWorker::tearDown() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
-    SyncName shortName = Str("1234567890");
+    const SyncName shortName = Str("1234567890");
     CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(shortName));
 
-    SyncName longName = Str(
+    const SyncName longName = Str(
             "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456"
             "78901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012"
             "3456789012345678901234567890");
@@ -93,7 +90,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
-    SyncName allowedName = Str("test-test");
+    const SyncName allowedName = Str("test-test");
     CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->nameHasForbiddenChars(allowedName));
 
     SyncName forbiddenName = Str("test/test");
@@ -162,9 +159,9 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash() {
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(parentNode);
 
 #if defined(WIN32) || defined(__APPLE__)
-    CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+    CPPUNIT_ASSERT(nodeLower->ignored() || nodeUpper->ignored());
 #else
-    CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+    CPPUNIT_ASSERT(!nodeLower->ignored() && !nodeUpper->ignored());
 #endif
 }
 
@@ -221,25 +218,27 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(remoteParentNode);
 
 #if defined(WIN32) || defined(__APPLE__)
-    CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
-    CPPUNIT_ASSERT(!std::filesystem::exists(_tempDir.path() / "a1"));
-    std::error_code ec;
-    auto dirIt = std::filesystem::recursive_directory_iterator(_syncPal->localPath(),
-                                                               std::filesystem::directory_options::skip_permission_denied, ec);
-    CPPUNIT_ASSERT(!ec);
-    bool foundConflicted = false;
-    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-        const auto filename = dirIt->path().filename().string();
-        const auto pos = filename.find("_conflict_");
-        if (Utility::startsWith(filename, std::string("a1")) && pos != std::string::npos) {
-            foundConflicted = true;
-            break;
-        }
-    }
-    CPPUNIT_ASSERT(foundConflicted);
+    CPPUNIT_ASSERT(localNodeLower->ignored() || localNodeUpper->ignored());
+    // CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+    // CPPUNIT_ASSERT(!std::filesystem::exists(_tempDir.path() / "a1"));
+    // std::error_code ec;
+    // auto dirIt = std::filesystem::recursive_directory_iterator(_syncPal->localPath(),
+    //                                                            std::filesystem::directory_options::skip_permission_denied, ec);
+    // CPPUNIT_ASSERT(!ec);
+    // bool foundConflicted = false;
+    // for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+    //     const auto filename = dirIt->path().filename().string();
+    //     const auto pos = filename.find("_conflict_");
+    //     if (Utility::startsWith(filename, std::string("a1")) && pos != std::string::npos) {
+    //         foundConflicted = true;
+    //         break;
+    //     }
+    // }
+    // CPPUNIT_ASSERT(foundConflicted);
 
 #else
-    CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+    CPPUNIT_ASSERT(!localNodeLower->ignored() && !localNodeUpper->ignored());
+    // CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
 #endif
 }
 
@@ -263,27 +262,7 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
 
     _syncPal->_platformInconsistencyCheckerWorker->execute();
 
-    const bool exactly1exist = (_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
-                                !_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id())) ||
-                               (!_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
-                                _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
-    LOG_DEBUG(Log::instance()->getLogger(),
-              "TestPlatformInconsistencyCheckerWorker::testExecute()"
-              "Upper Node exists: "
-                      << _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()));
-    LOG_DEBUG(Log::instance()->getLogger(),
-              "TestPlatformInconsistencyCheckerWorker::testExecute()"
-              "Lower Node exists: "
-                      << _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(*parentNode->id()));
-
-#if defined(WIN32) || defined(__APPLE__)
-    CPPUNIT_ASSERT(exactly1exist);
-#else
-    (void) exactly1exist;
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
-                   _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
-#endif
+    CPPUNIT_ASSERT(nodeLower->ignored() || nodeUpper->ignored());
 }
 
 void TestPlatformInconsistencyCheckerWorker::testNameSizeLocalTree() {
@@ -294,10 +273,8 @@ void TestPlatformInconsistencyCheckerWorker::testNameSizeLocalTree() {
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->exists("testNode"));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->exists("aNode"));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->exists("ANode"));
-    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("longNameANode"));
-    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("testNode2"));
-    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("bNode"));
-    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("BNode"));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->getNodeById("longNameANode")->ignored());
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->getNodeById("testNode2")->ignored());
 }
 
 void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {

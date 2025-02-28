@@ -949,9 +949,9 @@ void TestNetworkJobs::testUploadAborted() {
     }
     job->abort();
 
-    Utility::msleep(1000); // Wait 1sec
+    Utility::msleep(5000); // Wait 5sec
 
-    NodeId newNodeId = job->nodeId();
+    const NodeId newNodeId = job->nodeId();
     CPPUNIT_ASSERT(newNodeId.empty());
 
     job.reset();

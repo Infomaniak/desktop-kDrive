@@ -66,9 +66,10 @@ class SnapshotItem {
         [[nodiscard]] bool canWrite() const { return _canWrite; }
         void setCanWrite(const bool canWrite) { _canWrite = canWrite; }
         [[nodiscard]] bool canShare() const { return _canShare; }
-        void setCanShare(bool canShare) { _canShare = canShare; }
+        void setCanShare(const bool canShare) { _canShare = canShare; }
 
         SnapshotItem &operator=(const SnapshotItem &other);
+        bool operator==(const SnapshotItem &other) const;
 
         void copyExceptChildren(const SnapshotItem &other);
         void addChildren(const NodeId &id);

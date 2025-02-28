@@ -195,11 +195,11 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
 }
 
 void UpdateTree::clear() {
-    std::unordered_map<NodeId, std::shared_ptr<Node>>::iterator it = _nodes.begin();
+    auto it = _nodes.begin();
     while (it != _nodes.end()) {
         it->second->parentNode().reset();
         it->second->children().clear();
-        it++;
+        ++it;
     }
     _nodes.clear();
 }
