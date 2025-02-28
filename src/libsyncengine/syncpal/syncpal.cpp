@@ -55,18 +55,21 @@
 
 namespace KDC {
 
-SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
-    _logger(Log::instance()->getLogger()) {
+SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
+                 const bool hasFullyCompleted) : _logger(Log::instance()->getLogger()), _vfs(vfs) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
+    assert(_vfs);
 
     if (!createOrOpenDb(syncDbPath, version)) {
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
 }
 
-SyncPal::SyncPal(const int syncDbId_, const std::string &version) : _logger(Log::instance()->getLogger()) {
+SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId_, const std::string &version) :
+    _logger(Log::instance()->getLogger()), _vfs(vfs) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
+    assert(_vfs);
 
     // Get sync
     Sync sync;
@@ -361,127 +364,13 @@ void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
     }
 }
 
-bool SyncPal::vfsIsExcluded(const SyncPath &itemPath, bool &isExcluded) {
-    if (!_vfsIsExcluded) {
-        return false;
-    }
-
-    return _vfsIsExcluded(syncDbId(), itemPath, isExcluded);
-}
-
-bool SyncPal::vfsExclude(const SyncPath &itemPath) {
-    if (!_vfsExclude) {
-        return false;
-    }
-
-    return _vfsExclude(syncDbId(), itemPath);
-}
-
-bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
-    if (!_vfsPinState) {
-        return false;
-    }
-
-    return _vfsPinState(syncDbId(), itemPath, pinState);
-}
-
-bool SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
-    if (!_vfsSetPinState) {
-        return false;
-    }
-
-    return _vfsSetPinState(syncDbId(), itemPath, pinState);
-}
-
-bool SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
-    if (!_vfsStatus) {
-        return false;
-    }
-
-    return _vfsStatus(syncDbId(), itemPath, isPlaceholder, isHydrated, isSyncing, progress);
-}
-
-bool SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
-    if (!_vfsCreatePlaceholder) {
-        return false;
-    }
-
-    return _vfsCreatePlaceholder(syncDbId(), relativeLocalPath, item);
-}
-
-bool SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item) {
-    if (!_vfsConvertToPlaceholder) {
-        return false;
-    }
-
-    return _vfsConvertToPlaceholder(syncDbId(), path, item);
-}
-
-bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
-                                const NodeId &id, std::string &error) {
-    if (!_vfsUpdateMetadata) {
-        return false;
-    }
-
-    return _vfsUpdateMetadata(syncDbId(), path, creationTime, modtime, size, id, error);
-}
-
-bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
-                                   bool &finished) {
-    if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"vfsUpdateFetchStatus: " << Utility::formatSyncPath(path) << L" received=" << received);
-    }
-
-    if (!_vfsUpdateFetchStatus) {
-        return false;
-    }
-
-    return _vfsUpdateFetchStatus(syncDbId(), tmpPath, path, received, canceled, finished);
-}
-
-bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) {
-    if (!_vfsFileStatusChanged) {
-        return false;
-    }
-
-    return _vfsFileStatusChanged(syncDbId(), path, status);
-}
-
-bool SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
-    if (!_vfsForceStatus) {
-        return false;
-    }
-
-    return _vfsForceStatus(syncDbId(), path, isSyncing, progress, isHydrated);
-}
-
-bool SyncPal::vfsCleanUpStatuses() {
-    if (!_vfsCleanUpStatuses) {
-        return false;
-    }
-
-    return _vfsCleanUpStatuses(syncDbId());
-}
-
-bool SyncPal::vfsClearFileAttributes(const SyncPath &path) {
-    if (!_vfsClearFileAttributes) {
-        return false;
-    }
-
-    return _vfsClearFileAttributes(syncDbId(), path);
-}
-
-bool SyncPal::vfsCancelHydrate(const SyncPath &path) {
-    if (!_vfsCancelHydrate) {
-        return false;
-    }
-
-    return _vfsCancelHydrate(syncDbId(), path);
-}
-
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");
-    VirtualFilesCleaner virtualFileCleaner(localPath(), syncDbId(), _syncDb, _vfsStatus, _vfsClearFileAttributes);
+    if (!vfs()) {
+        addError(Error(syncDbId(), errId(), ExitCode::LogicError, ExitCause::Unknown));
+        return false;
+    }
+    VirtualFilesCleaner virtualFileCleaner(localPath(), _syncDb, vfs());
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
         addError(Error(syncDbId(), errId(), virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
@@ -492,7 +381,7 @@ bool SyncPal::wipeVirtualFiles() {
 
 bool SyncPal::wipeOldPlaceholders() {
     LOG_SYNCPAL_INFO(_logger, "Wiping old placeholders files");
-    VirtualFilesCleaner virtualFileCleaner(localPath(), syncDbId());
+    VirtualFilesCleaner virtualFileCleaner(localPath());
     std::vector<SyncPath> failedToRemovePlaceholders;
     if (!virtualFileCleaner.removeDehydratedPlaceholders(failedToRemovePlaceholders)) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
@@ -582,7 +471,7 @@ void SyncPal::resetSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects done");
 }
 
-void SyncPal::createWorkers() {
+void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
     LOG_SYNCPAL_DEBUG(_logger, "Create workers");
 #if defined(_WIN32)
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
@@ -610,7 +499,7 @@ void SyncPal::createWorkers() {
     _operationsSorterWorker =
             std::shared_ptr<OperationSorterWorker>(new OperationSorterWorker(shared_from_this(), "Operation Sorter", "OPSO"));
     _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(shared_from_this(), "Executor", "EXEC"));
-    _syncPalWorker = std::shared_ptr<SyncPalWorker>(new SyncPalWorker(shared_from_this(), "Main", "MAIN"));
+    _syncPalWorker = std::shared_ptr<SyncPalWorker>(new SyncPalWorker(shared_from_this(), "Main", "MAIN", startDelay));
 
     _tmpBlacklistManager = std::shared_ptr<TmpBlacklistManager>(new TmpBlacklistManager(shared_from_this()));
 }
@@ -720,7 +609,7 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
         return false;
     }
 
-    vfsFileStatusChanged(localPath() / relativeLocalPath, status);
+    vfs()->fileStatusChanged(localPath() / relativeLocalPath, status);
 
     bool found = false;
     if (!_syncDb->setStatus(ReplicaSide::Local, relativeLocalPath, status, found)) {
@@ -752,7 +641,7 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         error.setExitCause(ExitCause::NotFound);
         addError(error);
 
-        vfsCancelHydrate(directDownloadJobsMapIt->second->localPath());
+        vfs()->cancelHydrate(directDownloadJobsMapIt->second->localPath());
     }
 
     _syncPathToDownloadJobMap.erase(directDownloadJobsMapIt->second->affectedFilePath());
@@ -810,7 +699,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     // Hydration job
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
-        job = std::make_shared<DownloadJob>(driveDbId(), remoteNodeId, localPath, expectedSize);
+        job = std::make_shared<DownloadJob>(vfs(), driveDbId(), remoteNodeId, localPath, expectedSize);
         if (!job) {
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;
@@ -820,37 +709,6 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
         return ExitCode::Unknown;
-    }
-
-    if (vfsMode() == VirtualFileMode::Mac || vfsMode() == VirtualFileMode::Win) {
-        // Set callbacks
-        std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
-                std::bind(&SyncPal::vfsUpdateFetchStatus, this, std::placeholders::_1, std::placeholders::_2,
-                          std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-        job->setVfsUpdateFetchStatusCallback(vfsUpdateFetchStatusCallback);
-
-#ifdef __APPLE__
-        // Not done in Windows case: the pin state and the status must not be set by the download job because hydration could be
-        // asked for a move and so, the file place will change just after the dl.
-        std::function<bool(const SyncPath &, PinState)> vfsSetPinStateCallback =
-                std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);
-        job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
-
-        std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-                std::bind(&SyncPal::vfsForceStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-                          std::placeholders::_4);
-        job->setVfsForceStatusCallback(vfsForceStatusCallback);
-#endif
-
-        std::function<bool(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &, std::string &)>
-                vfsUpdateMetadataCallback =
-                        std::bind(&SyncPal::vfsUpdateMetadata, this, std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
-        job->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
-
-        std::function<bool(const SyncPath &)> vfsCancelHydrateCallback =
-                std::bind(&SyncPal::vfsCancelHydrate, this, std::placeholders::_1);
-        job->setVfsCancelHydrateCallback(vfsCancelHydrateCallback);
     }
 
     // Queue job
@@ -889,12 +747,6 @@ ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
     for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
         if (quit) {
-            // Reset callbacks
-            directDownloadJobsMapElt.second->setVfsUpdateFetchStatusCallback(nullptr);
-            directDownloadJobsMapElt.second->setVfsSetPinStateCallback(nullptr);
-            directDownloadJobsMapElt.second->setVfsForceStatusCallback(nullptr);
-            directDownloadJobsMapElt.second->setVfsUpdateMetadataCallback(nullptr);
-            directDownloadJobsMapElt.second->setVfsCancelHydrateCallback(nullptr);
             directDownloadJobsMapElt.second->setAdditionalCallback(nullptr);
         }
         directDownloadJobsMapElt.second->abort();
@@ -1208,7 +1060,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
     return ExitCode::Ok;
 }
 
-void SyncPal::start() {
+void SyncPal::start(const std::chrono::seconds &startDelay) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal start");
 
     // Load VFS mode
@@ -1234,7 +1086,7 @@ void SyncPal::start() {
     createSharedObjects();
 
     // Create workers
-    createWorkers();
+    createWorkers(startDelay);
 
     // Reset paused flag
     ExitCode exitCode = setSyncPaused(false);
@@ -1523,21 +1375,18 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 
-    localBlacklistedNode = updateTree(ReplicaSide::Local)->getNodeById(localNodeId);
-    remoteBlacklistedNode = updateTree(ReplicaSide::Remote)->getNodeById(remoteNodeId);
-
     // Blacklist the item
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
         if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
+            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
         }
     }
 
     if (!remoteNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
         if (!updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: " << Utility::formatSyncPath(relativeLocalPath));
+            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
         }
     }
 
@@ -1552,6 +1401,12 @@ void SyncPal::copySnapshots() {
     *_remoteSnapshotCopy = *_remoteSnapshot;
     _localSnapshot->startRead();
     _remoteSnapshot->startRead();
+}
+
+void SyncPal::invalideSnapshots() {
+    _localFSObserverWorker->invalidateSnapshot();
+    _remoteFSObserverWorker->forceUpdate();
+    _remoteFSObserverWorker->invalidateSnapshot();
 }
 
 } // namespace KDC

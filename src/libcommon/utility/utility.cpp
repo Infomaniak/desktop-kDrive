@@ -28,8 +28,10 @@
 #include <sys/statvfs.h>
 #endif
 
-#include <random>
+
 #include <fstream>
+#include <random>
+#include <regex>
 #include <sstream>
 #include <signal.h>
 
@@ -80,11 +82,11 @@ const int CommonUtility::logMaxSize = 500 * 1024 * 1024; // MB
 
 SyncPath CommonUtility::_workingDirPath = "";
 
-static const QString englishCode = "en";
-static const QString frenchCode = "fr";
-static const QString germanCode = "de";
-static const QString spanishCode = "es";
-static const QString italianCode = "it";
+const QString CommonUtility::englishCode = "en";
+const QString CommonUtility::frenchCode = "fr";
+const QString CommonUtility::germanCode = "de";
+const QString CommonUtility::spanishCode = "es";
+const QString CommonUtility::italianCode = "it";
 
 static std::random_device rd;
 static std::default_random_engine gen(rd());
@@ -505,7 +507,7 @@ SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &p
     return relativePath;
 }
 
-QStringList CommonUtility::languageCodeList(const KDC::Language enforcedLocale) {
+QStringList CommonUtility::languageCodeList(const Language enforcedLocale) {
     QStringList uiLanguages = QLocale::system().uiLanguages();
     uiLanguages.prepend(languageCode(enforcedLocale));
 
@@ -516,30 +518,21 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
     return languageCode.compare(englishCode) == 0;
 }
 
-QString CommonUtility::languageCode(const KDC::Language enforcedLocale) {
-    switch (enforcedLocale) {
-        case KDC::Language::Default: {
-            return QLocale::system().uiLanguages().isEmpty() ? QString() : QLocale::system().uiLanguages().first().left(2);
-            break;
-        }
-        case KDC::Language::English:
-            return englishCode;
-            break;
-        case KDC::Language::French:
+QString CommonUtility::languageCode(const Language language) {
+    switch (language) {
+        case Language::French:
             return frenchCode;
-            break;
-        case KDC::Language::German:
+        case Language::German:
             return germanCode;
-            break;
-        case KDC::Language::Italian:
+        case Language::Italian:
             return italianCode;
-            break;
-        case KDC::Language::Spanish:
+        case Language::Spanish:
             return spanishCode;
+        case Language::English:
+        case Language::Default:
             break;
     }
-
-    return {};
+    return englishCode; // Return english by default.
 }
 
 SyncPath CommonUtility::getAppDir() {
@@ -698,13 +691,31 @@ const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion) {
     if (version.empty()) return;
 
+    std::string versionDigits = version;
+
+    std::regex versionDigitsRegex(R"(^([0-9]+\.[0-9]+\.[0-9]+)\s\(build\s([0-9]{8})\)$)"); // Example: "3.6.9 (build 20250220)"
+    std::smatch words;
+    std::regex_match(versionDigits, words, versionDigitsRegex);
+
+    if (!words.empty()) {
+        assert(words.size() == 3 && "Wrong version format.");
+        versionDigits = words[1].str() + "." + words[2].str(); // Example: "3.6.9.20250220"
+    }
+
+    // Split `versionDigits` wrt the '.' delimiter
     std::string::size_type prevPos = 0;
     std::string::size_type pos = 0;
     do {
-        pos = version.find('.', prevPos);
-        tabVersion.push_back(std::stoi(version.substr(prevPos, pos - prevPos)));
+        pos = versionDigits.find('.', prevPos);
+        if (pos == std::string::npos) break;
+
+        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos, pos - prevPos)));
         prevPos = pos + 1;
-    } while (pos != std::string::npos);
+    } while (true);
+
+    if (prevPos < versionDigits.size()) {
+        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos)));
+    }
 }
 
 SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
@@ -950,4 +961,14 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
 }
 
 #endif
+
+QString CommonUtility::truncateLongLogMessage(const QString &message) {
+    if (static const qsizetype maxLogMessageSize = 2048; message.size() > maxLogMessageSize) {
+        return message.left(maxLogMessageSize) + " (truncated)";
+    }
+
+    return message;
+}
+
+
 } // namespace KDC

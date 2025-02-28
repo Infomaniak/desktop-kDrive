@@ -45,6 +45,7 @@ const NodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/tes
 const NodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
 
 void TestRemoteFileSystemObserverWorker::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
 
     LOG_DEBUG(_logger, "$$$$$ Set Up $$$$$");
@@ -86,12 +87,11 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     _syncPal = std::make_shared<SyncPalTest>(sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
-
     /// Insert node in blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {testBlackListedDirId});
 
-    _syncPal->_remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-            new RemoteFileSystemObserverWorker(_syncPal, "Remote File System Observer", "RFSO"));
+    _syncPal->_remoteFSObserverWorker =
+            std::make_shared<RemoteFileSystemObserverWorker>(_syncPal, "Remote File System Observer", "RFSO");
     _syncPal->_remoteFSObserverWorker->generateInitialSnapshot();
 }
 
@@ -110,6 +110,7 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
@@ -142,7 +143,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         {
             using namespace std::chrono;
             const auto time = system_clock::to_time_t(system_clock::now());
-            UploadJob job(_driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
+            UploadJob job(nullptr, _driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
             job.runSynchronously();
 
             // Extract file ID
@@ -171,7 +172,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         Utility::msleep(1000);
 
         const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        UploadJob job(_driveDbId, testFilePath, _testFileId, time);
+        UploadJob job(nullptr, _driveDbId, testFilePath, _testFileId, time);
         job.runSynchronously();
 
         // Get activity from the server
@@ -183,7 +184,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test move file *****");
 
-        MoveJob job(_driveDbId, testhelpers::localTestDirPath, _testFileId, nestedRemoteTmpDir.id());
+        MoveJob job(nullptr, _driveDbId, testhelpers::localTestDirPath, _testFileId, nestedRemoteTmpDir.id());
         job.runSynchronously();
 
         // Get activity from the server
@@ -198,7 +199,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         const SyncName newFileName =
                 Str("test_file_renamed_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
 
-        RenameJob job(_driveDbId, _testFileId, newFileName);
+        RenameJob job(nullptr, _driveDbId, _testFileId, newFileName);
         job.runSynchronously();
 
         // Get activity from the server

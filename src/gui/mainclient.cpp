@@ -103,7 +103,13 @@ int main(int argc, char **argv) {
 
     Q_INIT_RESOURCE(client);
 
-    KDC::AppClient app(argc, argv);
+    std::unique_ptr<KDC::AppClient> appPtr = nullptr;
+    try {
+        appPtr = std::make_unique<KDC::AppClient>(argc, argv);
+    } catch (const std::exception &e) {
+        std::cerr << "kDrive client initialization error: " << e.what() << std::endl;
+        return -1;
+    }
 
 #ifdef Q_OS_WIN
     // The Windows style still has pixelated elements with Qt 5.6,
@@ -111,7 +117,7 @@ int main(int argc, char **argv) {
     // though it looks slightly less native. Check here after the
     // QApplication was constructed, but before any QWidget is
     // constructed.
-    if (app.devicePixelRatio() > 1) QApplication::setStyle(QStringLiteral("fusion"));
+    if (appPtr->devicePixelRatio() > 1) QApplication::setStyle(QStringLiteral("fusion"));
 #endif
 
 #ifdef Q_OS_UNIX
@@ -125,9 +131,9 @@ int main(int argc, char **argv) {
 #endif
 
     // if the application is already running, notify it.
-    if (app.isRunning()) {
+    if (appPtr->isRunning()) {
         qCInfo(lcMain) << "Already running, exiting...";
-        if (app.isSessionRestored()) {
+        if (appPtr->isSessionRestored()) {
             // This call is mirrored with the one in Application::slotParseMessage
             qCInfo(lcMain) << "Session was restored, don't notify app!";
             return -1;
@@ -162,16 +168,16 @@ int main(int argc, char **argv) {
             }
 
             if (QSystemTrayIcon::isSystemTrayAvailable()) {
-                app.onTryTrayAgain();
+                appPtr->onTryTrayAgain();
             } else if (desktopSession != "ubuntu") {
                 qCInfo(lcMain) << "System tray still not available, showing window and trying again later";
-                app.showParametersDialog();
-                QTimer::singleShot(10000, &app, &KDC::AppClient::onTryTrayAgain);
+                appPtr->showParametersDialog();
+                QTimer::singleShot(10000, appPtr.get(), &KDC::AppClient::onTryTrayAgain);
             } else {
                 qCInfo(lcMain) << "System tray still not available, but assuming it's fine on 'ubuntu' desktop";
             }
         }
     }
 
-    return app.exec();
+    return appPtr->exec();
 }

@@ -22,152 +22,39 @@
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "requests/parameterscache.h"
-#include "server/updater/updatechecker.h"
+#include "mockupdatechecker.h"
 #include "utility/utility.h"
 
 namespace KDC {
 
-static const std::string highTagValue = "99.99.99";
-static constexpr uint64_t highBuildVersionValue = 21240604;
-static const std::string mediumTagValue = "55.55.55";
-static constexpr uint64_t mediumBuildVersionValue = 20240604;
-static const std::string lowTagValue = "1.1.1";
-static constexpr uint64_t lowBuildVersionValue = 20200604;
-
-std::string generateJsonReply(const std::string &tag, uint64_t buildVersion) {
-    Poco::JSON::Object versionObj;
-    versionObj.set("tag", tag);
-    versionObj.set("tag_updated_at", "2020-06-04 15:06:37");
-    versionObj.set("version_changelog", "test");
-    versionObj.set("type", "production");
-    versionObj.set("build_version", buildVersion);
-    versionObj.set("build_min_os_version", "XXXX");
-    versionObj.set("download_link", "test");
-
-    Poco::JSON::Array publishedVersionsArray;
-    for (const auto channel:
-         {DistributionChannel::Prod, DistributionChannel::Next, DistributionChannel::Beta, DistributionChannel::Internal}) {
-        Poco::JSON::Object tmpObj;
-        tmpObj.set("tag", tag);
-        tmpObj.set("tag_updated_at", "2020-06-04 15:06:37");
-        tmpObj.set("version_changelog", "test");
-        tmpObj.set("type", GetAppVersionJob::toStr(channel));
-        tmpObj.set("build_version", buildVersion);
-        tmpObj.set("build_min_os_version", "XXXX");
-        tmpObj.set("download_link", "test");
-        publishedVersionsArray.add(tmpObj);
-    }
-
-    Poco::JSON::Object applicationObj;
-    applicationObj.set("id", "27");
-    applicationObj.set("name", "com.infomaniak.drive");
-    applicationObj.set("platform", "mac-os");
-    applicationObj.set("store", "kStore");
-    applicationObj.set("api_id", "com.infomaniak.drive");
-    applicationObj.set("min_version", "3.6.2");
-    applicationObj.set("next_version_rate", "0");
-    applicationObj.set("published_versions", publishedVersionsArray);
-
-    Poco::JSON::Object dataObj;
-    dataObj.set("application_id", "27");
-    dataObj.set("prod_version", "production");
-    dataObj.set("version", versionObj);
-    dataObj.set("application", applicationObj);
-
-    Poco::JSON::Object mainObj;
-    mainObj.set("result", "success");
-    mainObj.set("data", dataObj);
-
-    std::ostringstream out;
-    mainObj.stringify(out);
-    return out.str();
-}
-
-class GetAppVersionJobTest final : public GetAppVersionJob {
-    public:
-        GetAppVersionJobTest(const Platform platform, const std::string &appID, const bool updateShouldBeAvailable) :
-            GetAppVersionJob(platform, appID), _updateShouldBeAvailable(updateShouldBeAvailable) {}
-
-        void runJob() noexcept override {
-            const auto str = _updateShouldBeAvailable ? generateJsonReply(highTagValue, highBuildVersionValue)
-                                                      : generateJsonReply(lowTagValue, lowBuildVersionValue);
-            const std::istringstream iss(str);
-            std::istream is(iss.rdbuf());
-            GetAppVersionJob::handleResponse(is);
-            _exitCode = ExitCode::Ok;
-        }
-
-    private:
-        bool _updateShouldBeAvailable{false};
-};
-
-class UpdateCheckerTest final : public UpdateChecker {
-    public:
-        void setUpdateShoudBeAvailable(const bool val) { _updateShouldBeAvailable = val; }
-
-    private:
-        ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
-            static const std::string appUid = "1234567890";
-            job = std::make_shared<GetAppVersionJobTest>(CommonUtility::platform(), appUid, _updateShouldBeAvailable);
-            return ExitCode::Ok;
-        }
-
-        bool _updateShouldBeAvailable{false};
-};
-
 void TestUpdateChecker::setUp() {
+    TestBase::start();
     ParametersCache::instance(true);
 }
 
 void TestUpdateChecker::testCheckUpdateAvailable() {
     // Version is higher than current version
     {
-        UpdateCheckerTest testObj;
+        MockUpdateChecker testObj;
         UniqueId jobId = 0;
         testObj.setUpdateShoudBeAvailable(true);
         testObj.checkUpdateAvailability(&jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT(testObj.versionInfo(DistributionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 
     // Version is lower than current version
     {
-        UpdateCheckerTest testObj;
+        MockUpdateChecker testObj;
         UniqueId jobId = 0;
         testObj.setUpdateShoudBeAvailable(false);
         testObj.checkUpdateAvailability(&jobId);
         while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
-        CPPUNIT_ASSERT(testObj.versionInfo(DistributionChannel::Beta).isValid());
+        CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 }
 
-enum VersionValue { High, Medium, Low };
-
-const std::string &tag(const VersionValue versionNumber) {
-    switch (versionNumber) {
-        case High:
-            return highTagValue;
-        case Medium:
-            return mediumTagValue;
-        case Low:
-            return lowTagValue;
-    }
-    return lowTagValue;
-}
-
-uint64_t buildVersion(const VersionValue versionNumber) {
-    switch (versionNumber) {
-        case High:
-            return highBuildVersionValue;
-        case Medium:
-            return mediumBuildVersionValue;
-        case Low:
-            return lowBuildVersionValue;
-    }
-    return lowBuildVersionValue;
-}
-
-VersionInfo getVersionInfo(const DistributionChannel channel, const VersionValue versionNumber) {
+VersionInfo getVersionInfo(const VersionChannel channel, const VersionValue versionNumber) {
     VersionInfo versionInfo;
     versionInfo.channel = channel;
     versionInfo.tag = tag(versionNumber);
@@ -178,18 +65,18 @@ VersionInfo getVersionInfo(const DistributionChannel channel, const VersionValue
 
 void TestUpdateChecker::testVersionInfo() {
     UpdateChecker testObj;
-    testObj._prodVersionChannel = DistributionChannel::Prod;
+    testObj._prodVersionChannel = VersionChannel::Prod;
 
-    auto testFunc = [&testObj](const VersionValue expectedValue, const DistributionChannel expectedChannel,
-                               const DistributionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber,
+    auto testFunc = [&testObj](const VersionValue expectedValue, const VersionChannel expectedChannel,
+                               const VersionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber,
                                const CPPUNIT_NS::SourceLine &sourceline) {
         testObj._versionsInfo.clear();
-        testObj._versionsInfo.try_emplace(DistributionChannel::Prod,
-                                          getVersionInfo(DistributionChannel::Prod, versionsNumber[0]));
-        testObj._versionsInfo.try_emplace(DistributionChannel::Beta,
-                                          getVersionInfo(DistributionChannel::Beta, versionsNumber[1]));
-        testObj._versionsInfo.try_emplace(DistributionChannel::Internal,
-                                          getVersionInfo(DistributionChannel::Internal, versionsNumber[2]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Prod,
+                                          getVersionInfo(VersionChannel::Prod, versionsNumber[0]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Beta,
+                                          getVersionInfo(VersionChannel::Beta, versionsNumber[1]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Internal,
+                                          getVersionInfo(VersionChannel::Internal, versionsNumber[2]));
         const auto &versionInfo = testObj.versionInfo(selectedChannel);
         CPPUNIT_NS::assertEquals(expectedChannel, versionInfo.channel, sourceline, "");
         CPPUNIT_NS::assertEquals(tag(expectedValue), versionInfo.tag, sourceline, "");
@@ -198,39 +85,39 @@ void TestUpdateChecker::testVersionInfo() {
 
     // selected version: Prod
     /// versions values: Prod > Beta > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Prod, {High, Medium, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Prod, {High, Medium, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Internal > Beta > Prod
-    testFunc(Low, DistributionChannel::Prod, DistributionChannel::Prod, {Low, Medium, High}, CPPUNIT_SOURCELINE());
+    testFunc(Low, VersionChannel::Prod, VersionChannel::Prod, {Low, Medium, High}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Beta == Internal
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Prod, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Prod, VersionChannel::Prod, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
 
     // selected version: Beta
     /// versions values: Prod > Beta > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Beta, {High, Medium, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Beta, {High, Medium, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Internal > Beta > Prod
-    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Beta, {Low, Medium, High}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Beta, VersionChannel::Beta, {Low, Medium, High}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Beta == Internal
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Beta, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Prod, VersionChannel::Beta, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
 
     // selected version: Internal
     /// versions values: Prod > Beta > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Medium, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Internal, {High, Medium, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Internal > Beta > Prod
-    testFunc(High, DistributionChannel::Internal, DistributionChannel::Internal, {Low, Medium, High}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Internal, VersionChannel::Internal, {Low, Medium, High}, CPPUNIT_SOURCELINE());
     /// versions values: Beta > Prod > Internal
-    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Medium, High, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Beta, VersionChannel::Internal, {Medium, High, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Prod > Internal > Beta
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, Low, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Internal, {High, Low, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Beta > Internal > Prod
-    testFunc(High, DistributionChannel::Beta, DistributionChannel::Internal, {Low, High, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Beta, VersionChannel::Internal, {Low, High, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Beta == Internal
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Prod, VersionChannel::Internal, {Medium, Medium, Medium}, CPPUNIT_SOURCELINE());
     /// versions values:  Beta == Prod > Internal
-    testFunc(High, DistributionChannel::Prod, DistributionChannel::Internal, {High, High, Low}, CPPUNIT_SOURCELINE());
+    testFunc(High, VersionChannel::Prod, VersionChannel::Internal, {High, High, Low}, CPPUNIT_SOURCELINE());
     /// versions values: Beta == Internal > Prod
-    testFunc(Medium, DistributionChannel::Beta, DistributionChannel::Internal, {Low, Medium, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Beta, VersionChannel::Internal, {Low, Medium, Medium}, CPPUNIT_SOURCELINE());
     /// versions values: Prod == Internal > Beta
-    testFunc(Medium, DistributionChannel::Prod, DistributionChannel::Internal, {Medium, Low, Medium}, CPPUNIT_SOURCELINE());
+    testFunc(Medium, VersionChannel::Prod, VersionChannel::Internal, {Medium, Low, Medium}, CPPUNIT_SOURCELINE());
 }
 
 } // namespace KDC

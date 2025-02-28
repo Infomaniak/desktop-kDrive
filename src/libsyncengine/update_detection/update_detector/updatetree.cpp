@@ -55,7 +55,7 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, int depth) {
 
     if (depth > MAX_DEPTH) {
         assert(false);
-        sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTree::deleteNode", "UpdateTree loop");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTree::deleteNode", "Update tree depth is too big");
         return false;
     }
 
@@ -186,7 +186,7 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
                                                        << Utility::formatSyncName(node->name()) << L"'.");
     }
 
-    if (!oldId.empty()  && _nodes.contains(oldId)) {
+    if (!oldId.empty() && _nodes.contains(oldId)) {
         auto nodeRef = _nodes.extract(oldId);
         nodeRef.key() = newId;
         _nodes.insert(std::move(nodeRef));

@@ -106,8 +106,8 @@ class ParametersDialog : public CustomDialog {
         QString getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const;
         QString getErrorLevelNodeText(const ErrorInfo &errorInfo) const;
 
-        void createErrorTabWidgetIfNeeded(int driveDbId);
         void refreshErrorList(int driveDbId);
+        bool driveHasSyncs(int driveDbId) const;
 
     private slots:
         void onExit();

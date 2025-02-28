@@ -54,7 +54,7 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
         if (checkResult == CheckDbResult::CantPrepare) {
             // When disk space is low, preparing may fail even though the db is fine.
             // Typically CANTOPEN or IOERR.
-            int64_t freeSpace = Utility::freeDiskSpace(dbPath);
+            int64_t freeSpace = Utility::getFreeDiskSpace(dbPath);
             if (freeSpace != -1 && freeSpace < 1000000) {
                 LOG_WARN(_logger, "Can't prepare consistency check and disk space is low: " << freeSpace);
                 close();

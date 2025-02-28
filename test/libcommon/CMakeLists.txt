@@ -1,4 +1,9 @@
-project(testcommon)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(testcommon LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(testcommon LANGUAGES C CXX)
+endif()
 
 find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.0 REQUIRED)
@@ -7,6 +12,8 @@ set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 
 set(testcommon_SRCS
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
+        ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+        ../test_utility/testbase.h
         ../test.cpp
 
         test.cpp
@@ -25,6 +32,17 @@ else ()
 endif ()
 
 add_executable(${testcommon_NAME} ${testcommon_SRCS})
+
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
+    # cppunit
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/TestFixture.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/extensions/HelperMacros.h$<ANGLE-R>>"
+)
+
+target_precompile_headers(${testcommon_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${testcommon_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})

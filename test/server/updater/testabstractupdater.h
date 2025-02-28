@@ -23,18 +23,20 @@
 
 namespace KDC {
 
-class TestAbstractUpdater final : public CppUnit::TestFixture {
+class TestAbstractUpdater final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestAbstractUpdater);
         CPPUNIT_TEST(testSkipUnskipVersion);
         CPPUNIT_TEST(testIsVersionSkipped);
+        CPPUNIT_TEST(testCurrentVersionedChannel);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
-
+        void tearDown() override { TestBase::stop(); }
     protected:
         void testSkipUnskipVersion();
         void testIsVersionSkipped();
+        void testCurrentVersionedChannel();
 };
 
 } // namespace KDC

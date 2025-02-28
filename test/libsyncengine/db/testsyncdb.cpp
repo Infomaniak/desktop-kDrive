@@ -81,6 +81,7 @@ class DbNodeTest : public DbNode {
 };
 
 void TestSyncDb::setUp() {
+    TestBase::start();
     bool alreadyExists = false;
     const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
 
@@ -97,6 +98,7 @@ void TestSyncDb::tearDown() {
     // Close and delete DB
     _testObj->close();
     delete _testObj;
+    TestBase::stop();
 }
 
 
@@ -804,5 +806,9 @@ void TestSyncDb::testCorrespondingNodeId() {
     // Unknown side case
     CPPUNIT_ASSERT(!_testObj->correspondingNodeId(ReplicaSide::Unknown, "id dir loc 1", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
+}
+
+void TestSyncDb::testDummyUpgrade() {
+    CPPUNIT_ASSERT(_testObj->upgrade("3.6.4 (build 20240112)", "3.6.4 (build 20240112)"));
 }
 } // namespace KDC

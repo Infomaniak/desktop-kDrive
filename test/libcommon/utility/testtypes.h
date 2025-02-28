@@ -20,15 +20,20 @@
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include "test_utility/testbase.h"
 
 namespace KDC {
 
-class TestTypes : public CppUnit::TestFixture {
+class TestTypes : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestTypes);
         CPPUNIT_TEST(testOtherSide);
         CPPUNIT_TEST(testStreamConversion);
         CPPUNIT_TEST(testExitInfo);
         CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp(void) override { TestBase::start(); }
+        void tearDown(void) override { TestBase::stop(); }
 
     protected:
         void testOtherSide();

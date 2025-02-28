@@ -1,5 +1,11 @@
-project(libcommonserver)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(libcommonserver LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(libcommonserver LANGUAGES C CXX)
+endif()
 
+find_package(Qt6 REQUIRED Core)
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
@@ -11,8 +17,12 @@ if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
 endif ()
 find_package(libzip 1.10.1 REQUIRED)
 
+set(CMAKE_AUTOMOC TRUE)
+
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
+
+add_subdirectory(vfs)
 
 # Sources
 set(libcommonserver_SRCS
@@ -34,6 +44,9 @@ set(libcommonserver_SRCS
     # Io
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
+    vfs/vfs.h vfs/vfs.cpp
+    vfs/workerinfo.h vfs/vfsworker.h
+    vfs/plugin.h vfs/plugin.cpp
 )
 
 if(APPLE)
@@ -54,6 +67,42 @@ endif()
 
 # Target
 add_library(${libcommonserver_NAME} STATIC ${libcommonserver_SRCS})
+
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<deque$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<iostream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<sstream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<sys/stat.h$<ANGLE-R>>"
+    # Qt
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qfile.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qlist.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qmutex.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qobject.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstring.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qthread.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qwaitcondition.h$<ANGLE-R>>"
+    # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/fileappender.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/logger.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+    # sqlite
+    "$<$<COMPILE_LANGUAGE:CXX>:<sqlite3.h$<ANGLE-R>>"
+    # kDrive
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/io/iohelper.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
+)
+
+target_precompile_headers(${libcommonserver_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libcommonserver_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}

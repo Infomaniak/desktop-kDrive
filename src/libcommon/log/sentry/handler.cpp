@@ -21,6 +21,7 @@
 #include "version.h"
 #include "utility/utility.h"
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -34,7 +35,6 @@ std::shared_ptr<Handler> Handler::_instance = nullptr;
 AppType Handler::_appType = AppType::None;
 bool Handler::_debugCrashCallback = false;
 bool Handler::_debugBeforeSendCallback = false;
-
 /*
  *  sentry_value_t reader implementation - begin
  *  Used for debbuging
@@ -268,7 +268,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     }
 
 #ifdef NDEBUG
-    sentry_options_set_traces_sample_rate(options, 0.001); // 0.1% of traces will be sent to sentry.
+    sentry_options_set_traces_sample_rate(options, 0.1); // 0.1% of traces will be sent to sentry.
 #else
     sentry_options_set_traces_sample_rate(options, 1);
 #endif
@@ -279,6 +279,14 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     std::cerr << "sentry_init returned " << res << std::endl;
     ASSERT(res == 0);
     _instance->_isSentryActivated = true;
+    _instance->setDistributionChannel(VersionChannel::Unknown);
+}
+
+void Handler::init(const std::shared_ptr<Handler> &initializedHandler) {
+    if (_instance) {
+        return;
+    }
+    _instance = initializedHandler;
 }
 
 void Handler::setAuthenticatedUser(const SentryUser &user) {
@@ -292,8 +300,8 @@ void Handler::setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level) 
     _globalConfidentialityLevel = level;
 }
 
-void Handler::_captureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
-                              const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
+void Handler::privateCaptureMessage(Level level, const std::string &title, std::string message /*Copy needed*/,
+                                    const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
     if (!_isSentryActivated) return;
 
     std::scoped_lock lock(_mutex);
@@ -322,6 +330,10 @@ void Handler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) 
     _sentryMinUploadIntervalOnRateLimit = std::max(1, minUploadIntervalOnRateLimit);
 }
 
+void Handler::setTag(const std::string &key, const std::string &value) {
+    sentry_set_tag(key.c_str(), value.c_str());
+}
+
 sentry_value_t Handler::toSentryValue(const SentryUser &user) const {
     sentry_value_t userValue = sentry_value_new_object();
     sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.email().data()));
@@ -345,7 +357,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = std::min(storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
@@ -435,6 +447,39 @@ void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
         eventFile << eventStr << std::endl;
         eventFile.close();
     }
+}
+
+void Handler::setDistributionChannel(const VersionChannel channel) {
+    // Editing the "distribution_channel" value implies reflecting the change in the Sentry project settings.
+    // (Settings > Projects > kdrive-[client/server] > Tags & Context).
+    // It is not recommended to change this value or the channelStr values, as some Sentry dashboards/alerts might rely
+    // on them and should be updated accordingly.
+
+    std::string channelStr;
+    switch (channel) {
+        case VersionChannel::Prod:
+            channelStr = "Production";
+            break;
+        case VersionChannel::Next:
+            channelStr = "Next";
+            break;
+        case VersionChannel::Beta:
+            channelStr = "Beta";
+            break;
+        case VersionChannel::Internal:
+            channelStr = "Internal";
+            break;
+        case VersionChannel::Legacy:
+            channelStr = "Legacy";
+            break;
+        case VersionChannel::Unknown:
+            channelStr = "Unknown";
+            break;
+        default:
+            channelStr = "Error";
+            break;
+    }
+    setTag("distribution_channel", channelStr);
 }
 
 Handler::~Handler() {

@@ -25,12 +25,13 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestUpdateTreeWorker : public CppUnit::TestFixture {
+class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUpdateTreeWorker);
         CPPUNIT_TEST(testUtilsFunctions);
         CPPUNIT_TEST(testUpdateTmpFileNode);
         CPPUNIT_TEST(testHandleCreateOperationsWithSamePath);
         CPPUNIT_TEST(testSearchForParentNode);
+        CPPUNIT_TEST(testGetNewPathAfterMove);
         CPPUNIT_TEST(testStep1);
         CPPUNIT_TEST(testStep2);
         CPPUNIT_TEST(testStep3);
@@ -51,6 +52,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testGetOriginPath2);
         CPPUNIT_TEST(testGetOriginPath3);
         CPPUNIT_TEST(testGetOriginPath4);
+        CPPUNIT_TEST(testGetOriginPath5);
         CPPUNIT_TEST(testDeleteMove);
         CPPUNIT_TEST(testDeleteRecreateBranch);
         CPPUNIT_TEST_SUITE_END();
@@ -61,12 +63,13 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
 
     protected:
         void setUpDbTree();
-        void setUpUpdateTree();
+        void setUpUpdateTree(ReplicaSide side);
 
         void testUtilsFunctions();
         void testUpdateTmpFileNode();
         void testHandleCreateOperationsWithSamePath();
         void testSearchForParentNode();
+        void testGetNewPathAfterMove();
 
         // Test with already existing UpdateTree
         void testStep1();
@@ -92,6 +95,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
         void testGetOriginPath2();
         void testGetOriginPath3();
         void testGetOriginPath4();
+        void testGetOriginPath5();
 
         void testDeleteMove();
 
@@ -103,10 +107,12 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
         void testDeleteRecreateBranch();
 
     private:
-        std::shared_ptr<UpdateTreeWorker> _updateTreeWorker;
+        std::shared_ptr<UpdateTreeWorker> _localUpdateTreeWorker;
+        std::shared_ptr<UpdateTreeWorker> _remoteUpdateTreeWorker;
         std::shared_ptr<SyncDb> _syncDb;
         std::shared_ptr<FSOperationSet> _operationSet;
-        std::shared_ptr<UpdateTree> _updateTree;
+        std::shared_ptr<UpdateTree> _localUpdateTree;
+        std::shared_ptr<UpdateTree> _remoteUpdateTree;
 
         DbNodeId _dbnodeIdDir41;
         DbNodeId _dbnodeIdDir411;

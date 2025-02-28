@@ -190,7 +190,7 @@ void FolderWatcher_win::watchChanges() {
     CancelIo(_directoryHandle);
     closeHandle();
 
-    LOG_DEBUG(_logger, "Watching changes stoped");
+    LOG_DEBUG(_logger, "Watching changes stopped");
 }
 
 void FolderWatcher_win::closeHandle() {

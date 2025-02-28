@@ -33,7 +33,6 @@
 #include <winbase.h>
 #include <fcntl.h>
 #include <io.h>
-#include <wchar.h>
 #endif
 
 namespace KDC {

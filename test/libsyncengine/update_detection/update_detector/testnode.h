@@ -23,11 +23,15 @@
 using namespace CppUnit;
 
 namespace KDC {
-class TestNode : public CppUnit::TestFixture {
+class TestNode : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestNode);
         CPPUNIT_TEST(testIsParentValid);
         CPPUNIT_TEST(testIsParentOf);
         CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp(void) override { TestBase::start(); }
+        void tearDown(void) override { TestBase::stop(); }
 
     protected:
         void testIsParentValid();

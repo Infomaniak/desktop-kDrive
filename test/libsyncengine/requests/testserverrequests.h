@@ -20,7 +20,7 @@
 
 namespace KDC {
 
-class TestServerRequests : public CppUnit::TestFixture {
+class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestServerRequests);
         CPPUNIT_TEST(testFixProxyConfig);
         CPPUNIT_TEST(testGetPublicLink);

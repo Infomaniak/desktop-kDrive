@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 #include "socketlistener.h"
 #include "libcommon/utility/types.h"
 #include "libsyncengine/syncpal/syncpal.h"
@@ -169,11 +169,10 @@ class SocketApi : public QObject {
 #endif
 
         QString buildRegisterPathMessage(const QString &path);
-        void processFileList(const QStringList &inFileList, std::list<KDC::SyncPath> &outFileList);
-        bool syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &status, bool &isPlaceholder, bool &isHydrated,
-                            int &progress);
-        bool setPinState(const FileData &fileData, KDC::PinState pinState);
-        bool dehydratePlaceholder(const FileData &fileData);
+        void processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList);
+        bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
+        ExitInfo setPinState(const FileData &fileData, PinState pinState);
+        ExitInfo dehydratePlaceholder(const FileData &fileData);
         bool addDownloadJob(const FileData &fileData);
         bool cancelDownloadJobs(int syncDbId, const QStringList &fileList);
 
@@ -183,7 +182,7 @@ class SocketApi : public QObject {
         QString cancelHydrationText();
         static bool openBrowser(const QUrl &url);
 
-        QString socketAPIString(KDC::SyncFileStatus status, bool isPlaceholder, bool isHydrated, int progress) const;
+        QString socketAPIString(SyncFileStatus status, const VfsStatus &vfsStatus) const;
 
 
         // Try to retrieve the Sync object with DB ID `syncDbId`.

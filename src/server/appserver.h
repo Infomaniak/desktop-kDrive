@@ -21,7 +21,7 @@
 #include "qtsingleapplication.h"
 #include "libcommonserver/commserver.h"
 #include "syncpal/syncpal.h"
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 #include "navigationpanehelper.h"
 #include "socketapi.h"
 #include "libparms/db/user.h"
@@ -82,8 +82,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         void clearSyncNodes();
         void sendShowSettingsMsg();
         void sendShowSynthesisMsg();
+        void sendRestartClientMsg();
+
         void clearKeychainKeys();
-        void showAlreadyRunning();
 
         void showHint(std::string errorHint);
         bool startClient();
@@ -93,7 +94,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         static std::unordered_map<int, std::shared_ptr<SyncPal>> _syncPalMap;
         static std::unordered_map<int, std::shared_ptr<Vfs>> _vfsMap;
         static std::vector<Notification> _notifications;
-        static std::chrono::time_point<std::chrono::steady_clock> _lastSyncPalStart;
 
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
         QScopedPointer<SocketApi> _socketApi;
@@ -109,6 +109,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsActivationDone{false};
         bool _vfsConnectionDone{false};
         bool _crashRecovered{false};
+        bool _appStartPTraceStopped{false};
+        bool _clientManuallyRestarted{false};
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
@@ -134,15 +136,17 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList = std::unordered_set<NodeId>(),
                              const std::unordered_set<NodeId> &undecidedList = std::unordered_set<NodeId>(),
                              const std::unordered_set<NodeId> &whiteList = std::unordered_set<NodeId>(), bool start = true,
-                             bool resumedByUser = false, bool firstInit = false);
+                             const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool resumedByUser = false,
+                             bool firstInit = false);
         ExitCode initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                             const QSet<QString> &whiteList, bool start = true, bool resumedByUser = false,
+                             const QSet<QString> &whiteList, bool start = true,
+                             const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool resumedByUser = false,
                              bool firstInit = false);
         ExitCode stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
-        ExitCode createAndStartVfs(const Sync &sync, ExitCause &exitCause) noexcept;
+        ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
-        [[nodiscard]] ExitCode tryCreateAndStartVfs(Sync &sync) noexcept;
+        [[nodiscard]] ExitInfo tryCreateAndStartVfs(Sync &sync) noexcept;
         ExitCode stopVfs(int syncDbId, bool unregister);
 
         ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
@@ -179,9 +183,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
-        // See types.h -> AppStateKey for the possible values of status
-        void cancelLogUpload();
-        ExitInfo uploadLog(bool includeArchivedLogs);
+        void uploadLog(bool includeArchivedLogs);
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();
@@ -195,23 +197,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         static void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
-        static bool vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded);
-        static bool vfsExclude(int syncDbId, const SyncPath &itemPath);
-        static bool vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState &pinState);
-        static bool vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState);
-        static bool vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                              int &progress);
-        static bool vfsCreatePlaceholder(int syncDbIdconst, const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        static bool vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item);
-        static bool vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                      const int64_t size, const NodeId &id, std::string &error);
-        static bool vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
-                                         bool &canceled, bool &finished);
-        static bool vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFileStatus status);
-        static bool vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false);
-        static bool vfsCleanUpStatuses(int syncDbId);
-        static bool vfsClearFileAttributes(int syncDbId, const SyncPath &path);
-        static bool vfsCancelHydrate(int syncDbId, const SyncPath &path);
+        static ExitInfo getVfsPtr(int syncDbId, std::shared_ptr<Vfs> &vfs);
 
         static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
@@ -255,6 +241,4 @@ class AppServer : public SharedTools::QtSingleApplication {
     signals:
         void socketApiExecuteCommandDirect(const QString &commandLine);
 };
-
-
 } // namespace KDC

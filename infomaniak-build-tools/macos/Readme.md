@@ -132,7 +132,7 @@ make
 sudo make install
 ```
 
-If the server does not reply to the `git clone` command, you can download the source from https://dev-www.libreoffice.org/src/.
+If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
 ## OpenSSL
 

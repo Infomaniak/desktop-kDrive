@@ -24,7 +24,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestUtility : public CppUnit::TestFixture {
+class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testFreeDiskSpace);
         CPPUNIT_TEST(testIsCreationDateValid);

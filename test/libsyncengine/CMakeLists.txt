@@ -1,4 +1,9 @@
-project(testsyncengine)
+cmake_minimum_required(VERSION 3.16)
+if(APPLE)
+    project(testsyncengine LANGUAGES C CXX OBJC OBJCXX)
+else()
+    project(testsyncengine LANGUAGES C CXX)
+endif()
 
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
@@ -7,11 +12,16 @@ find_package(log4cplus 2.1.0 REQUIRED)
 set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 
 set(testsyncengine_SRCS
+        # Utility
         ../test.cpp
         test.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+        ../test_utility/testbase.h
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
+        # Mocks
+        ../mocks/libsyncengine/vfs/mockvfs.h
+        ../mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
@@ -21,6 +31,7 @@ set(testsyncengine_SRCS
         ## Network jobs
         jobs/network/testsnapshotitemhandler.h jobs/network/testsnapshotitemhandler.cpp
         jobs/network/testnetworkjobs.h jobs/network/testnetworkjobs.cpp
+        jobs/network/API_v2/testloguploadjob.h jobs/network/API_v2/testloguploadjob.cpp
         ## Local jobs
         jobs/local/testlocaljobs.h jobs/local/testlocaljobs.cpp
         # Update Detection
@@ -71,6 +82,14 @@ else()
 endif ()
 
 add_executable(${testsyncengine_NAME} ${testsyncengine_SRCS})
+
+# Precompiled headers
+set(PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"
+)
+
+target_precompile_headers(${testsyncengine_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${testsyncengine_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})

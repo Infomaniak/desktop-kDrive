@@ -44,6 +44,7 @@ namespace KDC {
 #define MAX_NAME_LENGTH_WIN_SHORT 255
 
 void TestPlatformInconsistencyCheckerWorker::setUp() {
+    TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
     const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -63,7 +64,8 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
+                                         KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
@@ -78,6 +80,7 @@ void TestPlatformInconsistencyCheckerWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {

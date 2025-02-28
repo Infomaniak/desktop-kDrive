@@ -20,15 +20,17 @@
 
 #include "abstracttokennetworkjob.h"
 #include "../networkjobsparams.h"
+#include "libcommonserver/vfs/vfs.h"
 
 namespace KDC {
 
 class DownloadJob : public AbstractTokenNetworkJob {
     public:
-        DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
-                    SyncTime creationTime, SyncTime modtime, bool isCreate);
-        DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize);
-        ~DownloadJob();
+        DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
+                    int64_t expectedSize, SyncTime creationTime, SyncTime modtime, bool isCreate);
+        DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
+                    int64_t expectedSize);
+        ~DownloadJob() override;
 
         inline const NodeId &remoteNodeId() const { return _remoteFileId; }
         inline const SyncPath &localPath() const { return _localpath; }
@@ -48,11 +50,30 @@ class DownloadJob : public AbstractTokenNetworkJob {
         bool createLink(const std::string &mimeType, const std::string &data);
         bool removeTmpFile();
         bool moveTmpFile(bool &restartSync);
+        //! Create a tmp file from an std::istream or a std::string
+        /*!
+          \param istr is a stream used to read the file data.
+          \param data is a string containing the file data.
+          \param readError will be true if a read error occured on the input stream.
+          \param fetchCanceled will be true if the read on the input stream has been canceled by the user.
+          \param fetchFinished will be true if the read on the input stream has succeeded.
+          \param fetchError will be true if the read on the input stream has failed.
+          \return true if no unexpected error occurred, false otherwise.
+        */
+        bool createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
+                           std::optional<std::reference_wrapper<const std::string>> data, bool &readError, bool &writeError,
+                           bool &fetchCanceled, bool &fetchFinished, bool &fetchError);
+        //! Create a tmp file from an std::istream
+        bool createTmpFile(std::istream &is, bool &readError, bool &writeError, bool &fetchCanceled, bool &fetchFinished,
+                           bool &fetchError);
+        //! Create a tmp file from a std::string
+        bool createTmpFile(const std::string &data, bool &writeError);
+        bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace);
 
         NodeId _remoteFileId;
         SyncPath _localpath;
         SyncPath _tmpPath;
-        int64_t _expectedSize = -1;
+        int64_t _expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
         SyncTime _creationTime = 0;
         SyncTime _modtimeIn = 0;
         bool _isCreate = false;
@@ -60,6 +81,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
         bool _responseHandlingCanceled = false;
 
         NodeId _localNodeId;
+        const std::shared_ptr<Vfs> _vfs;
+        bool _isHydrated = false;
 };
 
 } // namespace KDC

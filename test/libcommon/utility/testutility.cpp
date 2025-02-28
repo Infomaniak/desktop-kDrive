@@ -18,7 +18,9 @@
 
 #include "config.h"
 #include "testutility.h"
+#include "test_utility/testhelpers.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
 #include <iostream>
@@ -80,6 +82,10 @@ void TestUtility::testIsVersionLower() {
 
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("55.25.0", "55.55.0"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("55.75.0", "55.55.0"));
+
+    // With a build version
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("155.75.0 (build 20250221)", "155.75.0 (build 20250222)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 20240221)", "255.85.0 (build 20250222)"));
 }
 
 void TestUtility::testStringToAppStateValue() {
@@ -299,7 +305,41 @@ void TestUtility::testCurrentVersion() {
     CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}\.{1}\d{1,2}\.{1}\d{1,2}\.{1}\d{0,8}$)")));
 }
 
+SourceLocation testSourceLocationFooFunc(uint32_t &constructLine, SourceLocation location = SourceLocation::currentLoc()) {
+    constructLine = __LINE__ - 1;
+    return location;
+}
+
+void TestUtility::testSourceLocation() {
+    SourceLocation location = SourceLocation::currentLoc();
+    uint32_t correctLine = __LINE__ - 1;
+
+    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
+    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
+
+#ifdef SRC_LOC_AVALAIBALE
+    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
+#else
+    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
+#endif
+
+    // Test as a default argument
+    uint32_t fooFuncLine = 0;
+    location = testSourceLocationFooFunc(fooFuncLine);
+    correctLine = __LINE__ - 1;
+
+    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
+#ifdef SRC_LOC_AVALAIBALE
+    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
+    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
+#else
+    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
+    CPPUNIT_ASSERT_EQUAL(fooFuncLine, location.line());
+#endif
+}
+
 void TestUtility::testGenerateRandomStringAlphaNum() {
+    if (!testhelpers::isNightlyTest()) return;
     {
         int err = 0;
         std::set<std::string> results;
@@ -337,6 +377,16 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
         CPPUNIT_ASSERT(err == 0);
     }
 }
+void TestUtility::testLanguageCode() {
+    CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(Language::English).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("fr"), CommonUtility::languageCode(Language::French).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("de"), CommonUtility::languageCode(Language::German).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
+    // English is the default language and is always returned of the provided language code is unknown.
+    CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(Language::Default).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(static_cast<Language>(18)).toStdString());
+}
 
 #ifdef _WIN32
 void TestUtility::testGetLastErrorMessage() {
@@ -353,4 +403,19 @@ void TestUtility::testGetLastErrorMessage() {
     }
 }
 #endif
+
+void TestUtility::testTruncateLongLogMessage() {
+    // No truncation
+    {
+        const QString message = "short";
+        CPPUNIT_ASSERT_EQUAL(std::string("short"), CommonUtility::truncateLongLogMessage(message).toStdString());
+    }
+
+    // Truncation of one character
+    {
+        const auto message = std::string(2049, 'a');
+        const QString truncatedMessage = CommonUtility::truncateLongLogMessage(QString::fromStdString(message));
+        CPPUNIT_ASSERT(QString::fromStdString(message.substr(0, 2048) + std::string(" (truncated)")) == truncatedMessage);
+    }
+}
 } // namespace KDC

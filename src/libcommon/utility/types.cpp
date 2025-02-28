@@ -66,6 +66,8 @@ std::string toString(const OperationType e) {
             return "Move";
         case OperationType::Edit:
             return "Edit";
+        case OperationType::MoveEdit:
+            return "MoveEdit";
         case OperationType::Delete:
             return "Delete";
         case OperationType::Rights:
@@ -576,6 +578,8 @@ std::string toString(const PinState e) {
             return "OnlineOnly";
         case PinState::Unspecified:
             return "Unspecified";
+        case PinState::Unknown:
+            return "Unknown";
         default:
             return noConversionStr;
     }
@@ -732,17 +736,19 @@ std::string toString(const UpdateState e) {
     }
 }
 
-std::string toString(const DistributionChannel e) {
+std::string toString(const VersionChannel e) {
     switch (e) {
-        case DistributionChannel::Prod:
+        case VersionChannel::Prod:
             return "Prod";
-        case DistributionChannel::Next:
+        case VersionChannel::Next:
             return "Next";
-        case DistributionChannel::Beta:
+        case VersionChannel::Beta:
             return "Beta";
-        case DistributionChannel::Internal:
+        case VersionChannel::Internal:
             return "Internal";
-        case DistributionChannel::Unknown:
+        case VersionChannel::Legacy:
+            return "Legacy";
+        case VersionChannel::Unknown:
             return "Unknown";
         default:
             return noConversionStr;

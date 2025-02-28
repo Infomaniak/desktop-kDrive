@@ -2,6 +2,8 @@ name: Linux kDrive desktop CI on x64 Arch
 
 on:
   pull_request: 
+    branches-ignore:
+        - 'release/**'
     types: [synchronize, review_requested]
 
 concurrency:
@@ -16,6 +18,8 @@ env:
   KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
+  KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
+  KDRIVE_TEST_CI_RUNNING_ON_CI: true
 
 jobs:
   build-kDrive:

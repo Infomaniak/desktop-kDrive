@@ -36,18 +36,16 @@ using namespace Windows::Security::Cryptography;
 #define REGKEY_NAMESPACECLSID L"NamespaceCLSID"
 #define REGKEY_AUMID L"AUMID"
 
-// Package family name, see FileExplorerExtensionPackage / Package.appxmanifest
-/// EV (Extended Validation) certificate AUMID : use this certificate to build a release version
-// #define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_dbrs6rk4qqhna!App"
-/// Virtual certificate AUMID : use this certificate in debug mode and to build a version for testing purpose
-#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_csy8f8zhvqa20!App" // virtual
-
 std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID,
                                                        DWORD *namespaceCLSIDSize) {
     std::wstring syncRootID;
 
     try {
         syncRootID = getSyncRootId(providerInfo);
+        if (syncRootID.empty()) {
+            TRACE_ERROR(L"Error in getSyncRootId");
+            return std::wstring();
+        }
 
         // Find if the provider is already registered
         bool found(false);
@@ -84,6 +82,21 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 TRACE_ERROR(L"Could not open key %s", subKey.c_str());
             }
         } else {
+            if (!providerInfo->folderPath()) {
+                TRACE_ERROR(L"Folder path is empty");
+                return std::wstring();
+            }
+
+            if (!providerInfo->folderName()) {
+                TRACE_ERROR(L"Folder name is empty");
+                return std::wstring();
+            }
+
+            if (!providerInfo->id()) {
+                TRACE_ERROR(L"Sync root id is empty");
+                return std::wstring();
+            }
+
             winrt::StorageProviderSyncRootInfo info;
             info.Id(syncRootID);
 
@@ -102,7 +115,10 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             info.DisplayNameResource(providerInfo->folderName());
 
             WCHAR exePath[MAX_FULL_PATH];
-            GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH);
+            if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
+                TRACE_ERROR(L"Error in GetModuleFileNameW");
+                return std::wstring();
+            }
             info.IconResource(exePath); // App icon
 
             info.HydrationPolicy(winrt::StorageProviderHydrationPolicy::Full);
@@ -124,6 +140,11 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             winrt::IBuffer contextBuffer =
                     winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
             info.Context(contextBuffer);
+
+            if (!info.Path() || info.DisplayNameResource().empty() || info.Id().empty()) {
+                TRACE_ERROR(L"Invalid StorageProviderSyncRootInfo");
+                return std::wstring();
+            }
 
             winrt::StorageProviderSyncRootManager::Register(info);
 
@@ -150,17 +171,21 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 // Create AMUID key
                 std::wstring name(REGKEY_AUMID);
                 std::wstring value;
-#ifdef _DEBUG
+
                 DWORD aumidValueSize = 65535;
                 std::wstring aumidValue;
                 aumidValue.resize(aumidValueSize);
-                aumidValueSize = GetEnvironmentVariableW(L"KDRIVEEXT_DEBUG_AUMID", &aumidValue[0], aumidValueSize);
+                LPCWSTR aumidEnvVarName = nullptr;
+#ifdef _DEBUG
+                aumidEnvVarName = L"KDC_VIRTUAL_AUMID";
+#else
+                aumidEnvVarName = L"KDC_PHYSICAL_AUMID";
+#endif
+                aumidValueSize = GetEnvironmentVariableW(aumidEnvVarName, &aumidValue[0], aumidValueSize);
                 aumidValue.resize(aumidValueSize);
                 value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
                 TRACE_INFO(L"AUMID value: %s", aumidValue.c_str());
-#else
-                value = REGVALUE_AUMID;
-#endif
+
                 if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(),
                                   (DWORD) (value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
                     TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());

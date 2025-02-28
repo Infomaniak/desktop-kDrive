@@ -85,9 +85,9 @@ int main(int argc, char **argv) {
 
     std::unique_ptr<KDC::AppServer> appPtr = nullptr;
     try {
-        appPtr = std::unique_ptr<KDC::AppServer>(new KDC::AppServer(argc, argv));
+        appPtr = std::make_unique<KDC::AppServer>(argc, argv);
     } catch (const std::exception &e) {
-        std::cerr << "kDrive server initialization error: error=" << e.what() << std::endl;
+        std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
         return -1;
     }
 
@@ -177,7 +177,8 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        appPtr->showAlreadyRunning();
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Asking the running server to start a newClient.");
+        appPtr->sendRestartClientMsg();
         return 0;
     }
 

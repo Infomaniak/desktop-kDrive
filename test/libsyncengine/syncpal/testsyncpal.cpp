@@ -30,6 +30,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestSyncPal::setUp() {
+    TestBase::start();
     const testhelpers::TestVariables testVariables;
 
     const std::string localPathStr = _localTempDir.path().string();
@@ -72,7 +73,8 @@ void TestSyncPal::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
+                                         KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
 }
 
@@ -83,6 +85,7 @@ void TestSyncPal::tearDown() {
         _syncPal->stop(false, true, true);
     }
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestSyncPal::testUpdateTree() {
@@ -414,7 +417,7 @@ bool TestSyncPal::exec_case_6_4() {
         return false;
     }
 
-    MoveJob job(_driveDbId, localCasePath, driveIdT.value(), driveIdN.value(), Str("w"));
+    MoveJob job(_syncPal->vfs(), _driveDbId, localCasePath, driveIdT.value(), driveIdN.value(), Str("w"));
     job.runSynchronously();
 
     return true;

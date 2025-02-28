@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "libcommonserver/vfs.h"
+#include "libcommonserver/vfs/vfs.h"
 
 #include <QObject>
 #include <QTimer>

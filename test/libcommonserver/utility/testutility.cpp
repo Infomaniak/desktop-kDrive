@@ -40,17 +40,21 @@ namespace KDC {
 
 static const SyncPath localTestDirPath(TEST_DIR "/test_ci");
 
-void TestUtility::setUp() {}
+void TestUtility::setUp() {
+    TestBase::start();
+}
 
-void TestUtility::tearDown() {}
+void TestUtility::tearDown() {
+    TestBase::stop();
+}
 
 void TestUtility::testFreeDiskSpace() {
     int64_t freeSpace;
 
 #if defined(__APPLE__) || defined(__unix__)
-    freeSpace = _testObj->freeDiskSpace("/");
+    freeSpace = _testObj->getFreeDiskSpace("/");
 #elif defined(_WIN32)
-    freeSpace = _testObj->freeDiskSpace(R"(C:\)");
+    freeSpace = _testObj->getFreeDiskSpace(R"(C:\)");
 #endif
 
     std::cout << " freeSpace=" << freeSpace;

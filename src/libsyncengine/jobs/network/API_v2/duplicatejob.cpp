@@ -22,24 +22,17 @@
 
 namespace KDC {
 
-DuplicateJob::DuplicateJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &absoluteFinalPath) :
+DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const NodeId &remoteFileId,
+                           const SyncPath &absoluteFinalPath) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteFileId(remoteFileId),
-    _absoluteFinalPath(absoluteFinalPath) {
+    _absoluteFinalPath(absoluteFinalPath), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
 DuplicateJob::~DuplicateJob() {
-    if (_vfsForceStatus && _vfsStatus && !_absoluteFinalPath.empty()) {
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        if (!_vfsStatus(_absoluteFinalPath, isPlaceholder, isHydrated, isSyncing, progress)) {
-            LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_absoluteFinalPath).c_str());
-        }
-
-        if (!_vfsForceStatus(_absoluteFinalPath, false, 0, false)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath).c_str());
+    if (!_absoluteFinalPath.empty() && _vfs) {
+        if (const auto exitInfo = _vfs->forceStatus(_absoluteFinalPath, VfsStatus()); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
         }
     }
 }
@@ -49,10 +42,8 @@ bool DuplicateJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    NodeId res;
     if (jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-        if (dataObj) {
+        if (Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey)) {
             if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
                 return false;
             }

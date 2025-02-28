@@ -60,23 +60,23 @@ std::string GetAppVersionJob::toStr(const Platform platform) {
     }
 }
 
-DistributionChannel toDistributionChannel(const std::string &str) {
-    if (str == versionTypeProdKey) return DistributionChannel::Prod;
-    if (str == versionTypeNextKey) return DistributionChannel::Next;
-    if (str == versionTypeBetaKey) return DistributionChannel::Beta;
-    if (str == versionTypeInternalKey) return DistributionChannel::Internal;
-    return DistributionChannel::Unknown;
+VersionChannel toDistributionChannel(const std::string &str) {
+    if (str == versionTypeProdKey) return VersionChannel::Prod;
+    if (str == versionTypeNextKey) return VersionChannel::Next;
+    if (str == versionTypeBetaKey) return VersionChannel::Beta;
+    if (str == versionTypeInternalKey) return VersionChannel::Internal;
+    return VersionChannel::Unknown;
 }
 
-std::string GetAppVersionJob::toStr(const DistributionChannel channel) {
+std::string GetAppVersionJob::toStr(const VersionChannel channel) {
     switch (channel) {
-        case DistributionChannel::Prod:
+        case VersionChannel::Prod:
             return versionTypeProdKey;
-        case DistributionChannel::Next:
+        case VersionChannel::Next:
             return versionTypeNextKey;
-        case DistributionChannel::Beta:
+        case VersionChannel::Beta:
             return versionTypeBetaKey;
-        case DistributionChannel::Internal:
+        case VersionChannel::Internal:
             return versionTypeInternalKey;
         default:
             return "unknown";
@@ -106,12 +106,12 @@ bool GetAppVersionJob::handleError(std::istream &, const Poco::URI &uri) {
     return false;
 }
 
-DistributionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) const {
-    if (val == versionTypeProdKey) return DistributionChannel::Prod;
-    if (val == versionTypeNextKey) return DistributionChannel::Next;
-    if (val == versionTypeBetaKey) return DistributionChannel::Beta;
-    if (val == versionTypeInternalKey) return DistributionChannel::Internal;
-    return DistributionChannel::Unknown;
+VersionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) const {
+    if (val == versionTypeProdKey) return VersionChannel::Prod;
+    if (val == versionTypeNextKey) return VersionChannel::Next;
+    if (val == versionTypeBetaKey) return VersionChannel::Beta;
+    if (val == versionTypeInternalKey) return VersionChannel::Internal;
+    return VersionChannel::Unknown;
 }
 
 bool GetAppVersionJob::handleResponse(std::istream &is) {
@@ -135,7 +135,7 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
         std::string versionType;
         if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) return false;
 
-        const DistributionChannel channel = toDistributionChannel(versionType);
+        const VersionChannel channel = toDistributionChannel(versionType);
         _versionsInfo[channel].channel = channel;
 
         if (!JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag)) return false;

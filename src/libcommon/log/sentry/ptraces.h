@@ -97,12 +97,13 @@ struct Propagation2 : public AbstractPTrace {
 /* Scoped performance traces will automatically start when the object is created and stop when the object is
  destroyed.
  Some scoped performance traces expect to be manually stopped. In this case, the stop() method must be called, else the trace will
- be consider as aborted when the object will be destroyed. Such traces are indicated by a comment in their class definition.
+ be considered as aborted when the object will be destroyed. Such traces are indicated by a comment in their class definition.
  */
 namespace scoped {
 struct LFSOChangeDetected : public AbstractScopedPTrace {
         explicit LFSOChangeDetected(int syncDbId) :
-            AbstractScopedPTrace({"LFSO_ChangeDetected", "Handle one detected changes", PTraceName::LFSOChangeDetected},
+            AbstractScopedPTrace({"LFSO_ChangeDetected", "Handle one detected changes", PTraceName::LFSOChangeDetected,
+                                  PTraceName::None, 0.01},
                                  PTraceStatus::Ok, syncDbId) {}
 };
 
@@ -115,8 +116,9 @@ struct LFSOGenerateInitialSnapshot : public AbstractScopedPTrace {
 
 struct RFSOChangeDetected : public AbstractScopedPTrace {
         explicit RFSOChangeDetected(int syncDbId) :
-            AbstractScopedPTrace({"RFSO_ChangeDetected", "Handle one detected changes", PTraceName::RFSOChangeDetected},
-                                 PTraceStatus::Ok, syncDbId) {}
+            AbstractScopedPTrace(
+                    {"RFSO_ChangeDetected", "Handle one detected changes", PTraceName::RFSOChangeDetected, PTraceName::None, 0.1},
+                    PTraceStatus::Ok, syncDbId) {}
 };
 
 // This scoped performance trace expects to be manually stopped.
