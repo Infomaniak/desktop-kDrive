@@ -183,39 +183,6 @@ jobs:
       - name: Clean-up generated code
         run : rm -rf build-linux
 
-  test-common-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
-    env:
-      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
-    needs: build-Linux
-    steps:
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
-
-      - name: Download test executable
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-build-test-common
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
-
-      - name: Grant tests script execute permission
-        run : chmod +x ./infomaniak-build-tools/run-test.sh
-      - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/kDrive_test_common
-
-      - name: Upload tests logs artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-tests-logs-tests-common
-          path: /tmp/kDrive-logdir/*
-          retention-days: 3
-          overwrite: true
-        if: always()
-
-      - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
-
-
   test-common-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
@@ -461,3 +428,159 @@ jobs:
       - name: Clean up
         run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
+  test-common-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
+    needs: build-Linux
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-test-common
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/kDrive_test_common
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tests-logs-tests-common
+          path: /tmp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
+
+  test-commonServer-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
+    needs: build-Linux
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-test-common-server
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/kDrive_test_common_server
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tests-logs-tests-common-server
+          path: /tmp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
+
+  test-server-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
+    needs: build-Linux
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-test-server
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/kDrive_test_server
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tests-logs-tests-server
+          path: /tmp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
+
+  test-syncengine-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
+    needs: build-Linux
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-test-syncengine
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/kDrive_test_syncengine
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tests-logs-tests-syncengine
+          path: /tmp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
+
+  test-parms-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
+    needs: build-Linux
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-test-parms
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/kDrive_test_parms
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tests-logs-tests-parms
+          path: /tmp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
