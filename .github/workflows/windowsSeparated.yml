@@ -102,7 +102,7 @@ jobs:
           $failures = @()
 
           $file = "kDrive_test_common.exe"
-          $path = "build-windows/install/$file"
+          $path = "./build-windows/install/$file"
           Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
           & $path
           if ($LASTEXITCODE -ne 0) {
