@@ -19,7 +19,6 @@ env:
   KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
-  KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
 
 
@@ -120,16 +119,16 @@ jobs:
 
   test-common-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Clean up previous tests
-        run : |
-            rm -r -force C:/Windows/Temp/kDrive-logdir/*
-            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+      - name: Clean up log directory
+        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
       - name: Download dlls
         uses: actions/download-artifact@v4
@@ -164,18 +163,21 @@ jobs:
           overwrite: true
         if: always()
 
+      - name: Clean up
+        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
   test-commonServer-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Clean up previous tests
-        run : |
-            rm -r -force C:/Windows/Temp/kDrive-logdir/*
-            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+      - name: Clean up log directory
+        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
       - name: Download dlls
         uses: actions/download-artifact@v4
@@ -210,18 +212,21 @@ jobs:
           overwrite: true
         if: always()
 
+      - name: Clean up
+        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
   test-server-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Clean up previous tests
-        run : |
-            rm -r -force C:/Windows/Temp/kDrive-logdir/*
-            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+      - name: Clean up log directory
+        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
       - name: Download dlls
         uses: actions/download-artifact@v4
@@ -256,18 +261,21 @@ jobs:
           overwrite: true
         if: always()
 
+      - name: Clean up
+        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
   test-syncengine-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Clean up previous tests
-        run : |
-            rm -r -force C:/Windows/Temp/kDrive-logdir/*
-            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+      - name: Clean up log directory
+        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
       - name: Download dlls
         uses: actions/download-artifact@v4
@@ -302,18 +310,21 @@ jobs:
           overwrite: true
         if: always()
 
+      - name: Clean up
+        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
   test-parms-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Clean up previous tests
-        run : |
-            rm -r -force C:/Windows/Temp/kDrive-logdir/*
-            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+      - name: Clean up log directory
+        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
       - name: Download dlls
         uses: actions/download-artifact@v4
@@ -347,4 +358,7 @@ jobs:
           retention-days: 3
           overwrite: true
         if: always()
+
+      - name: Clean up
+        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
