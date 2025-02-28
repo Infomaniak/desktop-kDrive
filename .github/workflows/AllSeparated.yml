@@ -185,7 +185,9 @@ jobs:
 
   test-common-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
-
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
+    needs: build-Linux
     steps:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
