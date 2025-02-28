@@ -219,6 +219,7 @@ jobs:
         with:
           name: macos-build-common-files
           path: |
+              /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/litesync-exclude.lst
               /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/sync-exclude.lst
               /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*.dylib
           retention-days: 3
