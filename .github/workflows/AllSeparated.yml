@@ -183,6 +183,80 @@ jobs:
       - name: Clean-up generated code
         run : rm -rf build-linux
 
+  build-MacOS:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+
+    steps:
+      - name: Clean-up XCode DerivedData
+        run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
+        
+      - name: Checkout the code
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+          submodules: recursive
+
+      - name: Grant empty trash script execute permission
+        run : chmod +x ./infomaniak-build-tools/empty_drive_trash.sh
+      - name: Empty drive's trash
+        run : ./infomaniak-build-tools/empty_drive_trash.sh
+
+      - name: Unlock keychain to use the certificate
+        run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
+
+      - name: Grant building script execute permission
+        run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
+      - name: Build kDrive desktop
+        run : ./infomaniak-build-tools/macos/build-ci.sh
+       
+      - name: Upload build test common executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-test-common
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Upload build test common server executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-test-common-server
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common_server
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Upload build test server executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-test-server
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_server
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Upload build test syncengine executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-test-syncengine
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_syncengine
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Upload build test parms executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-test-parms
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_parms
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Clean-up generated code
+        run : rm -rf build-macos
+
   test-common-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
@@ -584,3 +658,208 @@ jobs:
           retention-days: 3
           overwrite: true
         if: always()
+
+  test-common-MacOS:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
+    needs: build-MacOS
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-test-common
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/test/kDrive_test_common
+
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-tests-logs-tests-common
+          path: ${{ env.logdir_path }}/*
+          retention-days: 3
+          overwrite: true
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        continue-on-error: true
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+
+  test-commonServer-MacOS:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
+    needs: build-MacOS
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-test-common-server
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/test/kDrive_test_common_server
+
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-tests-logs-tests-common-server
+          path: ${{ env.logdir_path }}/*
+          retention-days: 3
+          overwrite: true
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        continue-on-error: true
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+
+  test-server-MacOS:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
+    needs: build-MacOS
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-test-server
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/test/kDrive_test_server
+
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-tests-logs-tests-server
+          path: ${{ env.logdir_path }}/*
+          retention-days: 3
+          overwrite: true
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        continue-on-error: true
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+
+  test-syncengine-MacOS:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
+    needs: build-MacOS
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-test-syncengine
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/test/kDrive_test_syncengine
+
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-tests-logs-tests-syncengine
+          path: ${{ env.logdir_path }}/*
+          retention-days: 3
+          overwrite: true
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        continue-on-error: true
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+
+  test-parms-MacOS:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
+    needs: build-MacOS
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-test-parms
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/test/kDrive_test_parms
+
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-tests-logs-tests-parms
+          path: ${{ env.logdir_path }}/*
+          retention-days: 3
+          overwrite: true
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        continue-on-error: true
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
