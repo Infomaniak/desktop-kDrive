@@ -116,6 +116,103 @@ jobs:
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
+        
+  build-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+          submodules: recursive
+
+      - name: Clean the log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Grant building script execute permission
+        run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
+      - name: Build kDrive desktop
+        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -u
+      
+      - name: Upload build test common executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-test-common
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_common
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Upload build test common server executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-test-common-server
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_common_server
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Upload build test server executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-test-server
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_server
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Upload build test syncengine executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-test-syncengine
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_syncengine
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Upload build test parms executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-test-parms
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_parms
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Clean-up generated code
+        run : rm -rf build-linux
+
+  test-common-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+
+    steps:
+      - name: Clean up log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-test-common
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-test.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-test.sh ./build-linux/build/bin/kDrive_test_common
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tests-logs-tests-common
+          path: /tmp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+      - name: Clean up
+        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
+
 
   test-common-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
