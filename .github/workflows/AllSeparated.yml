@@ -60,11 +60,13 @@ jobs:
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
-      - name: Upload build dll
+      - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build-dlls
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/install/bin/*.dll
+          name: windows-build-common-files
+          path: |
+              C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/install/bin/*.dll
+              C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/install/bin/sync-exclude.lst
           retention-days: 3
           overwrite: true
         if: always()
@@ -135,6 +137,15 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -u
       
+      - name: Upload build common files
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-common-files
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/sync-exclude.lst
+          retention-days: 3
+          overwrite: true
+        if: always()
+
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
@@ -209,11 +220,20 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/macos/build-ci.sh
        
+      - name: Upload build common files
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/litesync-exclude.lst
+          retention-days: 3
+          overwrite: true
+        if: always()
+
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-common
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/ /kDrive_test_common
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common
           retention-days: 3
           overwrite: true
         if: always()
@@ -270,10 +290,10 @@ jobs:
       - name: Clean up log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
-      - name: Download dlls
+      - name: Download common files
         uses: actions/download-artifact@v4
         with:
-          name: windows-build-dlls
+          name: windows-build-common-files
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Download test executable
@@ -319,10 +339,10 @@ jobs:
       - name: Clean up log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
-      - name: Download dlls
+      - name: Download common files
         uses: actions/download-artifact@v4
         with:
-          name: windows-build-dlls
+          name: windows-build-common-files
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Download test executable
@@ -368,10 +388,10 @@ jobs:
       - name: Clean up log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
-      - name: Download dlls
+      - name: Download common files
         uses: actions/download-artifact@v4
         with:
-          name: windows-build-dlls
+          name: windows-build-common-files
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Download test executable
@@ -417,10 +437,10 @@ jobs:
       - name: Clean up log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
-      - name: Download dlls
+      - name: Download common files
         uses: actions/download-artifact@v4
         with:
-          name: windows-build-dlls
+          name: windows-build-common-files
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Download test executable
@@ -466,10 +486,10 @@ jobs:
       - name: Clean up log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
-      - name: Download dlls
+      - name: Download common files
         uses: actions/download-artifact@v4
         with:
-          name: windows-build-dlls
+          name: windows-build-common-files
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Download test executable
@@ -511,6 +531,12 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-common-files
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -542,6 +568,12 @@ jobs:
     steps:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-common-files
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -575,6 +607,12 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-common-files
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -606,6 +644,12 @@ jobs:
     steps:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-common-files
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -639,6 +683,12 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-common-files
+          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -667,6 +717,12 @@ jobs:
     steps:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -709,6 +765,12 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -749,6 +811,12 @@ jobs:
     steps:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -791,6 +859,12 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -831,6 +905,12 @@ jobs:
     steps:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
