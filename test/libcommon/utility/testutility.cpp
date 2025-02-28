@@ -339,7 +339,7 @@ void TestUtility::testSourceLocation() {
 }
 
 void TestUtility::testGenerateRandomStringAlphaNum() {
-    if (!testhelpers::isNightlyTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
     {
         int err = 0;
         std::set<std::string> results;

@@ -22,6 +22,7 @@
 #include <winerror.h>
 #include <shlguid.h>
 
+#include <QApplication>
 #include <QFile>
 #include <QDir>
 

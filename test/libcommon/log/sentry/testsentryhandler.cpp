@@ -39,7 +39,7 @@ void MockTestSentryHandler::sendEventToSentry(const sentry::Level level, const s
 }
 
 void TestSentryHandler::testMultipleSendEventForTheSameEvent() {
-    if (!testhelpers::isNightlyTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
 
     MockTestSentryHandler mockSentryHandler;
 

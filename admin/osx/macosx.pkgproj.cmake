@@ -33,7 +33,7 @@
 											<key>PATH_TYPE</key>
 											<integer>3</integer>
 											<key>PERMISSIONS</key>
-											<integer>493</integer>
+											<integer>509</integer>
 											<key>TYPE</key>
 											<integer>3</integer>
 											<key>UID</key>

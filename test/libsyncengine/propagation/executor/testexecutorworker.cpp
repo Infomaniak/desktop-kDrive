@@ -84,7 +84,7 @@ void TestExecutorWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
-    _syncPal.reset();
+    TestBase::stop();
 }
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {

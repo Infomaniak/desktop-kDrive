@@ -26,8 +26,6 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libparms/db/parmsdb.h"
 
-#include <QDir>
-#include <QCoreApplication>
 #include <QUuid>
 
 #include <log4cplus/loggingmacros.h>

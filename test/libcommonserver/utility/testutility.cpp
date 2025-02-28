@@ -40,14 +40,6 @@ namespace KDC {
 
 static const SyncPath localTestDirPath(TEST_DIR "/test_ci");
 
-void TestUtility::setUp() {
-    TestBase::start();
-}
-
-void TestUtility::tearDown() {
-    TestBase::stop();
-}
-
 void TestUtility::testFreeDiskSpace() {
     int64_t freeSpace;
 

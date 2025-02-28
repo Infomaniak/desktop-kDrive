@@ -25,11 +25,7 @@
 
 #include <deque>
 
-#include <QList>
-#include <QMutex>
 #include <QObject>
-#include <QScopedPointer>
-#include <QWaitCondition>
 
 namespace KDC {
 
