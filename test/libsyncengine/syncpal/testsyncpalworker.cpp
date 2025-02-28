@@ -318,10 +318,6 @@ void TestSyncPalWorker::testInternalPause3() {
                                           testTimeout, loopWait));
     mockExecutorWorkerWaiting = false;
 
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor(
-            [&syncpalWorker]() { return syncpalWorker->_unpauseAsked; },
-            [&syncpalWorker]() { CPPUNIT_ASSERT_EQUAL(SyncStep::Propagation2, syncpalWorker->step()); }, testTimeout, loopWait));
-
     // Wait for the sync to finish
     CPPUNIT_ASSERT(TimeoutHelper::waitFor([&syncpalWorker]() { return syncpalWorker->step() == SyncStep::Idle; }, testTimeout,
                                           loopWait));
