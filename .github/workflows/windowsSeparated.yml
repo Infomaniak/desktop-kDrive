@@ -97,7 +97,7 @@ jobs:
           overwrite: true
         if: always()
 
-      - name: Upload build test common syncengine executable
+      - name: Upload build test syncengine executable
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-test-syncengine
@@ -126,8 +126,10 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Clean the log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+      - name: Clean up previous tests
+        run : |
+            rm -r -force C:/Windows/Temp/kDrive-logdir/*
+            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Download dlls
         uses: actions/download-artifact@v4
@@ -143,9 +145,6 @@ jobs:
 
       - name: Execute tests
         run: |
-          $errors = 0
-          $failures = @()
-
           $file = "kDrive_test_common.exe"
           $path = "./build-windows/test/$file"
           Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
@@ -165,6 +164,187 @@ jobs:
           overwrite: true
         if: always()
 
-      #- name: Clean-up
-      #  run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
-      #  if: always()
+  test-commonServer-Windows:
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    needs: build-Windows
+    steps:
+      - name: Load system Path into Github environment
+        run : echo Path=%Path%>> %GITHUB_ENV%
+        shell: cmd
+
+      - name: Clean up previous tests
+        run : |
+            rm -r -force C:/Windows/Temp/kDrive-logdir/*
+            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Download dlls
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-dlls
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-test-common-server
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Execute tests
+        run: |
+          $file = "kDrive_test_common_server.exe"
+          $path = "./build-windows/test/$file"
+          Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
+          & $path
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
+          } else {
+                  Write-Host "---------- Success: $file ----------" -ForegroundColor Green
+          }  
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-logs-tests-common-server
+          path: C:/Windows/Temp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+  test-server-Windows:
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    needs: build-Windows
+    steps:
+      - name: Load system Path into Github environment
+        run : echo Path=%Path%>> %GITHUB_ENV%
+        shell: cmd
+
+      - name: Clean up previous tests
+        run : |
+            rm -r -force C:/Windows/Temp/kDrive-logdir/*
+            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Download dlls
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-dlls
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-test-server
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Execute tests
+        run: |
+          $file = "kDrive_test_server.exe"
+          $path = "./build-windows/test/$file"
+          Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
+          & $path
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
+          } else {
+                  Write-Host "---------- Success: $file ----------" -ForegroundColor Green
+          }  
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-logs-tests-server
+          path: C:/Windows/Temp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+  test-syncengine-Windows:
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    needs: build-Windows
+    steps:
+      - name: Load system Path into Github environment
+        run : echo Path=%Path%>> %GITHUB_ENV%
+        shell: cmd
+
+      - name: Clean up previous tests
+        run : |
+            rm -r -force C:/Windows/Temp/kDrive-logdir/*
+            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Download dlls
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-dlls
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-test-syncengine
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Execute tests
+        run: |
+          $file = "kDrive_test_syncengine.exe"
+          $path = "./build-windows/test/$file"
+          Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
+          & $path
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
+          } else {
+                  Write-Host "---------- Success: $file ----------" -ForegroundColor Green
+          }  
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-logs-tests-syncengine
+          path: C:/Windows/Temp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
+
+  test-parms-Windows:
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    needs: build-Windows
+    steps:
+      - name: Load system Path into Github environment
+        run : echo Path=%Path%>> %GITHUB_ENV%
+        shell: cmd
+
+      - name: Clean up previous tests
+        run : |
+            rm -r -force C:/Windows/Temp/kDrive-logdir/*
+            rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Download dlls
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-dlls
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Download test executable
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-test-parms
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
+      - name: Execute tests
+        run: |
+          $file = "kDrive_test_parms.exe"
+          $path = "./build-windows/test/$file"
+          Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
+          & $path
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
+          } else {
+                  Write-Host "---------- Success: $file ----------" -ForegroundColor Green
+          }  
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-logs-tests-parms
+          path: C:/Windows/Temp/kDrive-logdir/*
+          retention-days: 3
+          overwrite: true
+        if: always()
+
