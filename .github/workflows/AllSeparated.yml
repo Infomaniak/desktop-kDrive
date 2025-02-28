@@ -201,7 +201,7 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/build/bin/kDrive_test_common
+        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/kDrive_test_common
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
