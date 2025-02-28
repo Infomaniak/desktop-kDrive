@@ -28,11 +28,13 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestUpdateTree::setUp() {
+    TestBase::start();
     _myTree = new UpdateTree(ReplicaSide::Local, SyncDb::driveRootNode());
 }
 
 void TestUpdateTree::tearDown() {
     delete _myTree;
+    TestBase::stop();
 }
 
 void TestUpdateTree::testConstructors() {

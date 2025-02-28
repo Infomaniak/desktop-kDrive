@@ -28,6 +28,7 @@
 #include <cppunit/TestRunner.h>
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>
+#include "test_utility/testbase.h"
 
 #ifdef _WIN32
 #define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */

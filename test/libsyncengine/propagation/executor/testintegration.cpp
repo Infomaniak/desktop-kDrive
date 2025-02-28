@@ -62,6 +62,7 @@ const std::string testLongFileRemoteId = "19146";
 const std::string test_beaucoupRemoteId = "24642";
 
 void TestIntegration::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up");
@@ -162,6 +163,7 @@ void TestIntegration::tearDown() {
     _syncPal->stop(false, true, false);
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestIntegration::testAll() {

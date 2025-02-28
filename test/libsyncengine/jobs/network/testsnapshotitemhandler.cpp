@@ -54,10 +54,6 @@ Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept {
 }
 } // namespace snapshotitem_checker
 
-void TestSnapshotItemHandler::setUp() {}
-
-void TestSnapshotItemHandler::tearDown() {}
-
 void TestSnapshotItemHandler::testUpdateItem() {
     SnapshotItemHandler handler(Log::instance()->getLogger());
     // Regular cases.

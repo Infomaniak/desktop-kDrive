@@ -24,10 +24,14 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestFsOperation : public CppUnit::TestFixture {
+class TestFsOperation : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestFsOperation);
         CPPUNIT_TEST(testConstructor);
         CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp(void) final { TestBase::start(); }
+        void tearDown(void) final { TestBase::stop(); }
 
     protected:
         void testConstructor();

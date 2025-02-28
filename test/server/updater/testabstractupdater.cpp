@@ -29,6 +29,7 @@
 namespace KDC {
 
 void TestAbstractUpdater::setUp() {
+    TestBase::start();
     // Init parmsDb
     bool alreadyExists = false;
     const std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);

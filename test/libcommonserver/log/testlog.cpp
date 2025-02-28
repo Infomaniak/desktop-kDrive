@@ -35,6 +35,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestLog::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
     _logDir = Log::instance()->getLogFilePath().parent_path();
 }

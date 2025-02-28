@@ -23,12 +23,17 @@
 
 namespace KDC {
 
-class TestVfsMac : public CppUnit::TestFixture {
+class TestVfsMac : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestVfsMac);
         CPPUNIT_TEST(testStatus);
         CPPUNIT_TEST(testDehydrate);
         CPPUNIT_TEST_SUITE_END();
 
+    public:
+        void setUp(void) override { TestBase::start(); }
+        void tearDown(void) override { TestBase::stop(); }
+
+    protected:
         void testStatus();
         void testDehydrate();
 };
