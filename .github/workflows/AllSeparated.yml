@@ -1,4 +1,4 @@
-name: Windows kDrive desktop CI
+name: kDrive desktop CI
 
 on:
   workflow_dispatch:  
@@ -213,7 +213,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-common
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/ /kDrive_test_common
           retention-days: 3
           overwrite: true
         if: always()
@@ -222,7 +222,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-common-server
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common_server
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common_server
           retention-days: 3
           overwrite: true
         if: always()
@@ -231,7 +231,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-server
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_server
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_server
           retention-days: 3
           overwrite: true
         if: always()
@@ -240,7 +240,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-syncengine
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_syncengine
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_syncengine
           retention-days: 3
           overwrite: true
         if: always()
@@ -249,7 +249,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-parms
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_parms
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_parms
           retention-days: 3
           overwrite: true
         if: always()
@@ -672,7 +672,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-common
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -698,7 +698,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
 
   test-commonServer-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -713,7 +713,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-common-server
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -739,7 +739,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
 
   test-server-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -754,7 +754,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-server
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -780,7 +780,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
 
   test-syncengine-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -795,7 +795,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-syncengine
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -821,7 +821,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
 
   test-parms-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -836,7 +836,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-parms
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -862,4 +862,4 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
