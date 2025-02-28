@@ -44,6 +44,7 @@ namespace KDC {
 #define MAX_NAME_LENGTH_WIN_SHORT 255
 
 void TestPlatformInconsistencyCheckerWorker::setUp() {
+    TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
     const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -79,6 +80,7 @@ void TestPlatformInconsistencyCheckerWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {

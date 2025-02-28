@@ -25,7 +25,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestSnapshotItemHandler : public CppUnit::TestFixture {
+class TestSnapshotItemHandler : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestSnapshotItemHandler);
         CPPUNIT_TEST(testUpdateItem);
@@ -34,8 +34,8 @@ class TestSnapshotItemHandler : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp() override;
-        void tearDown() override;
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
 
     protected:
         void testUpdateItem();

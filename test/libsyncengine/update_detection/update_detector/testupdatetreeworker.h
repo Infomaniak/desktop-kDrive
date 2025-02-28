@@ -25,7 +25,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestUpdateTreeWorker : public CppUnit::TestFixture {
+class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUpdateTreeWorker);
         CPPUNIT_TEST(testUtilsFunctions);
         CPPUNIT_TEST(testUpdateTmpFileNode);

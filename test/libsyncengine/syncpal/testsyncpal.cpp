@@ -30,6 +30,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestSyncPal::setUp() {
+    TestBase::start();
     const testhelpers::TestVariables testVariables;
 
     const std::string localPathStr = _localTempDir.path().string();
@@ -84,6 +85,7 @@ void TestSyncPal::tearDown() {
         _syncPal->stop(false, true, true);
     }
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestSyncPal::testUpdateTree() {

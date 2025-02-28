@@ -17,23 +17,22 @@
  */
 
 #pragma once
-
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include "test_utility/testbase.h"
 
 namespace KDC {
-
-class TestApiToken : public CppUnit::TestFixture {
+class TestApiToken : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestApiToken);
         CPPUNIT_TEST(testReconstructJson);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void);
-        void tearDown(void);
+        void setUp(void) override { TestBase::start(); }
+        void tearDown(void) override { TestBase::stop(); }
 
     protected:
+        std::chrono::steady_clock::time_point _start;
         void testReconstructJson();
 };
-
 } // namespace KDC
