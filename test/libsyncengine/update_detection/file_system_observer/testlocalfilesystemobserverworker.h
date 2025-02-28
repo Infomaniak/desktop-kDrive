@@ -62,7 +62,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_u
 };
 #endif
 
-class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
+class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
         CPPUNIT_TEST(testLFSOWithInitialSnapshot);
         CPPUNIT_TEST(testLFSOWithFiles);

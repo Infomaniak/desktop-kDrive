@@ -26,7 +26,51 @@ using namespace CppUnit;
 namespace KDC {
 
 
-void TestSnapshot::tearDown() {}
+/**
+ * Tree:
+ *
+ *            root
+ *        _____|_____
+ *       |          |
+ *       A          B
+ *       |
+ *      AA
+ *       |
+ *      AAA
+ */
+
+void TestSnapshot::setUp() {
+    TestBase::start();
+    ParametersCache::instance(true);
+
+    _rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
+    _dummyRootNode = DbNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
+                            NodeType::Directory, 0, std::nullopt);
+    _snapshot = std::make_unique<Snapshot>(ReplicaSide::Local, _dummyRootNode);
+
+    // Insert node A
+    const SnapshotItem itemA("a", _rootNodeId, Str("A"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                             testhelpers::defaultFileSize, false, true, true);
+    _snapshot->updateItem(itemA);
+
+    // Insert node B
+    const SnapshotItem itemB("b", _rootNodeId, Str("B"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                             testhelpers::defaultFileSize, false, true, true);
+    _snapshot->updateItem(itemB);
+
+    // Insert child nodes
+    const SnapshotItem itemAA("aa", "a", Str("AA"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                              testhelpers::defaultFileSize, false, true, true);
+    _snapshot->updateItem(itemAA);
+
+    const SnapshotItem itemAAA("aaa", "aa", Str("AAA"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                               testhelpers::defaultFileSize, false, true, true);
+    _snapshot->updateItem(itemAAA);
+}
+
+void TestSnapshot::tearDown() {
+    TestBase::stop();
+}
 
 void TestSnapshot::testItemId() {
     const NodeId rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
@@ -58,48 +102,6 @@ void TestSnapshot::testItemId() {
     CPPUNIT_ASSERT_EQUAL(NodeId("7"), snapshot.itemId(SyncPath("a/ab") / nfdNormalized / Str("abaa")));
     CPPUNIT_ASSERT_EQUAL(NodeId(""), snapshot.itemId(SyncPath("a/ab") / nfcNormalized / Str("abaa")));
 }
-
-/**
- * Tree:
- *
- *            root
- *        _____|_____
- *       |          |
- *       A          B
- *       |
- *      AA
- *       |
- *      AAA
- */
-
-void TestSnapshot::setUp() {
-    ParametersCache::instance(true);
-
-    _rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
-    _dummyRootNode = DbNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
-                            NodeType::Directory, 0, std::nullopt);
-    _snapshot = std::make_unique<Snapshot>(ReplicaSide::Local, _dummyRootNode);
-
-    // Insert node A
-    const SnapshotItem itemA("a", _rootNodeId, Str("A"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                             testhelpers::defaultFileSize, false, true, true);
-    _snapshot->updateItem(itemA);
-
-    // Insert node B
-    const SnapshotItem itemB("b", _rootNodeId, Str("B"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                             testhelpers::defaultFileSize, false, true, true);
-    _snapshot->updateItem(itemB);
-
-    // Insert child nodes
-    const SnapshotItem itemAA("aa", "a", Str("AA"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                              testhelpers::defaultFileSize, false, true, true);
-    _snapshot->updateItem(itemAA);
-
-    const SnapshotItem itemAAA("aaa", "aa", Str("AAA"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
-                               testhelpers::defaultFileSize, false, true, true);
-    _snapshot->updateItem(itemAAA);
-}
-
 
 void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT(_snapshot->exists("a"));

@@ -45,6 +45,7 @@ static const SyncPath localTestDirPath_manyFiles(std::wstring(L"" TEST_DIR) + L"
 static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/test_ci/test_pictures");
 static const int driveDbId = 1;
 void KDC::TestJobManager::setUp() {
+    TestBase::start();
     const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
@@ -85,6 +86,7 @@ void KDC::TestJobManager::setUp() {
 void KDC::TestJobManager::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestJobManager::testWithoutCallback() {
@@ -181,11 +183,13 @@ void TestJobManager::testWithCallback() {
 }
 
 void TestJobManager::testWithCallbackMediumFiles() {
+    if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
     testWithCallbackBigFiles(temporaryDirectory.path(), 50, 15); // 15 files of 50 MB
 }
 
 void TestJobManager::testWithCallbackBigFiles() {
+    if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
     testWithCallbackBigFiles(temporaryDirectory.path(), 200, 10); // 10 files of 200 MB
 }

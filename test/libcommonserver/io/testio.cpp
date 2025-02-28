@@ -84,11 +84,13 @@ SyncPath makeFileNameWithEmojis() {
 TestIo::TestIo() : CppUnit::TestFixture(), _localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci") {}
 
 void TestIo::setUp() {
+    TestBase::start();
     _testObj = new IoHelperTests();
 }
 
 void TestIo::tearDown() {
     delete _testObj;
+    TestBase::stop();
 }
 
 void TestIo::testTempDirectoryPath() {
