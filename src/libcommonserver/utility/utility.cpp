@@ -648,7 +648,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     LPWSTR strResult = nullptr;
     HANDLE hHeap = GetProcessHeap();
 
-    size_t iSizeEstimated = (name.length() + 1) * 2;
+    long long iSizeEstimated = static_cast<long long>(name.length() + 1) * 2;
     for (int i = 0; i < maxIterations; i++) {
         if (strResult) {
             HeapFree(hHeap, 0, strResult);
@@ -682,7 +682,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
         return false;
     }
 
-    normalizedName.assign(strResult, iSizeEstimated - 1);
+    (void) normalizedName.assign(strResult, iSizeEstimated - 1);
     HeapFree(hHeap, 0, strResult);
     return true;
 #else
