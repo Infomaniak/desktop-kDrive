@@ -42,6 +42,7 @@ namespace KDC {
  */
 
 void TestComputeFSOperationWorker::setUp() {
+    TestBase::start();
     const testhelpers::TestVariables testVariables;
     const std::string localPathStr = _localTempDir.path().string();
 
@@ -182,6 +183,7 @@ void TestComputeFSOperationWorker::tearDown() {
         _syncPal->syncDb()->close();
     }
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestComputeFSOperationWorker::testNoOps() {

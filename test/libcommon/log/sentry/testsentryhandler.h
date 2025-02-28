@@ -21,6 +21,7 @@
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include "libcommon/log/sentry/handler.h"
+#include "test_utility/testbase.h"
 
 namespace KDC {
 
@@ -39,12 +40,16 @@ class MockTestSentryHandler : public sentry::Handler {
 };
 
 
-class TestSentryHandler : public CppUnit::TestFixture {
+class TestSentryHandler : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSentryHandler);
         CPPUNIT_TEST(testMultipleSendEventForTheSameEvent);
         CPPUNIT_TEST(testMultipleSendEventForDifferentEvent);
         CPPUNIT_TEST(testWriteEvent);
         CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp(void) override { TestBase::start(); }
+        void tearDown(void) override { TestBase::stop(); }
 
     protected:
         void testMultipleSendEventForTheSameEvent();

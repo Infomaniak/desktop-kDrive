@@ -25,7 +25,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestFsOperationSet : public CppUnit::TestFixture {
+class TestFsOperationSet : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestFsOperationSet);
         CPPUNIT_TEST(testGetOp);
         CPPUNIT_TEST(testGetOpsByType);

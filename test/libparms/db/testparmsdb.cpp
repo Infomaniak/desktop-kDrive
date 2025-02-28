@@ -23,6 +23,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestParmsDb::setUp() {
+    TestBase::start();
     // Create a temp parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
@@ -31,6 +32,7 @@ void TestParmsDb::setUp() {
 
 void TestParmsDb::tearDown() {
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestParmsDb::testParameters() {

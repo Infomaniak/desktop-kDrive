@@ -24,7 +24,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestSyncPal : public CppUnit::TestFixture {
+class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSyncPal);
         CPPUNIT_TEST(testUpdateTree);
         CPPUNIT_TEST(testSnapshot);

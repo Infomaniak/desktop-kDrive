@@ -50,7 +50,7 @@ class MockVfs final : public VfsOff {
         VfsSetupParams _vfsSetupParams;
 };
 
-class TestExecutorWorker : public CppUnit::TestFixture {
+class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
         CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
         CPPUNIT_TEST(testFixModificationDate);

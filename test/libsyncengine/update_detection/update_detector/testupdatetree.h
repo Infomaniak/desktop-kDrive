@@ -26,7 +26,7 @@ namespace KDC {
 class UpdateTree;
 class FSOperationSet;
 
-class TestUpdateTree : public CppUnit::TestFixture {
+class TestUpdateTree : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUpdateTree);
         CPPUNIT_TEST(testConstructors);
         CPPUNIT_TEST(testAll);
