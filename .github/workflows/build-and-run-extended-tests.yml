@@ -10,7 +10,7 @@ on:
       types: [synchronize, review_requested]
       branches:
         - 'release/**'
-        - 'main' 
+        - 'main'
  
 concurrency:
   group: nighlty-${{ github.head_ref }}
@@ -196,7 +196,7 @@ jobs:
         run : rm -rf build-linux
 
   kChat_notification:
-    if: ${{ always() }}
+    if: github.event_name == 'schedule'
     needs: [ Windows-extended-tests, MacOS-extended-tests, Linux-extended-tests ]
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
