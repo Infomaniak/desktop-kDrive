@@ -75,7 +75,7 @@ jobs:
 
   test-common-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
-    needs: build-kDrive-Windows
+    needs: build-Windows
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
