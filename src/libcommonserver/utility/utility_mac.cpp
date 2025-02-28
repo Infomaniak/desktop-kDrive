@@ -33,13 +33,6 @@ namespace KDC {
 
 bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                   std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
-
-static bool init_private() {
-    return true;
-}
-
-static void makeMessage() {}
-
 bool moveItemToTrash(const SyncPath &itemPath, std::wstring &errorStr);
 bool preventSleeping(bool enable);
 bool preventSleeping();

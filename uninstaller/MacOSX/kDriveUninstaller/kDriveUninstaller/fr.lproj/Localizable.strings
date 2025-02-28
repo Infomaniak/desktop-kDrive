@@ -21,5 +21,6 @@
 "Keep configuration" = "Conserver la configuration";
 "Delete configuration" = "Supprimer la configuration";
 "Cancel" = "Annuler";
+"Uninstall" = "Désinstaller";
 "Error when uninstalling" = "Erreur lors de la désinstallation";
 "kDrive can't be moved to the trash" = "kDrive ne peut pas être déplacé vers la corbeille";

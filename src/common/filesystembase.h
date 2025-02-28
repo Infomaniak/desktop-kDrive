@@ -21,7 +21,6 @@
 #include "config.h"
 
 #include <QString>
-#include <QFileInfo>
 
 #include <ctime>
 

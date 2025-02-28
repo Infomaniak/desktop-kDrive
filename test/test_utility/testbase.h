@@ -25,7 +25,7 @@ class TestBase {
         virtual void stop(void) {
             const auto duration =
                     std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - _start);
-            if (duration.count() > 0) std::cout << " (" << duration.count() << " ms)";
+            if (duration.count() > 50) std::cout << " (" << duration.count() << " ms)";
         }
 
     private:

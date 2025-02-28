@@ -183,13 +183,13 @@ void TestJobManager::testWithCallback() {
 }
 
 void TestJobManager::testWithCallbackMediumFiles() {
-    if (!testhelpers::isNightlyTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
     testWithCallbackBigFiles(temporaryDirectory.path(), 50, 15); // 15 files of 50 MB
 }
 
 void TestJobManager::testWithCallbackBigFiles() {
-    if (!testhelpers::isNightlyTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
     testWithCallbackBigFiles(temporaryDirectory.path(), 200, 10); // 10 files of 200 MB
 }

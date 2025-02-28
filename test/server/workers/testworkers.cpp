@@ -51,7 +51,7 @@ constexpr bool connectorsAreAlreadyInstalled = false;
 void TestWorkers::setUp() {
     TestBase::start();
 #ifdef _WIN32
-    if (!testhelpers::isNightlyTest(false)) return;
+    if (!testhelpers::isExtendedTest(false)) return;
 #endif
 
     _logger = Log::instance()->getLogger();
@@ -160,7 +160,7 @@ void TestWorkers::setUp() {
 
 void TestWorkers::tearDown() {
 #ifdef _WIN32
-    if (!testhelpers::isNightlyTest()) return;
+    if (!testhelpers::isExtendedTest(false)) return;
 #endif
     ParmsDb::instance()->close();
     ParmsDb::reset();
@@ -177,7 +177,7 @@ void TestWorkers::tearDown() {
 
 void TestWorkers::testStartVfs() {
 #ifdef _WIN32
-    if (!testhelpers::isNightlyTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
 #endif
 #if defined(__APPLE__)
     if (connectorsAreAlreadyInstalled) {
@@ -201,7 +201,7 @@ void TestWorkers::testStartVfs() {
 
 void TestWorkers::testCreatePlaceholder() {
 #ifdef _WIN32
-    if (!testhelpers::isNightlyTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
 #endif
     _syncPal->resetEstimateUpdates();
     ExitInfo exitInfo;
@@ -294,7 +294,7 @@ void TestWorkers::testCreatePlaceholder() {
 
 void TestWorkers::testConvertToPlaceholder() {
 #ifdef _WIN32
-    if (!testhelpers::isNightlyTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
 #endif
     _syncPal->resetEstimateUpdates();
     ExitInfo exitInfo;

@@ -18,13 +18,13 @@
 
 #include "testserverrequests.h"
 
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libparms/db/parmsdb.h"
-#include "libsyncengine/requests/serverrequests.h"
+#include "requests/serverrequests.h"
 #include "requests/parameterscache.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "utility/types.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libparms/db/parmsdb.h"
 
 namespace KDC {
 
