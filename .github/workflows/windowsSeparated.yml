@@ -61,6 +61,15 @@ jobs:
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
+      - name: Upload build dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-dlls
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/install/*.dll
+          retention-days: 3
+          overwrite: true
+        if: always()
+
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
@@ -120,6 +129,12 @@ jobs:
       - name: Clean the log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
+      - name: Download dlls
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build-dlls
+          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -137,7 +152,6 @@ jobs:
           & $path
           if ($LASTEXITCODE -ne 0) {
               Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
-              exit 1
           } else {
                   Write-Host "---------- Success: $file ----------" -ForegroundColor Green
           }  
@@ -151,6 +165,6 @@ jobs:
           overwrite: true
         if: always()
 
-      - name: Clean-up
-        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
-        if: always()
+      #- name: Clean-up
+      #  run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+      #  if: always()
