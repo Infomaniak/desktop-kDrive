@@ -93,6 +93,7 @@ void createEmptyFile(const SyncPath &path) {
 } // namespace
 
 void TestNetworkJobs::setUp() {
+    TestBase::start();
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
     const testhelpers::TestVariables testVariables;
@@ -148,6 +149,7 @@ void TestNetworkJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     MockIoHelperTestNetworkJobs::resetStdFunctions();
+    TestBase::stop();
 }
 
 
@@ -390,8 +392,9 @@ void TestNetworkJobs::testDownload() {
 
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
-    {
-        // Not Enough disk space
+    if (testhelpers::isRunningOnCI()) {
+        // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
+
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
@@ -773,7 +776,7 @@ void TestNetworkJobs::testFullFileListWithCursorJsonBlacklist() {
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {pictureDirRemoteId}, true);
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     int counter = 0;
     std::string cursor = job.getCursor();
@@ -799,7 +802,7 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
 void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1");
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     int counter = 0;
     const std::string cursor = job.getCursor();
@@ -821,7 +824,7 @@ void TestNetworkJobs::testFullFileListWithCursorMissingEof() {
 void TestNetworkJobs::testGetInfoUser() {
     GetInfoUserJob job(_userDbId);
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     CPPUNIT_ASSERT_EQUAL(std::string("John Doe"), job.name());
     CPPUNIT_ASSERT_EQUAL(std::string("john.doe@nogafam.ch"), job.email());
@@ -831,7 +834,7 @@ void TestNetworkJobs::testGetInfoUser() {
 void TestNetworkJobs::testGetInfoDrive() {
     GetInfoDriveJob job(_driveDbId);
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
     CPPUNIT_ASSERT(data->get(nameKey).toString() == "kDrive Desktop Team");
@@ -840,7 +843,7 @@ void TestNetworkJobs::testGetInfoDrive() {
 void TestNetworkJobs::testThumbnail() {
     GetThumbnailJob job(_driveDbId, picture1RemoteId.c_str(), 50);
     const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     CPPUNIT_ASSERT(!job.octetStreamRes().empty());
 }
@@ -851,7 +854,7 @@ void TestNetworkJobs::testDuplicateRenameMove() {
     // Duplicate
     DuplicateJob dupJob(nullptr, _driveDbId, testFileRemoteId, Str("test_duplicate.txt"));
     ExitCode exitCode = dupJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     NodeId dupFileId;
     if (dupJob.jsonRes()) {
@@ -867,17 +870,17 @@ void TestNetworkJobs::testDuplicateRenameMove() {
     MoveJob moveJob(nullptr, _driveDbId, "", dupFileId, remoteTmpDir.id());
     moveJob.setBypassCheck(true);
     exitCode = moveJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == dupFileId);
-    CPPUNIT_ASSERT(dataArray->getObject(0)->get(nameKey) == "test_duplicate.txt");
+    CPPUNIT_ASSERT_EQUAL(dupFileId, NodeId(dataArray->getObject(0)->get(idKey).convert<std::string>()));
+    CPPUNIT_ASSERT_EQUAL(std::string("test_duplicate.txt"), dataArray->getObject(0)->get(nameKey).convert<std::string>());
 }
 
 void TestNetworkJobs::testRename() {

@@ -34,7 +34,7 @@ class SyncDbMock : public SyncDb {
         bool _isPrepareEnabled{false};
 };
 
-class TestSyncDb : public CppUnit::TestFixture {
+class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSyncDb);
         CPPUNIT_TEST(testNodes);
         CPPUNIT_TEST(testSyncNodes);

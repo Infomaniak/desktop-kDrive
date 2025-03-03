@@ -47,6 +47,7 @@ set(testserver_SRCS
     updater/mockupdater.h
     updater/mockupdatechecker.h
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+    ../test_utility/testbase.h
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
     ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
     ../test.cpp

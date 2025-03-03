@@ -81,6 +81,7 @@ class DbNodeTest : public DbNode {
 };
 
 void TestSyncDb::setUp() {
+    TestBase::start();
     bool alreadyExists = false;
     const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
 
@@ -97,6 +98,7 @@ void TestSyncDb::tearDown() {
     // Close and delete DB
     _testObj->close();
     delete _testObj;
+    TestBase::stop();
 }
 
 
