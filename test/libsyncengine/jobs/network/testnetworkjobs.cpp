@@ -464,7 +464,7 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
         const NodeId remote0bytesFileId = uploadJob.nodeId();
         const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
-        SyncPath localDestFilePath = temporaryDirectorySync.path() / "empty_file.txt";
+       const SyncPath localDestFilePath = temporaryDirectorySync.path() / "empty_file.txt";
         // Download an empty file
         {
             DownloadJob job(nullptr, _driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false);
