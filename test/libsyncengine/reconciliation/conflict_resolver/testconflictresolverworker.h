@@ -26,7 +26,7 @@
 
 namespace KDC {
 
-class TestConflictResolverWorker : public CppUnit::TestFixture {
+class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestConflictResolverWorker);
         CPPUNIT_TEST(testCreateCreate);

@@ -20,6 +20,7 @@
 "kDrive app will be removed" = "kDrive app wird entfernt";
 "Keep configuration" = "Konfiguration beibehalten";
 "Delete configuration" = "Konfiguration löschen";
-"Cancel" = "Stornieren";
+"Cancel" = "Abbrechen";
+"Uninstall" = "Bestätigen";
 "Error when uninstalling" = "Fehler bei der Deinstallation";
 "kDrive can't be moved to the trash" = "kDrive kann nicht in den Papierkorb verschoben werden";

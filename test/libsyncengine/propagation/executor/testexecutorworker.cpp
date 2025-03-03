@@ -31,6 +31,7 @@
 namespace KDC {
 
 void TestExecutorWorker::setUp() {
+    TestBase::start();
     const testhelpers::TestVariables testVariables;
 
     const std::string localPathStr = _localTempDir.path().string();
@@ -84,6 +85,7 @@ void TestExecutorWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {

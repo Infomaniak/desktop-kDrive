@@ -18,17 +18,18 @@
 
 #include "testserverrequests.h"
 
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libparms/db/parmsdb.h"
-#include "libsyncengine/requests/serverrequests.h"
+#include "requests/serverrequests.h"
 #include "requests/parameterscache.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "utility/types.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libparms/db/parmsdb.h"
 
 namespace KDC {
 
 void TestServerRequests::setUp() {
+    TestBase::start();
     const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
@@ -63,6 +64,7 @@ void TestServerRequests::setUp() {
 void TestServerRequests::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestServerRequests::testFixProxyConfig() {

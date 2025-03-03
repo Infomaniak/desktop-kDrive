@@ -110,6 +110,7 @@ static const std::vector<std::string> acceptedFiles = {"~test",
 };
 
 void TestExclusionTemplateCache::setUp() {
+    TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -121,6 +122,7 @@ void TestExclusionTemplateCache::setUp() {
 void TestExclusionTemplateCache::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestExclusionTemplateCache::testIsExcluded() {

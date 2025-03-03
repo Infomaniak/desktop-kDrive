@@ -23,7 +23,7 @@
 
 namespace KDC {
 
-class TestAbstractUpdater final : public CppUnit::TestFixture {
+class TestAbstractUpdater final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestAbstractUpdater);
         CPPUNIT_TEST(testSkipUnskipVersion);
         CPPUNIT_TEST(testIsVersionSkipped);
@@ -32,7 +32,7 @@ class TestAbstractUpdater final : public CppUnit::TestFixture {
 
     public:
         void setUp() override;
-
+        void tearDown() override { TestBase::stop(); }
     protected:
         void testSkipUnskipVersion();
         void testIsVersionSkipped();

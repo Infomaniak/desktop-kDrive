@@ -18,28 +18,22 @@
 
 #pragma once
 
-#include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
-#include "libsyncengine/progress/syncfileitem.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/vfs/workerinfo.h"
+#include "libsyncengine/progress/syncfileitem.h"
 
 #include <memory>
 #include <deque>
 
 #include <QObject>
-#include <QScopedPointer>
-#include <QSharedPointer>
-#include <QList>
-#include <QMutex>
-#include <QThread>
-#include <QWaitCondition>
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
-constexpr short nbWorkers = 2;
+constexpr size_t nbWorkers = 2;
 constexpr short workerHydration = 0;
 constexpr short workerDehydration = 1;
 
@@ -320,7 +314,7 @@ class Vfs : public QObject {
     protected:
         VfsSetupParams _vfsSetupParams;
         void starVfsWorkers();
-        const std::array<int, nbWorkers> s_nb_threads = {5, 5};
+        const std::array<size_t, nbWorkers> s_nb_threads = {5, 5};
 
         // Callbacks
         void (*_syncFileStatus)(int syncDbId, const KDC::SyncPath &itemPath, KDC::SyncFileStatus &status) = nullptr;

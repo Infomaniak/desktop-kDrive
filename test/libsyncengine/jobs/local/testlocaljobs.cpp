@@ -48,6 +48,7 @@ class LocalDeleteJobMockingTrash : public LocalDeleteJob {
 };
 
 void KDC::TestLocalJobs::setUp() {
+    TestBase::start();
     // Setup parameters cache in test mode
     ParametersCache::instance(true);
 }

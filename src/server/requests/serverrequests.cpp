@@ -23,14 +23,7 @@
 #include "serverrequests.h"
 #include "common/utility.h"
 #include "config.h"
-#include "parameterscache.h"
-#include "exclusiontemplatecache.h"
 #include "keychainmanager/keychainmanager.h"
-#include "libparms/db/parmsdb.h"
-#include "libparms/db/user.h"
-#include "libcommon/utility/utility.h" // fileSystemName(const QString&)
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
 #include "jobs/network/API_v2/getrootfilelistjob.h"
 #include "jobs/network/API_v2/getfilelistjob.h"
 #include "jobs/network/API_v2/getfileinfojob.h"
@@ -44,8 +37,15 @@
 #include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/getsizejob.h"
 #include "jobs/jobmanager.h"
-#include "libsyncengine/olddb/oldsyncdb.h"
 #include "utility/jsonparserutility.h"
+#include "libparms/db/parmsdb.h"
+#include "libparms/db/user.h"
+#include "libcommon/utility/utility.h" // fileSystemName(const QString&)
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
+#include "libsyncengine/olddb/oldsyncdb.h"
+#include "libsyncengine/requests/parameterscache.h"
+#include "libsyncengine/requests/exclusiontemplatecache.h"
 
 #include <QDir>
 #include <QUuid>

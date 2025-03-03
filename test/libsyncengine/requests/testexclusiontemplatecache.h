@@ -24,7 +24,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestExclusionTemplateCache : public CppUnit::TestFixture {
+class TestExclusionTemplateCache : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestExclusionTemplateCache);
         CPPUNIT_TEST(testIsExcluded);
         CPPUNIT_TEST_SUITE_END();
