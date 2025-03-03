@@ -472,7 +472,7 @@ void TestNetworkJobs::testDownload() {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local0bytesFilePath = temporaryDirectory.path() / "0bytes.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload0bytesFile");
-        { std::ofstream(local0bytesFilePath); }
+        std::ofstream(local0bytesFilePath).close();
 
         // Upload file
         UploadJob uploadJob(nullptr, _driveDbId, local0bytesFilePath, Str2SyncName("0bytes.txt"), remoteTmpDir.id(), 0);
