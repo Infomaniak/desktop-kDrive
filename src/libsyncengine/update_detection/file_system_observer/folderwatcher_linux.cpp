@@ -74,7 +74,7 @@ void FolderWatcher_linux::startWatching() {
                 if (_stop) {
                     break;
                 }
-                auto *event = reinterpret_cast<inotify_event *>(buffer + offset);
+                auto *event = (inotify_event *) (buffer + offset);
 
                 auto opType = OperationType::None;
                 bool skip = false;
@@ -142,7 +142,7 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
         setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
         return false;
     }
-    if (std::error_code ec;!std::filesystem::exists(dir, ec)) {
+    if (std::error_code ec; !std::filesystem::exists(dir, ec)) {
         if (ec) {
             LOG4CPLUS_WARN(_logger, L"Failed to check existence of " << Utility::formatSyncPath(dir) << L": "
                                                                      << Utility::formatStdError(ec));
@@ -207,7 +207,7 @@ bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
 }
 
 bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
-    if (_pathToWatch.contains(path)  ) {
+    if (_pathToWatch.contains(path)) {
         // This path is already watched
         return true;
     }
@@ -260,7 +260,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
         }
 
         auto wid = it->second;
-        if (const auto wd = inotify_rm_watch(_fileDescriptor, wid);wd > -1) {
+        if (const auto wd = inotify_rm_watch(_fileDescriptor, wid); wd > -1) {
             _watchToPath.erase(wid);
             it = _pathToWatch.erase(it);
             LOG4CPLUS_DEBUG(_logger, "Removed watch on" << itPath.c_str());
@@ -272,7 +272,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
 
 void FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType) {
     std::list<std::pair<SyncPath, OperationType>> list;
-    list.emplace_back(path, opType);
+    (void) list.emplace_back(path, opType);
     _parent->changesDetected(list);
 }
 
