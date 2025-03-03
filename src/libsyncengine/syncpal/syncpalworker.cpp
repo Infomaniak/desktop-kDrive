@@ -433,14 +433,23 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
         case SyncStep::Idle:
-            return (_syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote) &&
-                    _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning() &&
-                    !_syncPal->_localFSObserverWorker->initializing() && !_syncPal->_remoteFSObserverWorker->initializing() &&
-                    !_syncPal->_localFSObserverWorker->updating() && !_syncPal->_remoteFSObserverWorker->updating() &&
-                    (_syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated() ||
-                     _syncPal->restart()))
+            const bool areSnapshotsValid =
+                    _syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote);
+            const bool areFSOWorkersRunning =
+                    _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning();
+            const bool areFSOWorkersInitializing =
+                    _syncPal->_localFSObserverWorker->initializing() && _syncPal->_remoteFSObserverWorker->initializing();
+            const bool areFSOWorkersUpdating =
+                    _syncPal->_localFSObserverWorker->updating() && _syncPal->_remoteFSObserverWorker->updating();
+            const bool areSnapshotsUpdated =
+                    _syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated();
+
+
+            return areSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
+                                   (areSnapshotsUpdated || _syncPal->restart())
                            ? SyncStep::UpdateDetection1
                            : SyncStep::Idle;
+
         case SyncStep::UpdateDetection1: {
             auto logNbOps = [this](const ReplicaSide side) {
                 const auto opsSet = _syncPal->operationSet(side);
