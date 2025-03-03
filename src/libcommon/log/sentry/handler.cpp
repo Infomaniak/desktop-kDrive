@@ -277,7 +277,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     // Init sentry
     int res = sentry_init(options);
     std::cerr << "sentry_init returned " << res << std::endl;
-    ASSERT(res == 0);
+    LOG_IF_FAIL(res == 0);
     _instance->_isSentryActivated = true;
     _instance->setDistributionChannel(VersionChannel::Unknown);
 }
