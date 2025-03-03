@@ -65,8 +65,8 @@ jobs:
         with:
           name: windows-build-common-files
           path: |
-              C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/install/bin/*.dll
-              C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/install/bin/sync-exclude.lst
+              ${{ github.workspace }}/build-windows/install/bin/*.dll
+              ${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst
           retention-days: 3
         if: always()
 
@@ -74,7 +74,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-test-common
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/build/bin/kDrive_test_common.exe
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common.exe
           retention-days: 3
         if: always()
 
@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-test-common-server
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/build/bin/kDrive_test_common_server.exe
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common_server.exe
           retention-days: 3
         if: always()
 
@@ -90,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-test-server
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/build/bin/kDrive_test_server.exe
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_server.exe
           retention-days: 3
         if: always()
 
@@ -98,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-test-syncengine
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/build/bin/kDrive_test_syncengine.exe
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_syncengine.exe
           retention-days: 3
         if: always()
 
@@ -106,7 +106,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-test-parms
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/build/bin/kDrive_test_parms.exe
+          path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_parms.exe
           retention-days: 3
         if: always()
 
@@ -135,7 +135,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-common-files
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/sync-exclude.lst
+          path: ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst
           retention-days: 3
         if: always()
 
@@ -143,7 +143,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-test-common
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_common
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common
           retention-days: 3
         if: always()
 
@@ -151,7 +151,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-test-common-server
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_common_server
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common_server
           retention-days: 3
         if: always()
 
@@ -159,7 +159,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-test-server
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_server
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_server
           retention-days: 3
         if: always()
 
@@ -167,7 +167,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-test-syncengine
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_syncengine
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_syncengine
           retention-days: 3
         if: always()
 
@@ -175,7 +175,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-test-parms
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/build/bin/kDrive_test_parms
+          path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_parms
           retention-days: 3
         if: always()
 
@@ -213,8 +213,8 @@ jobs:
         with:
           name: macos-build-common-files
           path: |
-              /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*.lst
-              /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*.dylib
+              ${{ github.workspace }}/build-macos/client/bin/*.lst
+              ${{ github.workspace }}/build-macos/client/bin/*.dylib
           retention-days: 3
         if: always()
 
@@ -222,7 +222,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-common
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common
+          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common
           retention-days: 3
         if: always()
 
@@ -230,7 +230,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-common-server
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_common_server
+          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common_server
           retention-days: 3
         if: always()
 
@@ -238,7 +238,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-server
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_server
+          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_server
           retention-days: 3
         if: always()
 
@@ -246,7 +246,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-syncengine
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_syncengine
+          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_syncengine
           retention-days: 3
         if: always()
 
@@ -254,7 +254,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-test-parms
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/kDrive_test_parms
+          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_parms
           retention-days: 3
         if: always()
 
@@ -278,13 +278,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: windows-build-test-common
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_common.exe
@@ -298,7 +298,7 @@ jobs:
         if: always()
 
       - name: Clean up
-        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+        run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-commonServer-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
@@ -317,13 +317,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: windows-build-test-common-server
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_common_server.exe
@@ -337,7 +337,7 @@ jobs:
         if: always()
 
       - name: Clean up
-        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+        run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-server-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
@@ -356,13 +356,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: windows-build-test-server
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_server.exe 
@@ -376,7 +376,7 @@ jobs:
         if: always()
 
       - name: Clean up
-        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+        run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-syncengine-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
@@ -395,13 +395,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: windows-build-test-syncengine
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_syncengine.exe
@@ -415,7 +415,7 @@ jobs:
         if: always()
 
       - name: Clean up
-        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+        run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-parms-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
@@ -434,13 +434,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-build-common-files
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: windows-build-test-parms
-          path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+          path: ${{ github.workspace }}/build-windows/test/
 
       - name: Execute tests
         run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_parms.exe
@@ -454,7 +454,7 @@ jobs:
         if: always()
 
       - name: Clean up
-        run : rm -r -force C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
+        run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-common-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
@@ -469,13 +469,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: linux-build-common-files
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: linux-build-test-common
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -491,7 +491,7 @@ jobs:
         if: always()
 
       - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
+        run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-commonServer-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
@@ -506,13 +506,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: linux-build-common-files
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: linux-build-test-common-server
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -528,7 +528,7 @@ jobs:
         if: always()
 
       - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
+        run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-server-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
@@ -543,13 +543,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: linux-build-common-files
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: linux-build-test-server
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -565,7 +565,7 @@ jobs:
         if: always()
 
       - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
+        run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-syncengine-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
@@ -580,13 +580,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: linux-build-common-files
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: linux-build-test-syncengine
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -602,7 +602,7 @@ jobs:
         if: always()
 
       - name: Clean up
-        run : rm -rf /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/*
+        run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-parms-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
@@ -617,13 +617,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: linux-build-common-files
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: linux-build-test-parms
-          path: /home/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-linux/test/
+          path: ${{ github.workspace }}/build-linux/test/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -651,13 +651,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-common
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -682,7 +682,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
+        run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
 
   test-commonServer-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -697,13 +697,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-common-server
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -728,7 +728,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
+        run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
 
   test-server-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -743,13 +743,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-server
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -774,7 +774,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
+        run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
 
   test-syncengine-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -789,13 +789,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-syncengine
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -820,7 +820,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
+        run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
 
   test-parms-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -835,13 +835,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-parms
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -866,4 +866,4 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
+        run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
