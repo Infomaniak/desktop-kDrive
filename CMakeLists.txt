@@ -7,6 +7,18 @@ endif()
 
 project(client)
 
+##### Submodules
+
+# utf8proc
+if (UNIX)
+    add_subdirectory(src/3rdparty/utf8proc)
+endif ()
+
+# keychain
+add_subdirectory(src/3rdparty/keychain)
+
+#####
+
 if (WIN32 AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
@@ -212,14 +224,6 @@ endif ()
 if (BUILD_UNIT_TESTS)
     add_subdirectory("test")
 endif ()
-
-# utf8proc
-if (UNIX)
-    add_subdirectory(src/3rdparty/utf8proc)
-endif ()
-
-# keychain
-add_subdirectory(src/3rdparty/keychain)
 
 message(STATUS "Configure files")
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
