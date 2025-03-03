@@ -324,11 +324,29 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(content == "test");
         }
 
-        // Get nodeid
+        // Check that the node id has not changed
         NodeId nodeId2;
         CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
+        CPPUNIT_ASSERT(nodeId == nodeId2);
+
+        // Download again but as an EDIT to be propagated on a hydrated placeholder
+        auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+        {
+            DownloadJob job(vfs, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+            CPPUNIT_ASSERT_EQUAL(true, job._isHydrated);
+        }
+
+        // Check file content
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
 
         // Check that the node id has not changed
+        CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
         CPPUNIT_ASSERT(nodeId == nodeId2);
     }
 
@@ -394,7 +412,10 @@ void TestNetworkJobs::testDownload() {
     }
     if (testhelpers::isRunningOnCI()) {
         // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
+        const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
+        if (smallPartitionPath.empty()) return;
 
+        // Not Enough disk space
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
@@ -407,7 +428,6 @@ void TestNetworkJobs::testDownload() {
         uploadJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
 
-        SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
         bool exist = false;
