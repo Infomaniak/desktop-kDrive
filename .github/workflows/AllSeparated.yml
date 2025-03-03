@@ -215,6 +215,7 @@ jobs:
           path: |
               ${{ github.workspace }}/build-macos/client/bin/*.lst
               ${{ github.workspace }}/build-macos/client/bin/*.dylib
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework
           retention-days: 3
         if: always()
 
