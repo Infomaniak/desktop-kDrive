@@ -44,10 +44,6 @@ void ISyncWorker::start() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " start");
 
-    _stopAsked = false;
-    _exitCode = ExitCode::Unknown;
-    _exitCause = ExitCause::Unknown;
-
     init();
     _isRunning = true;
     _thread = (std::make_unique<std::thread>(executeFunc, this));
@@ -76,6 +72,12 @@ void ISyncWorker::waitForExit() {
     if (_thread && _thread->joinable()) {
         _thread->join();
     }
+}
+
+void ISyncWorker::init() {
+    _stopAsked = false;
+    _exitCode = ExitCode::Unknown;
+    _exitCause = ExitCause::Unknown;
 }
 
 void ISyncWorker::sleepUntilStartDelay(bool &awakenByStop) {
