@@ -208,6 +208,8 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/macos/build-ci.sh
        
+      - name: Copy Sparkle framework
+        run : cp -r ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ${{ github.workspace }}/build-macos/client/bin
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
@@ -215,7 +217,7 @@ jobs:
           path: |
               ${{ github.workspace }}/build-macos/client/bin/*.lst
               ${{ github.workspace }}/build-macos/client/bin/*.dylib
-              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework
+              ${{ github.workspace }}/build-macos/client/bin/Sparkle.framework
           retention-days: 3
         if: always()
 
@@ -263,7 +265,7 @@ jobs:
         run : rm -rf build-macos
 
   test-common-Windows:
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    runs-on: [ self-hosted, Windows, desktop-kdrive-test ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
@@ -302,7 +304,7 @@ jobs:
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-commonServer-Windows:
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    runs-on: [ self-hosted, Windows, desktop-kdrive-test ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
@@ -341,7 +343,7 @@ jobs:
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-server-Windows:
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    runs-on: [ self-hosted, Windows, desktop-kdrive-test ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
@@ -380,7 +382,7 @@ jobs:
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-syncengine-Windows:
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    runs-on: [ self-hosted, Windows, desktop-kdrive-test ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
@@ -419,7 +421,7 @@ jobs:
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-parms-Windows:
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    runs-on: [ self-hosted, Windows, desktop-kdrive-test ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
     needs: build-Windows
