@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QTimer>
+
 #include <unordered_map>
 
 namespace KDC {

@@ -43,7 +43,7 @@ struct IoHelperTests : public IoHelper {
         static void resetFunctions();
 };
 
-class TestIo : public CppUnit::TestFixture {
+class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIo);
         CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get rights functions
         CPPUNIT_TEST(testGetItemType);

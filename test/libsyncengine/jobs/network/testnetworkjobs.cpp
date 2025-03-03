@@ -55,8 +55,6 @@
 #include "test_utility/testhelpers.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 
-#include <iostream>
-
 using namespace CppUnit;
 
 namespace KDC {
@@ -68,9 +66,11 @@ static const NodeId pictureDirRemoteId = "56851"; // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373"; // test_ci/test_pictures/picture-1.jpg
 static const NodeId testFileRemoteId = "97370"; // test_ci/test_networkjobs/test_download.txt
 static const NodeId testFileRemoteRenameId = "97376"; // test_ci/test_networkjobs/test_rename*.txt
+#ifdef __APPLE__
 static const NodeId testAliasDnDRemoteId = "2023013"; // test_ci/test_networkjobs/test_alias_dnd
 static const NodeId testAliasGoodRemoteId = "2017813"; // test_ci/test_networkjobs/test_alias_good.log
 static const NodeId testAliasCorruptedRemoteId = "2017817"; // test_ci/test_networkjobs/test_alias_corrupted.log
+#endif
 static const NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
 static const NodeId testDummyDirRemoteId = "98648"; // test_ci/dummy_dir
 static const NodeId testDummyFileRemoteId = "98649"; // test_ci/dummy_dir/picture.jpg
@@ -93,6 +93,7 @@ void createEmptyFile(const SyncPath &path) {
 } // namespace
 
 void TestNetworkJobs::setUp() {
+    TestBase::start();
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
     const testhelpers::TestVariables testVariables;
@@ -148,6 +149,7 @@ void TestNetworkJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     MockIoHelperTestNetworkJobs::resetStdFunctions();
+    TestBase::stop();
 }
 
 
@@ -390,8 +392,9 @@ void TestNetworkJobs::testDownload() {
 
         MockIoHelperTestNetworkJobs::resetStdFunctions();
     }
-    {
-        // Not Enough disk space
+    if (testhelpers::isRunningOnCI()) {
+        // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
+
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");

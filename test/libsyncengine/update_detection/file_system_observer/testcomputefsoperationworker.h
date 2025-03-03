@@ -33,7 +33,7 @@ class MockComputeFSOperationWorker : public ComputeFSOperationWorker {
         ExitInfo checkIfOkToDelete(ReplicaSide, const SyncPath &, const NodeId &, bool &);
 };
 
-class TestComputeFSOperationWorker : public CppUnit::TestFixture {
+class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestComputeFSOperationWorker);
         CPPUNIT_TEST(testNoOps);
         CPPUNIT_TEST(testMultipleOps);

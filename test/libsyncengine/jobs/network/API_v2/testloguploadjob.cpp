@@ -30,6 +30,7 @@ using namespace CppUnit;
 
 namespace KDC {
 void TestLogUploadJob::setUp() {
+    TestBase::start();
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up TestLogUploadJob");
     deleteFakeFiles();
 
@@ -46,6 +47,7 @@ void TestLogUploadJob::tearDown() {
     deleteFakeFiles();
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    TestBase::stop();
 }
 
 void TestLogUploadJob::testLogUploadJobWithOldSessions() {

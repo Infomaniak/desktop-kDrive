@@ -55,6 +55,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestDb::setUp() {
+    TestBase::start();
     bool alreadyExists;
     std::filesystem::path testDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(testDbPath);
@@ -63,6 +64,7 @@ void TestDb::setUp() {
 
 void TestDb::tearDown() {
     delete _testObj;
+    TestBase::stop();
 }
 
 void TestDb::testQueries() {

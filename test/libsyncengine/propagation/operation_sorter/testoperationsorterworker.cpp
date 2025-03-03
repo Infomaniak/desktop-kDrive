@@ -27,6 +27,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestOperationSorterWorker::setUp() {
+    TestBase::start();
     // Create SyncPal
     bool alreadyExists = false;
     const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -58,6 +59,7 @@ void TestOperationSorterWorker::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     _syncPal->syncDb()->close();
+    TestBase::stop();
 }
 
 void TestOperationSorterWorker::testMoveFirstAfterSecond() {

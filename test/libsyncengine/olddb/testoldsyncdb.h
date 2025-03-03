@@ -25,7 +25,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestOldSyncDb : public CppUnit::TestFixture {
+class TestOldSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestOldSyncDb);
         CPPUNIT_TEST(testSelectiveSync);
         CPPUNIT_TEST_SUITE_END();
