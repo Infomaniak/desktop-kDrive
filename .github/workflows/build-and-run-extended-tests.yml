@@ -196,8 +196,9 @@ jobs:
         run : rm -rf build-linux
 
   kChat_notification:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' && always())
     needs: [ Windows-extended-tests, MacOS-extended-tests, Linux-extended-tests ]
+
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
       KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
