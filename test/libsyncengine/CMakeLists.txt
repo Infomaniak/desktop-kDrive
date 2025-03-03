@@ -59,6 +59,7 @@ set(testsyncengine_SRCS
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
+        syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
 )

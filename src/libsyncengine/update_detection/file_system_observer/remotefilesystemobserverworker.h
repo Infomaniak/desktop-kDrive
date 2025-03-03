@@ -33,9 +33,12 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
         ~RemoteFileSystemObserverWorker() override;
 
-    private:
+    protected:
         void execute() override;
+        virtual ExitCode sendLongPoll(bool &changes);
         ExitCode generateInitialSnapshot() override;
+
+    private:
         ExitCode processEvents() override;
         [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::Remote; }
 
@@ -43,7 +46,6 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitCode exploreDirectory(const NodeId &nodeId);
         ExitCode getItemsInDir(const NodeId &dirId, bool saveCursor);
 
-        ExitCode sendLongPoll(bool &changes);
 
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::actionCodeUnknown};

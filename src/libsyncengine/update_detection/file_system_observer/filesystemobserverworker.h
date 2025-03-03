@@ -37,6 +37,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         void resetInvalidateCounter() { _invalidateCounter = 0; }
         virtual void forceUpdate();
         [[nodiscard]] virtual bool updating() const { return _updating; }
+        [[nodiscard]] bool initializing() const { return _initializing; }
 
         [[nodiscard]] std::shared_ptr<Snapshot> snapshot() const { return _snapshot; };
 
@@ -46,13 +47,16 @@ class FileSystemObserverWorker : public ISyncWorker {
 
         std::list<std::pair<SyncPath, OperationType>> _pendingFileEvents;
 
-        bool _updating = false;
+        bool _updating{false};
+        bool _initializing{true};
         std::mutex _mutex;
 
         virtual ExitCode generateInitialSnapshot() = 0;
         virtual ExitCode processEvents() { return ExitCode::Ok; }
 
         [[nodiscard]] virtual bool isFolderWatcherReliable() const { return true; }
+
+        void init() override;
 
     private:
         [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;

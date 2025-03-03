@@ -55,18 +55,6 @@ void OperationGeneratorWorker::execute() {
             break;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-            if (unpauseAsked()) {
-                setUnpauseDone();
-            }
-        }
-
         std::shared_ptr<Node> currentNode = _queuedToExplore.front();
         _queuedToExplore.pop();
 

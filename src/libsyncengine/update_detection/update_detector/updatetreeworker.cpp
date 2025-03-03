@@ -138,14 +138,6 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             return ExitCode::Ok;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
-
         FSOpPtr deleteOp = nullptr;
         _operationSet->getOp(deleteOpId, deleteOp);
 
@@ -268,13 +260,6 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
 
         FSOpPtr createOp;
         _operationSet->getOp(createOpId, createOp);
@@ -374,13 +359,6 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
-        }
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
         FSOpPtr deleteOp = nullptr;
@@ -515,14 +493,6 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
             return ExitCode::Ok;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
-
         FSOpPtr createOp = nullptr;
         _operationSet->getOp(createOpId, createOp);
         if (createOp->objectType() != NodeType::Directory) {
@@ -579,13 +549,6 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
-        }
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
         FSOpPtr operation = op.second;
@@ -657,14 +620,6 @@ ExitCode UpdateTreeWorker::step7EditFile() {
         // worker stop or pause
         if (stopAsked()) {
             return ExitCode::Ok;
-        }
-
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
         FSOpPtr editOp = nullptr;
@@ -780,13 +735,6 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
 
         if (dbNodeId == rootNodeId.value()) {
             // Ignore root folder
@@ -868,14 +816,6 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
     for (const auto &moveOpId: moveOpsIds) {
         if (stopAsked()) {
             return ExitCode::Ok;
-        }
-
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
         FSOpPtr moveOp = nullptr;
@@ -1208,14 +1148,6 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
 
         if (stopAsked()) {
             return ExitCode::Ok;
-        }
-
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
         bool found = false;
