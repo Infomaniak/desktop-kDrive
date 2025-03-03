@@ -33,8 +33,7 @@
 #include <utime.h>
 #endif
 
-namespace KDC {
-namespace testhelpers {
+namespace KDC::testhelpers {
 
 SyncName makeNfdSyncName() {
     SyncName nfdNormalized;
@@ -95,34 +94,4 @@ void setModificationDate(const SyncPath& path, const std::chrono::time_point<std
     utime(fileName, &newTime);
 }
 #endif
-} // namespace testhelpers
-
-bool TimeoutHelper::waitFor(std::function<bool()> condition, const std::chrono::steady_clock::duration& duration,
-                            const std::chrono::steady_clock::duration& loopWait) {
-    TimeoutHelper timeout(duration, loopWait);
-    while (!condition()) {
-        if (timeout.timedOut()) return false;
-    }
-    return true;
-}
-
-
-bool TimeoutHelper::waitFor(std::function<bool()> condition, std::function<void()> stateCheck,
-                            const std::chrono::steady_clock::duration& duration,
-                            const std::chrono::steady_clock::duration& loopWait) {
-    TimeoutHelper timeout(duration, loopWait);
-    while (!condition()) {
-        if (timeout.timedOut()) return false;
-        stateCheck();
-    }
-    return true;
-}
-
-bool TimeoutHelper::timedOut() {
-    bool result = (_start + _duration) < std::chrono::steady_clock::now();
-    if (!result && _loopWait != std::chrono::milliseconds(0)) {
-        Utility::msleep(static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(_loopWait).count()));
-    }
-    return result;
-}
-} // namespace KDC
+} // namespace KDC::testhelpers

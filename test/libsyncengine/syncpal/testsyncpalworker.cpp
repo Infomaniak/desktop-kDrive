@@ -22,6 +22,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 #include "test_utility/testhelpers.h"
+#include "test_utility/timeouthelper.h"
 #include <cstdlib>
 #include <atomic>
 

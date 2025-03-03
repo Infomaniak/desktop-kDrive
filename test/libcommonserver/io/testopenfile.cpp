@@ -18,6 +18,7 @@
 
 #include "testio.h"
 #include "test_utility/testhelpers.h"
+#include "test_utility/timeouthelper.h"
 
 #include <thread>
 using namespace CppUnit;

@@ -16,6 +16,7 @@ set(testsyncengine_SRCS
         ../test.cpp
         test.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+        ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
         ../test_utility/testbase.h
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp

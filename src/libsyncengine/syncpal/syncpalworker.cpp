@@ -432,7 +432,7 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
-        case SyncStep::Idle:
+        case SyncStep::Idle: {
             const bool areSnapshotsValid =
                     _syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote);
             const bool areFSOWorkersRunning =
@@ -449,7 +449,7 @@ SyncStep SyncPalWorker::nextStep() const {
                                    (areSnapshotsUpdated || _syncPal->restart())
                            ? SyncStep::UpdateDetection1
                            : SyncStep::Idle;
-
+        }
         case SyncStep::UpdateDetection1: {
             auto logNbOps = [this](const ReplicaSide side) {
                 const auto opsSet = _syncPal->operationSet(side);
