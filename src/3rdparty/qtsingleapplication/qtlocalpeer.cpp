@@ -131,10 +131,10 @@ bool QtLocalPeer::sendMessage(const QString &message, int timeout, bool block)
 
     QByteArray uMsg(message.toUtf8());
     QDataStream ds(&socket);
-    ds.writeBytes(uMsg.constData(), uMsg.size());
+    ds.writeBytes(uMsg.constData(), static_cast<uint>(uMsg.size()));
     bool res = socket.waitForBytesWritten(timeout);
     res &= socket.waitForReadyRead(timeout); // wait for ack
-    res &= (socket.read(qstrlen(ack)) == ack);
+    res &= (socket.read(static_cast<qint64>(qstrlen(ack))) == ack);
     if (block) // block until peer disconnects
         socket.waitForDisconnected(-1);
     return res;
@@ -161,8 +161,8 @@ void QtLocalPeer::receiveConnection()
     char* uMsgBuf = uMsg.data();
     //qDebug() << "RCV: remaining" << remaining;
     do {
-        got = ds.readRawData(uMsgBuf, remaining);
-        remaining -= got;
+        got = ds.readRawData(uMsgBuf, static_cast<int>(remaining));
+        remaining -= static_cast<quint32>(got);
         uMsgBuf += got;
         //qDebug() << "RCV: got" << got << "remaining" << remaining;
     } while (remaining && got >= 0 && socket->waitForReadyRead(2000));
@@ -174,7 +174,7 @@ void QtLocalPeer::receiveConnection()
     }
     // ### async this
     QString message = QString::fromUtf8(uMsg.constData(), uMsg.size());
-    socket->write(ack, qstrlen(ack));
+    socket->write(ack, static_cast<qint64>(qstrlen(ack)));
     socket->waitForBytesWritten(1000);
     emit messageReceived(message, socket); // ##(might take a long time to return)
 }
