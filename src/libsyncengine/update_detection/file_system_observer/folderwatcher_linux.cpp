@@ -74,9 +74,9 @@ void FolderWatcher_linux::startWatching() {
                 if (_stop) {
                     break;
                 }
-                struct inotify_event *event = (inotify_event *) (buffer + offset);
+                auto *event = reinterpret_cast<inotify_event *>(buffer + offset);
 
-                OperationType opType = OperationType::None;
+                auto opType = OperationType::None;
                 bool skip = false;
                 if (event->mask & IN_CREATE) {
                     opType = OperationType::Create;
@@ -137,14 +137,12 @@ void FolderWatcher_linux::startWatching() {
 
 bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList) {
     bool ok = true;
-    bool isReadable = access(dir.c_str(), R_OK) == 0;
-    if (!isReadable) {
+    if (access(dir.c_str(), R_OK) != 0) {
         LOG4CPLUS_WARN(_logger, L"SyncDir is not readable: " << Utility::formatSyncPath(dir));
         setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
         return false;
     }
-    std::error_code ec;
-    if (!(std::filesystem::exists(dir, ec) && isReadable)) {
+    if (std::error_code ec;!std::filesystem::exists(dir, ec)) {
         if (ec) {
             LOG4CPLUS_WARN(_logger, L"Failed to check existence of " << Utility::formatSyncPath(dir) << L": "
                                                                      << Utility::formatStdError(ec));
@@ -154,7 +152,6 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
         ok = false;
     } else {
         try {
-            std::error_code ec;
             const auto dirIt = std::filesystem::recursive_directory_iterator(
                     dir, std::filesystem::directory_options::skip_permission_denied, ec);
             if (ec) {
@@ -210,7 +207,7 @@ bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
 }
 
 bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
-    if (_pathToWatch.find(path) != _pathToWatch.end()) {
+    if (_pathToWatch.contains(path)  ) {
         // This path is already watched
         return true;
     }
@@ -255,24 +252,15 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
         return;
     }
 
-    std::string pathSlash = dirPath.string() + '/';
-
     // Remove the entry and all subentries
     while (it != _pathToWatch.end()) {
         auto itPath = it->first;
-        if (Utility::isDescendantOrEqual(itPath, dirPath)) {
+        if (!Utility::isDescendantOrEqual(itPath, dirPath)) {
             break;
         }
 
-        if (itPath != dirPath && Utility::isDescendantOrEqual(itPath, pathSlash)) {
-            // order is 'foo', 'foo bar', 'foo/bar'
-            ++it;
-            continue;
-        }
-
         auto wid = it->second;
-        int wd = inotify_rm_watch(_fileDescriptor, wid);
-        if (wd > -1) {
+        if (const auto wd = inotify_rm_watch(_fileDescriptor, wid);wd > -1) {
             _watchToPath.erase(wid);
             it = _pathToWatch.erase(it);
             LOG4CPLUS_DEBUG(_logger, "Removed watch on" << itPath.c_str());
@@ -284,7 +272,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
 
 void FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType) {
     std::list<std::pair<SyncPath, OperationType>> list;
-    list.push_back({path, opType});
+    list.emplace_back(path, opType);
     _parent->changesDetected(list);
 }
 
