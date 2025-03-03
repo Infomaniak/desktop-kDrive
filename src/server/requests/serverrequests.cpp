@@ -1490,9 +1490,11 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     Sync sync;
     sync.setDbId(syncDbId);
     sync.setDriveDbId(driveDbId);
-    SyncName localPath = Str2SyncName(localFolderPath.toStdString());
+    auto localPath = QStr2Path(localFolderPath);
 #ifdef __APPLE__
-    (void) Utility::normalizedSyncName(localFolderPath.toStdString(), localPath, Utility::UnicodeNormalization::NFD);
+    // On macOS, the special characters in file names are NFD encoded. However, we use QFileDialog::getExistingDirectory to
+    // retrieve the selected sync path which return a NFC encoded path.
+    (void) Utility::normalizedSyncPath(localFolderPath.toStdString(), localPath, Utility::UnicodeNormalization::NFD);
 #endif
     sync.setLocalPath(localPath);
     sync.setTargetPath(QStr2Path(serverFolderPath));
@@ -1500,7 +1502,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setPaused(false);
 
     // Check vfs support
-    const QString fsName(CommonUtility::fileSystemName(SyncName2QStr(sync.localPath().native())));
+    const QString fsName(CommonUtility::fileSystemName(Path2QStr(sync.localPath())));
     const auto supportVfs = (fsName == "NTFS" || fsName == "apfs");
     sync.setSupportVfs(supportVfs);
 
