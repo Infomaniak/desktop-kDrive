@@ -28,6 +28,7 @@
 namespace KDC {
 
 void TestUpdateChecker::setUp() {
+    TestBase::start();
     ParametersCache::instance(true);
 }
 

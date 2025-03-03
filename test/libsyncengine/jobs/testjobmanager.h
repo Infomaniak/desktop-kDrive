@@ -34,7 +34,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestJobManager : public CppUnit::TestFixture {
+class TestJobManager : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestJobManager);
         CPPUNIT_TEST(testWithoutCallback);

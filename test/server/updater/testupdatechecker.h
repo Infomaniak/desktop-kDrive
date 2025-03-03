@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-class TestUpdateChecker final : public CppUnit::TestFixture {
+class TestUpdateChecker final : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestUpdateChecker);
         CPPUNIT_TEST(testCheckUpdateAvailable);
@@ -31,6 +31,7 @@ class TestUpdateChecker final : public CppUnit::TestFixture {
 
     public:
         void setUp() override;
+        void tearDown() override { TestBase::stop(); }
 
     protected:
         void testCheckUpdateAvailable();

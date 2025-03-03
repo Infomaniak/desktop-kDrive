@@ -22,11 +22,16 @@
 
 namespace KDC {
 
-class TestFolderWatcher_mac final : public CppUnit::TestFixture {
+class TestFolderWatcher_mac final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestFolderWatcher_mac);
         CPPUNIT_TEST(testGetOpType);
         CPPUNIT_TEST_SUITE_END();
 
+    public:
+        void setUp(void) final { TestBase::start(); }
+        void tearDown(void) final { TestBase::stop(); }
+
+    protected:
         void testGetOpType();
 };
 

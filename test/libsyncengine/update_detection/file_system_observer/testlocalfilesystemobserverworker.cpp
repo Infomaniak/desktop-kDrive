@@ -45,6 +45,7 @@ namespace KDC {
 constexpr uint64_t nbFileInTestDir = 5; // Test directory contains 5 files
 
 void TestLocalFileSystemObserverWorker::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
@@ -110,6 +111,7 @@ void TestLocalFileSystemObserverWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {

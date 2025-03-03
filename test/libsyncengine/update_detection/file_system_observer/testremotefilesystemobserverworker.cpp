@@ -45,6 +45,7 @@ const NodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/tes
 const NodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
 
 void TestRemoteFileSystemObserverWorker::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
 
     LOG_DEBUG(_logger, "$$$$$ Set Up $$$$$");
@@ -109,6 +110,7 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {

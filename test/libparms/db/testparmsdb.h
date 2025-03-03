@@ -25,7 +25,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestParmsDb : public CppUnit::TestFixture {
+class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestParmsDb);
         CPPUNIT_TEST(testParameters);
         CPPUNIT_TEST(testUser);

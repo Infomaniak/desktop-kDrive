@@ -24,6 +24,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestConflictFinderWorker::setUp() {
+    TestBase::start();
     // Create SyncPal
     bool alreadyExists;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -47,6 +48,7 @@ void TestConflictFinderWorker::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     _syncPal->syncDb()->close();
+    TestBase::stop();
 }
 
 void TestConflictFinderWorker::setUpTreesAndDb() {
