@@ -196,7 +196,7 @@ bool SqliteQuery::nullValue(int index) const {
     return sqlite3_column_type(_stmt.get(), index) == SQLITE_NULL;
 }
 
-std::string SqliteQuery::stringValue(int index) const {
+std::string SqliteQuery::stringValue(const int index) const {
 #ifdef _WIN32
     auto value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
     return value ? value : std::string();
