@@ -287,16 +287,7 @@ jobs:
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Execute tests
-        run: |
-          $file = "kDrive_test_common.exe"
-          $path = "./build-windows/test/$file"
-          Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
-          & $path
-          if ($LASTEXITCODE -ne 0) {
-              Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
-          } else {
-                  Write-Host "---------- Success: $file ----------" -ForegroundColor Green
-          }  
+        run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_common.exe
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -335,16 +326,7 @@ jobs:
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Execute tests
-        run: |
-          $file = "kDrive_test_common_server.exe"
-          $path = "./build-windows/test/$file"
-          Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
-          & $path
-          if ($LASTEXITCODE -ne 0) {
-              Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
-          } else {
-                  Write-Host "---------- Success: $file ----------" -ForegroundColor Green
-          }  
+        run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_common_server.exe
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -383,16 +365,7 @@ jobs:
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Execute tests
-        run: |
-          $file = "kDrive_test_server.exe"
-          $path = "./build-windows/test/$file"
-          Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
-          & $path
-          if ($LASTEXITCODE -ne 0) {
-              Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
-          } else {
-                  Write-Host "---------- Success: $file ----------" -ForegroundColor Green
-          }  
+        run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_server.exe 
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -431,16 +404,7 @@ jobs:
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Execute tests
-        run: |
-          $file = "kDrive_test_syncengine.exe"
-          $path = "./build-windows/test/$file"
-          Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
-          & $path
-          if ($LASTEXITCODE -ne 0) {
-              Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
-          } else {
-                  Write-Host "---------- Success: $file ----------" -ForegroundColor Green
-          }  
+        run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_syncengine.exe
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -479,17 +443,7 @@ jobs:
           path: C:/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-windows/test/
 
       - name: Execute tests
-        run: |
-          $file = "./kDrive_test_parms.exe"
-          cd ./build-windows/test/
-          Write-Host "---------- Running $file ----------" -ForegroundColor Yellow
-          & $file
-          if ($LASTEXITCODE -ne 0) {
-              Write-Host "---------- Failure: $file ----------" -ForegroundColor Red
-          } else {
-                  Write-Host "---------- Success: $file ----------" -ForegroundColor Green
-          }  
-          cd ../../..
+        run: powershell ./infomaniak-build-tools/run-test.ps1 ./build-windows/test/ kDrive_test_parms.exe
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -697,13 +651,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-common
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -728,7 +682,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
 
   test-commonServer-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -743,13 +697,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-common-server
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -774,7 +728,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
 
   test-server-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -789,13 +743,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-server
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -820,7 +774,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
 
   test-syncengine-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -835,13 +789,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-syncengine
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -866,7 +820,7 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
 
   test-parms-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -881,13 +835,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
           name: macos-build-test-parms
-          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/
+          path: /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
@@ -912,4 +866,4 @@ jobs:
         continue-on-error: true
 
       - name: Clean up
-        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/test/*
+        run : rm -rf /Users/runner/actions-runner/_work/desktop-kDrive/desktop-kDrive/build-macos/client/bin/*
