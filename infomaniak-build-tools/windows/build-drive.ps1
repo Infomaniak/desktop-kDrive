@@ -1,6 +1,6 @@
 ﻿<#
  Infomaniak kDrive - Desktop App
- Copyright (C) 2023-2024 Infomaniak Network SA
+ Copyright (C) 2023-2025 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -256,8 +256,8 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext)
 	msbuild "$extPath\kDriveExt.sln" /p:Configuration=Release /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 	
-	Copy-Item -Path "$extPath\Vfs\..\Common\debug.h" -Destination "$path\src\server\vfs\win\."
-	Copy-Item -Path "$extPath\Vfs\Vfs.h" -Destination "$path\src\server\vfs\win\."
+	Copy-Item -Path "$extPath\Vfs\..\Common\debug.h" -Destination "$path\src\libcommonserver\vfs\win\."
+	Copy-Item -Path "$extPath\Vfs\Vfs.h" -Destination "$path\src\libcommonserver\vfs\win\."
 }
 
 #################################################################################################
@@ -378,7 +378,7 @@ $dependencies = @(
 "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
 "${env:ProgramFiles(x86)}/xxHash/bin/xxhash",
 "$vfsDir/Vfs",
-"$buildPath/bin/kDrivesyncengine_vfs_win"
+"$buildPath/bin/kDrivecommonserver_vfs_win"
 )
 
 Write-Host "Copying dependencies to the folder $archivePath"

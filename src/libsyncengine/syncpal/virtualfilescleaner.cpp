@@ -30,19 +30,15 @@
 
 namespace KDC {
 
-VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
-                                         bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
-                                         bool (*vfsClearFileAttributes)(int, const SyncPath &)) :
-    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
-    _vfsClearFileAttributes(vfsClearFileAttributes) {}
+VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> &vfs) :
+    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDb(syncDb), _vfs(vfs) {}
 
-VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId) :
-    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId) {}
+VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path) : _logger(Log::instance()->getLogger()), _rootPath(path) {}
 
 bool VirtualFilesCleaner::run() {
     // Clear xattr on root path
-    assert(_vfsClearFileAttributes);
-    _vfsClearFileAttributes(_syncDbId, _rootPath);
+    assert(_vfs);
+    _vfs->clearFileAttributes(_rootPath);
     return removePlaceholdersRecursively(_rootPath);
 }
 
@@ -60,28 +56,24 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                 dirIt.disable_recursion_pending();
                 continue;
             }
-
-            SyncName entryPathStr = dirIt->path().native();
-            entryPathStr.erase(0, rootPathStr.length() + 1); // +1 because of the first “/”
+            SyncPath absolutePath = dirIt->path();
+            SyncPath relativePath = CommonUtility::relativePath(_rootPath, absolutePath);
 
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_DEBUG(_logger, L"VirtualFilesCleaner: processing item " << SyncName2WStr(entryPathStr).c_str());
+                LOGW_DEBUG(_logger, L"VirtualFilesCleaner: processing item " << Utility::formatSyncPath(absolutePath));
             }
-
-            SyncPath entryPath(entryPathStr);
-            SyncPath relativePath = CommonUtility::relativePath(_rootPath, entryPath);
             bool isWarning = false;
             bool isExcluded = false;
             IoError ioError = IoError::Success;
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_rootPath, relativePath, isWarning,
                                                                                        isExcluded, ioError);
             if (!success || ioError != IoError::Success) {
-                LOGW_WARN(_logger,
-                          L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(entryPath, ioError).c_str());
+                LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
+                                           << Utility::formatIoError(absolutePath, ioError).c_str());
                 continue;
             }
             if (isExcluded) {
-                LOGW_DEBUG(_logger, L"Ignore path=" << Path2WStr(dirIt->path()).c_str() << L" because it is excluded");
+                LOGW_DEBUG(_logger, L"Ignore " << Utility::formatSyncPath(absolutePath) << L" because it is excluded");
                 dirIt.disable_recursion_pending();
                 continue;
             }
@@ -91,32 +83,32 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             bool isHydrated = false;
             bool isSyncing = false;
             int progress = 0;
-            assert(_vfsStatus);
-            if (!_vfsStatus(_syncDbId, dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress)) {
-                LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(dirIt->path()).c_str());
-                _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::Unknown;
+            assert(_vfs);
+            if (ExitInfo exitInfo = _vfs->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
+                _exitCode = exitInfo.code();
+                _exitCause = exitInfo.cause();
                 return false;
             }
 
             if (!dirIt->is_directory() && isPlaceholder && isHydrated) {
                 // Keep this file in file system
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << SyncName2WStr(entryPathStr).c_str()
+                    LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)
                                                                       << L" is a hydrated placeholder, keep it");
                 }
             } else {
                 if (!dirIt->is_directory()) { // Keep folders
                     // Remove file from file system
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << SyncName2WStr(entryPathStr).c_str()
+                        LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
                                                                                    << L" from file system");
                     }
 
                     std::error_code ec;
                     if (!std::filesystem::remove(dirIt->path(), ec)) {
                         if (ec.value() != 0) {
-                            LOGW_WARN(_logger, L"Failed to remove all " << SyncName2WStr(entryPathStr).c_str() << L": "
+                            LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatSyncPath(absolutePath) << L": "
                                                                         << Utility::s2ws(ec.message()).c_str() << L" ("
                                                                         << ec.value() << L")");
                             _exitCode = ExitCode::SystemError;
@@ -124,7 +116,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                             return false;
                         }
 
-                        LOGW_WARN(_logger, L"Failed to remove all " << SyncName2WStr(entryPathStr).c_str());
+                        LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatSyncPath(absolutePath));
                         _exitCode = ExitCode::SystemError;
                         _exitCause = ExitCause::FileAccessError;
                         return false;
@@ -132,13 +124,13 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
 
                     // Remove item from db
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger,
-                                   L"VirtualFilesCleaner: removing item " << SyncName2WStr(entryPathStr).c_str() << L" from DB");
+                        LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
+                                                                                   << L" from DB");
                     }
 
                     DbNodeId dbId = -1;
                     bool found = false;
-                    if (!_syncDb->dbId(ReplicaSide::Local, entryPath, dbId, found)) {
+                    if (!_syncDb->dbId(ReplicaSide::Local, relativePath, dbId, found)) {
                         LOG_WARN(_logger, "Error in SyncDb::dbId");
                         _exitCode = ExitCode::DbError;
                         _exitCause = ExitCause::DbAccessError;
@@ -164,8 +156,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             }
 
             // Clear xattr
-            assert(_vfsClearFileAttributes);
-            _vfsClearFileAttributes(_syncDbId, dirIt->path());
+            assert(_vfs);
+            _vfs->clearFileAttributes(absolutePath);
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively: code=" << e.code()

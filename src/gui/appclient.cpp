@@ -49,7 +49,7 @@
 #include <log/sentry/handler.h>
 
 #define CONNECTION_TRIALS 3
-#define CHECKCOMMSTATUS_TRIALS 5
+#define CHECKCOMMSTATUS_TRIALS 3
 
 namespace KDC {
 
@@ -118,8 +118,11 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
         return;
     }
 
-    // Init ParametersCache
-    ParametersCache::instance();
+    // Init ParametersCache instance
+    if (!ParametersCache::instance()) {
+        qCWarning(lcAppClient) << "Error in ParametersCache::instance";
+        throw std::runtime_error("Unable to initialize parameters cache.");
+    }
 
     // Setup logging
     setupLogging();

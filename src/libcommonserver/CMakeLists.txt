@@ -1,5 +1,6 @@
 project(libcommonserver)
 
+find_package(Qt6 REQUIRED Core)
 find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
@@ -11,8 +12,12 @@ if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
 endif ()
 find_package(libzip 1.10.1 REQUIRED)
 
+set(CMAKE_AUTOMOC TRUE)
+
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
+
+add_subdirectory(vfs)
 
 # Sources
 set(libcommonserver_SRCS
@@ -34,6 +39,9 @@ set(libcommonserver_SRCS
     # Io
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
+    vfs/vfs.h vfs/vfs.cpp
+    vfs/workerinfo.h vfs/vfsworker.h
+    vfs/plugin.h vfs/plugin.cpp
 )
 
 if(APPLE)

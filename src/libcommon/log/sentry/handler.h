@@ -83,8 +83,9 @@ class Handler {
          */
         static void captureMessage(Level level, const std::string &title, const std::string &message,
                                    const SentryUser &user = SentryUser()) {
-            instance()->_captureMessage(level, title, message, user);
+            instance()->privateCaptureMessage(level, title, message, user);
         }
+
 
         // Performances monitoring
         pTraceId startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1);
@@ -105,8 +106,9 @@ class Handler {
         void setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit);
         void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
         virtual void sendEventToSentry(const Level level, const std::string &title, const std::string &message) const;
+        void privateCaptureMessage(Level level, const std::string &title, std::string message,
+                                   const SentryUser &user = SentryUser());
 
-        void _captureMessage(Level level, const std::string &title, std::string message, const SentryUser &user = SentryUser());
 
     private:
         Handler(const Handler &) = delete;

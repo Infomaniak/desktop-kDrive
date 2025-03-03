@@ -73,7 +73,11 @@ class UpdateChecker {
          * @return const reference on a VersionInfo
          */
         const VersionInfo &prodVersionInfo() {
+#if defined(__APPLE__) || defined(_WIN32)
             return _versionsInfo.contains(_prodVersionChannel) ? _versionsInfo[_prodVersionChannel] : _defaultVersionInfo;
+#else
+            return _versionsInfo.contains(DistributionChannel::Prod) ? _versionsInfo[DistributionChannel::Prod] : _defaultVersionInfo;
+#endif
         }
 
         std::function<void()> _callback = nullptr;

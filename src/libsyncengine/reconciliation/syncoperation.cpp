@@ -20,7 +20,7 @@
 
 namespace KDC {
 
-UniqueId SyncOperation::_nextId = 0;
+UniqueId SyncOperation::_nextId = 1;
 
 SyncOperation::SyncOperation() : _id(_nextId++) {}
 

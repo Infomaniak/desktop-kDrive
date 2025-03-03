@@ -117,7 +117,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             ioError = IoError::Success;
             if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
-                invalidateSnapshot();
+                tryToInvalidateSnapshot();
                 return;
             }
 
@@ -148,7 +148,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             if (!IoHelper::getItemType(absolutePath, itemType)) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, itemType.ioError));
-                invalidateSnapshot();
+                tryToInvalidateSnapshot();
                 return;
             }
             if (itemType.ioError == IoError::AccessDenied) {
@@ -170,7 +170,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             if (!success) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
                                                    << Utility::formatIoError(absolutePath, ioError));
-                invalidateSnapshot();
+                tryToInvalidateSnapshot();
                 return;
             }
             if (toExclude) {
@@ -192,11 +192,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                                        L"Item not processed because it is excluded: " << Utility::formatSyncPath(absolutePath));
                 }
 
-                if (!_syncPal->vfsExclude(
-                            absolutePath)) { // TODO : This class should never set any attribute or change anything on a file
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsExclude: " << Utility::formatSyncPath(absolutePath));
-                }
-
+                _syncPal->vfs()->exclude(absolutePath);
                 continue;
             }
         }
@@ -218,7 +214,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                     << Utility::s2ws(itemId) << L")");
-                invalidateSnapshot();
+                tryToInvalidateSnapshot();
                 return;
             }
 
@@ -258,27 +254,23 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 bool isHydrated = false;
                 bool isSyncing = false;
                 int progress = 0;
-                if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
-                    invalidateSnapshot();
+                if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress);
+                    !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger,
+                                      L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
+                    tryToInvalidateSnapshot();
                     return;
                 }
 
-                PinState pinstate = PinState::Unspecified;
-                if (!_syncPal->vfsPinState(absolutePath, pinstate)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState: " << Utility::formatSyncPath(absolutePath));
-                    invalidateSnapshot();
-                    return;
-                }
-
+                PinState pinState = _syncPal->vfs()->pinState(absolutePath);
                 if (isPlaceholder) {
-                    if ((isHydrated && pinstate == PinState::OnlineOnly) || (!isHydrated && pinstate == PinState::AlwaysLocal)) {
+                    if ((isHydrated && pinState == PinState::OnlineOnly) || (!isHydrated && pinState == PinState::AlwaysLocal)) {
                         // Change status in order to start hydration/dehydration
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
-                        if (!_syncPal->vfsFileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
+                        if (!_syncPal->vfs()->fileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
                             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: "
                                                                << Utility::formatSyncPath(absolutePath));
-                            invalidateSnapshot();
+                            tryToInvalidateSnapshot();
                             return;
                         }
                     }
@@ -307,7 +299,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                           << Utility::s2ws(itemId) << L")");
-                    invalidateSnapshot();
+                    tryToInvalidateSnapshot();
                     return;
                 }
                 continue;
@@ -325,7 +317,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to delete item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                           << Utility::s2ws(previousItemId) << L")");
-                    invalidateSnapshot();
+                    tryToInvalidateSnapshot();
                     return;
                 }
             }
@@ -337,7 +329,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             if (!_snapshot->updateItem(item)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                       << Utility::s2ws(nodeId) << L")");
-                invalidateSnapshot();
+                tryToInvalidateSnapshot();
                 return;
             }
 
@@ -364,7 +356,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
                 if (!exploreDir(absolutePath, true)) {
                     // Error while exploring directory, we need to invalidate the snapshot
-                    invalidateSnapshot();
+                    tryToInvalidateSnapshot();
                     return;
                 }
             }
@@ -381,7 +373,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 ExitCode exitCode = isEditValid(nodeId, absolutePath, fileStat.modtime, valid);
                 if (exitCode != ExitCode::Ok) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::isEditValid");
-                    invalidateSnapshot();
+                    tryToInvalidateSnapshot();
                     return;
                 }
 
@@ -409,7 +401,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         } else {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to update item: " << Utility::formatSyncPath(absolutePath) << L" ("
                                                                   << Utility::s2ws(nodeId) << L")");
-            invalidateSnapshot();
+            tryToInvalidateSnapshot();
             return;
         }
     }
@@ -431,13 +423,14 @@ void LocalFileSystemObserverWorker::execute() {
     for (;;) {
         if (stopAsked()) {
             exitCode = ExitCode::Ok;
-            invalidateSnapshot();
+            tryToInvalidateSnapshot();
             break;
         }
         if (!_folderWatcher->exitInfo()) {
+            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
             exitCode = _folderWatcher->exitInfo().code();
             setExitCause(_folderWatcher->exitInfo().cause());
-            invalidateSnapshot();
+            tryToInvalidateSnapshot();
             break;
         }
         // We never pause this thread
@@ -446,7 +439,7 @@ void LocalFileSystemObserverWorker::execute() {
             (std::chrono::steady_clock::now() - timerStart).count() * 1000 > defaultDiscoveryInterval) {
             // The folder watcher became unreliable so fallback to static synchronization
             timerStart = std::chrono::steady_clock::now();
-            invalidateSnapshot();
+            tryToInvalidateSnapshot();
             exitCode = generateInitialSnapshot();
             if (exitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: code=" << exitCode);
@@ -519,9 +512,9 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
-    if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncing, progress)) {
-        LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath));
-        return false;
+    if (ExitInfo exitInfo = _syncPal->vfs()->status(absolutePath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
+        return exitInfo;
     }
 
     return !isPlaceholder || (isHydrated && !isSyncing);
@@ -537,7 +530,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
     bool isHydrated = false;
     bool isSyncing = false;
     int progress = 0;
-    if (!_syncPal->vfsStatus(path.native(), isPlaceholder, isHydrated, isSyncing, progress)) {
+    if (!_syncPal->vfs()->status(path.native(), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::vfsStatus");
         return ExitCode::SystemError;
     }
@@ -739,10 +732,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             if (toExclude) {
                 if (!denyFullControl) {
-                    if (!_syncPal->vfsExclude(
-                                absolutePath)) { // TODO : This class should never set any attribute or change anything on a file
-                        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsExclude : " << Utility::formatSyncPath(absolutePath));
-                    }
+                    _syncPal->vfs()->exclude(absolutePath);
                 }
 
                 dirIt.disableRecursionPending();

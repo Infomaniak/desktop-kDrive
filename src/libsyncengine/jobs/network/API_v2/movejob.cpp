@@ -23,27 +23,28 @@
 
 namespace KDC {
 
-MoveJob::MoveJob(int driveDbId, const SyncPath &destFilepath, const NodeId &fileId, const NodeId &destDirId,
-                 const SyncName &name /*= ""*/) :
+MoveJob::MoveJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
+                 const NodeId &destDirId, const SyncName &name /*= ""*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _destFilepath(destFilepath), _fileId(fileId),
-    _destDirId(destDirId), _name(name) {
+    _destDirId(destDirId), _name(name), _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
 MoveJob::~MoveJob() {
-    if (_vfsForceStatus && _vfsStatus) {
-        bool isPlaceholder = false;
-        bool isHydrated = false;
-        bool isSyncing = false;
-        int progress = 0;
-        if (!_vfsStatus(_destFilepath, isPlaceholder, isHydrated, isSyncing, progress)) {
-            LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(_destFilepath).c_str());
-        }
+    if (!_vfs) return;
 
-        if (!_vfsForceStatus(_destFilepath, false, 100,
-                             isHydrated)) { // TODO : to be refactored, some parameters are used on macOS only
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_destFilepath).c_str());
-        }
+    bool isPlaceholder = false;
+    bool isHydrated = false;
+    bool isSyncing = false;
+    int progress = 0;
+    if (const ExitInfo exitInfo = _vfs->status(_destFilepath, isPlaceholder, isHydrated, isSyncing, progress); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(_destFilepath) << L": " << exitInfo);
+    }
+
+    if (const ExitInfo exitInfo = _vfs->forceStatus(_destFilepath, false, 100,
+                                                    isHydrated);
+        !exitInfo) { // TODO : to be refactored, some parameters are used on macOS only
+        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_destFilepath) << L": " << exitInfo);
     }
 }
 

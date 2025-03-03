@@ -92,7 +92,8 @@ struct ListenerHasSocketPred {
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
                      const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+    QObject(parent),
+    _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
@@ -442,7 +443,7 @@ bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &st
 
     if (vfsMapIt->second->mode() == KDC::VirtualFileMode::Mac || vfsMapIt->second->mode() == KDC::VirtualFileMode::Win) {
         bool isSyncing = false;
-        if (!vfsMapIt->second->status(fileData.localPath, isPlaceholder, isHydrated, isSyncing, progress)) {
+        if (!vfsMapIt->second->status(QStr2Path(fileData.localPath), isPlaceholder, isHydrated, isSyncing, progress)) {
             LOGW_WARN(KDC::Log::instance()->getLogger(),
                       L"Error in Vfs::status - " << Utility::formatPath(fileData.localPath).c_str());
             return false;
@@ -477,24 +478,22 @@ std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator SocketApi::re
     return result;
 }
 
-bool SocketApi::setPinState(const FileData &fileData, KDC::PinState pinState) {
-    if (!fileData.syncDbId) return false;
+ExitInfo SocketApi::setPinState(const FileData &fileData, KDC::PinState pinState) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _vfsMap.cend()) return false;
+    if (vfsMapIt == _vfsMap.cend()) return {ExitCode::LogicError};
 
-    vfsMapIt->second->setPinState(fileData.relativePath, pinState);
-
-    return true;
+    return vfsMapIt->second->setPinState(QStr2Path(fileData.relativePath), pinState);
 }
 
-bool SocketApi::dehydratePlaceholder(const FileData &fileData) {
-    if (!fileData.syncDbId) return false;
+ExitInfo SocketApi::dehydratePlaceholder(const FileData &fileData) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _vfsMap.cend()) return false;
+    if (vfsMapIt == _vfsMap.cend()) return {ExitCode::LogicError};
 
-    return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
+    return vfsMapIt->second->dehydratePlaceholder(QStr2Path(fileData.relativePath));
 }
 
 bool SocketApi::addDownloadJob(const FileData &fileData) {
@@ -697,16 +696,16 @@ void SocketApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, SocketL
         }
 
         // Set pin state
-        if (!setPinState(fileData, KDC::PinState::OnlineOnly)) {
+        if (ExitInfo exitInfo = setPinState(fileData, KDC::PinState::OnlineOnly); !exitInfo) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
-                      L"Error in SocketApi::setPinState - " << Utility::formatSyncPath(filePath).c_str());
+                      L"Error in SocketApi::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
         }
 
         // Dehydrate placeholder
-        if (!dehydratePlaceholder(fileData)) {
+        if (ExitInfo exitInfo = dehydratePlaceholder(fileData); !exitInfo) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
-                      L"Error in SocketApi::dehydratePlaceholder - " << Utility::formatSyncPath(filePath).c_str());
+                      L"Error in SocketApi::dehydratePlaceholder - " << Utility::formatSyncPath(filePath) << exitInfo);
             continue;
         }
 
@@ -759,7 +758,7 @@ void SocketApi::command_CANCEL_HYDRATION_DIRECT(const QString &filesArg) {
         auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
         if (vfsMapIt == _vfsMap.cend()) continue;
 
-        vfsMapIt->second->cancelHydrate(filePath);
+        vfsMapIt->second->cancelHydrate(QStr2Path(filePath));
     }
 #endif
 }
@@ -918,7 +917,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Thumbnail fetched - size=" << pixmap.width() << "x" << pixmap.height());
 
     // Set thumbnail
-    if (!vfsMapIt->second->setThumbnail(fileData.localPath, pixmap)) {
+    if (!vfsMapIt->second->setThumbnail(QStr2Path(fileData.localPath), pixmap)) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in setThumbnail - " << Utility::formatPath(filePath).c_str());
         return;
     }
@@ -1095,8 +1094,8 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
             bool isHydrated = false;
             bool isSyncing = false;
             int progress = 0;
-            if (!canCancelHydration && vfsMapIt->second->status(file, isPlaceholder, isHydrated, isSyncing, progress) &&
-                isSyncing) {
+            if (!canCancelHydration &&
+                vfsMapIt->second->status(QStr2Path(file), isPlaceholder, isHydrated, isSyncing, progress) && isSyncing) {
                 canCancelHydration = syncPalMapIt->second->isDownloadOngoing(QStr2Path(file));
             }
 
@@ -1151,7 +1150,7 @@ void SocketApi::manageActionsOnSingleFile(SocketListener *listener, const QStrin
     if (fileData.localPath.isEmpty()) {
         return;
     }
-    bool isExcluded = vfsMapIt->second->isExcluded(fileData.localPath);
+    bool isExcluded = vfsMapIt->second->isExcluded(QStr2Path(fileData.localPath));
     if (isExcluded) {
         return;
     }

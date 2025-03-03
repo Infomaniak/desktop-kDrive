@@ -19,7 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
-#include "server/vfs/mac/vfs_mac.h"
+#include "libcommonserver/vfs/mac/vfs_mac.h"
 
 namespace KDC {
 

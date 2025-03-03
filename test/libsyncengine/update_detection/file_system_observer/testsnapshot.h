@@ -47,6 +47,7 @@ class TestSnapshot : public CppUnit::TestFixture {
 
         std::unique_ptr<Snapshot> _snapshot;
         NodeId _rootNodeId;
+        DbNode _dummyRootNode;
 };
 
 } // namespace KDC

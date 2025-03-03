@@ -57,8 +57,10 @@
 - (void)initOpenWhiteListThumbnailSet
 {
     _defaultOpenWhiteListThumbnailSet = [NSSet setWithObjects:
-                                     @"com.apple.quicklook.satellite",                   // Quicklook
-                                     nil
+                                     @"com.apple.quicklook.satellite",                          // Quicklook
+                                     @"com.apple.quicklook.thumbnail.ImageExtension",           // Quicklook Thumbnail
+                                     @"com.apple.quicklook.thumbnail.AudiovisualExtension",     // Quicklook Thumbnail
+                                  nil
     ];
 }
 
@@ -104,8 +106,6 @@
                             @"com.apple.appkit.xpc.openAndSavePanelService",    // openAndSavePanelService
                             @"com.apple.appkit.xpc.documentPopoverViewService", // documentPopoverViewService
                             @"com.apple.QuickLookThumbnailing.extension.ThumbnailExtension-macOS",  // QuickLookThumbnailing
-                            @"com.apple.quicklook.thumbnail.ImageExtension",    // Quicklook Thumbnail
-                            @"com.apple.quicklook.thumbnail.AudiovisualExtension",    // Quicklook Thumbnail
                             @"com.apple.quicklook.thumbnail",                   // Quicklook Thumbnail
                             @"com.apple.Terminal",                              // Terminal
                             @"com.apple.system_profiler",                       // System profiler

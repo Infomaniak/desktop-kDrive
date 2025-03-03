@@ -79,7 +79,7 @@ class DriveInfoClient : public DriveInfo {
         }
         inline qint64 lastErrorTimestamp() const { return _lastErrorTimestamp; }
         inline void setLastErrorTimestamp(int newLastErrorTimestamp) { _lastErrorTimestamp = newLastErrorTimestamp; }
-        inline bool isBeingDeleted() const noexcept { return _isBeingDeleted; };
+        inline bool isBeingDeleted() const noexcept { return _isBeingDeleted; }
         inline void setIsBeingDeleted(bool isDeletionOnGoing) noexcept { _isBeingDeleted = isDeletionOnGoing; }
 
         void updateStatus(std::map<int, SyncInfoClient> &syncInfoMap);
