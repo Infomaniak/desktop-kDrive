@@ -18,7 +18,7 @@
 
 #include "sqlitedb.h"
 #include "utility/utility.h"
-#include "utility/asserts.h"
+#include "utility/logiffail.h"
 #include "log/log.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -383,7 +383,7 @@ bool SqliteDb::openHelper(const std::filesystem::path &dbPath, int sqliteFlags) 
 
 SqliteDb::CheckDbResult SqliteDb::checkDb() {
     // quick_check can fail with a disk IO error when diskspace is low
-    ASSERT(queryCreate(PRAGMA_QUICK_CHECK_ID));
+    LOG_IF_FAIL(queryCreate(PRAGMA_QUICK_CHECK_ID));
     if (!queryPrepare(PRAGMA_QUICK_CHECK_ID, PRAGMA_QUICK_CHECK, true, _errId, _error)) {
         LOG_WARN(_logger, "Error preparing query: " << PRAGMA_QUICK_CHECK_ID);
         queryFree(PRAGMA_QUICK_CHECK_ID);
@@ -396,7 +396,7 @@ SqliteDb::CheckDbResult SqliteDb::checkDb() {
         return CheckDbResult::NotOk;
     }
     std::string result;
-    ASSERT(queryStringValue(PRAGMA_QUICK_CHECK_ID, 0, result));
+    LOG_IF_FAIL(queryStringValue(PRAGMA_QUICK_CHECK_ID, 0, result));
     if (result != "ok") {
         LOG_WARN(_logger, "Bad query result: " << PRAGMA_QUICK_CHECK_ID << " - " << result.c_str());
         queryFree(PRAGMA_QUICK_CHECK_ID);

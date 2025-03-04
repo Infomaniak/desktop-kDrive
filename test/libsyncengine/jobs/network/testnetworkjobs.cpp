@@ -473,6 +473,31 @@ void TestNetworkJobs::testDownload() {
                                          ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), exitInfo);
         }
     }
+
+    // Empty file
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const SyncPath local0bytesFilePath = temporaryDirectory.path() / "0bytes.txt";
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload0bytesFile");
+        std::ofstream(local0bytesFilePath).close();
+
+        // Upload file
+        UploadJob uploadJob(nullptr, _driveDbId, local0bytesFilePath, Str2SyncName("0bytes.txt"), remoteTmpDir.id(), 0);
+        uploadJob.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
+        const NodeId remote0bytesFileId = uploadJob.nodeId();
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const SyncPath localDestFilePath = temporaryDirectorySync.path() / "empty_file.txt";
+        // Download an empty file
+        {
+            DownloadJob job(nullptr, _driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false);
+            (void) job.runSynchronously();
+            const ExitInfo exitInfo = {job.exitCode(), job.exitCause()};
+            CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+        }
+        // Check that the file has been copied
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
+    }
 #ifdef __APPLE__
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");

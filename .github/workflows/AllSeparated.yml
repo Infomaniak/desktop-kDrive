@@ -725,9 +725,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+        run : |
+            install_name_tool -change libcppunit.1.dylib @executable_path/libcppunit.1.dylib ./build-macos/client/bin/kDrive_test_common
+            install_name_tool -add_rpath @executable_path ./build-macos/client/bin/kDrive_test_common
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common
 
       - name: Get the path to kDrive-logdir
@@ -779,9 +779,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+        run : |
+            install_name_tool -change libcppunit.1.dylib @executable_path/libcppunit.1.dylib ./build-macos/client/bin/kDrive_test_common_server
+            install_name_tool -add_rpath @executable_path ./build-macos/client/bin/kDrive_test_common_server
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common_server
 
       - name: Get the path to kDrive-logdir
@@ -839,9 +839,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+        run : |
+            install_name_tool -change libcppunit.1.dylib @executable_path/libcppunit.1.dylib ./build-macos/client/bin/kDrive_test_server
+            install_name_tool -add_rpath @executable_path ./build-macos/client/bin/kDrive_test_server
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_server
 
       - name: Get the path to kDrive-logdir
@@ -893,9 +893,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+        run : |
+            install_name_tool -change libcppunit.1.dylib @executable_path/libcppunit.1.dylib ./build-macos/client/bin/kDrive_test_syncengine
+            install_name_tool -add_rpath @executable_path ./build-macos/client/bin/kDrive_test_syncengine
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_syncengine
 
       - name: Get the path to kDrive-logdir
@@ -947,9 +947,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+        run : |
+            install_name_tool -change libcppunit.1.dylib @executable_path/libcppunit.1.dylib ./build-macos/client/bin/kDrive_test_parms
+            install_name_tool -add_rpath @executable_path ./build-macos/client/bin/kDrive_test_parms
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
 
       - name: Get the path to kDrive-logdir
