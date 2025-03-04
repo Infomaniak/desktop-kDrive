@@ -1983,7 +1983,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString tmp;
             QDataStream paramsStream(params);
             paramsStream >> tmp;
-            _updateManager->updater()->skipVersion(tmp.toStdString());
+            AbstractUpdater::skipVersion(tmp.toStdString());
             break;
         }
         default: {
