@@ -274,8 +274,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run : powershell if (Test-Path "$env:TEMP\kDrive-logdir") { Remove-Item -Path "$env:TEMP\kDrive-logdir\*" -Recurse -Force}
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -313,8 +318,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run : powershell if (Test-Path "$env:TEMP\kDrive-logdir") { Remove-Item -Path "$env:TEMP\kDrive-logdir\*" -Recurse -Force}
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -352,8 +362,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run : powershell if (Test-Path "$env:TEMP\kDrive-logdir") { Remove-Item -Path "$env:TEMP\kDrive-logdir\*" -Recurse -Force}
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -391,8 +406,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run : powershell if (Test-Path "$env:TEMP\kDrive-logdir") { Remove-Item -Path "$env:TEMP\kDrive-logdir\*" -Recurse -Force}
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -430,8 +450,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run : powershell if (Test-Path "$env:TEMP\kDrive-logdir") { Remove-Item -Path "$env:TEMP\kDrive-logdir\*" -Recurse -Force}
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -465,6 +490,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -502,6 +532,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -539,6 +574,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -576,6 +616,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -613,6 +658,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -647,6 +697,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -693,6 +748,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -739,6 +799,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -785,6 +850,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -831,6 +901,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
