@@ -1175,7 +1175,7 @@ void DrivePreferencesWidget::onNeedToSave(bool isFolderItemBlackListed) {
 void DrivePreferencesWidget::onCancelUpdate(int syncDbId) {
     FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *) sender()->parent());
     if (treeItemWidget) {
-        ASSERT(treeItemWidget->syncDbId() == syncDbId);
+        LOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
         treeItemWidget->loadSubFolders();
 
         // Hide update widget
@@ -1190,7 +1190,7 @@ void DrivePreferencesWidget::onCancelUpdate(int syncDbId) {
 void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
     FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *) sender()->parent());
     if (treeItemWidget) {
-        ASSERT(treeItemWidget->syncDbId() == syncDbId);
+        LOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
         _displayBigFoldersWarningWidget->setVisible(false);
 
         QSet<QString> oldUndecidedSet;
