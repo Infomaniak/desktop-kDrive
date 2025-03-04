@@ -726,8 +726,8 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common
 
       - name: Get the path to kDrive-logdir
@@ -780,8 +780,8 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common_server
 
       - name: Get the path to kDrive-logdir
@@ -840,8 +840,8 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_server
 
       - name: Get the path to kDrive-logdir
@@ -894,8 +894,8 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_syncengine
 
       - name: Get the path to kDrive-logdir
@@ -948,8 +948,8 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
 
       - name: Get the path to kDrive-logdir
