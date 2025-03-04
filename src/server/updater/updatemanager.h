@@ -48,6 +48,8 @@ class UpdateManager final : public QObject {
         void startInstaller() const;
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
+        const std::shared_ptr<AbstractUpdater> updater() { return _updater; };
+
     signals:
         void updateAnnouncement(const QString &title, const QString &msg);
         void requestRestart();
@@ -66,7 +68,7 @@ class UpdateManager final : public QObject {
 
         void onUpdateStateChanged(UpdateState newState);
 
-        std::unique_ptr<AbstractUpdater> _updater;
+        static std::shared_ptr<AbstractUpdater> _updater;
         VersionChannel _currentChannel{VersionChannel::Unknown};
         QTimer _updateCheckTimer; /** Timer for the regular update check. */
 };

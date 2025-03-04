@@ -50,7 +50,13 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
     ParmsDb::instance()->selectParameters(parameters, found);
     CPPUNIT_ASSERT(parameters.seenVersion() == testStr);
 
-    AbstractUpdater::unskipVersion();
+#ifdef __APPLE__
+    SparkleUpdater::instance()->unskipversion();
+#elifdef _WIN32
+    AbstractUpdate::unskipversion();
+#elifdef __linux__
+    AbstractUpdate::unskipversion();
+#endif
 
     CPPUNIT_ASSERT(ParametersCache::instance()->parameters().seenVersion().empty());
 
