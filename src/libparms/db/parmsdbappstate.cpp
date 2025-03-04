@@ -18,7 +18,7 @@
 
 #include "parmsdb.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/utility/log_if_fail.h"
+#include "libcommonserver/utility/logiffail.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 

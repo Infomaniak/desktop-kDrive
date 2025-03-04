@@ -18,7 +18,7 @@
 
 #include "db.h"
 #include "utility/utility.h"
-#include "utility/log_if_fail.h"
+#include "utility/logiffail.h"
 #include "log/log.h"
 #include "db/sqlitedb.h"
 

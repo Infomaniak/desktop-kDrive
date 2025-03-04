@@ -17,7 +17,7 @@
  */
 
 #include "testdb.h"
-#include "libcommonserver/utility/log_if_fail.h"
+#include "libcommonserver/utility/logiffail.h"
 #include "libcommonserver/log/log.h"
 
 #define CREATE_TEST_TABLE_ID "testdb1"

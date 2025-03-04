@@ -17,7 +17,7 @@
  */
 
 #include "testoldsyncdb.h"
-#include "libcommonserver/utility/log_if_fail.h"
+#include "libcommonserver/utility/logiffail.h"
 
 
 using namespace CppUnit;
