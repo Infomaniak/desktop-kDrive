@@ -725,7 +725,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -776,7 +779,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common_server
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common_server
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -833,7 +839,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_server
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_server
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -884,7 +893,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_syncengine
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_syncengine
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -935,7 +947,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
