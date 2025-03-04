@@ -41,9 +41,9 @@ if (-not (Test-Path $tester -PathType Leaf)) {
     exit 1
 }
 
-Start-Process -FilePath ./$tester -NoNewWindow -Wait
+$testProcess = Start-Process -FilePath ./$tester -NoNewWindow -Wait -PassThru
 
-if ($LASTEXITCODE -ne 0) {
+if ($testProcess.ExitCode -ne 0) {
     Write-Host "---------- Failure: $tester ----------" -ForegroundColor Red
     Pop-Location
     exit 1
