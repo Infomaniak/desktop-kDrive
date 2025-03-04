@@ -20,6 +20,15 @@
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
+
+#if defined(__APPLE__)
+#include "server/updater/sparkleupdater.h"
+#elif defined(_WIN32)
+#include "server/updater/windowsupdater.h"
+#elif defined(__linux__)
+#include "server/updater/linuxupdater.h"
+#endif
+
 #include "libsyncengine/jobs/jobmanager.h"
 #include "version.h"
 
@@ -27,6 +36,18 @@
 #include "mockupdatechecker.h"
 
 namespace KDC {
+
+namespace {
+void skipVersion() {
+#if defined(__APPLE__)
+    SparkleUpdater::instance()->unskipVersion();
+#elif defined(_WIN32)
+    WindowsUpdater::instance()->unskipVersion();
+#elif defined(__linux__)
+    LinuxUpdater::instance()->unskipVersion();
+#endif
+}
+} // namespace
 
 void TestAbstractUpdater::setUp() {
     TestBase::start();
@@ -50,7 +71,7 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
     ParmsDb::instance()->selectParameters(parameters, found);
     CPPUNIT_ASSERT(parameters.seenVersion() == testStr);
 
-    AbstractUpdater::unskipVersion();
+    skipVersion();
 
     CPPUNIT_ASSERT(ParametersCache::instance()->parameters().seenVersion().empty());
 
@@ -87,7 +108,7 @@ void TestAbstractUpdater::testIsVersionSkipped() {
     CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
     CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 
-    AbstractUpdater::unskipVersion();
+    skipVersion();
 
     CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));
 

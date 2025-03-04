@@ -81,9 +81,6 @@ void AbstractUpdater::unskipVersion() {
         ParametersCache::instance()->parameters().setSeenVersion("");
         ParametersCache::instance()->save();
     }
-#if defined(__APPLE__)
-    SparkleUpdater::unskipVersion();
-#endif
 }
 
 bool AbstractUpdater::isVersionSkipped(const std::string& version) {
@@ -103,18 +100,15 @@ VersionChannel AbstractUpdater::currentVersionChannel() const {
     const std::unordered_map<VersionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
     if (allVersions.empty()) return VersionChannel::Unknown;
     std::string currentVersion = getCurrentVersion();
-    if (allVersions.contains(VersionChannel::Prod) &&
-        allVersions.at(VersionChannel::Prod).fullVersion() == currentVersion) {
+    if (allVersions.contains(VersionChannel::Prod) && allVersions.at(VersionChannel::Prod).fullVersion() == currentVersion) {
         return VersionChannel::Prod;
     }
 
-    if (allVersions.contains(VersionChannel::Next) &&
-        allVersions.at(VersionChannel::Next).fullVersion() == currentVersion) {
+    if (allVersions.contains(VersionChannel::Next) && allVersions.at(VersionChannel::Next).fullVersion() == currentVersion) {
         return VersionChannel::Next;
     }
 
-    if (allVersions.contains(VersionChannel::Beta) &&
-        allVersions.at(VersionChannel::Beta).fullVersion() == currentVersion) {
+    if (allVersions.contains(VersionChannel::Beta) && allVersions.at(VersionChannel::Beta).fullVersion() == currentVersion) {
         return VersionChannel::Beta;
     }
 
