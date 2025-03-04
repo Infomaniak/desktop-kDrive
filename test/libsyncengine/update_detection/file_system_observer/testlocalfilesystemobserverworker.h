@@ -74,6 +74,7 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         CPPUNIT_TEST(testLFSOWithSpecialCases1);
         CPPUNIT_TEST(testLFSOWithSpecialCases2);
         CPPUNIT_TEST(testInvalidateCounter);
+        CPPUNIT_TEST(testInvalidateSnapshot);
         CPPUNIT_TEST(testRenameParentFolder);
         CPPUNIT_TEST_SUITE_END();
 
@@ -100,6 +101,7 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
         void testInvalidateCounter();
+        void testInvalidateSnapshot();
         void testRenameParentFolder();
 
         static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
