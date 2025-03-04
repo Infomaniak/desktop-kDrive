@@ -20,6 +20,7 @@
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
+#include "server/updater/sparkleupdater.h"
 #include "libsyncengine/jobs/jobmanager.h"
 #include "version.h"
 
@@ -51,7 +52,7 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
     CPPUNIT_ASSERT(parameters.seenVersion() == testStr);
 
 #ifdef __APPLE__
-    SparkleUpdater::instance()->unskipversion();
+    SparkleUpdater::instance()->unskipVersion();
 #elifdef _WIN32
     AbstractUpdate::unskipversion();
 #elifdef __linux__
@@ -93,7 +94,13 @@ void TestAbstractUpdater::testIsVersionSkipped() {
     CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
     CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 
-    AbstractUpdater::unskipVersion();
+#ifdef __APPLE__
+    SparkleUpdater::instance()->unskipVersion();
+#elifdef _WIN32
+    AbstractUpdate::unskipversion();
+#elifdef __linux__
+    AbstractUpdate::unskipversion();
+#endif
 
     CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));
 
