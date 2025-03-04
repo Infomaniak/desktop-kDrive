@@ -67,7 +67,7 @@ jobs:
           path: |
               ${{ github.workspace }}/build-windows/install/bin/*.dll
               ${{ github.workspace }}/build-windows/install/bin/sync-exclude.lst
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test common executable
@@ -75,7 +75,7 @@ jobs:
         with:
           name: windows-build-test-common
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common.exe
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test common server executable
@@ -83,7 +83,7 @@ jobs:
         with:
           name: windows-build-test-common-server
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_common_server.exe
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test server executable
@@ -91,7 +91,7 @@ jobs:
         with:
           name: windows-build-test-server
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_server.exe
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test syncengine executable
@@ -99,7 +99,7 @@ jobs:
         with:
           name: windows-build-test-syncengine
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_syncengine.exe
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test parms executable
@@ -107,7 +107,7 @@ jobs:
         with:
           name: windows-build-test-parms
           path: ${{ github.workspace }}/build-windows/build/bin/kDrive_test_parms.exe
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean-up generated code
@@ -136,7 +136,7 @@ jobs:
         with:
           name: linux-build-common-files
           path: ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test common executable
@@ -144,7 +144,7 @@ jobs:
         with:
           name: linux-build-test-common
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test common server executable
@@ -152,7 +152,7 @@ jobs:
         with:
           name: linux-build-test-common-server
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common_server
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test server executable
@@ -160,7 +160,7 @@ jobs:
         with:
           name: linux-build-test-server
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_server
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test syncengine executable
@@ -168,7 +168,7 @@ jobs:
         with:
           name: linux-build-test-syncengine
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_syncengine
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test parms executable
@@ -176,7 +176,7 @@ jobs:
         with:
           name: linux-build-test-parms
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_parms
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean-up generated code
@@ -207,9 +207,7 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/macos/build-ci.sh
-       
-      - name: Copy Sparkle framework
-        run : cp -r ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ${{ github.workspace }}/build-macos/client/bin
+
       - name: Upload build common files
         uses: actions/upload-artifact@v4
         with:
@@ -217,8 +215,15 @@ jobs:
           path: |
               ${{ github.workspace }}/build-macos/client/bin/*.lst
               ${{ github.workspace }}/build-macos/client/bin/*.dylib
-              ${{ github.workspace }}/build-macos/client/bin/Sparkle.framework
-          retention-days: 3
+          retention-days: 1
+        if: always()
+
+      - name: Upload frameworks
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-frameworks
+          path: ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/*.framework
+          retention-days: 1
         if: always()
 
       - name: Upload build test common executable
@@ -226,7 +231,7 @@ jobs:
         with:
           name: macos-build-test-common
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test common server executable
@@ -234,7 +239,7 @@ jobs:
         with:
           name: macos-build-test-common-server
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common_server
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test server executable
@@ -242,7 +247,7 @@ jobs:
         with:
           name: macos-build-test-server
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_server
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test syncengine executable
@@ -250,7 +255,7 @@ jobs:
         with:
           name: macos-build-test-syncengine
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_syncengine
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Upload build test parms executable
@@ -258,7 +263,7 @@ jobs:
         with:
           name: macos-build-test-parms
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_parms
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean-up generated code
@@ -274,8 +279,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -297,7 +307,7 @@ jobs:
         with:
           name: windows-logs-tests-common
           path: C:/Windows/Temp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean up
@@ -313,8 +323,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -336,7 +351,7 @@ jobs:
         with:
           name: windows-logs-tests-common-server
           path: C:/Windows/Temp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean up
@@ -352,8 +367,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -375,7 +395,7 @@ jobs:
         with:
           name: windows-logs-tests-server
           path: C:/Windows/Temp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean up
@@ -391,8 +411,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -414,7 +439,7 @@ jobs:
         with:
           name: windows-logs-tests-syncengine
           path: C:/Windows/Temp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean up
@@ -430,8 +455,13 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -453,7 +483,7 @@ jobs:
         with:
           name: windows-logs-tests-parms
           path: C:/Windows/Temp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean up
@@ -465,6 +495,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -490,7 +525,7 @@ jobs:
         with:
           name: linux-tests-logs-tests-common
           path: /tmp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean up
@@ -502,6 +537,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -527,7 +567,7 @@ jobs:
         with:
           name: linux-tests-logs-tests-common-server
           path: /tmp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean up
@@ -539,6 +579,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -564,7 +609,7 @@ jobs:
         with:
           name: linux-tests-logs-tests-server
           path: /tmp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean up
@@ -576,6 +621,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -601,7 +651,7 @@ jobs:
         with:
           name: linux-tests-logs-tests-syncengine
           path: /tmp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
       - name: Clean up
@@ -613,6 +663,11 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -638,15 +693,20 @@ jobs:
         with:
           name: linux-tests-logs-tests-parms
           path: /tmp/kDrive-logdir/*
-          retention-days: 3
+          retention-days: 1
         if: always()
 
   test-common-MacOS:
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    runs-on: [ self-hosted, macOS]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -665,7 +725,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -676,7 +739,7 @@ jobs:
         with:
           name: macos-tests-logs-tests-common
           path: ${{ env.logdir_path }}/*
-          retention-days: 3
+          retention-days: 1
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
@@ -688,11 +751,16 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
 
   test-commonServer-MacOS:
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    runs-on: [ self-hosted, macOS ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -711,7 +779,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common_server
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common_server
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -722,7 +793,7 @@ jobs:
         with:
           name: macos-tests-logs-tests-common-server
           path: ${{ env.logdir_path }}/*
-          retention-days: 3
+          retention-days: 1
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
@@ -734,11 +805,16 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
 
   test-server-MacOS:
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    runs-on: [ self-hosted, macOS ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -746,6 +822,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Download Frameworks
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-frameworks
           path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
@@ -757,7 +839,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_server
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_server
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -768,7 +853,7 @@ jobs:
         with:
           name: macos-tests-logs-tests-server
           path: ${{ env.logdir_path }}/*
-          retention-days: 3
+          retention-days: 1
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
@@ -780,11 +865,16 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
 
   test-syncengine-MacOS:
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    runs-on: [ self-hosted, macOS]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -803,7 +893,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_syncengine
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_syncengine
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -814,7 +907,7 @@ jobs:
         with:
           name: macos-tests-logs-tests-syncengine
           path: ${{ env.logdir_path }}/*
-          retention-days: 3
+          retention-days: 1
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
@@ -826,11 +919,16 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*
 
   test-parms-MacOS:
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    runs-on: [ self-hosted, macOS]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     needs: build-MacOS
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
@@ -849,7 +947,10 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
+        run : | 
+            export DYLD_LIBRARY_PATH=./build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FRAMEWORK_PATH=./build-macos/client/bin:$DYLD_FRAMEWORK_PATH
+            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -860,7 +961,7 @@ jobs:
         with:
           name: macos-tests-logs-tests-parms
           path: ${{ env.logdir_path }}/*
-          retention-days: 3
+          retention-days: 1
         if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
