@@ -35,26 +35,25 @@ if [ -z "$2" ]; then
     exit 1
 fi
 
-
-
 dir=$1
 tester=$2
+
+echo -e "${YELLOW}---------- Running $($tester) ----------${NC}"
+pushd $dir 1>/dev/null
 
 if [ ! -f "$tester" ]; then
     echo -e "${RED}Error: File $tester does not exist.${NC}"
     exit 1
 fi
 
-echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
-pushd $(dirname "$dir") 1>/dev/null
 chmod +x $tester
-./$(basename "$tester")
+./$tester
 
 if [ $? -ne 0 ]; then
-    echo -e "${RED}---------- Failure: $(basename $tester) ----------${NC}"
+    echo -e "${RED}---------- Failure: $($tester) ----------${NC}"
     exit 1
 else
-    echo -e "${GREEN}---------- Success: $(basename $tester) ----------${NC}"
+    echo -e "${GREEN}---------- Success: $($tester) ----------${NC}"
 fi
 
 popd 1>/dev/null

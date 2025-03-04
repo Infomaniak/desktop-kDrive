@@ -648,8 +648,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     LPWSTR strResult = nullptr;
     HANDLE hHeap = GetProcessHeap();
 
-    int iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
-                                         name.c_str(), -1, nullptr, 0);
+    int64_t iSizeEstimated = static_cast<int64_t>(name.length() + 1) * 2;
     for (int i = 0; i < maxIterations; i++) {
         if (strResult) {
             HeapFree(hHeap, 0, strResult);
@@ -663,7 +662,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
         }
 
         if (iSizeEstimated <= 0) {
-            DWORD dwError = GetLastError();
+            const DWORD dwError = GetLastError();
             if (dwError != ERROR_INSUFFICIENT_BUFFER) {
                 // Real error, not buffer error
                 LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name) << L" ("
@@ -683,7 +682,7 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
         return false;
     }
 
-    normalizedName = SyncName(strResult);
+    (void) normalizedName.assign(strResult, iSizeEstimated - 1);
     HeapFree(hHeap, 0, strResult);
     return true;
 #else
