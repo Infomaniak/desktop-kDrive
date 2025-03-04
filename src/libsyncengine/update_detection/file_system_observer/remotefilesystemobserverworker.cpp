@@ -62,7 +62,7 @@ void RemoteFileSystemObserverWorker::execute() {
     for (;;) {
         if (stopAsked()) {
             exitCode = ExitCode::Ok;
-            invalidateSnapshot();
+            tryToInvalidateSnapshot();
             break;
         }
         // We never pause this thread
@@ -107,7 +107,7 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
                                                                    << " items");
         perfMonitor.stop();
     } else {
-        invalidateSnapshot();
+        tryToInvalidateSnapshot();
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
 
         switch (exitCode) {
@@ -170,7 +170,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         std::shared_ptr<ContinueFileListWithCursorJob> job = nullptr;
         if (_cursor.empty()) {
             LOG_SYNCPAL_WARN(_logger, "Cursor is empty for driveDbId=" << _driveDbId << ", invalidating snapshot");
-            invalidateSnapshot();
+            tryToInvalidateSnapshot();
             exitCode = ExitCode::DataError;
             break;
         }
@@ -239,7 +239,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
             // Look for new actions
             exitCode = processActions(dataObj->getArray(actionsKey));
             if (exitCode != ExitCode::Ok) {
-                invalidateSnapshot();
+                tryToInvalidateSnapshot();
                 break;
             }
         }
@@ -692,7 +692,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: "
                                                    << SyncName2WStr(actionInfo.snapshotItem.name()).c_str() << L" ("
                                                    << Utility::s2ws(actionInfo.snapshotItem.id()).c_str() << L")");
-                invalidateSnapshot();
+                tryToInvalidateSnapshot();
                 return ExitCode::BackError;
             }
             break;
@@ -740,7 +740,7 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
         LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
                                            << SyncName2WStr(snapshotItem.name()).c_str() << L" ("
                                            << Utility::s2ws(snapshotItem.id()).c_str() << L")");
-        invalidateSnapshot();
+        tryToInvalidateSnapshot();
         return ExitCode::BackError;
     }
 
