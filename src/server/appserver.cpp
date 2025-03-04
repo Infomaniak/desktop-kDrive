@@ -1134,7 +1134,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                 if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
-                    return;
                 }
 
                 // Create and start SyncPal

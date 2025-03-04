@@ -282,13 +282,6 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     _instance->setDistributionChannel(VersionChannel::Unknown);
 }
 
-void Handler::init(const std::shared_ptr<Handler> &initializedHandler) {
-    if (_instance) {
-        return;
-    }
-    _instance = initializedHandler;
-}
-
 void Handler::setAuthenticatedUser(const SentryUser &user) {
     std::scoped_lock lock(_mutex);
     _authenticatedUser = user;
