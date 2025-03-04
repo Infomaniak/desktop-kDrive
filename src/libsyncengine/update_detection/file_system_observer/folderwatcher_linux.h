@@ -28,7 +28,7 @@ namespace KDC {
 
 class LocalFileSystemObserverWorker;
 
-class FolderWatcher_linux : public FolderWatcher {
+class FolderWatcher_linux final : public FolderWatcher {
     public:
         FolderWatcher_linux(LocalFileSystemObserverWorker *parent, const SyncPath &path);
 
