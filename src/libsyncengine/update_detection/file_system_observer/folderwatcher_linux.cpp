@@ -262,6 +262,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
             _watchToPath.erase(wid);
             it = _pathToWatch.erase(it);
             LOG4CPLUS_DEBUG(_logger, "Removed watch on" << itPath.c_str());
+            continue;
         }
 
         ++it;
