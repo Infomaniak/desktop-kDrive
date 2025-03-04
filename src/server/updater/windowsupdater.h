@@ -24,10 +24,13 @@ namespace KDC {
 
 class WindowsUpdater final : public AbstractUpdater {
     public:
+        static std::shared_ptr<WindowsUpdater> instance();
         void onUpdateFound() override;
         void startInstaller() override;
 
     private:
+        static std::shared_ptr<WindowsUpdater> _instance;
+
         /**
          * @brief Start the synchronous download of the new version installer.
          */

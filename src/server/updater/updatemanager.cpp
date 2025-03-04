@@ -115,7 +115,7 @@ void UpdateManager::createUpdater() {
 #if defined(__APPLE__)
     _updater = SparkleUpdater::instance();
 #elif defined(_WIN32)
-    _updater = std::make_unique<WindowsUpdater>();
+    _updater = WindowsUpdater::instance();
 #else
     // the best we can do is notify about updates
     _updater = LinuxUpdater::instance();
