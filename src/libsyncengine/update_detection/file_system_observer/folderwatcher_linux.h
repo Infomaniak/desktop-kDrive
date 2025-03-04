@@ -44,7 +44,7 @@ class FolderWatcher_linux : public FolderWatcher {
         void removeFoldersBelow(const SyncPath &dirPath);
 
 
-        void changeDetected(const SyncPath &path, OperationType opType);
+        void changeDetected(const SyncPath &path, OperationType opType) const;
 
         std::unordered_map<int, SyncPath> _watchToPath;
         std::map<std::string, int> _pathToWatch;

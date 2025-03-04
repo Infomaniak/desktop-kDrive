@@ -176,8 +176,7 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
 }
 
 bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
-    std::error_code ec;
-    if (!std::filesystem::exists(path, ec)) {
+    if (std::error_code ec; !std::filesystem::exists(path, ec)) {
         if (ec.value() != 0) {
             LOG4CPLUS_WARN(_logger, L"Failed to check if path exists " << Utility::s2ws(path.string()).c_str() << L": "
                                                                        << Utility::s2ws(ec.message()).c_str() << " ("
@@ -186,7 +185,7 @@ bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
         return false;
     }
 
-    int wd = inotify_add_watch(_fileDescriptor, path.string().c_str(),
+    const auto wd = inotify_add_watch(_fileDescriptor, path.string().c_str(),
                                IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
                                        IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
 
@@ -224,8 +223,7 @@ bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
     }
 
     for (const auto &subDirPath: allSubFolders) {
-        std::error_code ec;
-        if (std::filesystem::exists(subDirPath, ec) && _pathToWatch.find(subDirPath) == _pathToWatch.end()) {
+        if (std::error_code ec ;std::filesystem::exists(subDirPath, ec) && !_pathToWatch.contains(subDirPath)  ) {
             subdirs++;
 
             inotifyRegisterPath(subDirPath);
@@ -270,13 +268,13 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
     }
 }
 
-void FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType) {
+void FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType)const {
     std::list<std::pair<SyncPath, OperationType>> list;
     (void) list.emplace_back(path, opType);
     _parent->changesDetected(list);
 }
 
-void KDC::FolderWatcher_linux::stopWatching() {
+void FolderWatcher_linux::stopWatching() {
     LOG4CPLUS_DEBUG(_logger, L"Stop watching folder: " << Path2WStr(_folder).c_str());
 
     close(_fileDescriptor);

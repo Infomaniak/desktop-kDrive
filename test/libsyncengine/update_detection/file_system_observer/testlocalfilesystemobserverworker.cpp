@@ -62,7 +62,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
         FileStat fileStat;
         bool exists = false;
         IoHelper::getFileStat(filepath, &fileStat, exists);
-        _testFiles.emplace_back(std::make_pair(std::to_string(fileStat.inode), filepath));
+        _testFiles.emplace_back(std::to_string(fileStat.inode), filepath);
     }
 
     // Create parmsDb
@@ -90,8 +90,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_win(_syncPal, "Local File System Observer", "LFSO"));
 #else
-    _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-            new LocalFileSystemObserverWorker_unix(_syncPal, "Local File System Observer", "LFSO"));
+    _syncPal->_localFSObserverWorker = std::make_shared<LocalFileSystemObserverWorker_unix> (_syncPal, "Local File System Observer", "LFSO");
 #endif
 
     _syncPal->_localFSObserverWorker->start();
@@ -474,7 +473,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
 void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingChange() {
     using namespace testhelpers;
 
-    LOGW_DEBUG(_logger, L"***** Test fast move/delete with enconding change*****"); // Behaviour of MS office apps on macOS
+    LOGW_DEBUG(_logger, L"***** Test fast move/delete with enconding change *****"); // Behaviour of MS office apps on macOS
     _syncPal->_localFSObserverWorker->stop();
     _syncPal->_localFSObserverWorker->waitForExit();
     _syncPal->_localFSObserverWorker.reset();
@@ -512,7 +511,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
 
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
 
-    IoError ioError = IoError::Unknown;
+    auto  ioError = IoError::Unknown;
     SyncPath destinationPath = tmpDirPath / (nfcFilePath.filename().string() + "2");
     CPPUNIT_ASSERT(IoHelper::renameItem(nfcFilePath, destinationPath, ioError)); // nfcFile -> nfcFile2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -549,6 +548,38 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
     _syncPal->_localFSObserverWorker->invalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot has been invalidated.
+}
+
+void TestLocalFileSystemObserverWorker::testRenameParentFolder() {
+    // Rename a parent folder
+    const auto parentDir = _subDirPath.parent_path();
+    const auto destination = parentDir / "A*";
+    std::filesystem::rename(_subDirPath, destination);
+
+    Utility::msleep(1000); // Wait 1sec
+
+    FileStat fileStat;
+    bool exists = false;
+    IoHelper::getFileStat(destination, &fileStat, exists);
+    auto itemId = std::to_string(fileStat.inode);
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
+    SyncPath testRelativePath;
+    bool ignore = false;
+    _syncPal->snapshot(ReplicaSide::Local)->path(itemId, testRelativePath, ignore);
+    CPPUNIT_ASSERT_EQUAL(destination, _rootFolderPath / testRelativePath);
+
+    // Verify that changes inside renamed folder are propagated into snapshot
+    const SyncName testFileName = Str("test_file.txt");
+    const auto testFilePath = parentDir / testFileName;
+    testhelpers::generateOrEditTestFile(testFilePath);
+
+    Utility::msleep(1000); // Wait 1sec
+
+    IoHelper::getFileStat(testFilePath, &fileStat, exists);
+    itemId = std::to_string(fileStat.inode);
+    CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
+    _syncPal->snapshot(ReplicaSide::Local)->path(itemId, testRelativePath, ignore);
+    CPPUNIT_ASSERT_EQUAL(testFilePath, _rootFolderPath / testRelativePath);
 }
 
 void MockLocalFileSystemObserverWorker::waitForUpdate(const long long timeoutMs) const {
