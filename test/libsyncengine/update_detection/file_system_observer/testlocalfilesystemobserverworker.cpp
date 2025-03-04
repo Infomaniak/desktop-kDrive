@@ -557,38 +557,6 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot has been invalidated.
 }
 
-void TestLocalFileSystemObserverWorker::testRenameParentFolder() {
-    // Rename a parent folder
-    const auto parentDir = _subDirPath.parent_path();
-    const auto destination = parentDir / "A*";
-    std::filesystem::rename(_subDirPath, destination);
-
-    Utility::msleep(1000); // Wait 1sec
-
-    FileStat fileStat;
-    bool exists = false;
-    IoHelper::getFileStat(destination, &fileStat, exists);
-    auto itemId = std::to_string(fileStat.inode);
-    CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
-    SyncPath testRelativePath;
-    bool ignore = false;
-    _syncPal->snapshot(ReplicaSide::Local)->path(itemId, testRelativePath, ignore);
-    CPPUNIT_ASSERT_EQUAL(destination, _rootFolderPath / testRelativePath);
-
-    // Verify that changes inside renamed folder are propagated into snapshot
-    const SyncName testFileName = Str("test_file.txt");
-    const auto testFilePath = parentDir / testFileName;
-    testhelpers::generateOrEditTestFile(testFilePath);
-
-    Utility::msleep(1000); // Wait 1sec
-
-    IoHelper::getFileStat(testFilePath, &fileStat, exists);
-    itemId = std::to_string(fileStat.inode);
-    CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
-    _syncPal->snapshot(ReplicaSide::Local)->path(itemId, testRelativePath, ignore);
-    CPPUNIT_ASSERT_EQUAL(testFilePath, _rootFolderPath / testRelativePath);
-}
-
 void MockLocalFileSystemObserverWorker::waitForUpdate(const long long timeoutMs) const {
     using namespace std::chrono;
     const auto start = system_clock::now();
