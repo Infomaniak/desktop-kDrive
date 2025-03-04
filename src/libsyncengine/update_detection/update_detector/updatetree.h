@@ -58,7 +58,14 @@ class UpdateTree : public SharedObject {
         [[nodiscard]] bool updateNodeId(std::shared_ptr<Node> node, const NodeId &newId);
         inline void setRootFolderId(const NodeId &nodeId) { _rootNode->setId(std::make_optional<NodeId>(nodeId)); }
 
+        /**
+         * Draw the update tree in the log file for debugging purpose
+         */
+        void drawUpdateTree();
+
     private:
+        void drawUpdateTreeRow(std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth = 0);
+
         std::unordered_map<NodeId, std::shared_ptr<Node>> _nodes;
         std::shared_ptr<Node> _rootNode;
         ReplicaSide _side;

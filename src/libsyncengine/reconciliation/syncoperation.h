@@ -87,7 +87,7 @@ class SyncOperation {
         bool _isBreakingCycleOp{false};
 
         UniqueId _id = -1;
-        UniqueId _parentId = -1; // ID of that parent operation i.e. the operation that must be completed before starting this one
+        UniqueId _parentId = -1; // ID of the parent operation i.e. the operation that must be completed before starting this one
 
         static UniqueId _nextId;
 };
@@ -109,15 +109,16 @@ class SyncOperationList : public SharedObject {
         const std::unordered_set<UniqueId> &opListIdByType(const OperationType type) { return _opListByType[type]; }
         const std::list<UniqueId> &getOpIdsFromNodeId(const NodeId &nodeId) { return _node2op[nodeId]; }
 
-        void pushOp(SyncOpPtr op);
+        bool pushOp(SyncOpPtr op);
+        void popOp();
         void insertOp(std::list<UniqueId>::const_iterator pos, SyncOpPtr op);
         void deleteOp(std::list<UniqueId>::const_iterator it);
         [[nodiscard]] size_t size() const { return _allOps.size(); }
-        [[nodiscard]] int isEmpty() const { return _allOps.empty(); }
+        [[nodiscard]] bool isEmpty() const { return _allOps.empty(); }
         void clear();
-        void operator=(SyncOperationList const &other);
+        SyncOperationList &operator=(SyncOperationList const &other);
 
-        void getMapIndexToOp(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
+        void getOpIdToIndexMap(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
 
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;

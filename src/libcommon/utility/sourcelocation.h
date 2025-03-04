@@ -71,8 +71,7 @@ class SourceLocation {
             return lastColon != std::string::npos ? str.substr(lastColon + 1) : str; // "namespace::class::function" -> "function"
         }
         [[nodiscard]] std::string toString() const {
-            return fileName() + ":" + std::to_string(line()) +
-                   (functionName().empty() ? "" : "[" + functionName() + "]");
+            return fileName() + ":" + std::to_string(line()) + (functionName().empty() ? "" : "[" + functionName() + "]");
         }
 
 
