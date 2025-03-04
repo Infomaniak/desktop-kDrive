@@ -54,7 +54,7 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
 #ifdef __APPLE__
     SparkleUpdater::instance()->unskipVersion();
 #elifdef _WIN32
-    AbstractUpdate::unskipversion();
+    WindowsUpdater::instance()->unskipVersion();
 #elifdef __linux__
     LinuxUpdater::instance()->unskipVersion();
 #endif
@@ -97,7 +97,7 @@ void TestAbstractUpdater::testIsVersionSkipped() {
 #ifdef __APPLE__
     SparkleUpdater::instance()->unskipVersion();
 #elifdef _WIN32
-    AbstractUpdate::unskipVersion();
+    WindowsUpdater::instance()->unskipVersion();
 #elifdef __linux__
     LinuxUpdater::instance()->unskipVersion();
 #endif
