@@ -212,17 +212,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-common-files
-          path: |
-              ${{ github.workspace }}/build-macos/client/bin/*.lst
-              ${{ github.workspace }}/build-macos/client/bin/*.dylib
+          path: ${{ github.workspace }}/build-macos/client/bin/*.lst
           retention-days: 1
         if: always()
 
-      - name: Upload frameworks
+      - name: Upload Libs
         uses: actions/upload-artifact@v4
         with:
-          name: macos-build-frameworks
-          path: ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/*.framework
+          name: macos-build-libs
+          path: ${{ github.workspace }}/build-macos/client/bin/*.dylib
           retention-days: 1
         if: always()
 
@@ -716,6 +714,12 @@ jobs:
           name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/bin/
 
+      - name: Download Libs
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-libs
+          path: /usr/local/lib/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -725,10 +729,7 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
-            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -770,6 +771,12 @@ jobs:
           name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/bin/
 
+      - name: Download Libs
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-libs
+          path: /usr/local/lib/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -779,10 +786,7 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
-            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common_server
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common_server
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -830,6 +834,12 @@ jobs:
           name: macos-build-frameworks
           path: ${{ github.workspace }}/build-macos/client/bin/
 
+      - name: Download Libs
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-libs
+          path: /usr/local/lib/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -839,10 +849,7 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
-            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_server
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_server
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -884,6 +891,12 @@ jobs:
           name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/bin/
 
+      - name: Download Libs
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-libs
+          path: /usr/local/lib/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -893,10 +906,7 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
-            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_syncengine
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_syncengine
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
@@ -938,6 +948,12 @@ jobs:
           name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/bin/
 
+      - name: Download Libs
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-libs
+          path: /usr/local/lib/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -947,10 +963,7 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : | 
-            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
-            export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
-            ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
+        run : ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
