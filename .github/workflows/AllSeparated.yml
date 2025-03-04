@@ -726,7 +726,7 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
             export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common
 
@@ -780,7 +780,7 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
             export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_common_server
 
@@ -840,7 +840,7 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
             export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_server
 
@@ -894,7 +894,7 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
             export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_syncengine
 
@@ -948,7 +948,7 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : | 
-            export DYLD_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_LIBRARY_PATH
+            export DYLD_FALLBACK_LIBRARY_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FALLBACK_LIBRARY_PATH
             export DYLD_FRAMEWORK_PATH=${{ github.workspace }}/build-macos/client/bin:$DYLD_FRAMEWORK_PATH
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
 
