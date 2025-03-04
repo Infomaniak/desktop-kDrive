@@ -44,10 +44,13 @@
 - (NSString *)availableVersion;
 - (void)setQuitCallback:(std::function<void()>)quitCallback;
 - (void)setSkipCallback:(std::function<void()>)skipCallback;
-- (void)updater:(SPUUpdater *)updater userDidMakeChoice:(SPUUserUpdateChoice)choice forUpdate:(SUAppcastItem *)updateItem state:(SPUUserUpdateState *)state;
+- (void)updater:(SPUUpdater *)updater
+        userDidMakeChoice:(SPUUserUpdateChoice)choice
+                forUpdate:(SUAppcastItem *)updateItem
+                    state:(SPUUserUpdateState *)state;
 @end
 
-@implementation DelegateUpdaterObject  //(SUUpdaterDelegateInformalProtocol)
+@implementation DelegateUpdaterObject //(SUUpdaterDelegateInformalProtocol)
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -60,7 +63,7 @@
 }
 
 - (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)updater {
-    (void)updater;
+    (void) updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "may check: YES");
     return YES;
 }
@@ -74,18 +77,18 @@
 }
 
 - (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater {
-    (void)updater;
+    (void) updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Updater should relaunch app: YES");
     return YES;
 }
 
 - (void)updaterWillRelaunchApplication:(SPUUpdater *)updater {
-    (void)updater;
+    (void) updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Updater will relaunch app");
 
     if (bool found = false; !KDC::ParmsDb::instance()->updateAppState(KDC::AppStateKey::LastServerSelfRestartDate,
                                                                       KDC::selfRestarterDisableValue, found) ||
-                            !found) {  // Deactivate the selfRestarter
+                            !found) { // Deactivate the selfRestarter
         LOG_ERROR(KDC::Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
 
@@ -109,7 +112,10 @@
     _skipCallback = skipCallback;
 }
 
-- (void)updater:(SPUUpdater *)updater userDidMakeChoice:(SPUUserUpdateChoice)choice forUpdate:(SUAppcastItem *)updateItem state:(SPUUserUpdateState *)state {
+- (void)updater:(SPUUpdater *)updater
+        userDidMakeChoice:(SPUUserUpdateChoice)choice
+                forUpdate:(SUAppcastItem *)updateItem
+                    state:(SPUUserUpdateState *)state {
     if (choice == SPUUserUpdateChoiceSkip) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version " << [updateItem.versionString UTF8String] << " skipped!");
         if (_skipCallback) {
@@ -120,33 +126,34 @@
 
 // Sent when a valid update is found by the update driver.
 - (void)updater:(SPUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)updateItem {
-    (void)updater;
+    (void) updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version: " << [updateItem.versionString UTF8String]);
     _availableVersion = [updateItem.versionString copy];
 }
 
 // Sent when a valid update is not found.
 - (void)updaterDidNotFindUpdate:(SPUUpdater *)update error:(nonnull NSError *)error {
-    (void)update;
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "No valid update found - Error code: " << [error code] << ", reason: " << [error.userInfo[SPUNoUpdateFoundReasonKey] integerValue]);
+    (void) update;
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "No valid update found - Error code: " << [error code] << ", reason: " <<
+                                                         [error.userInfo[SPUNoUpdateFoundReasonKey] integerValue]);
 }
 
 // Sent immediately before installing the specified update.
 - (void)updater:(SPUUpdater *)updater willInstallUpdate:(SUAppcastItem *)update {
-    (void)updater;
+    (void) updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Updater will install update");
 }
 
 - (void)updater:(SPUUpdater *)updater didAbortWithError:(NSError *)error {
-    (void)updater;
+    (void) updater;
     if ([error code] != SUNoUpdateError) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error: " << [error code]);
     }
 }
 
 - (void)updater:(SPUUpdater *)updater didFinishLoadingAppcast:(SUAppcast *)appcast {
-    (void)updater;
-    (void)appcast;
+    (void) updater;
+    (void) appcast;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Finish loading Appcast");
 }
 @end
@@ -182,13 +189,28 @@ SparkleUpdater::SparkleUpdater() {
     reset();
 }
 
+std::shared_ptr<SparkleUpdater> SparkleUpdater::_instance;
+
+std::shared_ptr<SparkleUpdater> SparkleUpdater::instance() {
+    if (_instance == nullptr) {
+        try {
+            _instance = std::shared_ptr<SparkleUpdater>(new SparkleUpdater());
+        } catch (...) {
+            return nullptr;
+        }
+    }
+
+    return _instance;
+}
+
 SparkleUpdater::~SparkleUpdater() {
     delete d;
 }
 
 void SparkleUpdater::onUpdateFound() {
     if (isVersionSkipped(versionInfo(_currentChannel).fullVersion())) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Version " << versionInfo(_currentChannel).fullVersion().c_str() << " is skipped.");
+        LOG_INFO(KDC::Log::instance()->getLogger(),
+                 "Version " << versionInfo(_currentChannel).fullVersion().c_str() << " is skipped.");
         return;
     }
 
@@ -198,7 +220,8 @@ void SparkleUpdater::onUpdateFound() {
     }
 
     if ([d->updater sessionInProgress]) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "An update window is already opened or installation is in progress. No need to start a new one.");
+        LOG_INFO(KDC::Log::instance()->getLogger(),
+                 "An update window is already opened or installation is in progress. No need to start a new one.");
         return;
     }
     startInstaller();
@@ -224,6 +247,8 @@ void SparkleUpdater::startInstaller() {
 }
 
 void SparkleUpdater::unskipVersion() {
+    AbstractUpdater::unskipVersion();
+
     // Discard skipped version in Sparkle
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@ "SUSkippedVersion"];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -287,4 +312,4 @@ void SparkleUpdater::skipVersionCallback() {
     skipVersion(versionInfo(_currentChannel).fullVersion());
 }
 
-}  // namespace KDC
+} // namespace KDC

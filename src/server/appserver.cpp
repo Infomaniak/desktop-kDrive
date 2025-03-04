@@ -111,6 +111,8 @@ static void displayHelpText(const QString &t) // No console on Windows.
 
 #else
 
+std::unique_ptr<UpdateManager> AppServer::_updateManager;
+
 static void displayHelpText(const QString &t) {
     std::cout << qUtf8Printable(t);
 }
@@ -1982,7 +1984,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString tmp;
             QDataStream paramsStream(params);
             paramsStream >> tmp;
-            AbstractUpdater::skipVersion(tmp.toStdString());
+            _updateManager->updater()->skipVersion(tmp.toStdString());
             break;
         }
         default: {
@@ -3741,7 +3743,7 @@ void AppServer::addError(const Error &error) {
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(error.syncDbId());
     } else if (error.exitCode() == ExitCode::UpdateRequired) {
-        AbstractUpdater::unskipVersion();
+        _updateManager->updater()->unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
