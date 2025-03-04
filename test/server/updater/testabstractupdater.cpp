@@ -20,7 +20,15 @@
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
+
+#if defined(__APPLE__)
 #include "server/updater/sparkleupdater.h"
+#elif defined(_WIN32)
+#include "server/updater/windowsupdater.h"
+#elif defined(__linux__)
+#include "server/updater/linuxpdater.h"
+#endif
+
 #include "libsyncengine/jobs/jobmanager.h"
 #include "version.h"
 
