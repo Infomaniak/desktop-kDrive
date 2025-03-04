@@ -22,6 +22,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "utility/logiffail.h"
 
 namespace KDC {
 
@@ -105,19 +106,24 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
 
     for (const auto &deleteOpId: deleteOps) {
         const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
+        LOG_IF_FAIL(deleteOp)
         const auto deleteNode = deleteOp->affectedNode();
+        LOG_IF_FAIL(deleteNode)
         const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
         NodeId deleteNodeParentId;
         if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath.parent_path(), deleteNodeParentId)) continue;
 
         for (const auto &moveOpId: moveOps) {
             const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
+            LOG_IF_FAIL(moveOp)
             if (moveOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
 
             const auto moveNode = moveOp->affectedNode();
+            LOG_IF_FAIL(moveNode)
             const auto moveNodeParent = moveNode->parentNode();
+            LOG_IF_FAIL(moveNodeParent)
             if (!moveNodeParent->id().has_value()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNodeParent->name()));
                 continue;
@@ -142,10 +148,13 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
     const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
     for (const auto &moveOpId: moveOps) {
         const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
+        LOG_IF_FAIL(moveOp)
         const auto moveNode = moveOp->affectedNode();
+        LOG_IF_FAIL(moveNode)
 
         for (const auto &createOpId: createOps) {
             const auto createOp = _syncPal->_syncOps->getOp(createOpId);
+            LOG_IF_FAIL(createOp)
             if (createOp->targetSide() != moveOp->targetSide()) {
                 continue;
             }
@@ -154,7 +163,9 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
             if (!getIdFromDb(moveNode->side(), moveNode->moveOrigin()->parent_path(), moveNodeOriginParentId)) continue;
 
             const auto createNode = createOp->affectedNode();
+            LOG_IF_FAIL(createNode)
             const auto createParentNode = createNode->parentNode();
+            LOG_IF_FAIL(createParentNode)
             if (!createParentNode->id().has_value()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createParentNode->name()));
                 continue;
@@ -179,14 +190,17 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
     const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     for (const auto &deleteOpId: deleteOps) {
         const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
+        LOG_IF_FAIL(deleteOp)
         if (deleteOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
         const auto deleteNode = deleteOp->affectedNode();
+        LOG_IF_FAIL(deleteNode)
         const auto deleteNodePath = deleteNode->getPath();
 
         for (const auto &moveOpId: moveOps) {
             const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
+            LOG_IF_FAIL(moveOp)
             if (moveOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
@@ -212,11 +226,13 @@ void OperationSorterWorker::fixCreateBeforeMove() {
     const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     for (const auto &createOpId: createOps) {
         const auto createOp = _syncPal->_syncOps->getOp(createOpId);
+        LOG_IF_FAIL(createOp)
         if (createOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
         const auto createNode = createOp->affectedNode();
+        LOG_IF_FAIL(createNode)
         if (!createNode->id().has_value()) {
             LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->name()));
             continue;
@@ -229,18 +245,15 @@ void OperationSorterWorker::fixCreateBeforeMove() {
             }
 
             const auto moveNode = moveOp->affectedNode();
+            LOG_IF_FAIL(moveNode)
             const auto moveParentNode = moveNode->parentNode();
+            LOG_IF_FAIL(moveParentNode)
             if (!moveParentNode->id().has_value()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveParentNode->name()));
                 continue;
             }
 
-            std::optional<NodeId> moveNodeParentId = moveParentNode->id();
-            if (!moveNodeParentId.has_value()) {
-                continue;
-            }
-
-            if (*moveNodeParentId == *createNode->id()) {
+            if (*moveParentNode->id() == *createNode->id()) {
                 // move only if moveOp is before createOp
                 moveFirstAfterSecond(moveOp, createOp);
             }
@@ -255,18 +268,22 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
     const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
     for (const auto &deleteOpId: deleteOps) {
         const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
+        LOG_IF_FAIL(deleteOp)
         const auto deleteNode = deleteOp->affectedNode();
+        LOG_IF_FAIL(deleteNode)
         const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
         NodeId deleteNodeParentId;
         if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) continue;
 
         for (const auto &createOpId: createOps) {
             const auto createOp = _syncPal->_syncOps->getOp(createOpId);
+            LOG_IF_FAIL(createOp)
             if (createOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
 
             const auto createNode = createOp->affectedNode();
+            LOG_IF_FAIL(createNode)
             if (!createNode->parentNode()) {
                 continue;
             }
@@ -288,18 +305,22 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveOccupied");
     for (const auto opIds = _syncPal->_syncOps->opListIdByType(OperationType::Move); const auto &opId: opIds) {
         const auto op = _syncPal->_syncOps->getOp(opId);
+        LOG_IF_FAIL(op)
         const auto node = op->affectedNode();
+        LOG_IF_FAIL(node)
         if (!node->parentNode()) continue;
         const auto nodePath = node->getPath();
         const auto nodeParentId = node->parentNode()->id();
 
         for (const auto &otherOpId: opIds) {
             const auto otherOp = _syncPal->_syncOps->getOp(otherOpId);
+            LOG_IF_FAIL(otherOp)
             if (op == otherOp || otherOp->targetSide() != op->targetSide()) {
                 continue;
             }
 
             const auto otherNode = otherOp->affectedNode();
+            LOG_IF_FAIL(otherNode)
             if (!otherNode->moveOrigin().has_value()) {
                 LOG_SYNCPAL_WARN(_logger, "Missing origin path");
                 return;
@@ -343,6 +364,7 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
 
     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr createOp = _syncPal->_syncOps->getOp(opId);
+        LOG_IF_FAIL(createOp)
         if (createOp->type() != OperationType::Create) continue;
 
         SyncOpPtr ancestorOpWithHighestDistance = nullptr;
@@ -403,9 +425,11 @@ void OperationSorterWorker::fixEditBeforeMove() {
     const auto moveOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     for (const auto editOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Edit); const auto &editOpId: editOpIds) {
         const auto editOp = _syncPal->_syncOps->getOp(editOpId);
+        LOG_IF_FAIL(editOp)
 
         for (const auto &moveOpId: moveOpIds) {
             const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
+            LOG_IF_FAIL(moveOp)
             if (moveOp->targetSide() != editOp->targetSide() || moveOp->affectedNode()->id() != editOp->affectedNode()->id()) {
                 continue;
             }
@@ -422,11 +446,13 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveHierarchyFlip");
     for (const auto moveOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Move); const auto &opIdX: moveOpIds) {
         const auto opX = _syncPal->_syncOps->getOp(opIdX);
+        LOG_IF_FAIL(opX)
         if (opX->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
         const auto nodeX = opX->affectedNode();
+        LOG_IF_FAIL(nodeX)
         if (!nodeX->moveOrigin().has_value()) {
             continue;
         }
@@ -435,11 +461,13 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
 
         for (const auto &opIdY: moveOpIds) {
             const auto opY = _syncPal->_syncOps->getOp(opIdY);
+            LOG_IF_FAIL(opY)
             if (opY->affectedNode()->type() != NodeType::Directory || opX == opY || opX->targetSide() != opY->targetSide()) {
                 continue;
             }
 
             const auto nodeY = opY->affectedNode();
+            LOG_IF_FAIL(nodeY)
             if (!nodeY->moveOrigin().has_value()) {
                 continue;
             }
@@ -459,7 +487,9 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     }
 
     const auto firstOp = _syncPal->_syncOps->getOp(_syncPal->_syncOps->opSortedList().front());
+    LOG_IF_FAIL(firstOp)
     const auto node = firstOp->affectedNode();
+    LOG_IF_FAIL(node)
     // Check if firstOp is move-directory operation.
     if (firstOp->type() != OperationType::Move || node->type() != NodeType::Directory) {
         return std::nullopt; // firstOp is possible
@@ -505,6 +535,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     for (const auto &n: moveDirectoryList) {
         for (const auto opIds = _syncPal->_syncOps->getOpIdsFromNodeId(*n->id()); const auto opId: opIds) {
             const auto op = _syncPal->_syncOps->getOp(opId);
+            LOG_IF_FAIL(op)
             if (op->type() != OperationType::Move) continue;
 
             if (const auto currentIndex = opIdToIndexMap[opId]; currentIndex < lowestIndex) {
@@ -519,6 +550,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     SyncOperationList reshuffledOps;
     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         const auto op = _syncPal->_syncOps->getOp(opId);
+        LOG_IF_FAIL(op)
         // Include selectedOp
         if (op == selectedOp) {
             (void) reshuffledOps.pushOp(op);
@@ -636,6 +668,7 @@ bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &
         LOGW_SYNCPAL_WARN(_logger, L"Node not found for path = " << Path2WStr(path));
         return false;
     }
+    LOG_IF_FAIL(!tmpId.has_value())
     id = tmpId.value();
     return true;
 }
