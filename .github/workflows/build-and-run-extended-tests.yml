@@ -196,7 +196,7 @@ jobs:
         run : rm -rf build-linux
 
   kChat_notification:
-    if: (github.event_name == 'schedule' && always())
+    if: ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && always())
     needs: [ Windows-extended-tests, MacOS-extended-tests, Linux-extended-tests ]
 
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
