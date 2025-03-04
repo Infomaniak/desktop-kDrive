@@ -280,7 +280,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : powershell if(Test-Path "%TEMP%\kDrive-logdir"){ Remove-Item -Path "%TEMP%\kDrive-logdir\*" -Recurse -Force}
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -324,7 +324,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : powershell if(Test-Path "%TEMP%\kDrive-logdir"){ Remove-Item -Path "%TEMP%\kDrive-logdir\*" -Recurse -Force}
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -368,7 +368,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : powershell if(Test-Path "%TEMP%\kDrive-logdir"){ Remove-Item -Path "%TEMP%\kDrive-logdir\*" -Recurse -Force}
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -412,7 +412,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : powershell if(Test-Path "%TEMP%\kDrive-logdir"){ Remove-Item -Path "%TEMP%\kDrive-logdir\*" -Recurse -Force}
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -456,7 +456,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : powershell if(Test-Path "%TEMP%\kDrive-logdir"){ Remove-Item -Path "%TEMP%\kDrive-logdir\*" -Recurse -Force}
+        run: powershell -ExecutionPolicy Bypass -Command "if (Test-Path '$env:TEMP\kDrive-logdir') { Remove-Item -Path '$env:TEMP\kDrive-logdir\*' -Recurse -Force }"
 
       - name: Download common files
         uses: actions/download-artifact@v4
