@@ -48,7 +48,7 @@ class UpdateManager final : public QObject {
         void startInstaller() const;
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
-        std::shared_ptr<AbstractUpdater> updater() { return _updater; };
+        std::shared_ptr<AbstractUpdater> updater() const { return _updater; };
 
     signals:
         void updateAnnouncement(const QString &title, const QString &msg);
