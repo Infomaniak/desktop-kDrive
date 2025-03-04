@@ -98,7 +98,7 @@ class ExecutorWorker : public OperationProcessor {
                                                             // good, function probably does too much
 
         ExitInfo handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
-        ExitInfo generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
+        ExitInfo generateMoveJob(const SyncOpPtr& syncOp, bool &ignored, bool &bypassProgressComplete);
 
         ExitInfo handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);

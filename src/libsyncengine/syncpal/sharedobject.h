@@ -24,9 +24,9 @@ class SharedObject {
     public:
         SharedObject();
 
-        inline bool updated() const { return _updated; }
-        inline void startUpdate() { _updated = true; }
-        inline void startRead() { _updated = false; }
+        [[nodiscard]] bool updated() const { return _updated; }
+        void startUpdate() { _updated = true; }
+        void startRead() { _updated = false; }
 
     private:
         bool _updated;

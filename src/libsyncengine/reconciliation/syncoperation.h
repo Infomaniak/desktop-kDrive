@@ -61,6 +61,12 @@ class SyncOperation {
         [[nodiscard]] SyncName nodeName(ReplicaSide side) const;
         [[nodiscard]] SyncPath nodePath(ReplicaSide side) const;
         [[nodiscard]] NodeType nodeType() const noexcept;
+        [[nodiscard]] const std::shared_ptr<Node> &localNode() const {
+            return _affectedNode->side() == ReplicaSide::Local ? _affectedNode : _correspondingNode;
+        }
+        [[nodiscard]] const std::shared_ptr<Node> &remoteNode() const {
+            return _affectedNode->side() == ReplicaSide::Remote ? _affectedNode : _correspondingNode;
+        }
 
         bool operator==(const SyncOperation &other) const;
 
@@ -69,9 +75,13 @@ class SyncOperation {
         void setParentId(UniqueId newParentId) { _parentId = newParentId; }
         [[nodiscard]] bool hasParentOp() const { return _parentId > -1; }
 
-
         [[nodiscard]] bool isBreakingCycleOp() const { return _isBreakingCycleOp; }
         void setIsBreakingCycleOp(const bool isBreakingCycleOp) { _isBreakingCycleOp = isBreakingCycleOp; }
+
+        [[nodiscard]] bool isDehydratedPlaceholder() const { return _isDehydratedPlaceholder; }
+        void setIsDehydratedPlaceholder(const bool isDehydratedPlaceholder) {
+            _isDehydratedPlaceholder = isDehydratedPlaceholder;
+        }
 
     private:
         OperationType _type = OperationType::None;
@@ -85,6 +95,7 @@ class SyncOperation {
                 nullptr; // New parent on the replica on which we will apply the operation. Only for move operation
         Conflict _conflict;
         bool _isBreakingCycleOp{false};
+        bool _isDehydratedPlaceholder{false};
 
         UniqueId _id = -1;
         UniqueId _parentId = -1; // ID of that parent operation i.e. the operation that must be completed before starting this one
