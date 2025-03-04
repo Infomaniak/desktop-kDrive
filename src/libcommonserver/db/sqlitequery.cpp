@@ -18,7 +18,7 @@
 
 #include "sqlitequery.h"
 #include "utility/utility.h"
-#include "utility/asserts.h"
+#include "utility/logiffail.h"
 #include "log/log.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -62,9 +62,9 @@ int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
         if (_errId != SQLITE_OK) {
             _error = std::string(sqlite3_errmsg(_sqlite3Db.get()));
             LOG_WARN(_logger, "Sqlite prepare statement error: " << _error.c_str() << " in " << _sql.c_str());
-            ASSERT_2(allow_failure, "SQLITE Prepare error");
+            LOG_IF_FAIL(allow_failure, "SQLITE Prepare error");
         } else {
-            ASSERT(_stmt.get());
+            LOG_IF_FAIL(_stmt.get());
         }
     }
     return _errId;

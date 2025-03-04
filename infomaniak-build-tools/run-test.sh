@@ -38,7 +38,7 @@ fi
 dir=$1
 tester=$2
 
-echo -e "${YELLOW}---------- Running $($tester) ----------${NC}"
+echo "${YELLOW}---------- Running $($tester) ----------${NC}"
 pushd $dir 1>/dev/null
 
 if [ ! -f "$tester" ]; then
@@ -50,10 +50,10 @@ chmod +x $tester
 ./$tester
 
 if [ $? -ne 0 ]; then
-    echo -e "${RED}---------- Failure: $($tester) ----------${NC}"
+    echo "${RED}---------- Failure: $($tester) ----------${NC}"
     exit 1
 else
-    echo -e "${GREEN}---------- Success: $($tester) ----------${NC}"
+    echo "${GREEN}---------- Success: $($tester) ----------${NC}"
 fi
 
 popd 1>/dev/null

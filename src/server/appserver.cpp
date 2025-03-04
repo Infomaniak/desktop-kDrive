@@ -429,11 +429,11 @@ void AppServer::stopSyncTask(int syncDbId) {
         addError(Error(errId(), exitCode, ExitCause::Unknown));
     }
 
-    ASSERT(!_syncPalMap[syncDbId] || _syncPalMap[syncDbId].use_count() == 1)
+    LOG_IF_FAIL(!_syncPalMap[syncDbId] || _syncPalMap[syncDbId].use_count() == 1)
     _syncPalMap.erase(syncDbId);
 
-    ASSERT(!_vfsMap[syncDbId] ||
-           _vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+    LOG_IF_FAIL(!_vfsMap[syncDbId] ||
+                _vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
     _vfsMap.erase(syncDbId);
 }
 
@@ -1154,10 +1154,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                         // Do nothing
                     }
 
-                    ASSERT(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
+                    LOG_IF_FAIL(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
                     _syncPalMap.erase(syncInfo.dbId());
 
-                    ASSERT(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
+                    LOG_IF_FAIL(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
                     _vfsMap.erase(syncInfo.dbId());
 
                     // Delete sync from DB
