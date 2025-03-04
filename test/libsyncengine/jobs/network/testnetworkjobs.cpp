@@ -324,11 +324,33 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(content == "test");
         }
 
-        // Get nodeid
+        // Check that the node id has not changed
         NodeId nodeId2;
         CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
+        CPPUNIT_ASSERT(nodeId == nodeId2);
+
+        // Download again but as an EDIT to be propagated on a hydrated placeholder
+
+        {
+            auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+            vfs->setMockForceStatus([]([[maybe_unused]] const SyncPath &path,
+                                       [[maybe_unused]] const VfsStatus &vfsStatus) -> ExitInfo { return ExitCode::Ok; });
+
+            DownloadJob job(vfs, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            const ExitCode exitCode = job.runSynchronously();
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+            CPPUNIT_ASSERT_EQUAL(true, job._isHydrated);
+        }
+
+        // Check file content
+        {
+            std::ifstream ifs(localDestFilePath.string().c_str());
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            CPPUNIT_ASSERT(content == "test");
+        }
 
         // Check that the node id has not changed
+        CPPUNIT_ASSERT(IoHelper::getNodeId(localDestFilePath, nodeId2));
         CPPUNIT_ASSERT(nodeId == nodeId2);
     }
 
@@ -394,7 +416,10 @@ void TestNetworkJobs::testDownload() {
     }
     if (testhelpers::isRunningOnCI()) {
         // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
+        const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
+        if (smallPartitionPath.empty()) return;
 
+        // Not Enough disk space
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
@@ -407,7 +432,6 @@ void TestNetworkJobs::testDownload() {
         uploadJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
 
-        SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
         bool exist = false;
@@ -448,6 +472,31 @@ void TestNetworkJobs::testDownload() {
                                                      std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
                                          ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), exitInfo);
         }
+    }
+
+    // Empty file
+    {
+        const LocalTemporaryDirectory temporaryDirectory("tmp");
+        const SyncPath local0bytesFilePath = temporaryDirectory.path() / "0bytes.txt";
+        const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload0bytesFile");
+        std::ofstream(local0bytesFilePath).close();
+
+        // Upload file
+        UploadJob uploadJob(nullptr, _driveDbId, local0bytesFilePath, Str2SyncName("0bytes.txt"), remoteTmpDir.id(), 0);
+        uploadJob.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
+        const NodeId remote0bytesFileId = uploadJob.nodeId();
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const SyncPath localDestFilePath = temporaryDirectorySync.path() / "empty_file.txt";
+        // Download an empty file
+        {
+            DownloadJob job(nullptr, _driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false);
+            (void) job.runSynchronously();
+            const ExitInfo exitInfo = {job.exitCode(), job.exitCause()};
+            CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+        }
+        // Check that the file has been copied
+        CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
     }
 #ifdef __APPLE__
     {

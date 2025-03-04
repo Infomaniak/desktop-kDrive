@@ -35,6 +35,7 @@ namespace KDC {
 static const int mainBoxHMargin = 40;
 static const int mainBoxVBMargin = 40;
 static const int boxHSpacing = 10;
+static const int webviewHeight = 300;
 
 UpdateDialog::UpdateDialog(const VersionInfo &versionInfo, QWidget *parent /*= nullptr*/) : CustomDialog(false, parent) {
     KDC::GuiUtility::setStyle(qApp, false);
@@ -75,12 +76,14 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     subLayout->addWidget(releaseNoteLabel);
 
     auto *webview = new WebView(this);
+    webview->setFixedHeight(webviewHeight);
     const Language language = ParametersCache::instance()->parametersInfo().language();
     QString languageCode = CommonUtility::languageCode(language);
     if (languageCode.isEmpty()) languageCode = "en";
     webview->setUrl(QUrl(
             QString("%1-%2-win-%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), languageCode.left(2))));
     subLayout->addWidget(webview);
+    subLayout->addStretch();
 
     auto *hLayout = new QHBoxLayout();
 
