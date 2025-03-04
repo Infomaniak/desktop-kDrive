@@ -1190,7 +1190,7 @@ ExitCode GuiRequests::askForStatus() {
 
 ExitCode GuiRequests::checkCommStatus() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_CHECKCOMMSTATUS, {}, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_CHECKCOMMSTATUS, {}, results, COMM_LONG_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1212,8 +1212,7 @@ ExitCode GuiRequests::changeDistributionChannel(const VersionChannel channel) {
     return ExitCode::Ok;
 }
 
-ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo,
-                                  const VersionChannel channel /*= VersionChannel::Unknown*/) {
+ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo, const VersionChannel channel /*= VersionChannel::Unknown*/) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << channel;
