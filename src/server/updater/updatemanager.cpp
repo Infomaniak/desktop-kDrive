@@ -118,7 +118,7 @@ void UpdateManager::createUpdater() {
     _updater = std::make_unique<WindowsUpdater>();
 #else
     // the best we can do is notify about updates
-    _updater = std::make_unique<LinuxUpdater>();
+    _updater = LinuxUpdater::instance();
 #endif
 }
 

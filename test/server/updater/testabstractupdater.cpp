@@ -56,7 +56,7 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
 #elifdef _WIN32
     AbstractUpdate::unskipversion();
 #elifdef __linux__
-    AbstractUpdate::unskipversion();
+    LinuxUpdater::instance()->unskipVersion();
 #endif
 
     CPPUNIT_ASSERT(ParametersCache::instance()->parameters().seenVersion().empty());
@@ -97,9 +97,9 @@ void TestAbstractUpdater::testIsVersionSkipped() {
 #ifdef __APPLE__
     SparkleUpdater::instance()->unskipVersion();
 #elifdef _WIN32
-    AbstractUpdate::unskipversion();
+    AbstractUpdate::unskipVersion();
 #elifdef __linux__
-    AbstractUpdate::unskipversion();
+    LinuxUpdater::instance()->unskipVersion();
 #endif
 
     CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));

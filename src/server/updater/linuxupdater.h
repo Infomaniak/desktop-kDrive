@@ -24,8 +24,13 @@ namespace KDC {
 
 class LinuxUpdater final : public AbstractUpdater {
     public:
+        static std::shared_ptr<LinuxUpdater> instance();
         void onUpdateFound() override;
-        void startInstaller() override { /* No automatic update on Linux for now */ }
+        void startInstaller() override { /* No automatic update on Linux for now */
+        }
+
+    private:
+        static std::shared_ptr<LinuxUpdater> _instance;
 };
 
 } // namespace KDC
