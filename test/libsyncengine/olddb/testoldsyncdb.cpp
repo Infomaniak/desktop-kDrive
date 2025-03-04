@@ -17,7 +17,7 @@
  */
 
 #include "testoldsyncdb.h"
-#include "libcommonserver/utility/asserts.h"
+#include "libcommonserver/utility/logiffail.h"
 
 
 using namespace CppUnit;

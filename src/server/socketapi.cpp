@@ -220,7 +220,7 @@ void SocketApi::onLostConnection() {
     sender()->deleteLater();
 
     auto socket = qobject_cast<QIODevice *>(sender());
-    ASSERT(socket);
+    LOG_IF_FAIL(socket);
     _listeners.erase(std::remove_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(socket)), _listeners.end());
 }
 
@@ -231,7 +231,7 @@ void SocketApi::slotSocketDestroyed(QObject *obj) {
 
 void SocketApi::slotReadSocket() {
     auto *socket = qobject_cast<QIODevice *>(sender());
-    ASSERT(socket);
+    LOG_IF_FAIL(socket);
 
     // Find the SocketListener
     //

@@ -20,24 +20,23 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#define ASSERT_CAT(A, B) A##B
-#define ASSERT_SELECT(NAME, NUM) ASSERT_CAT(NAME##_, NUM)
-#define ASSERT_GET_COUNT(_1, _2, _3, COUNT, ...) COUNT
-#define ASSERT_VA_SIZE(...) ASSERT_GET_COUNT(__VA_ARGS__, 3, 2, 1, 0)
+#define LOG_IF_FAIL_CAT(A, B) A##B
+#define LOG_IF_FAIL_SELECT(NAME, NUM) LOG_IF_FAIL_CAT(NAME##_, NUM)
+#define LOG_IF_FAIL_GET_COUNT(_1, _2, _3, COUNT, ...) COUNT
+#define LOG_IF_FAIL_VA_SIZE(...) LOG_IF_FAIL_GET_COUNT(__VA_ARGS__, 3, 2, 1, 0)
 
-#define ASSERT_OVERLOAD(NAME, ...)                   \
-    ASSERT_SELECT(NAME, ASSERT_VA_SIZE(__VA_ARGS__)) \
+#define LOG_IF_FAIL_OVERLOAD(NAME, ...)                        \
+    LOG_IF_FAIL_SELECT(NAME, LOG_IF_FAIL_VA_SIZE(__VA_ARGS__)) \
     (__VA_ARGS__)
 
-#define ASSERT(...) ASSERT_OVERLOAD(ASSERT, __VA_ARGS__)
-#define ASSERT_1(cond)                                                                                    \
+#define LOG_IF_FAIL(...) LOG_IF_FAIL_OVERLOAD(LOG_IF_FAIL, __VA_ARGS__)
+#define LOG_IF_FAIL_1(cond)                                                                               \
     if (!(cond)) {                                                                                        \
         LOG_FATAL(_logger, "ENFORCE: \"" << #cond << "\" in file " << __FILE__ << ", line " << __LINE__); \
-    } else {                                                                                              \
     }
-#define ASSERT_2(cond, message)                                                                                                 \
+
+#define LOG_IF_FAIL_2(cond, message)                                                                                            \
     if (!(cond)) {                                                                                                              \
         LOG_FATAL(_logger,                                                                                                      \
                   "ENFORCE: \"" << #cond << "\" in file " << __FILE__ << ", line " << __LINE__ << "with message: " << message); \
-    } else {                                                                                                                    \
     }
