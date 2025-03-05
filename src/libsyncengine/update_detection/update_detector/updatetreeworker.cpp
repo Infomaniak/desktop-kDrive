@@ -19,7 +19,7 @@
 #include "updatetreeworker.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/utility/asserts.h"
+#include "libcommon/asserts.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 
@@ -1322,8 +1322,8 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
 }
 
 ExitCode UpdateTreeWorker::linkNode(std::shared_ptr<Node> parentNode, const std::shared_ptr<Node> node) {
-    ASSERT(parentNode);
-    ASSERT(node);
+    LOG_IF_FAIL(parentNode)
+    LOG_IF_FAIL(node)
 
     for (auto &child: parentNode->children()) {
         if (child.second->name() == node->name() && child.second->isTmp()) {

@@ -203,7 +203,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
                         auto updateTree = _syncPal->updateTree(deleteNode->side());
                         auto orphanNode = updateTree->getNodeById(orphanNodeId);
-                        ASSERT(orphanNode != nullptr);
+                        LOG_IF_FAIL(orphanNode != nullptr)
                         auto correspondingOrphanNode = correspondingNodeInOtherTree(orphanNode);
                         if (!correspondingOrphanNode) {
                             LOGW_SYNCPAL_DEBUG(
