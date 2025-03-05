@@ -78,12 +78,6 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
         if (stopAsked()) {
             return;
         }
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
 
         // get next node
         node = queue.front();

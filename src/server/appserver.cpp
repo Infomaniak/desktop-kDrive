@@ -1450,8 +1450,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QList<int> pausedSyncs;
             for (auto &syncPalMapElt: _syncPalMap) {
                 if (!syncPalMapElt.second) continue;
-                std::chrono::time_point<std::chrono::system_clock> pauseTime;
-                if (syncPalMapElt.second->driveDbId() == driveDbId && !syncPalMapElt.second->isPaused(pauseTime)) {
+                if (syncPalMapElt.second->driveDbId() == driveDbId && !syncPalMapElt.second->isPaused()) {
                     syncPalMapElt.second->pause();
                     pausedSyncs.push_back(syncPalMapElt.first);
                 }
@@ -2080,7 +2079,7 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
     };
     const auto logUploadJob = std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack, &addError);
 
-    const std::function<void(UniqueId)> jobResultCallback = [this, logUploadJob](const UniqueId /*id*/) {
+    const std::function<void(UniqueId)> jobResultCallback = [this, logUploadJob]([[maybe_unused]] const UniqueId id) {
         if (const ExitInfo exitInfo = logUploadJob->exitInfo(); !exitInfo && exitInfo.code() != ExitCode::OperationCanceled) {
             LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: " << exitInfo);
             addError(Error(errId(), ExitCode::LogUploadFailed, exitInfo.cause()));
@@ -3309,8 +3308,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
 #endif
 
     if (start && (resumedByUser || !sync.paused())) {
-        std::chrono::time_point<std::chrono::system_clock> pauseTime;
-        if (_syncPalMap[sync.dbId()]->isPaused(pauseTime)) {
+        if (_syncPalMap[sync.dbId()]->isPaused()) {
             // Unpause SyncPal
             _syncPalMap[sync.dbId()]->unpause();
         } else if (!_syncPalMap[sync.dbId()]->isRunning()) {
@@ -4127,14 +4125,12 @@ void AppServer::onRestartSyncs() {
     }
 #endif
 
-    for (const auto &syncPalMapElt: _syncPalMap) {
-        if (!syncPalMapElt.second) continue;
-        std::chrono::time_point<std::chrono::system_clock> pauseTime;
-        if (syncPalMapElt.second->isPaused(pauseTime) && pauseTime + std::chrono::minutes(1) < std::chrono::system_clock::now()) {
-            LOG_INFO(_logger, "Try to resume SyncPal with syncDbId=" << syncPalMapElt.first);
-            syncPalMapElt.second->unpause();
+    for (const auto &[syncId, syncPtr]: _syncPalMap) {
+        if (!syncPtr) continue;
+        if ((syncPtr->isPaused() || syncPtr->pauseAsked()) &&
+            syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
+            syncPtr->unpause();
         }
     }
 }
-
 } // namespace KDC
