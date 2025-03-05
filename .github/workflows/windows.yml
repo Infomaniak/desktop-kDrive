@@ -57,7 +57,8 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          set COVFILE=%cd%\src\test.cov  
+          set COVFILE=%cd%\src\test.cov
+          copy NUL %COVFILE%
           call "cov01.exe" -1
           call "cov01.exe" -s
 
@@ -78,9 +79,7 @@ jobs:
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
           
           $env:COVFILE="$pwd\src\test.cov"
-          rm -Force -ErrorAction SilentlyContinue $env:COVFILE
-          New-Item $env:COVFILE -type file
-          
+
           & "cov01.exe" "-0" # coverage off
           & "cov01.exe" "-s" # show status
           & "covselect.exe" "--import" "BullseyeCoverageExclusions"
