@@ -42,9 +42,9 @@ namespace KDC {
 struct VfsSetupParams {
         VfsSetupParams() = default;
         explicit VfsSetupParams(const log4cplus::Logger &logger) : logger(logger) {}
-        int syncDbId{0};
-        int driveId{0};
-        int userId{0};
+        int syncDbId{-1};
+        int driveId{-1};
+        int userId{-1};
         SyncPath localPath;
         SyncPath targetPath;
         std::string namespaceCLSID;
@@ -421,18 +421,24 @@ class VfsOff : public Vfs {
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const SyncPath &) override { /*VfsOff*/ }
+        void exclude(const SyncPath &) override { /*VfsOff*/
+        }
         bool isExcluded(const SyncPath &) override { return false; }
         bool fileStatusChanged(const SyncPath &, const SyncFileStatus) override { return true; }
 
-        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
-        void dehydrate(const SyncPath &) override { /*VfsOff*/ }
-        void hydrate(const SyncPath &) override { /*VfsOff*/ }
-        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
+        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/
+        }
+        void dehydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void hydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void cancelHydrate(const SyncPath &) override { /*VfsOff*/
+        }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/ }
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
+        }
 
         friend class TestWorkers;
 };

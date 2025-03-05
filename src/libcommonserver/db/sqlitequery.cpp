@@ -18,7 +18,7 @@
 
 #include "sqlitequery.h"
 #include "utility/utility.h"
-#include "utility/asserts.h"
+#include "utility/logiffail.h"
 #include "log/log.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -36,8 +36,6 @@ namespace KDC {
 SqliteQuery::SqliteQuery() : _logger(Log::instance()->getLogger()) {}
 
 SqliteQuery::SqliteQuery(std::shared_ptr<sqlite3> sqlite3Db) : _logger(Log::instance()->getLogger()), _sqlite3Db(sqlite3Db) {}
-
-SqliteQuery::~SqliteQuery() {}
 
 int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
     _sql = Utility::trim(sql);
@@ -62,9 +60,9 @@ int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
         if (_errId != SQLITE_OK) {
             _error = std::string(sqlite3_errmsg(_sqlite3Db.get()));
             LOG_WARN(_logger, "Sqlite prepare statement error: " << _error.c_str() << " in " << _sql.c_str());
-            ASSERT_2(allow_failure, "SQLITE Prepare error");
+            LOG_IF_FAIL(allow_failure, "SQLITE Prepare error");
         } else {
-            ASSERT(_stmt.get());
+            LOG_IF_FAIL(_stmt.get());
         }
     }
     return _errId;
@@ -163,7 +161,7 @@ bool SqliteQuery::execAndGetRowId(int64_t &rowId) {
         return false;
     }
 
-    bool ret = exec();
+    const auto ret = exec();
     rowId = sqlite3_last_insert_rowid(_sqlite3Db.get());
     return ret;
 }
@@ -198,20 +196,20 @@ bool SqliteQuery::nullValue(int index) const {
     return sqlite3_column_type(_stmt.get(), index) == SQLITE_NULL;
 }
 
-const std::string SqliteQuery::stringValue(int index) const {
+std::string SqliteQuery::stringValue(const int index) const {
 #ifdef _WIN32
-    char *value = (char *) sqlite3_column_text(_stmt.get(), index);
-    return (value ? std::string(reinterpret_cast<const char *>(value)) : std::string());
+    auto value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
+    return value ? value : std::string();
 #else
     const char *value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
     return value ? std::string(value) : std::string();
 #endif
 }
 
-const SyncName SqliteQuery::syncNameValue(int index) const {
+SyncName SqliteQuery::syncNameValue(int index) const {
 #ifdef _WIN32
-    wchar_t *value = (wchar_t *) sqlite3_column_text16(_stmt.get(), index);
-    return (value ? reinterpret_cast<const wchar_t *>(value) : SyncName());
+    auto value = static_cast<const wchar_t *>(sqlite3_column_text16(_stmt.get(), index));
+    return value ? value : SyncName();
 #else
     const char *value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
     return value ? SyncName(value) : SyncName();

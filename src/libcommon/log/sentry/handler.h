@@ -67,9 +67,6 @@ class Handler {
         virtual ~Handler();
         static std::shared_ptr<Handler> instance();
         static void init(AppType appType, int breadCrumbsSize = 100);
-
-        // Allow to have a unique hanlder across the dlls.
-        static void init(const std::shared_ptr<Handler> &initializedHandler);
         void setAuthenticatedUser(const SentryUser &user);
         void setGlobalConfidentialityLevel(sentry::ConfidentialityLevel level);
 
