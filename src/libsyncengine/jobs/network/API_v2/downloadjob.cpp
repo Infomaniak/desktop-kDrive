@@ -604,8 +604,15 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
         expectedSize = _resHttp.getContentLength();
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
-            writeError = !hasEnoughPlace(_tmpPath, _localpath, expectedSize);
-            readError = expectedSize <= 0;
+            if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize)) {
+                LOGW_WARN(_logger, L"Request " << jobId() << L": not enough place at " << Utility::formatSyncPath(_tmpPath) << L" or "
+                                             << Utility::formatSyncPath(_localpath));
+                writeError = true;
+            }
+            if (expectedSize < 0) {
+                LOG_WARN(_logger, "Request " << jobId() << ": invalid content length: " << expectedSize);
+                readError = true;
+            }
         }
 
         if (!writeError && !readError) {

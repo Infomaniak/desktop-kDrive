@@ -172,7 +172,7 @@ package_release() {
 	
 	$HOME/desktop-setup/linuxdeploy-x86_64.AppImage --appdir $app_dir -e $app_dir/usr/bin/kDrive -i $app_dir/kdrive-win.png -d $app_dir/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
 	
-	full_version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/version.h" | awk '{print $3}')
+	full_version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')
     app_name=kDrive-${full_version}-amd64.AppImage
 	mv kDrive*.AppImage $app_dir/$app_name
 }

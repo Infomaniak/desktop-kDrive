@@ -429,11 +429,11 @@ void AppServer::stopSyncTask(int syncDbId) {
         addError(Error(errId(), exitCode, ExitCause::Unknown));
     }
 
-    ASSERT(!_syncPalMap[syncDbId] || _syncPalMap[syncDbId].use_count() == 1)
+    LOG_IF_FAIL(!_syncPalMap[syncDbId] || _syncPalMap[syncDbId].use_count() == 1)
     _syncPalMap.erase(syncDbId);
 
-    ASSERT(!_vfsMap[syncDbId] ||
-           _vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+    LOG_IF_FAIL(!_vfsMap[syncDbId] ||
+                _vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
     _vfsMap.erase(syncDbId);
 }
 
@@ -1134,7 +1134,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                 if (ExitInfo exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " " << exitInfo);
-                    return;
                 }
 
                 // Create and start SyncPal
@@ -1155,10 +1154,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                         // Do nothing
                     }
 
-                    ASSERT(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
+                    LOG_IF_FAIL(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
                     _syncPalMap.erase(syncInfo.dbId());
 
-                    ASSERT(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
+                    LOG_IF_FAIL(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
                     _vfsMap.erase(syncInfo.dbId());
 
                     // Delete sync from DB
@@ -2081,7 +2080,7 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
     };
     const auto logUploadJob = std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack, &addError);
 
-    const std::function<void(UniqueId)> jobResultCallback = [this, logUploadJob](const UniqueId id) {
+    const std::function<void(UniqueId)> jobResultCallback = [this, logUploadJob](const UniqueId /*id*/) {
         if (const ExitInfo exitInfo = logUploadJob->exitInfo(); !exitInfo && exitInfo.code() != ExitCode::OperationCanceled) {
             LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: " << exitInfo);
             addError(Error(errId(), ExitCode::LogUploadFailed, exitInfo.cause()));

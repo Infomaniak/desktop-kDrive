@@ -74,6 +74,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture, public Te
         CPPUNIT_TEST(testLFSOWithSpecialCases1);
         CPPUNIT_TEST(testLFSOWithSpecialCases2);
         CPPUNIT_TEST(testInvalidateCounter);
+        CPPUNIT_TEST(testInvalidateSnapshot);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -99,6 +100,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture, public Te
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
         void testInvalidateCounter();
+        void testInvalidateSnapshot();
 
         static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
         static bool vfsPinState(int, const SyncPath &, PinState &) { return true; };

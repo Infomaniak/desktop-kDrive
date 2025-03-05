@@ -10,7 +10,7 @@ on:
       types: [synchronize, review_requested]
       branches:
         - 'release/**'
-        - 'main' 
+        - 'main'
  
 concurrency:
   group: nighlty-${{ github.head_ref }}
@@ -196,8 +196,9 @@ jobs:
         run : rm -rf build-linux
 
   kChat_notification:
-    if: ${{ always() }}
+    if: ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && always())
     needs: [ Windows-extended-tests, MacOS-extended-tests, Linux-extended-tests ]
+
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
       KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
