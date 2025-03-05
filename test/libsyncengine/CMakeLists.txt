@@ -16,6 +16,7 @@ set(testsyncengine_SRCS
         ../test.cpp
         test.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+        ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
         ../test_utility/testbase.h
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
@@ -59,6 +60,7 @@ set(testsyncengine_SRCS
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
+        syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
 )

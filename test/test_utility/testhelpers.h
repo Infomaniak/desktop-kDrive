@@ -57,9 +57,9 @@ struct TestVariables {
         }
 };
 
-void generateOrEditTestFile(const SyncPath &path);
-void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
-
+void generateOrEditTestFile(const SyncPath& path);
+void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint);
+  
 inline bool isRunningOnCI(bool print = true) {
     static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
     if (print && !isRunningOnCI) {
@@ -77,5 +77,4 @@ inline bool isExtendedTest(bool print = true) {
     }
     return isExtended;
 }
-
 } // namespace KDC::testhelpers
