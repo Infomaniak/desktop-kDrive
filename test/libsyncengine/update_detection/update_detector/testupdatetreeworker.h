@@ -35,6 +35,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testStep1);
         CPPUNIT_TEST(testStep2);
         CPPUNIT_TEST(testStep3);
+        CPPUNIT_TEST(testStep3b);
         CPPUNIT_TEST(testStep4);
         CPPUNIT_TEST(testStep5);
         CPPUNIT_TEST(testStep6);
@@ -75,6 +76,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         void testStep1();
         void testStep2();
         void testStep3();
+        void testStep3b();
         void testStep4();
         void testStep5();
         void testStep6();
