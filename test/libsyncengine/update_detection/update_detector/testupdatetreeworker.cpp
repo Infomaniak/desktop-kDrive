@@ -339,7 +339,8 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
             std::make_shared<FSOperation>(OperationType::Delete, "id51bis", NodeType::File, testhelpers::defaultTime,
                                           testhelpers::defaultTime, testhelpers::defaultFileSize, "Dir 5/File 5.1");
     {
-        auto newNode = _localUpdateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1");
+        std::shared_ptr<Node> newNode;
+        CPPUNIT_ASSERT(_localUpdateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1", newNode) == ExitCode::Ok);
         CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
         CPPUNIT_ASSERT(newNode->isTmp());
 
@@ -357,7 +358,8 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
     CPPUNIT_ASSERT(_localUpdateTree->deleteNode(NodeId("id51")));
 
     {
-        auto newNode = _localUpdateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1");
+        std::shared_ptr<Node> newNode;
+        CPPUNIT_ASSERT(_localUpdateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1", newNode) == ExitCode::Ok);
         CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
         CPPUNIT_ASSERT(newNode->isTmp());
 

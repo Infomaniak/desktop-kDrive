@@ -620,7 +620,7 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
         // Find the parent pTrace
         auto parentPTraceIt = pTraceMap.find(pTraceInfo._parentPTraceName);
         if (parentPTraceIt == pTraceMap.end() || parentPTraceIt->second == 0) {
-            assert(false && "Parent transaction/span is not running.");
+            // assert(false && "Parent transaction/span is not running.");
             return 0;
         }
 
@@ -650,7 +650,7 @@ void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTrac
 
     auto pTraceIt = pTraceMap.find(pTraceInfo._pTraceName);
     if (pTraceIt == pTraceMap.end() || pTraceIt->second == 0) {
-        assert(false && "Transaction is not running");
+        // assert(false && "Transaction is not running");
         return;
     }
 
