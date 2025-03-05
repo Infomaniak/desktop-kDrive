@@ -32,7 +32,7 @@ class TmpBlacklistManager {
                 SyncPath path;
         };
 
-        TmpBlacklistManager(std::shared_ptr<SyncPal> syncPal);
+        TmpBlacklistManager(const std::shared_ptr<SyncPal> &syncPal);
         ~TmpBlacklistManager();
 
         void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
@@ -46,8 +46,7 @@ class TmpBlacklistManager {
         int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
 
     private:
-        void insertInBlacklist(const NodeId &nodeId, ReplicaSide side);
-        void removeFromDB(const NodeId &nodeId, ReplicaSide side);
+        void insertInBlacklist(const NodeId &nodeId, ReplicaSide side) const;
         int syncDbId() const noexcept {
             assert(_syncPal);
             return _syncPal->syncDbId();
