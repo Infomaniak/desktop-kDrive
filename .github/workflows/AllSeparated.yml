@@ -950,6 +950,7 @@ jobs:
         run : |
             install_name_tool -change libcppunit.1.dylib @executable_path/libcppunit.1.dylib ./build-macos/client/bin/kDrive_test_parms
             install_name_tool -add_rpath @executable_path ./build-macos/client/bin/kDrive_test_parms
+            otool -L ./build-macos/client/bin/kDrive_test_parms
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
 
       - name: Get the path to kDrive-logdir
