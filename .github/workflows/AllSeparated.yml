@@ -234,6 +234,14 @@ jobs:
           retention-days: 1
         if: always()
 
+      - name: Upload cppunit
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-cppunit
+          path: /usr/local/lib/libcppunit-1.15.2.dylib
+          retention-days: 1
+        if: always()
+
       - name: Upload build test common server executable
         uses: actions/upload-artifact@v4
         with:
@@ -936,6 +944,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Download cppunit
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-cppunit
           path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
