@@ -1010,8 +1010,8 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
                 return ExitCode::SystemError;
             }
 
-            if (const auto exitCode = linkNode(parentNode, newNode); exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::linkNode");
+            if (const auto exitCode = mergeNodeToParentChildren(parentNode, newNode); exitCode != ExitCode::Ok) {
+                LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::mergeNodeToParentChildren");
                 return exitCode;
             }
 
@@ -1321,7 +1321,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
     return ExitCode::Ok;
 }
 
-ExitCode UpdateTreeWorker::linkNode(std::shared_ptr<Node> parentNode, const std::shared_ptr<Node> node) {
+ExitCode UpdateTreeWorker::mergeNodeToParentChildren(std::shared_ptr<Node> parentNode, const std::shared_ptr<Node> node) {
     LOG_IF_FAIL(parentNode)
     LOG_IF_FAIL(node)
 

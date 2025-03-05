@@ -109,7 +109,7 @@ class UpdateTreeWorker : public ISyncWorker {
 
         ExitCode getNewPathAfterMove(const SyncPath &path, SyncPath &newPath);
         ExitCode updateNodeWithDb(const std::shared_ptr<Node> parentNode);
-        [[nodiscard]] ExitCode linkNode(std::shared_ptr<Node> parentNode, const std::shared_ptr<Node> node);
+        [[nodiscard]] ExitCode mergeNodeToParentChildren(std::shared_ptr<Node> parentNode, const std::shared_ptr<Node> node);
         ExitCode updateTmpNode(const std::shared_ptr<Node> tmpNode);
         ExitCode getOriginPath(const std::shared_ptr<Node> node, SyncPath &path);
 
