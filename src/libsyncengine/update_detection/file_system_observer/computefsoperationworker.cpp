@@ -324,18 +324,6 @@ ExitCode ComputeFSOperationWorker::inferChangesFromDb(const NodeType nodeType, N
             return ExitCode::Ok;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-            if (unpauseAsked()) {
-                setUnpauseDone();
-            }
-        }
-
         DbNode dbNode;
         bool dbNodeIsFound = false;
         const DbNodeId dbId = *dbIdIt;
@@ -444,18 +432,6 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
         while (snapIdIt != remainingDbIds.end()) {
             if (stopAsked()) {
                 return ExitCode::Ok;
-            }
-
-            while (pauseAsked() || isPaused()) {
-                if (!isPaused()) {
-                    setPauseDone();
-                }
-
-                Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-                if (unpauseAsked()) {
-                    setUnpauseDone();
-                }
             }
 
             if (*snapIdIt == snapshot->rootFolderId()) {
