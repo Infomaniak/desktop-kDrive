@@ -41,8 +41,6 @@ class SqliteQuery {
         explicit SqliteQuery();
         explicit SqliteQuery(std::shared_ptr<sqlite3> sqlite3Db);
 
-        ~SqliteQuery();
-
         int prepare(const std::string &sql, bool allow_failure = false);
         void resetAndClearBindings();
         bool bindValue(int index, const dbtype &value);
@@ -56,16 +54,16 @@ class SqliteQuery {
         NextResult next();
 
         bool nullValue(int index) const;
-        std::string const stringValue(int index) const;
-        SyncName const syncNameValue(int index) const;
+        std::string stringValue(int index) const;
+        SyncName syncNameValue(int index) const;
         int intValue(int index) const;
         int64_t int64Value(int index) const;
         double doubleValue(int index) const;
         const void *blobValue(int index) const;
         int blobSize(int index) const;
 
-        inline int errorId() const { return _errId; }
-        inline const std::string &error() const { return _error; }
+        int errorId() const { return _errId; }
+        const std::string &error() const { return _error; }
 
     private:
         log4cplus::Logger _logger;

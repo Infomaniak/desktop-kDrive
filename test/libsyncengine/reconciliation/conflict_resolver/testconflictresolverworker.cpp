@@ -26,6 +26,7 @@
 namespace KDC {
 
 void TestConflictResolverWorker::setUp() {
+    TestBase::start();
     // Create SyncPal
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -125,6 +126,7 @@ void TestConflictResolverWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestConflictResolverWorker::testCreateCreate() {

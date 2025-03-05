@@ -25,6 +25,7 @@
 namespace KDC {
 
 void KDC::TestOperationGeneratorWorker::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
@@ -161,6 +162,7 @@ void KDC::TestOperationGeneratorWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestOperationGeneratorWorker::testCreateOp() {

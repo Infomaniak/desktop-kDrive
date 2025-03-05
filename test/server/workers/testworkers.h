@@ -32,7 +32,7 @@
 
 namespace KDC {
 
-class TestWorkers : public CppUnit::TestFixture {
+class TestWorkers : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestWorkers);
         CPPUNIT_TEST(testStartVfs);
         CPPUNIT_TEST(testCreatePlaceholder);

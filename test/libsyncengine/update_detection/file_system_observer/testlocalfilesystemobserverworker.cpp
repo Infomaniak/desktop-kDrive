@@ -45,6 +45,7 @@ namespace KDC {
 constexpr uint64_t nbFileInTestDir = 5; // Test directory contains 5 files
 
 void TestLocalFileSystemObserverWorker::setUp() {
+    TestBase::start();
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
@@ -61,7 +62,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
         FileStat fileStat;
         bool exists = false;
         IoHelper::getFileStat(filepath, &fileStat, exists);
-        _testFiles.emplace_back(std::make_pair(std::to_string(fileStat.inode), filepath));
+        _testFiles.emplace_back(std::to_string(fileStat.inode), filepath);
     }
 
     // Create parmsDb
@@ -89,8 +90,8 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_win(_syncPal, "Local File System Observer", "LFSO"));
 #else
-    _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-            new LocalFileSystemObserverWorker_unix(_syncPal, "Local File System Observer", "LFSO"));
+    _syncPal->_localFSObserverWorker =
+            std::make_shared<LocalFileSystemObserverWorker_unix>(_syncPal, "Local File System Observer", "LFSO");
 #endif
 
     _syncPal->_localFSObserverWorker->start();
@@ -110,6 +111,7 @@ void TestLocalFileSystemObserverWorker::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    TestBase::stop();
 }
 
 void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
@@ -472,7 +474,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
 void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingChange() {
     using namespace testhelpers;
 
-    LOGW_DEBUG(_logger, L"***** Test fast move/delete with enconding change*****"); // Behaviour of MS office apps on macOS
+    LOGW_DEBUG(_logger, L"***** Test fast move/delete with enconding change *****"); // Behaviour of MS office apps on macOS
     _syncPal->_localFSObserverWorker->stop();
     _syncPal->_localFSObserverWorker->waitForExit();
     _syncPal->_localFSObserverWorker.reset();
@@ -510,7 +512,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
 
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcFileId));
 
-    IoError ioError = IoError::Unknown;
+    auto ioError = IoError::Unknown;
     SyncPath destinationPath = tmpDirPath / (nfcFilePath.filename().string() + "2");
     CPPUNIT_ASSERT(IoHelper::renameItem(nfcFilePath, destinationPath, ioError)); // nfcFile -> nfcFile2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -530,22 +532,28 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfdFileId));
 }
 
+void TestLocalFileSystemObserverWorker::testInvalidateSnapshot() {
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->isValid());
+    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->isValid());
+}
+
 void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
-    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
-    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
-    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot has been invalidated.
 
     Utility::msleep(1000); // Wait for the snapshot to be rebuilt
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is now valid again.
-    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
-    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot is not invalidated yet.
-    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->snapshot(ReplicaSide::Local)->isValid()); // Snapshot has been invalidated.
 }
 
