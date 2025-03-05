@@ -608,6 +608,8 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 }
 
 ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, std::set<NodeId, std::less<>> &movedItems) {
+    _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
+
     // Process action
     switch (actionInfo.actionCode) {
         // Item added
@@ -635,7 +637,6 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
                                     actionInfo.actionCode != ActionCode::actionCodeCreate &&
                                     !_snapshot->exists(actionInfo.snapshotItem.id());
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
             _snapshot->updateItem(actionInfo.snapshotItem);
             if (exploreDir) {
                 // Retrieve all children
@@ -687,7 +688,6 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             if (movedItems.find(actionInfo.snapshotItem.id()) != movedItems.end()) break;
             [[fallthrough]];
         case ActionCode::actionCodeTrash:
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.snapshotItem.id(), ReplicaSide::Remote);
             if (!_snapshot->removeItem(actionInfo.snapshotItem.id())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: "
                                                    << SyncName2WStr(actionInfo.snapshotItem.name()).c_str() << L" ("
