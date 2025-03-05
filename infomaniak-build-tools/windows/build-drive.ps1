@@ -273,6 +273,7 @@ $args = @("'-GNinja'")
 $args += ("'-DCMAKE_BUILD_TYPE=$buildType'")
 $args += ("'-DCMAKE_INSTALL_PREFIX=$installPath'")
 $args += ("'-DCMAKE_PREFIX_PATH=$installPath'")
+$args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
 
 $flags = @(
 "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
@@ -356,12 +357,6 @@ Set-Content -Path "$buildPath/NSIS.template.nsi" -Value $scriptContent
 #                                                                                               #
 #################################################################################################
 
-$binaries = @(
-"${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
-"kDrive.exe",
-"kDrive_client.exe"
-)
-
 $dependencies = @(
 "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
 "${env:ProgramFiles(x86)}/libzip/bin/zip",
@@ -403,6 +398,12 @@ if (Test-Path -Path $iconPath)
 {
 	Copy-Item -Path "$iconPath" -Destination $archivePath
 }
+
+$binaries = @(
+"${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
+"kDrive.exe",
+"kDrive_client.exe"
+)
 
 # Move each executable to the bin folder and sign them
 foreach ($file in $binaries)
