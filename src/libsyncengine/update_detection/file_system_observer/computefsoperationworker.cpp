@@ -297,7 +297,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         if (isInUnsyncedList(snapshot, nodeId, side)) {
             // Delete operation
             fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
-                                                 snapshotLastModified, snapshot->size(nodeId));
+                                                 snapshotLastModified, snapshot->size(nodeId), dbPath);
         } else {
             // Move operation
             fsOp = std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
