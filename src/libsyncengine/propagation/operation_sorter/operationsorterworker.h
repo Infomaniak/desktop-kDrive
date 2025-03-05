@@ -26,7 +26,7 @@
 
 namespace KDC {
 
-class OperationSorterWorker final : public OperationProcessor {
+class OperationSorterWorker : public OperationProcessor {
     public:
         OperationSorterWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name, const std::string &shortName);
 

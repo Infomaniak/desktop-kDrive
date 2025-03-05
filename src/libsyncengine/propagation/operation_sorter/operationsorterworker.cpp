@@ -54,12 +54,6 @@ void OperationSorterWorker::sortOperations() {
         if (stopAsked()) {
             return;
         }
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
 
         _hasOrderChanged = false;
         fixDeleteBeforeMove();
