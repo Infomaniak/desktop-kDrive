@@ -76,12 +76,13 @@ jobs:
       - name: Compute code coverage
         if: true
         run : |
-          rm -Force -ErrorAction SilentlyContinue BullseyeCoverageExclusions
-          echo "exclude folder 3rdparty/" >> BullseyeCoverageExclusions
-          echo "exclude folder ../" >> BullseyeCoverageExclusions
-          
           $env:COVFILE="$pwd\src\test.cov"
-
+          
+          & "covselect.exe" "--add" 'exclude folder c:/'
+          & "covselect.exe" "--add" 'exclude folder ../'
+          & "covselect.exe" "--add" 'exclude folder 3rdparty/'
+          & "covselect.exe" "--add" 'exclude folder gui/'
+          
           & "cov01.exe" "-0" # coverage off
           & "cov01.exe" "-s" # show status
           & "covselect.exe" "--import" "BullseyeCoverageExclusions"
