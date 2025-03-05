@@ -187,3 +187,7 @@ cmake-build-debug*
 /extensions/windows/cfapi/FileExplorerExtension/Generated Files
 /CMakeSettings.json
 /out/
+
+# BullseyeCoverage
+BullseyeCoverageExclusions
+src/test.cov

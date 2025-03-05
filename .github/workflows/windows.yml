@@ -70,14 +70,15 @@ jobs:
           $env:COVFILE="$pwd\src\test.cov"
           & "cov01.exe" "-1" # coverage on
           & "cov01.exe" "-s" # show status
-          
+
           ./infomaniak-build-tools/run-tests.ps1
 
       - name: Compute code coverage
         if: true
         run : |
           rm -Force -ErrorAction SilentlyContinue BullseyeCoverageExclusions
-          echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
+          echo "exclude folder 3rdparty/" >> BullseyeCoverageExclusions
+          echo "exclude folder ../" >> BullseyeCoverageExclusions
           
           $env:COVFILE="$pwd\src\test.cov"
 
