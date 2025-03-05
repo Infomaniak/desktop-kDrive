@@ -206,13 +206,15 @@ void ExecutorWorker::execute() {
 
     if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
         // If there are too many changes on the local filesystem, the OS stops sending events at some point.
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot is potentially invalid");
-        _snapshotToInvalidate = true;
-    }
+        LOG_SYNCPAL_INFO(_logger,
+                         "Local snapshot is potentially invalid because of too many file system events. Forcing invalidation.");
 
-    if (_snapshotToInvalidate) {
-        LOG_SYNCPAL_INFO(_logger, "Invalidate local snapshot");
+        _snapshotToInvalidate = true;
+        LOG_SYNCPAL_INFO(_logger, "Invalidate local snapshot.");
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    } else if (_snapshotToInvalidate) {
+        LOG_SYNCPAL_INFO(_logger, "Try to invalidate local snapshot.");
+        _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     }
 
     _syncPal->vfs()->cleanUpStatuses();

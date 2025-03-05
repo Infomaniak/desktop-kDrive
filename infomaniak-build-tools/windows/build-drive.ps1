@@ -256,8 +256,8 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext)
 	msbuild "$extPath\kDriveExt.sln" /p:Configuration=Release /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 	
-	Copy-Item -Path "$extPath\Vfs\..\Common\debug.h" -Destination "$path\src\server\vfs\win\."
-	Copy-Item -Path "$extPath\Vfs\Vfs.h" -Destination "$path\src\server\vfs\win\."
+	Copy-Item -Path "$extPath\Vfs\..\Common\debug.h" -Destination "$path\src\libcommonserver\vfs\win\."
+	Copy-Item -Path "$extPath\Vfs\Vfs.h" -Destination "$path\src\libcommonserver\vfs\win\."
 }
 
 #################################################################################################
