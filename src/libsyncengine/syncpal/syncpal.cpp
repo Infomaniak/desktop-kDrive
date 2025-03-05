@@ -1331,7 +1331,6 @@ void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
 }
 
-
 ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause) {
     std::shared_ptr<Node> dummyNodePtr;
     return handleAccessDeniedItem(relativeLocalPath, dummyNodePtr, dummyNodePtr, cause);

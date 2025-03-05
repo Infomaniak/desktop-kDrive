@@ -38,15 +38,17 @@ class TmpBlacklistManager {
         void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
         void blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         void refreshBlacklist();
-        void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
-        // Remove the item from local and/or remote blacklist
+
+        // Remove the item from local and remote blacklist
         void removeItemFromTmpBlacklist(const SyncPath &relativePath);
+        void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         bool isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const;
         bool isTmpBlacklisted(const NodeId &nodeId, ReplicaSide side) const;
         int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
 
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side) const;
+        void eraseSingleItemFromBlacklist(const NodeId &nodeId, ReplicaSide side);
         int syncDbId() const noexcept {
             assert(_syncPal);
             return _syncPal->syncDbId();

@@ -2332,7 +2332,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         default: {
             break;
         }
-    };
+    }
     LOG_WARN(_logger, "Unhandled error in ExecutorWorker::handleExecutorError: " << opsExitInfo);
     return opsExitInfo;
 }
