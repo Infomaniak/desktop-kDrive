@@ -109,9 +109,9 @@ class UpdateTreeWorker : public ISyncWorker {
 
         ExitCode getNewPathAfterMove(const SyncPath &path, SyncPath &newPath);
         ExitCode updateNodeWithDb(const std::shared_ptr<Node> parentNode);
+        [[nodiscard]] ExitCode mergeNodeToParentChildren(std::shared_ptr<Node> parentNode, const std::shared_ptr<Node> node);
         ExitCode updateTmpNode(const std::shared_ptr<Node> tmpNode);
         ExitCode getOriginPath(const std::shared_ptr<Node> node, SyncPath &path);
-        ExitCode updateNameFromDbForMoveOp(const std::shared_ptr<Node> node, FSOpPtr moveOp);
 
         // Log update information if extended logging is on.
         void logUpdate(const std::shared_ptr<Node> node, const OperationType opType,
@@ -138,11 +138,13 @@ class UpdateTreeWorker : public ISyncWorker {
          */
         ExitCode handleCreateOperationsWithSamePath();
 
-        std::shared_ptr<Node> getOrCreateNodeFromPath(const SyncPath &path, bool isDeleted);
-        std::shared_ptr<Node> getOrCreateNodeFromExistingPath(const SyncPath &path) {
-            return getOrCreateNodeFromPath(path, false);
+        [[nodiscard]] ExitCode getOrCreateNodeFromPath(const SyncPath &path, bool isDeleted, std::shared_ptr<Node> &node);
+        [[nodiscard]] ExitCode getOrCreateNodeFromExistingPath(const SyncPath &path, std::shared_ptr<Node> &node) {
+            return getOrCreateNodeFromPath(path, false, node);
         }
-        std::shared_ptr<Node> getOrCreateNodeFromDeletedPath(const SyncPath &path) { return getOrCreateNodeFromPath(path, true); }
+        [[nodiscard]] ExitCode getOrCreateNodeFromDeletedPath(const SyncPath &path, std::shared_ptr<Node> &node) {
+            return getOrCreateNodeFromPath(path, true, node);
+        }
         bool mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
 
         /**

@@ -19,6 +19,7 @@
 #include "conflictresolverworker.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "libcommonserver/utility/utility.h"
+#include "asserts.h"
 
 namespace KDC {
 
@@ -169,38 +170,40 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 return ExitCode::Ok;
             }
 
-            // Get all children of the deleted node
-            std::unordered_set<std::shared_ptr<Node>> allDeletedChildNodes;
-            findAllChildNodes(deleteNode, allDeletedChildNodes);
-
-            std::unordered_set<DbNodeId> deletedChildNodeDbIds;
-            for (auto &childNode: allDeletedChildNodes) {
-                deletedChildNodeDbIds.insert(*childNode->idb());
-            }
-
             if (deleteNode->type() == NodeType::Directory) {
-                // From the DB, get the list of all child nodes at the end of last sync.
-                std::unordered_set<DbNodeId> allChildNodeDbIds;
-                ExitCode res = findAllChildNodeIdsFromDb(deleteNode, allChildNodeDbIds);
+                // Get all children of the deleted node from the Update Tree
+                std::unordered_set<std::shared_ptr<Node>> allDeletedChildNodesFromUT;
+                findAllChildNodes(deleteNode, allDeletedChildNodesFromUT);
+
+                std::unordered_set<DbNodeId> allDeletedChildNodeDbIdsFromUT;
+                for (auto &childNode: allDeletedChildNodesFromUT) {
+                    allDeletedChildNodeDbIdsFromUT.insert(*childNode->idb());
+                }
+                allDeletedChildNodesFromUT.clear();
+
+                // Get all children of the deleted node from the DB
+                std::unordered_set<DbNodeId> allDeletedChildNodeDbIdsFromDB;
+                ExitCode res = findAllChildNodeIdsFromDb(deleteNode, allDeletedChildNodeDbIdsFromDB);
                 if (res != ExitCode::Ok) {
                     return res;
                 }
 
-                for (const auto &dbId: allChildNodeDbIds) {
-                    if (!deletedChildNodeDbIds.contains(dbId)) {
-                        // This is an orphan node
+                for (const auto &nodeDbIdFromDB: allDeletedChildNodeDbIdsFromDB) {
+                    if (!allDeletedChildNodeDbIdsFromUT.contains(nodeDbIdFromDB)) {
+                        // This is an orphan node (the item has been moved out from the deleted sub tree)
                         bool found = false;
                         NodeId orphanNodeId;
-                        if (!_syncPal->_syncDb->id(deleteNode->side(), dbId, orphanNodeId, found)) {
+                        if (!_syncPal->_syncDb->id(deleteNode->side(), nodeDbIdFromDB, orphanNodeId, found)) {
                             return ExitCode::DbError;
                         }
                         if (!found) {
-                            LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node ID for dbId=" << dbId);
+                            LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node ID for dbId=" << nodeDbIdFromDB);
                             return ExitCode::DataError;
                         }
 
                         auto updateTree = _syncPal->updateTree(deleteNode->side());
                         auto orphanNode = updateTree->getNodeById(orphanNodeId);
+                        LOG_IF_FAIL(orphanNode != nullptr)
                         auto correspondingOrphanNode = correspondingNodeInOtherTree(orphanNode);
                         if (!correspondingOrphanNode) {
                             LOGW_SYNCPAL_DEBUG(
@@ -231,7 +234,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                         _syncPal->_syncOps->pushOp(op);
 
                         // Register the orphan. Winner side is always the side with the DELETE operation.
-                        _registeredOrphans.insert({dbId, deleteNode->side()});
+                        _registeredOrphans.insert({nodeDbIdFromDB, deleteNode->side()});
                     }
                 }
             }
