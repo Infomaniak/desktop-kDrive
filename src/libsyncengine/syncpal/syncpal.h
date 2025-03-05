@@ -167,10 +167,19 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          */
         void start(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
         void stop(bool pausedByUser = false, bool quit = false, bool clear = false);
+
+
+        /* The synchronization will be paused once the ongoing sync reach the Idle state.
+         * It will automatically restart after one minute (triggered by the appserver).
+         *
+         * /!\ This pause mechanism is intended for internal use only, such as handling network disconnections.
+         * If the user pauses synchronization, use the stop() method instead.
+         */
         void pause();
         void unpause();
-
-        bool isPaused(std::chrono::time_point<std::chrono::system_clock> &pauseTime) const;
+        std::chrono::time_point<std::chrono::steady_clock> pauseTime() const;
+        bool isPaused() const;
+        bool pauseAsked() const;
         bool isIdle() const;
         bool isRunning() const;
 
@@ -223,8 +232,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _computeFSOperationsWorker = worker;
         }
 
-    private:
-        log4cplus::Logger _logger;
+    protected:
+        virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
+
         SyncPalInfo _syncInfo;
 
         std::shared_ptr<ExcludeListPropagator> _excludeListPropagator = nullptr;
@@ -279,7 +289,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void freeSharedObjects();
         void initSharedObjects();
         void resetSharedObjects();
-        void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
@@ -307,6 +316,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
 
+    private:
+        log4cplus::Logger _logger;
+
+        // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
         friend class FileSystemObserverWorker;
         friend class LocalFileSystemObserverWorker;
@@ -343,6 +356,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestLocalJobs;
         friend class TestIntegration;
         friend class TestWorkers;
+        friend class MockSyncPal;
 };
 
 } // namespace KDC

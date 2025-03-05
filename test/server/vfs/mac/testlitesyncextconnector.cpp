@@ -26,9 +26,13 @@ namespace KDC {
 
 TestLiteSyncExtConnector::TestLiteSyncExtConnector() : CppUnit::TestFixture() {}
 
-void TestLiteSyncExtConnector::setUp() {}
+void TestLiteSyncExtConnector::setUp() {
+    TestBase::start();
+}
 
-void TestLiteSyncExtConnector::tearDown() {}
+void TestLiteSyncExtConnector::tearDown() {
+    TestBase::stop();
+}
 
 void TestLiteSyncExtConnector::testGetVfsStatus() {
     /*

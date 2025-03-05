@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-class TestOperationGeneratorWorker : public CppUnit::TestFixture {
+class TestOperationGeneratorWorker : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestOperationGeneratorWorker);
         CPPUNIT_TEST(testCreateOp);

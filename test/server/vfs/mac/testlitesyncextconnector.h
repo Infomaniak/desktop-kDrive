@@ -22,7 +22,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestLiteSyncExtConnector : public CppUnit::TestFixture {
+class TestLiteSyncExtConnector : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestLiteSyncExtConnector);
 #ifdef __APPLE__
         CPPUNIT_TEST(testGetVfsStatus);

@@ -50,7 +50,7 @@
 #include <sentry.h>
 
 #define CONNECTION_TRIALS 3
-#define CHECKCOMMSTATUS_TRIALS 5
+#define CHECKCOMMSTATUS_TRIALS 3
 
 namespace KDC {
 

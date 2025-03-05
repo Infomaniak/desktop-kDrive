@@ -54,12 +54,6 @@ ExitCode OperationSorterWorker::sortOperations() {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
 
         _hasOrderChanged = false;
         fixDeleteBeforeMove();

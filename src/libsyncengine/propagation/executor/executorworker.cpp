@@ -88,19 +88,6 @@ void ExecutorWorker::execute() {
                 break;
             }
 
-            while (pauseAsked() || isPaused()) {
-                if (!isPaused()) {
-                    setPauseDone();
-                    cancelAllOngoingJobs(true);
-                }
-
-                Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-                if (unpauseAsked()) {
-                    setUnpauseDone();
-                }
-            }
-
             if (JobManager::instance()->countManagedJobs() > static_cast<size_t>(JobManager::instance()->maxNbThreads()) * 2) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Maximum number of jobs reached");
@@ -218,13 +205,15 @@ void ExecutorWorker::execute() {
 
     if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
         // If there are too many changes on the local filesystem, the OS stops sending events at some point.
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot is potentially invalid");
-        _snapshotToInvalidate = true;
-    }
+        LOG_SYNCPAL_INFO(_logger,
+                         "Local snapshot is potentially invalid because of too many file system events. Forcing invalidation.");
 
-    if (_snapshotToInvalidate) {
-        LOG_SYNCPAL_INFO(_logger, "Invalidate local snapshot");
+        _snapshotToInvalidate = true;
+        LOG_SYNCPAL_INFO(_logger, "Invalidate local snapshot.");
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
+    } else if (_snapshotToInvalidate) {
+        LOG_SYNCPAL_INFO(_logger, "Try to invalidate local snapshot.");
+        _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     }
 
     _syncPal->vfs()->cleanUpStatuses();
@@ -1347,20 +1336,7 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
             break;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-                cancelAllOngoingJobs(true);
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-            if (unpauseAsked()) {
-                setUnpauseDone();
-            }
-        }
-
-        if (const ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
+        if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
             cancelAllOngoingJobs();
             return exitInfo;
         }
@@ -2218,7 +2194,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     return ExitCode::Ok;
 }
 
-void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
+void ExecutorWorker::cancelAllOngoingJobs() {
     LOG_SYNCPAL_DEBUG(_logger, "Cancelling all queued executor jobs");
 
     const std::scoped_lock lock(_opListMutex);
@@ -2231,9 +2207,6 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
             LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job.second->jobId());
             job.second->setAdditionalCallback(nullptr);
             job.second->abort();
-            if (reschedule) {
-                _opList.push_front(_jobToSyncOpMap[job.first]->id());
-            }
         } else {
             remainingJobs.push_back(job.second);
         }
@@ -2244,16 +2217,9 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job->jobId());
         job->setAdditionalCallback(nullptr);
         job->abort();
-
-        if (reschedule) {
-            _opList.push_front(_jobToSyncOpMap[job->jobId()]->id());
-        }
     }
     _ongoingJobs.clear();
-    if (!reschedule) {
-        _opList.clear();
-    }
-
+    _opList.clear();
     LOG_SYNCPAL_DEBUG(_logger, "All queued executor jobs cancelled.");
 }
 

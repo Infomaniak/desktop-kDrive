@@ -25,7 +25,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestLocalJobs : public CppUnit::TestFixture {
+class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestLocalJobs);
         CPPUNIT_TEST(testLocalJobs);
@@ -35,6 +35,7 @@ class TestLocalJobs : public CppUnit::TestFixture {
 
     public:
         void setUp() override;
+        void tearDown() override { TestBase::stop(); }
 
     protected:
         void testLocalJobs();

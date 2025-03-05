@@ -128,7 +128,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);
 
         ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
-        void cancelAllOngoingJobs(bool reschedule = false);
+        void cancelAllOngoingJobs();
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
         bool isLiteSyncActivated() const { return _syncPal->vfsMode() != VirtualFileMode::Off; }

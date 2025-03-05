@@ -91,16 +91,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(std::shared_ptr<Nod
             return ExitCode::Ok;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-        }
-
         std::shared_ptr<Node> currentChildNode = it->second;
-
         if (pathChanged(currentChildNode)) {
             checkAgainstSiblings = true;
         }
@@ -130,14 +121,6 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
     for (; it != localNode->children().end(); it++) {
         if (stopAsked()) {
             return ExitCode::Ok;
-        }
-
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
         const ExitCode exitCode = checkLocalTree(it->second, parentPath / localNode->name());
@@ -206,14 +189,6 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
     for (; it != childrenCopy.end(); it++) {
         if (stopAsked()) {
             return;
-        }
-
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
         std::shared_ptr<Node> currentChildNode = it->second;

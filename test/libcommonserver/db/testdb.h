@@ -25,7 +25,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestDb : public CppUnit::TestFixture {
+class TestDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestDb);
         CPPUNIT_TEST(testQueries);
         CPPUNIT_TEST(testTableExist);

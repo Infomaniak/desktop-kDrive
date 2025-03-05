@@ -24,6 +24,7 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestFsOperationSet::setUp() {
+    TestBase::start();
     _operationTypes.push_back(OperationType::None);
     _operationTypes.push_back(OperationType::Create);
     _operationTypes.push_back(OperationType::Move);
@@ -32,7 +33,9 @@ void TestFsOperationSet::setUp() {
     _operationTypes.push_back(OperationType::Rights);
 }
 
-void TestFsOperationSet::tearDown() {}
+void TestFsOperationSet::tearDown() {
+    TestBase::stop();
+}
 
 
 void TestFsOperationSet::testGetOp() {

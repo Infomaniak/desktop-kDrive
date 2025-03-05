@@ -40,7 +40,7 @@
 // Default assert: If the condition is false in debug builds, terminate.
 //
 // Prints a message on failure, even in release builds.
-#define ASSERT(...) KD_ASSERT_OVERLOAD(ASSERT, __VA_ARGS__)
+#define LOG_IF_FAIL(...) KD_ASSERT_OVERLOAD(ASSERT, __VA_ARGS__)
 #define ASSERT_1(cond)                                                                  \
     if (!(cond)) {                                                                      \
         KD_ASSERT_MSG("ASSERT: \"%s\" in file %s, line %d", #cond, __FILE__, __LINE__); \

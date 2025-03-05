@@ -23,7 +23,7 @@
 using namespace CppUnit;
 
 namespace KDC {
-class TestLogUploadJob : public CppUnit::TestFixture {
+class TestLogUploadJob : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestLogUploadJob);
         CPPUNIT_TEST(testLogUploadJobWithOldSessions);
