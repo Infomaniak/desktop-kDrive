@@ -42,7 +42,7 @@ static const int hLogoSpacing = 10;
 static const int logoIconSize = 39;
 static const QSize logoTextIconSize = QSize(60, 42);
 
-static const QString domainLink = "domainLink";
+static const QString domainLink{"domainLink"};
 static const QString gitLink = "gitLink";
 static const QString gnuLink = "gnuLink";
 
