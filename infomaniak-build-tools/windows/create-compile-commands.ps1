@@ -39,7 +39,7 @@ Param(
 # CMake will treat any backslash as escape character and return an error
 $path = $path.Replace('\', '/')
 
-$contentPath = "$path/build-compile-commands"
+$contentPath = "$path/build-windows"
 $extPath = "$path/extensions/windows/cfapi/"
 $vfsDir = $extPath + "x64/Release"
 
