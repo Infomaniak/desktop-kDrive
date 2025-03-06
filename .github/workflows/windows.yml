@@ -54,12 +54,12 @@ jobs:
           Remove-Item -path certificate -include tempCert.txt
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
 
-      - name: Build compile commands 
+      - name: Create compile commands 
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           call "cov01.exe" "-0" # coverage off
           call "cov01.exe" "-s" # show status
-          powershell ./infomaniak-build-tools/windows/build-compile-commands.ps1
+          powershell ./infomaniak-build-tools/windows/create-compile-commands.ps1
         shell: cmd
 
       - name: Build kDrive desktop
