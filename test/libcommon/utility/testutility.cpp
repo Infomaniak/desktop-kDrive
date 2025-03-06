@@ -408,7 +408,7 @@ void TestUtility::testGetLastErrorMessage() {
     // No actual error. Display the expected success message.
     {
         const std::wstring msg = CommonUtility::getLastErrorMessage();
-        CPPUNIT_ASSERT(msg.starts_with(L"(0) - "));
+        CPPUNIT_ASSERT_MESSAGE(SyncName2Str(msg.c_str()), msg.starts_with(L"(0) - "));
     }
     // Display the file-not-found error message.
     {
