@@ -229,6 +229,7 @@ jobs:
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework
           retention-days: 1
         if: always()
@@ -244,6 +245,7 @@ jobs:
               /usr/local/lib/libPocoXML.103.dylib
               /usr/local/lib/libPocoFoundation.103.dylib
               /usr/local/lib/libPocoNet.103.dylib
+              /usr/local/lib/libPocoCrypto.103.dylib
               /usr/local/lib/libcppunit-1.15.2.dylib
               /usr/local/lib/liblog4cplusU.9.dylib
               /usr/local/lib/libsentry.dylib
