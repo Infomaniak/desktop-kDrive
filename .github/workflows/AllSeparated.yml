@@ -228,6 +228,7 @@ jobs:
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtNetwork.framework
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework
           retention-days: 1
         if: always()
 
@@ -242,6 +243,7 @@ jobs:
               /usr/local/lib/libPocoFoundation.103.dylib
               /usr/local/lib/libPocoNet.103.dylib
               /usr/local/lib/libcppunit-1.15.2.dylib
+              /usr/local/lib/liblog4cplusU.9.dylib
           retention-days: 1
         if: always()
 
@@ -735,6 +737,12 @@ jobs:
           name: macos-build-libs
           path: ${{ github.workspace }}/build-macos/client/bin/
 
+      - name: Download Frameworks
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-frameworks
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
@@ -790,6 +798,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-libs
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Download Frameworks
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-frameworks
           path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download common files
@@ -910,6 +924,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-libs
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Download Frameworks
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-frameworks
           path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download common files
