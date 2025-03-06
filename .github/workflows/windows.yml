@@ -96,6 +96,9 @@ jobs:
           & "cov01.exe" "-s" # show status
           & "covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
 
+          & "cov01.exe" "-1" # coverage on
+          & "cov01.exe" "-s" # show status
+
       - name: Run sonar-scanner
         if: true
         env:
