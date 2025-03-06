@@ -96,7 +96,7 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::NetworkError, ec);
     CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, ei.cause());
     CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, eca);
-    CPPUNIT_ASSERT_EQUAL(302, static_cast<int>(ei));
+    CPPUNIT_ASSERT_EQUAL(202, static_cast<int>(ei));
 
 
     ec = ExitCode::BackError;
