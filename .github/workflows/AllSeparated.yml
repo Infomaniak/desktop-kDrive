@@ -222,15 +222,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build-frameworks
-          path: ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/*.framework
-          retention-days: 1
-        if: always()
-
-      - name: Upload build test common executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-test-common
-          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common
+          path: |
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtWidgets.framework
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtGui.framework
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtNetwork.framework
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework
           retention-days: 1
         if: always()
 
@@ -239,6 +236,28 @@ jobs:
         with:
           name: macos-build-cppunit
           path: /usr/local/lib/libcppunit-1.15.2.dylib
+          retention-days: 1
+        if: always()
+
+      - name: Upload QT libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-qt-libs
+          path: |
+              /Users/runner/Qt/6.2.3/macos/lib/libPocoUtil.103.dylib
+              /Users/runner/Qt/6.2.3/macos/lib/libPocoJSON.103.dylib
+              /Users/runner/Qt/6.2.3/macos/lib/libPocoXML.103.dylib
+              /Users/runner/Qt/6.2.3/macos/lib/libPocoFoundation.103.dylib
+              /Users/runner/Qt/6.2.3/macos/lib/libPocoNet.103.dylib
+
+          retention-days: 1
+        if: always()
+
+      - name: Upload build test common executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-test-common
+          path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common
           retention-days: 1
         if: always()
 
@@ -939,6 +958,12 @@ jobs:
 
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
+
+      - name: Download QT libs
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-qt-libs
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download common files
         uses: actions/download-artifact@v4
