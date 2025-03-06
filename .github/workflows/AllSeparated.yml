@@ -244,6 +244,7 @@ jobs:
               /usr/local/lib/libPocoNet.103.dylib
               /usr/local/lib/libcppunit-1.15.2.dylib
               /usr/local/lib/liblog4cplusU.9.dylib
+              /usr/local/lib/libsentry.dylib
           retention-days: 1
         if: always()
 

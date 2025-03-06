@@ -405,6 +405,9 @@ void TestUtility::testIsSupportedLanguage() {
 
 #ifdef _WIN32
 void TestUtility::testGetLastErrorMessage() {
+    // Ensure that the error message is reset.
+    SetLastError(0);
+
     // No actual error. Display the expected success message.
     {
         const std::wstring msg = CommonUtility::getLastErrorMessage();
