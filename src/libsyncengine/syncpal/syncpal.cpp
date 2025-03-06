@@ -56,7 +56,7 @@
 namespace KDC {
 
 SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
-                 const bool hasFullyCompleted) : _logger(Log::instance()->getLogger()), _vfs(vfs) {
+                 const bool hasFullyCompleted) : _vfs(vfs), _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
@@ -211,10 +211,7 @@ SyncStatus SyncPal::status() const {
             LOG_IF_FAIL(_localSnapshot)
             LOG_IF_FAIL(_remoteSnapshot)
 
-            if (_syncPalWorker->pauseAsked()) {
-                // Auto pausing after a NON fatal error (network, back...)
-                return SyncStatus::PauseAsked;
-            } else if (_syncPalWorker->isPaused()) {
+            if (_syncPalWorker->isPaused()) {
                 // Auto paused after a NON fatal error
                 return SyncStatus::Paused;
             } else if (_syncPalWorker->stopAsked()) {
@@ -1142,6 +1139,13 @@ void SyncPal::unpause() {
     }
 }
 
+std::chrono::time_point<std::chrono::steady_clock> SyncPal::pauseTime() const {
+    if (_syncPalWorker) {
+        return _syncPalWorker->pauseTime();
+    }
+    return std::chrono::steady_clock::now();
+}
+
 void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     if (_syncPalWorker) {
         if (_syncPalWorker->isRunning()) {
@@ -1172,13 +1176,12 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
     _syncDb->setAutoDelete(clear);
 }
 
-bool SyncPal::isPaused(std::chrono::time_point<std::chrono::system_clock> &pauseTime) const {
-    if (_syncPalWorker && _syncPalWorker->isPaused()) {
-        pauseTime = _syncPalWorker->pauseTime();
-        return true;
-    }
+bool SyncPal::isPaused() const {
+    return _syncPalWorker && _syncPalWorker->isPaused();
+}
 
-    return false;
+bool SyncPal::pauseAsked() const {
+    return _syncPalWorker && _syncPalWorker->pauseAsked();
 }
 
 bool SyncPal::isIdle() const {

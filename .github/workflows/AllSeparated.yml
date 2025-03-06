@@ -234,6 +234,14 @@ jobs:
           retention-days: 1
         if: always()
 
+      - name: Upload cppunit
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-cppunit
+          path: /usr/local/lib/libcppunit-1.15.2.dylib
+          retention-days: 1
+        if: always()
+
       - name: Upload build test common server executable
         uses: actions/upload-artifact@v4
         with:
@@ -938,6 +946,18 @@ jobs:
           name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/bin/
 
+      - name: Download cppunit
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-cppunit
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Download Frameworks
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-frameworks
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -948,8 +968,7 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
         run : |
-            install_name_tool -change libcppunit.1.dylib @executable_path/libcppunit.1.dylib ./build-macos/client/bin/kDrive_test_parms
-            install_name_tool -add_rpath @executable_path ./build-macos/client/bin/kDrive_test_parms
+            otool -L ./build-macos/client/bin/kDrive_test_parms
             ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ kDrive_test_parms
 
       - name: Get the path to kDrive-logdir

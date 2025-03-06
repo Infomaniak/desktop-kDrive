@@ -16,6 +16,7 @@ set(testsyncengine_SRCS
         ../test.cpp
         test.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
+        ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
         ../test_utility/testbase.h
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
@@ -59,6 +60,7 @@ set(testsyncengine_SRCS
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
+        syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
 )
@@ -116,5 +118,9 @@ if (APPLE)
     install(CODE "
         message(STATUS \"Fixing library paths for ${testsyncengine_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/local/lib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+
         " COMPONENT RUNTIME)
 endif ()

@@ -19,6 +19,7 @@
 #include "conflictresolverworker.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "libcommonserver/utility/utility.h"
+#include "asserts.h"
 
 namespace KDC {
 

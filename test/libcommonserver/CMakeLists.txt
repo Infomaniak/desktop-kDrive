@@ -14,7 +14,7 @@ set(testcommonserver_SRCS
         ../test.cpp
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
-        ../test_utility/timechecker.h
+        ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
         ../test_utility/testbase.h
         test.cpp
         # Utility
@@ -79,5 +79,8 @@ if (APPLE)
     install(CODE "
         message(STATUS \"Fixing library paths for ${testcommonserver_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/local/lib ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testcommonserver_NAME})
         " COMPONENT RUNTIME)
 endif ()

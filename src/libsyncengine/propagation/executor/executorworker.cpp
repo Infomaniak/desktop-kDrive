@@ -88,19 +88,6 @@ void ExecutorWorker::execute() {
                 break;
             }
 
-            while (pauseAsked() || isPaused()) {
-                if (!isPaused()) {
-                    setPauseDone();
-                    cancelAllOngoingJobs(true);
-                }
-
-                Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-                if (unpauseAsked()) {
-                    setUnpauseDone();
-                }
-            }
-
             if (JobManager::instance()->countManagedJobs() > static_cast<size_t>(JobManager::instance()->maxNbThreads()) * 2) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Maximum number of jobs reached");
@@ -326,8 +313,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate"
-                                              << " " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate" << " " << exitInfo);
             return exitInfo;
         }
 
@@ -413,8 +399,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
-                                                          << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger,
+                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -1358,19 +1344,6 @@ ExitInfo ExecutorWorker::waitForAllJobsToFinish() {
             break;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-                cancelAllOngoingJobs(true);
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-            if (unpauseAsked()) {
-                setUnpauseDone();
-            }
-        }
-
         if (ExitInfo exitInfo = deleteFinishedAsyncJobs(); !exitInfo) {
             cancelAllOngoingJobs();
             return exitInfo;
@@ -2239,7 +2212,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     return ExitCode::Ok;
 }
 
-void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
+void ExecutorWorker::cancelAllOngoingJobs() {
     LOG_SYNCPAL_DEBUG(_logger, "Cancelling all queued executor jobs");
 
     const std::scoped_lock lock(_opListMutex);
@@ -2252,9 +2225,6 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
             LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job.second->jobId());
             job.second->setAdditionalCallback(nullptr);
             job.second->abort();
-            if (reschedule) {
-                _opList.push_front(_jobToSyncOpMap[job.first]->id());
-            }
         } else {
             remainingJobs.push_back(job.second);
         }
@@ -2265,16 +2235,9 @@ void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling job: " << job->jobId());
         job->setAdditionalCallback(nullptr);
         job->abort();
-
-        if (reschedule) {
-            _opList.push_front(_jobToSyncOpMap[job->jobId()]->id());
-        }
     }
     _ongoingJobs.clear();
-    if (!reschedule) {
-        _opList.clear();
-    }
-
+    _opList.clear();
     LOG_SYNCPAL_DEBUG(_logger, "All queued executor jobs cancelled.");
 }
 

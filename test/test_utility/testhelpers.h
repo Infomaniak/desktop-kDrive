@@ -36,7 +36,7 @@ constexpr int64_t defaultFileSize = 1654788079;
 SyncName makeNfdSyncName();
 SyncName makeNfcSyncName();
 
-std::string loadEnvVariable(const std::string &key, bool mandatory);
+std::string loadEnvVariable(const std::string& key, bool mandatory);
 struct TestVariables {
         std::string userId;
         std::string accountId;
@@ -57,14 +57,14 @@ struct TestVariables {
         }
 };
 
-void generateOrEditTestFile(const SyncPath &path);
-void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
+void generateOrEditTestFile(const SyncPath& path);
+void setModificationDate(const SyncPath& path, const std::chrono::time_point<std::chrono::system_clock>& timePoint);
 
 inline bool isRunningOnCI(bool print = true) {
     static const bool isRunningOnCI = !loadEnvVariable("KDRIVE_TEST_CI_RUNNING_ON_CI", false).empty();
     if (print && !isRunningOnCI) {
-        std::cout << " (Skipped, CI only test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skipped, CI only
-                                               // test) :  OK
+        std::cout << " (Skipped, CI only test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skipped, CI
+                                                 // only test) :  OK
     }
     return isRunningOnCI;
 }
@@ -72,10 +72,9 @@ inline bool isRunningOnCI(bool print = true) {
 inline bool isExtendedTest(bool print = true) {
     static const bool isExtended = !loadEnvVariable("KDRIVE_TEST_CI_EXTENDED_TEST", false).empty();
     if (print && !isExtended) {
-        std::cout << " (Skipped, extended test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skipped, extended
-                                               // test) :  OK
+        std::cout << " (Skipped, extended test)"; // This will show up in the test output -> KDC::TestXXX::testxxx (Skipped,
+                                                  // extended test) :  OK
     }
     return isExtended;
 }
-
 } // namespace KDC::testhelpers

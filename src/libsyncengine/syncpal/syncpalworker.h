@@ -32,13 +32,22 @@ class SyncPalWorker : public ISyncWorker {
                       const std::chrono::seconds &startDelay);
 
         void execute() override;
+        void stop() override;
+        void pause(); // The ongoing sync will be completed before pausing
+        inline bool isPaused() const { return _isPaused; }
+        inline bool pauseAsked() const { return _pauseAsked; }
+        void unpause();
         inline SyncStep step() const { return _step; }
-        inline std::chrono::time_point<std::chrono::system_clock> pauseTime() const { return _pauseTime; }
+        inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);
 
     private:
         SyncStep _step{SyncStep::Idle};
-        std::chrono::time_point<std::chrono::system_clock> _pauseTime{std::chrono::time_point<std::chrono::system_clock>()};
+        std::chrono::time_point<std::chrono::steady_clock> _pauseTime{std::chrono::time_point<std::chrono::steady_clock>()};
+        bool _pauseAsked{false};
+        bool _unpauseAsked{false};
+        bool _isPaused{false};
+
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
@@ -50,8 +59,8 @@ class SyncPalWorker : public ISyncWorker {
         void stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> fsoWorkers[2],
                                             std::shared_ptr<ISyncWorker> stepWorkers[2]);
-        void pauseAllWorkers(std::shared_ptr<ISyncWorker> workers[2]);
-        void unpauseAllWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         bool resetVfsFilesStatus();
+
+        friend class TestSyncPalWorker;
 };
 } // namespace KDC

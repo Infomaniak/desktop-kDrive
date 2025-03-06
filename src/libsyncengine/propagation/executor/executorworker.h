@@ -98,7 +98,7 @@ class ExecutorWorker : public OperationProcessor {
                                                             // good, function probably does too much
 
         ExitInfo handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
-        ExitInfo generateMoveJob(const SyncOpPtr& syncOp, bool &ignored, bool &bypassProgressComplete);
+        ExitInfo generateMoveJob(const SyncOpPtr &syncOp, bool &ignored, bool &bypassProgressComplete);
 
         ExitInfo handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
@@ -128,7 +128,7 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);
 
         ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
-        void cancelAllOngoingJobs(bool reschedule = false);
+        void cancelAllOngoingJobs();
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
         inline bool isLiteSyncActivated() { return _syncPal->vfsMode() != VirtualFileMode::Off; }
