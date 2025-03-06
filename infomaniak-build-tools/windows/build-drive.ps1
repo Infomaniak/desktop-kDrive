@@ -306,8 +306,6 @@ $cmake = ('cmake {0}'-f($args -Join ' '))
 Write-Host $cmake
 Invoke-Expression $cmake
 
-exit $LASTEXITCODE
-
 $buildArgs += @('--build', $buildPath, '--target all install')
 $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
 
