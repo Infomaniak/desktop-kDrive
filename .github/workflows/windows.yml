@@ -32,7 +32,7 @@ jobs:
         shell: cmd
 
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           submodules: recursive
@@ -87,12 +87,6 @@ jobs:
           & "cov01.exe" "-s" # show status
           & "covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
 
-      - name: Install sonar-scanner
-        if: true
-        uses: SonarSource/sonarcloud-github-c-cpp@v3
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
-
       - name: Run sonar-scanner
         if: true
         env:
@@ -100,8 +94,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_DESKTOP_KDRIVE_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
           INCLUDE: "C:\\"
-        run: >
-            sonar-scanner 
+        uses: SonarSource/sonarqube-scan-action@v4
+        with:
+          args: >
             --define sonar.projectKey="Infomaniak_desktop-kDrive"
             --define sonar.organization="infomaniak"
             --define sonar.host.url="https://sonarcloud.io"
