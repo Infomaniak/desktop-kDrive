@@ -169,11 +169,6 @@ bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, const ReplicaSi
     return false;
 }
 
-bool TmpBlacklistManager::isTmpBlacklisted(const NodeId &nodeId, const ReplicaSide side) const {
-    auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
-    return (errors.contains(nodeId));
-}
-
 void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, const ReplicaSide side) const {
     const auto blacklistType_ = blackListType(side);
 
