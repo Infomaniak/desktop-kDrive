@@ -501,11 +501,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 bool AbstractNetworkJob::followRedirect() {
     // Get redirection URL
     std::string redirectUrl;
-    try {
-        redirectUrl = _resHttp.get("Location");
-    } catch (...) {
-        // No redirection URL
-    }
+    redirectUrl = _resHttp.get("Location", "");
 
     if (redirectUrl.empty()) {
         LOG_WARN(_logger, "Request " << jobId() << ": Failed to retrieve redirection URL");

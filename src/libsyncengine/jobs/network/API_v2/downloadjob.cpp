@@ -173,11 +173,7 @@ void DownloadJob::runJob() noexcept {
 bool DownloadJob::handleResponse(std::istream &is) {
     // Get Mime type
     std::string contentType;
-    try {
-        contentType = _resHttp.get("Content-Type");
-    } catch (...) {
-        // No Content-Type
-    }
+    contentType = _resHttp.get("Content-Type", "");
 
     std::string mimeType;
     if (!contentType.empty()) {
