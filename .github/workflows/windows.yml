@@ -71,7 +71,7 @@ jobs:
           set PATH=%ProgramFiles%\BullseyeCoverage\bin;%ProgramFiles%\Microsoft Visual Studio\VC\bin;%PATH%
 
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
-          copy compile-commands.json build-windows/build
+          copy compile_commands.json build-windows/build
         shell: cmd
 
       - name: Execute tests
