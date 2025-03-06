@@ -109,7 +109,7 @@ jobs:
             --define sonar.organization="infomaniak"
             --define sonar.host.url="https://sonarcloud.io"
             --define sonar.sources="src"
-            --define sonar.tests="tests"
+            --define sonar.tests="test"
             --define sonar.exclusions="src/3rdparty/**,src/gui/**"
             --define sonar.cfamily.compile-commands="compile_commands.json"
             --define sonar.cfamily.bullseye.reportPath="coverage.xml"
