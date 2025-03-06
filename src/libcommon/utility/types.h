@@ -194,8 +194,6 @@ std::string toString(OperationType e);
 enum class ExitCode {
     Ok,
     Unknown,
-    NeedRestart, // A propagation job cannot be executed because the situation that led to its creation is no longer
-                 // verified
     NetworkError,
     InvalidToken,
     DataError, // Corruption of data
