@@ -48,13 +48,13 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_w
         void waitForUpdate(long long timeoutMs = 10000) const;
 };
 #else
-class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_unix {
+class MockLocalFileSystemObserverWorker final : public LocalFileSystemObserverWorker_unix {
     public:
-        MockLocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
+        MockLocalFileSystemObserverWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name,
                                           const std::string &shortName) :
             LocalFileSystemObserverWorker_unix(syncPal, name, shortName) {}
 
-        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) final {
+        void changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) override {
             Utility::msleep(200);
             LocalFileSystemObserverWorker_unix::changesDetected(changes);
         }
@@ -62,7 +62,7 @@ class MockLocalFileSystemObserverWorker : public LocalFileSystemObserverWorker_u
 };
 #endif
 
-class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture, public TestBase {
+class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
         CPPUNIT_TEST(testLFSOWithInitialSnapshot);
         CPPUNIT_TEST(testLFSOWithFiles);
@@ -74,6 +74,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture, public Te
         CPPUNIT_TEST(testLFSOWithSpecialCases1);
         CPPUNIT_TEST(testLFSOWithSpecialCases2);
         CPPUNIT_TEST(testInvalidateCounter);
+        CPPUNIT_TEST(testInvalidateSnapshot);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -82,7 +83,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture, public Te
 
     private:
         log4cplus::Logger _logger;
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<SyncPal> _syncPal;
 
         LocalTemporaryDirectory _tempDir;
         SyncPath _rootFolderPath;
@@ -99,6 +100,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture, public Te
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
         void testInvalidateCounter();
+        void testInvalidateSnapshot();
 
         static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
         static bool vfsPinState(int, const SyncPath &, PinState &) { return true; };
