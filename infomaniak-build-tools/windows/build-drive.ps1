@@ -273,7 +273,6 @@ $args = @("'-GNinja'")
 $args += ("'-DCMAKE_BUILD_TYPE=$buildType'")
 $args += ("'-DCMAKE_INSTALL_PREFIX=$installPath'")
 $args += ("'-DCMAKE_PREFIX_PATH=$installPath'")
-$args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
 
 $flags = @(
 "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
@@ -306,6 +305,8 @@ $cmake = ('cmake {0}'-f($args -Join ' '))
 
 Write-Host $cmake
 Invoke-Expression $cmake
+
+exit $LASTEXITCODE
 
 $buildArgs += @('--build', $buildPath, '--target all install')
 $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
