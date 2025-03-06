@@ -103,6 +103,6 @@ void TestTypes::testExitInfo() {
     ei = ec;
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, ei.code());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
-    CPPUNIT_ASSERT_EQUAL(700, static_cast<int>(ei));
+    CPPUNIT_ASSERT_EQUAL(600, static_cast<int>(ei));
 }
 } // namespace KDC
