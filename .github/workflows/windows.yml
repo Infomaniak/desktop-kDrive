@@ -71,6 +71,7 @@ jobs:
           set PATH=%ProgramFiles%\BullseyeCoverage\bin;%ProgramFiles%\Microsoft Visual Studio\VC\bin;%PATH%
 
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
+          copy compile-commands.json build-windows/build
         shell: cmd
 
       - name: Execute tests
@@ -111,7 +112,7 @@ jobs:
             --define sonar.sources="src"
             --define sonar.tests="test"
             --define sonar.exclusions="src/3rdparty/**,src/gui/**"
-            --define sonar.cfamily.compile-commands="compile_commands.json"
+            --define sonar.cfamily.compile-commands="build-windows/build/compile_commands.json"
             --define sonar.cfamily.bullseye.reportPath="coverage.xml"
             --define sonar.scm.exclusions.disabled=true
             --define sonar.verbose=true
