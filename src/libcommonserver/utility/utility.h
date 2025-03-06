@@ -21,7 +21,7 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/commonserverlib.h"
 #include "libcommonserver/db/dbdefs.h"
-#include "libcommonserver/utility/logiffail.h"
+#include "libcommon/filename.h"
 #include "libcommon/utility/types.h"
 
 #include <xxhash.h>

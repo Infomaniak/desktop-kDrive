@@ -37,14 +37,6 @@
     KD_ASSERT_SELECT(NAME, KD_ASSERT_VA_SIZE(__VA_ARGS__)) \
     (__VA_ARGS__)
 
-
-#if defined(__WIN3)
-#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
-#else
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#endif
-
-
 // Default assert: If the condition is false in debug builds, terminate.
 //
 // Prints a message on failure, even in release builds.
