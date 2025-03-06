@@ -22,7 +22,7 @@
 #include "libcommon/asserts.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
-#include "sentry/handler.h"
+
 #include <iostream>
 #include <log4cplus/loggingmacros.h>
 
@@ -1358,12 +1358,6 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
                                      << SyncName2WStr(tmpNode->name()).c_str() << L"' (node ID: '"
                                      << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())).c_str()
                                      << L"')");
-        }
-
-        // Update origine path
-        if (!tmpNode->moveOrigin().has_value() && prevNode->moveOrigin().has_value()) {
-            tmpNode->setMoveOrigin(prevNode->moveOrigin());
-            tmpNode->setMoveOriginParentDbId(prevNode->moveOriginParentDbId());
         }
     }
 
