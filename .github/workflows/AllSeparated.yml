@@ -997,6 +997,7 @@ jobs:
         uses: corca-ai/local-cache@v2
         with:
           path: ${{ github.workspace }}/build-macos/client/cache/
+          base: ${{ github.workspace }}/../local-cache/
           key: "6.2.3" #${{ hashFiles('${{ github.workspace }}/lockfiles') }}
           clean-key: true
 
