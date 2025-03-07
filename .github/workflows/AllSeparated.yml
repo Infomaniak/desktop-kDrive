@@ -941,9 +941,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
-
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
@@ -1017,9 +1014,6 @@ jobs:
         uses: actions/checkout@v4.1.1
         with:
           ref: ${{ github.head_ref }}
-
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -1095,9 +1089,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
-
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
@@ -1172,9 +1163,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
-
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
@@ -1248,9 +1236,6 @@ jobs:
         uses: actions/checkout@v4.1.1
         with:
           ref: ${{ github.head_ref }}
-
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
 
       - name: Download common files
         uses: actions/download-artifact@v4
