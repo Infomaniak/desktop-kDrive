@@ -172,10 +172,8 @@ const std::string &CommonUtility::currentVersion() {
 }
 
 QString CommonUtility::fileSystemName(const QString &dirPath) {
-    QDir dir(dirPath);
-    if (dir.exists()) {
-        QStorageInfo info(dirPath);
-        if (info.isValid()) {
+    if (QDir dir(dirPath); dir.exists()) {
+        if (const QStorageInfo info(dirPath); info.isValid()) {
             return info.fileSystemType();
         }
     } else {
@@ -183,7 +181,7 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
         return fileSystemName(dir.path());
     }
 
-    return QString();
+    return {};
 }
 
 QString CommonUtility::getIconPath(const IconType iconType) {
