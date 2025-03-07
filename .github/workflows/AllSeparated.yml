@@ -229,6 +229,8 @@ jobs:
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSql.framework
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtCore.framework
               ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework
+              ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework
           retention-days: 1
         if: always()
 
@@ -237,13 +239,20 @@ jobs:
         with:
           name: macos-build-libs
           path: |
+              /usr/local/lib/libPocoNetSSL.103.dylib
               /usr/local/lib/libPocoUtil.103.dylib
               /usr/local/lib/libPocoJSON.103.dylib
               /usr/local/lib/libPocoXML.103.dylib
               /usr/local/lib/libPocoFoundation.103.dylib
               /usr/local/lib/libPocoNet.103.dylib
+              /usr/local/lib/libPocoCrypto.103.dylib
               /usr/local/lib/libcppunit-1.15.2.dylib
               /usr/local/lib/liblog4cplusU.9.dylib
+              /usr/local/lib/libsentry.dylib
+              /usr/local/lib/libzip.5.dylib
+              /usr/local/lib/libzstd.1.dylib
+              /usr/local/lib/libssl.3.dylib
+              /usr/local/lib/libxxhash.0.8.2.dylib
           retention-days: 1
         if: always()
 
@@ -983,23 +992,40 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-macos/client/cache/
+          base: ${{ github.workspace }}/../local-cache/
+          key: "6.2.3" #${{ hashFiles('${{ github.workspace }}/lockfiles') }}
+          clean-key: true
+
       - name: Download libs
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: macos-build-libs
-          path: ${{ github.workspace }}/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/cache/
 
       - name: Download common files
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
-          path: ${{ github.workspace }}/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/cache/
 
       - name: Download Frameworks
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: macos-build-frameworks
-          path: ${{ github.workspace }}/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Move the cache to the build directory
+        run: | 
+            mkdir -p ${{ github.workspace }}/build-macos/client/bin/
+            mv ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
