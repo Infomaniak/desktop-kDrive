@@ -297,13 +297,13 @@ std::string toString(ExitInfo e);
 // Conflict types ordered by priority
 enum class ConflictType {
     None,
-    MoveParentDelete,
+    EditDelete,
     MoveDelete,
+    MoveParentDelete,
     CreateParentDelete,
     MoveMoveSource,
     MoveMoveDest,
     MoveCreate,
-    EditDelete,
     CreateCreate,
     EditEdit,
     MoveMoveCycle
@@ -347,7 +347,7 @@ enum class CancelType {
 };
 std::string toString(CancelType e);
 
-enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed };
+enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed, ConflictOpGenerated };
 std::string toString(NodeStatus e);
 
 enum class SyncStatus {

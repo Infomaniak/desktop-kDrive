@@ -100,15 +100,15 @@ class Node {
         size_t deleteChildren(const NodeId &childId);
         std::shared_ptr<Node> getChildExcept(SyncName name, OperationType except);
 
-        inline void setChangeEvents(const OperationType ops) { _changeEvents = ops; }
-        inline void insertChangeEvent(const OperationType &op) { _changeEvents |= op; }
-        inline void deleteChangeEvent(const OperationType &op) { _changeEvents ^= op; }
-        inline void clearChangeEvents() { _changeEvents = OperationType::None; }
-        inline bool hasChangeEvent() const { return _changeEvents != OperationType::None; }
-        inline bool hasChangeEvent(const OperationType op) const { return (_changeEvents & op) == op; }
+        void setChangeEvents(const OperationType ops) { _changeEvents = ops; }
+        void insertChangeEvent(const OperationType &op) { _changeEvents |= op; }
+        void deleteChangeEvent(const OperationType &op) { _changeEvents ^= op; }
+        void clearChangeEvents() { _changeEvents = OperationType::None; }
+        bool hasChangeEvent() const { return _changeEvents != OperationType::None; }
+        bool hasChangeEvent(const OperationType op) const { return (_changeEvents & op) == op; }
 
-        inline void insertConflictAlreadyConsidered(const ConflictType &conf) { _conflictsAlreadyConsidered.push_back(conf); }
-        inline void clearConflictAlreadyConsidered() { _conflictsAlreadyConsidered.clear(); }
+        void insertConflictAlreadyConsidered(const ConflictType &conf) { _conflictsAlreadyConsidered.push_back(conf); }
+        void clearConflictAlreadyConsidered() { _conflictsAlreadyConsidered.clear(); }
 
         bool isEditFromDeleteCreate() const;
 

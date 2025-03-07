@@ -59,6 +59,7 @@ void UpdateTreeWorker::execute() {
         nodeItem->clearConflictAlreadyConsidered();
         nodeItem->setInconsistencyType(InconsistencyType::None);
         nodeItem->setPreviousId(std::nullopt);
+        nodeItem->setStatus(NodeStatus::Unprocessed);
     }
 
     _updateTree->previousIdSet().clear();

@@ -25,7 +25,7 @@
 
 namespace KDC {
 
-class ConflictResolverWorker final : public OperationProcessor {
+class ConflictResolverWorker : public OperationProcessor {
     public:
         ConflictResolverWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name, const std::string &shortName);
 
@@ -41,12 +41,15 @@ class ConflictResolverWorker final : public OperationProcessor {
 
         ExitCode handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving);
         ExitCode generateLocalRenameOperation(const Conflict &conflict, bool &continueSolving);
-        ExitCode generateEditDeleteConflictOperation(const Conflict &conflict);
+        ExitCode generateEditDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
         ExitCode generateMoveDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
-        ExitCode checkForOrphanNodes(const Conflict &conflict, const std::shared_ptr<Node> &deleteNode);
         ExitCode generateMoveParentDeleteConflictOperation(const Conflict &conflict);
         ExitCode generateCreateParentDeleteConflictOperation(const Conflict &conflict);
         ExitCode generateUndoMoveOperation(const Conflict &conflict, const std::shared_ptr<Node> &loserNode);
+
+        void rescueModifiedLocalNodes(const Conflict &conflict, const std::shared_ptr<Node> &parentNode);
+        void generateRescueOperation(const Conflict &conflict, const std::shared_ptr<Node> &node);
+        void createRescueFolderIfNeeded();
 
         std::shared_ptr<Node> getLoserNode(const Conflict &conflict);
 
@@ -59,6 +62,8 @@ class ConflictResolverWorker final : public OperationProcessor {
                                       std::unordered_set<std::shared_ptr<Node>> &children);
         ExitCode findAllChildNodeIdsFromDb(const std::shared_ptr<Node> &parentNode, std::unordered_set<DbNodeId> &childrenDbIds);
         ExitCode undoMove(const std::shared_ptr<Node> &moveNode, const SyncOpPtr &moveOp);
+
+        bool _rescueFolderExists{false};
 
         friend class TestConflictResolverWorker;
 };

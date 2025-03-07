@@ -311,6 +311,8 @@ std::string toString(const NodeStatus e) {
             return "PartiallyProcessed";
         case NodeStatus::Processed:
             return "Processed";
+        case NodeStatus::ConflictOpGenerated:
+            return "ConflictOpGenerated";
         default:
             return noConversionStr;
     }
