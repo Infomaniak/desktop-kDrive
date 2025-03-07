@@ -521,7 +521,7 @@ jobs:
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-common-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
@@ -563,7 +563,7 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-commonServer-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
@@ -605,7 +605,7 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-server-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
@@ -647,7 +647,7 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-syncengine-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
@@ -689,7 +689,7 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-parms-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
