@@ -143,7 +143,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-qt-libs
-          path: /home/runner/Qt/6.2.3/gcc_64/lib/*
+          path: |
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.*
           retention-days: 1
         if: always()
 
@@ -152,11 +157,17 @@ jobs:
         with:
           name: linux-build-usr-lib
           path: |
-              /usr/local/lib/libcppunit*
-              /usr/local/lib/libPoco*
-              /usr/local/lib/liblog4cplus*
-              /usr/local/lib/libsentry*
-              /usr/local/lib/libzip*
+              /usr/local/lib/libcppunit.so
+              /usr/local/lib/libPocoUtil.so
+              /usr/local/lib/libPocoJSON.so
+              /usr/local/lib/libPocoXML.so
+              /usr/local/lib/libPocoFoundation.so
+              /usr/local/lib/libPocoNetSSL.so
+              /usr/local/lib/libPocoCrypto.so
+              /usr/local/lib/libPocoNet.so
+              /usr/local/lib/liblog4cplus.so
+              /usr/local/lib/libsentry.so
+              /usr/local/lib/libzip.so
               /usr/local/lib/libxxhash*
           retention-days: 1
         if: always()
@@ -582,7 +593,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
-          name: linux-build-qt-lib
+          name: linux-build-qt-libs
           path: ${{ github.workspace }}/build-linux/cache/
           
       - name: Copy the cache to the test directory
@@ -597,7 +608,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_common
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_common
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
