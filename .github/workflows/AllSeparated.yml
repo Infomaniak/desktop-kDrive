@@ -753,7 +753,7 @@ jobs:
         with:
           path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
-          key: "QT6.2.3"
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true
 
       - name: Download libs
@@ -830,7 +830,7 @@ jobs:
         with:
           path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
-          key: "QT6.2.3"
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true
 
       - name: Download libs
@@ -907,7 +907,7 @@ jobs:
         with:
           path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
-          key: "QT6.2.3"
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true
 
       - name: Download libs
@@ -984,7 +984,7 @@ jobs:
         with:
           path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
-          key: "QT6.2.3"
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true
 
       - name: Download libs
@@ -1061,7 +1061,7 @@ jobs:
         with:
           path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
-          key: "QT6.2.3"
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true
 
       - name: Download libs
