@@ -30,11 +30,7 @@ std::shared_ptr<WindowsUpdater> WindowsUpdater::_instance;
 
 std::shared_ptr<WindowsUpdater> WindowsUpdater::instance() {
     if (_instance == nullptr) {
-        try {
-            _instance = std::make_shared<WindowsUpdater>();
-        } catch (std::exception const &) {
-            return nullptr;
-        }
+        _instance = std::make_shared<WindowsUpdater>();
     }
 
     return _instance;
