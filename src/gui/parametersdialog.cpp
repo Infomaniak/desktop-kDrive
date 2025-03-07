@@ -388,7 +388,6 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                     .arg(err);
             break;
         case ExitCode::Ok:
-        case ExitCode::NeedRestart:
         case ExitCode::LogicError:
         case ExitCode::TokenRefreshed:
         case ExitCode::RateLimited:
@@ -573,7 +572,6 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             }
             break;
         case ExitCode::Ok:
-        case ExitCode::NeedRestart:
         case ExitCode::TokenRefreshed:
         case ExitCode::RateLimited:
         case ExitCode::OperationCanceled:

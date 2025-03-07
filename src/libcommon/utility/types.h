@@ -167,7 +167,7 @@ using ExecuteCommand = std::function<void(const char *)>;
 enum class ReplicaSide { Unknown, Local, Remote };
 std::string toString(ReplicaSide e);
 
-inline ReplicaSide otherSide(ReplicaSide side) {
+inline ReplicaSide otherSide(const ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
     return side == ReplicaSide::Local ? ReplicaSide::Remote : ReplicaSide::Local;
 }
@@ -194,8 +194,6 @@ std::string toString(OperationType e);
 enum class ExitCode {
     Ok,
     Unknown,
-    NeedRestart, // A propagation job cannot be executed because the situation that led to its creation is no longer
-                 // verified
     NetworkError,
     InvalidToken,
     DataError, // Corruption of data
