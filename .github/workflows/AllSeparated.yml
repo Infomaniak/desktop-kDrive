@@ -992,14 +992,17 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
-      - name: Create cache directory
-        run : mkdir -p ${{ github.workspace }}/build-macos/client/cache/
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Load cached dependencies
         id: cache
         uses: corca-ai/local-cache@v2
         with:
-          path: build-macos/client/cache/
+          path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
           key: "6.2.3" #${{ hashFiles('${{ github.workspace }}/lockfiles') }}
           clean-key: true
@@ -1009,13 +1012,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: macos-build-libs
-          path: ${{ github.workspace }}/build-macos/client/cache/
-
-      - name: Download common files
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/cache/
 
       - name: Download Frameworks
