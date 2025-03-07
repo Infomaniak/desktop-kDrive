@@ -589,74 +589,56 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
     return {};
 }
 
-QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const {
+QString ParametersDialog::getConflictText(const ConflictType conflictType, const ConflictTypeResolution resolution) const {
     switch (conflictType) {
         case ConflictType::None:
             break;
         case ConflictType::MoveParentDelete:
             return tr(
                     "An element was moved to a deleted folder.<br>"
-                    "The move has been canceled.");
-            break;
+                    "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
+                    "IMPROVED).");
         case ConflictType::MoveDelete:
             return tr(
                     "This element was moved by another user.<br>"
-                    "The deletion has been canceled.");
-            break;
+                    "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
+                    "IMPROVED).");
         case ConflictType::CreateParentDelete:
             return tr(
                     "An element was created in this folder while it was being deleted.<br>"
-                    "The delete operation has been propagated anyway.");
-            break;
+                    "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
+                    "IMPROVED).");
         case ConflictType::MoveMoveSource:
             return tr(
                     "This element has been moved somewhere else.<br>"
                     "The local operation has been canceled.");
-            break;
         case ConflictType::MoveMoveDest:
             return tr(
                     "An element with the same name already exists in this location.<br>"
                     "The local element has been renamed.");
-            break;
         case ConflictType::MoveCreate:
             return tr(
                     "An element with the same name already exists in this location.<br>"
                     "The local operation has been canceled.");
-            break;
         case ConflictType::EditDelete:
-            if (resolution == ConflictTypeResolution::DeleteCanceled) {
+            if (resolution == ConflictTypeResolution::FileRescued) {
                 return tr(
                         "The content of the file was modified while it was being deleted.<br>"
-                        "The deletion has been canceled.");
-            } else if (resolution == ConflictTypeResolution::FileMovedToRoot) {
-                return tr(
-                        "The content of a synchronized element was modified while a parent folder was being deleted (e.g. the "
-                        "folder "
-                        "containing the current folder).<br>"
-                        "The file has been moved to the root of your kDrive.");
-            } else {
-                // Should not happen
-                return tr(
-                        "The content of an already synchronized file has been modified while this one or one of its parent "
-                        "folders "
-                        "has been deleted.<br>");
+                        "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
+                        "IMPROVED).");
             }
-            break;
         case ConflictType::CreateCreate:
             return tr(
                     "An element with the same name already exists in this location.<br>"
                     "The local element has been renamed.");
-            break;
         case ConflictType::EditEdit:
             return tr(
                     "The file was modified at the same time by another user.<br>"
                     "Your modifications have been saved in a copy.");
-            break;
         case ConflictType::MoveMoveCycle:
             return tr(
                     "Another user has moved a parent folder of the destination.<br>"
                     "The local operation has been canceled.");
-            break;
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << conflictType;

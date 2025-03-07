@@ -317,7 +317,7 @@ inline bool isConflictsWithLocalRename(ConflictType type) {
     return conflictsWithLocalRename.contains(type);
 }
 
-enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
+enum class ConflictTypeResolution { None, FileRescued };
 std::string toString(ConflictTypeResolution e);
 
 enum class InconsistencyType {

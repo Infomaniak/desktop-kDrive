@@ -1069,7 +1069,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         return ExitCode::DataError;
     }
 
-    if (job->runSynchronously() != ExitCode::Ok) {
+    if (!job->runSynchronously()) {
         if (job->exitCode() == ExitCode::BackError && job->exitCause() == ExitCause::ShareLinkAlreadyExists) {
             // The link already exists, get it
             job.reset();
@@ -1080,7 +1080,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
                 return ExitCode::DataError;
             }
 
-            if (job->runSynchronously() != ExitCode::Ok) {
+            if (!job->runSynchronously()) {
                 logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitCode()));
                 return job->exitCode();
             }

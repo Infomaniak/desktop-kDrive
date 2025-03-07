@@ -39,6 +39,7 @@
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
 #include "utility/jsonparserutility.h"
+#include "utility/logiffail.h"
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>
@@ -47,6 +48,8 @@ namespace KDC {
 
 #define SEND_PROGRESS_DELAY 1 // 1 sec
 #define SNAPSHOT_INVALIDATION_THRESHOLD 100 // Changes
+
+static const SyncPath rescueFolderName = ".rescueFolder";
 
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
     OperationProcessor(syncPal, name, shortName) {}
@@ -184,7 +187,7 @@ void ExecutorWorker::execute() {
                 if (syncOp->affectedNode()->id().has_value()) {
                     std::unordered_set<NodeId> whiteList;
                     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
-                    if (whiteList.find(syncOp->affectedNode()->id().value()) != whiteList.end()) {
+                    if (whiteList.contains(syncOp->affectedNode()->id().value())) {
                         // This item has been synchronized, it can now be removed from white list
                         whiteList.erase(syncOp->affectedNode()->id().value());
                         SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
@@ -548,19 +551,6 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abs
                                                    << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
                                                    << exitInfo);
                 return exitInfo;
-            }
-
-            // Check for inconsistency
-            if (syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
-                // Notify user that the file has been renamed
-                SyncFileItem syncItem;
-                if (_syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
-                    Error err(_syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
-                              syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
-                              syncItem.newPath().has_value() ? syncItem.newPath().value() : syncItem.path(), syncItem.conflict(),
-                              syncItem.inconsistency());
-                    _syncPal->addError(err);
-                }
             }
 
             PinState pinState = _syncPal->vfs()->pinState(absoluteLocalFilePath);
@@ -994,25 +984,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
         // Do not generate job, only push changes in DB and update tree
         if (syncOp->hasConflict()) {
             bool propagateChange = true;
-            ExitInfo exitInfo = propagateConflictToDbAndTree(syncOp, propagateChange);
-
-            Error err(_syncPal->syncDbId(),
-                      syncOp->conflict().localNode() != nullptr
-                              ? (syncOp->conflict().localNode()->id().has_value() ? syncOp->conflict().localNode()->id().value()
-                                                                                  : "")
-                              : "",
-                      syncOp->conflict().remoteNode() != nullptr
-                              ? (syncOp->conflict().remoteNode()->id().has_value() ? syncOp->conflict().remoteNode()->id().value()
-                                                                                   : "")
-                              : "",
-                      syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeType::Unknown,
-                      syncOp->affectedNode()->moveOrigin().has_value() ? syncOp->affectedNode()->moveOrigin().value()
-                                                                       : syncOp->affectedNode()->getPath(),
-                      syncOp->conflict().type());
-
-            _syncPal->addError(err);
-
-            if (!propagateChange || !exitInfo) {
+            if (ExitInfo exitInfo = propagateConflictToDbAndTree(syncOp, propagateChange); !propagateChange || !exitInfo) {
                 return exitInfo;
             }
         }
@@ -1023,6 +995,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
             return exitInfo;
         }
     } else if (syncOp->isRescueOperation()) {
+        return executeRescueMoveJob(syncOp);
     } else {
         if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << SyncName2WStr(syncOp->affectedNode()->name())
@@ -1152,23 +1125,6 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             return exitInfo;
         }
 
-        // Send conflict notification
-        SyncFileItem syncItem;
-        if (_syncPal->getSyncFileItem(syncOp->affectedNode()->getPath(), syncItem)) {
-            NodeId localNodeId = syncOp->correspondingNode()->side() == ReplicaSide::Local
-                                         ? syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : ""
-                                         : "";
-            NodeId remoteNodeId = syncOp->correspondingNode()->side() == ReplicaSide::Local ? ""
-                                  : syncItem.remoteNodeId().has_value()                     ? syncItem.remoteNodeId().value()
-                                                                                            : "";
-
-            Error err(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncItem.type(),
-                      syncItem.newPath().has_value() ? syncItem.newPath().value() : syncItem.path(), syncItem.conflict(),
-                      syncItem.inconsistency(), CancelType::None,
-                      localNodeId.empty() ? relativeDestLocalFilePath : absoluteDestLocalFilePath);
-            _syncPal->addError(err);
-        }
-
         return ExitCode::Ok;
     }
 
@@ -1176,8 +1132,52 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
 }
 
 ExitInfo ExecutorWorker::executeRescueMoveJob(SyncOpPtr syncOp) {
-    LocalMoveJob rescueJob(_syncPal->localPath() / syncOp->relativeOriginPath(), syncOp->relativeDestinationPath());
-    rescueJob.runSynchronously();
+    if (const auto exitInfo = createRescueFolderIfNeeded(); !exitInfo) {
+        return exitInfo;
+    }
+
+    const auto absoluteOriginPath = _syncPal->localPath() / syncOp->relativeOriginPath();
+    const auto absoluteDestinationPath = _syncPal->localPath() / rescueFolderName / syncOp->relativeOriginPath().filename();
+    LocalMoveJob rescueJob(absoluteOriginPath, absoluteDestinationPath);
+    if (const auto exitInfo = rescueJob.runSynchronously(); !exitInfo) {
+        cancelAllOngoingJobs();
+        return exitInfo;
+    }
+    if (const auto exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
+        cancelAllOngoingJobs();
+        return exitInfo;
+    }
+
+    LOG_IF_FAIL(syncOp->conflict().localNode() && syncOp->conflict().localNode()->id().has_value())
+    const auto localNodeId = syncOp->conflict().localNode()->id().value();
+    const Error error(_syncPal->syncDbId(), localNodeId, {}, syncOp->conflict().localNode()->type(), absoluteOriginPath,
+                      syncOp->conflict().type(), InconsistencyType::None, CancelType::None, absoluteDestinationPath);
+    _syncPal->addError(error);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ExecutorWorker::createRescueFolderIfNeeded() {
+    const auto rescueFolderPath = _syncPal->localPath() / rescueFolderName;
+
+    bool exists = false;
+    auto ioError = IoError::Unknown;
+    IoHelper::checkIfPathExists(rescueFolderPath, exists, ioError);
+    if (ioError != IoError::Success) {
+        // Failed to check directory existence
+        LOGW_WARN(_logger, L"Failed to check rescue directory existence. Error code: " << Utility::formatIoError(ioError));
+        return ExitCode::SystemError;
+    }
+    if (exists) {
+        // Rescue folder already exists
+        return ExitCode::Ok;
+    }
+
+    LocalCreateDirJob job(rescueFolderPath);
+    if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
+        return exitInfo;
+    }
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
@@ -1192,40 +1192,20 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
 
     if (syncOp->omit()) {
         // Do not generate job, only push changes in DB and update tree
-        if (syncOp->hasConflict() &&
-            syncOp->conflict().type() !=
-                    ConflictType::EditDelete) { // Error message handled with move operation in case Edit-Delete conflict
+        if (syncOp->hasConflict()) { // Error message handled with move operation in case Edit-Delete conflict
             bool propagateChange = true;
-            ExitInfo exitInfo = propagateConflictToDbAndTree(syncOp, propagateChange);
-
-            Error err(_syncPal->syncDbId(),
-                      syncOp->conflict().localNode() != nullptr
-                              ? (syncOp->conflict().localNode()->id().has_value() ? syncOp->conflict().localNode()->id().value()
-                                                                                  : "")
-                              : "",
-                      syncOp->conflict().remoteNode() != nullptr
-                              ? (syncOp->conflict().remoteNode()->id().has_value() ? syncOp->conflict().remoteNode()->id().value()
-                                                                                   : "")
-                              : "",
-                      syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeType::Unknown,
-                      syncOp->affectedNode()->moveOrigin().has_value() ? syncOp->affectedNode()->moveOrigin().value()
-                                                                       : syncOp->affectedNode()->getPath(),
-                      syncOp->conflict().type());
-
-            _syncPal->addError(err);
-
-            if (!propagateChange || !exitInfo) {
+            if (const ExitInfo exitInfo = propagateConflictToDbAndTree(syncOp, propagateChange); !propagateChange || !exitInfo) {
                 return exitInfo;
             }
         }
 
-        if (ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
+        if (const ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
     } else {
-        if (ExitInfo exitInfo = generateDeleteJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
+        if (const ExitInfo exitInfo = generateDeleteJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             return exitInfo;
         }
     }

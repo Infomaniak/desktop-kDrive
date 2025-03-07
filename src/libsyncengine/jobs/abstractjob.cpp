@@ -46,7 +46,7 @@ AbstractJob::~AbstractJob() {
     log4cplus::threadCleanup();
 }
 
-ExitCode AbstractJob::runSynchronously() {
+ExitInfo AbstractJob::runSynchronously() {
     run();
     return _exitCode;
 }

@@ -470,66 +470,66 @@ void TestConflictResolverWorker::testMoveDelete3() {
     CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
 }
 
-void TestConflictResolverWorker::testMoveDelete4() {
-    // Simulate rename of node A to B on local replica
-    const auto lNodeA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lA");
-    lNodeA->setMoveOrigin(lNodeA->getPath());
-    lNodeA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->idb());
-    lNodeA->setName(Str("B"));
-    lNodeA->setChangeEvents(OperationType::Move);
-
-    // Simulate move of node AB under root on remote replica
-    const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
-    const auto rNodeAB = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAB");
-    rNodeAB->setChangeEvents(OperationType::Move);
-    rNodeAB->setMoveOrigin(rNodeAB->getPath());
-    rNodeAB->setMoveOriginParentDbId(rNodeA->idb());
-    CPPUNIT_ASSERT(rNodeAB->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-    (void) rNodeA->deleteChildren(rNodeAB);
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeAB));
-
-    // Simulate a delete of node A on remote replica
-    rNodeA->setChangeEvents(OperationType::Delete);
-    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
-
-    const Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
-    _syncPal->_conflictQueue->push(conflict);
-
-    _syncPal->_conflictResolverWorker->execute();
-
-    /**
-     * Desired final FS state:
-     *
-     *          root
-     *      _____|_____
-     *     |          |
-     *     B         AB'
-     *     |
-     *     AA
-     *     |
-     *    AAA
-     */
-
-    // Should have 1 move (orphan node) and 1 delete operation,
-    // changes to be done in db only for both op
-    // and on the remote replica only
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_syncOps->size());
-    CPPUNIT_ASSERT(!_syncPal->_conflictResolverWorker->registeredOrphans().empty());
-    for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
-        const auto op = _syncPal->_syncOps->getOp(opId);
-        CPPUNIT_ASSERT(op->omit());
-
-        if (op->type() == OperationType::Move) {
-            CPPUNIT_ASSERT(!op->newName().empty());
-            CPPUNIT_ASSERT_EQUAL(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(), op->newParentNode());
-            CPPUNIT_ASSERT_EQUAL(rNodeAB, op->affectedNode());
-        } else if (op->type() == OperationType::Delete) {
-            CPPUNIT_ASSERT_EQUAL(rNodeA, op->affectedNode());
-        } else {
-            CPPUNIT_ASSERT(false); // Should not happen
-        }
-    }
-}
+// void TestConflictResolverWorker::testMoveDelete4() {
+//     // Simulate rename of node A to B on local replica
+//     const auto lNodeA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lA");
+//     lNodeA->setMoveOrigin(lNodeA->getPath());
+//     lNodeA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->idb());
+//     lNodeA->setName(Str("B"));
+//     lNodeA->setChangeEvents(OperationType::Move);
+//
+//     // Simulate move of node AB under root on remote replica
+//     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
+//     const auto rNodeAB = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAB");
+//     rNodeAB->setChangeEvents(OperationType::Move);
+//     rNodeAB->setMoveOrigin(rNodeAB->getPath());
+//     rNodeAB->setMoveOriginParentDbId(rNodeA->idb());
+//     CPPUNIT_ASSERT(rNodeAB->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
+//     (void) rNodeA->deleteChildren(rNodeAB);
+//     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeAB));
+//
+//     // Simulate a delete of node A on remote replica
+//     rNodeA->setChangeEvents(OperationType::Delete);
+//     (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeA);
+//
+//     const Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
+//     _syncPal->_conflictQueue->push(conflict);
+//
+//     _syncPal->_conflictResolverWorker->execute();
+//
+//     /**
+//      * Desired final FS state:
+//      *
+//      *          root
+//      *      _____|_____
+//      *     |          |
+//      *     B         AB'
+//      *     |
+//      *     AA
+//      *     |
+//      *    AAA
+//      */
+//
+//     // Should have 1 move (orphan node) and 1 delete operation,
+//     // changes to be done in db only for both op
+//     // and on the remote replica only
+//     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_syncOps->size());
+//     CPPUNIT_ASSERT(!_syncPal->_conflictResolverWorker->registeredOrphans().empty());
+//     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
+//         const auto op = _syncPal->_syncOps->getOp(opId);
+//         CPPUNIT_ASSERT(op->omit());
+//
+//         if (op->type() == OperationType::Move) {
+//             CPPUNIT_ASSERT(!op->newName().empty());
+//             CPPUNIT_ASSERT_EQUAL(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(), op->newParentNode());
+//             CPPUNIT_ASSERT_EQUAL(rNodeAB, op->affectedNode());
+//         } else if (op->type() == OperationType::Delete) {
+//             CPPUNIT_ASSERT_EQUAL(rNodeA, op->affectedNode());
+//         } else {
+//             CPPUNIT_ASSERT(false); // Should not happen
+//         }
+//     }
+// }
 
 void TestConflictResolverWorker::testMoveDelete5() {
     // Simulate rename of node AA to AA' on local replica
@@ -789,60 +789,60 @@ void TestConflictResolverWorker::testMoveMoveSource() {
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
 }
 
-void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
-    // Initial state : Node AAA is orphan.
-    const SyncName orphanName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-            "AAA", PlatformInconsistencyCheckerUtility::SuffixType::Orphan);
-
-    const auto lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
-    lNodeAAA->setName(orphanName);
-    (void) lNodeAAA->parentNode()->deleteChildren(lNodeAAA);
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(lNodeAAA));
-    CPPUNIT_ASSERT(lNodeAAA->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-
-    const auto rNodeAAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAAA");
-    rNodeAAA->setName(orphanName);
-    (void) rNodeAAA->parentNode()->deleteChildren(rNodeAAA);
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeAAA));
-    CPPUNIT_ASSERT(rNodeAAA->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-
-    (void) _syncPal->_conflictResolverWorker->_registeredOrphans.insert({*rNodeAAA->idb(), ReplicaSide::Remote});
-
-    // Simulate move of node AAA to AB on local replica
-    const auto lNodeAB = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAB");
-
-    lNodeAAA->setChangeEvents(OperationType::Move);
-    lNodeAAA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->idb());
-    lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
-    CPPUNIT_ASSERT(lNodeAAA->setParentNode(lNodeAB));
-    lNodeAAA->setName(Str("AAA"));
-    (void) _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(lNodeAAA);
-    CPPUNIT_ASSERT(lNodeAB->insertChildren(lNodeAAA));
-
-    // Simulate move of node AAA to A on remote replica
-    const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
-
-    rNodeAAA->setChangeEvents(OperationType::Move);
-    rNodeAAA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->idb());
-    rNodeAAA->setMoveOrigin(rNodeAAA->getPath());
-    CPPUNIT_ASSERT(rNodeAAA->setParentNode(rNodeA));
-    rNodeAAA->setName(Str("AAA"));
-    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeAAA);
-    CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeAAA));
-
-    const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
-    _syncPal->_conflictQueue->push(conflict);
-
-    _syncPal->_conflictResolverWorker->execute();
-
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
-    const auto opId = _syncPal->_syncOps->opSortedList().front();
-    const auto op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT_EQUAL(SyncName2Str(orphanName), SyncName2Str(op->newName()));
-    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
-    CPPUNIT_ASSERT_EQUAL(_syncPal->updateTree(ReplicaSide::Local)->rootNode(), op->newParentNode());
-    CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
-}
+// void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
+//     // Initial state : Node AAA is orphan.
+//     const SyncName orphanName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+//             "AAA", PlatformInconsistencyCheckerUtility::SuffixType::Orphan);
+//
+//     const auto lNodeAAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAAA");
+//     lNodeAAA->setName(orphanName);
+//     (void) lNodeAAA->parentNode()->deleteChildren(lNodeAAA);
+//     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(lNodeAAA));
+//     CPPUNIT_ASSERT(lNodeAAA->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+//
+//     const auto rNodeAAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAAA");
+//     rNodeAAA->setName(orphanName);
+//     (void) rNodeAAA->parentNode()->deleteChildren(rNodeAAA);
+//     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeAAA));
+//     CPPUNIT_ASSERT(rNodeAAA->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
+//
+//     (void) _syncPal->_conflictResolverWorker->_registeredOrphans.insert({*rNodeAAA->idb(), ReplicaSide::Remote});
+//
+//     // Simulate move of node AAA to AB on local replica
+//     const auto lNodeAB = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAB");
+//
+//     lNodeAAA->setChangeEvents(OperationType::Move);
+//     lNodeAAA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->idb());
+//     lNodeAAA->setMoveOrigin(lNodeAAA->getPath());
+//     CPPUNIT_ASSERT(lNodeAAA->setParentNode(lNodeAB));
+//     lNodeAAA->setName(Str("AAA"));
+//     (void) _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(lNodeAAA);
+//     CPPUNIT_ASSERT(lNodeAB->insertChildren(lNodeAAA));
+//
+//     // Simulate move of node AAA to A on remote replica
+//     const auto rNodeA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rA");
+//
+//     rNodeAAA->setChangeEvents(OperationType::Move);
+//     rNodeAAA->setMoveOriginParentDbId(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->idb());
+//     rNodeAAA->setMoveOrigin(rNodeAAA->getPath());
+//     CPPUNIT_ASSERT(rNodeAAA->setParentNode(rNodeA));
+//     rNodeAAA->setName(Str("AAA"));
+//     (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeAAA);
+//     CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeAAA));
+//
+//     const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
+//     _syncPal->_conflictQueue->push(conflict);
+//
+//     _syncPal->_conflictResolverWorker->execute();
+//
+//     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+//     const auto opId = _syncPal->_syncOps->opSortedList().front();
+//     const auto op = _syncPal->_syncOps->getOp(opId);
+//     CPPUNIT_ASSERT_EQUAL(SyncName2Str(orphanName), SyncName2Str(op->newName()));
+//     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
+//     CPPUNIT_ASSERT_EQUAL(_syncPal->updateTree(ReplicaSide::Local)->rootNode(), op->newParentNode());
+//     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
+// }
 
 void TestConflictResolverWorker::testMoveMoveSourceDehydratedPlaceholder() {
     // Simulate move of A/AA/AAA to A/AB/AAA on local replica

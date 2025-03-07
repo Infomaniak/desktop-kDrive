@@ -240,10 +240,8 @@ std::string toString(const ConflictTypeResolution e) {
     switch (e) {
         case ConflictTypeResolution::None:
             return "None";
-        case ConflictTypeResolution::DeleteCanceled:
-            return "DeleteCanceled";
-        case ConflictTypeResolution::FileMovedToRoot:
-            return "FileMovedToRoot";
+        case ConflictTypeResolution::FileRescued:
+            return "FileRescued";
         default:
             return noConversionStr;
     }

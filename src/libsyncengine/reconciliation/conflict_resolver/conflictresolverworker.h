@@ -29,14 +29,10 @@ class ConflictResolverWorker : public OperationProcessor {
     public:
         ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
 
-        [[nodiscard]] const std::unordered_map<DbNodeId, ReplicaSide> &registeredOrphans() const { return _registeredOrphans; }
-
     protected:
         void execute() override;
 
     private:
-        std::unordered_map<DbNodeId, ReplicaSide> _registeredOrphans; // key: DB node ID, value : winner side
-
         ExitCode generateOperations(const Conflict &conflict, bool &continueSolving);
 
         ExitCode handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving);
@@ -45,25 +41,19 @@ class ConflictResolverWorker : public OperationProcessor {
         ExitCode generateMoveDeleteConflictOperation(const Conflict &conflict, bool &continueSolving);
         ExitCode generateMoveParentDeleteConflictOperation(const Conflict &conflict);
         ExitCode generateCreateParentDeleteConflictOperation(const Conflict &conflict);
-        ExitCode generateUndoMoveOperation(const Conflict &conflict, const std::shared_ptr<Node> &loserNode);
+        ExitCode generateUndoMoveOperation(const Conflict &conflict, std::shared_ptr<Node> loserNode);
 
-        void rescueModifiedLocalNodes(const Conflict &conflict, const std::shared_ptr<Node> &parentNode);
-        void generateRescueOperation(const Conflict &conflict, const std::shared_ptr<Node> &node);
-        void createRescueFolderIfNeeded();
+        void rescueModifiedLocalNodes(const Conflict &conflict, std::shared_ptr<Node> parentNode);
+        void generateRescueOperation(const Conflict &conflict, std::shared_ptr<Node> node);
 
         std::shared_ptr<Node> getLoserNode(const Conflict &conflict);
 
         /*
          * If return false, the file path is too long, the file needs to be moved to root directory
          */
-        bool generateConflictedName(const std::shared_ptr<Node> &node, SyncName &newName, bool isOrphanNode = false) const;
+        bool generateConflictedName(std::shared_ptr<Node> node, SyncName &newName, bool isOrphanNode = false) const;
 
-        static void findAllChildNodes(const std::shared_ptr<Node> &parentNode,
-                                      std::unordered_set<std::shared_ptr<Node>> &children);
-        ExitCode findAllChildNodeIdsFromDb(const std::shared_ptr<Node> &parentNode, std::unordered_set<DbNodeId> &childrenDbIds);
-        ExitCode undoMove(const std::shared_ptr<Node> &moveNode, const SyncOpPtr &moveOp);
-
-        bool _rescueFolderExists{false};
+        ExitCode undoMove(std::shared_ptr<Node> moveNode, SyncOpPtr moveOp);
 
         friend class TestConflictResolverWorker;
 };

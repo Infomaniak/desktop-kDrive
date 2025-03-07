@@ -38,14 +38,14 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         CPPUNIT_TEST(testMoveDelete1);
         CPPUNIT_TEST(testMoveDelete2);
         CPPUNIT_TEST(testMoveDelete3);
-        CPPUNIT_TEST(testMoveDelete4);
+        // CPPUNIT_TEST(testMoveDelete4);
         CPPUNIT_TEST(testMoveDelete5);
         CPPUNIT_TEST(testMoveDeleteDehydratedPlaceholder);
         CPPUNIT_TEST(testMoveParentDelete);
         CPPUNIT_TEST(testMoveParentDeleteDehydratedPlaceholder);
         CPPUNIT_TEST(testCreateParentDelete);
         CPPUNIT_TEST(testMoveMoveSource);
-        CPPUNIT_TEST(testMoveMoveSourceWithOrphanNodes);
+        // CPPUNIT_TEST(testMoveMoveSourceWithOrphanNodes);
         CPPUNIT_TEST(testMoveMoveSourceDehydratedPlaceholder);
         CPPUNIT_TEST(testMoveMoveDest);
         CPPUNIT_TEST(testMoveMoveDestDehydratedPlaceholder);
@@ -68,14 +68,14 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         void testMoveDelete1();
         void testMoveDelete2();
         void testMoveDelete3();
-        void testMoveDelete4(); // Test with orphan nodes
+        // void testMoveDelete4(); // Test with orphan nodes
         void testMoveDelete5();
         void testMoveDeleteDehydratedPlaceholder();
         void testMoveParentDelete();
         void testMoveParentDeleteDehydratedPlaceholder();
         void testCreateParentDelete();
         void testMoveMoveSource();
-        void testMoveMoveSourceWithOrphanNodes();
+        // void testMoveMoveSourceWithOrphanNodes();
         void testMoveMoveSourceDehydratedPlaceholder();
         void testMoveMoveDest();
         void testMoveMoveDestDehydratedPlaceholder();
