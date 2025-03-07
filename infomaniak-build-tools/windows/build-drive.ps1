@@ -273,7 +273,11 @@ $args = @("'-GNinja'")
 $args += ("'-DCMAKE_BUILD_TYPE=$buildType'")
 $args += ("'-DCMAKE_INSTALL_PREFIX=$installPath'")
 $args += ("'-DCMAKE_PREFIX_PATH=$installPath'")
+
+if ($ci)
+{
 $args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
+}
 
 $flags = @(
 "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
