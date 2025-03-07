@@ -164,7 +164,8 @@ struct COMMONSERVER_EXPORT Utility {
         enum class UnicodeNormalization { NFC, NFD };
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
-        static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept;
+        static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
+                                       UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
 
 #ifdef _WIN32
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
