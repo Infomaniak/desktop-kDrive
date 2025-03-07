@@ -56,6 +56,7 @@ jobs:
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
 
       - name: Create compile commands 
+        if: false
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           call "cov01.exe" "-0" # coverage off
@@ -66,13 +67,15 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
+          
           set COVFILE=%cd%\src\test.cov
+
           call "cov01.exe" -1
           call "cov01.exe" -s
+          
           set PATH=%ProgramFiles%\BullseyeCoverage\bin;%ProgramFiles%\Microsoft Visual Studio\VC\bin;%PATH%
-
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
-          copy compile_commands.json build-windows/build
+          rem copy compile_commands.json build-windows/build
         shell: cmd
 
       - name: Execute tests
@@ -95,6 +98,7 @@ jobs:
           
           & "cov01.exe" "-0" # coverage off
           & "cov01.exe" "-s" # show status
+
           & "covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
 
           & "cov01.exe" "-1" # coverage on
