@@ -1022,6 +1022,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
+    } else if (syncOp->isRescueOperation()) {
     } else {
         if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << SyncName2WStr(syncOp->affectedNode()->name())
@@ -1032,7 +1033,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::generateMoveJob(const SyncOpPtr &syncOp, bool &ignored, bool &bypassProgressComplete) {
+ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
     bypassProgressComplete = false;
 
     // 1. If omit-flag is False, move the object on replica Y (where it still needs to be moved) from uY to vY, changing the
@@ -1172,6 +1173,11 @@ ExitInfo ExecutorWorker::generateMoveJob(const SyncOpPtr &syncOp, bool &ignored,
     }
 
     return handleFinishedJob(job, syncOp, syncOp->affectedNode()->getPath(), ignored, bypassProgressComplete);
+}
+
+ExitInfo ExecutorWorker::executeRescueMoveJob(SyncOpPtr syncOp) {
+    LocalMoveJob rescueJob(_syncPal->localPath() / syncOp->relativeOriginPath(), syncOp->relativeDestinationPath());
+    rescueJob.runSynchronously();
 }
 
 ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
