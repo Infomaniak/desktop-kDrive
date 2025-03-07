@@ -439,7 +439,9 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 bool DownloadJob::removeTmpFile() {
     if (_tmpPath.empty()) return true;
 
-    if (std::error_code ec; !std::filesystem::remove_all(_tmpPath, ec)) {
+    std::error_code ec;
+    std::filesystem::remove_all(_tmpPath, ec);
+    if (ec.value()) {
         LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatStdError(_tmpPath, ec));
         return false;
     }

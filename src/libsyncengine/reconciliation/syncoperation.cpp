@@ -24,15 +24,15 @@ UniqueId SyncOperation::_nextId = 1;
 
 SyncOperation::SyncOperation() : _id(_nextId++) {}
 
-SyncName SyncOperation::nodeName(ReplicaSide side) const {
-    auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
+SyncName SyncOperation::nodeName(const ReplicaSide side) const {
+    const auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
     if (!node) return {};
     return node->name();
 }
 
 SyncPath SyncOperation::nodePath(const ReplicaSide side) const {
     if (!correspondingNode()) return affectedNode()->getPath(); // If there is no corresponding node, ignore side.
-    auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
+    const auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
     return node->getPath();
 }
 
@@ -56,34 +56,43 @@ void SyncOperationList::setOpList(const std::list<SyncOpPtr> &opList) {
     }
 }
 
-SyncOpPtr SyncOperationList::getOp(UniqueId id) {
-    auto opIt = _allOps.find(id);
+SyncOpPtr SyncOperationList::getOp(const UniqueId id) {
+    const auto opIt = _allOps.find(id);
     return opIt == _allOps.end() ? nullptr : opIt->second;
 }
 
-void SyncOperationList::pushOp(SyncOpPtr op) {
-    _allOps.insert({op->id(), op});
+bool SyncOperationList::pushOp(SyncOpPtr op) {
+    const auto [it, inserted] = _allOps.try_emplace(op->id(), op);
+    if (!inserted) return false;
     _opSortedList.push_back(op->id());
     _opListByType[op->type()].insert(op->id());
     _node2op[*op->affectedNode()->id()].push_back(op->id());
+    return true;
 }
 
-void SyncOperationList::insertOp(std::list<UniqueId>::const_iterator pos, SyncOpPtr op) {
+void SyncOperationList::popOp() {
+    const auto opId = _opSortedList.back();
+    const auto op = getOp(opId);
+    _opSortedList.pop_back();
+    _opListByType[op->type()].erase(opId);
+    _node2op[*op->affectedNode()->id()].pop_back();
+    _allOps.erase(opId);
+}
+
+void SyncOperationList::insertOp(const std::list<UniqueId>::const_iterator pos, SyncOpPtr op) {
     _allOps.insert({op->id(), op});
     _opSortedList.insert(pos, op->id());
     _opListByType[op->type()].insert(op->id());
     _node2op[*op->affectedNode()->id()].push_back(op->id());
 }
 
-void SyncOperationList::deleteOp(std::list<UniqueId>::const_iterator it) {
-    UniqueId opId = *it;
-    SyncOpPtr syncOp = getOp(opId);
-    if (syncOp != nullptr) {
-        OperationType type = syncOp->type();
+void SyncOperationList::deleteOp(const std::list<UniqueId>::const_iterator it) {
+    const auto opId = *it;
+    if (const auto syncOp = getOp(opId); !syncOp) {
+        const auto type = syncOp->type();
         _opListByType[type].erase(opId);
         if (syncOp->affectedNode()) {
-            auto nodeId = syncOp->affectedNode()->id();
-            if (nodeId.has_value()) {
+            if (const auto nodeId = syncOp->affectedNode()->id(); nodeId.has_value()) {
                 _node2op.erase(*nodeId);
             }
         }
@@ -96,7 +105,7 @@ void SyncOperationList::clear() {
     std::unordered_map<UniqueId, SyncOpPtr>::iterator it = _allOps.begin();
     while (it != _allOps.end()) {
         it->second.reset();
-        it++;
+        ++it;
     }
     _allOps.clear();
     _opSortedList.clear();
@@ -104,27 +113,22 @@ void SyncOperationList::clear() {
     _node2op.clear();
 }
 
-void SyncOperationList::operator=(const SyncOperationList &other) {
+SyncOperationList &SyncOperationList::operator=(const SyncOperationList &other) {
     this->_allOps = other._allOps;
     this->_opSortedList = other._opSortedList;
     this->_opListByType = other._opListByType;
     this->_node2op = other._node2op;
+    return *this;
 }
 
-void SyncOperationList::getMapIndexToOp(std::unordered_map<UniqueId, int> &map,
-                                        OperationType typeFilter /*= OperationType::None*/) {
-    int index = 0;
+void SyncOperationList::getOpIdToIndexMap(std::unordered_map<UniqueId, int32_t> &map,
+                                          const OperationType typeFilter /*= OperationType::None*/) {
+    int32_t index = 0;
     for (const auto &opId: _opSortedList) {
-        SyncOpPtr syncOp = getOp(opId);
-        if (syncOp != nullptr) {
-            if (typeFilter == OperationType::None) {
-                map.insert({syncOp->id(), index++});
-            } else {
-                if (syncOp->type() == typeFilter) {
-                    map.insert({syncOp->id(), index++});
-                }
-            }
-        }
+        const auto syncOp = getOp(opId);
+        if (!syncOp) continue;
+        if (typeFilter != OperationType::None && syncOp->type() != typeFilter) continue;
+        (void) map.insert({syncOp->id(), index++});
     }
 }
 
