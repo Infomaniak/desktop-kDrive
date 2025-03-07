@@ -153,6 +153,7 @@ jobs:
               /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.*
               /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.*
               /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.*
           retention-days: 1
         if: always()
 
@@ -682,7 +683,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_common_server
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_common_server
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -750,7 +753,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_server
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_server
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -818,7 +823,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_syncengine
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_syncengine
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -886,7 +893,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_parms
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_parms
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
