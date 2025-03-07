@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "libcommon/filename.h"
+
 #include <log4cplus/loggingmacros.h>
 
 #define LOG_IF_FAIL_CAT(A, B) A##B
@@ -30,13 +32,13 @@
     (__VA_ARGS__)
 
 #define LOG_IF_FAIL(...) LOG_IF_FAIL_OVERLOAD(LOG_IF_FAIL, __VA_ARGS__)
-#define LOG_IF_FAIL_1(cond)                                                                               \
-    if (!(cond)) {                                                                                        \
-        LOG_FATAL(_logger, "ENFORCE: \"" << #cond << "\" in file " << __FILE__ << ", line " << __LINE__); \
+#define LOG_IF_FAIL_1(cond)                                                                                   \
+    if (!(cond)) {                                                                                            \
+        LOG_FATAL(_logger, "ENFORCE: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
     }
 
-#define LOG_IF_FAIL_2(cond, message)                                                                                            \
-    if (!(cond)) {                                                                                                              \
-        LOG_FATAL(_logger,                                                                                                      \
-                  "ENFORCE: \"" << #cond << "\" in file " << __FILE__ << ", line " << __LINE__ << "with message: " << message); \
+#define LOG_IF_FAIL_2(cond, message)                                                                        \
+    if (!(cond)) {                                                                                          \
+        LOG_FATAL(_logger, "ENFORCE: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
+                                         << "with message: " << message);                                   \
     }

@@ -18,7 +18,7 @@
 
 #pragma once
 
-// #include <qglobal.h>
+#include "filename.h"
 
 #if defined(QT_FORCE_ASSERTS) || !defined(QT_NO_DEBUG)
 #define KD_ASSERT_MSG qFatal
@@ -41,28 +41,28 @@
 //
 // Prints a message on failure, even in release builds.
 #define LOG_IF_FAIL(...) KD_ASSERT_OVERLOAD(ASSERT, __VA_ARGS__)
-#define ASSERT_1(cond)                                                                  \
-    if (!(cond)) {                                                                      \
-        KD_ASSERT_MSG("ASSERT: \"%s\" in file %s, line %d", #cond, __FILE__, __LINE__); \
-    } else {                                                                            \
+#define ASSERT_1(cond)                                                                      \
+    if (!(cond)) {                                                                          \
+        KD_ASSERT_MSG("ASSERT: \"%s\" in file %s, line %d", #cond, __FILENAME__, __LINE__); \
+    } else {                                                                                \
     }
-#define ASSERT_2(cond, message)                                                                                   \
-    if (!(cond)) {                                                                                                \
-        KD_ASSERT_MSG("ASSERT: \"%s\" in file %s, line %d with message: %s", #cond, __FILE__, __LINE__, message); \
-    } else {                                                                                                      \
+#define ASSERT_2(cond, message)                                                                                       \
+    if (!(cond)) {                                                                                                    \
+        KD_ASSERT_MSG("ASSERT: \"%s\" in file %s, line %d with message: %s", #cond, __FILENAME__, __LINE__, message); \
+    } else {                                                                                                          \
     }
 
 // Enforce condition to be true, even in release builds.
 //
 // Prints 'message' and aborts execution if 'cond' is false.
 #define ENFORCE(...) KD_ASSERT_OVERLOAD(ENFORCE, __VA_ARGS__)
-#define ENFORCE_1(cond)                                                           \
-    if (!(cond)) {                                                                \
-        qFatal("ENFORCE: \"%s\" in file %s, line %d", #cond, __FILE__, __LINE__); \
-    } else {                                                                      \
+#define ENFORCE_1(cond)                                                               \
+    if (!(cond)) {                                                                    \
+        qFatal("ENFORCE: \"%s\" in file %s, line %d", #cond, __FILENAME__, __LINE__); \
+    } else {                                                                          \
     }
-#define ENFORCE_2(cond, message)                                                                            \
-    if (!(cond)) {                                                                                          \
-        qFatal("ENFORCE: \"%s\" in file %s, line %d with message: %s", #cond, __FILE__, __LINE__, message); \
-    } else {                                                                                                \
+#define ENFORCE_2(cond, message)                                                                                \
+    if (!(cond)) {                                                                                              \
+        qFatal("ENFORCE: \"%s\" in file %s, line %d with message: %s", #cond, __FILENAME__, __LINE__, message); \
+    } else {                                                                                                    \
     }

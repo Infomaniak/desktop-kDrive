@@ -21,6 +21,7 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/commonserverlib.h"
 #include "libcommonserver/db/dbdefs.h"
+#include "libcommon/filename.h"
 #include "libcommon/utility/types.h"
 
 #include <xxhash.h>
@@ -48,7 +49,7 @@ class URI;
 /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
  *  static std::string errId(std::source_location location = std::source_location::current());
  */
-#define errId() Utility::_errId(__FILE__, __LINE__)
+#define errId() Utility::_errId(__FILENAME__, __LINE__)
 
 namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
@@ -163,8 +164,7 @@ struct COMMONSERVER_EXPORT Utility {
         enum class UnicodeNormalization { NFC, NFD };
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
-        static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
-                                       UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
+        static bool normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept;
 
 #ifdef _WIN32
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
