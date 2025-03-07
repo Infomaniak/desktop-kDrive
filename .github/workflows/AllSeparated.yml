@@ -252,6 +252,7 @@ jobs:
               /usr/local/lib/libzip.5.dylib
               /usr/local/lib/libzstd.1.dylib
               /usr/local/lib/libssl.3.dylib
+              /usr/local/lib/libcrypto.3.dylib
               /usr/local/lib/libxxhash.0.8.2.dylib
           retention-days: 1
         if: always()
