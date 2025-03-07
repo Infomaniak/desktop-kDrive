@@ -20,9 +20,11 @@ env:
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
+  COVFILE: ${{ GITHUB_WORKSPACE }}\src\test.cov
 
 
 jobs:
+  env:
   build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
 
@@ -55,32 +57,19 @@ jobs:
           Remove-Item -path certificate -include tempCert.txt
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
 
-      - name: Create compile commands 
-        if: false
-        run: |
-          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          call "cov01.exe" "-0" # coverage off
-          call "cov01.exe" "-s" # show status
-          powershell ./infomaniak-build-tools/windows/create-compile-commands.ps1
-        shell: cmd
-
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           
-          set COVFILE=%cd%\src\test.cov
-
           call "cov01.exe" -1
           call "cov01.exe" -s
           
           set PATH=%ProgramFiles%\BullseyeCoverage\bin;%ProgramFiles%\Microsoft Visual Studio\VC\bin;%PATH%
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
-          rem copy compile_commands.json build-windows/build
         shell: cmd
 
       - name: Execute tests
         run: |
-          $env:COVFILE="$pwd\src\test.cov"
           & "cov01.exe" "-1" # coverage on
           & "cov01.exe" "-s" # show status
 
@@ -88,9 +77,7 @@ jobs:
 
       - name: Compute code coverage
         if: true
-        run : |
-          $env:COVFILE="$pwd\src\test.cov"
-          
+        run : |          
           & "covselect.exe" "--add" 'exclude folder c:/'
           & "covselect.exe" "--add" 'exclude folder ../'
           & "covselect.exe" "--add" 'exclude folder 3rdparty/'
@@ -124,6 +111,11 @@ jobs:
             --define sonar.cfamily.bullseye.reportPath="coverage.xml"
             --define sonar.scm.exclusions.disabled=true
             --define sonar.verbose=true
+
+      - name: Deactivate BullseyeCoverage
+        run: |
+          & "cov01.exe" "-0" # coverage off
+          & "cov01.exe" "-s" # show status
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
