@@ -412,7 +412,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             sync.setDriveDbId(driveDbId);
 
             // Fill sync with .cfg content
-            QString localPathStr = settings.value(QLatin1String(localPathC)).toString();
+            QString localPathStr = settings.value(localPathC).toString();
             if (localPathStr.back() == '/') {
                 localPathStr.chop(1);
             }
