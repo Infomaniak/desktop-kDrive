@@ -85,8 +85,6 @@ std::string toString(const ExitCode e) {
             return "Unknown";
         case ExitCode::Ok:
             return "Ok";
-        case ExitCode::NeedRestart:
-            return "NeedRestart";
         case ExitCode::NetworkError:
             return "NetworkError";
         case ExitCode::InvalidToken:

@@ -252,6 +252,7 @@ jobs:
               /usr/local/lib/libzip.5.dylib
               /usr/local/lib/libzstd.1.dylib
               /usr/local/lib/libssl.3.dylib
+              /usr/local/lib/libcrypto.3.dylib
               /usr/local/lib/libxxhash.0.8.2.dylib
           retention-days: 1
         if: always()
@@ -520,7 +521,7 @@ jobs:
         run : rm -r -force ${{ github.workspace }}/build-windows/test/
 
   test-common-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
@@ -562,7 +563,7 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-commonServer-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
@@ -604,7 +605,7 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-server-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
@@ -646,7 +647,7 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-syncengine-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
@@ -688,7 +689,7 @@ jobs:
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
 
   test-parms-Linux:
-    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    runs-on: [ self-hosted, Linux, X64 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
     needs: build-Linux
@@ -740,23 +741,37 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
-      - name: Download libs
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-libs
-          path: ${{ github.workspace }}/build-macos/client/bin/
-
-      - name: Download Frameworks
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-frameworks
-          path: ${{ github.workspace }}/build-macos/client/bin/
-
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-macos/client/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true
+
+      - name: Download libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-libs
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Download Frameworks
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-frameworks
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Copy the cache to the build directory
+        run: cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -803,23 +818,37 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
-      - name: Download libs
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-libs
-          path: ${{ github.workspace }}/build-macos/client/bin/
-
-      - name: Download Frameworks
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-frameworks
-          path: ${{ github.workspace }}/build-macos/client/bin/
-
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-macos/client/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true
+
+      - name: Download libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-libs
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Download Frameworks
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-frameworks
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Copy the cache to the build directory
+        run: cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -872,17 +901,31 @@ jobs:
           name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/bin/
 
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-macos/client/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true
+
       - name: Download libs
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: macos-build-libs
-          path: ${{ github.workspace }}/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/cache/
 
       - name: Download Frameworks
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           name: macos-build-frameworks
-          path: ${{ github.workspace }}/build-macos/client/bin/
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Copy the cache to the build directory
+        run: cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -929,23 +972,37 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
-      - name: Download libs
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-libs
-          path: ${{ github.workspace }}/build-macos/client/bin/
-
-      - name: Download Frameworks
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-frameworks
-          path: ${{ github.workspace }}/build-macos/client/bin/
-
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
           name: macos-build-common-files
           path: ${{ github.workspace }}/build-macos/client/bin/
+
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-macos/client/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true
+
+      - name: Download libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-libs
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Download Frameworks
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-frameworks
+          path: ${{ github.workspace }}/build-macos/client/cache/
+
+      - name: Copy the cache to the build directory
+        run: cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -992,13 +1049,19 @@ jobs:
       - name: Clean up log directory
         run : rm -rf /tmp/kDrive-logdir/*
 
+      - name: Download common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
       - name: Load cached dependencies
         id: cache
         uses: corca-ai/local-cache@v2
         with:
-          path: ${{ github.workspace }}/build-macos/client/cache/
-          base: ${{ github.workspace }}/../local-cache/
-          key: "6.2.3" #${{ hashFiles('${{ github.workspace }}/lockfiles') }}
+          path: build-macos/client/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
           clean-key: true
 
       - name: Download libs
@@ -1008,13 +1071,6 @@ jobs:
           name: macos-build-libs
           path: ${{ github.workspace }}/build-macos/client/cache/
 
-      - name: Download common files
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-build-common-files
-          path: ${{ github.workspace }}/build-macos/client/cache/
-
       - name: Download Frameworks
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
@@ -1022,8 +1078,8 @@ jobs:
           name: macos-build-frameworks
           path: ${{ github.workspace }}/build-macos/client/cache/
 
-      - name: Move the cache to the build directory
-        run: mv ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
+      - name: Copy the cache to the build directory
+        run: cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
 
       - name: Download test executable
         uses: actions/download-artifact@v4

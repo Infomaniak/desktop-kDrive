@@ -456,9 +456,9 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
-bool Utility::isDescendantOrEqual(const SyncPath &potentialChild, const SyncPath &path) {
-    if (path == potentialChild) return true;
-    for (auto it = potentialChild.begin(), it2 = path.begin(); it != potentialChild.end(); ++it, ++it2) {
+bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
+    if (path == potentialDescendant) return true;
+    for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
         if (it2 == path.end()) {
             return true;
         }

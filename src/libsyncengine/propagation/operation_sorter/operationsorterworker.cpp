@@ -18,41 +18,41 @@
 
 #include "operationsorterworker.h"
 
+#include "cyclefinder.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "utility/logiffail.h"
 
 namespace KDC {
 
-OperationSorterWorker::OperationSorterWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                             const std::string &shortName) :
-    OperationProcessor(syncPal, name, shortName), _hasOrderChanged(false) {}
+OperationSorterWorker::OperationSorterWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name,
+                                             const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
 
 void OperationSorterWorker::execute() {
-    auto exitCode(ExitCode::Unknown);
+    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
+    const auto start = std::chrono::steady_clock::now();
 
-    auto start = std::chrono::steady_clock::now();
-
+    _reorderings.clear();
     _syncPal->_syncOps->startUpdate();
-    exitCode = sortOperations();
+    sortOperations();
 
-    std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
+    const auto elapsed_seconds = std::chrono::steady_clock::now() - start;
     LOG_SYNCPAL_INFO(_logger, "Operation sorting finished in: " << elapsed_seconds.count() << "s");
 
-    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
-    setDone(exitCode);
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
+    setDone(ExitCode::Ok);
 }
 
-ExitCode OperationSorterWorker::sortOperations() {
+void OperationSorterWorker::sortOperations() {
     _syncPal->_syncOps->startUpdate();
-    // Keep a copy of the unsorted list
-    _unsortedList = *_syncPal->_syncOps;
-    std::list<SyncOperationList> completeCycles;
-    while (true) {
+    SyncOperationList completeCycle;
+    bool cycleFound = false;
+    _hasOrderChanged = true;
+    while (_hasOrderChanged) {
         if (stopAsked()) {
-            return ExitCode::Ok;
+            return;
         }
 
         _hasOrderChanged = false;
@@ -65,97 +65,71 @@ ExitCode OperationSorterWorker::sortOperations() {
         fixCreateBeforeCreate();
         fixEditBeforeMove();
         fixMoveBeforeMoveHierarchyFlip();
-        if (!_hasOrderChanged) {
-            break;
-        }
 
-        completeCycles = findCompleteCycles();
-        if (!completeCycles.empty()) {
+        CycleFinder cycleFinder(_reorderings);
+        cycleFinder.findCompleteCycle();
+        if (cycleFinder.hasCompleteCycle()) {
+            completeCycle = cycleFinder.completeCycle();
+            cycleFound = true;
             break;
         }
     }
 
-    if (!completeCycles.empty()) {
-        if (auto resolutionOperation = std::make_shared<SyncOperation>();
-            breakCycle(completeCycles.front(), resolutionOperation)) {
+    if (cycleFound) {
+        if (const auto resolutionOperation = std::make_shared<SyncOperation>(); breakCycle(completeCycle, resolutionOperation)) {
             _syncPal->_syncOps->setOpList({resolutionOperation});
-
             _hasOrderChanged = true;
-
-            // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOrderedOps
+            // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOps
             _syncPal->setRestart(true);
-
-            return ExitCode::Ok;
+            return;
         }
     }
 
     if (const auto reshuffledOps = fixImpossibleFirstMoveOp(); reshuffledOps && !reshuffledOps->isEmpty()) {
         *_syncPal->_syncOps = *reshuffledOps;
-
-        // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOrderedOps
+        // If a cycle is discovered, the sync must be restarted after the execution of the operation in _syncOps
         _syncPal->setRestart(true);
     }
-
-    return ExitCode::Ok;
 }
 
 void OperationSorterWorker::fixDeleteBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeMove");
-    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> deleteOps = _syncPal->_syncOps->opListIdByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     if (deleteOps.empty() || moveOps.empty()) return;
 
     for (const auto &deleteOpId: deleteOps) {
-        SyncOpPtr deleteOp = _unsortedList.getOp(deleteOpId);
-
-        std::shared_ptr<Node> deleteNode = deleteOp->affectedNode();
-        if (!deleteNode->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(deleteNode->name()).c_str());
-            continue;
-        }
-
-        SyncPath path;
-        bool found = false;
-        if (!_syncPal->_syncDb->path(deleteNode->side(), *deleteNode->id(), path, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-            return;
-        }
-        if (!found) {
-            LOGW_SYNCPAL_INFO(_logger, L"Node not found for id = " << Utility::s2ws(*deleteNode->id()).c_str() << L" and name="
-                                                                   << SyncName2WStr(deleteNode->name()).c_str());
-            break;
-        }
-
-        std::optional<NodeId> deleteParentNodeId;
-        if (!_syncPal->_syncDb->id(deleteNode->side(), path.parent_path(), deleteParentNodeId, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
-            return;
-        }
-        if (!found) {
-            LOGW_SYNCPAL_INFO(_logger, L"Node not found for path = " << Path2WStr(path.parent_path()).c_str());
-            break;
-        }
+        const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
+        LOG_IF_FAIL(deleteOp)
+        const auto deleteNode = deleteOp->affectedNode();
+        LOG_IF_FAIL(deleteNode)
+        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
+        NodeId deleteNodeParentId;
+        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath.parent_path(), deleteNodeParentId)) continue;
 
         for (const auto &moveOpId: moveOps) {
-            SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
+            LOG_IF_FAIL(moveOp)
             if (moveOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
 
-            // get the parent of the op nodes list
-            std::shared_ptr<Node> moveNode = moveOp->affectedNode();
-            if (!moveNode->parentNode()->id().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNode->parentNode()->name()).c_str());
+            const auto moveNode = moveOp->affectedNode();
+            LOG_IF_FAIL(moveNode)
+            const auto moveNodeParent = moveNode->parentNode();
+            LOG_IF_FAIL(moveNodeParent)
+            if (!moveNodeParent->id().has_value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveNodeParent->name()));
                 continue;
             }
 
-            NodeId moveParentNodeId = *moveNode->parentNode()->id();
-            if (deleteParentNodeId == moveParentNodeId) {
-                if (deleteNode->name() == moveNode->name()) {
-                    // move only if moveOp is before op
-                    // moveOp depends on op
-                    moveFirstAfterSecond(moveOp, deleteOp);
-                }
+            if (const auto moveNodeParentId = moveNodeParent->id(); deleteNodeParentId != moveNodeParentId.value()) {
+                continue;
+            }
+
+            if (deleteNode->name() == moveNode->name()) {
+                // move only if moveOp is before deleteOp
+                moveFirstAfterSecond(moveOp, deleteOp);
             }
         }
     }
@@ -164,58 +138,40 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
 
 void OperationSorterWorker::fixMoveBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeCreate");
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
-    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
     for (const auto &moveOpId: moveOps) {
-        SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+        const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
+        LOG_IF_FAIL(moveOp)
+        const auto moveNode = moveOp->affectedNode();
+        LOG_IF_FAIL(moveNode)
 
         for (const auto &createOpId: createOps) {
-            SyncOpPtr createOp = _unsortedList.getOp(createOpId);
+            const auto createOp = _syncPal->_syncOps->getOp(createOpId);
+            LOG_IF_FAIL(createOp)
             if (createOp->targetSide() != moveOp->targetSide()) {
                 continue;
             }
 
-            bool found;
-            std::shared_ptr<Node> moveNode = moveOp->affectedNode();
-            std::optional<NodeId> sourceParentId;
-            // get with path or with idb
-            // TODO : check if it's better with moveOriginParentId
-            if (!_syncPal->_syncDb->id(moveNode->side(), moveNode->moveOrigin()->parent_path(), sourceParentId, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
-                return;
-            }
-            if (!found) {
-                LOGW_SYNCPAL_INFO(_logger,
-                                  L"Node not found for path = " << Path2WStr(moveNode->moveOrigin()->parent_path()).c_str());
-                break;
-            }
+            NodeId moveNodeOriginParentId;
+            if (!getIdFromDb(moveNode->side(), moveNode->moveOrigin()->parent_path(), moveNodeOriginParentId)) continue;
 
-            std::shared_ptr<Node> createNode = createOp->affectedNode();
-            if (createNode->parentNode() != nullptr) {
-                if (!createNode->parentNode()->id().has_value()) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->parentNode()->name()).c_str());
-                    continue;
-                }
-
-                NodeId createParentId = *createNode->parentNode()->id();
-                if (sourceParentId == createParentId) {
-                    if (moveNode->name() == createNode->name()) {
-                        // move only if createOp is before op
-                        moveFirstAfterSecond(createOp, moveOp);
-                        continue;
-                    }
-                }
-            }
-
-            std::shared_ptr<Node> correspondingMoveNode = correspondingNodeInOtherTree(moveNode);
-            if (correspondingMoveNode) {
-                if (correspondingMoveNode->name() == createOp->affectedNode()->name()) {
-                    moveFirstAfterSecond(createOp, moveOp);
-                    continue;
-                }
-            } else {
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << SyncName2WStr(moveNode->name()).c_str());
+            const auto createNode = createOp->affectedNode();
+            LOG_IF_FAIL(createNode)
+            const auto createParentNode = createNode->parentNode();
+            LOG_IF_FAIL(createParentNode)
+            if (!createParentNode->id().has_value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createParentNode->name()));
                 continue;
+            }
+
+            if (const auto createParentId = *createParentNode->id(); moveNodeOriginParentId != createParentId) {
+                continue;
+            }
+
+            if (moveNode->moveOrigin()->filename() == createNode->name()) {
+                // move only if createOp is before moveOp
+                moveFirstAfterSecond(createOp, moveOp);
             }
         }
     }
@@ -224,36 +180,22 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
 
 void OperationSorterWorker::fixMoveBeforeDelete() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeDelete");
-    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> deleteOps = _syncPal->_syncOps->opListIdByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     for (const auto &deleteOpId: deleteOps) {
-        SyncOpPtr deleteOp = _unsortedList.getOp(deleteOpId);
+        const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
+        LOG_IF_FAIL(deleteOp)
         if (deleteOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
-
-        std::shared_ptr<Node> deleteNode = deleteOp->affectedNode();
-        if (!deleteNode->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(deleteNode->name()).c_str());
-            continue;
-        }
+        const auto deleteNode = deleteOp->affectedNode();
+        LOG_IF_FAIL(deleteNode)
+        const auto deleteNodePath = deleteNode->getPath();
 
         for (const auto &moveOpId: moveOps) {
-            SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
+            LOG_IF_FAIL(moveOp)
             if (moveOp->targetSide() != deleteOp->targetSide()) {
-                continue;
-            }
-
-            bool found = false;
-            SyncPath deleteDirPath;
-            if (!_syncPal->_syncDb->path(deleteNode->side(), *deleteNode->id(), deleteDirPath, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-                return;
-            }
-            if (!found) {
-                LOGW_SYNCPAL_INFO(_logger, L"Node not found for id = " << Utility::s2ws(*deleteNode->id()).c_str()
-                                                                       << L" and name="
-                                                                       << SyncName2WStr(deleteNode->name()).c_str());
                 continue;
             }
 
@@ -262,10 +204,9 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
                 return;
             }
 
-            SyncPath sourcePath = moveOp->affectedNode()->moveOrigin().value();
-            if (Utility::isDescendantOrEqual(sourcePath.lexically_normal(),
-                                             SyncPath(deleteDirPath.native() + Str("/")).lexically_normal())) {
-                // move only if op is before moveOp
+            if (const auto moveNodeOriginPath = moveOp->affectedNode()->moveOrigin().value();
+                Utility::isDescendantOrEqual(moveNodeOriginPath, deleteNodePath)) {
+                // move only if deleteOp is before moveOp
                 moveFirstAfterSecond(deleteOp, moveOp);
             }
         }
@@ -275,34 +216,40 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
 
 void OperationSorterWorker::fixCreateBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixCreateBeforeMove");
-    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
+    const std::unordered_set<UniqueId> moveOps = _syncPal->_syncOps->opListIdByType(OperationType::Move);
     for (const auto &createOpId: createOps) {
-        SyncOpPtr createOp = _unsortedList.getOp(createOpId);
+        const auto createOp = _syncPal->_syncOps->getOp(createOpId);
+        LOG_IF_FAIL(createOp)
         if (createOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
-        if (!createOp->affectedNode()->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createOp->affectedNode()->name()).c_str());
+        const auto createNode = createOp->affectedNode();
+        LOG_IF_FAIL(createNode)
+        if (!createNode->id().has_value()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->name()));
             continue;
         }
 
         for (const auto &moveOpId: moveOps) {
-            SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
             if (moveOp->targetSide() != createOp->targetSide()) {
                 continue;
             }
-            std::shared_ptr<Node> moveNode = moveOp->affectedNode();
-            if (moveNode->parentNode() != nullptr) {
-                std::optional<NodeId> moveDestParentId = moveNode->parentNode()->id();
-                if (moveDestParentId) {
-                    if (*moveDestParentId == *createOp->affectedNode()->id()) {
-                        // move only if moveOp is before op
-                        moveFirstAfterSecond(moveOp, createOp);
-                        continue;
-                    }
-                }
+
+            const auto moveNode = moveOp->affectedNode();
+            LOG_IF_FAIL(moveNode)
+            const auto moveParentNode = moveNode->parentNode();
+            LOG_IF_FAIL(moveParentNode)
+            if (!moveParentNode->id().has_value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(moveParentNode->name()));
+                continue;
+            }
+
+            if (*moveParentNode->id() == *createNode->id()) {
+                // move only if moveOp is before createOp
+                moveFirstAfterSecond(moveOp, createOp);
             }
         }
     }
@@ -311,70 +258,37 @@ void OperationSorterWorker::fixCreateBeforeMove() {
 
 void OperationSorterWorker::fixDeleteBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeCreate");
-    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
-    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
+    const std::unordered_set<UniqueId> deleteOps = _syncPal->_syncOps->opListIdByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> createOps = _syncPal->_syncOps->opListIdByType(OperationType::Create);
     for (const auto &deleteOpId: deleteOps) {
-        SyncOpPtr deleteOp = _unsortedList.getOp(deleteOpId);
-
-        std::shared_ptr<Node> deleteNode = deleteOp->affectedNode();
-        if (!deleteNode->id().has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(deleteNode->name()).c_str());
-            continue;
-        }
+        const auto deleteOp = _syncPal->_syncOps->getOp(deleteOpId);
+        LOG_IF_FAIL(deleteOp)
+        const auto deleteNode = deleteOp->affectedNode();
+        LOG_IF_FAIL(deleteNode)
+        const auto deleteNodeParentPath = deleteNode->getPath().parent_path();
+        NodeId deleteNodeParentId;
+        if (!getIdFromDb(deleteNode->side(), deleteNodeParentPath, deleteNodeParentId)) continue;
 
         for (const auto &createOpId: createOps) {
-            SyncOpPtr createOp = _unsortedList.getOp(createOpId);
+            const auto createOp = _syncPal->_syncOps->getOp(createOpId);
+            LOG_IF_FAIL(createOp)
             if (createOp->targetSide() != deleteOp->targetSide()) {
                 continue;
             }
 
-            std::shared_ptr<Node> createNode = createOp->affectedNode();
-            if (!createNode->id().has_value()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Node without id: " << SyncName2WStr(createNode->name()).c_str());
+            const auto createNode = createOp->affectedNode();
+            LOG_IF_FAIL(createNode)
+            if (!createNode->parentNode()) {
                 continue;
             }
 
-            bool found = false;
-            NodeId deleteNodeId = deleteNode->id().value();
-            if (createNode->id().value() == deleteNode->id().value()) {
-                if (!deleteNode->previousId().has_value()) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Node without previousId: " << SyncName2WStr(deleteNode->name()).c_str());
-                    continue;
-                }
-
-                deleteNodeId = deleteNode->previousId().value();
-            }
-
-            SyncPath deletePath;
-            if (!_syncPal->_syncDb->path(deleteNode->side(), deleteNodeId, deletePath, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-                return;
-            }
-            if (!found) {
-                LOGW_SYNCPAL_INFO(_logger, L"Node not found for id = " << Utility::s2ws(*deleteNode->id()).c_str()
-                                                                       << L" and name="
-                                                                       << SyncName2WStr(deleteNode->name()).c_str());
+            if (const auto createNodeParentId = createNode->parentNode()->id(); deleteNodeParentId != createNodeParentId) {
                 continue;
             }
 
-            std::optional<NodeId> deleteParentId;
-            if (!_syncPal->_syncDb->id(deleteNode->side(), deletePath.parent_path(), deleteParentId, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
-                return;
-            }
-            if (!found) {
-                LOGW_SYNCPAL_INFO(_logger, L"Node not found for path = " << Path2WStr(deletePath.parent_path()).c_str());
-                break;
-            }
-
-            if (createNode->parentNode() != nullptr) {
-                std::optional<NodeId> createParentId = createNode->parentNode()->id();
-                if (deleteParentId == createParentId) {
-                    if (createNode->name() == deleteNode->name()) {
-                        // move only if createOp is before op
-                        moveFirstAfterSecond(createOp, deleteOp);
-                    }
-                }
+            if (createNode->name() == deleteNode->name()) {
+                // move only if createOp is before deleteOp
+                moveFirstAfterSecond(createOp, deleteOp);
             }
         }
     }
@@ -383,33 +297,35 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
 
 void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveOccupied");
-    for (const auto opIds = _unsortedList.opListIdByType(OperationType::Move); const auto &opId: opIds) {
-        const auto op = _unsortedList.getOp(opId);
+    for (const auto opIds = _syncPal->_syncOps->opListIdByType(OperationType::Move); const auto &opId: opIds) {
+        const auto op = _syncPal->_syncOps->getOp(opId);
+        LOG_IF_FAIL(op)
+        const auto node = op->affectedNode();
+        LOG_IF_FAIL(node)
+        if (!node->parentNode()) continue;
+        const auto nodePath = node->getPath();
+        const auto nodeParentId = node->parentNode()->id();
 
-        for (const auto &moveOpId: opIds) {
-            const auto otherOp = _unsortedList.getOp(moveOpId);
+        for (const auto &otherOpId: opIds) {
+            const auto otherOp = _syncPal->_syncOps->getOp(otherOpId);
+            LOG_IF_FAIL(otherOp)
             if (op == otherOp || otherOp->targetSide() != op->targetSide()) {
                 continue;
             }
 
-            const auto node = op->affectedNode();
-            if (!node->parentNode()) continue;
-
             const auto otherNode = otherOp->affectedNode();
+            LOG_IF_FAIL(otherNode)
             if (!otherNode->moveOrigin().has_value()) {
                 LOG_SYNCPAL_WARN(_logger, "Missing origin path");
                 return;
             }
 
-            const auto nodePath = node->getPath();
             const auto otherNodeOriginPath = otherNode->moveOrigin();
-
-            const auto nodeParentId = node->parentNode()->id();
             NodeId otherNodeOriginParentId;
             if (!getIdFromDb(otherNode->side(), otherNodeOriginPath->parent_path(), otherNodeOriginParentId)) continue;
 
             if (nodeParentId == otherNodeOriginParentId && nodePath.filename() == otherNodeOriginPath->filename()) {
-                // move only if op is before otherMoveOp
+                // move only if op is before otherOp
                 moveFirstAfterSecond(op, otherOp);
             }
         }
@@ -419,7 +335,8 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
 
 class SyncOpDepthCmp {
     public:
-        bool operator()(const std::tuple<SyncOpPtr, SyncOpPtr, int> &a, const std::tuple<SyncOpPtr, SyncOpPtr, int> &b) {
+        bool operator()(const std::tuple<SyncOpPtr, SyncOpPtr, int32_t> &a,
+                        const std::tuple<SyncOpPtr, SyncOpPtr, int32_t> &b) const {
             if (std::get<2>(a) == std::get<2>(b)) {
                 // If depth are equal, put op to move with lowest ID first
                 return std::get<0>(a)->id() > std::get<0>(b)->id();
@@ -430,44 +347,88 @@ class SyncOpDepthCmp {
 
 void OperationSorterWorker::fixCreateBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixCreateBeforeCreate");
-    std::priority_queue<std::tuple<SyncOpPtr, SyncOpPtr, int>, std::vector<std::tuple<SyncOpPtr, SyncOpPtr, int>>, SyncOpDepthCmp>
+    // The method described in the thesis is way too slow. Therefor, a std::priority_queue is used to efficiently sort the
+    // operations before moving them in the sorted list.
+    std::priority_queue<std::tuple<SyncOpPtr, SyncOpPtr, int32_t>, std::vector<std::tuple<SyncOpPtr, SyncOpPtr, int32_t>>,
+                        SyncOpDepthCmp>
             opsToMove;
 
-    std::unordered_map<UniqueId, int> indexMap;
-    _syncPal->_syncOps->getMapIndexToOp(indexMap, OperationType::Create);
+    std::unordered_map<UniqueId, int32_t> opIdToIndexMap;
+    _syncPal->_syncOps->getOpIdToIndexMap(opIdToIndexMap, OperationType::Create);
 
     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr createOp = _syncPal->_syncOps->getOp(opId);
-        int createOpIndex = indexMap[opId];
-        SyncOpPtr ancestorOp = nullptr;
-        int relativeDepth = 0;
-        if (hasParentWithHigherIndex(indexMap, createOp, createOpIndex, ancestorOp, relativeDepth)) {
-            opsToMove.push(std::make_tuple(createOp, ancestorOp, relativeDepth));
+        LOG_IF_FAIL(createOp)
+        if (createOp->type() != OperationType::Create) continue;
+
+        SyncOpPtr ancestorOpWithHighestDistance = nullptr;
+        if (int32_t relativeDepth = 0;
+            hasParentWithHigherIndex(opIdToIndexMap, createOp, ancestorOpWithHighestDistance, relativeDepth)) {
+            opsToMove.emplace(createOp, ancestorOpWithHighestDistance, relativeDepth);
         }
     }
 
     while (!opsToMove.empty()) {
-        std::tuple<SyncOpPtr, SyncOpPtr, int> opTuple = opsToMove.top();
-        moveFirstAfterSecond(std::get<0>(opTuple), std::get<1>(opTuple));
+        const auto [op, ancestorOp, depth] = opsToMove.top();
+        LOGW_SYNCPAL_DEBUG(_logger, L"op: " << Utility::formatSyncName(op->affectedNode()->name()) << L", ancestorOp: "
+                                            << Utility::formatSyncName(ancestorOp->affectedNode()->name()) << L", depth; "
+                                            << depth);
+        moveFirstAfterSecond(op, ancestorOp);
         opsToMove.pop();
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixCreateBeforeCreate");
 }
 
+bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap,
+                                                     const SyncOpPtr &op, SyncOpPtr &ancestorOpWithHighestDistance,
+                                                     int32_t &relativeDepth) const {
+    ancestorOpWithHighestDistance = nullptr;
+    relativeDepth = 0;
+    const auto node = op->affectedNode();
+    auto parentNode = node->parentNode();
+
+    bool again = true;
+    while (again) {
+        again = false;
+        if (!parentNode || parentNode == _syncPal->updateTree(parentNode->side())->rootNode()) {
+            break;
+        }
+
+        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*parentNode->id());
+             const auto &parentOpId: parentOpIdList) {
+            const auto parentOp = _syncPal->_syncOps->getOp(parentOpId);
+            if (parentOp->type() != OperationType::Create) continue;
+
+            // Check that index of parentOp is lower than index of op
+            if (opIdToIndexMap.at(parentOpId) > opIdToIndexMap.at(op->id())) {
+                // parentOp has higher index than op. Save it in `ancestorOpWithHighestDistance` and check its parent.
+                ancestorOpWithHighestDistance = parentOp;
+                parentNode = parentNode->parentNode();
+                ++relativeDepth;
+                again = true;
+                break;
+            }
+        }
+    }
+
+    return ancestorOpWithHighestDistance != nullptr;
+}
+
 void OperationSorterWorker::fixEditBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
-    const std::unordered_set<UniqueId> editOps = _unsortedList.opListIdByType(OperationType::Edit);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
-    for (const auto &editOpId: editOps) {
-        SyncOpPtr editOp = _unsortedList.getOp(editOpId);
+    const auto moveOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Move);
+    for (const auto editOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Edit); const auto &editOpId: editOpIds) {
+        const auto editOp = _syncPal->_syncOps->getOp(editOpId);
+        LOG_IF_FAIL(editOp)
 
-        for (const auto &moveOpId: moveOps) {
-            SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
+        for (const auto &moveOpId: moveOpIds) {
+            const auto moveOp = _syncPal->_syncOps->getOp(moveOpId);
+            LOG_IF_FAIL(moveOp)
             if (moveOp->targetSide() != editOp->targetSide() || moveOp->affectedNode()->id() != editOp->affectedNode()->id()) {
                 continue;
             }
 
-            // Since in case of move op, the node contains already the new name
+            // Since in case of move op, the node already contains the new name
             // we always want to execute move operation first
             moveFirstAfterSecond(editOp, moveOp);
         }
@@ -475,81 +436,40 @@ void OperationSorterWorker::fixEditBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "End fixEditBeforeMove");
 }
 
-bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<UniqueId, int> &indexMap, const SyncOpPtr op,
-                                                     const int createOpIndex, SyncOpPtr &ancestorOp, int &depth) {
-    // Move createOp after the ancestor operation on the highest level (if needed)
-
-    // Retrieve parent Op
-    std::shared_ptr<Node> createNode = op->affectedNode();
-    std::shared_ptr<Node> parentNode = createNode->parentNode();
-
-    if (!parentNode->id().has_value()) {
-        return false;
-    }
-
-    std::list<UniqueId> parentOpList = _syncPal->_syncOps->getOpIdsFromNodeId(*parentNode->id());
-    for (const auto &parentOpId: parentOpList) {
-        SyncOpPtr parentOp = _syncPal->_syncOps->getOp(parentOpId);
-        // Check that parent has been just created
-        if (parentOp->type() == OperationType::Create) {
-            // Check that index of parentOp is lower than index of createOp
-            int parentOpIndex = indexMap.at(parentOpId);
-            if (parentOpIndex > createOpIndex) {
-                // Update ancestor
-                ancestorOp = parentOp;
-            }
-
-            // We need to check higher level ancestors anyway, even if direct parent index is correct
-            hasParentWithHigherIndex(indexMap, parentOp, parentOpIndex, ancestorOp, ++depth);
-            break;
-        }
-    }
-
-    if (ancestorOp == nullptr) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
 void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveHierarchyFlip");
-    std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
-    for (const auto &xOpId: moveOps) {
-        SyncOpPtr xOp = _unsortedList.getOp(xOpId);
-        if (xOp->affectedNode()->type() != NodeType::Directory) {
+    for (const auto moveOpIds = _syncPal->_syncOps->opListIdByType(OperationType::Move); const auto &opIdX: moveOpIds) {
+        const auto opX = _syncPal->_syncOps->getOp(opIdX);
+        LOG_IF_FAIL(opX)
+        if (opX->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
-        std::shared_ptr<Node> xNode = xOp->affectedNode();
-        SyncPath xDestPath = xNode->getPath();
-        if (!xNode->moveOrigin().has_value()) {
+        const auto nodeX = opX->affectedNode();
+        LOG_IF_FAIL(nodeX)
+        if (!nodeX->moveOrigin().has_value()) {
             continue;
         }
-        SyncPath xSourcePath = *xNode->moveOrigin();
+        const auto nodeOriginPathX = *nodeX->moveOrigin();
+        const auto nodeDestinationPathX = nodeX->getPath();
 
-        for (const auto &yOpId: moveOps) {
-            SyncOpPtr yOp = _unsortedList.getOp(yOpId);
-            if (yOp->affectedNode()->type() != NodeType::Directory || xOp == yOp || xOp->targetSide() != yOp->targetSide()) {
+        for (const auto &opIdY: moveOpIds) {
+            const auto opY = _syncPal->_syncOps->getOp(opIdY);
+            LOG_IF_FAIL(opY)
+            if (opY->affectedNode()->type() != NodeType::Directory || opX == opY || opX->targetSide() != opY->targetSide()) {
                 continue;
             }
 
-            std::shared_ptr<Node> yNode = yOp->affectedNode();
-            SyncPath yDestPath = yNode->getPath();
-            if (!yNode->moveOrigin().has_value()) {
+            const auto nodeY = opY->affectedNode();
+            LOG_IF_FAIL(nodeY)
+            if (!nodeY->moveOrigin().has_value()) {
                 continue;
             }
-            SyncPath ySourcePath = *yNode->moveOrigin();
 
-            bool isXBelowY = Utility::isDescendantOrEqual(xDestPath.lexically_normal(),
-                                                          SyncPath(yDestPath.native() + Str("/")).lexically_normal());
-            if (isXBelowY) {
-                bool isYBelowXInDb = Utility::isDescendantOrEqual(ySourcePath.lexically_normal(),
-                                                                  SyncPath(xSourcePath.native() + Str("/")).lexically_normal());
-                if (isYBelowXInDb) {
-                    moveFirstAfterSecond(xOp, yOp);
-                }
-            }
+            if (!Utility::isDescendantOrEqual(nodeDestinationPathX, nodeY->getPath())) continue;
+            if (!Utility::isDescendantOrEqual(*nodeY->moveOrigin(), nodeOriginPathX)) continue;
+
+            moveFirstAfterSecond(opX, opY);
         }
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveHierarchyFlip");
@@ -560,109 +480,86 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
         return std::nullopt;
     }
 
-    UniqueId opId1 = _syncPal->_syncOps->opSortedList().front();
-    SyncOpPtr o1 = _syncPal->_syncOps->getOp(opId1);
-    // check if o1 is move-directory operation
-    if (o1->type() != OperationType::Move && o1->affectedNode()->type() != NodeType::Directory) {
-        return std::nullopt;
+    const auto firstOp = _syncPal->_syncOps->getOp(_syncPal->_syncOps->opSortedList().front());
+    LOG_IF_FAIL(firstOp)
+    const auto node = firstOp->affectedNode();
+    LOG_IF_FAIL(node)
+    // Check if firstOp is move-directory operation.
+    if (firstOp->type() != OperationType::Move || node->type() != NodeType::Directory) {
+        return std::nullopt; // firstOp is possible
     }
 
-    // computes paths
-    // impossible move if dest = source + "/"
-    SyncPath source = (o1->affectedNode()->moveOrigin().has_value() ? o1->affectedNode()->moveOrigin().value() : "");
-    SyncPath dest = o1->affectedNode()->getPath();
-    if (!Utility::isDescendantOrEqual(dest.lexically_normal(), SyncPath(source.native() + Str("/")).lexically_normal())) {
-        return std::nullopt;
+    // firstOp is an impossible move if dest starts with source + "/".
+    if (!node->moveOrigin().has_value()) {
+        LOGW_SYNCPAL_ERROR(_logger, L"Missing origin path for node " << Utility::formatSyncName(node->name()) << L" ("
+                                                                     << Utility::s2ws(*node->id()) << L")");
+        return std::nullopt; // Should never happen
+    }
+    const auto originPath = *node->moveOrigin();
+    if (!Utility::isDescendantOrEqual(node->getPath(), *node->moveOrigin())) {
+        return std::nullopt; // firstOp is possible
     }
 
-    std::shared_ptr<Node> correspondingDestinationParentNode = correspondingNodeInOtherTree(o1->affectedNode()->parentNode());
-    std::shared_ptr<Node> correspondingSourceNode = correspondingNodeInOtherTree(o1->affectedNode());
+    const auto correspondingDestinationParentNode = correspondingNodeInOtherTree(node->parentNode());
+    const auto correspondingSourceNode = correspondingNodeInOtherTree(node);
     if (correspondingDestinationParentNode == nullptr || correspondingSourceNode == nullptr) {
-        return std::nullopt;
+        LOGW_SYNCPAL_ERROR(_logger, L"Missing corresponding nodes for node " << Utility::formatSyncName(node->name()) << L" ("
+                                                                             << Utility::s2ws(*node->id()) << L")");
+        return std::nullopt; // Should never happen
     }
 
     std::list<std::shared_ptr<Node>> moveDirectoryList;
-    // Traverse updatetree from source to dest
-    std::shared_ptr<Node> tmpNode = correspondingSourceNode;
-    while (tmpNode->parentNode() != nullptr && tmpNode != correspondingDestinationParentNode) {
+    // Traverse update tree, starting from the corresponding destination parent directory node, up to the corresponding source
+    // node.
+    std::shared_ptr<Node> tmpNode = correspondingDestinationParentNode;
+    while (tmpNode->parentNode() != nullptr && tmpNode != correspondingSourceNode) {
         tmpNode = tmpNode->parentNode();
-        // storing all move-directory nodes
+        // Storing all move-directory nodes
         if (tmpNode->type() == NodeType::Directory && tmpNode->hasChangeEvent(OperationType::Move)) {
             moveDirectoryList.push_back(tmpNode);
         }
     }
 
-    // look for oFirst the operation in moveDirectoryList which come first in _sortedOps
-    bool found = false;
-    SyncOpPtr oFirst;
-    for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
-        SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-        for (auto n: moveDirectoryList) {
-            if (op->affectedNode() == n) {
-                oFirst = op;
-                found = true;
-                break;
+    // Find the operation in moveDirectoryList which come first in _sortedOps
+    std::unordered_map<UniqueId, int32_t> opIdToIndexMap;
+    _syncPal->_syncOps->getOpIdToIndexMap(opIdToIndexMap, OperationType::Move);
+
+    int32_t lowestIndex = INT32_MAX;
+    SyncOpPtr selectedOp = nullptr;
+    for (const auto &n: moveDirectoryList) {
+        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromNodeId(*n->id()); const auto opId: opIds) {
+            const auto op = _syncPal->_syncOps->getOp(opId);
+            LOG_IF_FAIL(op)
+            if (op->type() != OperationType::Move) continue;
+
+            if (const auto currentIndex = opIdToIndexMap[opId]; currentIndex < lowestIndex) {
+                lowestIndex = currentIndex;
+                selectedOp = op;
             }
-        }
-        if (found) {
-            break;
         }
     }
 
-    // make filtered version of sortedOps
-    ReplicaSide targetReplica = correspondingDestinationParentNode->side();
+    // Make a list of all operations on target replica up to selectedOp
+    const auto targetReplica = correspondingDestinationParentNode->side();
     SyncOperationList reshuffledOps;
     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
-        SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-        // we include the oFirst op
-        if (op == oFirst) {
-            reshuffledOps.pushOp(op);
+        const auto op = _syncPal->_syncOps->getOp(opId);
+        LOG_IF_FAIL(op)
+        // Include selectedOp
+        if (op == selectedOp) {
+            (void) reshuffledOps.pushOp(op);
             break;
         }
-        // op that affect the targetReplica or both
-        if (op->targetSide() == targetReplica || op->omit()) {
-            reshuffledOps.pushOp(op);
+        // Operations that affect the targetReplica or both (omit flag)
+        if (op->affectedNode()->side() == targetReplica || op->omit()) {
+            (void) reshuffledOps.pushOp(op);
         }
     }
 
     return reshuffledOps;
 }
 
-std::list<SyncOperationList> OperationSorterWorker::findCompleteCycles() {
-    std::list<SyncOperationList> completeCycles;
-
-    for (auto &pair: _reorderings) {
-        std::list<std::pair<SyncOpPtr, SyncOpPtr>> l1;
-        std::list<SyncOpPtr> l2;
-        l1 = _reorderings;
-        l1.remove(pair);
-        l2.push_back(pair.first);
-        l2.push_back(pair.second);
-        SyncOpPtr opToFind = pair.first;
-        SyncOpPtr opTmp = l2.back();
-        for (auto it = l1.begin(); it != l1.end(); ++it) {
-            if (SyncOpPtr opF = it->first; opF == opTmp) {
-                l2.push_back(it->second);
-                opTmp = l2.back();
-                if (it->second == opToFind) {
-                    break;
-                }
-                it = l1.erase(it);
-            }
-        }
-
-        if (l2.front() == l2.back()) {
-            l2.pop_back();
-            SyncOperationList cycle;
-            cycle.setOpList(l2);
-            completeCycles.push_back(cycle);
-            break;
-        }
-    }
-    return completeCycles;
-}
-
-bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renameResolutionOp) {
+bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, const SyncOpPtr &renameResolutionOp) {
     SyncOpPtr matchOp;
     // Look for delete operation in the cycle
     if (!cycle.opListIdByType(OperationType::Delete).empty()) {
@@ -683,7 +580,7 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renam
     renameResolutionOp->setType(OperationType::Move);
     renameResolutionOp->setOmit(matchOp->omit());
     // Find the corresponding node of `matchOp`
-    std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(matchOp->affectedNode());
+    const auto correspondingNode = correspondingNodeInOtherTree(matchOp->affectedNode());
     if (!correspondingNode) {
         LOG_SYNCPAL_WARN(_logger, "Error in correspondingNode with id = " << matchOp->affectedNode()->id()->c_str()
                                                                           << " - idDb = " << *matchOp->affectedNode()->idb());
@@ -699,18 +596,18 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renam
     renameResolutionOp->setNewName(correspondingNode->name() + Str("-") +
                                    Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
     // and we only execute Opr follow by restart sync
-    LOGW_SYNCPAL_INFO(_logger, L"Breaking cycle by renaming temporarily item "
-                                       << SyncName2WStr(correspondingNode->name()).c_str() << L" to "
-                                       << SyncName2WStr(renameResolutionOp->newName()).c_str());
+    LOGW_SYNCPAL_INFO(_logger, L"Breaking cycle by renaming temporarily item " << SyncName2WStr(correspondingNode->name())
+                                                                               << L" to "
+                                                                               << SyncName2WStr(renameResolutionOp->newName()));
     return true;
 }
 
-void OperationSorterWorker::moveFirstAfterSecond(SyncOpPtr opFirst, SyncOpPtr opSecond) {
+void OperationSorterWorker::moveFirstAfterSecond(const SyncOpPtr &opFirst, const SyncOpPtr &opSecond) {
     std::list<UniqueId>::const_iterator firstIt;
     std::list<UniqueId>::const_iterator secondIt;
     bool firstFound = false;
     for (auto it = _syncPal->_syncOps->opSortedList().begin(); it != _syncPal->_syncOps->opSortedList().end(); ++it) {
-        SyncOpPtr op = _syncPal->_syncOps->getOp(*it);
+        const auto op = _syncPal->_syncOps->getOp(*it);
         if (op == opSecond) {
             if (firstFound) {
                 secondIt = it;
@@ -730,40 +627,42 @@ void OperationSorterWorker::moveFirstAfterSecond(SyncOpPtr opFirst, SyncOpPtr op
         // make sure opSecond is executed after opFirst
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Operation " << opFirst->id() << L" (" << opFirst->type() << L" "
-                                                      << SyncName2WStr(opFirst->affectedNode()->name()).c_str()
+                                                      << Utility::formatSyncName(opFirst->affectedNode()->name())
                                                       << L") moved after operation " << opSecond->id() << L" ("
                                                       << opSecond->type() << L" "
-                                                      << SyncName2WStr(opSecond->affectedNode()->name()).c_str() << L")");
+                                                      << Utility::formatSyncName(opSecond->affectedNode()->name()) << L")");
         }
 
         _syncPal->_syncOps->deleteOp(firstIt);
         _syncPal->_syncOps->insertOp(++secondIt, opFirst);
         _hasOrderChanged = true;
-        addPairToReorderings(opSecond, opFirst);
+        addPairToReorderings(opFirst, opSecond);
     }
 }
 
-void OperationSorterWorker::addPairToReorderings(SyncOpPtr op, SyncOpPtr opOnFirstDepends) {
-    const auto pair = std::make_pair(op, opOnFirstDepends);
+void OperationSorterWorker::addPairToReorderings(const SyncOpPtr &op1, const SyncOpPtr &op2 /*opOnFirstDepends*/) {
+    const auto pair = std::make_pair(op1, op2);
     for (auto const &opPair: _reorderings) {
+        // Check that the pair does not already exist in the list
         if (opPair == pair) {
-            return;
+            return; // Usefull?
         }
     }
     _reorderings.push_back(pair);
 }
 
-bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &parentPath, NodeId &id) const {
+bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &path, NodeId &id) const {
     bool found = false;
     std::optional<NodeId> tmpId;
-    if (!_syncPal->_syncDb->id(side, parentPath, tmpId, found)) {
+    if (!_syncPal->_syncDb->id(side, path, tmpId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return false;
     }
     if (!found || !tmpId) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found for path = " << Path2WStr(parentPath).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found for path = " << Path2WStr(path));
         return false;
     }
+    LOG_IF_FAIL(!tmpId.has_value())
     id = tmpId.value();
     return true;
 }
