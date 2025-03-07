@@ -149,6 +149,10 @@ jobs:
               /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.*
               /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.*
               /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.*
           retention-days: 1
         if: always()
 
