@@ -22,9 +22,9 @@
 
 namespace KDC {
 
-constexpr SyncPath rescueFolderName = ".rescueFolder";
+static const SyncPath rescueFolderName = ".rescueFolder";
 
-ConflictResolverWorker::ConflictResolverWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name,
+ConflictResolverWorker::ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictResolverWorker::execute() {
@@ -319,7 +319,7 @@ void ConflictResolverWorker::generateRescueOperation(const Conflict &conflict, c
     // Move the deleted node to the rescue folder
     const auto moveOp = std::make_shared<SyncOperation>();
     moveOp->setType(OperationType::Move);
-    moveOp->setAffectedNode(nullptr);
+    moveOp->setAffectedNode(node);
     moveOp->setCorrespondingNode(node);
     moveOp->setTargetSide(ReplicaSide::Local);
     // TO DO : check for existing names

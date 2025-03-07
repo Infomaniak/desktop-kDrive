@@ -57,7 +57,7 @@ void SyncOperationList::setOpList(const std::list<SyncOpPtr> &opList) {
 }
 
 SyncOpPtr SyncOperationList::getOp(UniqueId id) {
-    auto opIt = _allOps.find(id);
+    const auto opIt = _allOps.find(id);
     return opIt == _allOps.end() ? nullptr : opIt->second;
 }
 

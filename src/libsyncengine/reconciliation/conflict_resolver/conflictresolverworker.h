@@ -27,7 +27,7 @@ namespace KDC {
 
 class ConflictResolverWorker : public OperationProcessor {
     public:
-        ConflictResolverWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name, const std::string &shortName);
+        ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
 
         [[nodiscard]] const std::unordered_map<DbNodeId, ReplicaSide> &registeredOrphans() const { return _registeredOrphans; }
 

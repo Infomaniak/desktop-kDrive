@@ -83,6 +83,9 @@ class SyncOperation {
             _isDehydratedPlaceholder = isDehydratedPlaceholder;
         }
 
+        [[nodiscard]] bool isRescueOperation() const { return _isRescueOperation; }
+        void setIsRescueOperation(bool val) { _isRescueOperation = val; }
+
         [[nodiscard]] const SyncPath &relativeOriginPath() const { return _relativeOriginPath; }
         void setRelativeOriginPath(const SyncPath &relativeOriginPath) { _relativeOriginPath = relativeOriginPath; }
         [[nodiscard]] const SyncPath &relativeDestinationPath() const { return _relativeDestinationPath; }
@@ -103,6 +106,7 @@ class SyncOperation {
         Conflict _conflict;
         bool _isBreakingCycleOp{false};
         bool _isDehydratedPlaceholder{false};
+        bool _isRescueOperation{false};
 
         SyncPath _relativeOriginPath;
         SyncPath _relativeDestinationPath;
@@ -117,10 +121,8 @@ typedef std::shared_ptr<SyncOperation> SyncOpPtr;
 
 class SyncOperationList : public SharedObject {
     public:
-        SyncOperationList() {}
-        SyncOperationList(const SyncOperationList &other) :
-            _allOps(other._allOps), _opSortedList(other._opSortedList), _opListByType(other._opListByType),
-            _node2op(other._node2op) {}
+        SyncOperationList() = default;
+        SyncOperationList(const SyncOperationList &other) = default;
         ~SyncOperationList();
 
         void setOpList(const std::list<SyncOpPtr> &opList);
