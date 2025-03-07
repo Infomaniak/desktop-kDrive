@@ -112,7 +112,7 @@ jobs:
             --define sonar.projectKey="Infomaniak_desktop-kDrive"
             --define sonar.organization="infomaniak"
             --define sonar.host.url="https://sonarcloud.io"
-            --define sonar.sources="src,extensions"
+            --define sonar.sources="src"
             --define sonar.tests="test"
             --define sonar.exclusions="src/3rdparty/**,src/gui/**"
             --define sonar.cfamily.compile-commands="build-windows/build/compile_commands.json"
