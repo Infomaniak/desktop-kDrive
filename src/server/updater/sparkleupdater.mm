@@ -195,7 +195,7 @@ std::shared_ptr<SparkleUpdater> SparkleUpdater::instance() {
     if (_instance == nullptr) {
         try {
             _instance = std::shared_ptr<SparkleUpdater>(new SparkleUpdater());
-        } catch (...) {
+        } catch (std::exception const &) {
             return nullptr;
         }
     }

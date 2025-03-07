@@ -26,7 +26,7 @@ std::shared_ptr<LinuxUpdater> LinuxUpdater::instance() {
     if (_instance == nullptr) {
         try {
             _instance = std::make_shared<LinuxUpdater>();
-        } catch (...) {
+        } catch (std::exception const &) {
             return nullptr;
         }
     }
