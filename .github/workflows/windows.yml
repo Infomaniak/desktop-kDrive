@@ -86,9 +86,6 @@ jobs:
 
           & "covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
 
-          & "cov01.exe" "-1" # coverage on
-          & "cov01.exe" "-s" # show status
-
       - name: Run sonar-scanner
         if: true
         env:
@@ -109,10 +106,6 @@ jobs:
             --define sonar.cfamily.bullseye.reportPath="coverage.xml"
             --define sonar.scm.exclusions.disabled=true
             --define sonar.verbose=true
-
-      - name: Deactivate BullseyeCoverage
-        run: |
-          & "cov01.exe" "-0" # coverage off
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
