@@ -31,7 +31,6 @@ FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> sync
 
 void FileSystemObserverWorker::invalidateSnapshot() {
     if (!_snapshot->isValid()) return;
-
     // The synchronisation will restart.
     _syncPal->setRestart(true);
 
@@ -61,6 +60,12 @@ void FileSystemObserverWorker::tryToInvalidateSnapshot() {
 void FileSystemObserverWorker::forceUpdate() {
     const std::scoped_lock lock(_mutex);
     _updating = true;
+}
+
+void FileSystemObserverWorker::init() {
+    ISyncWorker::init();
+    _updating = false;
+    _initializing = true;
 }
 
 } // namespace KDC

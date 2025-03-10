@@ -55,18 +55,6 @@ void OperationGeneratorWorker::execute() {
             break;
         }
 
-        while (pauseAsked() || isPaused()) {
-            if (!isPaused()) {
-                setPauseDone();
-            }
-
-            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-
-            if (unpauseAsked()) {
-                setUnpauseDone();
-            }
-        }
-
         std::shared_ptr<Node> currentNode = _queuedToExplore.front();
         _queuedToExplore.pop();
 
@@ -149,7 +137,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
 
     op->setType(OperationType::Create);
     op->setAffectedNode(currentNode);
-    ReplicaSide targetSide = otherSide(currentNode->side());
+    const auto targetSide = otherSide(currentNode->side());
     op->setTargetSide(targetSide);
     // We do not set parent node here since it might have been just created as well. In that case, parent node does not exist yet
     // in update tree.
@@ -161,15 +149,15 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Create-Create pseudo conflict detected. Operation Create to be propagated in DB only for item "
-                                       << SyncName2WStr(currentNode->name()).c_str());
+                                       << Utility::formatSyncPath(currentNode->getPath()).c_str());
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Create operation "
-                                                << op->id() << L" to be propagated on " << op->targetSide()
-                                                << L" replica for item " << SyncName2WStr(op->newName()).c_str() << L" ("
-                                                << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str()
-                                                << L")");
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               L"Create operation "
+                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
+                                       << Utility::formatSyncPath(currentNode->getPath()).c_str() << L" ("
+                                       << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
 
         if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
@@ -205,15 +193,15 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Edit-Edit pseudo conflict detected. Operation Edit to be propagated in DB only for item "
-                                       << SyncName2WStr(currentNode->name()).c_str());
+                                       << Utility::formatSyncPath(currentNode->getPath()).c_str());
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Edit operation "
-                                                << op->id() << L" to be propagated on " << op->targetSide()
-                                                << L" replica for item " << SyncName2WStr(currentNode->name()).c_str() << L"(ID: "
-                                                << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str()
-                                                << L")");
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               L"Edit operation "
+                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
+                                       << Utility::formatSyncPath(currentNode->getPath()).c_str() << L"(ID: "
+                                       << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
 
         if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
@@ -259,15 +247,17 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                     _logger, L"Move-Move (Source) pseudo conflict detected. Operation Move to be propagated in DB only for item "
-                                     << SyncName2WStr(currentNode->name()).c_str());
+                                     << Utility::formatSyncPath(currentNode->getPath()).c_str());
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Move operation "
                                        << op->id() << L" to be propagated on " << op->targetSide() << L" replica from \""
-                                       << (currentNode->moveOrigin() ? Path2WStr(currentNode->moveOrigin().value()).c_str() : L"")
-                                       << L"\" to \"" << Path2WStr(currentNode->getPath()).c_str() << L"\" (ID: "
+                                       << (currentNode->moveOrigin()
+                                                   ? Utility::formatSyncPath(currentNode->moveOrigin().value()).c_str()
+                                                   : L"")
+                                       << L"\" to \"" << Utility::formatSyncPath(currentNode->getPath()).c_str() << L"\" (ID: "
                                        << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
     }
@@ -307,18 +297,18 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
             LOGW_SYNCPAL_DEBUG(_logger, L"Corresponding file already deleted on "
                                                 << op->targetSide()
                                                 << L" replica. Operation Delete to be propagated in DB only for item "
-                                                << SyncName2WStr(currentNode->name()).c_str());
+                                                << Utility::formatSyncPath(currentNode->getPath()).c_str());
         }
         _syncPal->setRestart(true);
         // In certain cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
         // of next sync because nothing has changed but create events are not propagated
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Delete operation "
-                                                << op->id() << L" to be propagated on " << op->targetSide()
-                                                << L" replica for item " << SyncName2WStr(currentNode->name()).c_str() << L" ("
-                                                << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str()
-                                                << L")");
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               L"Delete operation "
+                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica for item "
+                                       << Utility::formatSyncPath(currentNode->getPath()).c_str() << L" ("
+                                       << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
     }
 
