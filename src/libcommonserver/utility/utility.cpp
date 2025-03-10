@@ -456,9 +456,9 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
-bool Utility::isDescendantOrEqual(const SyncPath &potentialChild, const SyncPath &path) {
-    if (path == potentialChild) return true;
-    for (auto it = potentialChild.begin(), it2 = path.begin(); it != potentialChild.end(); ++it, ++it2) {
+bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
+    if (path == potentialDescendant) return true;
+    for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
         if (it2 == path.end()) {
             return true;
         }
@@ -637,7 +637,8 @@ std::string Utility::_errId(const char *file, int line) {
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName, UnicodeNormalization normalization) noexcept {
+bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
+                                 const UnicodeNormalization normalization) noexcept {
     if (name.empty()) {
         normalizedName = name;
         return true;
@@ -706,14 +707,15 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
 #endif
 }
 
-bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath) noexcept {
+bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
+                                 const UnicodeNormalization normalization /*= UnicodeNormalization::NFC*/) noexcept {
     auto segmentIt = path.begin();
     if (segmentIt == path.end()) return true;
 
     auto segment = *segmentIt;
     if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
         SyncName normalizedName;
-        if (!normalizedSyncName(segment, normalizedName)) {
+        if (!normalizedSyncName(segment, normalizedName, normalization)) {
             LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(segment));
             return false;
         }
@@ -725,7 +727,7 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath)
     for (; segmentIt != path.end(); ++segmentIt) {
         if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
             SyncName normalizedName;
-            if (!normalizedSyncName(*segmentIt, normalizedName)) {
+            if (!normalizedSyncName(*segmentIt, normalizedName, normalization)) {
                 LOGW_DEBUG(logger(), L"Error in Utility::normalizedSyncName: " << formatSyncName(*segmentIt));
                 return false;
             }
