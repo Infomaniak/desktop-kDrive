@@ -995,9 +995,8 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
             return exitInfo;
         }
     } else if (syncOp->isRescueOperation()) {
-        FileRescuer fileRescuer(_syncPal);
+        const FileRescuer fileRescuer(_syncPal);
         if (const auto exitInfo = fileRescuer.executeRescueMoveJob(syncOp); !exitInfo) return exitInfo;
-        if (const auto exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) return exitInfo;
     } else {
         if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << SyncName2WStr(syncOp->affectedNode()->name())
