@@ -139,6 +139,44 @@ jobs:
           retention-days: 1
         if: always()
 
+      - name: Upload build qt libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-qt-libs
+          path: |
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.*
+              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.*
+          retention-days: 1
+        if: always()
+
+      - name: Upload build usr lib
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-usr-lib
+          path: |
+              /usr/local/lib/libcppunit.so
+              /usr/local/lib/libPocoUtil.so
+              /usr/local/lib/libPocoJSON.so
+              /usr/local/lib/libPocoXML.so
+              /usr/local/lib/libPocoFoundation.so
+              /usr/local/lib/libPocoNetSSL.so
+              /usr/local/lib/libPocoCrypto.so
+              /usr/local/lib/libPocoNet.so
+              /usr/local/lib/liblog4cplus.so
+              /usr/local/lib/libsentry.so
+              /usr/local/lib/libzip.so
+              /usr/local/lib/libxxhash*
+          retention-days: 1
+        if: always()
+
       - name: Upload build test common executable
         uses: actions/upload-artifact@v4
         with:
@@ -532,7 +570,8 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -540,6 +579,32 @@ jobs:
           name: linux-build-common-files
           path: ${{ github.workspace }}/build-linux/test/
 
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-linux/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
+      - name: Download usr libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-usr-lib
+          path: ${{ github.workspace }}/build-linux/cache/
+
+      - name: Download QT libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-qt-libs
+          path: ${{ github.workspace }}/build-linux/cache/
+          
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-linux/cache/* ${{ github.workspace }}/build-linux/test/
+        
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:
@@ -549,7 +614,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_common
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_common
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -558,6 +625,10 @@ jobs:
           path: /tmp/kDrive-logdir/*
           retention-days: 1
         if: always()
+
+      - name: Clean up log directory
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
       - name: Clean up
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
@@ -574,13 +645,40 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
           name: linux-build-common-files
           path: ${{ github.workspace }}/build-linux/test/
+
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-linux/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
+      - name: Download usr libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-usr-lib
+          path: ${{ github.workspace }}/build-linux/cache/
+
+      - name: Download QT libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-qt-libs
+          path: ${{ github.workspace }}/build-linux/cache/
+          
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-linux/cache/* ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -591,7 +689,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_common_server
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_common_server
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -600,6 +700,10 @@ jobs:
           path: /tmp/kDrive-logdir/*
           retention-days: 1
         if: always()
+
+      - name: Clean up log directory
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
       - name: Clean up
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
@@ -616,13 +720,40 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
           name: linux-build-common-files
           path: ${{ github.workspace }}/build-linux/test/
+
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-linux/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
+      - name: Download usr libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-usr-lib
+          path: ${{ github.workspace }}/build-linux/cache/
+
+      - name: Download QT libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-qt-libs
+          path: ${{ github.workspace }}/build-linux/cache/
+          
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-linux/cache/* ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -633,7 +764,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_server
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_server
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -642,6 +775,10 @@ jobs:
           path: /tmp/kDrive-logdir/*
           retention-days: 1
         if: always()
+
+      - name: Clean up log directory
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
       - name: Clean up
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
@@ -658,13 +795,40 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
           name: linux-build-common-files
           path: ${{ github.workspace }}/build-linux/test/
+
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-linux/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
+      - name: Download usr libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-usr-lib
+          path: ${{ github.workspace }}/build-linux/cache/
+
+      - name: Download QT libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-qt-libs
+          path: ${{ github.workspace }}/build-linux/cache/
+          
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-linux/cache/* ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -675,7 +839,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_syncengine
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_syncengine
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -684,6 +850,10 @@ jobs:
           path: /tmp/kDrive-logdir/*
           retention-days: 1
         if: always()
+
+      - name: Clean up log directory
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
       - name: Clean up
         run : rm -rf ${{ github.workspace }}/build-linux/test/*
@@ -700,13 +870,40 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
           name: linux-build-common-files
           path: ${{ github.workspace }}/build-linux/test/
+
+      - name: Load cached dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
+        with:
+          path: build-linux/cache
+          base: ${{ github.workspace }}/../local-cache
+          key: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+          clean-key: true        
+
+      - name: Download usr libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-usr-lib
+          path: ${{ github.workspace }}/build-linux/cache/
+
+      - name: Download QT libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build-qt-libs
+          path: ${{ github.workspace }}/build-linux/cache/
+          
+      - name: Copy the cache to the test directory
+        run: cp -r ${{ github.workspace }}/build-linux/cache/* ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
         uses: actions/download-artifact@v4
@@ -717,7 +914,9 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-test.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_parms
+        run : |
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            ./infomaniak-build-tools/run-test.sh ./build-linux/test/ kDrive_test_parms
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -726,6 +925,10 @@ jobs:
           path: /tmp/kDrive-logdir/*
           retention-days: 1
         if: always()
+
+      - name: Clean up log directory
+        if: always()
+        run : rm -rf /tmp/kDrive-logdir/* || true
 
   test-common-MacOS:
     runs-on: [ self-hosted, macOS]
@@ -737,9 +940,6 @@ jobs:
         uses: actions/checkout@v4.1.1
         with:
           ref: ${{ github.head_ref }}
-
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -815,9 +1015,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
-
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
@@ -891,9 +1088,6 @@ jobs:
         uses: actions/checkout@v4.1.1
         with:
           ref: ${{ github.head_ref }}
-
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
 
       - name: Download common files
         uses: actions/download-artifact@v4
@@ -969,9 +1163,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
-
       - name: Download common files
         uses: actions/download-artifact@v4
         with:
@@ -1045,9 +1236,6 @@ jobs:
         uses: actions/checkout@v4.1.1
         with:
           ref: ${{ github.head_ref }}
-
-      - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/*
 
       - name: Download common files
         uses: actions/download-artifact@v4
