@@ -24,7 +24,7 @@ set(testsyncengine_SRCS
         ../mocks/libsyncengine/vfs/mockvfs.h
         ../mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
-        ../test_classes/testinitialsituationgenerator.h ../test_classes/testinitialsituationgenerator.cpp
+        ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         olddb/testoldsyncdb.h olddb/testoldsyncdb.cpp

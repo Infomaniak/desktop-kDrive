@@ -19,7 +19,7 @@
 #include "testoperationsorterworker.h"
 
 #include "propagation/operation_sorter/cyclefinder.h"
-#include "test_classes/testinitialsituationgenerator.h"
+#include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
@@ -51,8 +51,8 @@ void TestOperationSorterWorker::setUp() {
     // ├── B
     // ├── C
     // └── D
-    _initialSituationGenerator.setSyncpal(_syncPal);
-    _initialSituationGenerator.generateInitialSituation(R"({"a":{"aa":{"aaa":1,"aab":{}}},"b":{},"c":{},"d":{}})");
+    _testSituationGenerator.setSyncpal(_syncPal);
+    _testSituationGenerator.generateInitialSituation(R"({"a":{"aa":{"aaa":1,"aab":{}}},"b":{},"c":{},"d":{}})");
 }
 
 void TestOperationSorterWorker::tearDown() {
@@ -63,9 +63,9 @@ void TestOperationSorterWorker::tearDown() {
 }
 
 void TestOperationSorterWorker::testMoveFirstAfterSecond() {
-    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto nodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
-    const auto nodeC = _initialSituationGenerator.getNode(ReplicaSide::Local, "c");
+    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto nodeB = _testSituationGenerator.getNode(ReplicaSide::Local, "b");
+    const auto nodeC = _testSituationGenerator.getNode(ReplicaSide::Local, "c");
     const auto opA = std::make_shared<SyncOperation>();
     const auto opB = std::make_shared<SyncOperation>();
     const auto opC = std::make_shared<SyncOperation>();
@@ -90,8 +90,8 @@ void TestOperationSorterWorker::testMoveFirstAfterSecond() {
 
 // delete before move, e.g. user deletes an object at path "x" and moves another object "a" to "x".
 void TestOperationSorterWorker::testFixDeleteBeforeMove() {
-    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto nodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
+    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto nodeB = _testSituationGenerator.getNode(ReplicaSide::Local, "b");
 
     // Delete node A
     nodeA->insertChangeEvent(OperationType::Delete);
@@ -114,17 +114,15 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
 
 // move before create, e.g. user moves an object "a" to "b" and creates another object at "a".
 void TestOperationSorterWorker::testFixMoveBeforeCreate() {
-    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto nodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
+    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto nodeB = _testSituationGenerator.getNode(ReplicaSide::Local, "b");
 
     // Move A to B/A
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeB->id());
-    nodeA->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeB->id());
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeA);
 
     // Create A
-    const auto nodeA2 = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "a2");
-    nodeA2->insertChangeEvent(OperationType::Create);
+    const auto nodeA2 = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "a2", "");
     nodeA2->setName(Str("A"));
     const auto createOp = generateSyncOperation(OperationType::Create, nodeA2);
 
@@ -140,12 +138,11 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
 
 // move before delete, e.g. user moves object "X/y" outside of directory "X" (e.g. to "z") and then deletes "X".
 void TestOperationSorterWorker::testFixMoveBeforeDelete() {
-    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto nodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
 
     // Move A/AA/AAA to AAA
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeAAA->id(), "");
-    nodeAAA->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeAAA->id(), "");
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAA);
 
     // Delete A
@@ -164,16 +161,14 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
 
 // create before move, e.g. user creates directory "X" and moves object "y" into "X".
 void TestOperationSorterWorker::testFixCreateBeforeMove() {
-    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
 
     // Create E
-    const auto nodeE = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "e");
-    nodeE->insertChangeEvent(OperationType::Create);
+    const auto nodeE = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "e", "");
     const auto createOp = generateSyncOperation(OperationType::Create, nodeE);
 
     // Move A to E/A
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeE->id());
-    nodeA->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeE->id());
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeA);
 
     _syncPal->_syncOps->pushOp(moveOp);
@@ -188,17 +183,15 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
 
 // delete before create, e.g. user deletes object "x" and then creates a new object at "x".
 void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
-    const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
-    const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    const auto nodeAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aa");
+    const auto nodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
 
     // Delete AAA
     nodeAAA->insertChangeEvent(OperationType::Delete);
     const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeAAA);
 
     // Create AAA
-    const auto nodeAAA2 =
-            _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "aaa2", *nodeAA->id());
-    nodeAAA2->insertChangeEvent(OperationType::Create);
+    const auto nodeAAA2 = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "aaa2", *nodeAA->id());
     nodeAAA2->setName(Str("AAA"));
     const auto createOp = generateSyncOperation(OperationType::Create, nodeAAA2);
 
@@ -214,18 +207,16 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
 
 // move before move (occupation), e.g. user moves file "a" to "temp" and then moves file "b" to "a".
 void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
-    const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
-    const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
-    const auto nodeC = _initialSituationGenerator.getNode(ReplicaSide::Local, "c");
+    const auto nodeAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aa");
+    const auto nodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    const auto nodeC = _testSituationGenerator.getNode(ReplicaSide::Local, "c");
 
     // Move A/AA/AAA to AAA
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeAAA->id(), {});
-    nodeAAA->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeAAA->id(), {});
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAA);
 
     // Move C to A/AA/AAA
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeC->id(), *nodeAA->id());
-    nodeC->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeC->id(), *nodeAA->id());
     nodeC->setName(Str("AAA"));
     const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeC);
 
@@ -260,20 +251,15 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
     //     │   ├── DAA
     //     │   └── DAB
     //     └── DB
-    const auto nodeD = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "d");
-    nodeD->insertChangeEvent(OperationType::Create);
+    const auto nodeD = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "d", "");
     const auto opD = generateSyncOperation(OperationType::Create, nodeD);
-    const auto nodeDA = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "da", nodeD);
-    nodeDA->insertChangeEvent(OperationType::Create);
+    const auto nodeDA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "da", nodeD);
     const auto opDA = generateSyncOperation(OperationType::Create, nodeDA);
-    const auto nodeDB = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "db", nodeD);
-    nodeDB->insertChangeEvent(OperationType::Create);
+    const auto nodeDB = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "db", nodeD);
     const auto opDB = generateSyncOperation(OperationType::Create, nodeDB);
-    const auto nodeDAA = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "daa", nodeDA);
-    nodeDAA->insertChangeEvent(OperationType::Create);
+    const auto nodeDAA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "daa", nodeDA);
     const auto opDAA = generateSyncOperation(OperationType::Create, nodeDAA);
-    const auto nodeDAB = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::File, "dab", nodeDA);
-    nodeDAB->insertChangeEvent(OperationType::Create);
+    const auto nodeDAB = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "dab", nodeDA);
     const auto opDAB = generateSyncOperation(OperationType::Create, nodeDAB);
 
     _syncPal->_syncOps->clear();
@@ -377,15 +363,14 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
 
 // edit before move, e.g. user moves an object "a" to "b" and then edit it.
 void TestOperationSorterWorker::testFixEditBeforeMove() {
-    const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    const auto nodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
 
     // Move A/AA/AAA to AAA
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeAAA->id(), {});
-    nodeAAA->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeAAA->id(), {});
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeAAA);
 
     // Edit AAA
-    _initialSituationGenerator.editNode(ReplicaSide::Local, *nodeAAA->id());
+    _testSituationGenerator.editNode(ReplicaSide::Local, *nodeAAA->id());
     const auto editOp = generateSyncOperation(OperationType::Edit, nodeAAA);
 
     _syncPal->_syncOps->pushOp(editOp);
@@ -401,18 +386,16 @@ void TestOperationSorterWorker::testFixEditBeforeMove() {
 // move before move (parent-child flip), e.g. user moves directory "A/B" to "D", then moves directory "A" to "D/A" (parent-child
 // relationships are now flipped).
 void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFlip() {
-    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
+    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto nodeAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aa");
 
     // Move A/AA to D
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeAA->id(), {});
-    nodeAA->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeAA->id(), {});
     nodeAA->setName(Str("D"));
     const auto moveOp1 = generateSyncOperation(OperationType::Move, nodeAA);
 
     // Move A to D
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeAA->id());
-    nodeA->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeAA->id());
     const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeA);
 
     _syncPal->_syncOps->pushOp(moveOp2);
@@ -443,18 +426,16 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     // ├── B(aab)
     // │   └── B*(b)
     // └── C(c)
-    const auto lNodeAAB = _initialSituationGenerator.getNode(ReplicaSide::Local, "aab");
-    const auto lNodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
+    const auto lNodeAAB = _testSituationGenerator.getNode(ReplicaSide::Local, "aab");
+    const auto lNodeB = _testSituationGenerator.getNode(ReplicaSide::Local, "b");
 
     // Move B to A/AA/AAB/B*
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *lNodeB->id(), *lNodeAAB->id());
-    lNodeB->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *lNodeB->id(), *lNodeAAB->id());
     lNodeB->setName(Str("B*"));
     const auto lMoveOpB = generateSyncOperation(OperationType::Move, lNodeB);
 
     // Move A/AA/AAB to B
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *lNodeAAB->id(), {});
-    lNodeAAB->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *lNodeAAB->id(), {});
     lNodeAAB->setName(Str("B"));
     const auto lMoveOpAAB = generateSyncOperation(OperationType::Move, lNodeAAB);
 
@@ -466,24 +447,21 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     // │           ├── AAA*(aaa)
     // │           └── AAB(aab)
     // └── C*(c)
-    const auto rNodeA = _initialSituationGenerator.getNode(ReplicaSide::Remote, "a");
-    const auto rNodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Remote, "aaa");
-    const auto rNodeB = _initialSituationGenerator.getNode(ReplicaSide::Remote, "b");
-    const auto rNodeC = _initialSituationGenerator.getNode(ReplicaSide::Remote, "c");
+    const auto rNodeA = _testSituationGenerator.getNode(ReplicaSide::Remote, "a");
+    const auto rNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Remote, "aaa");
+    const auto rNodeB = _testSituationGenerator.getNode(ReplicaSide::Remote, "b");
+    const auto rNodeC = _testSituationGenerator.getNode(ReplicaSide::Remote, "c");
 
     // Move A to B/A*
-    _initialSituationGenerator.moveNode(ReplicaSide::Remote, *rNodeA->id(), *rNodeB->id());
-    rNodeA->insertChangeEvent(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Remote, *rNodeA->id(), *rNodeB->id());
     rNodeA->setName(Str("A*"));
     const auto rMoveOpA = generateSyncOperation(OperationType::Move, rNodeA);
 
     // Move C to C*
-    rNodeC->insertChangeEvent(OperationType::Move);
     rNodeC->setName(Str("C*"));
     const auto rMoveOpC = generateSyncOperation(OperationType::Move, rNodeC);
 
     // Move A/AA/AAA to A/AA/AAA*
-    rNodeAAA->insertChangeEvent(OperationType::Move);
     rNodeAAA->setName(Str("AAA*"));
     const auto rMoveOpAAA = generateSyncOperation(OperationType::Move, rNodeAAA);
 
@@ -495,33 +473,27 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
 }
 
 void TestOperationSorterWorker::testFindCompleteCycles() {
-    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
-    nodeA->insertChangeEvent(OperationType::Move);
+    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
     nodeA->setName(Str("A*"));
     const auto opA = generateSyncOperation(OperationType::Move, nodeA);
 
-    const auto nodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
-    nodeB->insertChangeEvent(OperationType::Move);
+    const auto nodeB = _testSituationGenerator.getNode(ReplicaSide::Local, "b");
     nodeB->setName(Str("B*"));
     const auto opB = generateSyncOperation(OperationType::Move, nodeB);
 
-    const auto nodeC = _initialSituationGenerator.getNode(ReplicaSide::Local, "c");
-    nodeC->insertChangeEvent(OperationType::Move);
+    const auto nodeC = _testSituationGenerator.getNode(ReplicaSide::Local, "c");
     nodeC->setName(Str("C*"));
     const auto opC = generateSyncOperation(OperationType::Move, nodeC);
 
-    const auto nodeD = _initialSituationGenerator.getNode(ReplicaSide::Local, "d");
-    nodeD->insertChangeEvent(OperationType::Move);
+    const auto nodeD = _testSituationGenerator.getNode(ReplicaSide::Local, "d");
     nodeD->setName(Str("D*"));
     const auto opD = generateSyncOperation(OperationType::Move, nodeD);
 
-    const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
-    nodeAA->insertChangeEvent(OperationType::Move);
+    const auto nodeAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aa");
     nodeAA->setName(Str("AA*"));
     const auto opAA = generateSyncOperation(OperationType::Move, nodeAA);
 
-    const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
-    nodeAAA->insertChangeEvent(OperationType::Move);
+    const auto nodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
     nodeAAA->setName(Str("AAA*"));
     const auto opAAA = generateSyncOperation(OperationType::Move, nodeAAA);
 
@@ -629,8 +601,8 @@ void TestOperationSorterWorker::testBreakCycle() {
     // Initial situation
     // .
     // └── A(a)
-    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto correspondingNodeA = _initialSituationGenerator.getNode(ReplicaSide::Remote, "a");
+    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto correspondingNodeA = _testSituationGenerator.getNode(ReplicaSide::Remote, "a");
 
     // Final situation
     // .
@@ -638,14 +610,12 @@ void TestOperationSorterWorker::testBreakCycle() {
     //     └── A*(a)
 
     // Create a new node A(a2)
-    const auto nodeA2 = _initialSituationGenerator.insertInUpdateTree(ReplicaSide::Local, NodeType::Directory, "a_new");
-    nodeA2->setChangeEvents(OperationType::Create);
+    const auto nodeA2 = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "a_new", "");
     nodeA2->setName(Str("A"));
     const auto createOp = generateSyncOperation(OperationType::Create, nodeA2);
 
     // Move A(a) to A(a2)/A*(a)
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeA2->id());
-    nodeA->setChangeEvents(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeA->id(), *nodeA2->id());
     nodeA->setName(Str("A*"));
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeA);
 
@@ -669,17 +639,16 @@ void TestOperationSorterWorker::testBreakCycle2() {
     // .
     // └── A(a)
     //     └── AA(aa)
-    const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
-    const auto correspondingNodeA = _initialSituationGenerator.getNode(ReplicaSide::Remote, "a");
+    const auto nodeA = _testSituationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto nodeAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aa");
+    const auto correspondingNodeA = _testSituationGenerator.getNode(ReplicaSide::Remote, "a");
 
     // Final situation
     // .
     // └── A(aa)
 
     // Move A(a)/AA(aa) to A(aa)
-    _initialSituationGenerator.moveNode(ReplicaSide::Local, *nodeAA->id(), {});
-    nodeAA->setChangeEvents(OperationType::Move);
+    _testSituationGenerator.moveNode(ReplicaSide::Local, *nodeAA->id(), {});
     nodeAA->setName(Str("A"));
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeAA);
 
@@ -709,7 +678,7 @@ SyncOpPtr TestOperationSorterWorker::generateSyncOperation(const OperationType o
     op->setAffectedNode(affectedNode);
     const auto targetSide = otherSide(affectedNode->side());
     if (opType != OperationType::Create) {
-        op->setCorrespondingNode(_initialSituationGenerator.getNode(targetSide, *affectedNode->id()));
+        op->setCorrespondingNode(_testSituationGenerator.getNode(targetSide, *affectedNode->id()));
     }
     op->setNewName(affectedNode->name());
     op->setTargetSide(targetSide);

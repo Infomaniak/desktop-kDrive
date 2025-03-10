@@ -43,7 +43,7 @@ class ConflictResolverWorker : public OperationProcessor {
         ExitCode generateCreateParentDeleteConflictOperation(const Conflict &conflict);
         ExitCode generateUndoMoveOperation(const Conflict &conflict, std::shared_ptr<Node> loserNode);
 
-        void rescueModifiedLocalNodes(const Conflict &conflict, std::shared_ptr<Node> parentNode);
+        void rescueModifiedLocalNodes(const Conflict &conflict, std::shared_ptr<Node> node);
         void generateRescueOperation(const Conflict &conflict, std::shared_ptr<Node> node);
 
         std::shared_ptr<Node> getLoserNode(const Conflict &conflict);

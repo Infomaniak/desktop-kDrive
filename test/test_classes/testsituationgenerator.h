@@ -52,10 +52,10 @@ class SyncPal;
  *
  * where "AAA" is a file, and the other nodes are directories.
  */
-class TestInitialSituationGenerator {
+class TestSituationGenerator {
     public:
-        TestInitialSituationGenerator() = default;
-        explicit TestInitialSituationGenerator(const std::shared_ptr<SyncPal> &syncpal) : _syncpal(syncpal) {}
+        TestSituationGenerator() = default;
+        explicit TestSituationGenerator(const std::shared_ptr<SyncPal> &syncpal) : _syncpal(syncpal) {}
 
         void setSyncpal(const std::shared_ptr<SyncPal> &syncpal) { _syncpal = syncpal; }
         void generateInitialSituation(const std::string &jsonInputStr);
@@ -63,6 +63,30 @@ class TestInitialSituationGenerator {
         [[nodiscard]] std::shared_ptr<Node> getNode(ReplicaSide side, const NodeId &id) const;
         bool getDbNode(const NodeId &id, DbNode &dbNode) const;
 
+        // Utility functions used to simulate events in the update tree
+        std::shared_ptr<Node> createNode(const ReplicaSide side, const NodeType itemType, const NodeId &id,
+                                         const NodeId &parentId, const bool setChangeEvent = true) const {
+            DbNodeId dnNodeId = -1;
+            const auto node = insertInUpdateTree(side, itemType, id, parentId, dnNodeId);
+            if (setChangeEvent) node->setChangeEvents(OperationType::Create);
+            return node;
+        }
+        std::shared_ptr<Node> createNode(const ReplicaSide side, const NodeType itemType, const NodeId &id,
+                                         const std::shared_ptr<Node> &parentNode, const bool setChangeEvent = true) const {
+            return createNode(side, itemType, id, parentNode ? *parentNode->id() : "", setChangeEvent);
+        }
+        std::shared_ptr<Node> moveNode(ReplicaSide side, const NodeId &id, const NodeId &newParentRawId) const;
+        std::shared_ptr<Node> renameNode(ReplicaSide side, const NodeId &id, const SyncName &newName) const;
+        [[maybe_unused]] std::shared_ptr<Node> editNode(ReplicaSide side, const NodeId &id) const;
+        std::shared_ptr<Node> deleteNode(ReplicaSide side, const NodeId &id) const;
+
+    private:
+        [[nodiscard]] NodeId generateId(ReplicaSide side, const NodeId &id) const;
+
+        void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
+        void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
+
+        [[nodiscard]] DbNodeId insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
         /**
          * @brief Insert a new node in the update tree.
          * @param side Replica side for the update tree (Local or Remote).
@@ -73,24 +97,7 @@ class TestInitialSituationGenerator {
          * @return A pointer to the generated node.
          */
         [[nodiscard]] std::shared_ptr<Node> insertInUpdateTree(ReplicaSide side, NodeType itemType, const NodeId &id,
-                                                               const NodeId &parentId = "",
-                                                               std::optional<DbNodeId> dbNodeId = std::nullopt) const;
-        [[nodiscard]] std::shared_ptr<Node> insertInUpdateTree(const ReplicaSide side, const NodeType itemType, const NodeId &id,
-                                                               const std::shared_ptr<Node> &parentNode,
-                                                               const std::optional<DbNodeId> dbNodeId = std::nullopt) const {
-            return insertInUpdateTree(side, itemType, id, parentNode ? *parentNode->id() : "", dbNodeId);
-        }
-        void moveNode(ReplicaSide side, const NodeId &id, const NodeId &newParentRawId) const;
-        void editNode(ReplicaSide side, const NodeId &id) const;
-        void removeFromUpdateTree(ReplicaSide side, const NodeId &id) const;
-
-    private:
-        [[nodiscard]] NodeId generateId(ReplicaSide side, const NodeId &id) const;
-
-        void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
-        void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
-
-        [[nodiscard]] DbNodeId insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
+                                                               const NodeId &parentId, std::optional<DbNodeId> dbNodeId) const;
         void insertInAllUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId, DbNodeId dbNodeId) const;
 
         std::shared_ptr<SyncPal> _syncpal;

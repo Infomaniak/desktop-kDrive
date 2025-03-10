@@ -103,35 +103,35 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 }
 
 ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving) {
-    if (_syncPal->vfsMode() != VirtualFileMode::Off) {
-        if (const auto localNode = conflict.localNode(); localNode->type() == NodeType::File) {
-            VfsStatus vfsStatus;
-            const auto moveNodeRelativePath = localNode->getPath();
-            if (const auto exitInfo = _syncPal->vfs()->status(_syncPal->syncInfo().localPath / moveNodeRelativePath, vfsStatus);
-                exitInfo.code() != ExitCode::Ok) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Failed to get VFS status for file " << Utility::formatSyncPath(moveNodeRelativePath));
-                return exitInfo;
-            }
-            if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated && !vfsStatus.isSyncing) {
-                // Local node is a dehydrated placeholder, remove it so it will be detected as new on next sync
-                const auto op = std::make_shared<SyncOperation>();
-                op->setType(OperationType::Delete);
-                op->setAffectedNode(conflict.remoteNode());
-                op->setCorrespondingNode(localNode);
+    if (_syncPal->vfsMode() == VirtualFileMode::Off) return ExitCode::Ok;
 
-                op->setTargetSide(localNode->side());
-                op->setConflict(conflict);
-                op->setIsDehydratedPlaceholder(true);
-                LOGW_SYNCPAL_INFO(_logger, L"The conflict occurred on a dehydrated placeholder. Operation "
-                                                   << op->type() << L" to be propagated on " << op->targetSide()
-                                                   << L" replica for item " << SyncName2WStr(localNode->name()) << L" ("
-                                                   << Utility::s2ws(*localNode->id()) << L")");
+    const auto localNode = conflict.localNode();
+    if (localNode->type() != NodeType::File) return ExitCode::Ok;
 
-                _syncPal->_syncOps->pushOp(op);
-                continueSolving = true;
-            }
-        }
+    VfsStatus vfsStatus;
+    const auto moveNodeRelativePath = localNode->getPath();
+    if (const auto exitInfo = _syncPal->vfs()->status(_syncPal->syncInfo().localPath / moveNodeRelativePath, vfsStatus);
+        exitInfo.code() != ExitCode::Ok) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to get VFS status for file " << Utility::formatSyncPath(moveNodeRelativePath));
+        return exitInfo;
+    }
+    if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated && !vfsStatus.isSyncing) {
+        // Local node is a dehydrated placeholder, remove it so it will be detected as new on next sync
+        const auto op = std::make_shared<SyncOperation>();
+        op->setType(OperationType::Delete);
+        op->setAffectedNode(conflict.remoteNode());
+        op->setCorrespondingNode(localNode);
+
+        op->setTargetSide(localNode->side());
+        op->setConflict(conflict);
+        op->setIsDehydratedPlaceholder(true);
+        LOGW_SYNCPAL_INFO(_logger, L"The conflict occurred on a dehydrated placeholder. Operation "
+                                           << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
+                                           << SyncName2WStr(localNode->name()) << L" (" << Utility::s2ws(*localNode->id())
+                                           << L")");
+
+        _syncPal->_syncOps->pushOp(op);
+        continueSolving = true;
     }
     return ExitCode::Ok;
 }
@@ -210,9 +210,7 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
     }
 
     // Otherwise we need to check if any item has been modified locally
-    if (moveNode->side() == ReplicaSide::Local) {
-        rescueModifiedLocalNodes(conflict, moveNode);
-    }
+    rescueModifiedLocalNodes(conflict, moveNode);
 
     // Then propagate the delete operation if the item is a directory or if the file has not been modified locally
     if (moveNode->type() == NodeType::Directory || moveNode->status() != NodeStatus::ConflictOpGenerated) {
@@ -299,17 +297,18 @@ ExitCode ConflictResolverWorker::generateUndoMoveOperation(const Conflict &confl
     return ExitCode::Ok;
 }
 
-void ConflictResolverWorker::rescueModifiedLocalNodes(const Conflict &conflict, std::shared_ptr<Node> parentNode) {
-    if (parentNode->side() != ReplicaSide::Local) return;
+void ConflictResolverWorker::rescueModifiedLocalNodes(const Conflict &conflict, std::shared_ptr<Node> node) {
+    if (node->side() != ReplicaSide::Local) return;
 
-    for (const auto &[_, child]: parentNode->children()) {
+    generateRescueOperation(conflict, node);
+    for (const auto &[_, child]: node->children()) {
         rescueModifiedLocalNodes(conflict, child);
-        generateRescueOperation(conflict, child);
     }
 }
 
 void ConflictResolverWorker::generateRescueOperation(const Conflict &conflict, std::shared_ptr<Node> node) {
     if (node->status() == NodeStatus::ConflictOpGenerated) return; // Already processed
+    if (node->type() != NodeType::File) return;
     if (!node->hasChangeEvent(OperationType::Edit) && !node->hasChangeEvent(OperationType::Create)) return;
 
     // Move the deleted node to the rescue folder
@@ -389,6 +388,7 @@ ExitCode ConflictResolverWorker::undoMove(std::shared_ptr<Node> moveNode, SyncOp
         moveOp->setNewName(originPath->filename().native());
     } else {
         // We cannot undo the move operation, so the file is moved under the root node instead.
+        // TODO : move it to the rescue folder instead
         moveOp->setNewParentNode(_syncPal->updateTree(moveNode->side())->rootNode());
         SyncName newName;
         (void) generateConflictedName(moveNode, newName);
