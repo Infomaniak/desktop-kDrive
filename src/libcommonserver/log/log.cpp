@@ -94,8 +94,7 @@ Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
             new CustomRollingFileAppender(filePath, CommonUtility::logMaxSize, Log::rfMaxBackupIdx, true, true);
 
     // Unicode management
-    std::locale loc(std::locale(), new std::codecvt_utf8<wchar_t>);
-    rfAppender->imbue(loc);
+    rfAppender->imbue(std::locale("en_US.UTF-8"));
 
     log4cplus::SharedAppenderPtr appender(std::move(rfAppender));
     appender->setName(Log::rfName);
