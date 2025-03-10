@@ -53,7 +53,7 @@ class URI;
 
 namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
-        inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
+        inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
 
         static bool init();
         static void free();
