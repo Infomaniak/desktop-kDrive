@@ -35,6 +35,7 @@ class ErrorTabWidget : public QTabWidget {
         Q_OBJECT
 
     public:
+        enum ErrorTabIndex { ToResolveIndex = 0, AutoResolveIndex };
         ErrorTabWidget(int driveDbId = 0, bool generic = false, QWidget *parent = nullptr);
 
         inline QListWidget *autoResolvedErrorsListWidget() const { return _autoResolvedErrorsListWidget; }

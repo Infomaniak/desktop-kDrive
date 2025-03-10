@@ -236,17 +236,6 @@ std::string toString(const ConflictType e) {
     }
 }
 
-std::string toString(const ConflictTypeResolution e) {
-    switch (e) {
-        case ConflictTypeResolution::None:
-            return "None";
-        case ConflictTypeResolution::FileRescued:
-            return "FileRescued";
-        default:
-            return noConversionStr;
-    }
-}
-
 std::string toString(const InconsistencyType e) {
     switch (e) {
         case InconsistencyType::None:

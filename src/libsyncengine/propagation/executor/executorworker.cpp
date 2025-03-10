@@ -1466,24 +1466,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
             return exitInfo;
         }
 
-        SyncFileStatus status = SyncFileStatus::Success;
-        // Check for conflict or inconsistency
-        if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
-            if (syncOp->conflict().type() != ConflictType::None) {
-                status = SyncFileStatus::Conflict;
-            } else if (syncItem.inconsistency() != InconsistencyType::None) {
-                status = SyncFileStatus::Inconsistency;
-            }
-
-            if (status != SyncFileStatus::Success) {
-                Error err(_syncPal->syncDbId(), syncItem.localNodeId() ? *syncItem.localNodeId() : "",
-                          syncItem.remoteNodeId() ? *syncItem.remoteNodeId() : "", syncItem.type(),
-                          syncItem.newPath() ? *syncItem.newPath() : syncItem.path(), syncItem.conflict(),
-                          syncItem.inconsistency());
-                _syncPal->addError(err);
-            }
-        }
-
         bypassProgressComplete = syncOp->affectedNode()->hasChangeEvent(OperationType::Create) &&
                                  syncOp->affectedNode()->hasChangeEvent(OperationType::Delete);
     }

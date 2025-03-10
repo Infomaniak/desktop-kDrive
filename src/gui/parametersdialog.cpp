@@ -589,7 +589,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
     return {};
 }
 
-QString ParametersDialog::getConflictText(const ConflictType conflictType, const ConflictTypeResolution resolution) const {
+QString ParametersDialog::getConflictText(const ConflictType conflictType) const {
     switch (conflictType) {
         case ConflictType::None:
             break;
@@ -621,12 +621,10 @@ QString ParametersDialog::getConflictText(const ConflictType conflictType, const
                     "An element with the same name already exists in this location.<br>"
                     "The local operation has been canceled.");
         case ConflictType::EditDelete:
-            if (resolution == ConflictTypeResolution::FileRescued) {
-                return tr(
-                        "The content of the file was modified while it was being deleted.<br>"
-                        "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
-                        "IMPROVED).");
-            }
+            return tr(
+                    "The content of the file was modified while it was being deleted.<br>"
+                    "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
+                    "IMPROVED).");
         case ConflictType::CreateCreate:
             return tr(
                     "An element with the same name already exists in this location.<br>"
@@ -694,7 +692,7 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
     return text;
 }
 
-QString ParametersDialog::getCancelText(CancelType cancelType, const QString &path,
+QString ParametersDialog::getCancelText(const CancelType cancelType, const QString &path,
                                         const QString &destinationPath /*= ""*/) const {
     switch (cancelType) {
         case CancelType::Create: {
@@ -708,19 +706,18 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
                     "The file containing your modifications has been renamed and excluded from synchronization.");
         }
         case CancelType::Move: {
-            QFileInfo fileInfo(path);
-            QFileInfo destFileInfo(destinationPath);
-            if (fileInfo.dir() == destFileInfo.dir()) {
+            const QFileInfo fileInfo(path);
+            if (const QFileInfo destFileInfo(destinationPath); fileInfo.dir() == destFileInfo.dir()) {
                 // Rename
                 return tr(
                         "You are not allowed to rename item.<br>"
                         "It will be restored with its original name.");
-            } else {
-                // Move
-                return tr("You are not allowed to move item to \"%1\".<br>"
-                          "It will be restored to its original location.")
-                        .arg(destinationPath);
             }
+
+            // Move
+            return tr("You are not allowed to move item to \"%1\".<br>"
+                      "It will be restored to its original location.")
+                    .arg(destinationPath);
         }
         case CancelType::Delete: {
             return tr(
@@ -748,6 +745,11 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
         }
         case CancelType::Hardlink: {
             return tr("This item has been excluded from sync because it is an hard link");
+        }
+        case CancelType::FileRescued: {
+            return tr(
+                    "The file has been modified locally and deleted on remote kDrive.<br>"
+                    "Local copy has been saved in the rescue folder (TEMPORARY TEXT, TO BE IMPROVED).");
         }
         default: {
             break;
@@ -788,7 +790,7 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
 
 QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const {
     if (errorInfo.conflictType() != ConflictType::None) {
-        return getConflictText(errorInfo.conflictType(), ConflictTypeResolution::None);
+        return getConflictText(errorInfo.conflictType());
     }
 
     if (errorInfo.inconsistencyType() != InconsistencyType::None) {
@@ -1254,6 +1256,8 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
     } else {
         _drivePreferencesWidget->showErrorBanner(unresolvedErrorCount > 0);
     }
+
+    errorTabWidget->setCurrentIndex(autoresolvedErrorCount ? ErrorTabWidget::AutoResolveIndex : ErrorTabWidget::ToResolveIndex);
 }
 
 bool ParametersDialog::driveHasSyncs(int driveDbId) const {

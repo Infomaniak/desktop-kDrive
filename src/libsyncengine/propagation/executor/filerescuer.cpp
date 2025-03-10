@@ -31,7 +31,7 @@ ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) const {
     }
 
     const auto absoluteOriginPath = _syncPal->localPath() / syncOp->relativeOriginPath();
-    SyncPath absoluteDestinationPath;
+    SyncPath relativeDestinationPath;
     ExitInfo exitInfo;
     auto counter = 0;
     SyncName suffix;
@@ -41,20 +41,20 @@ ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) const {
         }
         const SyncName filename =
                 Path2Str(syncOp->relativeOriginPath().stem()) + suffix + Path2Str(syncOp->relativeOriginPath().extension());
-        absoluteDestinationPath = _syncPal->localPath() / rescueFolderName / filename;
-        LocalMoveJob rescueJob(absoluteOriginPath, absoluteDestinationPath);
+        relativeDestinationPath = rescueFolderName / filename;
+        LocalMoveJob rescueJob(absoluteOriginPath, _syncPal->localPath() / relativeDestinationPath);
         exitInfo = rescueJob.runSynchronously();
         if (exitInfo.cause() == ExitCause::FileAlreadyExist) {
             ++counter;
-        } else {
+        } else if (!exitInfo) {
             return exitInfo;
         }
     } while (!exitInfo);
 
     LOG_IF_FAIL(syncOp->conflict().localNode() && syncOp->conflict().localNode()->id().has_value())
     const auto localNodeId = syncOp->conflict().localNode()->id().value();
-    const Error error(_syncPal->syncDbId(), localNodeId, {}, syncOp->conflict().localNode()->type(), absoluteOriginPath,
-                      syncOp->conflict().type(), InconsistencyType::None, CancelType::None, absoluteDestinationPath);
+    const Error error(_syncPal->syncDbId(), localNodeId, {}, syncOp->conflict().localNode()->type(), syncOp->relativeOriginPath(),
+                      ConflictType::None, InconsistencyType::None, CancelType::FileRescued, relativeDestinationPath);
     _syncPal->addError(error);
 
     return ExitCode::Ok;
