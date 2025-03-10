@@ -31,8 +31,7 @@ bool LocalMoveJob::canRun() {
         return true;
     }
 
-    std::error_code ec;
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
     if (!Utility::isEqualInsensitive(_source, _dest)) {
         // Check that we can move the file in destination
         bool exists = false;
@@ -51,8 +50,8 @@ bool LocalMoveJob::canRun() {
 
         if (exists) {
             LOGW_DEBUG(_logger, L"Item " << Path2WStr(_dest).c_str() << L" already exist. Aborting current sync and restart.");
-            _exitCode = ExitCode::NeedRestart;
-            _exitCause = ExitCause::UnexpectedFileSystemEvent;
+            _exitCode = ExitCode::DataError;
+            _exitCause = ExitCause::FileAlreadyExist;
             return false;
         }
     }
@@ -69,8 +68,8 @@ bool LocalMoveJob::canRun() {
     if (!exists) {
         LOGW_DEBUG(_logger,
                    L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_source).c_str());
-        _exitCode = ExitCode::NeedRestart;
-        _exitCause = ExitCause::UnexpectedFileSystemEvent;
+        _exitCode = ExitCode::DataError;
+        _exitCause = ExitCause::InvalidDestination;
         return false;
     }
 

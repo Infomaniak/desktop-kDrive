@@ -17,6 +17,8 @@
  */
 
 #include "executorworker.h"
+
+#include "filerescuer.h"
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
@@ -48,8 +50,6 @@ namespace KDC {
 
 #define SEND_PROGRESS_DELAY 1 // 1 sec
 #define SNAPSHOT_INVALIDATION_THRESHOLD 100 // Changes
-
-static const SyncPath rescueFolderName = ".rescueFolder";
 
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
     OperationProcessor(syncPal, name, shortName) {}
@@ -995,7 +995,9 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
             return exitInfo;
         }
     } else if (syncOp->isRescueOperation()) {
-        return executeRescueMoveJob(syncOp);
+        FileRescuer fileRescuer(_syncPal);
+        if (const auto exitInfo = fileRescuer.executeRescueMoveJob(syncOp); !exitInfo) return exitInfo;
+        if (const auto exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) return exitInfo;
     } else {
         if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << SyncName2WStr(syncOp->affectedNode()->name())
@@ -1129,55 +1131,6 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
     }
 
     return handleFinishedJob(job, syncOp, syncOp->affectedNode()->getPath(), ignored, bypassProgressComplete);
-}
-
-ExitInfo ExecutorWorker::executeRescueMoveJob(SyncOpPtr syncOp) {
-    if (const auto exitInfo = createRescueFolderIfNeeded(); !exitInfo) {
-        return exitInfo;
-    }
-
-    const auto absoluteOriginPath = _syncPal->localPath() / syncOp->relativeOriginPath();
-    const auto absoluteDestinationPath = _syncPal->localPath() / rescueFolderName / syncOp->relativeOriginPath().filename();
-    LocalMoveJob rescueJob(absoluteOriginPath, absoluteDestinationPath);
-    if (const auto exitInfo = rescueJob.runSynchronously(); !exitInfo) {
-        cancelAllOngoingJobs();
-        return exitInfo;
-    }
-    if (const auto exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
-        cancelAllOngoingJobs();
-        return exitInfo;
-    }
-
-    LOG_IF_FAIL(syncOp->conflict().localNode() && syncOp->conflict().localNode()->id().has_value())
-    const auto localNodeId = syncOp->conflict().localNode()->id().value();
-    const Error error(_syncPal->syncDbId(), localNodeId, {}, syncOp->conflict().localNode()->type(), absoluteOriginPath,
-                      syncOp->conflict().type(), InconsistencyType::None, CancelType::None, absoluteDestinationPath);
-    _syncPal->addError(error);
-
-    return ExitCode::Ok;
-}
-
-ExitInfo ExecutorWorker::createRescueFolderIfNeeded() {
-    const auto rescueFolderPath = _syncPal->localPath() / rescueFolderName;
-
-    bool exists = false;
-    auto ioError = IoError::Unknown;
-    IoHelper::checkIfPathExists(rescueFolderPath, exists, ioError);
-    if (ioError != IoError::Success) {
-        // Failed to check directory existence
-        LOGW_WARN(_logger, L"Failed to check rescue directory existence. Error code: " << Utility::formatIoError(ioError));
-        return ExitCode::SystemError;
-    }
-    if (exists) {
-        // Rescue folder already exists
-        return ExitCode::Ok;
-    }
-
-    LocalCreateDirJob job(rescueFolderPath);
-    if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
-        return exitInfo;
-    }
-    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {

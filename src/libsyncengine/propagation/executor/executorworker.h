@@ -99,8 +99,6 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
-        ExitInfo executeRescueMoveJob(SyncOpPtr syncOp);
-        ExitInfo createRescueFolderIfNeeded();
 
         ExitInfo handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);

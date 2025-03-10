@@ -256,7 +256,8 @@ enum class ExitCause {
     FullListParsingError,
     OperationCanceled,
     ShareLinkAlreadyExists,
-    InvalidArgument
+    InvalidArgument,
+    InvalidDestination
 };
 std::string toString(ExitCause e);
 
