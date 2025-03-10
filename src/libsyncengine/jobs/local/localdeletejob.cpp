@@ -114,7 +114,7 @@ bool LocalDeleteJob::canRun() {
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart: "
                                     << Utility::formatSyncPath(_absolutePath).c_str());
-        _exitCode = ExitCode::NeedRestart;
+        _exitCode = ExitCode::DataError;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
