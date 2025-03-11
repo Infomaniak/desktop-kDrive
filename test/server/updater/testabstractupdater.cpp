@@ -168,7 +168,15 @@ void TestAbstractUpdater::testCurrentVersionedChannel() {
     version = "9.0.0.20210102";
     CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
 
+    // Emtpy version info.
     updateChecker->setAllVersionInfo({});
+    version = "11.0.1.20210101";
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
+
+    // Non-empty invalid version info.
+    AllVersionsInfo invalidVersions;
+    testVersions[VersionChannel::Unknown].tag = "10.0.0";
+    updateChecker->setAllVersionInfo(invalidVersions);
     version = "11.0.1.20210101";
     CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
 }
