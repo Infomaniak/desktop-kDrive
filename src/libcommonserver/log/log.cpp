@@ -88,14 +88,13 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
     return true;
 }
 
-Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
+Log::Log(const log4cplus::tstring &filePath) : _logger(log4cplus::Logger::getInstance(Log::instanceName)), _filePath(filePath) {
     // Instantiate an appender object
     CustomRollingFileAppender *rfAppender =
             new CustomRollingFileAppender(filePath, CommonUtility::logMaxSize, Log::rfMaxBackupIdx, true, true);
 
     // Unicode management
-    std::locale loc(std::locale(), new std::codecvt_utf8<wchar_t>);
-    rfAppender->imbue(loc);
+    rfAppender->imbue(std::locale("en_US.UTF-8"));
 
     log4cplus::SharedAppenderPtr appender(std::move(rfAppender));
     appender->setName(Log::rfName);
@@ -104,7 +103,6 @@ Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
     appender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(Log::rfPattern)));
 
     // Instantiate a logger object
-    _logger = log4cplus::Logger::getInstance(Log::instanceName);
     _logger.setLogLevel(log4cplus::TRACE_LOG_LEVEL);
 
     // Attach the appender object to the logger
