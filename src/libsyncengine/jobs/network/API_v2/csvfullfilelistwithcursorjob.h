@@ -25,7 +25,7 @@ namespace KDC {
 
 class SnapshotItemHandler {
     public:
-        explicit SnapshotItemHandler(log4cplus::Logger logger);
+        explicit SnapshotItemHandler(const log4cplus::Logger &logger);
         enum CsvIndex {
             CsvIndexId = 0,
             CsvIndexParentId,

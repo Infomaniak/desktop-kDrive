@@ -119,7 +119,7 @@ bool DownloadJob::canRun() {
     if (_isCreate && exists) {
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_localpath)
                                           << L" already exists. Aborting current sync and restarting.");
-        _exitCode = ExitCode::NeedRestart;
+        _exitCode = ExitCode::DataError;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
@@ -173,11 +173,7 @@ void DownloadJob::runJob() noexcept {
 bool DownloadJob::handleResponse(std::istream &is) {
     // Get Mime type
     std::string contentType;
-    try {
-        contentType = _resHttp.get("Content-Type");
-    } catch (...) {
-        // No Content-Type
-    }
+    contentType = _resHttp.get("Content-Type", "");
 
     std::string mimeType;
     if (!contentType.empty()) {
@@ -439,7 +435,9 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 bool DownloadJob::removeTmpFile() {
     if (_tmpPath.empty()) return true;
 
-    if (std::error_code ec; !std::filesystem::remove_all(_tmpPath, ec)) {
+    std::error_code ec;
+    std::filesystem::remove_all(_tmpPath, ec);
+    if (ec.value()) {
         LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatStdError(_tmpPath, ec));
         return false;
     }

@@ -24,6 +24,7 @@ set(testsyncengine_SRCS
         ../mocks/libsyncengine/vfs/mockvfs.h
         ../mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
+        ../test_classes/testinitialsituationgenerator.h ../test_classes/testinitialsituationgenerator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         olddb/testoldsyncdb.h olddb/testoldsyncdb.cpp
@@ -118,5 +119,11 @@ if (APPLE)
     install(CODE "
         message(STATUS \"Fixing library paths for ${testsyncengine_NAME}...\")
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /usr/local/lib/libcppunit-1.15.2.dylib @rpath/libcppunit-1.15.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libssl.3.dylib @rpath/libssl.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+        execute_process(COMMAND \"install_name_tool\" -change /opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /usr/local/lib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath /opt/homebrew/openssl@3/lib ${BIN_OUTPUT_DIRECTORY}/${testsyncengine_NAME})
         " COMPONENT RUNTIME)
 endif ()

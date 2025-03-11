@@ -204,4 +204,32 @@ void UpdateTree::clear() {
     _nodes.clear();
 }
 
+void UpdateTree::drawUpdateTree() {
+    if (const std::string drawUpdateTree = CommonUtility::envVarValue("KDRIVE_DEBUG_DRAW_UPDATETREE"); drawUpdateTree.empty()) {
+        return;
+    }
+
+    SyncName treeStr;
+    drawUpdateTreeRow(rootNode(), treeStr);
+    LOGW_INFO(Log::instance()->getLogger(), _side << L" update tree:\n" << SyncName2WStr(treeStr).c_str());
+}
+
+void UpdateTree::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth /*= 0*/) {
+    for (uint64_t i = 0; i < depth; i++) {
+        treeStr += Str(" ");
+    }
+    treeStr += Str("'") + node->name() + Str("'");
+    treeStr += Str("[");
+    treeStr += Str2SyncName(*node->id());
+    treeStr += Str(" / ");
+    treeStr += node->changeEvents() != OperationType::None ? Str2SyncName(toString(node->changeEvents())).c_str() : Str("-");
+    treeStr += Str("]");
+    treeStr += Str("\n");
+
+    depth++;
+    for (const auto &[_, childNode]: node->children()) {
+        drawUpdateTreeRow(childNode, treeStr, depth);
+    }
+}
+
 } // namespace KDC

@@ -1463,12 +1463,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     ignored = false;
     bypassProgressComplete = false;
 
-    if (job->exitCode() == ExitCode::NeedRestart) {
-        cancelAllOngoingJobs();
-        _syncPal->setRestart(true);
-        return ExitCode::Ok;
-    }
-
     NodeId locaNodeId;
     NodeId remoteNodeId;
     if (syncOp->targetSide() == ReplicaSide::Local) {

@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import <ServiceManagement/SMLoginItem.h>
 #import "NSXPCConnection+LoginItem.h"
+#import <ServiceManagement/SMAppService.h>
+#import <ServiceManagement/SMLoginItem.h>
 
 @implementation NSXPCConnection (LoginItem)
 
@@ -84,13 +85,31 @@
 
     // Enable the login item.
     // This will start it running if it wasn't already running.
-    if (!SMLoginItemSetEnabled((__bridge CFStringRef)loginItemBundleId, true)) {
-        if (errorp != NULL) {
-            *errorp = [NSError errorWithDomain:NSPOSIXErrorDomain code:EINVAL userInfo:@{
-                NSLocalizedFailureReasonErrorKey: @"SMLoginItemSetEnabled() failed"
-            }];
+    if (@available(macOS 13.0, *)) {
+        NSError *error;
+        [[SMAppService loginItemServiceWithIdentifier:loginItemBundleId]
+            registerAndReturnError:&error];
+        if (error) {
+            if (errorp != NULL) {
+                *errorp = error;
+            }
+            return nil;
         }
-        return nil;
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        if (!SMLoginItemSetEnabled((__bridge CFStringRef) loginItemBundleId, true)) {
+            if (errorp != NULL) {
+                *errorp = [NSError
+                    errorWithDomain:NSPOSIXErrorDomain
+                               code:EINVAL
+                           userInfo:@{
+                               NSLocalizedFailureReasonErrorKey: @"SMLoginItemSetEnabled() failed"
+                           }];
+            }
+            return nil;
+        }
+#pragma clang diagnostic pop
     }
 
     return [self initWithMachServiceName:loginItemBundleId options:0];
