@@ -475,8 +475,8 @@ void TestExecutorWorker::testFileRescuer() {
     CPPUNIT_ASSERT(fileRescuer.executeRescueMoveJob(syncOp));
     // Check that both files are now in rescue folder
     CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(_localTempDir.path() / FileRescuer::rescueFolderName() / fileName));
-    CPPUNIT_ASSERT_EQUAL(true,
-                         std::filesystem::exists(_localTempDir.path() / FileRescuer::rescueFolderName() / (fileName + " (1)")));
+    CPPUNIT_ASSERT_EQUAL(
+            true, std::filesystem::exists(_localTempDir.path() / FileRescuer::rescueFolderName() / (fileName + Str(" (1)"))));
 }
 
 void TestExecutorWorker::testFixModificationDate() {
