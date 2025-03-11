@@ -303,7 +303,7 @@ void TestConflictResolverWorker::testMoveDelete4() {
 
 void TestConflictResolverWorker::testMoveDelete5() {
     // Simulate rename of node AA to AA* on local replica
-    const auto lNodeAA = _testSituationGenerator.renameNode(ReplicaSide::Local, "aa", "AA*");
+    const auto lNodeAA = _testSituationGenerator.renameNode(ReplicaSide::Local, "aa", Str("AA*"));
 
     // Simulate a delete of node A on remote replica
     const auto rNodeA = _testSituationGenerator.deleteNode(ReplicaSide::Remote, "a");
@@ -583,7 +583,7 @@ void TestConflictResolverWorker::testMoveMoveDest() {
 
     // Simulate move of A/AA to A/AB/AAA on remote replica
     const auto rNodeAA = _testSituationGenerator.moveNode(ReplicaSide::Remote, "aa", "ab");
-    (void) _testSituationGenerator.renameNode(ReplicaSide::Remote, "aa", "AAA");
+    (void) _testSituationGenerator.renameNode(ReplicaSide::Remote, "aa", Str("AAA"));
 
     const Conflict conflict(lNodeAAA, rNodeAA, ConflictType::MoveMoveDest);
     _syncPal->_conflictQueue->push(conflict);
@@ -605,7 +605,7 @@ void TestConflictResolverWorker::testMoveMoveDestDehydratedPlaceholder() {
 
     // Simulate move of A/AA to A/AB/AAA on remote replica
     const auto rNodeAA = _testSituationGenerator.moveNode(ReplicaSide::Remote, "aa", "ab");
-    (void) _testSituationGenerator.renameNode(ReplicaSide::Local, "aa", "AAA");
+    (void) _testSituationGenerator.renameNode(ReplicaSide::Local, "aa", Str("AAA"));
 
     // Since the methods needed for tests are mocked, we can put any VirtualFileMode type. It just needs to be different from
     // VirtualFileMode::off
@@ -636,7 +636,6 @@ void TestConflictResolverWorker::testMoveMoveDestDehydratedPlaceholder() {
 void TestConflictResolverWorker::testMoveMoveCycle() {
     // Simulate move of node A/AA to A/AB/AA on local replica
     const auto lNodeAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aa", "ab");
-    _syncPal->updateTree(ReplicaSide::Local)->getNodeById("l_aa");
 
     // Simulate move of node A/AB to A/AA/AB, on remote replica
     const auto rNodeAB = _testSituationGenerator.moveNode(ReplicaSide::Remote, "ab", "aa");

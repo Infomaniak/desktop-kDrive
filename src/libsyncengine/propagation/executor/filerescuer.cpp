@@ -39,8 +39,8 @@ ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) const {
         if (counter) {
             suffix = Str(" (") + Str2SyncName(std::to_string(counter)) + Str(")"); // TODO : use format when fully moved to c++20
         }
-        const SyncName filename =
-                Path2Str(syncOp->relativeOriginPath().stem()) + suffix + Path2Str(syncOp->relativeOriginPath().extension());
+        const SyncName filename = Str2SyncName(syncOp->relativeOriginPath().stem().string()) + suffix +
+                                  Str2SyncName(syncOp->relativeOriginPath().extension().string());
         relativeDestinationPath = rescueFolderName / filename;
         LocalMoveJob rescueJob(absoluteOriginPath, _syncPal->localPath() / relativeDestinationPath);
         exitInfo = rescueJob.runSynchronously();
