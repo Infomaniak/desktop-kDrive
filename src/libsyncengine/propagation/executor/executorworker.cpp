@@ -1126,6 +1126,12 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             return exitInfo;
         }
 
+        // Send conflict notification
+        Error err(_syncPal->syncDbId(), *syncOp->localNode()->id(), *syncOp->remoteNode()->id(), syncOp->localNode()->type(),
+                  syncOp->relativeOriginPath(), syncOp->conflict().type(), InconsistencyType::None, CancelType::None,
+                  syncOp->relativeDestinationPath());
+        _syncPal->addError(err);
+
         return ExitCode::Ok;
     }
 

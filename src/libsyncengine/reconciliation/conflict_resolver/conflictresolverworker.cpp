@@ -153,6 +153,10 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     op->setNewName(newName);
     op->setConflict(conflict);
 
+    const auto originPath = conflict.remoteNode()->getPath();
+    op->setRelativeOriginPath(originPath);
+    op->setRelativeDestinationPath(originPath.parent_path() / newName);
+
     LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated on " << op->targetSide()
                                              << L" replica for item " << SyncName2WStr(op->correspondingNode()->name()) << L" ("
                                              << Utility::s2ws(*op->correspondingNode()->id()) << L")");

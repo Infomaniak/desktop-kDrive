@@ -257,7 +257,7 @@ void ParametersDialog::initUI() {
 
     // Create General level errors list
     _errorTabWidgetStackPosition = _errorsStackedWidget->addWidget(
-            new ErrorTabWidget(toInt(DriveInfoClient::ParametersStackedWidget::General), true, this));
+            new ErrorTabWidget(_gui, toInt(DriveInfoClient::ParametersStackedWidget::General), true, this));
     refreshErrorList(0);
 
     // Init labels and setup connection for on the fly translation
@@ -914,7 +914,7 @@ void ParametersDialog::onConfigRefreshed() {
     for (auto &[driveId, driveInfo]: _gui->driveInfoMap()) {
         if (driveInfo.errorTabWidgetStackPosition() == 0 && driveHasSyncs(driveInfo.dbId())) {
             driveInfo.setErrorTabWidgetStackPosition(
-                    _errorsStackedWidget->addWidget(new ErrorTabWidget(driveInfo.dbId(), false, this)));
+                    _errorsStackedWidget->addWidget(new ErrorTabWidget(_gui, driveInfo.dbId(), false, this)));
         }
         refreshErrorList(driveId);
     }

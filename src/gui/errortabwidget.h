@@ -36,13 +36,14 @@ class ErrorTabWidget : public QTabWidget {
 
     public:
         enum ErrorTabIndex { ToResolveIndex = 0, AutoResolveIndex };
-        ErrorTabWidget(int driveDbId = 0, bool generic = false, QWidget *parent = nullptr);
+        explicit ErrorTabWidget(std::shared_ptr<ClientGui> gui, int driveDbId = 0, bool generic = false,
+                                QWidget *parent = nullptr);
 
-        inline QListWidget *autoResolvedErrorsListWidget() const { return _autoResolvedErrorsListWidget; }
-        inline QListWidget *unresolvedErrorsListWidget() const { return _unresolvedErrorsListWidget; }
-        inline qint64 getLastErrorTimestamp() const { return _lastErrorTimestamp; }
-        inline void setLastErrorTimestamp(qint64 newLastErrorTimestamp) { _lastErrorTimestamp = newLastErrorTimestamp; }
-        inline void setDriveDbId(int driveDbId) { _driveDbId = driveDbId; }
+        QListWidget *autoResolvedErrorsListWidget() const { return _autoResolvedErrorsListWidget; }
+        QListWidget *unresolvedErrorsListWidget() const { return _unresolvedErrorsListWidget; }
+        qint64 getLastErrorTimestamp() const { return _lastErrorTimestamp; }
+        void setLastErrorTimestamp(qint64 newLastErrorTimestamp) { _lastErrorTimestamp = newLastErrorTimestamp; }
+        void setDriveDbId(int driveDbId) { _driveDbId = driveDbId; }
 
         void setUnresolvedErrorsCount(int count);
         void setAutoResolvedErrorsCount(int count);
@@ -59,6 +60,8 @@ class ErrorTabWidget : public QTabWidget {
         void onResolveUnsupportedCharactersErrors();
 
     private:
+        std::shared_ptr<ClientGui> _gui;
+
         CustomTabBar *_tabBar;
         QLabel *_toResolveErrorsLabel;
         QLabel *_toResolveErrorsNb;
