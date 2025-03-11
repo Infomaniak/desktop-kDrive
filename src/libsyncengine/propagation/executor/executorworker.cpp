@@ -1017,20 +1017,19 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
             }
         }
 
-        ExitInfo exitInfo = propagateMoveToDbAndTree(syncOp);
-        if (!exitInfo) {
+        if (const auto exitInfo = propagateMoveToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
+            return exitInfo;
         }
-        return exitInfo;
     }
 
-    ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete);
-    if (!exitInfo) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
-                                                                        << exitInfo);
+    if (const auto exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << Utility::formatSyncName(syncOp->affectedNode()->name())
+                                                                        << L" " << exitInfo);
+        return exitInfo;
     }
-    return exitInfo;
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
