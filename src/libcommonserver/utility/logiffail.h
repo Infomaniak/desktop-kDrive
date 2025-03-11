@@ -33,6 +33,7 @@
 #define LOG_IF_FAIL_1(cond)                                                                               \
     if (!(cond)) {                                                                                        \
         LOG_FATAL(_logger, "ENFORCE: \"" << #cond << "\" in file " << __FILE__ << ", line " << __LINE__); \
+        sentry::Handler::captureMessage(sentry::Level::Error, "ENFORCE", #cond);                        \
     }
 
 #define LOG_IF_FAIL_2(cond, message)                                                                                            \

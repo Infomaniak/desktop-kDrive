@@ -26,19 +26,25 @@ namespace KDC {
 
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
-           std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
+           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode) :
     _idb(idb), _side(side), _name(name), _type(type), _changeEvents(changeEvents), _id(id), _createdAt(createdAt),
-    _lastModified(lastmodified), _size(size), _moveOrigin(moveOrigin), _moveOriginParentDbId(moveOriginParentDbId),
-    _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
+    _lastModified(lastmodified), _size(size), _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
     setParentNode(parentNode);
+}
+
+Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
+           OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
+           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
+           const MoveOriginInfos &moveOriginInfos) :
+    Node(idb, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode) {
+    setParentNode(parentNode);
+    setMoveOriginInfos(moveOriginInfos);
 }
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
            const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size,
-           std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
-    Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode, moveOrigin,
-         moveOriginParentDbId) {}
+           std::shared_ptr<Node> parentNode) :
+    Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode) {}
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode) :
     _side(side), _name(name), _type(type), _isTmp(true) {
@@ -72,6 +78,24 @@ std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) 
         }
     }
     return nullptr;
+}
+
+void Node::setChangeEvents(const OperationType ops) {
+    _changeEvents = ops;
+    if (hasChangeEvent(OperationType::Move) && !_moveOriginInfos.has_value()) {
+        assert(false && "Cannot insert a move event on a node without move origin infos");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Node::setChangeEvents", "Move event without move origin");
+        LOGW_WARN(Log::instance()->getLogger(), L"Move event without move origin are not allowed" << Utility::formatSyncPath(getPath()));
+    }
+}
+
+void Node::insertChangeEvent(const OperationType &op) {
+    _changeEvents |= op;
+    if (hasChangeEvent(OperationType::Move) && !_moveOriginInfos.has_value()) {
+        assert(false && "Cannot insert a move event on a node without move origin infos");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Node::insertChangeEvent", "Move event without move origin");
+        LOGW_WARN(Log::instance()->getLogger(), L"Move event without move origin are not allowed" << Utility::formatSyncPath(getPath()));
+    }
 }
 
 std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nodeId /*= ""*/) {
@@ -199,5 +223,4 @@ bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
 bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
     return !isParentOf(parentNode);
 }
-
 } // namespace KDC

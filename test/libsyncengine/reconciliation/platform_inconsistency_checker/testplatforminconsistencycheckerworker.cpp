@@ -149,13 +149,13 @@ void TestPlatformInconsistencyCheckerWorker::testCheckReservedNames() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testNameClash() {
-    const auto parentNode = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("parentNode"),
+    const auto parentNode = std::make_shared<Node>(ReplicaSide::Remote, Str("parentNode"),
                                                    NodeType::Directory, OperationType::Create, "parentID", 0, 0, 12345,
                                                    _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    const auto nodeLower = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("a"), NodeType::File,
+    const auto nodeLower = std::make_shared<Node>(ReplicaSide::Remote, Str("a"), NodeType::File,
                                                   OperationType::Create, "a", 0, 0, 12345, parentNode);
-    const auto nodeUpper = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"), NodeType::File,
+    const auto nodeUpper = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::File,
                                                   OperationType::Create, "A", 0, 0, 12345, parentNode);
 
     CPPUNIT_ASSERT(parentNode->insertChildren(nodeLower));
@@ -246,7 +246,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testExecute() {
-    const auto parentNode = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("parentNode"),
+    const auto parentNode = std::make_shared<Node>(ReplicaSide::Remote, Str("parentNode"),
                                                    NodeType::Directory, OperationType::Create, "parentID", 0, 0, 12345,
                                                    _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
