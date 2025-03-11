@@ -23,7 +23,7 @@
 
 namespace KDC {
 
-const SyncPath rescueFolderName = ".rescueFolder";
+const SyncPath FileRescuer::_rescueFolderName = ".rescueFolder";
 
 ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) const {
     if (const auto exitInfo = createRescueFolderIfNeeded(); !exitInfo) {
@@ -41,7 +41,7 @@ ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) const {
         }
         const SyncName filename =
                 Path2Str(syncOp->relativeOriginPath().stem()) + suffix + Path2Str(syncOp->relativeOriginPath().extension());
-        relativeDestinationPath = rescueFolderName / filename;
+        relativeDestinationPath = _rescueFolderName / filename;
         LocalMoveJob rescueJob(absoluteOriginPath, _syncPal->localPath() / relativeDestinationPath);
         exitInfo = rescueJob.runSynchronously();
         if (exitInfo.cause() == ExitCause::FileAlreadyExist) {
@@ -61,7 +61,7 @@ ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) const {
 }
 
 ExitInfo FileRescuer::createRescueFolderIfNeeded() const {
-    const auto rescueFolderPath = _syncPal->localPath() / rescueFolderName;
+    const auto rescueFolderPath = _syncPal->localPath() / _rescueFolderName;
 
     bool exists = false;
     auto ioError = IoError::Unknown;

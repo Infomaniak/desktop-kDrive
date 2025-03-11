@@ -24,6 +24,8 @@
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "network/proxy.h"
+#include "propagation/executor/filerescuer.h"
+#include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
 #include <memory>
@@ -433,6 +435,34 @@ void TestExecutorWorker::testDeleteOpNodes() {
         CPPUNIT_ASSERT(_executorWorker->deleteOpNodes(syncOp));
         CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*syncOp->affectedNode()->id()));
     }
+}
+
+void TestExecutorWorker::testFileRescuer() {
+    // Setup
+    TestSituationGenerator situationGenerator(_syncPal);
+    situationGenerator.generateInitialSituation("{a:1}");
+
+    const auto lnodeA = situationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto filePath = _localTempDir.path() / lnodeA->name();
+    testhelpers::generateOrEditTestFile(filePath);
+
+    const auto rnodeA = situationGenerator.getNode(ReplicaSide::Remote, "a");
+    const Conflict conflict(lnodeA, rnodeA, ConflictType::EditDelete);
+    _syncPal->_conflictQueue->push(conflict);
+
+    const auto syncOp = std::make_shared<SyncOperation>();
+    syncOp->setType(OperationType::Move);
+    syncOp->setAffectedNode(lnodeA);
+    syncOp->setCorrespondingNode(lnodeA);
+    syncOp->setTargetSide(ReplicaSide::Local);
+    syncOp->setRelativeOriginPath(lnodeA->getPath());
+    syncOp->setConflict(conflict);
+    syncOp->setIsRescueOperation(true);
+    lnodeA->setStatus(NodeStatus::ConflictOpGenerated);
+
+    const FileRescuer fileRescuer(_syncPal);
+    CPPUNIT_ASSERT(fileRescuer.executeRescueMoveJob(syncOp));
+    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(_localTempDir.path() / FileRescuer::rescueFolderName()));
 }
 
 void TestExecutorWorker::testFixModificationDate() {

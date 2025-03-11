@@ -23,10 +23,14 @@ class FileRescuer {
         explicit FileRescuer(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {}
 
         ExitInfo executeRescueMoveJob(SyncOpPtr syncOp) const;
-        ExitInfo createRescueFolderIfNeeded() const;
+
+        static SyncPath rescueFolderName() { return _rescueFolderName; }
 
     private:
+        ExitInfo createRescueFolderIfNeeded() const;
+
         std::shared_ptr<SyncPal> _syncPal;
+        static const SyncPath _rescueFolderName;
 };
 
 } // namespace KDC

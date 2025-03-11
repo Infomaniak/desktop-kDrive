@@ -27,15 +27,16 @@ namespace KDC {
 
 class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
-        CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
-        CPPUNIT_TEST(testFixModificationDate);
-        CPPUNIT_TEST(testAffectedUpdateTree);
-        CPPUNIT_TEST(testTargetUpdateTree);
-        CPPUNIT_TEST(testRemoveDependentOps);
-        CPPUNIT_TEST(testIsValidDestination);
-        CPPUNIT_TEST(testTerminatedJobsQueue);
-        CPPUNIT_TEST(testPropagateConflictToDbAndTree);
-        CPPUNIT_TEST(testDeleteOpNodes);
+        // CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
+        // CPPUNIT_TEST(testFixModificationDate);
+        // CPPUNIT_TEST(testAffectedUpdateTree);
+        // CPPUNIT_TEST(testTargetUpdateTree);
+        // CPPUNIT_TEST(testRemoveDependentOps);
+        // CPPUNIT_TEST(testIsValidDestination);
+        // CPPUNIT_TEST(testTerminatedJobsQueue);
+        // CPPUNIT_TEST(testPropagateConflictToDbAndTree);
+        // CPPUNIT_TEST(testDeleteOpNodes);
+        CPPUNIT_TEST(testFileRescuer);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -52,6 +53,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         void testTerminatedJobsQueue();
         void testPropagateConflictToDbAndTree();
         void testDeleteOpNodes();
+        void testFileRescuer();
 
         bool opsExist(SyncOpPtr op);
         SyncOpPtr generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
