@@ -452,7 +452,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         case Poco::Net::HTTPResponse::HTTP_FOUND: {
             // Redirection
             if (!isAborted()) {
-                if (!followRedirect(stream[0].get())) {
+                if (!followRedirect()) {
                     if (_exitCode != ExitCode::Ok && _exitCode != ExitCode::DataError) {
                         LOG_WARN(_logger, "Redirect handling failed");
                     }
@@ -498,27 +498,10 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     return res;
 }
 
-bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
-    // Extract redirect URL
-    Poco::XML::InputSource inputSrc(inputStream);
-    Poco::XML::DOMParser parser;
-    Poco::AutoPtr<Poco::XML::Document> pDoc;
-    try {
-        pDoc = parser.parse(&inputSrc);
-    } catch (Poco::Exception &e) {
-        LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << errorText(e).c_str());
-        Utility::logGenericServerError(_logger, "Redirection error", inputStream, _resHttp);
-
-        _exitCode = ExitCode::BackError;
-        _exitCause = ExitCause::ApiErr;
-        return false;
-    }
-
+bool AbstractNetworkJob::followRedirect() {
+    // Get redirection URL
     std::string redirectUrl;
-    Poco::XML::Node *pNode = pDoc->getNodeByPath(redirectUrlPathKey);
-    if (pNode != nullptr) {
-        redirectUrl = pNode->innerText();
-    }
+    redirectUrl = _resHttp.get("Location", "");
 
     if (redirectUrl.empty()) {
         LOG_WARN(_logger, "Request " << jobId() << ": Failed to retrieve redirection URL");
