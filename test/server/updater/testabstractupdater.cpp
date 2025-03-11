@@ -168,8 +168,7 @@ void TestAbstractUpdater::testCurrentVersionedChannel() {
     version = "9.0.0.20210102";
     CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
 
-    AllVersionsInfo emptyTestVersions;
-    updateChecker->setAllVersionInfo(testVersions);
+    updateChecker->setAllVersionInfo({});
     version = "11.0.1.20210101";
     CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
 }
