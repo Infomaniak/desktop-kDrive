@@ -611,9 +611,6 @@ QString ParametersDialog::getConflictText(const ConflictType conflictType) const
                     "This element has been moved somewhere else.<br>"
                     "The local operation has been canceled.");
         case ConflictType::MoveMoveDest:
-            return tr(
-                    "An element with the same name already exists in this location.<br>"
-                    "The local element has been renamed.");
         case ConflictType::MoveCreate:
             return tr(
                     "An element with the same name already exists in this location.<br>"

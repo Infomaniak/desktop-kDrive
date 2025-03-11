@@ -1126,11 +1126,24 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             return exitInfo;
         }
 
-        // Send conflict notification
-        Error err(_syncPal->syncDbId(), *syncOp->localNode()->id(), *syncOp->remoteNode()->id(), syncOp->localNode()->type(),
-                  syncOp->relativeOriginPath(), syncOp->conflict().type(), InconsistencyType::None, CancelType::None,
-                  syncOp->relativeDestinationPath());
-        _syncPal->addError(err);
+        switch (syncOp->conflict().type()) {
+            case ConflictType::CreateCreate:
+            case ConflictType::EditEdit:
+            case ConflictType::MoveMoveSource:
+            case ConflictType::MoveMoveDest:
+            case ConflictType::MoveMoveCycle:
+            case ConflictType::MoveCreate: {
+                // Send conflict notification
+                Error err(_syncPal->syncDbId(), *syncOp->localNode()->id(), *syncOp->remoteNode()->id(),
+                          syncOp->localNode()->type(), syncOp->relativeOriginPath(), syncOp->conflict().type(),
+                          InconsistencyType::None, CancelType::None, syncOp->relativeDestinationPath());
+                _syncPal->addError(err);
+                break;
+            }
+            default:
+                // Do not show error message for other conflicts
+                break;
+        }
 
         return ExitCode::Ok;
     }

@@ -387,9 +387,11 @@ ExitCode ConflictResolverWorker::undoMove(std::shared_ptr<Node> moveNode, SyncOp
         }
     }
 
+    SyncPath destinationPath;
     if (undoPossible) {
         moveOp->setNewParentNode(originParentNode);
         moveOp->setNewName(originPath->filename().native());
+        destinationPath = moveNode->moveOrigin()->parent_path() / moveOp->newName();
     } else {
         // We cannot undo the move operation, so the file is moved under the root node instead.
         // TODO : move it to the rescue folder instead
@@ -397,6 +399,7 @@ ExitCode ConflictResolverWorker::undoMove(std::shared_ptr<Node> moveNode, SyncOp
         SyncName newName;
         (void) generateConflictedName(moveNode, newName);
         moveOp->setNewName(newName);
+        destinationPath = moveOp->newName();
     }
 
     moveOp->setType(OperationType::Move);
@@ -404,6 +407,9 @@ ExitCode ConflictResolverWorker::undoMove(std::shared_ptr<Node> moveNode, SyncOp
     moveOp->setAffectedNode(correspondingNode);
     moveOp->setCorrespondingNode(moveNode);
     moveOp->setTargetSide(moveNode->side());
+
+    moveOp->setRelativeOriginPath(moveNode->getPath());
+    moveOp->setRelativeDestinationPath(destinationPath);
 
     return ExitCode::Ok;
 }
