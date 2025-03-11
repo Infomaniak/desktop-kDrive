@@ -32,3 +32,4 @@
 .nfs*
 *.app
 *.lnk
+.rescueFolder

@@ -40,3 +40,4 @@
 Icon\r*
 .Spotlight-V100
 *.lnk
+.rescueFolder

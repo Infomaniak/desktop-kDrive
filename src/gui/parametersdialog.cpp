@@ -591,21 +591,6 @@ QString ParametersDialog::getConflictText(const ConflictType conflictType) const
     switch (conflictType) {
         case ConflictType::None:
             break;
-        case ConflictType::MoveParentDelete:
-            return tr(
-                    "An element was moved to a deleted folder.<br>"
-                    "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
-                    "IMPROVED).");
-        case ConflictType::MoveDelete:
-            return tr(
-                    "This element was moved by another user.<br>"
-                    "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
-                    "IMPROVED).");
-        case ConflictType::CreateParentDelete:
-            return tr(
-                    "An element was created in this folder while it was being deleted.<br>"
-                    "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
-                    "IMPROVED).");
         case ConflictType::MoveMoveSource:
             return tr(
                     "This element has been moved somewhere else.<br>"
@@ -615,11 +600,8 @@ QString ParametersDialog::getConflictText(const ConflictType conflictType) const
             return tr(
                     "An element with the same name already exists in this location.<br>"
                     "The local operation has been canceled.");
-        case ConflictType::EditDelete:
-            return tr(
-                    "The content of the file was modified while it was being deleted.<br>"
-                    "Local files containing unsynchronized changes can be found in the rescue folder (TEMPORARY TEXT, TO BE "
-                    "IMPROVED).");
+
+
         case ConflictType::CreateCreate:
             return tr(
                     "An element with the same name already exists in this location.<br>"
@@ -632,6 +614,12 @@ QString ParametersDialog::getConflictText(const ConflictType conflictType) const
             return tr(
                     "Another user has moved a parent folder of the destination.<br>"
                     "The local operation has been canceled.");
+        case ConflictType::EditDelete:
+        case ConflictType::MoveParentDelete:
+        case ConflictType::MoveDelete:
+        case ConflictType::CreateParentDelete:
+            // Those conflicts do not generate error message. If needed, a message is shown using CancelType::FileRescued.
+            return {};
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << conflictType;
@@ -744,7 +732,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
         case CancelType::FileRescued: {
             return tr(
                     "The file has been modified locally and deleted on remote kDrive.<br>"
-                    "Local copy has been saved in the rescue folder (TEMPORARY TEXT, TO BE IMPROVED).");
+                    "Local copy has been saved in the rescue folder.");
         }
         default: {
             break;
