@@ -41,7 +41,7 @@ ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) const {
         }
         const SyncName filename = Str2SyncName(syncOp->relativeOriginPath().stem().string()) + suffix +
                                   Str2SyncName(syncOp->relativeOriginPath().extension().string());
-        relativeDestinationPath = rescueFolderName / filename;
+        relativeDestinationPath = _rescueFolderName / filename;
         LocalMoveJob rescueJob(absoluteOriginPath, _syncPal->localPath() / relativeDestinationPath);
         exitInfo = rescueJob.runSynchronously();
         if (exitInfo.cause() == ExitCause::FileAlreadyExist) {
