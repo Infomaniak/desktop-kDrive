@@ -31,7 +31,7 @@ static const std::string endOfFileDelimiter("#EOF");
 
 namespace KDC {
 
-SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger) {}
+SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) : _logger(logger) {}
 
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                                    const std::exception &exc) {
@@ -279,7 +279,7 @@ bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool
 }
 
 std::string CsvFullFileListWithCursorJob::getCursor() {
-    return _resHttp.get("X-kDrive-Cursor");
+    return _resHttp.get("X-kDrive-Cursor", "");
 }
 
 std::string CsvFullFileListWithCursorJob::getSpecificUrl() {

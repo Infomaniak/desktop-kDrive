@@ -22,7 +22,6 @@
 #include "update_detection/file_system_observer/folderwatcher_mac.h"
 
 #include <CoreServices/CoreServices.h>
-#include <codecvt>
 
 namespace KDC {
 

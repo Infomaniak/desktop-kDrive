@@ -21,8 +21,6 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 
-#include <codecvt>
-
 namespace KDC {
 
 FolderWatcher_mac::FolderWatcher_mac(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
