@@ -1027,7 +1027,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
 
     ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete);
     if (!exitInfo) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << SyncName2WStr(syncOp->affectedNode()->name()) << L" "
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
                                                                         << exitInfo);
     }
     return exitInfo;
