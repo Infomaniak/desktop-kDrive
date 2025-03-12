@@ -35,8 +35,8 @@ bool TimeoutHelper::waitFor(std::function<bool()> condition, std::function<void(
                             const std::chrono::steady_clock::duration& loopWait) {
     TimeoutHelper timeout(duration, loopWait);
     while (!condition()) {
-        if (timeout.timedOut()) return false;
         stateCheck();
+        if (timeout.timedOut()) return false;
     }
     return true;
 }
