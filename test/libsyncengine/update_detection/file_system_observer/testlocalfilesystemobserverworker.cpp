@@ -148,7 +148,7 @@ void TestLocalFileSystemObserverWorker::testGenerateInitialSnapshotWithoutSearch
         CPPUNIT_FAIL("Failed to set rights");
     }
 #else
-    if (!IoHelper::setRights(_rootFolderPath, true, true, false, ioError) || ioError != IoError::Success) {
+    if (!IoHelper::setRights(_rootFolderPath, false, true, true, ioError) || ioError != IoError::Success) {
         (void) IoHelper::setRights(_rootFolderPath, true, true, true, ioError); // Try to reset rights
         CPPUNIT_FAIL("Failed to set rights");
     }
@@ -157,12 +157,14 @@ void TestLocalFileSystemObserverWorker::testGenerateInitialSnapshotWithoutSearch
 
     bool exists = false;
     if (!IoHelper::checkIfPathExists(_rootFolderPath, exists, ioError) || ioError != IoError::Success || !exists) {
+        (void) IoHelper::setRights(_rootFolderPath, true, true, true, ioError); // Try to reset rights
         CPPUNIT_ASSERT_EQUAL_MESSAGE("Root path not found", IoError::Success, ioError);
         CPPUNIT_ASSERT(exists);
         CPPUNIT_FAIL("Failed"); // Should assert on one of the previous conditions
     }
 
     if (!IoHelper::checkIfPathExists(_testFiles[0].second, exists, ioError) || ioError != IoError::Success || exists) {
+        (void) IoHelper::setRights(_rootFolderPath, true, true, true, ioError); // Try to reset rights
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!exists); // Child folder should not be seen
         CPPUNIT_FAIL("Failed"); // Should assert on one of the previous conditions
