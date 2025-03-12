@@ -147,20 +147,20 @@ void TestLocalFileSystemObserverWorker::testGenerateInitialSnapshotWithoutSearch
     }
 
     bool exists = false;
-    if (!IoHelper::checkIfPathExists(_rootFolderPath, exists, ioError) || ioError != IoError::Success || exists) {
+    if (!IoHelper::checkIfPathExists(_rootFolderPath, exists, ioError) || ioError != IoError::Success || !exists) {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(exists);
         CPPUNIT_FAIL("Failed"); // Should assert on one of the previous conditions
     }
 
-    if (!IoHelper::checkIfPathExists(_testFiles[0].second, exists, ioError) || ioError != IoError::Success || !exists) {
+    if (!IoHelper::checkIfPathExists(_testFiles[0].second, exists, ioError) || ioError != IoError::Success || exists) {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!exists); // Child folder should not be seen
         CPPUNIT_FAIL("Failed"); // Should assert on one of the previous conditions
     }
-    
+
     (void) _syncPal->_localFSObserverWorker->generateInitialSnapshot();
-    ExitInfo exitInfo{_syncPal->_localFSObserverWorker->exitCode(), _syncPal->_localFSObserverWorker->exitCause()};
+    const ExitInfo exitInfo{_syncPal->_localFSObserverWorker->exitCode(), _syncPal->_localFSObserverWorker->exitCause()};
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), exitInfo);
 }
 
