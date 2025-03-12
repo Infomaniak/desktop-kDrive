@@ -105,4 +105,62 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
     CPPUNIT_ASSERT_EQUAL(600, static_cast<int>(ei));
 }
+
+/* Test that all values of an enum class can be converted to a string
+ * Unfortunatly, this test cannot detect missing conversion for the last value of the enum class.
+ * This test is only suitable for enum class with continuous values starting from 0.
+ */
+template<IntegralEnum T>
+bool testToStringIntValues() {
+    int validationLength = 10; // The test will succeed after 10 missing consecutive missing conversion
+    int i = 0;
+    while (validationLength != 0) {
+        if (toString(fromInt<T>(i)) == noConversionStr) {
+            validationLength--;
+        } else if (validationLength < 10) {
+            return false;
+        }
+        i++;
+    }
+    return true;
+}
+
+void TestTypes::testToString() {
+    CPPUNIT_ASSERT(testToStringIntValues<AppType>());
+    CPPUNIT_ASSERT(testToStringIntValues<SignalCategory>());
+    CPPUNIT_ASSERT(testToStringIntValues<ReplicaSide>());
+    CPPUNIT_ASSERT(testToStringIntValues<NodeType>());
+    CPPUNIT_ASSERT(testToStringIntValues<ExitCode>());
+    CPPUNIT_ASSERT(testToStringIntValues<ExitCause>());
+    CPPUNIT_ASSERT(testToStringIntValues<ConflictType>());
+    CPPUNIT_ASSERT(testToStringIntValues<ConflictTypeResolution>());
+    CPPUNIT_ASSERT(testToStringIntValues<CancelType>());
+    CPPUNIT_ASSERT(testToStringIntValues<NodeStatus>());
+    CPPUNIT_ASSERT(testToStringIntValues<SyncStatus>());
+    CPPUNIT_ASSERT(testToStringIntValues<UploadSessionType>());
+    CPPUNIT_ASSERT(testToStringIntValues<SyncNodeType>());
+    CPPUNIT_ASSERT(testToStringIntValues<SyncDirection>());
+    CPPUNIT_ASSERT(testToStringIntValues<SyncFileStatus>());
+    CPPUNIT_ASSERT(testToStringIntValues<SyncDirection>());
+    CPPUNIT_ASSERT(testToStringIntValues<SyncFileInstruction>());
+    CPPUNIT_ASSERT(testToStringIntValues<SyncStep>());
+    CPPUNIT_ASSERT(testToStringIntValues<ActionType>());
+    CPPUNIT_ASSERT(testToStringIntValues<ActionTarget>());
+    CPPUNIT_ASSERT(testToStringIntValues<ErrorLevel>());
+    CPPUNIT_ASSERT(testToStringIntValues<Language>());
+    CPPUNIT_ASSERT(testToStringIntValues<LogLevel>());
+    CPPUNIT_ASSERT(testToStringIntValues<NotificationsDisabled>());
+    CPPUNIT_ASSERT(testToStringIntValues<VirtualFileMode>());
+    CPPUNIT_ASSERT(testToStringIntValues<PinState>());
+    CPPUNIT_ASSERT(testToStringIntValues<ProxyType>());
+    CPPUNIT_ASSERT(testToStringIntValues<ExclusionTemplateComplexity>());
+    CPPUNIT_ASSERT(testToStringIntValues<LinkType>());
+    CPPUNIT_ASSERT(testToStringIntValues<IoError>());
+    CPPUNIT_ASSERT(testToStringIntValues<AppStateKey>());
+    CPPUNIT_ASSERT(testToStringIntValues<LogUploadState>());
+    CPPUNIT_ASSERT(testToStringIntValues<UpdateState>());
+    CPPUNIT_ASSERT(testToStringIntValues<VersionChannel>());
+    CPPUNIT_ASSERT(testToStringIntValues<Platform>());
+    CPPUNIT_ASSERT(testToStringIntValues<sentry::ConfidentialityLevel>());
+}
 } // namespace KDC

@@ -178,10 +178,14 @@ std::string toString(const ExitCause e) {
             return "NotEnoughtMemory";
         case ExitCause::FileTooBig:
             return "FileTooBig";
+        case ExitCause::MoveToTrashFailed:
+            return "MoveToTrashFailed";
         case ExitCause::InvalidName:
             return "InvalidName";
         case ExitCause::LiteSyncNotAllowed:
             return "LiteSyncNotAllowed";
+        case ExitCause::NotPlaceHolder:
+            return "NotPlaceHolder";
         case ExitCause::NetworkTimeout:
             return "NetworkTimeout";
         case ExitCause::SocketsDefuncted:
@@ -662,6 +666,8 @@ std::string toString(const IoError e) {
             return "NoSuchFileOrDirectory";
         case IoError::ResultOutOfRange:
             return "ResultOutOfRange";
+        case IoError::CrossDeviceLink:
+            return "CrossDeviceLink";
         case IoError::Unknown:
             return "Unknown";
         default:
@@ -685,6 +691,8 @@ std::string toString(const AppStateKey e) {
             return "LogUploadPercent";
         case AppStateKey::LogUploadToken:
             return "LogUploadToken";
+        case AppStateKey::AppUid:
+            return "AppUid";
         case AppStateKey::Unknown:
             return "Unknown";
         default:
