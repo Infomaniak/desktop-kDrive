@@ -62,7 +62,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
         FileStat fileStat;
         bool exists = false;
         IoHelper::getFileStat(filepath, &fileStat, exists);
-        _testFiles.emplace_back(std::to_string(fileStat.inode), filepath);
+        (void) _testFiles.emplace_back(std::to_string(fileStat.inode), filepath);
     }
 
     // Create parmsDb
@@ -134,6 +134,34 @@ void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
         }
     }
     CPPUNIT_ASSERT_EQUAL(nbFileInTestDir, fileCounter);
+}
+
+void TestLocalFileSystemObserverWorker::testGenerateInitialSnapshotWithoutSearchPermission() {
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->invalidateSnapshot();
+
+    IoError ioError = IoError::Success;
+    if (!IoHelper::setRights(_rootFolderPath, false, true, false, ioError) || ioError != IoError::Success) {
+        (void) IoHelper::setRights(_rootFolderPath, true, true, true, ioError); // Try to reset rights
+        CPPUNIT_FAIL("Failed to set rights");
+    }
+
+    bool exists = false;
+    if (!IoHelper::checkIfPathExists(_rootFolderPath, exists, ioError) || ioError != IoError::Success || exists) {
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_FAIL("Failed"); // Should assert on one of the previous conditions
+    }
+
+    if (!IoHelper::checkIfPathExists(_testFiles[0].second, exists, ioError) || ioError != IoError::Success || !exists) {
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(!exists); // Child folder should not be seen
+        CPPUNIT_FAIL("Failed"); // Should assert on one of the previous conditions
+    }
+    
+    (void) _syncPal->_localFSObserverWorker->generateInitialSnapshot();
+    ExitInfo exitInfo{_syncPal->_localFSObserverWorker->exitCode(), _syncPal->_localFSObserverWorker->exitCause()};
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), exitInfo);
 }
 
 void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {

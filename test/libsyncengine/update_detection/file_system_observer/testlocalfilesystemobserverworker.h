@@ -65,6 +65,7 @@ class MockLocalFileSystemObserverWorker final : public LocalFileSystemObserverWo
 class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
         CPPUNIT_TEST(testLFSOWithInitialSnapshot);
+        CPPUNIT_TEST(testGenerateInitialSnapshotWithoutSearchPermission);
         CPPUNIT_TEST(testLFSOWithFiles);
         CPPUNIT_TEST(testLFSOWithDuplicateFileNames);
         CPPUNIT_TEST(testLFSODeleteDir);
@@ -91,6 +92,7 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         std::vector<std::pair<NodeId, SyncPath>> _testFiles;
 
         void testLFSOWithInitialSnapshot();
+        void testGenerateInitialSnapshotWithoutSearchPermission();
         void testLFSOWithFiles();
         void testLFSOWithDuplicateFileNames();
         void testLFSOWithDirs();
