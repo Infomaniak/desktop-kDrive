@@ -26,6 +26,16 @@
 
 namespace KDC {
 
+std::shared_ptr<WindowsUpdater> WindowsUpdater::_instance;
+
+std::shared_ptr<WindowsUpdater> WindowsUpdater::instance() {
+    if (_instance == nullptr) {
+        _instance = std::make_shared<WindowsUpdater>();
+    }
+
+    return _instance;
+}
+
 void WindowsUpdater::onUpdateFound() {
     // Check if version is already downloaded
     SyncPath filepath;
