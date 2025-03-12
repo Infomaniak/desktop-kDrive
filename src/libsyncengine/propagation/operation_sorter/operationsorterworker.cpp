@@ -199,12 +199,10 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
                 continue;
             }
 
-            if (!moveOp->affectedNode()->moveOriginInfos().has_value()) {
-                LOG_SYNCPAL_WARN(_logger, "Missing origin infos");
-                return;
-            }
-
-            if (const auto moveNodeOriginPath = moveOp->affectedNode()->moveOriginInfos()->path();
+            LOG_IF_FAIL(moveOp->affectedNode())
+            LOG_IF_FAIL(moveOp->affectedNode()->moveOriginInfos().has_value())
+            if (const auto moveNodeOriginPath =
+                    moveOp->affectedNode()->moveOriginInfos()->path();
                 Utility::isDescendantOrEqual(moveNodeOriginPath, deleteNodePath)) {
                 // move only if deleteOp is before moveOp
                 moveFirstAfterSecond(deleteOp, moveOp);
@@ -315,11 +313,7 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
 
             const auto otherNode = otherOp->affectedNode();
             LOG_IF_FAIL(otherNode)
-            if (!otherNode->moveOriginInfos().has_value()) {
-                LOG_SYNCPAL_WARN(_logger, "Missing origin path");
-                return;
-            }
-
+            LOG_IF_FAIL(otherNode->moveOriginInfos().has_value())
             const auto otherNodeOriginPath = otherNode->moveOriginInfos()->path();
             NodeId otherNodeOriginParentId;
             if (!getIdFromDb(otherNode->side(), otherNodeOriginPath.parent_path(), otherNodeOriginParentId)) continue;
@@ -447,9 +441,8 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
 
         const auto nodeX = opX->affectedNode();
         LOG_IF_FAIL(nodeX)
-        if (!nodeX->moveOriginInfos().has_value()) {
-            continue;
-        }
+        LOG_IF_FAIL(nodeX->moveOriginInfos().has_value())
+
         const auto nodeOriginPathX = nodeX->moveOriginInfos()->path();
         const auto nodeDestinationPathX = nodeX->getPath();
 
@@ -462,9 +455,7 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
 
             const auto nodeY = opY->affectedNode();
             LOG_IF_FAIL(nodeY)
-            if (!nodeY->moveOriginInfos().has_value()) {
-                continue;
-            }
+            LOG_IF_FAIL(nodeY->moveOriginInfos().has_value())
 
             if (!Utility::isDescendantOrEqual(nodeDestinationPathX, nodeY->getPath())) continue;
             if (!Utility::isDescendantOrEqual(nodeY->moveOriginInfos()->path(), nodeOriginPathX)) continue;
@@ -490,13 +481,11 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     }
 
     // firstOp is an impossible move if dest starts with source + "/".
-    if (!node->moveOriginInfos().has_value()) {
-        LOGW_SYNCPAL_ERROR(_logger, L"Missing origin path for node " << Utility::formatSyncName(node->name()) << L" ("
-                                                                     << Utility::s2ws(*node->id()) << L")");
-        return std::nullopt; // Should never happen
-    }
+    LOG_IF_FAIL(node->moveOriginInfos().has_value())
 
-    if (!Utility::isDescendantOrEqual(node->getPath(), node->moveOriginInfos()->path())) {
+    const auto originPath = *node->moveOriginInfos();
+    if (!Utility::isDescendantOrEqual(node->getPath(),
+                                      node->moveOriginInfos()->path())) {
         return std::nullopt; // firstOp is possible
     }
 
