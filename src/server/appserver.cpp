@@ -99,6 +99,8 @@ static constexpr char restartClientMsg[] = "restartClient";
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
+std::unique_ptr<UpdateManager> AppServer::_updateManager;
+
 // Helpers for displaying messages. Note that there is no console on Windows.
 #ifdef Q_OS_WIN
 static void displayHelpText(const QString &t) // No console on Windows.
@@ -3739,7 +3741,7 @@ void AppServer::addError(const Error &error) {
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(error.syncDbId());
     } else if (error.exitCode() == ExitCode::UpdateRequired) {
-        AbstractUpdater::unskipVersion();
+        _updateManager->updater()->unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
