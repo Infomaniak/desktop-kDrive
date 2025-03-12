@@ -33,9 +33,6 @@ export PATH=$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH
 export LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
-# Set defaults
-export SUFFIX="master"
-
 # Build client
 cd /build
 mkdir -p client
@@ -57,7 +54,6 @@ cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
     -DBUILD_UNIT_TESTS=0 \
     "${CMAKE_PARAMS[@]}" \
