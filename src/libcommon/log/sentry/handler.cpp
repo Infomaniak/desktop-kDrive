@@ -598,19 +598,19 @@ pTraceId Handler::startSpan(const std::string &name, const std::string &descript
 }
 
 bool Handler::checkCustomSampleRate(const PTraceDescriptor &pTraceInfo) const {
-    if (pTraceInfo._customSampleRate >= 1.0) return true;
+    if (pTraceInfo.customSampleRate() >= 1.0) return true;
     static std::random_device rd;
     static std::mt19937 gen(rd());
     static std::uniform_real_distribution dis(0.0, 1.0);
-    return dis(gen) < pTraceInfo._customSampleRate;
+    return dis(gen) < pTraceInfo.customSampleRate();
 }
 
 pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) {
-    if (!_isSentryActivated || pTraceInfo._pTraceName == PTraceName::None) return 0;
+    if (!_isSentryActivated || pTraceInfo.pTraceName() == PTraceName::None) return 0;
 
     std::scoped_lock lock(_mutex);
     pTraceId newPTraceId = 0;
-    if (pTraceInfo._parentPTraceName != PTraceName::None) {
+    if (pTraceInfo.parentPTraceName() != PTraceName::None) {
         // Fetch the pTraceMap associated with the provided syncDbId
         auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
         if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
@@ -620,7 +620,7 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
         auto &pTraceMap = pTraceMapIt->second;
 
         // Find the parent pTrace
-        auto parentPTraceIt = pTraceMap.find(pTraceInfo._parentPTraceName);
+        auto parentPTraceIt = pTraceMap.find(pTraceInfo.parentPTraceName());
         if (parentPTraceIt == pTraceMap.end()) {
             assert(false && "Parent transaction/span is not running.");
             return 0;
@@ -628,25 +628,25 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
 
         // Start the span
         if (const pTraceId &parentId = parentPTraceIt->second; parentId != 0 && checkCustomSampleRate(pTraceInfo)) {
-            newPTraceId = startSpan(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription, parentId);
+            newPTraceId = startSpan(pTraceInfo.pTraceTitle(), pTraceInfo.pTraceDescription(), parentId);
         } else {
             newPTraceId = 0;
         }
-        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] = newPTraceId;
+        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo.pTraceName()] = newPTraceId;
     } else {
         // Start the transaction
         if (checkCustomSampleRate(pTraceInfo)) {
-            newPTraceId = startTransaction(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription);
+            newPTraceId = startTransaction(pTraceInfo.pTraceTitle(), pTraceInfo.pTraceDescription());
         } else {
             newPTraceId = 0;
         }
-        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] = newPTraceId;
+        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo.pTraceName()] = newPTraceId;
     }
     return newPTraceId;
 }
 
 void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTraceStatus status) {
-    if (!_isSentryActivated || pTraceInfo._pTraceName == PTraceName::None) return;
+    if (!_isSentryActivated || pTraceInfo.pTraceName() == PTraceName::None) return;
 
     std::scoped_lock lock(_mutex);
     auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
@@ -656,7 +656,7 @@ void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTrac
     }
     auto &pTraceMap = pTraceMapIt->second;
 
-    auto pTraceIt = pTraceMap.find(pTraceInfo._pTraceName);
+    auto pTraceIt = pTraceMap.find(pTraceInfo.pTraceName());
     if (pTraceIt == pTraceMap.end()) {
         assert(false && "Transaction is not running");
         return;
