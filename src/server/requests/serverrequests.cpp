@@ -1316,7 +1316,7 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
     }
 
     for (const Error &error: errorList) {
-        if (isConflictsWithLocalRename(error.conflictType())) {
+        if (error.conflictType() == ConflictType::CreateCreate || error.conflictType() == ConflictType::EditEdit) {
             // For conflict type that rename local file
             Sync sync;
             bool found = false;
@@ -1329,17 +1329,16 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
                 return ExitCode::DataError;
             }
 
-            IoError ioError = IoError::Success;
+            auto ioError = IoError::Success;
             const SyncPath dest = sync.localPath() / error.destinationPath();
-            const bool success = IoHelper::checkIfPathExists(dest, found, ioError);
-            if (!success) {
+            if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
                 LOGW_WARN(Log::instance()->getLogger(),
                           L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError).c_str());
                 return ExitCode::SystemError;
             }
 
             // If conflict file still exists, keep the error.
-            if (found || ioError != IoError::NoSuchFileOrDirectory) {
+            if (found) {
                 continue;
             }
         }

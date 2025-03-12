@@ -51,7 +51,6 @@ class FolderItemWidget : public QWidget {
         void setToolTipsEnabled(bool enabled) noexcept;
 
     signals:
-        void runSync(int syncDbId);
         void pauseSync(int syncDbId);
         void resumeSync(int syncDbId);
         void unSync(int syncDbId);
@@ -93,7 +92,6 @@ class FolderItemWidget : public QWidget {
         void onCancelButtonClicked();
         void onValidateButtonClicked();
         void onOpenFolder(const QString &link);
-        void onSyncTriggered();
         void onPauseTriggered();
         void onResumeTriggered();
         void onUnsyncTriggered();
