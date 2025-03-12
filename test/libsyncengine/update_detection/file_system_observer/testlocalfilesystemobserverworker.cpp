@@ -141,14 +141,23 @@ void TestLocalFileSystemObserverWorker::testGenerateInitialSnapshotWithoutSearch
     _syncPal->_localFSObserverWorker->invalidateSnapshot();
 
     IoError ioError = IoError::Success;
-    if (!IoHelper::setRights(_rootFolderPath, false, true, false, ioError) || ioError != IoError::Success) {
+#ifdef _WIN32
+    if (!IoHelper::setRights(_rootFolderPath, false, true, false, ioError) ||
+        ioError != IoError::Success) { // on windows, having either read or exec permission is enough to list the directory
         (void) IoHelper::setRights(_rootFolderPath, true, true, true, ioError); // Try to reset rights
         CPPUNIT_FAIL("Failed to set rights");
     }
+#else
+    if (!IoHelper::setRights(_rootFolderPath, true, true, false, ioError) || ioError != IoError::Success) {
+        (void) IoHelper::setRights(_rootFolderPath, true, true, true, ioError); // Try to reset rights
+        CPPUNIT_FAIL("Failed to set rights");
+    }
+#endif
+
 
     bool exists = false;
     if (!IoHelper::checkIfPathExists(_rootFolderPath, exists, ioError) || ioError != IoError::Success || !exists) {
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("Root path not found", IoError::Success, ioError);
         CPPUNIT_ASSERT(exists);
         CPPUNIT_FAIL("Failed"); // Should assert on one of the previous conditions
     }
@@ -161,6 +170,7 @@ void TestLocalFileSystemObserverWorker::testGenerateInitialSnapshotWithoutSearch
 
     (void) _syncPal->_localFSObserverWorker->generateInitialSnapshot();
     const ExitInfo exitInfo{_syncPal->_localFSObserverWorker->exitCode(), _syncPal->_localFSObserverWorker->exitCause()};
+    std::cout << "snapshotSize: " << _syncPal->snapshot(ReplicaSide::Local)->nbItems() << std::endl;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), exitInfo);
 }
 
