@@ -330,9 +330,9 @@ void Handler::setTag(const std::string &key, const std::string &value) {
 
 sentry_value_t Handler::toSentryValue(const SentryUser &user) const {
     sentry_value_t userValue = sentry_value_new_object();
-    sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.email().data()));
-    sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.username().data()));
-    sentry_value_set_by_key(userValue, "id", sentry_value_new_string(user.userId().data()));
+    (void) sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.email().data()));
+    (void) sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.username().data()));
+    (void) sentry_value_set_by_key(userValue, "id", sentry_value_new_string(user.userId().data()));
     return userValue;
 }
 
@@ -410,16 +410,16 @@ void Handler::updateEffectiveSentryUser(const SentryUser &user) {
     sentry_value_t userValue;
     if (_globalConfidentialityLevel == sentry::ConfidentialityLevel::Anonymous) {
         userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
-        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("0.0.0.0"));
-        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
+        (void) sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("0.0.0.0"));
+        (void) sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
     } else if (!user.isDefault()) {
         userValue = toSentryValue(user);
-        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
-        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
+        (void) sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
+        (void) sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
     } else if (_globalConfidentialityLevel == sentry::ConfidentialityLevel::Authenticated) {
         userValue = toSentryValue(_authenticatedUser);
-        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
-        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
+        (void) sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
+        (void) sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
     } else {
         assert(false && "Invalid _globalConfidentialityLevel");
         sentry_remove_user();
