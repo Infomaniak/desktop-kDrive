@@ -32,6 +32,8 @@
 
 namespace KDC {
 
+std::shared_ptr<AbstractUpdater> UpdateManager::_updater;
+
 UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     _currentChannel = ParametersCache::instance()->parameters().distributionChannel();
 
@@ -62,7 +64,7 @@ void UpdateManager::startInstaller() const {
     LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
 
     // Cleanup skipped version
-    AbstractUpdater::unskipVersion();
+    _updater->unskipVersion();
 
     _updater->startInstaller();
 }
@@ -111,12 +113,12 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
 
 void UpdateManager::createUpdater() {
 #if defined(__APPLE__)
-    _updater = std::make_unique<SparkleUpdater>();
+    _updater = SparkleUpdater::instance();
 #elif defined(_WIN32)
-    _updater = std::make_unique<WindowsUpdater>();
+    _updater = WindowsUpdater::instance();
 #else
     // the best we can do is notify about updates
-    _updater = std::make_unique<LinuxUpdater>();
+    _updater = LinuxUpdater::instance();
 #endif
 }
 
