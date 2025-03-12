@@ -266,20 +266,25 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext)
 #                                                                                               #
 #################################################################################################
 
-$msvc_bin_path = "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin"
-$compiler_path = "$msvc_bin_path/Hostx64/x64/cl.exe"
+
+$compiler = "cl.exe"
 
 $args = @("'-GNinja'")
 $args += ("'-DCMAKE_BUILD_TYPE=$buildType'")
 $args += ("'-DCMAKE_INSTALL_PREFIX=$installPath'")
 $args += ("'-DCMAKE_PREFIX_PATH=$installPath'")
 
+if ($ci)
+{
+$args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
+}
+
 $flags = @(
 "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
 "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
 "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
-"'-DCMAKE_C_COMPILER:STRING=$compiler_path'",
-"'-DCMAKE_CXX_COMPILER:STRING=$compiler_path'",
+"'-DCMAKE_C_COMPILER:STRING=$compiler'",
+"'-DCMAKE_CXX_COMPILER:STRING=$compiler'",
 "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
 "'-DBIN_INSTALL_DIR:PATH=$path'",
 "'-DVFS_DIRECTORY:PATH=$vfsDir'",
@@ -356,12 +361,6 @@ Set-Content -Path "$buildPath/NSIS.template.nsi" -Value $scriptContent
 #                                                                                               #
 #################################################################################################
 
-$binaries = @(
-"${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
-"kDrive.exe",
-"kDrive_client.exe"
-)
-
 $dependencies = @(
 "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
 "${env:ProgramFiles(x86)}/libzip/bin/zip",
@@ -403,6 +402,12 @@ if (Test-Path -Path $iconPath)
 {
 	Copy-Item -Path "$iconPath" -Destination $archivePath
 }
+
+$binaries = @(
+"${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
+"kDrive.exe",
+"kDrive_client.exe"
+)
 
 # Move each executable to the bin folder and sign them
 foreach ($file in $binaries)

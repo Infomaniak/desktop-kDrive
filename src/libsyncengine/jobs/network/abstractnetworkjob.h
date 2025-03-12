@@ -114,8 +114,8 @@ class AbstractNetworkJob : public AbstractJob {
         Poco::JSON::Object::Ptr _jsonRes{nullptr};
         std::string _octetStreamRes;
 
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) { canceled = false; };
-        virtual ExitInfo setData() { return ExitCode::Ok; };
+        virtual void setQueryParameters(Poco::URI &, bool &canceled) { canceled = false; }
+        virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string getContentType(bool &canceled) {
             canceled = false;
             return {};
@@ -129,7 +129,7 @@ class AbstractNetworkJob : public AbstractJob {
         void abortSession();
         bool sendRequest(const Poco::URI &uri);
         bool receiveResponse(const Poco::URI &uri);
-        bool followRedirect(std::istream &inputStream);
+        bool followRedirect();
         bool processSocketError(const std::string &msg, const UniqueId jobId);
         bool processSocketError(const std::string &msg, const UniqueId jobId, const std::exception &e);
         bool processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e);
