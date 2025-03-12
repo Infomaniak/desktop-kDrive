@@ -38,7 +38,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         CPPUNIT_TEST(testMoveDelete4);
         CPPUNIT_TEST(testMoveDelete5);
         CPPUNIT_TEST(testMoveParentDelete);
-        CPPUNIT_TEST(testMoveParentDelete2);
+        CPPUNIT_TEST(testMoveParentDeleteb);
         CPPUNIT_TEST(testCreateParentDelete);
         CPPUNIT_TEST(testMoveMoveSource);
         CPPUNIT_TEST(testMoveMoveSourceWithOrphanNodes);
@@ -64,7 +64,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         void testMoveDelete4(); // Test with orphan nodes
         void testMoveDelete5();
         void testMoveParentDelete();
-        void testMoveParentDelete2();
+        void testMoveParentDeleteb();
         void testCreateParentDelete();
         void testMoveMoveSource();
         void testMoveMoveSourceWithOrphanNodes();

@@ -536,7 +536,7 @@ void TestConflictResolverWorker::testMoveParentDelete() {
     CPPUNIT_ASSERT_EQUAL(OperationType::Move, op->type());
 }
 
-void TestConflictResolverWorker::testMoveParentDelete2() {
+void TestConflictResolverWorker::testMoveParentDeleteb() {
     // Simulate a move of node AA from A to B on local replica
     const std::shared_ptr<Node> lNodeA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lA");
     const std::shared_ptr<Node> lNodeAB = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAB");
