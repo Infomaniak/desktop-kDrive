@@ -410,10 +410,8 @@ ExitCode ConflictResolverWorker::findAllChildNodeIdsFromDb(const std::shared_ptr
 }
 
 ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, SyncOpPtr moveOp) {
-    if (!moveNode->moveOriginInfos().has_value()) {
-        LOG_SYNCPAL_WARN(_logger, "Failed to retrieve origin parent path");
-        return ExitCode::DataError;
-    }
+    LOG_IF_FAIL(moveNode)
+    LOG_IF_FAIL(moveNode->moveOriginInfos().has_value())
 
     const auto updateTree = _syncPal->updateTree(moveNode->side());
     const auto originParentNode =  updateTree->getNodeById(moveNode->moveOriginInfos()->parentNodeId());

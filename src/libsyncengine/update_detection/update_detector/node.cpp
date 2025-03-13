@@ -21,24 +21,27 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/logiffail.h"
 
 namespace KDC {
 
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode) :
-    _idb(idb), _side(side), _name(name), _type(type), _changeEvents(changeEvents), _id(id), _createdAt(createdAt),
+    _idb(idb), _side(side), _name(name), _type(type), _id(id), _createdAt(createdAt),
     _lastModified(lastmodified), _size(size), _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
     setParentNode(parentNode);
+    setChangeEvents(changeEvents);
 }
 
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
            const MoveOriginInfos &moveOriginInfos) :
-    Node(idb, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode) {
+    Node(idb, side, name, type, OperationType::None, id, createdAt, lastmodified, size, parentNode) {
     setParentNode(parentNode);
     setMoveOriginInfos(moveOriginInfos);
+    setChangeEvents(changeEvents);
 }
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
@@ -82,20 +85,12 @@ std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) 
 
 void Node::setChangeEvents(const OperationType ops) {
     _changeEvents = ops;
-    if (hasChangeEvent(OperationType::Move) && !_moveOriginInfos.has_value()) {
-        assert(false && "Cannot insert a move event on a node without move origin infos");
-        sentry::Handler::captureMessage(sentry::Level::Warning, "Node::setChangeEvents", "Move event without move origin");
-        LOGW_WARN(Log::instance()->getLogger(), L"Move event without move origin are not allowed" << Utility::formatSyncPath(getPath()));
-    }
+    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.has_value()));
 }
 
 void Node::insertChangeEvent(const OperationType &op) {
     _changeEvents |= op;
-    if (hasChangeEvent(OperationType::Move) && !_moveOriginInfos.has_value()) {
-        assert(false && "Cannot insert a move event on a node without move origin infos");
-        sentry::Handler::captureMessage(sentry::Level::Warning, "Node::insertChangeEvent", "Move event without move origin");
-        LOGW_WARN(Log::instance()->getLogger(), L"Move event without move origin are not allowed" << Utility::formatSyncPath(getPath()));
-    }
+    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.has_value()));
 }
 
 std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nodeId /*= ""*/) {

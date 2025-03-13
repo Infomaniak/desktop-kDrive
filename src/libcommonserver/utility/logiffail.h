@@ -30,6 +30,7 @@
     (__VA_ARGS__)
 
 #define LOG_IF_FAIL(...) LOG_IF_FAIL_OVERLOAD(LOG_IF_FAIL, __VA_ARGS__)
+#define LOG_IF_FAIL_LOGGER(logger, ...) LOG_IF_FAIL_LOG(logger, __VA_ARGS__)
 #define LOG_IF_FAIL_1(cond)                                                                               \
     if (!(cond)) {                                                                                        \
         LOG_FATAL(_logger, "ENFORCE: \"" << #cond << "\" in file " << __FILE__ << ", line " << __LINE__); \
@@ -40,4 +41,10 @@
     if (!(cond)) {                                                                                                              \
         LOG_FATAL(_logger,                                                                                                      \
                   "ENFORCE: \"" << #cond << "\" in file " << __FILE__ << ", line " << __LINE__ << "with message: " << message); \
+    }
+
+#define LOG_IF_FAIL_LOG(logger, cond)                                                                               \
+    if (!(cond)) {                                                                                        \
+        LOG_FATAL(logger, "ENFORCE: \"" << #cond << "\" in file " << __FILE__ << ", line " << __LINE__); \
+        sentry::Handler::captureMessage(sentry::Level::Error, "ENFORCE", #cond);                          \
     }
