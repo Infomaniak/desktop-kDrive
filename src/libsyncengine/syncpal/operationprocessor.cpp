@@ -60,15 +60,14 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         return false;
     }
 
-    bool useContentChecksum =
-            !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
-    bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
-                           snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
-    bool hasSameContent = useContentChecksum ? snapshot->contentChecksum(*node->id()) ==
-                                                       otherSnapshot->contentChecksum(*correspondingNode->id())
-                                             : sameSizeAndDate;
+    const auto nodeChecksum = snapshot->contentChecksum(*node->id());
+    const auto correspondingNodeChecksum = otherSnapshot->contentChecksum(*correspondingNode->id());
+    const bool useContentChecksum = !nodeChecksum.empty() && !correspondingNodeChecksum.empty();
+    const bool hasSameContent = useContentChecksum ? (nodeChecksum == correspondingNodeChecksum)
+                                                   : (node->size() == correspondingNode->size() &&
+                                                      node->lastmodified() == correspondingNode->lastmodified());
 
-    bool hasCreateOrEditChangeEvent =
+    const bool hasCreateOrEditChangeEvent =
             (node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Edit)) &&
             (correspondingNode->hasChangeEvent(OperationType::Create) || correspondingNode->hasChangeEvent(OperationType::Edit));
 
