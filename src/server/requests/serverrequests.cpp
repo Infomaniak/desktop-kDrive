@@ -495,7 +495,7 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
 
     list.clear();
     for (size_t i = 0; i < dataArray->size(); i++) {
-        Poco::JSON::Object::Ptr obj = dataArray->getObject(i);
+        Poco::JSON::Object::Ptr obj = dataArray->getObject(static_cast<unsigned int>(i));
         if (!obj) {
             continue;
         }
