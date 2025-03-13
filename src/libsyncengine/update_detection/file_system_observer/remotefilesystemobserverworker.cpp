@@ -73,12 +73,13 @@ void RemoteFileSystemObserverWorker::execute() {
             }
         }
 
+        if (_initializing) _initializing = false;
+
         exitCode = processEvents();
         if (exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents: code=" << exitCode);
             break;
         }
-        if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
