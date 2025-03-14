@@ -104,5 +104,65 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, ei.code());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
     CPPUNIT_ASSERT_EQUAL(600, static_cast<int>(ei));
+
+    // indexInList
+    {
+        long index =
+                ExitInfo::indexInList(ExitCode::SystemError, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(0L, index);
+    }
+
+    {
+        long index = ExitInfo::indexInList(ExitCode::BackError, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(2L, index);
+    }
+
+    {
+        long index = ExitInfo::indexInList(ExitCode::DataError, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(3L, index);
+    }
+
+    // merge
+    {
+        ExitInfo exitInfo = ExitCode::Ok;
+        ExitInfo exitInfoToMerge = ExitCode::SystemError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DataError;
+        ExitInfo exitInfoToMerge = ExitCode::BackError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DataError;
+        ExitInfo exitInfoToMerge = ExitCode::NetworkError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DbError;
+        ExitInfo exitInfoToMerge = ExitCode::SystemError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DbError;
+        ExitInfo exitInfoToMerge = ExitCode::BackError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DbError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DbError;
+        ExitInfo exitInfoToMerge = ExitCode::Ok;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DbError, exitInfo.code());
+    }
 }
 } // namespace KDC
