@@ -1311,10 +1311,6 @@ void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativ
     _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
 }
 
-bool SyncPal::isTmpBlacklisted(const NodeId &nodeId, ReplicaSide side) const {
-    return _tmpBlacklistManager->isTmpBlacklisted(nodeId, side);
-}
-
 bool SyncPal::isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const {
     return _tmpBlacklistManager->isTmpBlacklisted(relativePath, side);
 }
@@ -1330,7 +1326,6 @@ void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side)
 void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
 }
-
 
 ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause) {
     std::shared_ptr<Node> dummyNodePtr;

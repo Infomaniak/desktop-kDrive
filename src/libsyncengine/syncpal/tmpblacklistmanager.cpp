@@ -22,7 +22,7 @@
 
 #include <unordered_set>
 
-static const int oneHour = 3600;
+static constexpr int oneHour = 3600;
 
 namespace KDC {
 
@@ -34,7 +34,7 @@ TmpBlacklistManager::~TmpBlacklistManager() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "TmpBlacklistManager destroyed");
 }
 
-int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept {
+int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, const ReplicaSide side) const noexcept {
     const auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     const auto errorItem = errors.find(nodeId);
 
@@ -48,12 +48,11 @@ void TmpBlacklistManager::logMessage(const std::wstring &msg, const NodeId &id, 
                                   << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path)).c_str()));
 }
 
-void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath,
-                                             ReplicaSide side) {
+void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, const NodeType type, const SyncPath &relativePath,
+                                             const ReplicaSide side) {
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
 
-    auto errorItem = errors.find(nodeId);
-    if (errorItem != errors.end()) {
+    if (const auto errorItem = errors.find(nodeId); errorItem != errors.end()) {
         errorItem->second.count++;
         errorItem->second.lastErrorTime = std::chrono::steady_clock::now();
         logMessage(L"Error counter increased", nodeId, side, relativePath);
@@ -63,37 +62,37 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
 
             sentry::Handler::captureMessage(sentry::Level::Warning, "TmpBlacklistManager::increaseErrorCount",
                                             "Blacklisting item temporarily to avoid infinite loop");
-            Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyType::None,
-                      CancelType::TmpBlacklisted);
+            const Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyType::None,
+                            CancelType::TmpBlacklisted);
             _syncPal->addError(err);
         }
     } else {
         TmpErrorInfo errorInfo;
         errorInfo.path = relativePath;
-        errors.try_emplace(nodeId, errorInfo);
+        (void) errors.try_emplace(nodeId, errorInfo);
         logMessage(L"Item added in error list", nodeId, side, relativePath);
     }
 }
 
-void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {
+void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, const ReplicaSide side) {
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
-    if (auto errorItem = errors.find(nodeId); errorItem != errors.end()) {
+    if (const auto &errorItem = errors.find(nodeId); errorItem != errors.end()) {
         // Reset error timer
         errorItem->second.count++;
         errorItem->second.lastErrorTime = std::chrono::steady_clock::now();
     } else {
         TmpErrorInfo errorInfo;
         errorInfo.path = relativePath;
-        errors.try_emplace(nodeId, errorInfo);
+        (void) errors.try_emplace(nodeId, errorInfo);
         logMessage(L"Item added in error list", nodeId, side, relativePath);
     }
 
     insertInBlacklist(nodeId, side);
 
     std::list<NodeId> toBeRemoved;
-    for (const auto &errorInfo: errors) {
-        if (Utility::isDescendantOrEqual(errorInfo.second.path, relativePath) && errorInfo.first != nodeId) {
-            toBeRemoved.push_back(errorInfo.first);
+    for (const auto &[id, errorInfo]: errors) {
+        if (Utility::isDescendantOrEqual(errorInfo.path, relativePath) && id != nodeId) {
+            toBeRemoved.push_back(id);
         }
     }
 
@@ -123,23 +122,9 @@ void TmpBlacklistManager::refreshBlacklist() {
                 continue;
             }
 
-            errorIt++;
+            ++errorIt;
         }
     }
-}
-
-void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
-    const SyncNodeType blacklistType_ = blackListType(side);
-
-    std::unordered_set<NodeId> tmp;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType_, tmp);
-    if (tmp.contains(nodeId)) {
-        tmp.erase(nodeId);
-        SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, tmp);
-    }
-
-    auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
-    errors.erase(nodeId);
 }
 
 void TmpBlacklistManager::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
@@ -162,29 +147,29 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const SyncPath &relativePat
     }
 
     if (!localId.empty()) {
-        removeItemFromTmpBlacklist(localId, ReplicaSide::Local);
+        eraseSingleItemFromBlacklist(localId, ReplicaSide::Local);
     }
 
     if (!remotedId.empty()) {
-        removeItemFromTmpBlacklist(remotedId, ReplicaSide::Remote);
+        eraseSingleItemFromBlacklist(remotedId, ReplicaSide::Remote);
     }
 }
 
-bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const {
-    auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
-    for (const auto &errorInfo: errors) {
+void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, const ReplicaSide side) {
+    if (const auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors; errors.contains(nodeId)) {
+        removeItemFromTmpBlacklist(errors.at(nodeId).path);
+    }
+}
+
+bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, const ReplicaSide side) const {
+    for (auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors; const auto &errorInfo: errors) {
         if (Utility::isDescendantOrEqual(path, errorInfo.second.path)) return true;
     }
 
     return false;
 }
 
-bool TmpBlacklistManager::isTmpBlacklisted(const NodeId &nodeId, ReplicaSide side) const {
-    auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
-    return (errors.contains(nodeId));
-}
-
-void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, ReplicaSide side) {
+void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, const ReplicaSide side) const {
     const auto blacklistType_ = blackListType(side);
 
     std::unordered_set<NodeId> tmp;
@@ -193,25 +178,20 @@ void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, ReplicaSide si
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, tmp);
 
     logMessage(L"Item added in tmp blacklist", nodeId, side);
-    removeFromDB(nodeId, side);
 }
 
-void TmpBlacklistManager::removeFromDB(const NodeId &nodeId, const ReplicaSide side) {
-    DbNodeId dbNodeId = -1;
-    bool found = false;
-    if (!_syncPal->syncDb()->dbId(side, nodeId, dbNodeId, found)) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::dbId");
-        return;
-    }
-    if (found) {
-        // Delete old node
-        if (!_syncPal->syncDb()->deleteNode(dbNodeId, found)) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::deleteNode");
-            return;
-        }
+void TmpBlacklistManager::eraseSingleItemFromBlacklist(const NodeId &nodeId, const ReplicaSide side) {
+    const SyncNodeType blacklistType_ = blackListType(side);
 
-        LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "Item " << dbNodeId << " removed from DB");
+    std::unordered_set<NodeId> tmp;
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType_, tmp);
+    if (tmp.contains(nodeId)) {
+        tmp.erase(nodeId);
+        SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, tmp);
     }
+
+    auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
+    errors.erase(nodeId);
 }
 
 } // namespace KDC

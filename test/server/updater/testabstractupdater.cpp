@@ -20,6 +20,15 @@
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
+
+#if defined(__APPLE__)
+#include "server/updater/sparkleupdater.h"
+#elif defined(_WIN32)
+#include "server/updater/windowsupdater.h"
+#elif defined(__linux__)
+#include "server/updater/linuxupdater.h"
+#endif
+
 #include "libsyncengine/jobs/jobmanager.h"
 #include "version.h"
 
@@ -27,6 +36,18 @@
 #include "mockupdatechecker.h"
 
 namespace KDC {
+
+namespace {
+void unskipVersion() {
+#if defined(__APPLE__)
+    SparkleUpdater::instance()->unskipVersion();
+#elif defined(_WIN32)
+    WindowsUpdater::instance()->unskipVersion();
+#elif defined(__linux__)
+    LinuxUpdater::instance()->unskipVersion();
+#endif
+}
+} // namespace
 
 void TestAbstractUpdater::setUp() {
     TestBase::start();
@@ -50,7 +71,7 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
     ParmsDb::instance()->selectParameters(parameters, found);
     CPPUNIT_ASSERT(parameters.seenVersion() == testStr);
 
-    AbstractUpdater::unskipVersion();
+    unskipVersion();
 
     CPPUNIT_ASSERT(ParametersCache::instance()->parameters().seenVersion().empty());
 
@@ -87,7 +108,7 @@ void TestAbstractUpdater::testIsVersionSkipped() {
     CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
     CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
 
-    AbstractUpdater::unskipVersion();
+    unskipVersion();
 
     CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));
 
@@ -145,6 +166,18 @@ void TestAbstractUpdater::testCurrentVersionedChannel() {
 
     // Check Unknown version (higher than prod)
     version = "9.0.0.20210102";
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
+
+    // Emtpy version info.
+    updateChecker->setAllVersionInfo({});
+    version = "11.0.1.20210101";
+    CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
+
+    // Non-empty invalid version info.
+    AllVersionsInfo invalidVersions;
+    testVersions[VersionChannel::Unknown].tag = "10.0.0";
+    updateChecker->setAllVersionInfo(invalidVersions);
+    version = "11.0.1.20210101";
     CPPUNIT_ASSERT_EQUAL(VersionChannel::Unknown, updater.currentVersionChannel());
 }
 } // namespace KDC
