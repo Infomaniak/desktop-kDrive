@@ -109,6 +109,7 @@ jobs:
             --define sonar.cfamily.bullseye.reportPath="coverage.xml"
             --define sonar.scm.exclusions.disabled=true
             --define sonar.verbose=true
+            --define sonar.analysisCache.enabled=false
 
       - name: Deactivate BullseyeCoverage
         run: |
