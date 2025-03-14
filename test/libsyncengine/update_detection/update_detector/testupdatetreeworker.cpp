@@ -175,9 +175,9 @@ void TestUpdateTreeWorker::setUpDbTree() {
 
     // Node with name encoded differently on remote (NFC) and on local (NFD) side
     DbNodeId dbnodeIdfile7;
-    const const DbNode nodeFile7(0, _syncDb->rootNode().nodeId(), testhelpers::makeNfdSyncName(), testhelpers::makeNfdSyncName(),
-                                 "id7l", "id7r", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
-                                 NodeType::File, testhelpers::defaultFileSize, std::nullopt);
+    const DbNode nodeFile7(0, _syncDb->rootNode().nodeId(), testhelpers::makeNfdSyncName(), testhelpers::makeNfdSyncName(),
+                           "id7l", "id7r", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
+                           NodeType::File, testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeFile7, dbnodeIdfile7, constraintError);
 }
 
@@ -667,9 +667,10 @@ void TestUpdateTreeWorker::testStep8b() {
     // Ensure we have a duplicated Dir1 node in the tree (normal case), one is tmp, the other is not
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step1MoveDirectory());
     CPPUNIT_ASSERT(_localUpdateTree->getNodeById("id41")->parentNode()->isTmp());
+    CPPUNIT_ASSERT_EQUAL(SyncName(Str("Dir 1")), _localUpdateTree->getNodeById("id1")->parentNode()->name());
     CPPUNIT_ASSERT(_localUpdateTree->nodes().contains("id1"));
 
-    // Ensure the real Node has the origin node informations and the excpeted name
+    // Ensure the real Node has the origin node informations and the excpected name
     CPPUNIT_ASSERT(_localUpdateTree->getNodeById("id1")->moveOriginInfos().isValid());
     CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1"), _localUpdateTree->getNodeById("id1")->moveOriginInfos().path());
     CPPUNIT_ASSERT_EQUAL(std::string("Dir 1b"), SyncName2Str(_localUpdateTree->getNodeById("id1")->name()));
@@ -921,7 +922,7 @@ void TestUpdateTreeWorker::testGetOriginPath4() {
     node411->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1", "id41"});
     node411->insertChangeEvent(OperationType::Move);
     CPPUNIT_ASSERT(node411->setParentNode(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
-    
+
     node4111->setMoveOriginInfos({"Dir 4/Dir 4.1.1/File 4.1.1.1", "id411"});
     node4111->insertChangeEvent(OperationType::Move);
     node4111->setName(Str("File 4.1.1.1 renamed")); // Rename node

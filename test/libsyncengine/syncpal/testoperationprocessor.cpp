@@ -141,7 +141,7 @@ void TestOperationProcessor::testIsPseudoConflict() {
     remoteNodeFile->setChangeEvents(OperationType::Create);
     CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
 
-    // ### Diferent size and same modtime
+    // ### Different size and same modtime
     localNodeFile->setSize(testhelpers::defaultFileSize + 1);
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
     localNodeFile->setSize(testhelpers::defaultFileSize);

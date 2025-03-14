@@ -78,8 +78,8 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const  {
             case ConflictType::MoveDelete:
             case ConflictType::EditDelete:
                 // Path of deleted node
-                path1 = affectedNodePath(c1, OperationType::Delete);
-                path2 = affectedNodePath(c2, OperationType::Delete);
+                path1 = pathOfEvent(c1, OperationType::Delete);
+                path2 = pathOfEvent(c2, OperationType::Delete);
                 break;
             case ConflictType::MoveMoveSource:
                 // Move origin path of the local node
@@ -108,8 +108,8 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const  {
                 break;
             case ConflictType::MoveCreate:
                 // Path of the created node
-                path1 = affectedNodePath(c1, OperationType::Create);
-                path2 = affectedNodePath(c2, OperationType::Create);
+                path1 = pathOfEvent(c1, OperationType::Create);
+                path2 = pathOfEvent(c2, OperationType::Create);
                 break;
             default:
                 break;
@@ -129,7 +129,7 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const  {
     return ret;
 }
 
-SyncPath ConflictCmp::affectedNodePath(const Conflict &conflict, OperationType optype) const {
+SyncPath ConflictCmp::pathOfEvent(const Conflict &conflict, OperationType optype) const {
     ReplicaSide side = conflict.sideOfEvent(optype);
     SyncPath path = (side == ReplicaSide::Local    ? conflict.node()->getPath()
                      : side == ReplicaSide::Remote ? conflict.correspondingNode()->getPath()

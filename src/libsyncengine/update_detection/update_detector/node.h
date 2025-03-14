@@ -38,14 +38,14 @@ class Node {
                 MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId) :
                     _path(path), _parentNodeId(parentNodeId), _isValid(true) {}
 
-                bool isValid() const { return _isValid; }
-                const SyncPath &path() const { return _path; }
-                const NodeId &parentNodeId() const { return _parentNodeId; }
+                bool isValid() const;
+                const SyncPath &path() const;
+                const NodeId &parentNodeId() const;
 
             private:
                 bool _isValid = false;
-                SyncPath _path;
-                NodeId _parentNodeId;
+                SyncPath _path = ":\0/:\0"; // Invalid path for increased safety
+                NodeId _parentNodeId = "-1"; // Invalid node id for increased safety
         };
 
     public:
@@ -92,10 +92,7 @@ class Node {
         inline std::optional<NodeId> previousId() const { return _previousId; }
         inline NodeStatus status() const { return _status; }
         inline std::shared_ptr<Node> parentNode() const { return _parentNode; }
-        inline const MoveOriginInfos &moveOriginInfos() const {
-            LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), _moveOriginInfos.isValid());
-            return _moveOriginInfos;
-        }
+        inline const MoveOriginInfos &moveOriginInfos() const { return _moveOriginInfos; }
         inline const std::vector<ConflictType> &conflictsAlreadyConsidered() const { return _conflictsAlreadyConsidered; }
         inline bool hasConflictAlreadyConsidered(const ConflictType conf) const {
             return std::count(_conflictsAlreadyConsidered.cbegin(), _conflictsAlreadyConsidered.cend(), conf) > 0;
@@ -168,7 +165,6 @@ class Node {
         std::shared_ptr<Node> _parentNode;
         // For moved items
         MoveOriginInfos _moveOriginInfos;
-
         // For conflicts resolutions
         std::vector<ConflictType> _conflictsAlreadyConsidered;
 

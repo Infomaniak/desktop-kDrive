@@ -256,8 +256,7 @@ void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
 
     if (bitWiseEnumToBool(syncOp->type() & OperationType::Move)) {
         syncItem.setInstruction(SyncFileInstruction::Move);
-        syncItem.setPath(syncOp->affectedNode()->moveOriginInfos().isValid() ? syncOp->affectedNode()->moveOriginInfos().path()
-                                                                               : SyncPath());
+        syncItem.setPath(syncOp->affectedNode()->moveOriginInfos().path());
         syncItem.setNewPath(syncOp->affectedNode()->getPath());
     } else {
         syncItem.setPath(syncOp->affectedNode()->getPath());
@@ -365,10 +364,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     const Error err(_syncPal->syncDbId(),
                                     syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
                                     syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
-                                    syncOp->affectedNode()->moveOriginInfos().isValid()
-                                            ? syncOp->affectedNode()->moveOriginInfos().path()
-                                            : syncItem.path(),
-                                    syncItem.conflict(), syncItem.inconsistency(), CancelType::Create);
+                                    syncItem.path(), syncItem.conflict(), syncItem.inconsistency(), CancelType::Create);
                     _syncPal->addError(err);
                 }
 
@@ -1010,7 +1006,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
                             : "",
                     syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeType::Unknown,
                     syncOp->affectedNode()->moveOriginInfos().isValid() ? syncOp->affectedNode()->moveOriginInfos().path()
-                                                                          : syncOp->affectedNode()->getPath(),
+                                                                        : syncOp->affectedNode()->getPath(),
                     syncOp->conflict().type());
 
             _syncPal->addError(err);
@@ -1207,7 +1203,7 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
                             : "",
                     syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeType::Unknown,
                     syncOp->affectedNode()->moveOriginInfos().isValid() ? syncOp->affectedNode()->moveOriginInfos().path()
-                                                                          : syncOp->affectedNode()->getPath(),
+                                                                        : syncOp->affectedNode()->getPath(),
                     syncOp->conflict().type());
 
             _syncPal->addError(err);
@@ -1607,7 +1603,7 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         const Error err(_syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
                         syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
                         syncOp->affectedNode()->moveOriginInfos().isValid() ? syncOp->affectedNode()->moveOriginInfos().path()
-                                                                              : syncItem.path(),
+                                                                            : syncItem.path(),
                         syncItem.conflict(), syncItem.inconsistency(), cancelType,
                         syncOp->affectedNode()->moveOriginInfos().isValid() ? relativeLocalPath : "");
         _syncPal->addError(err);

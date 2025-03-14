@@ -251,14 +251,11 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
         }
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger,
-                               L"Move operation "
-                                       << op->id() << L" to be propagated on " << op->targetSide() << L" replica from \""
-                                       << (currentNode->moveOriginInfos().isValid()
-                                                   ? Utility::formatSyncPath(currentNode->moveOriginInfos().path())
-                                                   : L"")
-                                       << L"\" to \"" << Utility::formatSyncPath(currentNode->getPath()) << L"\" (ID: "
-                                       << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
+            LOGW_SYNCPAL_DEBUG(_logger, L"Move operation "
+                                                << op->id() << L" to be propagated on " << op->targetSide() << L" replica from \""
+                                                << Utility::formatSyncPath(currentNode->moveOriginInfos().path())
+                                                << L"\" to \"" << Utility::formatSyncPath(currentNode->getPath()) << L"\" (ID: "
+                                                << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
     }
 }

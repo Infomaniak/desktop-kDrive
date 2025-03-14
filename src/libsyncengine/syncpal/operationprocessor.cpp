@@ -53,7 +53,7 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         node->parentNode()->idb() == correspondingNode->parentNode()->idb() && isEqual) {
         if (!node->parentNode()->idb().has_value() && !correspondingNode->parentNode()->idb().has_value() &&
             node->parentNode()->getPath() != correspondingNode->parentNode()->getPath()) {
-            return false; // The nodes are not in DB and have different parent paths
+            return false; // The parent nodes are not in DB and have different paths
         }
         return true;
     }

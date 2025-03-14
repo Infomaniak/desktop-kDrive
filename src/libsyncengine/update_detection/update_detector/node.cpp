@@ -28,8 +28,8 @@ namespace KDC {
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode) :
-    _idb(idb), _side(side), _name(name), _type(type), _id(id), _createdAt(createdAt),
-    _lastModified(lastmodified), _size(size), _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
+    _idb(idb), _side(side), _name(name), _type(type), _id(id), _createdAt(createdAt), _lastModified(lastmodified), _size(size),
+    _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
     setParentNode(parentNode);
     setChangeEvents(changeEvents);
 }
@@ -217,5 +217,17 @@ bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
 
 bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
     return !isParentOf(parentNode);
+}
+bool Node::MoveOriginInfos::isValid() const {
+    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), _isValid);
+    return _isValid;
+}
+const SyncPath &Node::MoveOriginInfos::path() const {
+    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), isValid());
+    return _path;
+}
+const NodeId &Node::MoveOriginInfos::parentNodeId() const {
+    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), isValid());
+    return _parentNodeId;
 }
 } // namespace KDC

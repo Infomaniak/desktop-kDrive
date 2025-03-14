@@ -154,7 +154,8 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
             }
 
             NodeId moveNodeOriginParentId;
-            if (!getIdFromDb(moveNode->side(), moveNode->moveOriginInfos().path().parent_path(), moveNodeOriginParentId)) continue;
+            if (!getIdFromDb(moveNode->side(), moveNode->moveOriginInfos().path().parent_path(), moveNodeOriginParentId))
+                continue;
 
             const auto createNode = createOp->affectedNode();
             LOG_IF_FAIL(createNode)
@@ -200,8 +201,7 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
             }
 
             LOG_IF_FAIL(moveOp->affectedNode())
-            if (const auto moveNodeOriginPath =
-                    moveOp->affectedNode()->moveOriginInfos().path();
+            if (const auto moveNodeOriginPath = moveOp->affectedNode()->moveOriginInfos().path();
                 Utility::isDescendantOrEqual(moveNodeOriginPath, deleteNodePath)) {
                 // move only if deleteOp is before moveOp
                 moveFirstAfterSecond(deleteOp, moveOp);
@@ -312,6 +312,7 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
 
             const auto otherNode = otherOp->affectedNode();
             LOG_IF_FAIL(otherNode)
+            if (!otherNode->moveOriginInfos().isValid()) continue;
             const auto otherNodeOriginPath = otherNode->moveOriginInfos().path();
             NodeId otherNodeOriginParentId;
             if (!getIdFromDb(otherNode->side(), otherNodeOriginPath.parent_path(), otherNodeOriginParentId)) continue;
@@ -438,8 +439,8 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
         }
 
         const auto nodeX = opX->affectedNode();
-        LOG_IF_FAIL(nodeX)
-
+        LOG_IF_FAIL(nodeX);
+        if (!nodeX->moveOriginInfos().isValid()) continue;
         const auto nodeOriginPathX = nodeX->moveOriginInfos().path();
         const auto nodeDestinationPathX = nodeX->getPath();
 
@@ -478,8 +479,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
 
     // firstOp is an impossible move if dest starts with source + "/".
 
-    if (!Utility::isDescendantOrEqual(node->getPath(),
-                                      node->moveOriginInfos().path())) {
+    if (!Utility::isDescendantOrEqual(node->getPath(), node->moveOriginInfos().path())) {
         return std::nullopt; // firstOp is possible
     }
 
