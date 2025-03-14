@@ -209,6 +209,8 @@ class Handler {
 
         std::map<int /*syncDbId*/, std::map<PTraceName, pTraceId>> _pTraceNameToPTraceIdMap;
 
+        bool checkCustomSampleRate(const PTraceDescriptor &pTraceInfo) const;
+
         // Debug
         static AppType _appType;
         static bool _debugCrashCallback;

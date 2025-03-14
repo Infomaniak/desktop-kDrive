@@ -214,7 +214,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
         virtual int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
         virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
-        virtual bool isTmpBlacklisted(const NodeId &nodeId, ReplicaSide side) const;
         virtual bool isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const;
         virtual void refreshTmpBlacklist();
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
@@ -241,6 +240,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
+        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
@@ -308,7 +308,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
-        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
         const std::shared_ptr<const Snapshot> snapshotCopy(ReplicaSide side) { return snapshot(side, true); }
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
 

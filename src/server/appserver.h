@@ -122,7 +122,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         std::string _testParmsDbName;
 
-        void parseOptions(const QStringList &);
+  void parseOptions(const QStringList &);
         bool initLogging() noexcept;
         void logUsefulInformation() const;
         bool setupProxy() noexcept;

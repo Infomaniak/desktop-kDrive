@@ -22,6 +22,7 @@
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
+#include "test_classes/testinitialsituationgenerator.h"
 
 namespace KDC {
 
@@ -45,6 +46,8 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST(testCreateDuplicateNamesWithDistinctEncodings);
         CPPUNIT_TEST(testDeletionOfNestedFolders);
         CPPUNIT_TEST(testAccessDenied);
+        CPPUNIT_TEST(testExclusion);
+        CPPUNIT_TEST(testIsInUnsyncedList);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -86,9 +89,16 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         // Test Access Denied error in ComputeFSOperationWorker::inferChangeFromDbNode
         void testAccessDenied();
 
+        // Test exclusions
+        void testExclusion();
+        void testIsInUnsyncedList();
+
     private:
+        void testIsInUnsyncedList(bool expectedResult, const NodeId &nodeId, ReplicaSide side) const;
+
         std::shared_ptr<SyncPal> _syncPal;
         LocalTemporaryDirectory _localTempDir{"TestSyncPal"};
+        TestInitialSituationGenerator _situationGenerator;
 };
 
 } // namespace KDC

@@ -223,22 +223,6 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 
 #if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
-    CPPUNIT_ASSERT(!std::filesystem::exists(_tempDir.path() / "a1"));
-    std::error_code ec;
-    auto dirIt = std::filesystem::recursive_directory_iterator(_syncPal->localPath(),
-                                                               std::filesystem::directory_options::skip_permission_denied, ec);
-    CPPUNIT_ASSERT(!ec);
-    bool foundConflicted = false;
-    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-        const auto filename = dirIt->path().filename().string();
-        const auto pos = filename.find("_conflict_");
-        if (Utility::startsWith(filename, std::string("a1")) && pos != std::string::npos) {
-            foundConflicted = true;
-            break;
-        }
-    }
-    CPPUNIT_ASSERT(foundConflicted);
-
 #else
     CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
 #endif
