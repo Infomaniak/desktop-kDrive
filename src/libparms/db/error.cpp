@@ -34,9 +34,19 @@ Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitC
     _workerName(std::string()), _exitCode(exitCode), _exitCause(exitCause), _nodeType(NodeType::Unknown),
     _conflictType(ConflictType::None), _inconsistencyType(InconsistencyType::None), _cancelType(CancelType::None) {}
 
+Error::Error(const std::string &functionName, ExitInfo exitInfo) :
+    _dbId(0), _time(std::time(0)), _level(ErrorLevel::Server), _functionName(functionName), _syncDbId(0),
+    _workerName(std::string()), _exitCode(exitInfo.code()), _exitCause(exitInfo.cause()), _nodeType(NodeType::Unknown),
+    _conflictType(ConflictType::None), _inconsistencyType(InconsistencyType::None), _cancelType(CancelType::None) {}
+
 Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause) :
     _dbId(0), _time(std::time(0)), _level(ErrorLevel::SyncPal), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitCode),
     _exitCause(exitCause), _nodeType(NodeType::Unknown), _conflictType(ConflictType::None),
+    _inconsistencyType(InconsistencyType::None), _cancelType(CancelType::None) {}
+
+Error::Error(int syncDbId, const std::string &workerName, ExitInfo exitInfo) :
+    _dbId(0), _time(std::time(0)), _level(ErrorLevel::SyncPal), _syncDbId(syncDbId), _workerName(workerName),
+    _exitCode(exitInfo.code()), _exitCause(exitInfo.cause()), _nodeType(NodeType::Unknown), _conflictType(ConflictType::None),
     _inconsistencyType(InconsistencyType::None), _cancelType(CancelType::None) {}
 
 Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
