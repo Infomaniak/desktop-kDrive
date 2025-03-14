@@ -40,6 +40,8 @@
 
 namespace KDC {
 struct COMMON_EXPORT CommonUtility {
+        static void reset(QCoreApplication *app);
+
         enum IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
 
         static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
@@ -80,6 +82,8 @@ struct COMMON_EXPORT CommonUtility {
         static bool compressFile(const QString &originalName, const QString &targetName,
                                  const std::function<bool(int)> &progressCallback = nullptr);
 
+        static QTranslator *_translator;
+        static QTranslator *_qtTranslator;
         static const QString englishCode;
         static const QString frenchCode;
         static const QString germanCode;

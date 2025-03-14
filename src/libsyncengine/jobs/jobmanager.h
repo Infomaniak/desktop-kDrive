@@ -54,6 +54,7 @@ class JobManager {
         static JobManager *instance();
         static void stop();
         static void clear();
+        static void reset();
 
         /*
          * Queue a job to be executed as soon as a thread is available in the default thread pool

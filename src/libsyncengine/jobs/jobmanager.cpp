@@ -80,6 +80,12 @@ void JobManager::clear() {
     _runningJobs.clear();
 }
 
+void JobManager::reset() {
+    if (_instance) {
+        _instance = nullptr;
+    }
+}
+
 void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/,
                                std::function<void(UniqueId)> externalCallback /*= nullptr*/) noexcept {
     const std::scoped_lock lock(_mutex);

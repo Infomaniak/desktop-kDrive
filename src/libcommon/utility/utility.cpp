@@ -81,6 +81,8 @@ const int CommonUtility::logMaxSize = 500 * 1024 * 1024; // MB
 
 SyncPath CommonUtility::_workingDirPath = "";
 
+QTranslator *CommonUtility::_translator = nullptr;
+QTranslator *CommonUtility::_qtTranslator = nullptr;
 const QString CommonUtility::englishCode = "en";
 const QString CommonUtility::frenchCode = "fr";
 const QString CommonUtility::germanCode = "de";
@@ -182,6 +184,20 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
     }
 
     return {};
+}
+
+void CommonUtility::reset(QCoreApplication *app) {
+    if (_translator) {
+        app->removeTranslator(_translator);
+        _translator->deleteLater();
+        _translator = nullptr;
+    }
+
+    if (_qtTranslator) {
+        app->removeTranslator(_qtTranslator);
+        _qtTranslator->deleteLater();
+        _qtTranslator = nullptr;
+    }
 }
 
 QString CommonUtility::getIconPath(const IconType iconType) {
@@ -411,28 +427,16 @@ QString applicationTrPath() {
 void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language enforcedLocale) {
     QStringList uiLanguages = languageCodeList(enforcedLocale);
 
-    static QTranslator *translator = nullptr;
-    static QTranslator *qtTranslator = nullptr;
+    reset(app);
 
-    if (translator) {
-        app->removeTranslator(translator);
-        translator->deleteLater();
-        translator = nullptr;
-    }
-    translator = new QTranslator(app);
-
-    if (qtTranslator) {
-        app->removeTranslator(qtTranslator);
-        qtTranslator->deleteLater();
-        qtTranslator = nullptr;
-    }
-    qtTranslator = new QTranslator(app);
+    _translator = new QTranslator(app);
+    _qtTranslator = new QTranslator(app);
 
     foreach (QString lang, uiLanguages) {
         lang.replace(QLatin1Char('-'), QLatin1Char('_')); // work around QTBUG-25973
         const QString trPath = applicationTrPath();
         const QString trFile = QLatin1String("client_") + lang;
-        if (translator->load(trFile, trPath) || lang.startsWith(QLatin1String("en"))) {
+        if (_translator->load(trFile, trPath) || lang.startsWith(QLatin1String("en"))) {
             // Permissive approach: Qt translations
             // may be missing, but Qt translations must be there in order
             // for us to accept the language. Otherwise, we try with the next.
@@ -442,17 +446,17 @@ void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language
             const QString qtTrPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
             const QString qtTrFile = QLatin1String("qt_") + lang;
             const QString qtBaseTrFile = QLatin1String("qtbase_") + lang;
-            if (!qtTranslator->load(qtTrFile, qtTrPath)) {
-                if (!qtTranslator->load(qtTrFile, trPath)) {
-                    if (!qtTranslator->load(qtBaseTrFile, qtTrPath)) {
-                        static_cast<void>(qtTranslator->load(qtBaseTrFile, trPath));
+            if (!_qtTranslator->load(qtTrFile, qtTrPath)) {
+                if (!_qtTranslator->load(qtTrFile, trPath)) {
+                    if (!_qtTranslator->load(qtBaseTrFile, qtTrPath)) {
+                        static_cast<void>(_qtTranslator->load(qtBaseTrFile, trPath));
                         // static_cast<void>() explicitly discard warning on
                         // function declared with 'nodiscard' attribute
                     }
                 }
             }
-            if (!translator->isEmpty()) app->installTranslator(translator);
-            if (!qtTranslator->isEmpty()) app->installTranslator(qtTranslator);
+            if (!_translator->isEmpty()) app->installTranslator(_translator);
+            if (!_qtTranslator->isEmpty()) app->installTranslator(_qtTranslator);
             break;
         }
         if (app->property("ui_lang").isNull()) app->setProperty("ui_lang", "C");
