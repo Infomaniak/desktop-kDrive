@@ -399,12 +399,12 @@ void TestComputeFSOperationWorker::testExclusion() {
                                                              testhelpers::defaultDirSize, false, true, true));
     _syncPal->copySnapshots();
 
-    /// Blacklist local node B temporarly
+    /// Blacklist local node B temporarily
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist, {"l_b"});
     _syncPal->computeFSOperationsWorker()->execute();
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 
-    /// Blacklist remote node B temporarly
+    /// Blacklist remote node B temporarily
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, {"r_b"});
     _syncPal->computeFSOperationsWorker()->execute();
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
@@ -424,7 +424,7 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList() {
     testIsInUnsyncedList(false, "l_bb", ReplicaSide::Local);
     testIsInUnsyncedList(false, "r_bb", ReplicaSide::Remote);
 
-    /// Blacklist local node B temporarly
+    /// Blacklist local node B temporarily
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist, {"l_b"});
     _syncPal->computeFSOperationsWorker()->updateUnsyncedList();
     testIsInUnsyncedList(false, "dummy", ReplicaSide::Local);
@@ -437,7 +437,7 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList() {
     testIsInUnsyncedList(true, "l_bb", ReplicaSide::Local);
     testIsInUnsyncedList(true, "r_bb", ReplicaSide::Remote);
 
-    /// Blacklist remote node A temporarly
+    /// Blacklist remote node A temporarily
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, {"r_a"});
     _syncPal->computeFSOperationsWorker()->updateUnsyncedList();
     testIsInUnsyncedList(false, "dummy", ReplicaSide::Local);
@@ -453,8 +453,7 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList() {
 
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,
                                                         const ReplicaSide side) const {
-    CPPUNIT_ASSERT_EQUAL(expectedResult,
-                         _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInDb(nodeId, side));
+    CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInDb(nodeId, side));
     CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInSnapshot(
                                                  _syncPal->snapshot(side), nodeId, side));
 }

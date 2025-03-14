@@ -679,13 +679,12 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInDb(const NodeId &no
         NodeId otherTmpNodeId;
         _syncPal->syncDb()->correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
 
-        const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
-        NodeId remoteId = side == ReplicaSide::Remote ? tmpNodeId : otherTmpNodeId;
-
-        if (!localId.empty() && _localTmpUnsyncedList.contains(localId)) {
+        if (const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
+            !localId.empty() && _localTmpUnsyncedList.contains(localId)) {
             return true;
         }
-        if (!remoteId.empty() && (_remoteTmpUnsyncedList.contains(remoteId) || _remoteUnsyncedList.contains(remoteId))) {
+        if (const NodeId remoteId = side == ReplicaSide::Remote ? tmpNodeId : otherTmpNodeId;
+            !remoteId.empty() && (_remoteTmpUnsyncedList.contains(remoteId) || _remoteUnsyncedList.contains(remoteId))) {
             return true;
         }
 
@@ -711,13 +710,12 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInSnapshot(const std:
         bool found = false;
         _syncPal->syncDb()->correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
 
-        const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
-        NodeId remoteId = side == ReplicaSide::Remote ? tmpNodeId : otherTmpNodeId;
-
-        if (!localId.empty() && _localTmpUnsyncedList.contains(localId)) {
+        if (const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
+            !localId.empty() && _localTmpUnsyncedList.contains(localId)) {
             return true;
         }
-        if (!remoteId.empty() && (_remoteTmpUnsyncedList.contains(remoteId) || _remoteUnsyncedList.contains(remoteId))) {
+        if (const NodeId remoteId = side == ReplicaSide::Remote ? tmpNodeId : otherTmpNodeId;
+            !remoteId.empty() && (_remoteTmpUnsyncedList.contains(remoteId) || _remoteUnsyncedList.contains(remoteId))) {
             return true;
         }
 
@@ -725,38 +723,6 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInSnapshot(const std:
     }
 
     return false;
-    //
-    // const auto &unsyncedList =
-    //         side == ReplicaSide::Local ? _localTmpUnsyncedList : (tmpListOnly ? _remoteTmpUnsyncedList : _remoteUnsyncedList);
-    // const auto &correspondingUnsyncedList =
-    //         side == ReplicaSide::Local ? (tmpListOnly ? _remoteTmpUnsyncedList : _remoteUnsyncedList) : _localTmpUnsyncedList;
-    //
-    // if (unsyncedList.empty() && correspondingUnsyncedList.empty()) {
-    //     return false;
-    // }
-    //
-    // NodeId tmpNodeId = nodeId;
-    // while (!tmpNodeId.empty() && tmpNodeId != snapshot->rootFolderId()) {
-    //     // Check if node is in black list or undecided list
-    //     if (unsyncedList.contains(tmpNodeId)) {
-    //         return true;
-    //     }
-    //
-    //     // Check if node already exists on other side
-    //     NodeId tmpCorrespondingNodeId;
-    //     bool found = false;
-    //     _syncPal->_syncDb->correspondingNodeId(side, tmpNodeId, tmpCorrespondingNodeId, found);
-    //     if (found) {
-    //         // Check if corresponding node is in black list or undecided list
-    //         if (correspondingUnsyncedList.contains(tmpCorrespondingNodeId)) {
-    //             return true;
-    //         }
-    //     }
-    //
-    //     tmpNodeId = snapshot->parentId(tmpNodeId);
-    // }
-    //
-    // return false;
 }
 
 bool ComputeFSOperationWorker::isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const {
