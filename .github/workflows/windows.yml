@@ -111,6 +111,7 @@ jobs:
             --define sonar.cfamily.bullseye.reportPath="coverage.xml"
             --define sonar.scm.exclusions.disabled=true
             --define sonar.verbose=true
+            --define sonar.newCode.referenceBranch
             --define sonar.branch.name="${{ env.PR_SOURCE_BRANCH }}"
             --define sonar.branch.target="${{ env.PR_TARGET_BRANCH }}"
 
