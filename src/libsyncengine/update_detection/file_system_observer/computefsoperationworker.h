@@ -57,7 +57,22 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         bool isExcludedFromSync(const std::shared_ptr<const Snapshot> snapshot, const ReplicaSide side, const NodeId &nodeId,
                                 const SyncPath &path, NodeType type, int64_t size);
-        bool isInUnsyncedListParentSearchInDb(const NodeId &nodeId, ReplicaSide side) const; // Search parent in DB
+        /**
+         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other snapshot
+         * if it appears in any blacklist. Parents are retrieved from DB.
+         * @param nodeId The ID of the item to evaluate.
+         * @param side The replica side corresponding to the provided ID.
+         * @return `true` if the item is blacklisted in any blacklist.
+         */
+        bool isInUnsyncedListParentSearchInDb(const NodeId &nodeId, ReplicaSide side) const;
+        /**
+         * Check if the item, or any ancestor, appears in any blacklist. Also checks for each corresponding node in other snapshot
+         * if it appears in any blacklist. Parents are retrieved from snapshot.
+         * @param snapshot The snapshot that contains `nodeId`
+         * @param nodeId The ID of the item to evaluate.
+         * @param side The replica side corresponding to the provided ID.
+         * @return `true` if the item is blacklisted in any blacklist.
+         */
         bool isInUnsyncedListParentSearchInSnapshot(std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId,
                                                     ReplicaSide side) const; // Search parent in snapshot
         bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
