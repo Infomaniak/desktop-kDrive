@@ -10,6 +10,13 @@ find_package(Poco 1.13.3 REQUIRED XML Net)
 
 set(CMAKE_AUTOMOC ON)
 
+if(WIN32)
+    # Set stack size
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:0x4000000")
+    # Set no manifest
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
+endif()
+
 set(testserver_NAME ${APPLICATION_NAME}_test_server)
 
 set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
@@ -150,6 +157,14 @@ if (APPLE)
 elseif (WIN32)
     target_link_libraries(${testserver_NAME}
         "${libcommonserver_NAME}_vfs_win")
+endif()
+
+## handle DBUS for Fdo notifications
+if( UNIX AND NOT APPLE )
+    # For migrationparams
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBSECRET IMPORTED_TARGET libsecret-1)
+    target_link_libraries(${testserver_NAME} PkgConfig::LIBSECRET)
 endif()
 
 # Install
