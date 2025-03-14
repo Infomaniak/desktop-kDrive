@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/filename.h"
+#include "filename.h"
 
 #include <log4cplus/loggingmacros.h>
 

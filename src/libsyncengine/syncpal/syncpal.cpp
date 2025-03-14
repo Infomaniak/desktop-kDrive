@@ -20,7 +20,7 @@
 #include "comm.h"
 #include "syncpal/virtualfilescleaner.h"
 #include "syncpalworker.h"
-#include "utility/logiffail.h"
+#include "libcommon/utility/logiffail.h"
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
@@ -56,7 +56,9 @@
 namespace KDC {
 
 SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
-                 const bool hasFullyCompleted) : _vfs(vfs), _logger(Log::instance()->getLogger()) {
+                 const bool hasFullyCompleted) :
+    _vfs(vfs),
+    _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
