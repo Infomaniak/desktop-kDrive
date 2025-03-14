@@ -677,9 +677,9 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInDb(const NodeId &no
     do {
         // Check if node already exists on other side
         NodeId otherTmpNodeId;
-        _syncPal->_syncDb->correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
+        _syncPal->syncDb()->correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
 
-        NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
+        const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
         NodeId remoteId = side == ReplicaSide::Remote ? tmpNodeId : otherTmpNodeId;
 
         if (!localId.empty() && _localTmpUnsyncedList.contains(localId)) {
@@ -709,9 +709,9 @@ bool ComputeFSOperationWorker::isInUnsyncedListParentSearchInSnapshot(const std:
         // Check if node already exists on other side
         NodeId otherTmpNodeId;
         bool found = false;
-        _syncPal->_syncDb->correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
+        _syncPal->syncDb()->correspondingNodeId(side, tmpNodeId, otherTmpNodeId, found);
 
-        NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
+        const NodeId localId = side == ReplicaSide::Local ? tmpNodeId : otherTmpNodeId;
         NodeId remoteId = side == ReplicaSide::Remote ? tmpNodeId : otherTmpNodeId;
 
         if (!localId.empty() && _localTmpUnsyncedList.contains(localId)) {
