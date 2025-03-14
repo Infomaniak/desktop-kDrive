@@ -1317,16 +1317,8 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
             // if it's a Move event
             if (prevNode->hasChangeEvent(OperationType::Move)) {
                 tmpNode->setName(prevNode->name());
-                if (prevNode->moveOriginInfos().has_value()) {
-                    tmpNode->setMoveOriginInfos(prevNode->moveOriginInfos().value());
-                } else {
-                    LOGW_SYNCPAL_WARN(_logger,
-                                      L"Error in UpdateTreeWorker::updateTmpNode: Move origin infos not found on a moved node");
-                    assert(false && "Move origin infos not found on a moved node");
-                    sentry::Handler::captureMessage(sentry::Level::Error, "UpdateTreeWorker::updateTmpNode",
-                                                    "Move origin infos not found on a moved node");
-                    return ExitCode::DataError;
-                }
+                LOG_IF_FAIL(prevNode->moveOriginInfos().has_value())
+                tmpNode->setMoveOriginInfos(prevNode->moveOriginInfos().value());
             }
 
             // Update change events
