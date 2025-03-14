@@ -21,6 +21,7 @@
 #include "olddb/testoldsyncdb.h"
 #include "syncpal/testsyncpal.h"
 #include "syncpal/testsyncpalworker.h"
+#include "syncpal/testoperationprocessor.h"
 #include "update_detection/file_system_observer/testfsoperation.h"
 #include "update_detection/file_system_observer/testfsoperationset.h"
 #include "update_detection/file_system_observer/testremotefilesystemobserverworker.h"
