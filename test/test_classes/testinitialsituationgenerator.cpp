@@ -110,10 +110,21 @@ void TestInitialSituationGenerator::addItem(Poco::JSON::Object::Ptr obj, const N
 }
 
 void TestInitialSituationGenerator::addItem(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
+    insertInAllSnapshot(itemType, id, parentId);
     const DbNodeId dbNodeId = insertInDb(itemType, id, parentId);
     insertInAllUpdateTrees(itemType, id, parentId, dbNodeId);
 }
 
+void TestInitialSituationGenerator::insertInAllSnapshot(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
+    if (id.empty()) return;
+    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
+        const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
+        const auto parentFinalId = parentId.empty() ? "1" : generateId(side, parentId);
+        SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
+                          testhelpers::defaultTime, itemType, size, false, true, true);
+        _syncpal->snapshot(side)->updateItem(item);
+    }
+}
 
 DbNodeId TestInitialSituationGenerator::insertInDb(const NodeType itemType, const NodeId &id, const NodeId &parentId) const {
     DbNode parentNode;
@@ -135,7 +146,7 @@ DbNodeId TestInitialSituationGenerator::insertInDb(const NodeType itemType, cons
                         testhelpers::defaultTime, testhelpers::defaultTime, itemType, size);
     DbNodeId dbNodeId = 0;
     bool constraintError = false;
-    _syncpal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
+    (void) _syncpal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
     return dbNodeId;
 }
 

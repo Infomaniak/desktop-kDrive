@@ -37,7 +37,12 @@ namespace KDC {
 class UpdateManager final : public QObject {
         Q_OBJECT
     public:
-        explicit UpdateManager(QObject *parent);
+        UpdateManager(UpdateManager &) = delete;
+        UpdateManager(UpdateManager &&) = delete;
+        UpdateManager &operator=(UpdateManager &) = delete;
+        UpdateManager &operator=(UpdateManager &&) = delete;
+
+        static std::shared_ptr<UpdateManager> instance();
 
         void setDistributionChannel(VersionChannel channel);
         [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel = VersionChannel::Unknown) const {
@@ -61,6 +66,8 @@ class UpdateManager final : public QObject {
         void slotUpdateStateChanged(KDC::UpdateState newState);
 
     private:
+        explicit UpdateManager(QObject *parent = nullptr);
+        static std::shared_ptr<UpdateManager> _instance;
         /**
          * @brief Create adequate updater according to OS.
          */
