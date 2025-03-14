@@ -114,8 +114,6 @@ std::filesystem::path Db::makeDbName(bool &alreadyExist, bool addRandomSuffix /*
 
 std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int syncDbId, bool &alreadyExist,
                                      bool addRandomSuffix /*= false*/, const std::string &name /*= ""*/) {
-    assert((userId && accountId && driveId && syncDbId) || addRandomSuffix || !name.empty());
-
     // App support dir
     std::filesystem::path dbPath(CommonUtility::getAppSupportDir());
 
@@ -141,7 +139,9 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     if (!userId && !accountId && !driveId && !syncDbId) {
         if (addRandomSuffix) {
             dbFile.append(".parms" + CommonUtility::generateRandomStringAlphaNum() + ".db");
-        } else if (!name.empty()) {
+        } else if (name.empty()) {
+            dbFile.append(".parms.db");
+        } else {
             dbFile = name;
         }
     } else {
