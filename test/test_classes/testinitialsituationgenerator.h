@@ -90,6 +90,7 @@ class TestInitialSituationGenerator {
         void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
         void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
 
+        void insertInAllSnapshot(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
         [[nodiscard]] DbNodeId insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
         void insertInAllUpdateTrees(NodeType itemType, const NodeId &id, const NodeId &parentId, DbNodeId dbNodeId) const;
 
