@@ -4,6 +4,10 @@ on:
   pull_request:
     branches-ignore:
         - 'release/**'
+    paths-ignore:
+        - 'release_notes/**'
+        - 'translations/**'
+        - 'infomaniak-build-tools/kDrive-template.html'
     types: [synchronize, review_requested]
 
 concurrency:
