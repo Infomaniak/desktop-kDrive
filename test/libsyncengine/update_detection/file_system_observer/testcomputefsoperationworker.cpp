@@ -24,6 +24,7 @@
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
+#include "test_classes/testinitialsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
@@ -81,88 +82,12 @@ void TestComputeFSOperationWorker::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
 
+    // Generate initial situation
+    _situationGenerator.setSyncpal(_syncPal);
+    _situationGenerator.generateInitialSituation(R"({"a":{"aa":1,"ab":1,"ac":1},"b":{"ba":1, "bb":1}})");
+
     /// Insert node "AC" in blacklist
-    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {"lac"});
-
-    /// Insert nodes in DB
-    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    DbNode nodeDirB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
-    DbNodeId dbNodeIdDirA;
-    DbNodeId dbNodeIdDirB;
-    bool constraintError = false;
-    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
-    _syncPal->syncDb()->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
-
-    DbNode nodeFileAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", testhelpers::defaultTime, testhelpers::defaultTime,
-                      testhelpers::defaultTime, NodeType::File, 0, "cs_aa");
-    DbNodeId dbNodeIdFileAA;
-    _syncPal->syncDb()->insertNode(nodeFileAA, dbNodeIdFileAA, constraintError);
-
-    DbNode nodeFileAB(0, dbNodeIdDirA, Str("AB"), Str("AB"), "lab", "rab", testhelpers::defaultTime, testhelpers::defaultTime,
-                      testhelpers::defaultTime, NodeType::File, 0, "cs_ab");
-
-    DbNodeId dbNodeIdFileAB;
-    _syncPal->syncDb()->insertNode(nodeFileAB, dbNodeIdFileAB, constraintError);
-
-    // AC not in db since it should be excluded from sync
-
-    DbNode nodeFileBA(0, dbNodeIdDirB, Str("BA"), Str("BA"), "lba", "rba", testhelpers::defaultTime, testhelpers::defaultTime,
-                      testhelpers::defaultTime, NodeType::File, 0, "cs_ba");
-    DbNodeId dbNodeIdFileBA;
-    _syncPal->syncDb()->insertNode(nodeFileBA, dbNodeIdFileBA, constraintError);
-
-    DbNode nodeFileBB(0, dbNodeIdDirB, Str("BB"), Str("BB"), "lbb", "rbb", testhelpers::defaultTime, testhelpers::defaultTime,
-                      testhelpers::defaultTime, NodeType::File, 0, "cs_bb");
-    DbNodeId dbNodeIdFileBB;
-    _syncPal->syncDb()->insertNode(nodeFileBB, dbNodeIdFileBB, constraintError);
-
-    /// Init test snapshot
-    //// Insert dir in snapshot
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(
-            nodeDirA.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
-            nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123, false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(
-            nodeDirB.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
-            nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123, false, true, true));
-
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-            nodeDirA.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
-            nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-            nodeDirB.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
-            nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123, false, true, true));
-
-    //// Insert files in snapshot
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(
-            nodeFileAA.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(), nodeFileAA.nameLocal(),
-            nodeFileAA.created().value(), nodeFileAA.lastModifiedLocal().value(), nodeFileAA.type(), 123, false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(
-            nodeFileAB.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(), nodeFileAB.nameLocal(),
-            nodeFileAB.created().value(), nodeFileAB.lastModifiedLocal().value(), nodeFileAB.type(), 123, false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(
-            nodeFileBA.nodeIdLocal().value(), nodeDirB.nodeIdLocal().value(), nodeFileBA.nameLocal(),
-            nodeFileBA.created().value(), nodeFileBA.lastModifiedLocal().value(), nodeFileBA.type(), 123, false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(
-            nodeFileBB.nodeIdLocal().value(), nodeDirB.nodeIdLocal().value(), nodeFileBB.nameLocal(),
-            nodeFileBB.created().value(), nodeFileBB.lastModifiedLocal().value(), nodeFileBB.type(), 123, false, true, true));
-
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-            nodeFileAA.nodeIdRemote().value(), nodeDirA.nodeIdRemote().value(), nodeFileAA.nameRemote(),
-            nodeFileAA.created().value(), nodeFileAA.lastModifiedRemote().value(), nodeFileAA.type(), 123, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-            nodeFileAB.nodeIdRemote().value(), nodeDirA.nodeIdRemote().value(), nodeFileAB.nameRemote(),
-            nodeFileAB.created().value(), nodeFileAB.lastModifiedRemote().value(), nodeFileAB.type(), 123, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-            nodeFileBA.nodeIdRemote().value(), nodeDirB.nodeIdRemote().value(), nodeFileBA.nameRemote(),
-            nodeFileBA.created().value(), nodeFileBA.lastModifiedRemote().value(), nodeFileBA.type(), 123, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-            nodeFileBB.nodeIdRemote().value(), nodeDirB.nodeIdRemote().value(), nodeFileBB.nameRemote(),
-            nodeFileBB.created().value(), nodeFileBB.lastModifiedRemote().value(), nodeFileBB.type(), 123, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rac", nodeDirA.nodeIdRemote().value(), Str("AC"),
-                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                                                       123, false, true, true));
+    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {"r_ac"});
 
     // Insert items to excluded templates in DB
     std::vector<ExclusionTemplate> templateVec = {ExclusionTemplate("*.lnk", true)};
@@ -189,27 +114,27 @@ void TestComputeFSOperationWorker::tearDown() {
 void TestComputeFSOperationWorker::testNoOps() {
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
-    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
 void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
     // Delete operations
-    _syncPal->_localSnapshot->removeItem("laa"); // Folder "AA" is contained in folder "A".
-    _syncPal->_localSnapshot->removeItem("lab"); // Folder "AB" is contained in folder "A".
-    _syncPal->_localSnapshot->removeItem("lac"); // Folder "AC" is contained in folder "A" but is blacklisted.
-    _syncPal->_localSnapshot->removeItem("la");
+    _syncPal->_localSnapshot->removeItem("l_aa"); // Folder "AA" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("l_ab"); // Folder "AB" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("l_ac"); // Folder "AC" is contained in folder "A" but is blacklisted.
+    _syncPal->_localSnapshot->removeItem("l_a");
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("la", OperationType::Delete, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("laa", OperationType::Delete, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lab", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_a", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_aa", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ab", OperationType::Delete, tmpOp));
 
-    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("lac", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ac", OperationType::Delete, tmpOp));
 
-    CPPUNIT_ASSERT_EQUAL(uint64_t(3), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(3), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
 void TestComputeFSOperationWorker::testAccessDenied() {
@@ -217,7 +142,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         // BB (child of B) is deleted
         // B access is denied
         // Causes an Access Denied error in checkIfPathExists
-        _syncPal->_localSnapshot->removeItem("lbb");
+        _syncPal->_localSnapshot->removeItem("l_bb");
 
         SyncPath bNodePath = "B";
         std::error_code ec;
@@ -255,7 +180,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         // AA (child of A) is deleted and recreated with the same node ID after the snapshots are copied
         // A access is denied
         // Causes an Access Denied in checkIfOkToDelete
-        _syncPal->_localSnapshot->removeItem("laa");
+        _syncPal->_localSnapshot->removeItem("l_aa");
 
         SyncPath aNodePath = "A";
         std::error_code ec;
@@ -302,19 +227,19 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
 
     // Duplicated items with distinct encodings are not supported, and only one of them will be synced. We do not guarantee
     // that it will always be the same one.
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfc", "la", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("l_a_nfc", "l_a", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
                                                       testhelpers::defaultTime, NodeType::File, 123, false, true, true));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfd", "la", testhelpers::makeNfdSyncName(), testhelpers::defaultTime,
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("l_a_nfd", "l_a", testhelpers::makeNfdSyncName(), testhelpers::defaultTime,
                                                       testhelpers::defaultTime, NodeType::File, 123, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("la_nfc", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("la_nfd", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_a_nfc", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_a_nfd", OperationType::Create, tmpOp));
 
-    CPPUNIT_ASSERT_EQUAL(uint64_t(1), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
 void TestComputeFSOperationWorker::testMultipleOps() {
@@ -323,42 +248,42 @@ void TestComputeFSOperationWorker::testMultipleOps() {
 
     // On local replica
     // Create operation
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime,
-                                                      NodeType::File, 123, false, true, true));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("l_ad", "l_a", Str("AD"), testhelpers::defaultTime,
+                                                      testhelpers::defaultTime, NodeType::File, 123, false, true, true));
     // Edit operation
-    _syncPal->_localSnapshot->setLastModified("laa", testhelpers::defaultTime + 60);
+    _syncPal->_localSnapshot->setLastModified("l_aa", testhelpers::defaultTime + 60);
     // Move operation
-    _syncPal->_localSnapshot->setParentId("lab", "lb");
+    _syncPal->_localSnapshot->setParentId("l_ab", "l_b");
     // Rename operation
-    _syncPal->_localSnapshot->setName("lba", Str("BA-renamed"));
+    _syncPal->_localSnapshot->setName("l_ba", Str("BA-renamed"));
     // Delete operation
-    _syncPal->_localSnapshot->removeItem("lbb");
+    _syncPal->_localSnapshot->removeItem("l_bb");
 
     // Create operation on a too big directory
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("raf", "ra", Str("AF_too_big"), testhelpers::defaultTime,
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r_af", "r_a", Str("AF_too_big"), testhelpers::defaultTime,
                                                        testhelpers::defaultTime, NodeType::Directory, 0, false, true, true));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rafa", "raf", Str("AFA"), testhelpers::defaultTime,
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r_afa", "r_af", Str("AFA"), testhelpers::defaultTime,
                                                        testhelpers::defaultTime, NodeType::File, 550 * 1024 * 1024, false, true,
                                                        true)); // File size: 550MB
     // Rename operation on a blacklisted directory
-    _syncPal->_remoteSnapshot->setName("rac", Str("AC-renamed"));
+    _syncPal->_remoteSnapshot->setName("r_ac", Str("AC-renamed"));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lad", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("laa", OperationType::Edit, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lab", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lba", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lbb", OperationType::Delete, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("lae", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ad", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_aa", OperationType::Edit, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ab", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ba", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_bb", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ae", OperationType::Create, tmpOp));
 
     // On remote replica
     // Create operation but folder too big (should be ignored on local replica)
-    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("raf", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("rafa", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("rac", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("r_af", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("r_afa", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("r_ac", OperationType::Move, tmpOp));
 }
 
 void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
@@ -366,7 +291,7 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
 
     // Add file in DB
-    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("test.lnk"), Str("test.lnk"), "ltest", "rtest",
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("test.lnk"), Str("test.lnk"), "l_test", "r_test",
                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0,
                     std::nullopt);
     DbNodeId dbNodeIdTest;
@@ -376,85 +301,85 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     // File is excluded by template, it does not appear in snapshot
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
-    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
 void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
     // NFC in DB, NFD on FS
-    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "l_test", "r_test",
                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                     testhelpers::defaultFileSize, std::nullopt);
     DbNodeId dbNodeIdTest;
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
 }
 
 void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
     // NFD in DB, NFC on FS
-    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "l_test", "r_test",
                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                     testhelpers::defaultFileSize, std::nullopt);
     DbNodeId dbNodeIdTest;
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
 }
 
 void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
     // NFD in DB, NFD on FS
-    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "l_test", "r_test",
                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                     testhelpers::defaultFileSize, std::nullopt);
     DbNodeId dbNodeIdTest;
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
 void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
     // NFC in DB, NFC on FS
-    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "l_test", "r_test",
                     testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                     testhelpers::defaultFileSize, std::nullopt);
     DbNodeId dbNodeIdTest;
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("l_test", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                                                       testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("l_test", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
 MockComputeFSOperationWorker::MockComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
@@ -463,6 +388,75 @@ MockComputeFSOperationWorker::MockComputeFSOperationWorker(std::shared_ptr<SyncP
 
 ExitInfo MockComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide, const SyncPath &, const NodeId &, bool &) {
     return ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError);
+}
+
+void TestComputeFSOperationWorker::testExclusion() {
+    // Simulate an Edit operation on BA
+    (void) _syncPal->_localSnapshot->setLastModified("l_ba", testhelpers::defaultTime + 1);
+    // Simulate a Create operation inside B
+    (void) _syncPal->_localSnapshot->updateItem(SnapshotItem("l_bc", "l_b", Str("BC"), testhelpers::defaultTime,
+                                                             testhelpers::defaultTime, NodeType::Directory,
+                                                             testhelpers::defaultDirSize, false, true, true));
+    _syncPal->copySnapshots();
+
+    /// Blacklist local node B temporarly
+    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist, {"l_b"});
+    _syncPal->computeFSOperationsWorker()->execute();
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+
+    /// Blacklist remote node B temporarly
+    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, {"r_b"});
+    _syncPal->computeFSOperationsWorker()->execute();
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+}
+
+void TestComputeFSOperationWorker::testIsInUnsyncedList() {
+    _syncPal->computeFSOperationsWorker()->updateUnsyncedList();
+
+    testIsInUnsyncedList(false, "dummy", ReplicaSide::Local);
+
+    testIsInUnsyncedList(false, "l_aa", ReplicaSide::Local);
+    testIsInUnsyncedList(false, "r_aa", ReplicaSide::Remote);
+    testIsInUnsyncedList(true, "l_ac", ReplicaSide::Local);
+    testIsInUnsyncedList(true, "r_ac", ReplicaSide::Remote);
+    testIsInUnsyncedList(false, "l_b", ReplicaSide::Local);
+    testIsInUnsyncedList(false, "r_b", ReplicaSide::Remote);
+    testIsInUnsyncedList(false, "l_bb", ReplicaSide::Local);
+    testIsInUnsyncedList(false, "r_bb", ReplicaSide::Remote);
+
+    /// Blacklist local node B temporarly
+    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist, {"l_b"});
+    _syncPal->computeFSOperationsWorker()->updateUnsyncedList();
+    testIsInUnsyncedList(false, "dummy", ReplicaSide::Local);
+    testIsInUnsyncedList(false, "l_aa", ReplicaSide::Local);
+    testIsInUnsyncedList(false, "r_aa", ReplicaSide::Remote);
+    testIsInUnsyncedList(true, "l_ac", ReplicaSide::Local);
+    testIsInUnsyncedList(true, "r_ac", ReplicaSide::Remote);
+    testIsInUnsyncedList(true, "l_b", ReplicaSide::Local);
+    testIsInUnsyncedList(true, "r_b", ReplicaSide::Remote);
+    testIsInUnsyncedList(true, "l_bb", ReplicaSide::Local);
+    testIsInUnsyncedList(true, "r_bb", ReplicaSide::Remote);
+
+    /// Blacklist remote node A temporarly
+    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, {"r_a"});
+    _syncPal->computeFSOperationsWorker()->updateUnsyncedList();
+    testIsInUnsyncedList(false, "dummy", ReplicaSide::Local);
+    testIsInUnsyncedList(true, "l_aa", ReplicaSide::Local);
+    testIsInUnsyncedList(true, "r_aa", ReplicaSide::Remote);
+    testIsInUnsyncedList(true, "l_ac", ReplicaSide::Local);
+    testIsInUnsyncedList(true, "r_ac", ReplicaSide::Remote);
+    testIsInUnsyncedList(true, "l_b", ReplicaSide::Local);
+    testIsInUnsyncedList(true, "r_b", ReplicaSide::Remote);
+    testIsInUnsyncedList(true, "l_bb", ReplicaSide::Local);
+    testIsInUnsyncedList(true, "r_bb", ReplicaSide::Remote);
+}
+
+void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,
+                                                        const ReplicaSide side) const {
+    CPPUNIT_ASSERT_EQUAL(expectedResult,
+                         _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInDb(nodeId, side));
+    CPPUNIT_ASSERT_EQUAL(expectedResult, _syncPal->computeFSOperationsWorker()->isInUnsyncedListParentSearchInSnapshot(
+                                                 _syncPal->snapshot(side), nodeId, side));
 }
 
 } // namespace KDC
