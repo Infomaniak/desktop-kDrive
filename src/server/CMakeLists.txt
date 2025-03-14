@@ -222,8 +222,8 @@ target_link_libraries(${APPLICATION_EXECUTABLE}
     sentry::sentry
     updater)
 
-## handle DBUS for Fdo notifications
 if( UNIX AND NOT APPLE )
+    # handle DBUS for Fdo notifications
     find_package(Qt6 COMPONENTS DBus)
     target_link_libraries(${APPLICATION_EXECUTABLE} Qt6::DBus)
     target_compile_definitions(${APPLICATION_EXECUTABLE} PRIVATE "USE_FDO_NOTIFICATIONS")
