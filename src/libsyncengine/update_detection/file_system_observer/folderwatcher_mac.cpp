@@ -35,6 +35,8 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
         return;
     }
 
+    const std::scoped_lock lock(fw->_streamMutex);
+
     static const FSEventStreamEventFlags interestingFlags =
             kFSEventStreamEventFlagItemCreated // for new folder/file
             | kFSEventStreamEventFlagItemRemoved // for rm
@@ -95,6 +97,7 @@ void FolderWatcher_mac::startWatching() {
 
     FSEventStreamContext ctx = {0, this, nullptr, nullptr, nullptr};
 
+    _streamMutex.lock();
     _stream = FSEventStreamCreate(
             nullptr, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
             0, // latency
@@ -104,6 +107,7 @@ void FolderWatcher_mac::startWatching() {
     CFRelease(pathsToWatch);
     FSEventStreamScheduleWithRunLoop(_stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(_stream);
+    _streamMutex.unlock();
     CFRunLoopRun();
 
     LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));
@@ -131,6 +135,7 @@ OperationType FolderWatcher_mac::getOpType(const FSEventStreamEventFlags eventFl
 }
 
 void KDC::FolderWatcher_mac::stopWatching() {
+    const std::scoped_lock lock(_streamMutex);
     if (_stream) {
         LOGW_DEBUG(_logger, L"Stop watching folder: " << Utility::formatSyncPath(_folder));
         FSEventStreamStop(_stream);
