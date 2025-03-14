@@ -120,6 +120,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         std::unique_ptr<UpdateManager> _updateManager;
 
+        std::string _testParmsDbName;
+
         void parseOptions(const QStringList &);
         bool initLogging() noexcept;
         void logUsefulInformation() const;
@@ -133,32 +135,33 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);
         ExitCode updateAllUsersInfo();
-        ExitCode initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList = std::unordered_set<NodeId>(),
-                             const std::unordered_set<NodeId> &undecidedList = std::unordered_set<NodeId>(),
-                             const std::unordered_set<NodeId> &whiteList = std::unordered_set<NodeId>(), bool start = true,
-                             const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool resumedByUser = false,
-                             bool firstInit = false);
-        ExitCode initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                             const QSet<QString> &whiteList, bool start = true,
-                             const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool resumedByUser = false,
-                             bool firstInit = false);
-        ExitCode stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
+        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync,
+                                           const std::unordered_set<NodeId> &blackList = std::unordered_set<NodeId>(),
+                                           const std::unordered_set<NodeId> &undecidedList = std::unordered_set<NodeId>(),
+                                           const std::unordered_set<NodeId> &whiteList = std::unordered_set<NodeId>(),
+                                           bool start = true, const std::chrono::seconds &startDelay = std::chrono::seconds(0),
+                                           bool resumedByUser = false, bool firstInit = false);
+        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
+                                           const QSet<QString> &whiteList, bool start = true,
+                                           const std::chrono::seconds &startDelay = std::chrono::seconds(0),
+                                           bool resumedByUser = false, bool firstInit = false);
+        [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
-        ExitInfo createAndStartVfs(const Sync &sync) noexcept;
+        [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
         [[nodiscard]] ExitInfo tryCreateAndStartVfs(Sync &sync) noexcept;
-        ExitCode stopVfs(int syncDbId, bool unregister);
+        [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
 
-        ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
 
-        ExitCode startSyncs(ExitCause &exitCause);
-        ExitCode startSyncs(User &user, ExitCause &exitCause);
-        ExitCode processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
-                                                  QSet<QString> &undecidedList, bool &syncUpdated);
+        [[nodiscard]] ExitInfo startSyncs();
+        [[nodiscard]] ExitInfo startSyncs(User &user);
+        [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
+                                                                QSet<QString> &undecidedList, bool &syncUpdated);
         ExitCode clearErrors(int syncDbId, bool autoResolved = false);
         // Check if the synchronization `sync` is registred in the sync database and
         // if the `sync` folder does not contain any other sync subfolder.
-        ExitCode checkIfSyncIsValid(const Sync &sync);
+        [[nodiscard]] ExitInfo checkIfSyncIsValid(const Sync &sync);
 
         void sendUserAdded(const UserInfo &userInfo);
         static void sendUserUpdated(const UserInfo &userInfo);
@@ -223,6 +226,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         // For testing purpose
         void crash() const;
+
+        friend class TestAppServer;
 
     private slots:
         void onLoadInfo();

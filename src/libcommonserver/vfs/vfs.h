@@ -210,7 +210,7 @@ class Vfs : public QObject {
          */
         virtual ExitInfo forceStatus(const SyncPath &path, const VfsStatus &vfsStatus) = 0;
 
-        virtual bool cleanUpStatuses() { return true; };
+        virtual bool cleanUpStatuses() { return true; }
 
         /** Determine whether the file at the given path is a dehydrated placeholder.
          *
