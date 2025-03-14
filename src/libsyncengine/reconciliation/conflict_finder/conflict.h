@@ -55,7 +55,7 @@ class ConflictCmp {
 
         bool operator()(const Conflict &c1, const Conflict &c2) const;
 
-        SyncPath pathOfEvent(const Conflict &conflict, OperationType optype) const;
+        SyncPath affectedNodePath(const Conflict &conflict, OperationType optype) const;
 
     private:
         std::shared_ptr<UpdateTree> _localUpdateTree;

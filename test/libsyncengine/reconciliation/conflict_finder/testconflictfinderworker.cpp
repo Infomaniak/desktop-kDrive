@@ -1049,15 +1049,41 @@ void TestConflictFinderWorker::testConflictCmp() {
                                                         ConflictType::MoveMoveSource,   ConflictType::MoveMoveDest,
                                                         ConflictType::MoveMoveCycle,    ConflictType::CreateCreate,
                                                         ConflictType::EditEdit,         ConflictType::MoveCreate};
+    const size_t nbConflictType = conflictTypes.size();
 
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            if (i == j) continue;
-            Conflict c1(nullptr, nullptr, conflictTypes[i]);
-            Conflict c2(nullptr, nullptr, conflictTypes[j]);
-            bool res = cmp(c1, c2);
-            CPPUNIT_ASSERT(res == (conflictTypes[i] > conflictTypes[j]));
-        }
+    const std::shared_ptr<Node> localNodeA =
+            std::shared_ptr<Node>(new Node(0, ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, "A", 0, 0,
+                                           0, _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+
+    const std::shared_ptr<Node> remoteNodeA =
+            std::shared_ptr<Node>(new Node(0, ReplicaSide::Remote, Str("A"), NodeType::Directory, OperationType::None, "A", 0, 0,
+                                           0, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
+
+    OperationType allOp =
+            OperationType::Create | OperationType::Edit | OperationType::Delete | OperationType::Move;
+    const std::shared_ptr<Node> localNodeAA = std::shared_ptr<Node>(
+            new Node(0, ReplicaSide::Local, Str("AA"), NodeType::Directory, allOp, "AA", 0, 0, 0, localNodeA));
+    localNodeAA->setMoveOriginInfos({"AA1", localNodeA->parentNode()->id().value()});
+
+    const std::shared_ptr<Node> remoteNodeAA = std::shared_ptr<Node>(
+            new Node(0, ReplicaSide::Remote, Str("AA"), NodeType::Directory, allOp, "AA", 0, 0, 0, remoteNodeA));
+    remoteNodeAA->setMoveOriginInfos({"AA2", remoteNodeA->parentNode()->id().value()});
+
+
+    ConflictQueue queue(_syncPal->updateTree(ReplicaSide::Local), _syncPal->updateTree(ReplicaSide::Remote));
+    for (size_t i = 0; i < 1000; i++) {
+        size_t index = rand() % nbConflictType;
+        Conflict c1(localNodeAA, remoteNodeAA, conflictTypes[index]);
+        queue.push(c1);
+    }
+
+    // Ensure that all the operations are grouped by type
+    ConflictType lastType = ConflictType::None;
+    while (!queue.empty()) {
+        const ConflictType currentType = queue.top().type();
+        CPPUNIT_ASSERT(currentType >= lastType);
+        lastType = currentType;
+        queue.pop();
     }
 }
 } // namespace KDC
