@@ -35,9 +35,9 @@ class COMMONSERVER_EXPORT Db {
         Db(const std::filesystem::path &dbPath);
         virtual ~Db();
 
-        static std::filesystem::path makeDbName(bool &alreadyExist, bool addRandomSuffix = false);
+        static std::filesystem::path makeDbName(bool &alreadyExist, bool addRandomSuffix = false, const std::string &name = "");
         static std::filesystem::path makeDbName(int userId, int accountId, int driveId, int syncDbId, bool &alreadyExist,
-                                                bool addRandomSuffix = false);
+                                                bool addRandomSuffix = false, const std::string &name = "");
 
         void setAutoDelete(bool value);
         bool exists();

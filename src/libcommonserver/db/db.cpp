@@ -108,12 +108,14 @@ Db::~Db() {
     close();
 }
 
-std::filesystem::path Db::makeDbName(bool &alreadyExist, bool addRandomSuffix /*= false*/) {
-    return makeDbName(0, 0, 0, 0, alreadyExist, addRandomSuffix);
+std::filesystem::path Db::makeDbName(bool &alreadyExist, bool addRandomSuffix /*= false*/, const std::string &name /*= ""*/) {
+    return makeDbName(0, 0, 0, 0, alreadyExist, addRandomSuffix, name);
 }
 
 std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int syncDbId, bool &alreadyExist,
-                                     bool addRandomSuffix /*= false*/) {
+                                     bool addRandomSuffix /*= false*/, const std::string &name /*= ""*/) {
+    assert((userId && accountId && driveId && syncDbId) || addRandomSuffix || !name.empty());
+
     // App support dir
     std::filesystem::path dbPath(CommonUtility::getAppSupportDir());
 
@@ -137,11 +139,11 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     // Db file name
     std::string dbFile;
     if (!userId && !accountId && !driveId && !syncDbId) {
-        std::string suffix;
         if (addRandomSuffix) {
-            suffix = CommonUtility::generateRandomStringAlphaNum();
+            dbFile.append(".parms" + CommonUtility::generateRandomStringAlphaNum() + ".db");
+        } else if (!name.empty()) {
+            dbFile = name;
         }
-        dbFile.append(".parms" + suffix + ".db");
     } else {
         std::string key(std::to_string(userId));
         key.append(":");
