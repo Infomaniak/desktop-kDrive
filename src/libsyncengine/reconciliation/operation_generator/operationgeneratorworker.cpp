@@ -254,8 +254,8 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Move operation "
                                        << op->id() << L" to be propagated on " << op->targetSide() << L" replica from \""
-                                       << (currentNode->moveOriginInfos().has_value()
-                                                   ? Utility::formatSyncPath(currentNode->moveOriginInfos()->path())
+                                       << (currentNode->moveOriginInfos().isValid()
+                                                   ? Utility::formatSyncPath(currentNode->moveOriginInfos().path())
                                                    : L"")
                                        << L"\" to \"" << Utility::formatSyncPath(currentNode->getPath()) << L"\" (ID: "
                                        << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");

@@ -85,12 +85,12 @@ std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) 
 
 void Node::setChangeEvents(const OperationType ops) {
     _changeEvents = ops;
-    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.has_value()));
+    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
 }
 
 void Node::insertChangeEvent(const OperationType &op) {
     _changeEvents |= op;
-    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.has_value()));
+    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
 }
 
 std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nodeId /*= ""*/) {

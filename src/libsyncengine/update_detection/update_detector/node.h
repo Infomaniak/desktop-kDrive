@@ -20,6 +20,7 @@
 
 #include "utility/types.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/utility/logiffail.h"
 
 #include <algorithm>
 #include <vector>
@@ -32,14 +33,17 @@ class Node {
     public:
         class MoveOriginInfos {
             public:
+                MoveOriginInfos() = default;
                 MoveOriginInfos(const MoveOriginInfos &) = default;
-                MoveOriginInfos(const SyncPath &path, const NodeId parentNodeId) :
-                    _path(path), _parentNodeId(parentNodeId) {}
+                MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId) :
+                    _path(path), _parentNodeId(parentNodeId), _isValid(true) {}
 
+                bool isValid() const { return _isValid; }
                 const SyncPath &path() const { return _path; }
                 const NodeId &parentNodeId() const { return _parentNodeId; }
 
             private:
+                bool _isValid = false;
                 SyncPath _path;
                 NodeId _parentNodeId;
         };
@@ -53,7 +57,8 @@ class Node {
 
         Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
              OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-             std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode, const MoveOriginInfos& moveOriginInfos);
+             std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
+             const MoveOriginInfos &moveOriginInfos);
 
         Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
              const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
@@ -87,7 +92,10 @@ class Node {
         inline std::optional<NodeId> previousId() const { return _previousId; }
         inline NodeStatus status() const { return _status; }
         inline std::shared_ptr<Node> parentNode() const { return _parentNode; }
-        inline const std::optional<MoveOriginInfos> &moveOriginInfos() const { return _moveOriginInfos; }
+        inline const MoveOriginInfos &moveOriginInfos() const {
+            LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), _moveOriginInfos.isValid());
+            return _moveOriginInfos;
+        }
         inline const std::vector<ConflictType> &conflictsAlreadyConsidered() const { return _conflictsAlreadyConsidered; }
         inline bool hasConflictAlreadyConsidered(const ConflictType conf) const {
             return std::count(_conflictsAlreadyConsidered.cbegin(), _conflictsAlreadyConsidered.cend(), conf) > 0;
@@ -103,7 +111,8 @@ class Node {
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
         bool setParentNode(const std::shared_ptr<Node> &parentNode);
         inline void setMoveOriginInfos(const MoveOriginInfos &moveOriginInfos) {
-            (void) _moveOriginInfos.emplace(moveOriginInfos);
+            LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), _moveOriginInfos.isValid());
+            _moveOriginInfos = moveOriginInfos;
         }
         inline void setStatus(const NodeStatus &status) { _status = status; }
 
@@ -158,7 +167,7 @@ class Node {
         std::unordered_map<NodeId, std::shared_ptr<Node>> _childrenById;
         std::shared_ptr<Node> _parentNode;
         // For moved items
-        std::optional<MoveOriginInfos> _moveOriginInfos = std::nullopt;
+        MoveOriginInfos _moveOriginInfos;
 
         // For conflicts resolutions
         std::vector<ConflictType> _conflictsAlreadyConsidered;

@@ -154,7 +154,7 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
             }
 
             NodeId moveNodeOriginParentId;
-            if (!getIdFromDb(moveNode->side(), moveNode->moveOriginInfos()->path().parent_path(), moveNodeOriginParentId)) continue;
+            if (!getIdFromDb(moveNode->side(), moveNode->moveOriginInfos().path().parent_path(), moveNodeOriginParentId)) continue;
 
             const auto createNode = createOp->affectedNode();
             LOG_IF_FAIL(createNode)
@@ -169,7 +169,7 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
                 continue;
             }
 
-            if (moveNode->moveOriginInfos()->path().filename() == createNode->name()) {
+            if (moveNode->moveOriginInfos().path().filename() == createNode->name()) {
                 // move only if createOp is before moveOp
                 moveFirstAfterSecond(createOp, moveOp);
             }
@@ -200,9 +200,8 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
             }
 
             LOG_IF_FAIL(moveOp->affectedNode())
-            LOG_IF_FAIL(moveOp->affectedNode()->moveOriginInfos().has_value())
             if (const auto moveNodeOriginPath =
-                    moveOp->affectedNode()->moveOriginInfos()->path();
+                    moveOp->affectedNode()->moveOriginInfos().path();
                 Utility::isDescendantOrEqual(moveNodeOriginPath, deleteNodePath)) {
                 // move only if deleteOp is before moveOp
                 moveFirstAfterSecond(deleteOp, moveOp);
@@ -313,8 +312,7 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
 
             const auto otherNode = otherOp->affectedNode();
             LOG_IF_FAIL(otherNode)
-            LOG_IF_FAIL(otherNode->moveOriginInfos().has_value())
-            const auto otherNodeOriginPath = otherNode->moveOriginInfos()->path();
+            const auto otherNodeOriginPath = otherNode->moveOriginInfos().path();
             NodeId otherNodeOriginParentId;
             if (!getIdFromDb(otherNode->side(), otherNodeOriginPath.parent_path(), otherNodeOriginParentId)) continue;
 
@@ -441,9 +439,8 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
 
         const auto nodeX = opX->affectedNode();
         LOG_IF_FAIL(nodeX)
-        LOG_IF_FAIL(nodeX->moveOriginInfos().has_value())
 
-        const auto nodeOriginPathX = nodeX->moveOriginInfos()->path();
+        const auto nodeOriginPathX = nodeX->moveOriginInfos().path();
         const auto nodeDestinationPathX = nodeX->getPath();
 
         for (const auto &opIdY: moveOpIds) {
@@ -455,10 +452,9 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
 
             const auto nodeY = opY->affectedNode();
             LOG_IF_FAIL(nodeY)
-            LOG_IF_FAIL(nodeY->moveOriginInfos().has_value())
 
             if (!Utility::isDescendantOrEqual(nodeDestinationPathX, nodeY->getPath())) continue;
-            if (!Utility::isDescendantOrEqual(nodeY->moveOriginInfos()->path(), nodeOriginPathX)) continue;
+            if (!Utility::isDescendantOrEqual(nodeY->moveOriginInfos().path(), nodeOriginPathX)) continue;
 
             moveFirstAfterSecond(opX, opY);
         }
@@ -481,11 +477,9 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     }
 
     // firstOp is an impossible move if dest starts with source + "/".
-    LOG_IF_FAIL(node->moveOriginInfos().has_value())
 
-    const auto originPath = *node->moveOriginInfos();
     if (!Utility::isDescendantOrEqual(node->getPath(),
-                                      node->moveOriginInfos()->path())) {
+                                      node->moveOriginInfos().path())) {
         return std::nullopt; // firstOp is possible
     }
 

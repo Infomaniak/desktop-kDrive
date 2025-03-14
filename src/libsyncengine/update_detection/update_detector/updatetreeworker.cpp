@@ -1317,8 +1317,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
             // if it's a Move event
             if (prevNode->hasChangeEvent(OperationType::Move)) {
                 tmpNode->setName(prevNode->name());
-                LOG_IF_FAIL(prevNode->moveOriginInfos().has_value())
-                tmpNode->setMoveOriginInfos(prevNode->moveOriginInfos().value());
+                tmpNode->setMoveOriginInfos(prevNode->moveOriginInfos());
             }
 
             // Update change events
@@ -1357,14 +1356,14 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
     std::vector<SyncName> names;
     std::shared_ptr<Node> tmpNode = node;
     while (tmpNode && tmpNode->parentNode() != nullptr) {
-        if (tmpNode->moveOriginInfos().has_value()) {
+        if (tmpNode->moveOriginInfos().isValid()) {
             // Save origin file name
-            names.push_back(tmpNode->moveOriginInfos().value().path().filename());
+            names.push_back(tmpNode->moveOriginInfos().path().filename());
 
             // Get origin parent
             DbNode dbNode;
             bool found = false;
-            if (!_syncDb->node(tmpNode->side(), tmpNode->moveOriginInfos()->parentNodeId(), dbNode, found)) {
+            if (!_syncDb->node(tmpNode->side(), tmpNode->moveOriginInfos().parentNodeId(), dbNode, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
                 return ExitCode::DbError;
             }

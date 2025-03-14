@@ -411,11 +411,10 @@ ExitCode ConflictResolverWorker::findAllChildNodeIdsFromDb(const std::shared_ptr
 
 ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, SyncOpPtr moveOp) {
     LOG_IF_FAIL(moveNode)
-    LOG_IF_FAIL(moveNode->moveOriginInfos().has_value())
 
     const auto updateTree = _syncPal->updateTree(moveNode->side());
-    const auto originParentNode =  updateTree->getNodeById(moveNode->moveOriginInfos()->parentNodeId());
-    const auto originPath = moveNode->moveOriginInfos()->path();
+    const auto originParentNode =  updateTree->getNodeById(moveNode->moveOriginInfos().parentNodeId());
+    const auto originPath = moveNode->moveOriginInfos().path();
 
     bool undoPossible = true;
 

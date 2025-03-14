@@ -473,7 +473,7 @@ void TestUpdateTreeWorker::testStep2() {
     CPPUNIT_ASSERT(node->hasChangeEvent(OperationType::Move));
     CPPUNIT_ASSERT(node->id() == "id1111");
     CPPUNIT_ASSERT(node->parentNode()->id() == "id1");
-    CPPUNIT_ASSERT(node->moveOriginInfos().value().path() == "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1");
+    CPPUNIT_ASSERT(node->moveOriginInfos().path() == "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1");
 }
 
 void TestUpdateTreeWorker::testStep3() {
@@ -670,8 +670,8 @@ void TestUpdateTreeWorker::testStep8b() {
     CPPUNIT_ASSERT(_localUpdateTree->nodes().contains("id1"));
 
     // Ensure the real Node has the origin node informations and the excpeted name
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeById("id1")->moveOriginInfos().has_value());
-    CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1"), _localUpdateTree->getNodeById("id1")->moveOriginInfos().value().path());
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeById("id1")->moveOriginInfos().isValid());
+    CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1"), _localUpdateTree->getNodeById("id1")->moveOriginInfos().path());
     CPPUNIT_ASSERT_EQUAL(std::string("Dir 1b"), SyncName2Str(_localUpdateTree->getNodeById("id1")->name()));
 
     // Ensure origin node info and name are not lost after step8
@@ -680,7 +680,7 @@ void TestUpdateTreeWorker::testStep8b() {
     CPPUNIT_ASSERT(!_localUpdateTree->getNodeById("id41")->parentNode()->isTmp());
     CPPUNIT_ASSERT_EQUAL(_localUpdateTree->getNodeById("id41")->parentNode(), _localUpdateTree->nodes().at("id1"));
 
-    CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1"), _localUpdateTree->getNodeById("id1")->moveOriginInfos().value().path());
+    CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1"), _localUpdateTree->getNodeById("id1")->moveOriginInfos().path());
     CPPUNIT_ASSERT_EQUAL(std::string("Dir 1b"), SyncName2Str(_localUpdateTree->getNodeById("id1")->name()));
 }
 
@@ -718,7 +718,7 @@ void TestUpdateTreeWorker::testClearTreeStep2() {
     // tree has been cleared so parent node has temp data
     CPPUNIT_ASSERT(node->parentNode()->name() == Str("Dir 1"));
     CPPUNIT_ASSERT(node->parentNode()->isTmp());
-    CPPUNIT_ASSERT(node->moveOriginInfos().value().path() == "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1");
+    CPPUNIT_ASSERT(node->moveOriginInfos().path() == "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1");
 }
 
 void TestUpdateTreeWorker::testClearTreeStep3() {
