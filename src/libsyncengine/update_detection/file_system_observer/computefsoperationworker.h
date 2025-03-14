@@ -57,9 +57,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         bool isExcludedFromSync(const std::shared_ptr<const Snapshot> snapshot, const ReplicaSide side, const NodeId &nodeId,
                                 const SyncPath &path, NodeType type, int64_t size);
-        bool isInUnsyncedList(const NodeId &nodeId, const ReplicaSide side) const; // Search parent in DB
-        bool isInUnsyncedList(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId, const ReplicaSide side,
-                              bool tmpListOnly = false) const; // Search parent in snapshot
+        bool isInUnsyncedListParentSearchInDb(const NodeId &nodeId, ReplicaSide side) const; // Search parent in DB
+        bool isInUnsyncedListParentSearchInSnapshot(std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId,
+                                                    ReplicaSide side) const; // Search parent in snapshot
         bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
         bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
