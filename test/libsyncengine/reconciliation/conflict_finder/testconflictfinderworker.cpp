@@ -1060,7 +1060,7 @@ void TestConflictFinderWorker::testConflictCmp() {
                                            0, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
 
     OperationType allOp =
-            OperationType::Create | OperationType::Edit | OperationType::Delete | OperationType::Move;
+            OperationType::Create | OperationType::Edit | OperationType::Delete  | OperationType::Move;
     const std::shared_ptr<Node> localNodeAA = std::shared_ptr<Node>(
             new Node(0, ReplicaSide::Local, Str("AA"), NodeType::Directory, allOp, "AA", 0, 0, 0, localNodeA));
     localNodeAA->setMoveOriginInfos({"AA1", localNodeA->parentNode()->id().value()});
