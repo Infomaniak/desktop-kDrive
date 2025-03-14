@@ -108,6 +108,7 @@ void TestLocalFileSystemObserverWorker::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    ParametersCache::reset();
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }

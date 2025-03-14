@@ -64,6 +64,7 @@ void TestServerRequests::setUp() {
 void TestServerRequests::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    ParametersCache::reset();
     TestBase::stop();
 }
 

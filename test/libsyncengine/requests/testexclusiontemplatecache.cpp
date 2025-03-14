@@ -122,6 +122,7 @@ void TestExclusionTemplateCache::setUp() {
 void TestExclusionTemplateCache::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    ParametersCache::reset();
     TestBase::stop();
 }
 

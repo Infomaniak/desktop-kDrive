@@ -183,6 +183,7 @@ void TestComputeFSOperationWorker::tearDown() {
         _syncPal->syncDb()->close();
     }
     ParmsDb::reset();
+    ParametersCache::reset();
     TestBase::stop();
 }
 

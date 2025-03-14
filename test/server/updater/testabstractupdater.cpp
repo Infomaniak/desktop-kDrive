@@ -39,6 +39,11 @@ void TestAbstractUpdater::setUp() {
     ParametersCache::instance(true);
 }
 
+void TestAbstractUpdater::tearDown() {
+    ParametersCache::reset();
+    TestBase::stop();
+}
+
 void TestAbstractUpdater::testSkipUnskipVersion() {
     const std::string testStr("1.1.1.20210101");
     AbstractUpdater::skipVersion(testStr);

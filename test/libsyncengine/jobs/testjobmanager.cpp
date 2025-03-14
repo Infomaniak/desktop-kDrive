@@ -86,6 +86,8 @@ void KDC::TestJobManager::setUp() {
 void KDC::TestJobManager::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    ParametersCache::reset();
+    JobManager::reset();
     TestBase::stop();
 }
 

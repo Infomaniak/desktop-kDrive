@@ -21,7 +21,6 @@
 #include <memory>
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/types.h"
-#include "requests/parameterscache.h"
 #include "syncpal/tmpblacklistmanager.h"
 
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"

@@ -69,6 +69,7 @@ void TestSnapshot::setUp() {
 }
 
 void TestSnapshot::tearDown() {
+    ParametersCache::reset();
     TestBase::stop();
 }
 
