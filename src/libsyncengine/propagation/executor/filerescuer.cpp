@@ -23,7 +23,7 @@
 
 namespace KDC {
 
-const SyncPath FileRescuer::_rescueFolderName = ".rescueFolder";
+const SyncPath FileRescuer::_rescueFolderName = "kDrive Rescue Folder";
 
 ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) const {
     if (const auto exitInfo = createRescueFolderIfNeeded(); !exitInfo) {
