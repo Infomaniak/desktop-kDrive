@@ -99,7 +99,6 @@ static constexpr char restartClientMsg[] = "restartClient";
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
-std::unique_ptr<UpdateManager> AppServer::_updateManager;
 
 // Helpers for displaying messages. Note that there is no console on Windows.
 #ifdef Q_OS_WIN
@@ -336,16 +335,15 @@ AppServer::AppServer(int &argc, char **argv) :
     updateSentryUser();
 
     // Update checks
-    _updateManager = std::make_unique<UpdateManager>(this);
-    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
+    connect(UpdateManager::instance().get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
 #ifdef Q_OS_MACOS
     const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    _updateManager->setQuitCallback(quitCallback);
+    UpdateManager::instance()->setQuitCallback(quitCallback);
 #endif
 
-    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
-    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
+    connect(UpdateManager::instance().get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+    connect(UpdateManager::instance().get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+    connect(UpdateManager::instance().get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
 
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
@@ -1959,24 +1957,24 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             auto channel = VersionChannel::Unknown;
             QDataStream paramsStream(params);
             paramsStream >> channel;
-            _updateManager->setDistributionChannel(channel);
+            UpdateManager::instance()->setDistributionChannel(channel);
             break;
         }
         case RequestNum::UPDATER_VERSION_INFO: {
             auto channel = VersionChannel::Unknown;
             QDataStream paramsStream(params);
             paramsStream >> channel;
-            VersionInfo versionInfo = _updateManager->versionInfo(channel);
+            VersionInfo versionInfo = UpdateManager::instance()->versionInfo(channel);
             resultStream << versionInfo;
             break;
         }
         case RequestNum::UPDATER_STATE: {
-            UpdateState state = _updateManager->state();
+            UpdateState state = UpdateManager::instance()->state();
             resultStream << state;
             break;
         }
         case RequestNum::UPDATER_START_INSTALLER: {
-            _updateManager->startInstaller();
+            UpdateManager::instance()->startInstaller();
             break;
         }
         case RequestNum::UPDATER_SKIP_VERSION: {
@@ -2122,7 +2120,7 @@ void AppServer::onScheduleAppRestart() {
 void AppServer::onShowWindowsUpdateDialog() {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << _updateManager->versionInfo();
+    paramsStream << UpdateManager::instance()->versionInfo();
     CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
 }
 
@@ -3741,7 +3739,7 @@ void AppServer::addError(const Error &error) {
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(error.syncDbId());
     } else if (error.exitCode() == ExitCode::UpdateRequired) {
-        _updateManager->updater()->unskipVersion();
+        UpdateManager::instance()->updater()->unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {

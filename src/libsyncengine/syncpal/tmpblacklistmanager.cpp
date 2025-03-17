@@ -192,6 +192,7 @@ void TmpBlacklistManager::eraseSingleItemFromBlacklist(const NodeId &nodeId, con
 
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     errors.erase(nodeId);
+    logMessage(L"Item removed from tmp blacklist", nodeId, side);
 }
 
 } // namespace KDC
