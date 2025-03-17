@@ -274,7 +274,6 @@ void ParametersDialog::initUI() {
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::displayErrors, this, &ParametersDialog::onDisplayDriveErrors);
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::openFolder, this, &ParametersDialog::onOpenFolder);
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::removeDrive, this, &ParametersDialog::onRemoveDrive);
-    connect(_drivePreferencesWidget, &DrivePreferencesWidget::runSync, this, &ParametersDialog::onRunSync);
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::pauseSync, this, &ParametersDialog::onPauseSync);
     connect(_drivePreferencesWidget, &DrivePreferencesWidget::resumeSync, this, &ParametersDialog::onResumeSync);
     connect(_preferencesMenuBarWidget, &PreferencesMenuBarWidget::backButtonClicked, this,
@@ -1087,20 +1086,14 @@ void ParametersDialog::onResumeSync(int syncDbId) {
     emit executeSyncAction(ActionType::Start, ActionTarget::Sync, syncDbId);
 }
 
-void ParametersDialog::onRunSync(int syncDbId) {
-    Q_UNUSED(syncDbId)
-
-    // TODO: useless?
-}
-
-void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
+void ParametersDialog::onClearErrors(const int driveDbId, const bool autoResolved) {
     ErrorTabWidget *errorTabWidget = nullptr;
     QListWidget *listWidgetToClear = nullptr;
 
     if (driveDbId == 0) {
         LOG_IF_FAIL(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
 
-        errorTabWidget = static_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
+        errorTabWidget = dynamic_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
 
         if (GuiRequests::deleteErrorsServer() != ExitCode::Ok) {
             qCWarning(lcParametersDialog()) << "Error in GuiRequests::deleteErrorsServer";
@@ -1113,13 +1106,13 @@ void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
             return;
         }
 
-        errorTabWidget =
-                static_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(driveInfoMapIt->second.errorTabWidgetStackPosition()));
+        errorTabWidget = dynamic_cast<ErrorTabWidget *>(
+                _errorsStackedWidget->widget(driveInfoMapIt->second.errorTabWidgetStackPosition()));
 
-        for (const auto &syncInfoMapIt: _gui->syncInfoMap()) {
-            if (syncInfoMapIt.second.driveDbId() == driveDbId) {
-                if (GuiRequests::deleteErrorsForSync(syncInfoMapIt.first, autoResolved) != ExitCode::Ok) {
-                    qCWarning(lcParametersDialog()) << "Error in GuiRequests::deleteErrorsForSync syncId=" << syncInfoMapIt.first;
+        for (const auto &[syncDbId, syncInfo]: _gui->syncInfoMap()) {
+            if (syncInfo.driveDbId() == driveDbId) {
+                if (GuiRequests::deleteErrorsForSync(syncDbId, autoResolved) != ExitCode::Ok) {
+                    qCWarning(lcParametersDialog()) << "Error in GuiRequests::deleteErrorsForSync syncId=" << syncDbId;
                     return;
                 }
             }

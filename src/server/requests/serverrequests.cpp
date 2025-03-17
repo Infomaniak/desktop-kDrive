@@ -500,17 +500,17 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
             continue;
         }
 
-        int driveId;
+        int driveId = -1;
         if (!JsonParserUtility::extractValue(obj, driveIdKey, driveId)) {
             return ExitCode::BackError;
         }
 
-        int userId;
+        int userId = -1;
         if (!JsonParserUtility::extractValue(obj, idKey, userId)) {
             return ExitCode::BackError;
         }
 
-        int accountId;
+        int accountId = -1;
         if (!JsonParserUtility::extractValue(obj, accountIdKey, accountId)) {
             return ExitCode::BackError;
         }
@@ -521,8 +521,7 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
         }
 
         std::string colorHex;
-        Poco::JSON::Object::Ptr prefObj = obj->getObject(preferenceKey);
-        if (prefObj) {
+        if (Poco::JSON::Object::Ptr prefObj = obj->getObject(preferenceKey)) {
             if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
                 return ExitCode::BackError;
             }
@@ -532,7 +531,7 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
 
         // Search user in DB
         User user;
-        bool found;
+        bool found = false;
         if (!ParmsDb::instance()->selectUserByUserId(userId, user, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
             return ExitCode::DbError;
@@ -547,8 +546,8 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
-                                       bool withPath /*= false*/) {
+ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
+                                       const bool withPath /*= false*/) {
     std::shared_ptr<GetRootFileListJob> job = nullptr;
     if (nodeId.isEmpty()) {
         try {
@@ -560,8 +559,7 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
         }
     } else {
         try {
-            job = (std::shared_ptr<GetFileListJob>) std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), 1,
-                                                                                     true);
+            job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), 1, true);
         } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
                                                            << userDbId << " driveId=" << driveId << " nodeId="
@@ -1316,7 +1314,7 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
     }
 
     for (const Error &error: errorList) {
-        if (isConflictsWithLocalRename(error.conflictType())) {
+        if (error.conflictType() == ConflictType::CreateCreate || error.conflictType() == ConflictType::EditEdit) {
             // For conflict type that rename local file
             Sync sync;
             bool found = false;
@@ -1329,17 +1327,16 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
                 return ExitCode::DataError;
             }
 
-            IoError ioError = IoError::Success;
+            auto ioError = IoError::Success;
             const SyncPath dest = sync.localPath() / error.destinationPath();
-            const bool success = IoHelper::checkIfPathExists(dest, found, ioError);
-            if (!success) {
+            if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
                 LOGW_WARN(Log::instance()->getLogger(),
                           L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError).c_str());
                 return ExitCode::SystemError;
             }
 
             // If conflict file still exists, keep the error.
-            if (found || ioError != IoError::NoSuchFileOrDirectory) {
+            if (found) {
                 continue;
             }
         }

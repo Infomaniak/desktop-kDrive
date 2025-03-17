@@ -575,7 +575,6 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
             folderTreeItemWidget->setVisible(false);
             folderTreeBox->addWidget(folderTreeItemWidget);
 
-            connect(folderItemWidget, &FolderItemWidget::runSync, this, &DrivePreferencesWidget::runSync);
             connect(folderItemWidget, &FolderItemWidget::pauseSync, this, &DrivePreferencesWidget::pauseSync);
             connect(folderItemWidget, &FolderItemWidget::resumeSync, this, &DrivePreferencesWidget::resumeSync);
             connect(folderItemWidget, &FolderItemWidget::unSync, this, &DrivePreferencesWidget::onUnsyncTriggered);
