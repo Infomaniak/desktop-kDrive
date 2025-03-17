@@ -408,10 +408,6 @@ void FolderItemWidget::onOpenFolder(const QString &link) {
     emit openFolder(syncInfoClient->localPath());
 }
 
-void FolderItemWidget::onSyncTriggered() {
-    emit runSync(_syncDbId);
-}
-
 void FolderItemWidget::onPauseTriggered() {
     emit pauseSync(_syncDbId);
 }
