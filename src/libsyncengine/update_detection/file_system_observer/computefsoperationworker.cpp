@@ -126,6 +126,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     const auto dbLastModified = dbNode.lastModified(side);
     const auto dbName = dbNode.name(side);
     const auto &dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
+    const auto dbType = dbNode.type();
     const auto snapshot = _syncPal->snapshotCopy(side);
     const auto opSet = _syncPal->operationSet(side);
 
@@ -146,6 +147,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool remoteItemUnsynced = false;
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
+    const auto nodeTypeChanged =
+            nodeExistsInSnapshot && snapshot->type(nodeId) != NodeType::Unknown && snapshot->type(nodeId) != dbType;
     if (side == ReplicaSide::Remote) {
         // In case of a move inside an excluded folder, the item must be removed in this sync
         if (isInUnsyncedListParentSearchInDb(nodeId, ReplicaSide::Remote)) {
@@ -158,7 +161,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::Ok;
     }
 
-    if (!nodeExistsInSnapshot || movedIntoUnsyncedFolder) {
+    if (!nodeExistsInSnapshot || movedIntoUnsyncedFolder || nodeTypeChanged) {
         bool isInDeletedFolder = false;
         if (!checkIfPathIsInDeletedFolder(dbPath, isInDeletedFolder)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::checkIfPathIsInDeletedFolder: " << Utility::formatSyncPath(dbPath));
@@ -183,7 +186,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
         bool checkTemplate = side == ReplicaSide::Remote;
         if (side == ReplicaSide::Local) {
-            SyncPath localPath = _syncPal->localPath() / dbPath;
+            const SyncPath localPath = _syncPal->localPath() / dbPath;
 
             // Do not propagate delete if the path is too long.
             const size_t pathSize = localPath.native().size();
@@ -225,18 +228,16 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         }
 
         // Delete operation
-        FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
-                                                     dbNode.created().has_value() ? dbNode.created().value() : 0, dbLastModified,
-                                                     dbNode.size(), dbPath);
+        const auto fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
+                                                        dbNode.created().has_value() ? dbNode.created().value() : 0,
+                                                        dbLastModified, dbNode.size(), dbPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
 
-        if (dbNode.type() == NodeType::Directory) {
-            if (!addFolderToDelete(dbPath)) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
-                return ExitCode::SystemError;
-            }
+        if (dbNode.type() == NodeType::Directory && !addFolderToDelete(dbPath)) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Error in ComputeFSOperationWorker::addFolderToDelete: " << Utility::formatSyncPath(dbPath));
+            return ExitCode::SystemError;
         }
         return ExitCode::Ok;
     }
@@ -645,7 +646,7 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Sn
         }
     } else {
         if (!_testing) {
-            SyncPath absoluteFilePath = _syncPal->localPath() / path;
+            const SyncPath absoluteFilePath = _syncPal->localPath() / path;
 
             // Check that file exists
             bool exists = false;

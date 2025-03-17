@@ -132,7 +132,7 @@ ExitCode UpdateTreeWorker::searchForParentNode(const SyncPath &nodePath, std::sh
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
     auto perfMonitor = sentry::pTraces::scoped::Step3DeleteDirectory(syncDbId());
 
-    std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationType::Delete);
     for (const auto &deleteOpId: deleteOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -146,7 +146,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             continue;
         }
 
-        auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
+        const auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
         if (currentNodeIt != _updateTree->nodes().end()) {
             // Node exists
             currentNodeIt->second->insertChangeEvent(OperationType::Delete);
