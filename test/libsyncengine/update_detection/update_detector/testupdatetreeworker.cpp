@@ -667,7 +667,7 @@ void TestUpdateTreeWorker::testStep8b() {
     // Ensure we have a duplicated Dir1 node in the tree (normal case), one is tmp, the other is not
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step1MoveDirectory());
     CPPUNIT_ASSERT(_localUpdateTree->getNodeById("id41")->parentNode()->isTmp());
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeById("id1")->parentNode()->name().c_str() == Str("Dir 1"));
+    CPPUNIT_ASSERT_EQUAL(std::string("Dir 1"), SyncName2Str(_localUpdateTree->getNodeById("id41")->parentNode()->name()));
     CPPUNIT_ASSERT(_localUpdateTree->nodes().contains("id1"));
 
     // Ensure the real Node has the origin node informations and the excpected name
