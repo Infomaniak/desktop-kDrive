@@ -20,7 +20,6 @@
 #include "config.h"
 #include "version.h"
 #include "common/utility.h"
-#include "libcommon/asserts.h"
 #include "cocoainitializer.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
