@@ -19,12 +19,12 @@
 #pragma once
 
 #include "testincludes.h"
-#include "server/updater/abstractupdater.h"
+#include "server/updater/updater.h"
 
 namespace KDC {
 
-class TestAbstractUpdater final : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestAbstractUpdater);
+class TestUpdater final : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestUpdater);
         CPPUNIT_TEST(testSkipUnskipVersion);
         CPPUNIT_TEST(testIsVersionSkipped);
         CPPUNIT_TEST(testCurrentVersionedChannel);
@@ -33,6 +33,7 @@ class TestAbstractUpdater final : public CppUnit::TestFixture, public TestBase {
     public:
         void setUp() override;
         void tearDown() override { TestBase::stop(); }
+
     protected:
         void testSkipUnskipVersion();
         void testIsVersionSkipped();

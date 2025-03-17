@@ -51,7 +51,7 @@ set(server_SRCS
 )
 
 set(updater_SRCS
-        updater/abstractupdater.h updater/abstractupdater.cpp
+        updater/updater.h updater/updater.cpp
         updater/updatemanager.h updater/updatemanager.cpp
         updater/updatechecker.h updater/updatechecker.cpp
 )

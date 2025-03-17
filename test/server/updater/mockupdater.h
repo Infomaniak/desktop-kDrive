@@ -20,14 +20,14 @@
 
 #include "testincludes.h"
 #include "utility/types.h"
-#include "server/updater/abstractupdater.h"
+#include "server/updater/updater.h"
 
 namespace KDC {
 
-class MockUpdater : public AbstractUpdater {
+class MockUpdater : public Updater {
     public:
         MockUpdater(const std::shared_ptr<UpdateChecker>& customUpdateChecker = std::make_shared<UpdateChecker>()) :
-            AbstractUpdater(customUpdateChecker) {}
+            Updater(customUpdateChecker) {}
 
         void startInstaller() override {
             if (_startInstallerMock) _startInstallerMock();
@@ -37,7 +37,7 @@ class MockUpdater : public AbstractUpdater {
         }
         std::string getCurrentVersion() const override {
             if (_mockGetCurrentVersion) return _mockGetCurrentVersion();
-            return AbstractUpdater::getCurrentVersion();
+            return Updater::getCurrentVersion();
         }
 
         void setMockGetCurrentVersion(const std::function<std::string()>& mockGetCurrentVersion) {

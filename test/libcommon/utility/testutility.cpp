@@ -436,4 +436,16 @@ void TestUtility::testTruncateLongLogMessage() {
         CPPUNIT_ASSERT(QString::fromStdString(message.substr(0, 2048) + std::string(" (truncated)")) == truncatedMessage);
     }
 }
+
+void TestUtility::testGetOs() {
+#if defined(__APPLE__)
+    CPPUNIT_ASSERT_EQUAL(std::string{"macos"}, CommonUtility::getOs());
+#elif defined(_WIN32)
+    CPPUNIT_ASSERT_EQUAL(std::string{"win"}, CommonUtility::getOs());
+#else
+    CPPUNIT_ASSERT_EQUAL(std::string{"linux"}, CommonUtility::getOs());
+#endif
+}
+
+
 } // namespace KDC

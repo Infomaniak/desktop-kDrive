@@ -23,13 +23,20 @@
 #include "libcommon/utility/utility.h"
 
 #include <functional>
+#include <unordered_map>
 
 namespace KDC {
 
-class AbstractUpdater {
+class Updater {
     public:
-        AbstractUpdater();
-        virtual ~AbstractUpdater() = default;
+        virtual ~Updater() = default;
+
+        Updater(Updater &) = delete;
+        Updater(Updater &&) = delete;
+        Updater &operator=(Updater &) = delete;
+        Updater &operator=(Updater &&) = delete;
+
+        static std::shared_ptr<Updater> instance();
 
         [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel) const {
             return _updateChecker->versionInfo(channel);
@@ -49,7 +56,7 @@ class AbstractUpdater {
          * On macOS, raise the Sparkle dialog.
          * Not used on Linux since we only send a notification to the user.
          */
-        virtual void startInstaller() = 0;
+        virtual void startInstaller(){};
 
         /**
          * @brief A new version is available on the server.
@@ -57,7 +64,7 @@ class AbstractUpdater {
          * On Windows : download the installer package
          * On Linux : notify the user
          */
-        virtual void onUpdateFound() = 0;
+        virtual void onUpdateFound(){};
         virtual void setQuitCallback(const std::function<void()> & /*quitCallback*/) { /* Redefined in child class if necessary */
         }
         void setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback);
@@ -75,7 +82,10 @@ class AbstractUpdater {
         [[nodiscard]] VersionChannel currentVersionChannel() const;
 
     protected:
-        explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker);
+        Updater();
+        explicit Updater(const std::shared_ptr<UpdateChecker> &updateChecker);
+        static void registerUpdater(const std::string &osName, Updater *instance);
+
         void setState(UpdateState newState);
         inline virtual std::string getCurrentVersion() const { return CommonUtility::currentVersion(); }
 
@@ -87,6 +97,10 @@ class AbstractUpdater {
         std::shared_ptr<UpdateChecker> _updateChecker;
         UpdateState _state{UpdateState::UpToDate}; // Current state of the update process.
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
+
+        static std::shared_ptr<Updater> _instance;
+        static std::shared_ptr<Updater> lookUp(const std::string &osName);
+        static std::unordered_map<std::string, std::shared_ptr<Updater>> _updaterRegistry;
 };
 
 } // namespace KDC

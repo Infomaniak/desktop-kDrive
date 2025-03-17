@@ -124,6 +124,8 @@ struct COMMON_EXPORT CommonUtility {
         static std::string envVarValue(const std::string &name);
         static std::string envVarValue(const std::string &name, bool &isSet);
 
+        static std::string getOs();
+
         static void handleSignals(void (*sigHandler)(int));
         static SyncPath signalFilePath(AppType appType, SignalCategory signalCategory);
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;

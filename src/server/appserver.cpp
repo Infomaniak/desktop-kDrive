@@ -56,6 +56,7 @@
 #endif
 
 #include "updater/updatemanager.h"
+#include "updater/updater.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -1981,7 +1982,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString tmp;
             QDataStream paramsStream(params);
             paramsStream >> tmp;
-            AbstractUpdater::skipVersion(tmp.toStdString());
+            Updater::skipVersion(tmp.toStdString());
             break;
         }
         default: {
@@ -3739,7 +3740,7 @@ void AppServer::addError(const Error &error) {
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(error.syncDbId());
     } else if (error.exitCode() == ExitCode::UpdateRequired) {
-        UpdateManager::instance()->updater()->unskipVersion();
+        Updater::instance()->unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {

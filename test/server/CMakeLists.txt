@@ -17,7 +17,7 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 set(server_SRCS
     ${server_srcs_path}/socketapi.h ${server_srcs_path}/socketapi.cpp
     ${server_srcs_path}/socketlistener.h ${server_srcs_path}/socketlistener.cpp
-    ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
+    ${server_srcs_path}/updater/updater.h ${server_srcs_path}/updater/updater.cpp
     ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
 )
@@ -54,7 +54,7 @@ set(testserver_SRCS
 
     test.cpp
     updater/testupdatechecker.h updater/testupdatechecker.cpp
-    updater/testabstractupdater.h updater/testabstractupdater.cpp
+    updater/testupdater.h updater/testupdater.cpp
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
 )

@@ -18,19 +18,23 @@
 
 #pragma once
 
-#include "abstractupdater.h"
+#include "updater.h"
 
 namespace KDC {
 
-class WindowsUpdater final : public AbstractUpdater {
+class WindowsUpdater final : public Updater {
     public:
-        static std::shared_ptr<WindowsUpdater> instance();
+        WindowsUpdater();
+
+        WindowsUpdater(WindowsUpdater &) = delete;
+        WindowsUpdater(WindowsUpdater &&) = delete;
+        WindowsUpdater &operator=(WindowsUpdater &) = delete;
+        WindowsUpdater &operator=(WindowsUpdater &&) = delete;
+
         void onUpdateFound() override;
         void startInstaller() override;
 
     private:
-        static std::shared_ptr<WindowsUpdater> _instance;
-
         /**
          * @brief Start the synchronous download of the new version installer.
          */

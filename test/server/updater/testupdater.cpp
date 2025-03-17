@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testabstractupdater.h"
+#include "testupdater.h"
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
@@ -49,7 +49,7 @@ void unskipVersion() {
 }
 } // namespace
 
-void TestAbstractUpdater::setUp() {
+void TestUpdater::setUp() {
     TestBase::start();
     // Init parmsDb
     bool alreadyExists = false;
@@ -60,9 +60,9 @@ void TestAbstractUpdater::setUp() {
     ParametersCache::instance(true);
 }
 
-void TestAbstractUpdater::testSkipUnskipVersion() {
+void TestUpdater::testSkipUnskipVersion() {
     const std::string testStr("1.1.1.20210101");
-    AbstractUpdater::skipVersion(testStr);
+    Updater::skipVersion(testStr);
 
     CPPUNIT_ASSERT_EQUAL(testStr, ParametersCache::instance()->parameters().seenVersion());
 
@@ -79,51 +79,51 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
     CPPUNIT_ASSERT(parameters.seenVersion().empty());
 }
 
-void TestAbstractUpdater::testIsVersionSkipped() {
+void TestUpdater::testIsVersionSkipped() {
     const auto skippedVersion("3.3.3.20210101");
 
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped(skippedVersion));
 
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("4.3.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.5.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.6.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20210109"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("4.3.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.5.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.6.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.3.20210109"));
 
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("2.3.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.1.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("2.3.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.1.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.0.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.3.20200101"));
 
-    AbstractUpdater::skipVersion(skippedVersion);
+    Updater::skipVersion(skippedVersion);
 
-    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped(skippedVersion));
+    CPPUNIT_ASSERT(Updater::isVersionSkipped(skippedVersion));
 
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("4.3.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.5.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.6.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20210109"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("4.3.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.5.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.6.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.3.20210109"));
 
-    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("2.3.3.20210101"));
-    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.1.3.20210101"));
-    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
-    CPPUNIT_ASSERT(AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
+    CPPUNIT_ASSERT(Updater::isVersionSkipped("2.3.3.20210101"));
+    CPPUNIT_ASSERT(Updater::isVersionSkipped("3.1.3.20210101"));
+    CPPUNIT_ASSERT(Updater::isVersionSkipped("3.3.0.20210101"));
+    CPPUNIT_ASSERT(Updater::isVersionSkipped("3.3.3.20200101"));
 
     unskipVersion();
 
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped(skippedVersion));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped(skippedVersion));
 
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("4.3.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.5.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.6.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20210109"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("4.3.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.5.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.6.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.3.20210109"));
 
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("2.3.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.1.3.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.0.20210101"));
-    CPPUNIT_ASSERT(!AbstractUpdater::isVersionSkipped("3.3.3.20200101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("2.3.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.1.3.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.0.20210101"));
+    CPPUNIT_ASSERT(!Updater::isVersionSkipped("3.3.3.20200101"));
 }
 
-void TestAbstractUpdater::testCurrentVersionedChannel() {
+void TestUpdater::testCurrentVersionedChannel() {
     auto updateChecker = std::make_shared<MockUpdateChecker>();
     MockUpdater updater(updateChecker);
 

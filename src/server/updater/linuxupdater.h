@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "abstractupdater.h"
+#include "updater.h"
 
 namespace KDC {
 
-class LinuxUpdater final : public AbstractUpdater {
+class LinuxUpdater final : public Updater {
     public:
-        static std::shared_ptr<LinuxUpdater> instance();
+        LinuxUpdater();
+
+        LinuxUpdater(LinuxUpdater &) = delete;
+        LinuxUpdater(LinuxUpdater &&) = delete;
+        LinuxUpdater &operator=(LinuxUpdater &) = delete;
+        LinuxUpdater &operator=(LinuxUpdater &&) = delete;
+
         void onUpdateFound() override;
         void startInstaller() override { /* No automatic update on Linux for now */
         }
-
-    private:
-        static std::shared_ptr<LinuxUpdater> _instance;
 };
 
 } // namespace KDC

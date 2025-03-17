@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "abstractupdater.h"
+#include "updater.h"
 
 #include "log/log.h"
 #include "requests/parameterscache.h"
@@ -26,28 +26,51 @@
 
 namespace KDC {
 
-AbstractUpdater::AbstractUpdater() : _updateChecker(std::make_shared<UpdateChecker>()) {
+std::shared_ptr<Updater> Updater::_instance;
+std::unordered_map<std::string, std::shared_ptr<Updater>> Updater::_updaterRegistry;
+
+Updater::Updater() : _updateChecker(std::make_shared<UpdateChecker>()) {
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);
 }
 
-AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker>& updateChecker) : _updateChecker(updateChecker) {
+Updater::Updater(const std::shared_ptr<UpdateChecker>& updateChecker) : _updateChecker(updateChecker) {
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);
 }
 
-ExitCode AbstractUpdater::checkUpdateAvailable(const VersionChannel currentChannel, UniqueId* id /*= nullptr*/) {
+void Updater::registerUpdater(const std::string& osName, Updater* instance) {
+    _updaterRegistry.try_emplace(osName, std::shared_ptr<Updater>(instance));
+}
+
+std::shared_ptr<Updater> Updater::lookUp(const std::string& osName) {
+    if (auto it = _updaterRegistry.find(osName); it != _updaterRegistry.cend()) {
+        return it->second;
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<Updater> Updater::instance() {
+    if (_instance == nullptr) {
+        _instance = lookUp(CommonUtility::getOs());
+    }
+
+    return _instance;
+}
+
+ExitCode Updater::checkUpdateAvailable(const VersionChannel currentChannel, UniqueId* id /*= nullptr*/) {
     _currentChannel = currentChannel;
     setState(UpdateState::Checking);
     return _updateChecker->checkUpdateAvailability(id);
 }
 
-void AbstractUpdater::setStateChangeCallback(const std::function<void(UpdateState)>& stateChangeCallback) {
+void Updater::setStateChangeCallback(const std::function<void(UpdateState)>& stateChangeCallback) {
     LOG_INFO(Log::instance()->getLogger(), "Set state change callback");
     _stateChangeCallback = stateChangeCallback;
 }
 
-void AbstractUpdater::onAppVersionReceived() {
+void Updater::onAppVersionReceived() {
     if (!_updateChecker->isVersionReceived()) {
         setState(UpdateState::CheckError);
         LOG_WARN(Log::instance()->getLogger(), "Error while retrieving latest app version");
@@ -71,19 +94,19 @@ void AbstractUpdater::onAppVersionReceived() {
     sentry::Handler::instance()->setDistributionChannel(currentVersionChannel());
 }
 
-void AbstractUpdater::skipVersion(const std::string& skippedVersion) {
+void Updater::skipVersion(const std::string& skippedVersion) {
     ParametersCache::instance()->parameters().setSeenVersion(skippedVersion);
     ParametersCache::instance()->save();
 }
 
-void AbstractUpdater::unskipVersion() {
+void Updater::unskipVersion() {
     if (!ParametersCache::instance()->parameters().seenVersion().empty()) {
         ParametersCache::instance()->parameters().setSeenVersion("");
         ParametersCache::instance()->save();
     }
 }
 
-bool AbstractUpdater::isVersionSkipped(const std::string& version) {
+bool Updater::isVersionSkipped(const std::string& version) {
     if (version.empty()) return false;
 
     const auto seenVerison = ParametersCache::instance()->parameters().seenVersion();
@@ -96,7 +119,7 @@ bool AbstractUpdater::isVersionSkipped(const std::string& version) {
     return false;
 }
 
-VersionChannel AbstractUpdater::currentVersionChannel() const {
+VersionChannel Updater::currentVersionChannel() const {
     const std::unordered_map<VersionChannel, VersionInfo> allVersions = _updateChecker->versionsInfo();
     if (allVersions.empty()) return VersionChannel::Unknown;
     std::string currentVersion = getCurrentVersion();
@@ -125,7 +148,7 @@ VersionChannel AbstractUpdater::currentVersionChannel() const {
     return VersionChannel::Unknown;
 }
 
-void AbstractUpdater::setState(const UpdateState newState) {
+void Updater::setState(const UpdateState newState) {
     if (_state != newState) {
         LOG_INFO(Log::instance()->getLogger(), "Update state changed to: " << newState);
         _state = newState;

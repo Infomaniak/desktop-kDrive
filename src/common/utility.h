@@ -115,5 +115,4 @@ inline bool OldUtility::isBSD() {
     return false;
 #endif
 }
-
 } // namespace KDC

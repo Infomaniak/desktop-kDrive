@@ -26,14 +26,10 @@
 
 namespace KDC {
 
-std::shared_ptr<WindowsUpdater> WindowsUpdater::_instance;
+WindowsUpdater windowsUpdater;
 
-std::shared_ptr<WindowsUpdater> WindowsUpdater::instance() {
-    if (_instance == nullptr) {
-        _instance = std::make_shared<WindowsUpdater>();
-    }
-
-    return _instance;
+WindowsUpdater::WindowsUpdater() {
+    registerUpdater("win", this);
 }
 
 void WindowsUpdater::onUpdateFound() {

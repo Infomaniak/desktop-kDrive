@@ -18,14 +18,19 @@
 
 #pragma once
 
-#include "abstractupdater.h"
+#include "updater.h"
 
 namespace KDC {
 
-class SparkleUpdater final : public AbstractUpdater {
+class SparkleUpdater final : public Updater {
     public:
-        static std::shared_ptr<SparkleUpdater> instance();
         ~SparkleUpdater() override;
+        SparkleUpdater();
+
+        SparkleUpdater(SparkleUpdater &) = delete;
+        SparkleUpdater(SparkleUpdater &&) = delete;
+        SparkleUpdater &operator=(SparkleUpdater &) = delete;
+        SparkleUpdater &operator=(SparkleUpdater &&) = delete;
 
         void onUpdateFound() override;
 
@@ -35,9 +40,6 @@ class SparkleUpdater final : public AbstractUpdater {
         void unskipVersion() override;
 
     private:
-        SparkleUpdater();
-        static std::shared_ptr<SparkleUpdater> _instance;
-
         void reset(const std::string &url = "");
         bool startSparkleUpdater();
 

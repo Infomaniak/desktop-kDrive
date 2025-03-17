@@ -176,6 +176,8 @@
 // SparkleUpdater class
 namespace KDC {
 
+static SparkleUpdater sparkleUpdater;
+
 class SparkleUpdater::Private {
     public:
         SPUUpdater *updater = nil;
@@ -184,19 +186,11 @@ class SparkleUpdater::Private {
         DelegateUserDriverObject *delegateUserDriverObject = nil;
 };
 
+
 SparkleUpdater::SparkleUpdater() {
     d = new Private;
     reset();
-}
-
-std::shared_ptr<SparkleUpdater> SparkleUpdater::_instance;
-
-std::shared_ptr<SparkleUpdater> SparkleUpdater::instance() {
-    if (_instance == nullptr) {
-        _instance = std::shared_ptr<SparkleUpdater>(new SparkleUpdater());
-    }
-
-    return _instance;
+    registerUpdater("macos", this);
 }
 
 SparkleUpdater::~SparkleUpdater() {
@@ -243,7 +237,7 @@ void SparkleUpdater::startInstaller() {
 }
 
 void SparkleUpdater::unskipVersion() {
-    AbstractUpdater::unskipVersion();
+    Updater::unskipVersion();
 
     // Discard skipped version in Sparkle
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@ "SUSkippedVersion"];

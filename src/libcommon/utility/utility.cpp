@@ -965,5 +965,14 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
     return message;
 }
 
+std::string CommonUtility::getOs() {
+#if defined(__APPLE__)
+    return "macos";
+#elif defined(_WIN32)
+    return "win";
+#else
+    return "linux";
+#endif
+}
 
 } // namespace KDC

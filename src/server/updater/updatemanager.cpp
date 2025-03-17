@@ -29,17 +29,15 @@
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "requests/parameterscache.h"
+#include "updater.h"
 
 namespace KDC {
 
-std::shared_ptr<AbstractUpdater> UpdateManager::_updater;
 
 std::shared_ptr<UpdateManager> UpdateManager::_instance;
 
 UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     _currentChannel = ParametersCache::instance()->parameters().distributionChannel();
-
-    createUpdater();
 
     connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdateManager::slotTimerFired);
 
@@ -48,7 +46,7 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
 
     // Setup callback for update state change notification
     const std::function<void(UpdateState)> callback = std::bind_front(&UpdateManager::onUpdateStateChanged, this);
-    _updater->setStateChangeCallback(callback);
+    Updater::instance()->setStateChangeCallback(callback);
     connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
     // At startup, do a check in any case and setup distribution channel.
@@ -61,9 +59,21 @@ std::shared_ptr<UpdateManager> UpdateManager::instance() {
     return _instance;
 }
 
+const VersionInfo &UpdateManager::versionInfo(const VersionChannel channel) const {
+    return Updater::instance()->versionInfo(channel == VersionChannel::Unknown ? _currentChannel : channel);
+}
+
+const UpdateState &UpdateManager::state() const {
+    return Updater::instance()->state();
+}
+
+void UpdateManager::setQuitCallback(const std::function<void()> &quitCallback) const {
+    Updater::instance()->setQuitCallback(quitCallback);
+}
+
 void UpdateManager::setDistributionChannel(const VersionChannel channel) {
     _currentChannel = channel;
-    _updater->checkUpdateAvailable(channel);
+    Updater::instance()->checkUpdateAvailable(channel);
     ParametersCache::instance()->parameters().setDistributionChannel(channel);
     ParametersCache::instance()->save();
 }
@@ -72,13 +82,13 @@ void UpdateManager::startInstaller() const {
     LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
 
     // Cleanup skipped version
-    _updater->unskipVersion();
+    Updater::instance()->unskipVersion();
 
-    _updater->startInstaller();
+    Updater::instance()->startInstaller();
 }
 
 void UpdateManager::slotTimerFired() const {
-    _updater->checkUpdateAvailable(_currentChannel);
+    Updater::instance()->checkUpdateAvailable(_currentChannel);
 }
 
 void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
@@ -91,18 +101,18 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::ManualUpdateAvailable: {
-            emit updateAnnouncement(
-                    tr("New update available."),
-                    tr("Version %1 is available for download.").arg(_updater->versionInfo(_currentChannel).tag.c_str()));
+            emit updateAnnouncement(tr("New update available."),
+                                    tr("Version %1 is available for download.")
+                                            .arg(Updater::instance()->versionInfo(_currentChannel).tag.c_str()));
             break;
         }
         case UpdateState::Available: {
             // A new version has been found
-            _updater->onUpdateFound();
+            Updater::instance()->onUpdateFound();
             break;
         }
         case UpdateState::Ready: {
-            if (AbstractUpdater::isVersionSkipped(_updater->versionInfo(_currentChannel).fullVersion())) break;
+            if (Updater::isVersionSkipped(Updater::instance()->versionInfo(_currentChannel).fullVersion())) break;
                 // The new version is ready to be installed
 #if defined(_WIN32)
             emit showUpdateDialog();
@@ -117,17 +127,6 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
     }
-}
-
-void UpdateManager::createUpdater() {
-#if defined(__APPLE__)
-    _updater = SparkleUpdater::instance();
-#elif defined(_WIN32)
-    _updater = WindowsUpdater::instance();
-#else
-    // the best we can do is notify about updates
-    _updater = LinuxUpdater::instance();
-#endif
 }
 
 void UpdateManager::onUpdateStateChanged(const UpdateState newState) {

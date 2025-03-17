@@ -65,9 +65,8 @@ const VersionInfo &UpdateChecker::versionInfo(const VersionChannel choosedChanne
     // Otherwise, we need to check if there is not a newer version in other channels.
     const VersionInfo &betaVersion =
             _versionsInfo.contains(VersionChannel::Beta) ? _versionsInfo[VersionChannel::Beta] : _defaultVersionInfo;
-    const VersionInfo &internalVersion = _versionsInfo.contains(VersionChannel::Internal)
-                                                 ? _versionsInfo[VersionChannel::Internal]
-                                                 : _defaultVersionInfo;
+    const VersionInfo &internalVersion =
+            _versionsInfo.contains(VersionChannel::Internal) ? _versionsInfo[VersionChannel::Internal] : _defaultVersionInfo;
     std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
     sortedVersionList.insert(prodVersion);
     sortedVersionList.insert(betaVersion);
@@ -97,7 +96,7 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
     if (getAppVersionJobPtr->hasErrorApi(&errorCode, &errorDescr)) {
         std::stringstream ss;
         ss << errorCode.c_str() << " - " << errorDescr;
-        sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Updater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
     } else if (getAppVersionJobPtr->exitCode() != ExitCode::Ok) {
         LOG_ERROR(Log::instance()->getLogger(), "Error in UpdateChecker::versionInfoReceived : exit code: "
