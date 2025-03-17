@@ -77,7 +77,7 @@ class TestSituationGenerator {
         }
         std::shared_ptr<Node> moveNode(ReplicaSide side, const NodeId &id, const NodeId &newParentRawId) const;
         std::shared_ptr<Node> renameNode(ReplicaSide side, const NodeId &id, const SyncName &newName) const;
-        [[maybe_unused]] std::shared_ptr<Node> editNode(ReplicaSide side, const NodeId &id) const;
+        std::shared_ptr<Node> editNode(ReplicaSide side, const NodeId &id) const;
         std::shared_ptr<Node> deleteNode(ReplicaSide side, const NodeId &id) const;
 
     private:
@@ -86,6 +86,7 @@ class TestSituationGenerator {
         void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
         void addItem(NodeType itemType, const std::string &id, const std::string &parentId) const;
 
+        void insertInAllSnapshot(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
         [[nodiscard]] DbNodeId insertInDb(NodeType itemType, const NodeId &id, const NodeId &parentId) const;
         /**
          * @brief Insert a new node in the update tree.

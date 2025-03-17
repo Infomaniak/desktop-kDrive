@@ -22,7 +22,7 @@
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
-#include "test_classes/testinitialsituationgenerator.h"
+#include "test_classes/testsituationgenerator.h"
 
 namespace KDC {
 
@@ -98,7 +98,7 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
 
         std::shared_ptr<SyncPal> _syncPal;
         LocalTemporaryDirectory _localTempDir{"TestSyncPal"};
-        TestInitialSituationGenerator _situationGenerator;
+        TestSituationGenerator _situationGenerator;
 };
 
 } // namespace KDC
