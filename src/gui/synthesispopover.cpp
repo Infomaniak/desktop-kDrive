@@ -678,31 +678,38 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
 
     KDC::GuiUtility::StatusInfo statusInfo;
     if (userInfoMapIt->second.connected()) {
-        statusInfo._status = SyncStatus::Idle;
         int syncsInPropagationStep = 0;
+        int syncsProcessed = 0;
         for (const auto &sync: _gui->syncInfoMap()) {
             const auto &syncInfo = sync.second;
             if (syncInfo.driveDbId() != driveInfo.dbId()) continue;
 
             statusInfo._syncedFiles += syncInfo.currentFile();
             statusInfo._totalFiles += syncInfo.totalFiles();
-            if (statusInfo._estimatedRemainingTime < syncInfo.estimatedRemainingTime()) {
-                statusInfo._estimatedRemainingTime = syncInfo.estimatedRemainingTime();
-            }
             if (syncInfo.unresolvedConflicts()) {
                 statusInfo._unresolvedConflicts = true;
-            }
-            if (statusPriority.indexOf(statusInfo._status) > statusPriority.indexOf(syncInfo.status())) {
-                statusInfo._status = syncInfo.status();
-            }
-            if (SyncStepPriority.indexOf(statusInfo._syncStep) > SyncStepPriority.indexOf(syncInfo.step())) {
-                statusInfo._syncStep = syncInfo.step();
             }
             if (syncInfo.step() != SyncStep::Propagation2) {
                 syncsInPropagationStep++;
             }
             if (syncInfo.virtualFileMode() != VirtualFileMode::Off) {
                 statusInfo._liteSyncActivated = true;
+            }
+
+            if (syncsProcessed++ == 0) {
+                statusInfo._estimatedRemainingTime = syncInfo.estimatedRemainingTime();
+                statusInfo._status = syncInfo.status();
+                statusInfo._syncStep = syncInfo.step();
+            } else {
+                if (statusInfo._estimatedRemainingTime < syncInfo.estimatedRemainingTime()) {
+                    statusInfo._estimatedRemainingTime = syncInfo.estimatedRemainingTime();
+                }
+                if (statusPriority.indexOf(statusInfo._status) > statusPriority.indexOf(syncInfo.status())) {
+                    statusInfo._status = syncInfo.status();
+                }
+                if (SyncStepPriority.indexOf(statusInfo._syncStep) > SyncStepPriority.indexOf(syncInfo.step())) {
+                    statusInfo._syncStep = syncInfo.step();
+                }
             }
         }
 
