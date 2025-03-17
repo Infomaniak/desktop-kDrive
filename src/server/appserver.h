@@ -120,9 +120,11 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         std::unique_ptr<UpdateManager> _updateManager;
 
+        //! For testing
         std::string _testParmsDbName;
+        bool _test{false};
 
-  void parseOptions(const QStringList &);
+        void parseOptions(const QStringList &);
         bool initLogging() noexcept;
         void logUsefulInformation() const;
         bool setupProxy() noexcept;

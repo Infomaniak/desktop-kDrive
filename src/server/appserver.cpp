@@ -166,6 +166,7 @@ AppServer::AppServer(int &argc, char **argv) :
         LOG_WARN(_logger, "Error in Db::makeDbName");
         throw std::runtime_error("Unable to get ParmsDb path.");
     }
+    _test = !_testParmsDbName.empty();
 
     bool newDbExists = false;
     IoError ioError = IoError::Success;
@@ -186,7 +187,7 @@ AppServer::AppServer(int &argc, char **argv) :
     LOGW_INFO(_logger, L"Old config exists : " << Path2WStr(pre334ConfigFilePath) << L" => " << oldConfigExists);
 
     // Init ParmsDb instance
-    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString(), false, !_testParmsDbName.empty())) {
+    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString(), false, _test)) {
         LOG_WARN(_logger, "Error in ParmsDb::instance");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -363,9 +364,11 @@ AppServer::AppServer(int &argc, char **argv) :
     processInterruptedLogsUpload();
 
     // Start client
-    if (!startClient()) {
-        LOG_ERROR(_logger, "Error in startClient");
-        throw std::runtime_error("Failed to start kDrive client.");
+    if (!_test) {
+        if (!startClient()) {
+            LOG_ERROR(_logger, "Error in startClient");
+            throw std::runtime_error("Failed to start kDrive client.");
+        }
     }
 
     // Send syncs progress

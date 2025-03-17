@@ -159,7 +159,6 @@ elseif (WIN32)
         "${libcommonserver_NAME}_vfs_win")
 endif()
 
-## handle DBUS for Fdo notifications
 if( UNIX AND NOT APPLE )
     # For migrationparams
     find_package(PkgConfig REQUIRED)
