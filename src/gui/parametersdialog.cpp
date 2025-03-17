@@ -1122,7 +1122,8 @@ void ParametersDialog::onClearErrors(const int driveDbId, const bool autoResolve
     QListWidget *listWidgetToClear = nullptr;
 
     if (driveDbId == 0) {
-        LOG_IF_FAIL(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
+        LOG_IF_DB_FAIL(_errorsStackedWidget->currentIndex() ==
+                       static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
 
         errorTabWidget = dynamic_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
 

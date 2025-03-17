@@ -17,7 +17,7 @@
  */
 
 #include "testdb.h"
-#include "libcommon/utility/logiffail.h"
+#include "libcommon/utility/logifdbfail.h"
 #include "libcommonserver/log/log.h"
 
 #define CREATE_TEST_TABLE_ID "testdb1"
@@ -167,7 +167,7 @@ bool TestDb::MyTestDb::create(bool &retry) {
     std::string error;
 
     // Test
-    LOG_IF_FAIL(queryCreate(CREATE_TEST_TABLE_ID));
+    LOG_IF_DB_FAIL(queryCreate(CREATE_TEST_TABLE_ID));
     if (!queryPrepare(CREATE_TEST_TABLE_ID, CREATE_TEST_TABLE, false, errId, error)) {
         queryFree(CREATE_TEST_TABLE_ID);
         return sqlFail(CREATE_TEST_TABLE_ID, error);
@@ -187,25 +187,25 @@ bool TestDb::MyTestDb::prepare() {
     std::string error;
 
     // Test
-    LOG_IF_FAIL(queryCreate(INSERT_TEST_REQUEST_ID));
+    LOG_IF_DB_FAIL(queryCreate(INSERT_TEST_REQUEST_ID));
     if (!queryPrepare(INSERT_TEST_REQUEST_ID, INSERT_TEST_REQUEST, false, errId, error)) {
         queryFree(INSERT_TEST_REQUEST_ID);
         return sqlFail(INSERT_TEST_REQUEST_ID, error);
     }
 
-    LOG_IF_FAIL(queryCreate(UPDATE_TEST_REQUEST_ID));
+    LOG_IF_DB_FAIL(queryCreate(UPDATE_TEST_REQUEST_ID));
     if (!queryPrepare(UPDATE_TEST_REQUEST_ID, UPDATE_TEST_REQUEST, false, errId, error)) {
         queryFree(UPDATE_TEST_REQUEST_ID);
         return sqlFail(UPDATE_TEST_REQUEST_ID, error);
     }
 
-    LOG_IF_FAIL(queryCreate(DELETE_TEST_REQUEST_ID));
+    LOG_IF_DB_FAIL(queryCreate(DELETE_TEST_REQUEST_ID));
     if (!queryPrepare(DELETE_TEST_REQUEST_ID, DELETE_TEST_REQUEST, false, errId, error)) {
         queryFree(DELETE_TEST_REQUEST_ID);
         return sqlFail(DELETE_TEST_REQUEST_ID, error);
     }
 
-    LOG_IF_FAIL(queryCreate(SELECT_TEST_REQUEST_ID));
+    LOG_IF_DB_FAIL(queryCreate(SELECT_TEST_REQUEST_ID));
     if (!queryPrepare(SELECT_TEST_REQUEST_ID, SELECT_TEST_REQUEST, false, errId, error)) {
         queryFree(SELECT_TEST_REQUEST_ID);
         return sqlFail(SELECT_TEST_REQUEST_ID, error);
@@ -223,7 +223,7 @@ bool TestDb::MyTestDb::clear() {
     int errId = -1;
     std::string error;
 
-    LOG_IF_FAIL(queryCreate(DROP_TEST_TABLE_ID));
+    LOG_IF_DB_FAIL(queryCreate(DROP_TEST_TABLE_ID));
     if (!queryPrepare(DROP_TEST_TABLE_ID, DROP_TEST_TABLE, false, errId, error)) {
         queryFree(DROP_TEST_TABLE_ID);
         return sqlFail(DROP_TEST_TABLE_ID, error);
@@ -242,12 +242,12 @@ bool TestDb::MyTestDb::insertTest(const Test &test) {
     int errId = -1;
     std::string error;
 
-    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_TEST_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 1, test.id));
-    LOG_IF_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 2, test.intValue));
-    LOG_IF_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 3, test.int64Value));
-    LOG_IF_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 4, test.doubleValue));
-    LOG_IF_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 5, test.textValue));
+    LOG_IF_DB_FAIL(queryResetAndClearBindings(INSERT_TEST_REQUEST_ID));
+    LOG_IF_DB_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 1, test.id));
+    LOG_IF_DB_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 2, test.intValue));
+    LOG_IF_DB_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 3, test.int64Value));
+    LOG_IF_DB_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 4, test.doubleValue));
+    LOG_IF_DB_FAIL(queryBindValue(INSERT_TEST_REQUEST_ID, 5, test.textValue));
     if (!queryExecAndGetRowId(INSERT_TEST_REQUEST_ID, rowId, errId, error)) {
         LOG_WARN(_logger, "Error running query:" << INSERT_TEST_REQUEST_ID);
         return false;
@@ -260,12 +260,12 @@ bool TestDb::MyTestDb::updateTest(const Test &test) {
     int errId;
     std::string error;
 
-    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_TEST_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 1, test.intValue));
-    LOG_IF_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 2, test.int64Value));
-    LOG_IF_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 3, test.doubleValue));
-    LOG_IF_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 4, test.textValue));
-    LOG_IF_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 5, test.id));
+    LOG_IF_DB_FAIL(queryResetAndClearBindings(INSERT_TEST_REQUEST_ID));
+    LOG_IF_DB_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 1, test.intValue));
+    LOG_IF_DB_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 2, test.int64Value));
+    LOG_IF_DB_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 3, test.doubleValue));
+    LOG_IF_DB_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 4, test.textValue));
+    LOG_IF_DB_FAIL(queryBindValue(UPDATE_TEST_REQUEST_ID, 5, test.id));
     if (!queryExec(UPDATE_TEST_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query:" << UPDATE_TEST_REQUEST_ID);
         return false;
@@ -278,8 +278,8 @@ bool TestDb::MyTestDb::deleteTest(int64_t id) {
     int errId;
     std::string error;
 
-    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_TEST_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(DELETE_TEST_REQUEST_ID, 1, id));
+    LOG_IF_DB_FAIL(queryResetAndClearBindings(DELETE_TEST_REQUEST_ID));
+    LOG_IF_DB_FAIL(queryBindValue(DELETE_TEST_REQUEST_ID, 1, id));
     if (!queryExec(DELETE_TEST_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query:" << DELETE_TEST_REQUEST_ID);
         return false;
@@ -305,11 +305,11 @@ std::vector<TestDb::Test> TestDb::MyTestDb::selectTest() {
         int64_t value3 = -1;
         double value4 = -1.0;
         std::string value5;
-        LOG_IF_FAIL(queryInt64Value(SELECT_TEST_REQUEST_ID, 0, value1));
-        LOG_IF_FAIL(queryIntValue(SELECT_TEST_REQUEST_ID, 1, value2));
-        LOG_IF_FAIL(queryInt64Value(SELECT_TEST_REQUEST_ID, 2, value3));
-        LOG_IF_FAIL(queryDoubleValue(SELECT_TEST_REQUEST_ID, 3, value4));
-        LOG_IF_FAIL(queryStringValue(SELECT_TEST_REQUEST_ID, 4, value5));
+        LOG_IF_DB_FAIL(queryInt64Value(SELECT_TEST_REQUEST_ID, 0, value1));
+        LOG_IF_DB_FAIL(queryIntValue(SELECT_TEST_REQUEST_ID, 1, value2));
+        LOG_IF_DB_FAIL(queryInt64Value(SELECT_TEST_REQUEST_ID, 2, value3));
+        LOG_IF_DB_FAIL(queryDoubleValue(SELECT_TEST_REQUEST_ID, 3, value4));
+        LOG_IF_DB_FAIL(queryStringValue(SELECT_TEST_REQUEST_ID, 4, value5));
         Test test(value1, value2, value3, value4, value5);
         tests.push_back(test);
     }

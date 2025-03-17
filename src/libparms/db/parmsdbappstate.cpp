@@ -18,7 +18,7 @@
 
 #include "parmsdb.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommon/utility/logiffail.h"
+#include "libcommon/utility/logifdbfail.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
@@ -122,8 +122,8 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bo
         valueStr = "";
     }
 
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
-    LOG_IF_FAIL(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
+    LOG_IF_DB_FAIL(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
+    LOG_IF_DB_FAIL(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
     bool found = false;
     if (!queryNext(SELECT_APP_STATE_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
@@ -131,21 +131,21 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bo
     }
     std::string existingValue;
     if (found) {
-        LOG_IF_FAIL(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, existingValue))
+        LOG_IF_DB_FAIL(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, existingValue))
     }
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
+    LOG_IF_DB_FAIL(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
 
     if (!found || (updateOnlyIfEmpty && existingValue.empty())) {
         const auto requestId = found ? UPDATE_APP_STATE_REQUEST_ID : INSERT_APP_STATE_REQUEST_ID;
-        LOG_IF_FAIL(queryBindValue(requestId, 1, static_cast<int>(key)))
-        LOG_IF_FAIL(queryBindValue(requestId, 2, valueStr))
+        LOG_IF_DB_FAIL(queryBindValue(requestId, 1, static_cast<int>(key)))
+        LOG_IF_DB_FAIL(queryBindValue(requestId, 2, valueStr))
         int errId = 0;
         std::string error;
         if (!queryExec(requestId, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << requestId);
             return false;
         }
-        LOG_IF_FAIL(queryResetAndClearBindings(requestId))
+        LOG_IF_DB_FAIL(queryResetAndClearBindings(requestId))
     }
     return true;
 }
@@ -155,8 +155,8 @@ bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found)
     found = false;
     std::string valueStr;
 
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
-    LOG_IF_FAIL(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
+    LOG_IF_DB_FAIL(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
+    LOG_IF_DB_FAIL(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
     if (!queryNext(SELECT_APP_STATE_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
@@ -168,8 +168,8 @@ bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found)
         LOG_WARN(_logger, "AppStateKey not found: " << key);
         return true;
     }
-    LOG_IF_FAIL(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, valueStr))
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
+    LOG_IF_DB_FAIL(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, valueStr))
+    LOG_IF_DB_FAIL(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
 
     if (!CommonUtility::stringToAppStateValue(valueStr, value)) {
         LOG_WARN(_logger, "Unable to convert value from string in selectAppState");
@@ -203,14 +203,14 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
     const std::scoped_lock lock(_mutex);
     if (found) {
         std::string error;
-        LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID))
-        LOG_IF_FAIL(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
-        LOG_IF_FAIL(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, valueStr))
+        LOG_IF_DB_FAIL(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID))
+        LOG_IF_DB_FAIL(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
+        LOG_IF_DB_FAIL(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, valueStr))
         if (!queryExec(UPDATE_APP_STATE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << UPDATE_APP_STATE_REQUEST_ID);
             return false;
         }
-        LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID))
+        LOG_IF_DB_FAIL(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID))
     }
     return true;
 };

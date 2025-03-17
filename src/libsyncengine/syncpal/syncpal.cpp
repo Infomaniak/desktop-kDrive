@@ -20,7 +20,7 @@
 #include "comm.h"
 #include "syncpal/virtualfilescleaner.h"
 #include "syncpalworker.h"
-#include "libcommon/utility/logiffail.h"
+#include "libcommon/utility/logifdbfail.h"
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
@@ -180,8 +180,8 @@ SyncPal::~SyncPal() {
 ExitCode SyncPal::setTargetNodeId(const std::string &targetNodeId) {
     bool found = false;
 
-    LOG_IF_FAIL(_remoteSnapshot)
-    LOG_IF_FAIL(_remoteUpdateTree)
+    LOG_IF_DB_FAIL(_remoteSnapshot)
+    LOG_IF_DB_FAIL(_remoteUpdateTree)
 
     if (!_syncDb->setTargetNodeId(targetNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setTargetNodeId");
@@ -210,8 +210,8 @@ SyncStatus SyncPal::status() const {
         // Has started
         if (_syncPalWorker->isRunning()) {
             // Still running
-            LOG_IF_FAIL(_localSnapshot)
-            LOG_IF_FAIL(_remoteSnapshot)
+            LOG_IF_DB_FAIL(_localSnapshot)
+            LOG_IF_DB_FAIL(_remoteSnapshot)
 
             if (_syncPalWorker->isPaused()) {
                 // Auto paused after a NON fatal error
@@ -434,17 +434,17 @@ void SyncPal::freeSharedObjects() {
     _progressInfo.reset();
 
     // Check that there is no memory leak
-    LOG_IF_FAIL(_localSnapshot.use_count() == 0);
-    LOG_IF_FAIL(_remoteSnapshot.use_count() == 0);
-    LOG_IF_FAIL(_localSnapshotCopy.use_count() == 0);
-    LOG_IF_FAIL(_remoteSnapshotCopy.use_count() == 0);
-    LOG_IF_FAIL(_localOperationSet.use_count() == 0);
-    LOG_IF_FAIL(_remoteOperationSet.use_count() == 0);
-    LOG_IF_FAIL(_localUpdateTree.use_count() == 0);
-    LOG_IF_FAIL(_remoteUpdateTree.use_count() == 0);
-    LOG_IF_FAIL(_conflictQueue.use_count() == 0);
-    LOG_IF_FAIL(_syncOps.use_count() == 0);
-    LOG_IF_FAIL(_progressInfo.use_count() == 0);
+    LOG_IF_DB_FAIL(_localSnapshot.use_count() == 0);
+    LOG_IF_DB_FAIL(_remoteSnapshot.use_count() == 0);
+    LOG_IF_DB_FAIL(_localSnapshotCopy.use_count() == 0);
+    LOG_IF_DB_FAIL(_remoteSnapshotCopy.use_count() == 0);
+    LOG_IF_DB_FAIL(_localOperationSet.use_count() == 0);
+    LOG_IF_DB_FAIL(_remoteOperationSet.use_count() == 0);
+    LOG_IF_DB_FAIL(_localUpdateTree.use_count() == 0);
+    LOG_IF_DB_FAIL(_remoteUpdateTree.use_count() == 0);
+    LOG_IF_DB_FAIL(_conflictQueue.use_count() == 0);
+    LOG_IF_DB_FAIL(_syncOps.use_count() == 0);
+    LOG_IF_DB_FAIL(_progressInfo.use_count() == 0);
 }
 
 void SyncPal::initSharedObjects() {
@@ -652,8 +652,8 @@ bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
 }
 
 bool SyncPal::isSnapshotValid(ReplicaSide side) {
-    LOG_IF_FAIL(_localSnapshot)
-    LOG_IF_FAIL(_remoteSnapshot)
+    LOG_IF_DB_FAIL(_localSnapshot)
+    LOG_IF_DB_FAIL(_remoteSnapshot)
 
     return side == ReplicaSide::Local ? _localSnapshot->isValid() : _remoteSnapshot->isValid();
 }
@@ -1394,8 +1394,8 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
 }
 
 void SyncPal::copySnapshots() {
-    LOG_IF_FAIL(_localSnapshot)
-    LOG_IF_FAIL(_remoteSnapshot)
+    LOG_IF_DB_FAIL(_localSnapshot)
+    LOG_IF_DB_FAIL(_remoteSnapshot)
 
     *_localSnapshotCopy = *_localSnapshot;
     *_remoteSnapshotCopy = *_remoteSnapshot;

@@ -17,7 +17,7 @@
  */
 
 #include "oldsyncdb.h"
-#include "libcommon/utility/logiffail.h"
+#include "libcommon/utility/logifdbfail.h"
 #include "libcommonserver/log/log.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
@@ -51,7 +51,7 @@ bool OldSyncDb::upgrade(const std::string &, const std::string &) {
 bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, SyncNodeType>> &selectiveSyncList) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
+    LOG_IF_DB_FAIL(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
     bool found = false;
     for (;;) {
         if (!queryNext(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, found)) {
@@ -63,13 +63,13 @@ bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, SyncNode
         }
 
         std::string path;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, 0, path));
+        LOG_IF_DB_FAIL(queryStringValue(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, 0, path));
         int type = -1;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, 1, type));
+        LOG_IF_DB_FAIL(queryIntValue(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, 1, type));
 
         selectiveSyncList.push_back(std::make_pair(path, fromInt<SyncNodeType>(type)));
     }
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
+    LOG_IF_DB_FAIL(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
 
     return true;
 }

@@ -19,7 +19,7 @@
 #include "socketapi.h"
 #include "config.h"
 #include "version.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/logiffail.h"
 #include "common/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -91,7 +91,8 @@ struct ListenerHasSocketPred {
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
                      const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+    QObject(parent),
+    _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
