@@ -27,6 +27,7 @@
 #include <sstream>
 
 #include <asserts.h>
+#include <random>
 
 namespace KDC::sentry {
 
@@ -329,9 +330,9 @@ void Handler::setTag(const std::string &key, const std::string &value) {
 
 sentry_value_t Handler::toSentryValue(const SentryUser &user) const {
     sentry_value_t userValue = sentry_value_new_object();
-    sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.email().data()));
-    sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.username().data()));
-    sentry_value_set_by_key(userValue, "id", sentry_value_new_string(user.userId().data()));
+    (void) sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.email().data()));
+    (void) sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.username().data()));
+    (void) sentry_value_set_by_key(userValue, "id", sentry_value_new_string(user.userId().data()));
     return userValue;
 }
 
@@ -409,16 +410,16 @@ void Handler::updateEffectiveSentryUser(const SentryUser &user) {
     sentry_value_t userValue;
     if (_globalConfidentialityLevel == sentry::ConfidentialityLevel::Anonymous) {
         userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
-        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("0.0.0.0"));
-        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
+        (void) sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("0.0.0.0"));
+        (void) sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
     } else if (!user.isDefault()) {
         userValue = toSentryValue(user);
-        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
-        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
+        (void) sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
+        (void) sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
     } else if (_globalConfidentialityLevel == sentry::ConfidentialityLevel::Authenticated) {
         userValue = toSentryValue(_authenticatedUser);
-        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
-        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
+        (void) sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
+        (void) sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
     } else {
         assert(false && "Invalid _globalConfidentialityLevel");
         sentry_remove_user();
@@ -546,7 +547,7 @@ pTraceId Handler::startTransaction(const std::string &name, const std::string &d
     sentry_transaction_context_t *tx_ctx = sentry_transaction_context_new(name.c_str(), description.c_str());
     sentry_transaction_t *tx = sentry_transaction_start(tx_ctx, sentry_value_new_null());
     pTraceId traceId = makeUniquePTraceId();
-    auto [it, res] = _pTraces.try_emplace(traceId, traceId);
+    const auto [it, res] = _pTraces.try_emplace(traceId, traceId);
     if (!res) {
         assert(false && "Transaction already exists");
         return 0;
@@ -559,7 +560,7 @@ pTraceId Handler::startTransaction(const std::string &name, const std::string &d
 }
 
 pTraceId Handler::startSpan(const std::string &name, const std::string &description, const pTraceId &parentId) {
-    auto parentIt = _pTraces.find(parentId);
+    const auto parentIt = _pTraces.find(parentId);
     if (parentIt == _pTraces.end()) {
         assert(false && "Parent transaction/span does not exist");
         return 0;
@@ -596,12 +597,20 @@ pTraceId Handler::startSpan(const std::string &name, const std::string &descript
     return traceId;
 }
 
+bool Handler::checkCustomSampleRate(const PTraceDescriptor &pTraceInfo) const {
+    if (pTraceInfo.customSampleRate() >= 1.0) return true;
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_real_distribution dis(0.0, 1.0);
+    return dis(gen) < pTraceInfo.customSampleRate();
+}
+
 pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) {
-    if (!_isSentryActivated || pTraceInfo._pTraceName == PTraceName::None) return 0;
+    if (!_isSentryActivated || pTraceInfo.pTraceName() == PTraceName::None) return 0;
 
     std::scoped_lock lock(_mutex);
     pTraceId newPTraceId = 0;
-    if (pTraceInfo._parentPTraceName != PTraceName::None) {
+    if (pTraceInfo.parentPTraceName() != PTraceName::None) {
         // Fetch the pTraceMap associated with the provided syncDbId
         auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
         if (pTraceMapIt == _pTraceNameToPTraceIdMap.end()) {
@@ -611,27 +620,33 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
         auto &pTraceMap = pTraceMapIt->second;
 
         // Find the parent pTrace
-        auto parentPTraceIt = pTraceMap.find(pTraceInfo._parentPTraceName);
-        if (parentPTraceIt == pTraceMap.end() || parentPTraceIt->second == 0) {
+        auto parentPTraceIt = pTraceMap.find(pTraceInfo.parentPTraceName());
+        if (parentPTraceIt == pTraceMap.end()) {
             assert(false && "Parent transaction/span is not running.");
             return 0;
         }
 
-        const pTraceId &parentId = parentPTraceIt->second;
-
         // Start the span
-        newPTraceId = startSpan(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription, parentId);
-        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] = newPTraceId;
+        if (const pTraceId &parentId = parentPTraceIt->second; parentId != 0 && checkCustomSampleRate(pTraceInfo)) {
+            newPTraceId = startSpan(pTraceInfo.pTraceTitle(), pTraceInfo.pTraceDescription(), parentId);
+        } else {
+            newPTraceId = 0;
+        }
+        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo.pTraceName()] = newPTraceId;
     } else {
         // Start the transaction
-        newPTraceId = startTransaction(pTraceInfo._pTraceTitle, pTraceInfo._pTraceDescription);
-        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo._pTraceName] = newPTraceId;
+        if (checkCustomSampleRate(pTraceInfo)) {
+            newPTraceId = startTransaction(pTraceInfo.pTraceTitle(), pTraceInfo.pTraceDescription());
+        } else {
+            newPTraceId = 0;
+        }
+        _pTraceNameToPTraceIdMap[syncDbId][pTraceInfo.pTraceName()] = newPTraceId;
     }
     return newPTraceId;
 }
 
 void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTraceStatus status) {
-    if (!_isSentryActivated || pTraceInfo._pTraceName == PTraceName::None) return;
+    if (!_isSentryActivated || pTraceInfo.pTraceName() == PTraceName::None) return;
 
     std::scoped_lock lock(_mutex);
     auto pTraceMapIt = _pTraceNameToPTraceIdMap.find(syncDbId);
@@ -641,14 +656,14 @@ void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTrac
     }
     auto &pTraceMap = pTraceMapIt->second;
 
-    auto pTraceIt = pTraceMap.find(pTraceInfo._pTraceName);
-    if (pTraceIt == pTraceMap.end() || pTraceIt->second == 0) {
+    auto pTraceIt = pTraceMap.find(pTraceInfo.pTraceName());
+    if (pTraceIt == pTraceMap.end()) {
         assert(false && "Transaction is not running");
         return;
     }
 
     stopPTrace(pTraceIt->second, status);
-    pTraceIt->second = 0;
+    pTraceMap.erase(pTraceIt);
 }
 
 } // namespace KDC::sentry
