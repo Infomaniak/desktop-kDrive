@@ -178,10 +178,14 @@ std::string toString(const ExitCause e) {
             return "NotEnoughtMemory";
         case ExitCause::FileTooBig:
             return "FileTooBig";
+        case ExitCause::MoveToTrashFailed:
+            return "MoveToTrashFailed";
         case ExitCause::InvalidName:
             return "InvalidName";
         case ExitCause::LiteSyncNotAllowed:
             return "LiteSyncNotAllowed";
+        case ExitCause::NotPlaceHolder:
+            return "NotPlaceHolder";
         case ExitCause::NetworkTimeout:
             return "NetworkTimeout";
         case ExitCause::SocketsDefuncted:
@@ -196,6 +200,8 @@ std::string toString(const ExitCause e) {
             return "OperationCanceled";
         case ExitCause::ShareLinkAlreadyExists:
             return "ShareLinkAlreadyExists";
+        case ExitCause::InvalidArgument:
+            return "InvalidArgument";
         default:
             return noConversionStr;
     }
