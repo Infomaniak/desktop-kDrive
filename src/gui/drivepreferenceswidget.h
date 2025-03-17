@@ -58,7 +58,6 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void removeDrive(int driveDbId);
         void newBigFolderDiscovered(int syncDbId, const QString &path);
         void undecidedListsCleared();
-        void runSync(int syncDbId);
         void pauseSync(int syncDbId);
         void resumeSync(int syncDbId);
 

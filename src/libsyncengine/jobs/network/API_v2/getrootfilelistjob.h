@@ -25,15 +25,14 @@ namespace KDC {
 class GetRootFileListJob : public AbstractTokenNetworkJob {
     public:
         GetRootFileListJob(int userDbId, int driveId, uint64_t page = 1, bool dirOnly = false);
-        GetRootFileListJob(int driveDbId, uint64_t page = 1, bool dirOnly = false);
-        virtual ~GetRootFileListJob();
+        explicit GetRootFileListJob(int driveDbId, uint64_t page = 1, bool dirOnly = false);
 
-        inline void setWithPath(bool val) { _withPath = val; }
+        void setWithPath(const bool val) { _withPath = val; }
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
+        ExitInfo setData() override { return ExitCode::Ok; }
 
         uint64_t _page;
         bool _dirOnly;

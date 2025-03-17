@@ -127,7 +127,6 @@ class ParametersDialog : public CustomDialog {
         void retranslateUi();
         void onPauseSync(int syncDbId = 0);
         void onResumeSync(int syncDbId = 0);
-        void onRunSync(int syncDbId = 0);
         void onClearErrors(int syncDbId, bool autoResolved);
 };
 
