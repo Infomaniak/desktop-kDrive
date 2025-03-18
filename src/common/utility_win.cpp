@@ -17,7 +17,7 @@
  */
 
 #include "common/utility.h"
-#include "libcommon/utility/logiffail.h.h"
+#include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/types.h"
 
 #include <shlobj.h>
