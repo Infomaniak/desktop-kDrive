@@ -441,9 +441,9 @@ SyncStep SyncPalWorker::nextStep() const {
             const bool areFSOWorkersRunning =
                     _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning();
             const bool areFSOWorkersInitializing =
-                    _syncPal->_localFSObserverWorker->initializing() && _syncPal->_remoteFSObserverWorker->initializing();
+                    _syncPal->_localFSObserverWorker->initializing() || _syncPal->_remoteFSObserverWorker->initializing();
             const bool areFSOWorkersUpdating =
-                    _syncPal->_localFSObserverWorker->updating() && _syncPal->_remoteFSObserverWorker->updating();
+                    _syncPal->_localFSObserverWorker->updating() || _syncPal->_remoteFSObserverWorker->updating();
             const bool areSnapshotsUpdated =
                     _syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated();
 

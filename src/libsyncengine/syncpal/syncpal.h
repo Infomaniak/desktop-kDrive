@@ -233,6 +233,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
+        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
@@ -300,7 +301,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
-        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
         const std::shared_ptr<const Snapshot> snapshotCopy(ReplicaSide side) { return snapshot(side, true); }
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
 

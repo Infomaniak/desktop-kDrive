@@ -280,7 +280,8 @@ QString GuiUtility::getSyncStatusIconPath(StatusInfo &statusInfo) {
     } else {
         switch (statusInfo._status) {
             case KDC::SyncStatus::Undefined:
-                path = QString(":/client/resources/icons/statuts/warning.svg");
+                // Drive with no configured sync
+                path = QString("");
                 break;
             case KDC::SyncStatus::Starting:
             case KDC::SyncStatus::Running:

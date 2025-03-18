@@ -1016,17 +1016,17 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
             }
         }
 
-        if (ExitInfo exitInfo = propagateMoveToDbAndTree(syncOp); !exitInfo) {
+        if (const auto exitInfo = propagateMoveToDbAndTree(syncOp); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
-    } else {
-        if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << SyncName2WStr(syncOp->affectedNode()->name())
-                                                                            << L" " << exitInfo);
-            return exitInfo;
-        }
+    }
+
+    if (const auto exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << Utility::formatSyncName(syncOp->affectedNode()->name())
+                                                                        << L" " << exitInfo);
+        return exitInfo;
     }
     return ExitCode::Ok;
 }
@@ -1498,6 +1498,7 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
             LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitCode() << L" " << job->exitCause() << L" on "
                                                                 << syncOp->type() << L" operation for "
                                                                 << Utility::formatSyncPath(syncOp->affectedNode()->getPath()));
+            bypassProgressComplete = true;
             return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
     } else {
@@ -2347,10 +2348,7 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, const Exit
     }
 
     SyncPath relativeLocalPath;
-    SyncPath relativeRemotePath;
     if (syncOp->targetSide() == ReplicaSide::Local) {
-        relativeRemotePath = syncOp->affectedNode()->getPath();
-
         if (syncOp->type() == OperationType::Create) {
             relativeLocalPath = syncOp->localCreationTargetPath();
         } else {

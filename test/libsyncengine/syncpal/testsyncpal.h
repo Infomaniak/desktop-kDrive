@@ -32,6 +32,7 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testOperationSet);
         CPPUNIT_TEST(testSyncFileItem);
         CPPUNIT_TEST(testCheckIfExistsOnServer);
+        CPPUNIT_TEST(testBlacklist);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -53,6 +54,7 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         void testCopySnapshots();
         void testSyncFileItem();
         void testCheckIfExistsOnServer();
+        void testBlacklist();
 
         void testAll();
         void testConflictQueue();

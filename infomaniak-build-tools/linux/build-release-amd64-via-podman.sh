@@ -46,10 +46,7 @@ podman machine stop build_kdrive
 
 VERSION=$(grep "KDRIVE_VERSION_FULL" "$BUILDDIR/client/version.h" | awk '{print $3}')
 
-SUFFIX="master"
-
-echo $SUFFIX
-mv "${INSTALLDIR}/kDrive-${SUFFIX}-x86_64.AppImage" $INSTALLDIR/kDrive-$VERSION-amd64.AppImage
+mv "${INSTALLDIR}/kDrive-x86_64.AppImage" $INSTALLDIR/kDrive-$VERSION-amd64.AppImage
 
 rm -Rf "${BUILDDIR}-amd64"
 mv "${BUILDDIR}" "${BUILDDIR}-amd64"

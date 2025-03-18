@@ -62,7 +62,7 @@ void LocalFileSystemObserverWorker::stop() {
 }
 
 void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
-    const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
+    const std::lock_guard lock(_recursiveMutex);
 
     // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
     // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it will
@@ -73,7 +73,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         return;
     }
 
-    for (const auto &changedItem: changes) {
+    for (const auto &[path, opTypeFromOS]: changes) {
         if (stopAsked()) {
             _pendingFileEvents.clear();
             break;
@@ -83,11 +83,11 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
-        OperationType opTypeFromOS = changedItem.second;
-        const SyncPath absolutePath = changedItem.first.native();
+        const SyncPath absolutePath = path.native();
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
+        _syncPal->removeItemFromTmpBlacklist(relativePath);
 
-        IoError ioError = IoError::Success;
+        auto ioError = IoError::Success;
         bool exists = true;
 
         if (opTypeFromOS == OperationType::Delete) {
@@ -129,7 +129,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         NodeId nodeId;
-        NodeType nodeType = NodeType::Unknown;
+        auto nodeType = NodeType::Unknown;
         bool isLink = false;
         if (exists) {
             nodeId = std::to_string(fileStat.inode);
@@ -220,7 +220,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
         }
 
-        if (opTypeFromOS == OperationType::Edit) {
+        if (opTypeFromOS == OperationType::Edit || opTypeFromOS == OperationType::Rights) {
             // Filter out hydration/dehydration
             bool changed = false;
             const bool success = IoHelper::checkIfFileChanged(absolutePath, _snapshot->size(nodeId),
@@ -566,7 +566,7 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
 
 ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected) {
     // Check if root dir exists
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
 
     ItemType itemType;
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
@@ -627,11 +627,10 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 return ExitCode::Ok;
             }
 
-            const SyncPath absolutePath = entry.path();
-            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
+            const auto &absolutePath = entry.path();
+            const auto relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
 
             bool toExclude = false;
-            bool denyFullControl = false;
             bool isLink = false;
 
             // Check if the directory entry is managed
@@ -665,7 +664,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 // Check template exclusion
                 bool isWarning = false;
                 bool isExcluded = false;
-                IoError ioError = IoError::Success;
                 const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
                                                                                            isWarning, isExcluded, ioError);
                 if (!success) {
@@ -684,7 +682,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             FileStat fileStat;
             NodeId nodeId;
             if (!toExclude) {
-                IoError ioError = IoError::Success;
                 if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
                     LOGW_SYNCPAL_DEBUG(_logger,
                                        L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError));
@@ -707,10 +704,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             }
 
             if (toExclude) {
-                if (!denyFullControl) {
-                    _syncPal->vfs()->exclude(absolutePath);
-                }
-
                 dirIt.disableRecursionPending();
                 continue;
             }
@@ -721,7 +714,6 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
             } else {
                 FileStat parentFileStat;
-                IoError ioError = IoError::Success;
                 if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, ioError)) {
                     LOGW_WARN(_logger,
                               L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath.parent_path(), ioError));

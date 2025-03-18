@@ -118,8 +118,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
 
-        std::unique_ptr<UpdateManager> _updateManager;
-
         void parseOptions(const QStringList &);
         bool initLogging() noexcept;
         void logUsefulInformation() const;
