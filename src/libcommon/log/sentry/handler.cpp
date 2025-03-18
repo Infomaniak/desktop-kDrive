@@ -20,7 +20,6 @@
 #include "config.h"
 #include "version.h"
 #include "utility/utility.h"
-#include "utility/logiffail.h"
 
 #include <algorithm>
 #include <iostream>
@@ -279,7 +278,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     // Init sentry
     int res = sentry_init(options);
     std::cerr << "sentry_init returned " << res << std::endl;
-    LOG_IF_FAIL(res == 0);
+    assert(res == 0);
     _instance->_isSentryActivated = true;
     _instance->setDistributionChannel(VersionChannel::Unknown);
 }

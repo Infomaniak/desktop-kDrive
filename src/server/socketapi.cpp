@@ -221,7 +221,7 @@ void SocketApi::onLostConnection() {
     sender()->deleteLater();
 
     auto socket = qobject_cast<QIODevice *>(sender());
-    LOG_IF_FAIL(socket);
+    LOG_IF_FAIL(Log::instance()->getLogger(), socket)
     _listeners.erase(std::remove_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(socket)), _listeners.end());
 }
 
@@ -232,7 +232,7 @@ void SocketApi::slotSocketDestroyed(QObject *obj) {
 
 void SocketApi::slotReadSocket() {
     auto *socket = qobject_cast<QIODevice *>(sender());
-    LOG_IF_FAIL(socket);
+    LOG_IF_FAIL(Log::instance()->getLogger(), socket)
 
     // Find the SocketListener
     //
@@ -1076,7 +1076,7 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
 
     // File availability actions
     if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->socketApiPinStateActionsShown()) {
-        ENFORCE(!files.isEmpty());
+        LOG_IF_FAIL(Log::instance()->getLogger(), !files.isEmpty());
 
         bool canHydrate = true;
         bool canDehydrate = true;

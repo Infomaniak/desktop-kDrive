@@ -32,7 +32,7 @@
 #include "guiutility.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
-#include "libcommon/utility/logiffail.h"
+#include "libcommon/utility/qlogiffail.h"
 #include "languagechangefilter.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
@@ -1174,7 +1174,7 @@ void DrivePreferencesWidget::onNeedToSave(bool isFolderItemBlackListed) {
 void DrivePreferencesWidget::onCancelUpdate(int syncDbId) {
     FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *) sender()->parent());
     if (treeItemWidget) {
-        LOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
+        QLOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
         treeItemWidget->loadSubFolders();
 
         // Hide update widget
@@ -1189,7 +1189,7 @@ void DrivePreferencesWidget::onCancelUpdate(int syncDbId) {
 void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
     FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *) sender()->parent());
     if (treeItemWidget) {
-        LOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
+        QLOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
         _displayBigFoldersWarningWidget->setVisible(false);
 
         QSet<QString> oldUndecidedSet;

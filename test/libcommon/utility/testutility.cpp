@@ -19,6 +19,7 @@
 #include "config.h"
 #include "testutility.h"
 #include "test_utility/testhelpers.h"
+#include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
@@ -435,5 +436,17 @@ void TestUtility::testTruncateLongLogMessage() {
         const QString truncatedMessage = CommonUtility::truncateLongLogMessage(QString::fromStdString(message));
         CPPUNIT_ASSERT(QString::fromStdString(message.substr(0, 2048) + std::string(" (truncated)")) == truncatedMessage);
     }
+}
+
+void TestUtility::testLogIfFail() {
+    // Logs nothing. Don't abort execution.
+    LOG_IF_FAIL(Log::instance()->getLogger(), true)
+    LOG_MSG_IF_FAIL(Log::instance()->getLogger(), true, "Surprisingly incorrect!")
+
+#ifdef NDEBUG
+    // Log failure messages but do not abort execution.
+    LOG_IF_FAIL(Log::instance()->getLogger(), false)
+    LOG_MSG_IF_FAIL(Log::instance()->getLogger(), false, "Check your logs, something went wrong.")
+#endif
 }
 } // namespace KDC

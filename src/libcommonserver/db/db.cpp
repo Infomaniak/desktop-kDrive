@@ -18,7 +18,7 @@
 
 #include "db.h"
 #include "utility/utility.h"
-#include "utility/logifdbfail.h"
+#include "utility/logiffail.h"
 #include "log/log.h"
 #include "db/sqlitedb.h"
 
@@ -249,20 +249,20 @@ bool Db::queryBindValue(const std::string &id, int index, const dbtype &value) {
 
 bool Db::queryExec(const std::string &id, int &errId, std::string &error) {
     bool ret = _sqliteDb->queryExec(id, errId, error);
-    LOG_IF_DB_FAIL(_sqliteDb->queryResetAndClearBindings(id));
+    LOG_IF_FAIL(_sqliteDb->queryResetAndClearBindings(id));
     return ret;
 }
 
 bool Db::queryExecAndGetRowId(const std::string &id, int64_t &rowId, int &errId, std::string &error) {
     bool ret = _sqliteDb->queryExecAndGetRowId(id, rowId, errId, error);
-    LOG_IF_DB_FAIL(_sqliteDb->queryResetAndClearBindings(id));
+    LOG_IF_FAIL(_sqliteDb->queryResetAndClearBindings(id));
     return ret;
 }
 
 bool Db::queryNext(const std::string &id, bool &hasData) {
     bool ret = _sqliteDb->queryNext(id, hasData);
     if (!ret || !hasData) {
-        LOG_IF_DB_FAIL(_sqliteDb->queryResetAndClearBindings(id));
+        LOG_IF_FAIL(_sqliteDb->queryResetAndClearBindings(id));
     }
     return ret;
 }
@@ -444,7 +444,7 @@ bool Db::sqlFail(const std::string &log, const std::string &error) {
     commitTransaction();
     LOG_WARN(_logger, "SQL Error - " << log.c_str() << " - " << error.c_str());
     _sqliteDb->close();
-    LOG_IF_DB_FAIL(false);
+    LOG_IF_FAIL(false);
     return false;
 }
 
@@ -504,7 +504,7 @@ bool Db::checkConnect(const std::string &version) {
         return false;
     }
     std::string result;
-    LOG_IF_DB_FAIL(queryStringValue(SELECT_SQLITE_VERSION_ID, 0, result));
+    LOG_IF_FAIL(queryStringValue(SELECT_SQLITE_VERSION_ID, 0, result));
     queryFree(SELECT_SQLITE_VERSION_ID);
     LOG_DEBUG(_logger, "sqlite3 version=" << result.c_str());
 
@@ -515,7 +515,7 @@ bool Db::checkConnect(const std::string &version) {
         queryFree(PRAGMA_LOCKING_MODE_ID);
         return false;
     }
-    LOG_IF_DB_FAIL(queryStringValue(PRAGMA_LOCKING_MODE_ID, 0, result));
+    LOG_IF_FAIL(queryStringValue(PRAGMA_LOCKING_MODE_ID, 0, result));
     queryFree(PRAGMA_LOCKING_MODE_ID);
     LOG_DEBUG(_logger, "sqlite3 locking_mode=" << result.c_str());
 
@@ -527,7 +527,7 @@ bool Db::checkConnect(const std::string &version) {
         queryFree(PRAGMA_JOURNAL_MODE_ID);
         return false;
     }
-    LOG_IF_DB_FAIL(queryStringValue(PRAGMA_JOURNAL_MODE_ID, 0, result));
+    LOG_IF_FAIL(queryStringValue(PRAGMA_JOURNAL_MODE_ID, 0, result));
     queryFree(PRAGMA_JOURNAL_MODE_ID);
     LOG_DEBUG(_logger, "sqlite3 journal_mode=" << result.c_str());
 
@@ -613,8 +613,8 @@ bool Db::tableExists(const std::string &tableName, bool &exist) {
     const std::scoped_lock lock(_mutex);
 
     static const std::string id = CHECK_TABLE_EXISTENCE_REQUEST_ID;
-    LOG_IF_DB_FAIL(queryResetAndClearBindings(id));
-    LOG_IF_DB_FAIL(queryBindValue(id, 1, tableName));
+    LOG_IF_FAIL(queryResetAndClearBindings(id));
+    LOG_IF_FAIL(queryBindValue(id, 1, tableName));
     if (!queryNext(id, exist)) {
         LOG_WARN(_logger, "Error getting query result: " << id.c_str());
         return false;
@@ -629,9 +629,9 @@ bool Db::columnExists(const std::string &tableName, const std::string &columnNam
     const std::scoped_lock lock(_mutex);
 
     static const std::string id = CHECK_COLUMN_EXISTENCE_REQUEST_ID;
-    LOG_IF_DB_FAIL(queryResetAndClearBindings(id));
-    LOG_IF_DB_FAIL(queryBindValue(id, 1, tableName));
-    LOG_IF_DB_FAIL(queryBindValue(id, 2, columnName));
+    LOG_IF_FAIL(queryResetAndClearBindings(id));
+    LOG_IF_FAIL(queryBindValue(id, 1, tableName));
+    LOG_IF_FAIL(queryBindValue(id, 2, columnName));
 
     bool found = false;
     if (!queryNext(id, found)) {
@@ -641,8 +641,8 @@ bool Db::columnExists(const std::string &tableName, const std::string &columnNam
     if (!found) return false;
 
     int count = 0;
-    LOG_IF_DB_FAIL(queryIntValue(id, 0, count));
-    LOG_IF_DB_FAIL(queryResetAndClearBindings(id));
+    LOG_IF_FAIL(queryIntValue(id, 0, count));
+    LOG_IF_FAIL(queryResetAndClearBindings(id));
 
     exist = count != 0;
     return true;
@@ -659,8 +659,8 @@ bool Db::insertVersion(const std::string &version) {
     int errId;
     std::string error;
 
-    LOG_IF_DB_FAIL(queryResetAndClearBindings(INSERT_VERSION_REQUEST_ID));
-    LOG_IF_DB_FAIL(queryBindValue(INSERT_VERSION_REQUEST_ID, 1, version));
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_VERSION_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_VERSION_REQUEST_ID, 1, version));
     if (!queryExec(INSERT_VERSION_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_VERSION_REQUEST_ID);
         return false;
@@ -675,8 +675,8 @@ bool Db::updateVersion(const std::string &version, bool &found) {
     int errId;
     std::string error;
 
-    LOG_IF_DB_FAIL(queryResetAndClearBindings(UPDATE_VERSION_REQUEST_ID));
-    LOG_IF_DB_FAIL(queryBindValue(UPDATE_VERSION_REQUEST_ID, 1, version));
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_VERSION_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_VERSION_REQUEST_ID, 1, version));
     if (!queryExec(UPDATE_VERSION_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_VERSION_REQUEST_ID);
         return false;
@@ -694,7 +694,7 @@ bool Db::updateVersion(const std::string &version, bool &found) {
 bool Db::selectVersion(std::string &version, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    LOG_IF_DB_FAIL(queryResetAndClearBindings(SELECT_VERSION_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_VERSION_REQUEST_ID));
     if (!queryNext(SELECT_VERSION_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_VERSION_REQUEST_ID);
         return false;
@@ -703,7 +703,7 @@ bool Db::selectVersion(std::string &version, bool &found) {
         return true;
     }
 
-    LOG_IF_DB_FAIL(queryStringValue(SELECT_VERSION_REQUEST_ID, 0, version));
+    LOG_IF_FAIL(queryStringValue(SELECT_VERSION_REQUEST_ID, 0, version));
 
     return true;
 }
