@@ -78,6 +78,7 @@ void JobManager::clear() {
     }
     _managedJobs.clear();
     _runningJobs.clear();
+    _stop = false;
 }
 
 void JobManager::reset() {
