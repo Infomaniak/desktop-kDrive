@@ -67,7 +67,7 @@ void TestOperationProcessor::setUp() {
 
     // Setup proxy
     Parameters parameters;
-    bool found;
+    bool found = false;
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }

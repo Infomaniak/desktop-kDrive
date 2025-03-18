@@ -37,7 +37,7 @@ class TestOperationProcessor : public CppUnit::TestFixture, public TestBase {
     private:
         std::shared_ptr<SyncPal> _syncPal;
         std::shared_ptr<ParmsDb> _parmsDb;
-        int _driveDbId;
+        int _driveDbId = 0;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
 
         void testIsPseudoConflict();
