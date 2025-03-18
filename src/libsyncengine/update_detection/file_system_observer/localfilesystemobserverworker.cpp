@@ -62,7 +62,7 @@ void LocalFileSystemObserverWorker::stop() {
 }
 
 void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
-    const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
+    const std::lock_guard lock(_recursiveMutex);
 
     // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
     // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it will
@@ -73,7 +73,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         return;
     }
 
-    for (const auto &changedItem: changes) {
+    for (const auto &[path, opTypeFromOS]: changes) {
         if (stopAsked()) {
             _pendingFileEvents.clear();
             break;
@@ -83,8 +83,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
-        OperationType opTypeFromOS = changedItem.second;
-        const SyncPath absolutePath = changedItem.first.native();
+        const SyncPath absolutePath = path.native();
         const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
@@ -220,7 +219,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
         }
 
-        if (opTypeFromOS == OperationType::Edit) {
+        if (opTypeFromOS == OperationType::Edit || opTypeFromOS == OperationType::Rights) {
             // Filter out hydration/dehydration
             bool changed = false;
             const bool success = IoHelper::checkIfFileChanged(absolutePath, _snapshot->size(nodeId),
