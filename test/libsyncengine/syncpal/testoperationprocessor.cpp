@@ -194,22 +194,22 @@ void TestOperationProcessor::testIsPseudoConflict() {
 
 
     // Ensure that all the other combinations of operations do not generate pseudo conflicts
-    const std::array<OperationType, 4> allOp = {
+    const std::array<OperationType, 4> opTypes = {
             OperationType::Edit, OperationType::Delete, OperationType::Move /*, OperationType::Create CreateCreate is handled and
                                                                                other CreateXXXXX combinations are not possible*/
     };
-    for (const auto &op: allOp) {
-        for (const auto &op2: allOp) {
-            if (op == OperationType::Move && op2 == OperationType::Move) continue;
-            if (op == OperationType::Edit && op2 == OperationType::Edit) continue;
+    for (const auto &localOp: opTypes) {
+        for (const auto &remoteOp: opTypes) {
+            if (localOp == OperationType::Move && remoteOp == OperationType::Move) continue; // Already tested
+            if (localOp == OperationType::Edit && remoteOp == OperationType::Edit) continue; // Already tested
 
-            if (op == OperationType::Move)
+            if (localOp == OperationType::Move)
                 localNodeFile->setMoveOriginInfos({localNodeFile->getPath(), localNodeSyncedDir->id().value()});
-            if (op2 == OperationType::Move)
+            if (remoteOp == OperationType::Move)
                 remoteNodeFile->setMoveOriginInfos({remoteNodeFile->getPath(), remoteNodeSyncedDir->id().value()});
 
-            localNodeFile->setChangeEvents(op);
-            remoteNodeFile->setChangeEvents(op2);
+            localNodeFile->setChangeEvents(localOp);
+            remoteNodeFile->setChangeEvents(remoteOp);
             CPPUNIT_ASSERT_MESSAGE(
                     toString(localNodeFile->changeEvents()) + std::string(" and ") + toString(remoteNodeFile->changeEvents()),
                     !opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
