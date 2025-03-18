@@ -61,6 +61,8 @@ void TestAbstractUpdater::setUp() {
 }
 
 void TestAbstractUpdater::tearDown() {
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
     ParametersCache::reset();
     TestBase::stop();
 }

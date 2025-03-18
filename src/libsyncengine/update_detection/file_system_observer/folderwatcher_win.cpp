@@ -73,6 +73,7 @@ void FolderWatcher_win::stopWatching() {
 void FolderWatcher_win::watchChanges() {
     LOG_DEBUG(_logger, "Start watching changes");
 
+    _directoryHandleMutex.lock();
     _directoryHandle =
             CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
                         nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
@@ -186,6 +187,7 @@ void FolderWatcher_win::watchChanges() {
                                                                           notifInfo->NextEntryOffset);
         }
     }
+    _directoryHandleMutex.unlock();
 
     CancelIo(_directoryHandle);
     closeHandle();
@@ -194,6 +196,8 @@ void FolderWatcher_win::watchChanges() {
 }
 
 void FolderWatcher_win::closeHandle() {
+    const std::scoped_lock lock(_directoryHandleMutex);
+
     if (_directoryHandle) {
         try {
             CloseHandle(_directoryHandle);

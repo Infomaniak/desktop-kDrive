@@ -106,10 +106,8 @@ endif()
 set( final_src
     ${KDRIVE_RC_SRC}
     ${server_SRCS}
-    ${server_UI_SRCS}
     ${server_version}
     ${3rdparty_SRC}
-    ${3rdparty_MOC}
 )
 
 # Target

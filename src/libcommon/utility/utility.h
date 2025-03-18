@@ -149,6 +149,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static QString truncateLongLogMessage(const QString &message);
 
+        static SyncPath applicationFilePath();
 
     private:
         static std::mutex _generateRandomStringMutex;

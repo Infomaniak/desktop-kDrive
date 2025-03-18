@@ -21,8 +21,7 @@
 #include "utility/types.h"
 #include "requests/parameterscache.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/network/proxy.h"
-#include "test_utility/remotetemporarydirectory.h"
+#include "libcommon/utility/utility.h"
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
@@ -69,8 +68,9 @@ void TestAppServer::setUp() {
     ParmsDb::reset();
 
     // Create AppServer
+    SyncPath exePath = KDC::CommonUtility::applicationFilePath();
     try {
-        const std::vector<std::string> args = {"./kdrive_test_server", "--testParmsDbName", parmsDbPath.filename().string()};
+        const std::vector<std::string> args = {Path2Str(exePath), "--testParmsDbName", parmsDbPath.filename().string()};
         std::vector<char *> argv;
         for (size_t i = 0; i < args.size(); ++i) argv.push_back(const_cast<char *>(args[i].c_str()));
         int argc = static_cast<int>(args.size());
@@ -79,6 +79,8 @@ void TestAppServer::setUp() {
         std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
         return;
     }
+
+    // /!\ No event handling (no call to _appPtr->exec())
 }
 
 void TestAppServer::tearDown() {

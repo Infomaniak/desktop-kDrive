@@ -58,6 +58,7 @@
 #include "utility_win.cpp"
 #elif defined(Q_OS_MAC)
 #include "utility_mac.cpp"
+#include <mach-o/dyld.h>
 #else
 #include "utility_linux.cpp"
 #endif
@@ -967,6 +968,29 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
     }
 
     return message;
+}
+
+SyncPath CommonUtility::applicationFilePath() {
+    size_t maxPathLength = CommonUtility::maxPathLength();
+    SyncChar *pathStr = new SyncChar[maxPathLength + 1];
+    memset(pathStr, Str('\0'), (maxPathLength + 1) * sizeof(SyncChar));
+
+#if defined(_WIN32)
+    DWORD pathLength = static_cast<DWORD>(maxPathLength);
+    DWORD count = GetModuleFileNameW(NULL, pathStr, pathLength);
+    assert(count);
+#elif defined(__APPLE__)
+    uint32_t pathLength = static_cast<uint32_t>(maxPathLength);
+    int ret = _NSGetExecutablePath(pathStr, &pathLength);
+    assert(!ret);
+#else
+    ssize_t count = readlink("/proc/self/exe", pathStr, maxPathLength);
+    assert(count != -1);
+#endif
+
+    SyncPath path = SyncPath(pathStr);
+    delete[] pathStr;
+    return path;
 }
 
 

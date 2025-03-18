@@ -44,6 +44,7 @@ class FolderWatcher_win : public FolderWatcher {
         HANDLE _directoryHandle = nullptr;
         HANDLE _resultEventHandle = nullptr;
         HANDLE _stopEventHandle = nullptr;
+        std::mutex _directoryHandleMutex;
 
         void watchChanges();
         void closeHandle();
