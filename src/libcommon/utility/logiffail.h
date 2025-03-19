@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "coveragemacros.h"
 #include "filename.h"
 
 #include <cassert>
@@ -33,33 +34,40 @@
     LOG_IF_FAIL_SELECT(NAME, LOG_IF_FAIL_VA_SIZE(__VA_ARGS__)) \
     (__VA_ARGS__)
 
-
 // Log failure message if 'cond' is false. Aborts execution in DEBUG only.
 #define LOG_IF_FAIL(...) LOG_IF_FAIL_OVERLOAD(LOG_IF_FAIL, __VA_ARGS__)
 #define LOG_IF_FAIL_1(cond)                                                                                             \
+    COVERAGE_OFF                                                                                                        \
     if (!(cond)) {                                                                                                      \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
         assert(cond);                                                                                                   \
-    }
+    }                                                                                                                   \
+    COVERAGE_ON
 
 #define LOG_IF_FAIL_2(logger, cond)                                                                                    \
+    COVERAGE_OFF                                                                                                       \
     if (!(cond)) {                                                                                                     \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
         assert(cond);                                                                                                  \
-    }
+    }                                                                                                                  \
+    COVERAGE_ON
 
 // Log failure message if 'cond' is false. Aborts execution in DEBUG only.
 #define LOG_MSG_IF_FAIL(...) LOG_IF_FAIL_OVERLOAD(LOG_MSG_IF_FAIL, __VA_ARGS__)
 #define LOG_MSG_IF_FAIL_2(cond, message)                                                                              \
+    COVERAGE_OFF                                                                                                      \
     if (!(cond)) {                                                                                                    \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                    << "with message: " << message);                                   \
         assert(cond);                                                                                                 \
-    }
+    }                                                                                                                 \
+    COVERAGE_ON
 
 #define LOG_MSG_IF_FAIL_3(logger, cond, message)                                                                     \
+    COVERAGE_OFF                                                                                                     \
     if (!(cond)) {                                                                                                   \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                   << "with message: " << message);                                   \
         assert(cond);                                                                                                \
-    }
+    }                                                                                                                \
+    COVERAGE_ON
