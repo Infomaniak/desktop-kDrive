@@ -91,8 +91,7 @@ struct ListenerHasSocketPred {
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
                      const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent),
-    _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
@@ -1237,7 +1236,7 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
 
     // File availability actions
     if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileMode::Off) {
-        ENFORCE(!argumentList.isEmpty());
+        LOG_IF_FAIL(Log::instance()->getLogger(), !argumentList.isEmpty());
 
         for (const auto &file: qAsConst(argumentList)) {
             auto fileData = FileData::get(file);

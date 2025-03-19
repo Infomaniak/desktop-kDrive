@@ -440,7 +440,8 @@ void TestUtility::testTruncateLongLogMessage() {
 
 void TestUtility::testLogIfFail() {
     // Logs nothing. Don't abort execution.
-    LOG_IF_FAIL(Log::instance()->getLogger(), true)
+    auto logger = Log::instance()->getLogger();
+    LOG_IF_FAIL(logger, true)
     LOG_MSG_IF_FAIL(Log::instance()->getLogger(), true, "Surprisingly incorrect!")
 
 #ifdef NDEBUG
