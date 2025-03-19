@@ -862,7 +862,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
         }
 
         if (!moveOriginParentId.has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Parent node id is empty for node= " << Utility::formatSyncPath(moveOp->path()));
+            LOGW_SYNCPAL_WARN(_logger, L"Parent node id is empty for node with " << Utility::formatSyncPath(moveOp->path()));
             return ExitCode::DataError;
         }
 
