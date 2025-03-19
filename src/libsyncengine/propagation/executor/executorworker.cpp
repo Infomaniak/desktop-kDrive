@@ -999,7 +999,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
         if (const auto exitInfo = fileRescuer.executeRescueMoveJob(syncOp); !exitInfo) return exitInfo;
     } else {
         if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << SyncName2WStr(syncOp->affectedNode()->name())
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << Utility::formatSyncName(syncOp->affectedNode()->name())
                                                                             << L" " << exitInfo);
             return exitInfo;
         }
@@ -1204,7 +1204,7 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
 
         if (syncOp->isDehydratedPlaceholder() && !isDehydratedPlaceholder) {
             LOGW_SYNCPAL_INFO(_logger,
-                              L"Placeholder is not dehydrated anymore " << Utility::formatSyncPath(absoluteLocalFilePath));
+                              L"Placeholder is not dehydrated anymore for " << Utility::formatSyncPath(absoluteLocalFilePath));
             return ExitCode::DataError;
         }
 

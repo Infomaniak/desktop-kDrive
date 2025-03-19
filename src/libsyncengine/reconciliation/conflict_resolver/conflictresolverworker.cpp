@@ -127,7 +127,7 @@ ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Con
         op->setIsDehydratedPlaceholder(true);
         LOGW_SYNCPAL_INFO(_logger, L"The conflict occurred on a dehydrated placeholder. Operation "
                                            << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
-                                           << SyncName2WStr(localNode->name()) << L" (" << Utility::s2ws(*localNode->id())
+                                           << Utility::formatSyncName(localNode->name()) << L" (" << Utility::s2ws(*localNode->id())
                                            << L")");
 
         _syncPal->_syncOps->pushOp(op);
@@ -158,7 +158,7 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     op->setRelativeDestinationPath(originPath.parent_path() / newName);
 
     LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated on " << op->targetSide()
-                                             << L" replica for item " << SyncName2WStr(op->correspondingNode()->name()) << L" ("
+                                             << L" replica for item " << Utility::formatSyncName(op->correspondingNode()->name()) << L" ("
                                              << Utility::s2ws(*op->correspondingNode()->id()) << L")");
 
     _syncPal->_syncOps->pushOp(op);
@@ -178,8 +178,8 @@ ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Confl
         continueSolving = true;
     } else {
         // Edit operation wins.
-        // Delete the edit node from DB
-        // This will cause the file to be detected as new in the next sync iteration, thus it will be restored
+        // Remove the edited node from DB.
+        // This will cause the file to be detected as new in the next sync iteration, thus it will be restored.
         const auto deleteOp = std::make_shared<SyncOperation>();
         deleteOp->setType(OperationType::Delete);
         deleteOp->setAffectedNode(editNode);
@@ -189,7 +189,7 @@ ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Confl
         deleteOp->setConflict(conflict);
 
         LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated in DB only for item "
-                                                 << SyncName2WStr(deleteOp->correspondingNode()->name()) << L" ("
+                                                 << Utility::formatSyncName(deleteOp->correspondingNode()->name()) << L" ("
                                                  << Utility::s2ws(*deleteOp->correspondingNode()->id()) << L")");
 
         _syncPal->_syncOps->pushOp(deleteOp);
@@ -205,9 +205,9 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
     if (const auto correspondingMoveNodeParent = correspondingNodeDirect(moveNode->parentNode());
         correspondingMoveNodeParent && correspondingMoveNodeParent->hasChangeEvent(OperationType::Delete) &&
         _syncPal->_conflictQueue->hasConflict(ConflictType::MoveParentDelete)) {
-        // If the move operation happen within a directory that was deleted on the other replica,
-        // therefor, we ignore the Move-Delete conflict
-        // This conflict will be handled as Move-ParentDelete conflict
+        // If the move operation happens within a directory that was deleted on the other replica,
+        // therefore, we ignore the Move-Delete conflict.
+        // This conflict will be handled as a Move-ParentDelete conflict.
         LOG_SYNCPAL_INFO(_logger, "Move-Delete conflict ignored because it will be solved by solving Move-ParentDelete conflict");
         continueSolving = true;
         return ExitCode::Ok;
@@ -226,7 +226,7 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
         deleteOp->setConflict(conflict);
 
         LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated for item "
-                                                 << SyncName2WStr(deleteOp->correspondingNode()->name()) << L" ("
+                                                 << Utility::formatSyncName(deleteOp->correspondingNode()->name()) << L" ("
                                                  << Utility::s2ws(*deleteOp->correspondingNode()->id()) << L")");
 
 

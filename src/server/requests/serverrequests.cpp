@@ -1305,7 +1305,7 @@ bool keepError(const int syncDbId, const Error &error, ExitInfo &exitInfo) {
     exitInfo = ExitCode::Ok;
     if (error.conflictType() == ConflictType::CreateCreate || error.conflictType() == ConflictType::EditEdit ||
         error.cancelType() == CancelType::FileRescued) {
-        // For conflict type that rename local file
+        // For the selected conflict types, the local item is renamed.
         Sync sync;
         bool found = false;
         if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
@@ -1323,12 +1323,12 @@ bool keepError(const int syncDbId, const Error &error, ExitInfo &exitInfo) {
         const SyncPath dest = sync.localPath() / error.destinationPath();
         if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
             LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError).c_str());
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError));
             exitInfo = ExitCode::SystemError;
             return false;
         }
 
-        // If conflict file still exists, keep the error.
+        // If the conflicted file still exists, keep the error.
         if (found) {
             return true;
         }

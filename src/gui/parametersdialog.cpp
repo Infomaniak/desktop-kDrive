@@ -698,7 +698,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
 
             // Move
             return tr("You are not allowed to move item to \"%1\".<br>"
-                      "It will be restored to its original location.")
+                      "It will be restored into its original parent folder.")
                     .arg(destinationPath);
         }
         case CancelType::Delete: {
@@ -730,7 +730,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
         }
         case CancelType::FileRescued: {
             return tr(
-                    "The file has been modified locally and deleted on remote kDrive.<br>"
+                    "The file has been modified locally while it has been deleted on the remote kDrive.<br>"
                     "Local copy has been saved in the rescue folder.");
         }
         default: {
