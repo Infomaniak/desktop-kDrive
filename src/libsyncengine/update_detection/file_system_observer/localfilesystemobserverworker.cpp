@@ -750,7 +750,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 sendAccessDeniedError(absolutePath);
             }
 
-            SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
+            const SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
                               itemType.nodeType, fileStat.size, isLink, true, true);
             if (_snapshot->updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {

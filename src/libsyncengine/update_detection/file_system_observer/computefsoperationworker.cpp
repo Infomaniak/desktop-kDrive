@@ -147,8 +147,12 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool remoteItemUnsynced = false;
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
-    const auto nodeTypeChanged =
-            nodeExistsInSnapshot && snapshot->type(nodeId) != NodeType::Unknown && snapshot->type(nodeId) != dbType;
+    bool nodeIdReused;
+    if (ExitInfo exitInfo = isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused); !exitInfo) {
+        setExitCause(exitInfo.cause());
+        return ExitCode::SystemError;
+    }
+
     if (side == ReplicaSide::Remote) {
         // In case of a move inside an excluded folder, the item must be removed in this sync
         if (isInUnsyncedListParentSearchInDb(nodeId, ReplicaSide::Remote)) {
@@ -161,7 +165,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::Ok;
     }
 
-    if (!nodeExistsInSnapshot || movedIntoUnsyncedFolder || nodeTypeChanged) {
+    if (!nodeExistsInSnapshot || movedIntoUnsyncedFolder || nodeIdReused) {
         bool isInDeletedFolder = false;
         if (!checkIfPathIsInDeletedFolder(dbPath, isInDeletedFolder)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::checkIfPathIsInDeletedFolder: " << Utility::formatSyncPath(dbPath));
@@ -808,6 +812,66 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
         return true;
     }
     return false;
+}
+
+ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
+                                                  const std::shared_ptr<const Snapshot> &snapshot, bool &isReused) const {
+    isReused = false;
+    // Check if the node is in the snapshot
+    if (!snapshot->exists(localNodeId)) {
+        return ExitCode::Ok;
+    }
+
+    // Check if the node type has changed
+    if (snapshot->type(localNodeId) != NodeType::Unknown && dbNode.type() != NodeType::Unknown &&
+        snapshot->type(localNodeId) != dbNode.type()) {
+        isReused = true;
+        return ExitCode::Ok;
+    }
+
+    // The nodeId will be considered as reused if the creation date has changed, the modification date has changed, the size has
+    // changed and path has changed. Check if the creation date has changed
+    if (snapshot->createdAt(localNodeId) == dbNode.created().value()) {
+        return ExitCode::Ok;
+    }
+
+    // Check if the mtime has changed (for a directory, the mtime is updated when a child is added or removed or when the
+    // directory is renamed)
+    if (snapshot->lastModified(localNodeId) == dbNode.lastModified(ReplicaSide::Local)) {
+        return ExitCode::Ok;
+    }
+
+    // Check if the node size has changed
+    if (snapshot->size(localNodeId) == dbNode.size()) {
+        return ExitCode::Ok;
+    }
+
+    // Check if the node path has changed
+    SyncPath localDbPath;
+    bool found = false;
+    if (!_syncDb->path(ReplicaSide::Local, localNodeId, localDbPath, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
+        return {ExitCode::DbError, ExitCause::DbAccessError};
+    } else if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "Node not found in DB");
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+    SyncPath localSnapshotPath;
+    bool ignore = false;
+    if (!snapshot->path(localNodeId, localSnapshotPath, ignore)) {
+        if (ignore) {
+            return ExitCode::Ok;
+        }
+        LOG_SYNCPAL_WARN(_logger, "Failed to retrieve path from snapshot for item " << localNodeId.c_str());
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
+    }
+
+    if (localDbPath == localSnapshotPath) {
+        return ExitCode::Ok;
+    }
+
+    isReused = true;
+    return ExitCode::Ok;
 }
 
 ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
