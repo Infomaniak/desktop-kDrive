@@ -515,9 +515,8 @@ bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
 QString CommonUtility::languageCode(const Language language) {
     switch (language) {
         case Language::Default: {
-            const auto systemLanguages = QLocale::system().uiLanguages();
-            if (systemLanguages.empty()) break;
-            if (const auto systemLanguage = systemLanguages.first().left(2); isSupportedLanguage(systemLanguage))
+            if (const auto systemLanguage = QLocale::languageToCode(QLocale::system().language());
+                isSupportedLanguage(systemLanguage))
                 return systemLanguage;
             break;
         }

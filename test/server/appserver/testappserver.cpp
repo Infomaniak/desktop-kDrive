@@ -30,7 +30,7 @@ void TestAppServer::setUp() {
     TestBase::start();
 
     if (QCoreApplication::instance()) {
-        _appPtr = std::unique_ptr<AppServer>(dynamic_cast<AppServer *>(QCoreApplication::instance()));
+        _appPtr = dynamic_cast<AppServer *>(QCoreApplication::instance());
         return;
     }
 
@@ -80,7 +80,7 @@ void TestAppServer::setUp() {
         std::vector<char *> argv;
         for (size_t i = 0; i < args.size(); ++i) argv.push_back(const_cast<char *>(args[i].c_str()));
         int argc = static_cast<int>(args.size());
-        _appPtr = std::make_unique<AppServer>(argc, &argv[0]);
+        _appPtr = new AppServer(argc, &argv[0]);
     } catch (const std::exception &e) {
         std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
         return;
@@ -169,7 +169,7 @@ void TestAppServer::testStartAndStopSync() {
 
 void TestAppServer::testCleanup() {
     _appPtr->onCleanup();
-    _appPtr.reset();
+    delete _appPtr;
     CPPUNIT_ASSERT(true);
 }
 

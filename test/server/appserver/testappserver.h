@@ -38,7 +38,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         void testCleanup();
 
     private:
-        std::unique_ptr<AppServer> _appPtr;
+        AppServer *_appPtr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
         SyncPath _localPath;
         SyncPath _remotePath;
