@@ -46,6 +46,9 @@ std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> IoHelpe
         static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size);
 std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
         static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
+
+std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
+
 #ifdef __APPLE__
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
         [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
@@ -258,7 +261,7 @@ bool IoHelper::isFileAccessible(const SyncPath &, IoError &ioError) {
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
+bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoError::Success;
 
     struct stat sb;
@@ -744,6 +747,10 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     }
 
     return true;
+}
+
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
+    return _getFileStat(path, filestat, ioError);
 }
 
 void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {

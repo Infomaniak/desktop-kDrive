@@ -187,7 +187,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
+bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept {
     ioError = IoError::Success;
 
     // Get parent folder handle

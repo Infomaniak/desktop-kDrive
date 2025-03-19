@@ -461,6 +461,8 @@ struct IoHelper {
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
 #endif
+        static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
+        static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
 
     private:
         static log4cplus::Logger _logger;
