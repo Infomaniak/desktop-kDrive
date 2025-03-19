@@ -662,7 +662,7 @@ bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &
         LOGW_SYNCPAL_WARN(_logger, L"Node not found for path = " << Path2WStr(path));
         return false;
     }
-    LOG_IF_FAIL(!tmpId.has_value())
+    LOG_IF_FAIL(tmpId.has_value())
     id = tmpId.value();
     return true;
 }
