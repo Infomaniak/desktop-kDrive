@@ -36,20 +36,20 @@
 
 // Log failure message if 'cond' is false. Aborts execution in DEBUG only.
 #define LOG_IF_FAIL(...) LOG_IF_FAIL_OVERLOAD(LOG_IF_FAIL, __VA_ARGS__)
-#define LOG_IF_FAIL_1(cond)                                                                                             \
-    COVERAGE_OFF                                                                                                        \
-    if (!(cond)) {                                                                                                      \
-        LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
-        assert(cond);                                                                                                   \
-    }                                                                                                                   \
-    COVERAGE_ON
-
-#define LOG_IF_FAIL_2(logger, cond)                                                                                    \
+#define LOG_IF_FAIL_1(cond)                                                                                            \
     COVERAGE_OFF                                                                                                       \
     if (!(cond)) {                                                                                                     \
-        LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__); \
+        LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__) \
         assert(cond);                                                                                                  \
     }                                                                                                                  \
+    COVERAGE_ON
+
+#define LOG_IF_FAIL_2(logger, cond)                                                                                   \
+    COVERAGE_OFF                                                                                                      \
+    if (!(cond)) {                                                                                                    \
+        LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__) \
+        assert(cond);                                                                                                 \
+    }                                                                                                                 \
     COVERAGE_ON
 
 // Log failure message if 'cond' is false. Aborts execution in DEBUG only.
@@ -58,7 +58,7 @@
     COVERAGE_OFF                                                                                                      \
     if (!(cond)) {                                                                                                    \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
-                                                   << "with message: " << message);                                   \
+                                                   << "with message: " << message)                                    \
         assert(cond);                                                                                                 \
     }                                                                                                                 \
     COVERAGE_ON
@@ -67,7 +67,7 @@
     COVERAGE_OFF                                                                                                     \
     if (!(cond)) {                                                                                                   \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
-                                                  << "with message: " << message);                                   \
+                                                  << "with message: " << message)                                    \
         assert(cond);                                                                                                \
     }                                                                                                                \
     COVERAGE_ON

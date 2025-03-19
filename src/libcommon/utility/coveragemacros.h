@@ -21,8 +21,8 @@
 #include "config.h"
 
 #ifdef COVERAGE
-#define COVERAGE_OFF _Pragma("BullseyeCoverage off")
-#define COVERAGE_ON _Pragma("BullseyeCoverage on")
+#define COVERAGE_OFF _Pragma("BullseyeCoverage off");
+#define COVERAGE_ON _Pragma("BullseyeCoverage on");
 #else
 #define COVERAGE_OFF
 #define COVERAGE_ON
