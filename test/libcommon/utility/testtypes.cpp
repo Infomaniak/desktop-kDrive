@@ -113,12 +113,9 @@ void testToStringIntValues() {
         if (fromInt<T>(i) == T::EnumEnd) {
             break;
         }
-        const std::string failStr = std::string("No string conversion for value ") + std::to_string(i) + std::string(" of ") +
-                              std::string(typeid(T).name());
-        if (toString(fromInt<T>(i)) == noConversionStr) {
-            CPPUNIT_FAIL(failStr);
-        }
-        if (toString(fromInt<T>(i)) == "") {
+        if (toString(fromInt<T>(i)) == noConversionStr || toString(fromInt<T>(i)) == "") {
+            const std::string failStr = std::string("No string conversion for value ") + std::to_string(i) + std::string(" of ") +
+                                        std::string(typeid(T).name());
             CPPUNIT_FAIL(failStr);
         }
         i++;
