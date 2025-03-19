@@ -31,11 +31,11 @@ class ConflictCmp;
 class Conflict {
     public:
         Conflict() = default;
-        Conflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode, ConflictType type);
+        Conflict(std::shared_ptr<Node> node, std::shared_ptr<Node> otherNode, ConflictType type);
         ~Conflict();
 
         [[nodiscard]] std::shared_ptr<Node> node() const { return _node; }
-        [[nodiscard]] std::shared_ptr<Node> correspondingNode() const { return _correspondingNode; }
+        [[nodiscard]] std::shared_ptr<Node> otherNode() const { return _otherNode; }
         [[nodiscard]] ConflictType type() const { return _type; }
 
         [[nodiscard]] ReplicaSide sideOfEvent(OperationType opType) const;
@@ -44,7 +44,7 @@ class Conflict {
 
     private:
         std::shared_ptr<Node> _node = nullptr;
-        std::shared_ptr<Node> _correspondingNode = nullptr;
+        std::shared_ptr<Node> _otherNode = nullptr;
         ConflictType _type = ConflictType::None;
 };
 

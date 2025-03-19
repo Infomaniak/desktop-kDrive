@@ -298,7 +298,7 @@ void TestConflictFinderWorker::testCreateCreate() {
     CPPUNIT_ASSERT(confTest);
     CPPUNIT_ASSERT(confTest->node() ==
                    _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
-    CPPUNIT_ASSERT(confTest->correspondingNode() ==
+    CPPUNIT_ASSERT(confTest->otherNode() ==
                    _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
     CPPUNIT_ASSERT(confTest->type() == ConflictType::CreateCreate);
 }
@@ -336,7 +336,7 @@ void TestConflictFinderWorker::testEditEdit() {
     CPPUNIT_ASSERT(confTest);
     CPPUNIT_ASSERT(confTest->node() ==
                    _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1"));
-    CPPUNIT_ASSERT(confTest->correspondingNode() ==
+    CPPUNIT_ASSERT(confTest->otherNode() ==
                    _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1"));
     CPPUNIT_ASSERT(confTest->type() == ConflictType::EditEdit);
 }
@@ -349,7 +349,7 @@ void TestConflictFinderWorker::testMoveCreate() {
             _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3/Dir 3.1"));
     CPPUNIT_ASSERT(confTest);
     CPPUNIT_ASSERT(confTest->node() == _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3/Dir 3.1"));
-    CPPUNIT_ASSERT(confTest->correspondingNode() == _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 3/Dir 3.1"));
+    CPPUNIT_ASSERT(confTest->otherNode() == _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 3/Dir 3.1"));
     CPPUNIT_ASSERT(confTest->type() == ConflictType::MoveCreate);
 }
 
@@ -366,7 +366,7 @@ void TestConflictFinderWorker::testEditDelete() {
     CPPUNIT_ASSERT(confTest);
     CPPUNIT_ASSERT(confTest->node() ==
                    _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
-    CPPUNIT_ASSERT(confTest->correspondingNode() ==
+    CPPUNIT_ASSERT(confTest->otherNode() ==
                    _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
     CPPUNIT_ASSERT(confTest->type() == ConflictType::EditDelete);
 }
@@ -384,7 +384,7 @@ void TestConflictFinderWorker::testMoveDeleteFile() {
     CPPUNIT_ASSERT(confTest);
     CPPUNIT_ASSERT(confTest->node() ==
                    _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
-    CPPUNIT_ASSERT(confTest->correspondingNode() ==
+    CPPUNIT_ASSERT(confTest->otherNode() ==
                    _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
     CPPUNIT_ASSERT(confTest->type() == ConflictType::MoveDelete);
 }
@@ -404,7 +404,7 @@ void TestConflictFinderWorker::testMoveParentDelete() {
             _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1"));
     CPPUNIT_ASSERT(confTest);
     CPPUNIT_ASSERT(confTest->back().node() == _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1"));
-    CPPUNIT_ASSERT(confTest->back().correspondingNode() ==
+    CPPUNIT_ASSERT(confTest->back().otherNode() ==
                    _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
     CPPUNIT_ASSERT(confTest->back().type() == ConflictType::MoveParentDelete);
 }
@@ -419,7 +419,7 @@ void TestConflictFinderWorker::testCreateParentDelete() {
             _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1"));
     CPPUNIT_ASSERT(confTest);
     CPPUNIT_ASSERT(confTest->back().node() == _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1"));
-    CPPUNIT_ASSERT(confTest->back().correspondingNode() ==
+    CPPUNIT_ASSERT(confTest->back().otherNode() ==
                    _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
     CPPUNIT_ASSERT(confTest->back().type() == ConflictType::CreateParentDelete);
 }
@@ -440,7 +440,7 @@ void TestConflictFinderWorker::testMoveMoveSrc() {
     std::optional<Conflict> confTest = _syncPal->_conflictFinderWorker->checkMoveMoveSourceConflict(localDir2);
     CPPUNIT_ASSERT(confTest);
     CPPUNIT_ASSERT(confTest->node() == localDir2);
-    CPPUNIT_ASSERT(confTest->correspondingNode() == remoteDir2);
+    CPPUNIT_ASSERT(confTest->otherNode() == remoteDir2);
     CPPUNIT_ASSERT(confTest->type() == ConflictType::MoveMoveSource);
 }
 
@@ -462,7 +462,7 @@ void TestConflictFinderWorker::testMoveMoveDest() {
     std::optional<Conflict> confTest = _syncPal->_conflictFinderWorker->checkMoveMoveDestConflict(localDir2);
     CPPUNIT_ASSERT(confTest);
     CPPUNIT_ASSERT(confTest->node() == localDir2);
-    CPPUNIT_ASSERT(confTest->correspondingNode() == remoteDir1);
+    CPPUNIT_ASSERT(confTest->otherNode() == remoteDir1);
     CPPUNIT_ASSERT(confTest->type() == ConflictType::MoveMoveDest);
 }
 
@@ -488,7 +488,7 @@ void TestConflictFinderWorker::testMoveMoveCycle() {
     CPPUNIT_ASSERT(confTestList);
     CPPUNIT_ASSERT(confTestList->size() == 1);
     CPPUNIT_ASSERT(confTestList->back().node() == A);
-    CPPUNIT_ASSERT(confTestList->back().correspondingNode() == B);
+    CPPUNIT_ASSERT(confTestList->back().otherNode() == B);
     CPPUNIT_ASSERT(confTestList->back().type() == ConflictType::MoveMoveCycle);
 }
 
@@ -543,10 +543,10 @@ void TestConflictFinderWorker::testCase55b() {
 
     CPPUNIT_ASSERT(conflict.type() == ConflictType::MoveCreate);
     CPPUNIT_ASSERT(conflict.node() == nodeA);
-    CPPUNIT_ASSERT(conflict.correspondingNode() == rNodeB);
+    CPPUNIT_ASSERT(conflict.otherNode() == rNodeB);
     CPPUNIT_ASSERT(conflict1.type() == ConflictType::EditEdit);
     CPPUNIT_ASSERT(conflict1.node() == nodeA);
-    CPPUNIT_ASSERT(conflict1.correspondingNode() == rNodeA);
+    CPPUNIT_ASSERT(conflict1.otherNode() == rNodeA);
 }
 /* Move-Move (Source) + Move-Create + Move-Create */
 void TestConflictFinderWorker::testCase55c() {
@@ -675,15 +675,15 @@ void TestConflictFinderWorker::testCase57() {
     CPPUNIT_ASSERT(conf1.type() == ConflictType::MoveParentDelete);
     CPPUNIT_ASSERT(conf1.node() == rNodeB);
     CPPUNIT_ASSERT(conf1.node()->parentNode() == _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
-    CPPUNIT_ASSERT(conf1.correspondingNode() == nodeC);
-    CPPUNIT_ASSERT(conf1.correspondingNode()->parentNode() == nodeB);
+    CPPUNIT_ASSERT(conf1.otherNode() == nodeC);
+    CPPUNIT_ASSERT(conf1.otherNode()->parentNode() == nodeB);
     _syncPal->_conflictQueue->pop();
     auto conf2 = _syncPal->_conflictQueue->top();
     CPPUNIT_ASSERT(conf2.type() == ConflictType::MoveMoveSource);
     CPPUNIT_ASSERT(conf2.node() == rNodeC);
     CPPUNIT_ASSERT(conf2.node()->parentNode() == _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
-    CPPUNIT_ASSERT(conf2.correspondingNode() == nodeC);
-    CPPUNIT_ASSERT(conf2.correspondingNode()->parentNode() == nodeB);
+    CPPUNIT_ASSERT(conf2.otherNode() == nodeC);
+    CPPUNIT_ASSERT(conf2.otherNode()->parentNode() == nodeB);
 }
 /* Move-Delete > Move-Move (Dest) */
 void TestConflictFinderWorker::testCase59() {
@@ -798,11 +798,11 @@ void TestConflictFinderWorker::testCase510() {
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->size() == 2);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveDelete);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == rNodeX);
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode() == nodeX);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode() == nodeX);
     _syncPal->_conflictQueue->pop();
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::CreateParentDelete);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == rNodeA);
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode() == nodeX2);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode() == nodeX2);
 }
 /* Move-Delete > Create-ParentDelete */
 void TestConflictFinderWorker::testCase511() {
@@ -864,11 +864,11 @@ void TestConflictFinderWorker::testCase511() {
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->size() == 2);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveDelete);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == nodeB);
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode() == rNodeB);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode() == rNodeB);
     _syncPal->_conflictQueue->pop();
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::CreateParentDelete);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == nodeB);
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode() == nodeNewFile);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode() == nodeNewFile);
 }
 /* Move_Move_Cycle */
 void TestConflictFinderWorker::testCase513() {
@@ -945,7 +945,7 @@ void TestConflictFinderWorker::testCase513() {
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->size() == 1);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveCycle);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == nodeR);
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode() == rNodeQ);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode() == rNodeQ);
 }
 /* Move_Move_Cycle & 2 Move-Move-Source */
 void TestConflictFinderWorker::testCase516() {
@@ -1046,20 +1046,20 @@ void TestConflictFinderWorker::testCase516() {
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveSource);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == nodeM);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node()->side() == nodeM->side());
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode() == rNodeM);
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode()->side() == rNodeM->side());
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode() == rNodeM);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode()->side() == rNodeM->side());
     _syncPal->_conflictQueue->pop();
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveSource);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == rNodeN);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node()->side() == rNodeN->side());
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode() == nodeN);
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode()->side() == nodeN->side());
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode() == nodeN);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode()->side() == nodeN->side());
     _syncPal->_conflictQueue->pop();
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveCycle);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == nodeN);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node()->side() == nodeN->side());
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode() == rNodeM);
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().correspondingNode()->side() == rNodeM->side());
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode() == rNodeM);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().otherNode()->side() == rNodeM->side());
 }
 
 } // namespace KDC
