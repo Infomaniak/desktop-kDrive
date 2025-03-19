@@ -57,16 +57,12 @@ void GenericErrorItemWidget::init() {
             setDriveName(driveInfoMapIt->second.name(), syncInfoMapIt->second.localPath());
             setPathIconColor(driveInfoMapIt->second.color());
         } else if (_errorInfo.level() == ErrorLevel::Node) {
-            if (_errorInfo.cancelType() == CancelType::FileRescued) {
-                setName(_errorInfo.path());
-                setPath(_errorInfo.destinationPath());
-            } else {
-                const bool useDestPath = _errorInfo.cancelType() == CancelType::AlreadyExistRemote ||
-                                         _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
-                                         _errorInfo.conflictType() == ConflictType::EditDelete;
-                const QString &filePath = useDestPath ? _errorInfo.destinationPath() : _errorInfo.path();
-                setPathAndName(filePath, _errorInfo.nodeType());
-            }
+            const bool useDestPath = _errorInfo.cancelType() == CancelType::AlreadyExistRemote ||
+                                     _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
+                                     _errorInfo.cancelType() == CancelType::FileRescued ||
+                                     _errorInfo.conflictType() == ConflictType::EditDelete;
+            const QString &filePath = useDestPath ? _errorInfo.destinationPath() : _errorInfo.path();
+            setPathAndName(filePath, _errorInfo.nodeType());
         }
     }
 
