@@ -857,7 +857,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return ExitCode::DbError;
         } else if (!found) {
-            LOG_SYNCPAL_WARN(_logger, "Parent node not found for id = " << moveOp->nodeId());
+            LOG_SYNCPAL_WARN(_logger, "Parent node not found for id=" << moveOp->nodeId());
             return ExitCode::DataError;
         }
 
