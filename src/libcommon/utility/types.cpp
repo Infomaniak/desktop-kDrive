@@ -115,6 +115,8 @@ std::string toString(const ExitCode e) {
             return "UpdateRequired";
         case ExitCode::LogUploadFailed:
             return "LogUploadFailed";
+        case ExitCode::UpdateFailed:
+            return "UpdateFailed";
         default:
             return noConversionStr;
     }
@@ -200,6 +202,8 @@ std::string toString(const ExitCause e) {
             return "OperationCanceled";
         case ExitCause::ShareLinkAlreadyExists:
             return "ShareLinkAlreadyExists";
+        case ExitCause::InvalidArgument:
+            return "InvalidArgument";
         default:
             return noConversionStr;
     }
@@ -741,6 +745,8 @@ std::string toString(const UpdateState e) {
             return "DownloadError";
         case UpdateState::UpdateError:
             return "UpdateError";
+        case UpdateState::Unknown:
+            return "Unknown";
         default:
             return noConversionStr;
     }
@@ -787,6 +793,10 @@ std::string toString(const sentry::ConfidentialityLevel e) {
             return "Authenticated";
         case sentry::ConfidentialityLevel::Anonymous:
             return "Anonymous";
+        case sentry::ConfidentialityLevel::None:
+            return "None";
+        case sentry::ConfidentialityLevel::Specific:
+            return "Specific";
         default:
             return noConversionStr;
     }
