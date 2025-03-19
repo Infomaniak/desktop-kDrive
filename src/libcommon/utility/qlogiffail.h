@@ -64,12 +64,12 @@
     COVERAGE_OFF                                                                      \
     if (!(cond)) {                                                                    \
         qFatal("ENFORCE: \"%s\" in file %s, line %d", #cond, __FILENAME__, __LINE__); \
-    }                                                                                 \
+    };                                                                                \
     COVERAGE_ON
 
 #define ENFORCE_2(cond, message)                                                                                \
     COVERAGE_OFF                                                                                                \
     if (!(cond)) {                                                                                              \
         qFatal("ENFORCE: \"%s\" in file %s, line %d with message: %s", #cond, __FILENAME__, __LINE__, message); \
-    }                                                                                                           \
+    };                                                                                                          \
     COVERAGE_ON

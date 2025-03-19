@@ -41,7 +41,7 @@
     if (!(cond)) {                                                                                                     \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__) \
         assert(cond);                                                                                                  \
-    }                                                                                                                  \
+    };                                                                                                                 \
     COVERAGE_ON
 
 #define LOG_IF_FAIL_2(logger, cond)                                                                                   \
@@ -49,7 +49,7 @@
     if (!(cond)) {                                                                                                    \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__) \
         assert(cond);                                                                                                 \
-    }                                                                                                                 \
+    };                                                                                                                \
     COVERAGE_ON
 
 // Log failure message if 'cond' is false. Aborts execution in DEBUG only.
@@ -60,7 +60,7 @@
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                    << "with message: " << message)                                    \
         assert(cond);                                                                                                 \
-    }                                                                                                                 \
+    };                                                                                                                \
     COVERAGE_ON
 
 #define LOG_MSG_IF_FAIL_3(logger, cond, message)                                                                     \
@@ -69,5 +69,5 @@
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
                                                   << "with message: " << message)                                    \
         assert(cond);                                                                                                \
-    }                                                                                                                \
+    };                                                                                                               \
     COVERAGE_ON
