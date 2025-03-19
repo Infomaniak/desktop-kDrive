@@ -36,7 +36,7 @@ class Node {
                 MoveOriginInfos() = default;
                 MoveOriginInfos(const MoveOriginInfos &) = default;
                 MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId) :
-                    _path(path), _parentNodeId(parentNodeId), _isValid(true) {}
+                    _isValid(true), _path(path), _parentNodeId(parentNodeId) {}
 
                 bool isValid() const;
                 const SyncPath &path() const;
@@ -108,7 +108,7 @@ class Node {
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
         bool setParentNode(const std::shared_ptr<Node> &parentNode);
         inline void setMoveOriginInfos(const MoveOriginInfos &moveOriginInfos) {
-            LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), _moveOriginInfos.isValid());
+            LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), moveOriginInfos.isValid());
             _moveOriginInfos = moveOriginInfos;
         }
         inline void setStatus(const NodeStatus &status) { _status = status; }
