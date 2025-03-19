@@ -28,6 +28,12 @@ namespace KDC {
 
 void TestAppServer::setUp() {
     TestBase::start();
+
+    if (QCoreApplication::instance()) {
+        _appPtr = std::unique_ptr<AppServer>(dynamic_cast<AppServer *>(QCoreApplication::instance()));
+        return;
+    }
+
     const testhelpers::TestVariables testVariables;
 
     const std::string localPathStr = _localTempDir.path().string();
@@ -84,8 +90,6 @@ void TestAppServer::setUp() {
 }
 
 void TestAppServer::tearDown() {
-    _appPtr->onCleanup();
-    _appPtr.reset();
     TestBase::stop();
 }
 
@@ -161,6 +165,12 @@ void TestAppServer::testStartAndStopSync() {
     _appPtr->stopAllSyncsTask({syncDbId});
     CPPUNIT_ASSERT(_appPtr->_syncPalMap.size() == 0);
     CPPUNIT_ASSERT(_appPtr->_vfsMap.size() == 0);
+}
+
+void TestAppServer::testCleanup() {
+    _appPtr->onCleanup();
+    _appPtr.reset();
+    CPPUNIT_ASSERT(true);
 }
 
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {

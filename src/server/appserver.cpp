@@ -193,7 +193,6 @@ AppServer::AppServer(int &argc, char **argv) :
     }
 
     // Clear old server errors
-    LOG_INFO(_logger, "Clear old server errors");
     if (clearErrors(0) != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in AppServer::clearErrors");
         throw std::runtime_error("Unable to clear old errors.");
@@ -217,7 +216,6 @@ AppServer::AppServer(int &argc, char **argv) :
     }
 
     // Init KeyChainManager instance
-    LOG_INFO(_logger, "Init KeyChainManager instance");
     if (!KeyChainManager::instance()) {
         LOG_WARN(_logger, "Error in KeyChainManager::instance");
         throw std::runtime_error("Unable to initialize key chain manager.");
@@ -225,24 +223,20 @@ AppServer::AppServer(int &argc, char **argv) :
 
 #if defined(__unix__) && !defined(__APPLE__)
     // For access to keyring in order to promt authentication popup
-    LOG_INFO(_logger, "Test KeyChainManager");
     KeyChainManager::instance()->writeDummyTest();
     KeyChainManager::instance()->clearDummyTest();
 #endif
 
     // Init ParametersCache instance
-    LOG_INFO(_logger, "Init ParametersCache instance");
     if (!ParametersCache::instance()) {
         LOG_WARN(_logger, "Error in ParametersCache::instance");
         throw std::runtime_error("Unable to initialize parameters cache.");
     }
 
     // Setup translations
-    LOG_INFO(_logger, "Setup translations");
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parameters().language());
 
     // Configure logger
-    LOG_INFO(_logger, "Configure logger");
     if (!Log::instance()->configure(ParametersCache::instance()->parameters().useLog(),
                                     ParametersCache::instance()->parameters().logLevel(),
                                     ParametersCache::instance()->parameters().purgeOldLogs())) {
@@ -250,8 +244,7 @@ AppServer::AppServer(int &argc, char **argv) :
         addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
     }
 
-    // Log usefull information
-    LOG_INFO(_logger, "Log usefull information");
+    // Log usefull infomation
     logUsefulInformation();
 
     // Init ExclusionTemplateCache instance

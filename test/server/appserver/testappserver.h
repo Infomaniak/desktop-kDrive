@@ -26,6 +26,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestAppServer);
         CPPUNIT_TEST(testInitAndStopSyncPal);
         CPPUNIT_TEST(testStartAndStopSync);
+        CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -34,6 +35,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
 
         void testInitAndStopSyncPal();
         void testStartAndStopSync();
+        void testCleanup();
 
     private:
         std::unique_ptr<AppServer> _appPtr;
