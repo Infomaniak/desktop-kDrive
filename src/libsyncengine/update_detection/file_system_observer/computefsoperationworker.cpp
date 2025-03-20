@@ -126,7 +126,6 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     const auto dbLastModified = dbNode.lastModified(side);
     const auto dbName = dbNode.name(side);
     const auto &dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
-    const auto dbType = dbNode.type();
     const auto snapshot = _syncPal->snapshotCopy(side);
     const auto opSet = _syncPal->operationSet(side);
 
@@ -147,8 +146,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool remoteItemUnsynced = false;
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
-    bool nodeIdReused;
-    if (ExitInfo exitInfo = isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused); !exitInfo) {
+    bool nodeIdReused = false;
+    if (const ExitInfo exitInfo = isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused); !exitInfo) {
         setExitCause(exitInfo.cause());
         return ExitCode::SystemError;
     }

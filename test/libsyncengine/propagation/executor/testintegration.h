@@ -107,7 +107,6 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
                 std::map<SyncPath, uint64_t> _pathNodeIdMap;
         };
 
-        void initNodeIdReuseTests();
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
 
