@@ -150,21 +150,38 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(_appPtr->_syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
-    // Stop sync (ie. Vfs & SyncPal) & clear maps
+    // Stop sync & clear maps
     _appPtr->stopSyncTask(syncDbId);
     CPPUNIT_ASSERT(_appPtr->_syncPalMap.size() == 0);
     CPPUNIT_ASSERT(_appPtr->_vfsMap.size() == 0);
 
-    // Start syncs (ie. Vfs & SyncPal) for all users
+    // Start syncs for all users
     exitInfo = _appPtr->startSyncs();
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(_appPtr->_syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
-    // Stop syncs (ie. Vfs & SyncPal) & clear maps for all users
+    // Stop syncs & clear maps for all users
     _appPtr->stopAllSyncsTask({syncDbId});
     CPPUNIT_ASSERT(_appPtr->_syncPalMap.size() == 0);
     CPPUNIT_ASSERT(_appPtr->_vfsMap.size() == 0);
+
+    // Update sync local folder with a dummy value
+    Sync sync;
+    found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(syncDbId, sync, found) && found);
+
+    sync.setLocalPath("/dummy");
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
+
+    // Start syncs
+    exitInfo = _appPtr->startSyncs();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::SyncDirDoesntExist, exitInfo.cause());
+
+    // Update sync local folder with the good value
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
+    sync.setLocalPath(_localPath);
 }
 
 void TestAppServer::testCleanup() {

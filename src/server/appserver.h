@@ -156,6 +156,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
 
+        void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();
         [[nodiscard]] ExitInfo startSyncs(User &user);
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
@@ -191,7 +192,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void uploadLog(bool includeArchivedLogs);
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
-        void startSyncPals();
         void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList); // Idem.
         void deleteAccountIfNeeded(int accountDbId); // Remove the account if no drive is associated to it.

@@ -73,8 +73,7 @@
 #define LOAD_PROGRESS_MAXITEMS 100 // ms
 #define SEND_NOTIFICATIONS_INTERVAL 15000 // ms
 #define RESTART_SYNCS_INTERVAL 15000 // ms
-#define START_SYNCPALS_TRIALS 12
-#define START_SYNCPALS_RETRY_INTERVAL 5000 // ms
+#define START_SYNCPALS_RETRY_INTERVAL 60000 // ms
 #define START_SYNCPALS_TIME_GAP 5 // sec
 
 namespace KDC {
@@ -358,7 +357,7 @@ AppServer::AppServer(int &argc, char **argv) :
     sentry::Handler::captureMessage(sentry::Level::Info, "kDrive started", "kDrive started");
 
     // Start syncs
-    QTimer::singleShot(0, [=, this]() { startSyncPals(); });
+    QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
 
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
@@ -2006,16 +2005,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
     CommServer::instance()->sendReply(id, results);
 }
 
-void AppServer::startSyncPals() {
-    static int trials = 0;
-
-    if (trials < START_SYNCPALS_TRIALS) {
-        trials++;
-        LOG_DEBUG(_logger, "Start SyncPals - trials = " << trials);
-        if (const auto exitInfo = startSyncs(); !exitInfo) {
-            if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::Unknown) {
-                QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=, this]() { startSyncPals(); });
-            }
+void AppServer::startSyncsAndRetryOnError() {
+    LOG_DEBUG(_logger, "Start syncs");
+    if (const auto exitInfo = startSyncs(); !exitInfo) {
+        LOG_WARN(_logger, "Error in startSyncsAndRetryOnError: " << exitInfo);
+        if (exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::SyncDirDoesntExist) {
+            LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
+            QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this, [=, this]() { startSyncsAndRetryOnError(); });
         }
     }
 }
@@ -2533,7 +2529,7 @@ ExitInfo AppServer::startSyncs() {
     ExitInfo mainExitInfo = ExitCode::Ok;
     for (User &user: userList) {
         if (const auto exitInfo = startSyncs(user); !exitInfo) {
-            LOG_WARN(_logger, "Error in startSyncs for userDbId=" << user.dbId());
+            LOG_WARN(_logger, "Error in startSyncs for userDbId=" << user.dbId() << " " << exitInfo);
             mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
         }
     }
