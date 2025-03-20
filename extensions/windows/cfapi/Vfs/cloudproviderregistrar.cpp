@@ -169,21 +169,10 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 }
 
                 // Create AMUID key
-                std::wstring name(REGKEY_AUMID);
-                std::wstring value;
+                const std::wstring name(REGKEY_AUMID);
+                const std::wstring aumidValue = L"$(KDC_AUMID)";
+                const std::wstring value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
 
-                DWORD aumidValueSize = 65535;
-                std::wstring aumidValue;
-                aumidValue.resize(aumidValueSize);
-                LPCWSTR aumidEnvVarName = nullptr;
-#ifdef _DEBUG
-                aumidEnvVarName = L"KDC_VIRTUAL_AUMID";
-#else
-                aumidEnvVarName = L"KDC_PHYSICAL_AUMID";
-#endif
-                aumidValueSize = GetEnvironmentVariableW(aumidEnvVarName, &aumidValue[0], aumidValueSize);
-                aumidValue.resize(aumidValueSize);
-                value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
                 TRACE_INFO(L"AUMID value: %s", aumidValue.c_str());
 
                 if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(),
