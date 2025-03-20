@@ -40,8 +40,6 @@
 
 namespace KDC {
 struct COMMON_EXPORT CommonUtility {
-        static void reset();
-
         enum IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
 
         static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
@@ -150,6 +148,8 @@ struct COMMON_EXPORT CommonUtility {
         static QString truncateLongLogMessage(const QString &message);
 
         static SyncPath applicationFilePath();
+
+        static void resetTranslations();
 
     private:
         static std::mutex _generateRandomStringMutex;

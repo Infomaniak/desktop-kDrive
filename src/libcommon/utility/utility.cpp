@@ -187,7 +187,7 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
     return {};
 }
 
-void CommonUtility::reset() {
+void CommonUtility::resetTranslations() {
     if (qApp) {
         if (_translator) {
             QCoreApplication::removeTranslator(_translator);
@@ -429,7 +429,7 @@ QString applicationTrPath() {
 void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language enforcedLocale) {
     QStringList uiLanguages = languageCodeList(enforcedLocale);
 
-    reset();
+    resetTranslations();
 
     _translator = new QTranslator(app);
     _qtTranslator = new QTranslator(app);

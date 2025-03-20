@@ -427,7 +427,6 @@ void AppServer::onCleanup() {
     JobManager::reset();
     ParmsDb::reset();
     ParametersCache::reset();
-    CommonUtility::reset();
     LOG_DEBUG(_logger, "Reset done");
 }
 
