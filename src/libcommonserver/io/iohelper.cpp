@@ -304,8 +304,6 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
             }
         }
     }
-}
-
 #endif
     buf->modtime = sb.st_mtime;
     buf->size = sb.st_size;
