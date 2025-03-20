@@ -173,7 +173,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "F:\Projects\build-desktop-kDrive-Deskto
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;VFS_EXPORTS;_WINDOWS;_USRDLL;KDC_AUMID=dbrs6rk4qqhna;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;VFS_EXPORTS;_WINDOWS;_USRDLL;KDC_AUMID=L"$(KDC_PHYSICAL_AUMID)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
