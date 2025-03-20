@@ -437,48 +437,6 @@ void TestExecutorWorker::testDeleteOpNodes() {
     }
 }
 
-void TestExecutorWorker::testFileRescuer() {
-    // Setup
-    TestSituationGenerator situationGenerator(_syncPal);
-    situationGenerator.generateInitialSituation(R"({"a":1})");
-
-    const auto lnodeA = situationGenerator.getNode(ReplicaSide::Local, "a");
-    const auto fileName = lnodeA->name();
-    const auto filePath = _localTempDir.path() / fileName;
-    testhelpers::generateOrEditTestFile(filePath);
-
-    const auto rnodeA = situationGenerator.getNode(ReplicaSide::Remote, "a");
-    const Conflict conflict(lnodeA, rnodeA, ConflictType::EditDelete);
-    _syncPal->_conflictQueue->push(conflict);
-
-    // Rescue file "A"
-    const auto syncOp = std::make_shared<SyncOperation>();
-    syncOp->setType(OperationType::Move);
-    syncOp->setAffectedNode(lnodeA);
-    syncOp->setCorrespondingNode(lnodeA);
-    syncOp->setTargetSide(ReplicaSide::Local);
-    syncOp->setRelativeOriginPath(lnodeA->getPath());
-    syncOp->setConflict(conflict);
-    syncOp->setIsRescueOperation(true);
-    lnodeA->setStatus(NodeStatus::ConflictOpGenerated);
-
-    const FileRescuer fileRescuer(_syncPal);
-    CPPUNIT_ASSERT(fileRescuer.executeRescueMoveJob(syncOp));
-    // Check that rescue folder has been created
-    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(_localTempDir.path() / FileRescuer::rescueFolderName()));
-    // Check that file "A" has been moved into rescue folder
-    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(_localTempDir.path() / FileRescuer::rescueFolderName() / fileName));
-    CPPUNIT_ASSERT_EQUAL(true, !std::filesystem::exists(filePath));
-
-    // Generate another file "A" and rescue it again
-    testhelpers::generateOrEditTestFile(filePath);
-    CPPUNIT_ASSERT(fileRescuer.executeRescueMoveJob(syncOp));
-    // Check that both files are now in rescue folder
-    CPPUNIT_ASSERT_EQUAL(true, std::filesystem::exists(_localTempDir.path() / FileRescuer::rescueFolderName() / fileName));
-    CPPUNIT_ASSERT_EQUAL(
-            true, std::filesystem::exists(_localTempDir.path() / FileRescuer::rescueFolderName() / (fileName + Str(" (1)"))));
-}
-
 void TestExecutorWorker::testFixModificationDate() {
     // Create temp directory
     const LocalTemporaryDirectory temporaryDirectory;

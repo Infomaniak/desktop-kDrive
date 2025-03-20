@@ -995,12 +995,12 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
             return exitInfo;
         }
     } else if (syncOp->isRescueOperation()) {
-        const FileRescuer fileRescuer(_syncPal);
+        FileRescuer fileRescuer(_syncPal);
         if (const auto exitInfo = fileRescuer.executeRescueMoveJob(syncOp); !exitInfo) return exitInfo;
     } else {
         if (ExitInfo exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: " << Utility::formatSyncName(syncOp->affectedNode()->name())
-                                                                            << L" " << exitInfo);
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: "
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
     }

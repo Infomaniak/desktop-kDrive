@@ -16,23 +16,26 @@
 
 #pragma once
 
+#include "testincludes.h"
+#include "syncpal/syncpal.h"
+#include "test_utility/localtemporarydirectory.h"
+
 namespace KDC {
 
-class FileRescuer {
+class TestFileRescuer final : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestFileRescuer);
+        CPPUNIT_TEST(testFileRescuer);
+        CPPUNIT_TEST_SUITE_END();
+
     public:
-        explicit FileRescuer(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {}
-
-        ExitInfo executeRescueMoveJob(SyncOpPtr syncOp);
-
-        static SyncPath rescueFolderName() { return _rescueFolderName; }
+        void setUp() override;
+        void tearDown() override;
 
     private:
-        ExitInfo createRescueFolderIfNeeded() const;
-        ExitInfo moveToRescueFolder(const SyncPath &relativeOriginPath, SyncPath &relativeDestinationPath) const;
-        SyncPath getDestinationPath(const SyncPath &relativeOriginPath, uint16_t counter = 0) const;
+        void testFileRescuer();
 
+        LocalTemporaryDirectory _localTempDir{"TestFileRescuer"};
         std::shared_ptr<SyncPal> _syncPal;
-        static const SyncPath _rescueFolderName;
 };
 
 } // namespace KDC

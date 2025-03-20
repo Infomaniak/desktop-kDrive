@@ -42,6 +42,7 @@
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
+#include "propagation/executor/testfilerescuer.h"
 #include "requests/testexclusiontemplatecache.h"
 
 #ifdef __APPLE__
@@ -83,6 +84,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFileRescuer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);

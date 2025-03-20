@@ -25,31 +25,16 @@ namespace KDC {
 
 const SyncPath FileRescuer::_rescueFolderName = "kDrive Rescue Folder";
 
-ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) const {
+ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) {
     if (const auto exitInfo = createRescueFolderIfNeeded(); !exitInfo) {
         return exitInfo;
     }
 
-    const auto absoluteOriginPath = _syncPal->localPath() / syncOp->relativeOriginPath();
+    const auto relativeOriginPath = syncOp->relativeOriginPath();
     SyncPath relativeDestinationPath;
-    ExitInfo exitInfo;
-    auto counter = 0;
-    SyncName suffix;
-    do {
-        if (counter) {
-            suffix = Str(" (") + Str2SyncName(std::to_string(counter)) + Str(")"); // TODO : use format when fully moved to c++20
-        }
-        const SyncName filename = Str2SyncName(syncOp->relativeOriginPath().stem().string()) + suffix +
-                                  Str2SyncName(syncOp->relativeOriginPath().extension().string());
-        relativeDestinationPath = _rescueFolderName / filename;
-        LocalMoveJob rescueJob(absoluteOriginPath, _syncPal->localPath() / relativeDestinationPath);
-        exitInfo = rescueJob.runSynchronously();
-        if (exitInfo.cause() == ExitCause::FileAlreadyExist) {
-            ++counter;
-        } else if (!exitInfo) {
-            return exitInfo;
-        }
-    } while (!exitInfo);
+    if (const auto exitInfo = moveToRescueFolder(relativeOriginPath, relativeDestinationPath); !exitInfo) {
+        return exitInfo;
+    }
 
     LOG_IF_FAIL(syncOp->conflict().localNode() && syncOp->conflict().localNode()->id().has_value())
     const auto localNodeId = syncOp->conflict().localNode()->id().value();
@@ -82,6 +67,26 @@ ExitInfo FileRescuer::createRescueFolderIfNeeded() const {
         return exitInfo;
     }
     return ExitCode::Ok;
+}
+
+ExitInfo FileRescuer::moveToRescueFolder(const SyncPath &relativeOriginPath, SyncPath &relativeDestinationPath) const {
+    ExitInfo exitInfo;
+    uint16_t counter = 0;
+    do {
+        relativeDestinationPath = getDestinationPath(relativeOriginPath, counter++);
+        LocalMoveJob rescueJob(_syncPal->localPath() / relativeOriginPath, _syncPal->localPath() / relativeDestinationPath);
+        exitInfo = rescueJob.runSynchronously();
+    } while (!exitInfo && exitInfo.cause() == ExitCause::FileAlreadyExist);
+    return ExitCode::Ok;
+}
+
+SyncPath FileRescuer::getDestinationPath(const SyncPath &relativeOriginPath, const uint16_t counter /*= 0*/) const {
+    if (counter == 0) return _syncPal->localPath() / _rescueFolderName / relativeOriginPath.filename();
+    const SyncName suffix =
+            Str(" (") + Str2SyncName(std::to_string(counter)) + Str(")"); // TODO : use format when fully moved to c++20
+    const SyncName filename =
+            Str2SyncName(relativeOriginPath.stem().string()) + suffix + Str2SyncName(relativeOriginPath.extension().string());
+    return _syncPal->localPath() / _rescueFolderName / filename;
 }
 
 } // namespace KDC

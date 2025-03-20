@@ -84,7 +84,7 @@ class SyncOperation {
         }
 
         [[nodiscard]] bool isRescueOperation() const { return _isRescueOperation; }
-        void setIsRescueOperation(bool val) { _isRescueOperation = val; }
+        void setIsRescueOperation(const bool val) { _isRescueOperation = val; }
 
         [[nodiscard]] const SyncPath &relativeOriginPath() const { return _relativeOriginPath; }
         void setRelativeOriginPath(const SyncPath &relativeOriginPath) { _relativeOriginPath = relativeOriginPath; }

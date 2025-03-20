@@ -239,8 +239,15 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _computeFSOperationsWorker = worker;
         }
 
+        void createSharedObjects();
+        void freeSharedObjects();
+        void initSharedObjects();
+        void resetSharedObjects();
+
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
         std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
+
+        [[nodiscard]] const std::shared_ptr<ConflictQueue> &conflictQueue() const { return _conflictQueue; }
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
@@ -295,10 +302,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager{nullptr};
 
-        void createSharedObjects();
-        void freeSharedObjects();
-        void initSharedObjects();
-        void resetSharedObjects();
+
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,

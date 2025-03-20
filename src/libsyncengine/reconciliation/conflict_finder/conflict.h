@@ -43,8 +43,8 @@ class Conflict {
         [[nodiscard]] std::shared_ptr<Node> remoteNode() const;
 
     private:
-        std::shared_ptr<Node> _node = nullptr;
-        std::shared_ptr<Node> _otherNode = nullptr;
+        std::shared_ptr<Node> _node;
+        std::shared_ptr<Node> _otherNode;
         ConflictType _type = ConflictType::None;
 };
 

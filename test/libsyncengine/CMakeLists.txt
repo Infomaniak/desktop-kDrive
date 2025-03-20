@@ -59,6 +59,7 @@ set(testsyncengine_SRCS
         propagation/operation_sorter/testoperationsorterworker.h propagation/operation_sorter/testoperationsorterworker.cpp
         propagation/executor/testintegration.h propagation/executor/testintegration.cpp
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
+        propagation/executor/testfilerescuer.h propagation/executor/testfilerescuer.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
