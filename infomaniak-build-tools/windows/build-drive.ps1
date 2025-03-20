@@ -119,7 +119,7 @@ function Get-Thumbprint {
 #                                                                                               #
 #################################################################################################
 
-$msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -prerelease -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+$msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -version [16.0,17.0] -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe 
 $7zaPath = "${env:ProgramFiles}\7-Zip\7za.exe"
 
 Set-Alias msbuild $msbuildPath

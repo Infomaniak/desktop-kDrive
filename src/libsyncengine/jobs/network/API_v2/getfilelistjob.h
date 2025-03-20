@@ -29,8 +29,8 @@ class GetFileListJob : public GetRootFileListJob {
         GetFileListJob(int driveDbId, const NodeId &fileId, uint64_t page = 1, bool dirOnly = false);
 
     private:
-        virtual std::string getSpecificUrl() override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        ExitInfo setData() override { return ExitCode::Ok; }
 
         std::string _fileId;
 };
