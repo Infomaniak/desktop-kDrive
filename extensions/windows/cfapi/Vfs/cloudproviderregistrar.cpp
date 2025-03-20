@@ -170,7 +170,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
 
                 // Create AMUID key
                 const std::wstring name(REGKEY_AUMID);
-                const std::wstring aumidValue = L"$(KDC_AUMID)";
+                const std::wstring aumidValue = KDC_AUMID;
                 const std::wstring value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
 
                 TRACE_INFO(L"AUMID value: %s", aumidValue.c_str());
