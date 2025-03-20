@@ -111,7 +111,6 @@ void ComputeFSOperationWorker::execute() {
     setDone(exitCode);
 }
 
-
 ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode,
                                                          const SyncPath &localDbPath, const SyncPath &remoteDbPath) {
     assert(side != ReplicaSide::Unknown);
@@ -281,7 +280,9 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     // Detect EDIT
     const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
-    if (snapshotLastModified != dbLastModified && dbNode.type() == NodeType::File) {
+    // Size can differ for links between remote and local replica, do not check it in that case
+    if (const auto sameSize = snapshot->isLink(nodeId) || snapshot->size(nodeId) == dbNode.size();
+        snapshotLastModified != dbLastModified && !sameSize && dbNode.type() == NodeType::File) {
         // Edit operation
         auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
                                                   snapshotLastModified, snapshot->size(nodeId), snapshotPath);
@@ -290,9 +291,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     // Detect MOVE
-    const auto snapshotName = snapshot->name(nodeId);
-    const bool movedOrRenamed = dbName != snapshotName || parentNodeid != snapshot->parentId(nodeId);
-    if (movedOrRenamed) {
+    if (const auto snapshotName = snapshot->name(nodeId); dbName != snapshotName || parentNodeid != snapshot->parentId(nodeId)) {
         FSOpPtr fsOp = nullptr;
         if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
             // Delete operation

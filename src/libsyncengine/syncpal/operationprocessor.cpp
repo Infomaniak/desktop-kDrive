@@ -31,8 +31,8 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         return false;
     }
 
-    std::shared_ptr<const Snapshot> snapshot = _syncPal->snapshotCopy(node->side());
-    std::shared_ptr<const Snapshot> otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
+    const auto snapshot = _syncPal->snapshotCopy(node->side());
+    const auto otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
 
     // Create-Create pseudo-conflict
     if (node->hasChangeEvent(OperationType::Create) && correspondingNode->hasChangeEvent(OperationType::Create) &&
@@ -60,15 +60,18 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         return false;
     }
 
-    bool useContentChecksum =
-            !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
-    bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
-                           snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
-    bool hasSameContent = useContentChecksum ? snapshot->contentChecksum(*node->id()) ==
-                                                       otherSnapshot->contentChecksum(*correspondingNode->id())
-                                             : sameSizeAndDate;
+    // Size can differ for links between remote and local replica, do not check it in that case
+    const bool sameSizeAndDate =
+            snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
+            (snapshot->isLink(*node->id()) || snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id()));
 
-    bool hasCreateOrEditChangeEvent =
+    const bool useContentChecksum =
+            !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
+    const bool hasSameContent = useContentChecksum ? snapshot->contentChecksum(*node->id()) ==
+                                                             otherSnapshot->contentChecksum(*correspondingNode->id())
+                                                   : sameSizeAndDate;
+
+    const bool hasCreateOrEditChangeEvent =
             (node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Edit)) &&
             (correspondingNode->hasChangeEvent(OperationType::Create) || correspondingNode->hasChangeEvent(OperationType::Edit));
 
