@@ -463,7 +463,7 @@ struct IoHelper {
 #endif
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
-
+        static bool _unsuportedFSLogged;
     private:
         static log4cplus::Logger _logger;
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }

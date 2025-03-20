@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
@@ -27,6 +27,8 @@
 
 #if defined(__APPLE__) || defined(__unix__)
 #include <sys/stat.h>
+#include <sys/xattr.h>
+
 #endif
 #include <fstream>
 #include <log4cplus/loggingmacros.h> // LOGW_WARN
@@ -48,7 +50,7 @@ std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
         static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
 
 std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
-
+bool IoHelper::_unsuportedFSLogged = false;
 #ifdef __APPLE__
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
         [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
@@ -283,7 +285,28 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 #endif
 
     buf->inode = sb.st_ino;
+#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
     buf->creationTime = sb.st_birthtime;
+#else
+    if (lgetxattr(path.string().c_str(), "kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
+        buf->creationTime = sb.st_ctime;
+        const auto err = errno;
+        if (err == ENOTSUP) {
+            if (!_unsuportedFSLogged) {
+                LOG_ERROR(logger(), "The file system does not support extended attributes");
+                sentry::Handler::captureMessage(sentry::Level::Warning, "Unsuported file system",
+                                                "The file system does not support neither creation time nor extended attributes");
+                _unsuportedFSLogged = true;
+            }
+        } else if (err == ENODATA) {
+            if (lsetxattr(path.string().c_str(), "kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
+                LOG_ERROR(logger(), "Failed to set kDrive.birthtime extended attribute: " << strerror(errno));
+            }
+        }
+    }
+}
+
+#endif
     buf->modtime = sb.st_mtime;
     buf->size = sb.st_size;
     if (S_ISLNK(sb.st_mode)) {
@@ -705,8 +728,9 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #ifdef _WIN32 // TODO: Remove this block when migrating the release process to Visual Studio 2022.
     // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a misleading InvalidArgument if the path is
-    // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when compiling
-    // with VS2022, see https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
+    // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when
+    // compiling with VS2022, see
+    // https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
     if (ioError == IoError::InvalidArgument && !Utility::isNtfs(path)) {
         (void) std::filesystem::status(
                 path, ec); // Symlink are only supported on NTFS on Windows, there is no risk to follow a symlink.
