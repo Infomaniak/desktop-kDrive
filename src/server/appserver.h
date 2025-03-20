@@ -69,7 +69,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         };
 
         explicit AppServer(int &argc, char **argv);
-        ~AppServer();
+        virtual ~AppServer();
 
         inline bool helpAsked() { return _helpAsked; }
         inline bool versionAsked() { return _versionAsked; }

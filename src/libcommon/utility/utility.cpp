@@ -187,17 +187,19 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
     return {};
 }
 
-void CommonUtility::reset(QCoreApplication *app) {
-    if (_translator) {
-        app->removeTranslator(_translator);
-        _translator->deleteLater();
-        _translator = nullptr;
-    }
+void CommonUtility::reset() {
+    if (qApp) {
+        if (_translator) {
+            QCoreApplication::removeTranslator(_translator);
+            _translator->deleteLater();
+            _translator = nullptr;
+        }
 
-    if (_qtTranslator) {
-        app->removeTranslator(_qtTranslator);
-        _qtTranslator->deleteLater();
-        _qtTranslator = nullptr;
+        if (_qtTranslator) {
+            QCoreApplication::removeTranslator(_qtTranslator);
+            _qtTranslator->deleteLater();
+            _qtTranslator = nullptr;
+        }
     }
 }
 
@@ -225,7 +227,6 @@ QString CommonUtility::getIconPath(const IconType iconType) {
 bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType iconType) {
 #ifdef Q_OS_MAC
     if (!setFolderCustomIcon_private(folderPath, getIconPath(iconType))) {
-        // qCWarning(lcUtility) << "Error setting custom icon" << getIconPath(iconType) << "for folder" << folderPath;
         return false;
     }
     return true;
@@ -428,7 +429,7 @@ QString applicationTrPath() {
 void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language enforcedLocale) {
     QStringList uiLanguages = languageCodeList(enforcedLocale);
 
-    reset(app);
+    reset();
 
     _translator = new QTranslator(app);
     _qtTranslator = new QTranslator(app);
@@ -456,8 +457,8 @@ void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language
                     }
                 }
             }
-            if (!_translator->isEmpty()) app->installTranslator(_translator);
-            if (!_qtTranslator->isEmpty()) app->installTranslator(_qtTranslator);
+            if (!_translator->isEmpty()) QCoreApplication::installTranslator(_translator);
+            if (!_qtTranslator->isEmpty()) QCoreApplication::installTranslator(_qtTranslator);
             break;
         }
         if (app->property("ui_lang").isNull()) app->setProperty("ui_lang", "C");

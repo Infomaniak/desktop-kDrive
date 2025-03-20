@@ -40,7 +40,7 @@
 
 namespace KDC {
 struct COMMON_EXPORT CommonUtility {
-        static void reset(QCoreApplication *app);
+        static void reset();
 
         enum IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
 
