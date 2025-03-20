@@ -384,8 +384,7 @@ void TestUtility::testLanguageCode() {
     CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
 
-    const auto systemLanguages = QLocale::system().uiLanguages();
-    const auto systemLanguage = systemLanguages.first().left(2);
+    const auto systemLanguage = QLocale::languageToCode(QLocale::system().language());
     CPPUNIT_ASSERT_EQUAL(systemLanguage.toStdString(), CommonUtility::languageCode(Language::Default).toStdString());
 
     // English is the default language and is always returned if the provided language code is unknown.
