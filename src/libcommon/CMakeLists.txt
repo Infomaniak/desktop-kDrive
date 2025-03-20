@@ -27,7 +27,7 @@ set(libcommon_SRCS
     comm.h
     utility/types.h utility/types.cpp
     utility/utility_base.h utility/utility.h utility/utility.cpp
-    utility/filename.h utility/coveragemacros.h
+    utility/filename.h utility/commonmacros.h utility/coveragemacros.h
     utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp

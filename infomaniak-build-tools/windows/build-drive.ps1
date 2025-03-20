@@ -299,7 +299,7 @@ $flags = @(
 if ($ci)
 {
 	$flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
-	$flags += ("'-DCOVERAGE:BOOL=TRUE'")
+	$flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
 }
 
 $args += $flags
