@@ -283,11 +283,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 #endif
 
     buf->inode = sb.st_ino;
-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
     buf->creationTime = sb.st_birthtime;
-#else
-    buf->creationTime = sb.st_ctime;
-#endif
     buf->modtime = sb.st_mtime;
     buf->size = sb.st_size;
     if (S_ISLNK(sb.st_mode)) {
