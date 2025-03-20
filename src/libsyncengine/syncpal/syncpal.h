@@ -141,6 +141,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
         [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
+        [[nodiscard]] const std::shared_ptr<ConflictQueue> &conflictQueue() const { return _conflictQueue; }
 
         // TODO : not ideal, to be refactored
         bool checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
@@ -247,8 +248,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
         std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
 
-        [[nodiscard]] const std::shared_ptr<ConflictQueue> &conflictQueue() const { return _conflictQueue; }
-
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -343,7 +342,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class PlatformInconsistencyCheckerWorker;
         friend class OperationProcessor;
         friend class ConflictFinderWorker;
-        friend class ConflictResolverWorker;
         friend class OperationGeneratorWorker;
         friend class OperationSorterWorker;
         friend class ExecutorWorker;

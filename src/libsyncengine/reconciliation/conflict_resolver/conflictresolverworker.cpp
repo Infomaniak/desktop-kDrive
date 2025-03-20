@@ -29,19 +29,19 @@ void ConflictResolverWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
     auto exitCode = ExitCode::Ok;
-    _syncPal->_syncOps->startUpdate();
+    _syncPal->syncOps()->startUpdate();
 
     do {
         bool continueSolving = false;
-        exitCode = generateOperations(_syncPal->_conflictQueue->top(), continueSolving);
+        exitCode = generateOperations(_syncPal->conflictQueue()->top(), continueSolving);
 
         if (continueSolving) {
-            _syncPal->_conflictQueue->pop();
+            _syncPal->conflictQueue()->pop();
         } else {
-            _syncPal->_conflictQueue->clear();
+            _syncPal->conflictQueue()->clear();
             break;
         }
-    } while (!_syncPal->_conflictQueue->empty() || exitCode != ExitCode::Ok);
+    } while (!_syncPal->conflictQueue()->empty() || exitCode != ExitCode::Ok);
 
     // The sync must be restarted after the execution of the operations that resolve the conflict
     _syncPal->setRestart(true);
@@ -51,9 +51,10 @@ void ConflictResolverWorker::execute() {
 }
 
 ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bool &continueSolving) {
-    LOGW_SYNCPAL_INFO(_logger, L"Solving " << conflict.type() << L" conflict for items " << SyncName2WStr(conflict.node()->name())
-                                           << L" (" << Utility::s2ws(*conflict.node()->id()) << L") and "
-                                           << SyncName2WStr(conflict.otherNode()->name()) << L" ("
+    LOGW_SYNCPAL_INFO(_logger, L"Solving " << conflict.type() << L" conflict for items "
+                                           << Utility::formatSyncName(conflict.node()->name()) << L" ("
+                                           << Utility::s2ws(*conflict.node()->id()) << L") and "
+                                           << Utility::formatSyncName(conflict.otherNode()->name()) << L" ("
                                            << Utility::s2ws(*conflict.otherNode()->id()) << L")");
 
     continueSolving = false;
@@ -123,12 +124,9 @@ ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Con
         op->setTargetSide(localNode->side());
         op->setConflict(conflict);
         op->setIsDehydratedPlaceholder(true);
-        LOGW_SYNCPAL_INFO(_logger, L"The conflict occurred on a dehydrated placeholder. Operation "
-                                           << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
-                                           << Utility::formatSyncName(localNode->name()) << L" ("
-                                           << Utility::s2ws(*localNode->id()) << L")");
+        LOGW_SYNCPAL_INFO(_logger, L"The conflict occurred on a dehydrated placeholder. " << getLogString(op));
 
-        (void) _syncPal->_syncOps->pushOp(op);
+        (void) _syncPal->syncOps()->pushOp(op);
         continueSolving = true;
     }
     return ExitCode::Ok;
@@ -155,11 +153,9 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     op->setRelativeOriginPath(originPath);
     op->setRelativeDestinationPath(originPath.parent_path() / newName);
 
-    LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated on " << op->targetSide()
-                                             << L" replica for item " << Utility::formatSyncName(op->correspondingNode()->name())
-                                             << L" (" << Utility::s2ws(*op->correspondingNode()->id()) << L")");
+    LOGW_SYNCPAL_INFO(_logger, getLogString(op));
 
-    (void) _syncPal->_syncOps->pushOp(op);
+    (void) _syncPal->syncOps()->pushOp(op);
     continueSolving = true; // solve them all in the same sync
     return ExitCode::Ok;
 }
@@ -168,7 +164,7 @@ ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Confl
     const auto deleteNode = conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.otherNode();
     const auto editNode = conflict.node()->hasChangeEvent(OperationType::Edit) ? conflict.node() : conflict.otherNode();
     if (deleteNode->parentNode()->hasChangeEvent(OperationType::Delete)) {
-        // The move operation happen in a deleted directory.
+        // The edit operation happen in a deleted directory.
         // Move the items that have been modified locally (if any).
         // Delete operations will be propagated on next sync.
         rescueModifiedLocalNodes(conflict, editNode);
@@ -181,15 +177,13 @@ ExitCode ConflictResolverWorker::generateEditDeleteConflictOperation(const Confl
         deleteOp->setType(OperationType::Delete);
         deleteOp->setAffectedNode(editNode);
         deleteOp->setCorrespondingNode(deleteNode);
-        deleteOp->setTargetSide(deleteNode->side());
-        deleteOp->setOmit(true); // Target side does not matter when we remove only in DB
+        deleteOp->setOmit(true);
+        deleteOp->setTargetSide(deleteNode->side()); // Target side does not matter when we remove only in DB
         deleteOp->setConflict(conflict);
 
-        LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated in DB only for item "
-                                                 << Utility::formatSyncName(deleteOp->correspondingNode()->name()) << L" ("
-                                                 << Utility::s2ws(*deleteOp->correspondingNode()->id()) << L")");
+        LOGW_SYNCPAL_INFO(_logger, getLogString(deleteOp));
 
-        (void) _syncPal->_syncOps->pushOp(deleteOp);
+        (void) _syncPal->syncOps()->pushOp(deleteOp);
     }
     return ExitCode::Ok;
 }
@@ -200,11 +194,13 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
 
     if (const auto correspondingMoveNodeParent = correspondingNodeDirect(moveNode->parentNode());
         correspondingMoveNodeParent && correspondingMoveNodeParent->hasChangeEvent(OperationType::Delete) &&
-        _syncPal->_conflictQueue->hasConflict(ConflictType::MoveParentDelete)) {
+        _syncPal->conflictQueue()->hasConflict(ConflictType::MoveParentDelete)) {
         // If the move operation happens within a directory that was deleted on the other replica,
         // therefore, we ignore the Move-Delete conflict.
         // This conflict will be handled as a Move-ParentDelete conflict.
-        LOG_SYNCPAL_INFO(_logger, "Move-Delete conflict ignored because it will be solved by solving Move-ParentDelete conflict");
+        LOG_SYNCPAL_INFO(
+                _logger,
+                "Move-Delete conflict ignored because it will be solved by solving the Move-ParentDelete conflict instead.");
         continueSolving = true;
         return ExitCode::Ok;
     }
@@ -221,12 +217,9 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
         deleteOp->setTargetSide(moveNode->side());
         deleteOp->setConflict(conflict);
 
-        LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated for item "
-                                                 << Utility::formatSyncName(deleteOp->correspondingNode()->name()) << L" ("
-                                                 << Utility::s2ws(*deleteOp->correspondingNode()->id()) << L")");
+        LOGW_SYNCPAL_INFO(_logger, getLogString(deleteOp));
 
-
-        (void) _syncPal->_syncOps->pushOp(deleteOp);
+        (void) _syncPal->syncOps()->pushOp(deleteOp);
     }
 
     return ExitCode::Ok;
@@ -247,11 +240,9 @@ ExitCode ConflictResolverWorker::generateParentDeleteConflictOperation(const Con
     deleteOp->setTargetSide(correspondingNode->side());
     deleteOp->setConflict(conflict);
 
-    LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated on " << deleteOp->targetSide()
-                                             << L" replica for item " << SyncName2WStr(deleteNode->name()) << L" ("
-                                             << Utility::s2ws(*deleteNode->id()) << L")");
+    LOGW_SYNCPAL_INFO(_logger, getLogString(deleteOp));
 
-    (void) _syncPal->_syncOps->pushOp(deleteOp);
+    (void) _syncPal->syncOps()->pushOp(deleteOp);
     return ExitCode::Ok;
 }
 
@@ -262,10 +253,8 @@ ExitCode ConflictResolverWorker::generateUndoMoveOperation(const Conflict &confl
         return res;
     }
     moveOp->setConflict(conflict);
-    LOGW_SYNCPAL_INFO(_logger, L"Operation " << moveOp->type() << L" to be propagated on " << moveOp->targetSide()
-                                             << L" replica for item " << SyncName2WStr(moveOp->correspondingNode()->name())
-                                             << L" (" << Utility::s2ws(*moveOp->correspondingNode()->id()) << L")");
-    (void) _syncPal->_syncOps->pushOp(moveOp);
+    LOGW_SYNCPAL_INFO(_logger, getLogString(moveOp));
+    (void) _syncPal->syncOps()->pushOp(moveOp);
     return ExitCode::Ok;
 }
 
@@ -294,12 +283,9 @@ void ConflictResolverWorker::generateRescueOperation(const Conflict &conflict, c
     moveOp->setIsRescueOperation(true);
     node->setStatus(NodeStatus::ConflictOpGenerated);
 
-    LOGW_SYNCPAL_INFO(_logger, L"Operation " << moveOp->type() << L" to be propagated on " << moveOp->targetSide()
-                                             << L" replica for item " << Utility::formatSyncPath(moveOp->relativeOriginPath())
-                                             << L" (" << Utility::s2ws(*moveOp->correspondingNode()->id())
-                                             << L") because it has been modified locally.");
+    LOGW_SYNCPAL_INFO(_logger, getLogString(moveOp) << L" because it has been modified locally.");
 
-    (void) _syncPal->_syncOps->pushOp(moveOp);
+    (void) _syncPal->syncOps()->pushOp(moveOp);
 }
 
 std::shared_ptr<Node> ConflictResolverWorker::getLoserNode(const Conflict &conflict) {
@@ -379,6 +365,15 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     moveOp->setRelativeDestinationPath(destinationPath);
 
     return ExitCode::Ok;
+}
+
+std::wstring ConflictResolverWorker::getLogString(SyncOpPtr op) {
+    if (!op->correspondingNode()) return {};
+    std::wstringstream ss;
+    ss << L"Operation " << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
+       << Utility::formatSyncName(op->correspondingNode()->name()) << L" (" << Utility::s2ws(*op->correspondingNode()->id())
+       << L")";
+    return ss.str();
 }
 
 } // namespace KDC
