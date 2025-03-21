@@ -34,13 +34,6 @@ TmpBlacklistManager::~TmpBlacklistManager() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "TmpBlacklistManager destroyed");
 }
 
-int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, const ReplicaSide side) const noexcept {
-    const auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
-    const auto errorItem = errors.find(nodeId);
-
-    return errorItem == errors.end() ? 0 : errorItem->second.count + 1;
-}
-
 void TmpBlacklistManager::logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side,
                                      const SyncPath &path) const {
     LOGW_SYNCPAL_INFO(Log::instance()->getLogger(),
@@ -53,24 +46,19 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, const NodeTyp
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
 
     if (const auto errorItem = errors.find(nodeId); errorItem != errors.end()) {
-        errorItem->second.count++;
         errorItem->second.lastErrorTime = std::chrono::steady_clock::now();
-        logMessage(L"Error counter increased", nodeId, side, relativePath);
+        insertInBlacklist(nodeId, side);
 
-        if (errorItem->second.count >= 1) { // We try only once. TODO: If we keep this logic, no need to keep _count
-            insertInBlacklist(nodeId, side);
-
-            sentry::Handler::captureMessage(sentry::Level::Warning, "TmpBlacklistManager::increaseErrorCount",
-                                            "Blacklisting item temporarily to avoid infinite loop");
-            const Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyType::None,
-                            CancelType::TmpBlacklisted);
-            _syncPal->addError(err);
-        }
+        sentry::Handler::captureMessage(sentry::Level::Warning, "TmpBlacklistManager::increaseErrorCount",
+                                        "Blacklisting item temporarily to avoid infinite loop");
+        const Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyType::None,
+                        CancelType::TmpBlacklisted);
+        _syncPal->addError(err);
     } else {
         TmpErrorInfo errorInfo;
         errorInfo.path = relativePath;
         (void) errors.try_emplace(nodeId, errorInfo);
-        logMessage(L"Item added in error list", nodeId, side, relativePath);
+        logMessage(L"First time we try to blacklist this item, it is not blacklisted yet", nodeId, side, relativePath);
     }
 }
 
@@ -78,7 +66,6 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     if (const auto &errorItem = errors.find(nodeId); errorItem != errors.end()) {
         // Reset error timer
-        errorItem->second.count++;
         errorItem->second.lastErrorTime = std::chrono::steady_clock::now();
     } else {
         TmpErrorInfo errorInfo;

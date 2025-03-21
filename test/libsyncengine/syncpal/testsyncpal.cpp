@@ -252,15 +252,11 @@ void TestSyncPal::testBlacklist() {
 
     // Make sure the local and remote items are blacklisted
     _syncPal->handleAccessDeniedItem("A", ExitCause::FileAccessError);
-    CPPUNIT_ASSERT_EQUAL(1, _syncPal->_tmpBlacklistManager->getErrorCount("la", ReplicaSide::Local));
-    CPPUNIT_ASSERT_EQUAL(1, _syncPal->_tmpBlacklistManager->getErrorCount("ra", ReplicaSide::Remote));
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Local));
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Remote));
 
     // Make sure the local and remote items are removed from blacklist (and the descendant)
     _syncPal->removeItemFromTmpBlacklist("ra", ReplicaSide::Remote);
-    CPPUNIT_ASSERT_EQUAL(0, _syncPal->_tmpBlacklistManager->getErrorCount("la", ReplicaSide::Local));
-    CPPUNIT_ASSERT_EQUAL(0, _syncPal->_tmpBlacklistManager->getErrorCount("ra", ReplicaSide::Remote));
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Local));
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Remote));
 }
