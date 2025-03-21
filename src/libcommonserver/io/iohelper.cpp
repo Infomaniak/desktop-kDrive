@@ -28,7 +28,6 @@
 #if defined(__APPLE__) || defined(__unix__)
 #include <sys/stat.h>
 #include <sys/xattr.h>
-
 #endif
 #include <fstream>
 #include <log4cplus/loggingmacros.h> // LOGW_WARN
@@ -266,9 +265,9 @@ bool IoHelper::isFileAccessible(const SyncPath &, IoError &ioError) {
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoError::Success;
 
-    struct stat sb;
+    struct statx sb;
 
-    if (lstat(path.string().c_str(), &sb) < 0) {
+    if (lstatx(path.string().c_str(), &sb) < 0) {
         ioError = posixError2ioError(errno);
         return isExpectedError(ioError);
     }
@@ -288,7 +287,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 #if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
     buf->creationTime = sb.st_birthtime;
 #else
-    if (lgetxattr(path.string().c_str(), "kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
+    if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
         buf->creationTime = sb.st_ctime;
         const auto err = errno;
         if (err == ENOTSUP) {
@@ -299,7 +298,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
                 _unsuportedFSLogged = true;
             }
         } else if (err == ENODATA) {
-            if (lsetxattr(path.string().c_str(), "kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
+            if (lsetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
                 LOG_ERROR(logger(), "Failed to set kDrive.birthtime extended attribute: " << strerror(errno));
             }
         }
