@@ -18,8 +18,7 @@
 
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/localmovejob.h"
-
-#include <asserts.h>
+#include "utility/logiffail.h"
 
 namespace KDC {
 
@@ -36,7 +35,8 @@ ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) {
         return exitInfo;
     }
 
-    LOG_IF_FAIL(syncOp->conflict().localNode() && syncOp->conflict().localNode()->id().has_value())
+    LOG_IF_FAIL_2(Log::instance()->getLogger(),
+                  syncOp->conflict().localNode() && syncOp->conflict().localNode()->id().has_value())
     const auto localNodeId = syncOp->conflict().localNode()->id().value();
     const Error error(_syncPal->syncDbId(), localNodeId, {}, syncOp->conflict().localNode()->type(), syncOp->relativeOriginPath(),
                       ConflictType::None, InconsistencyType::None, CancelType::FileRescued, relativeDestinationPath);
