@@ -27,6 +27,7 @@
 
 #if defined(__APPLE__) || defined(__unix__)
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 #include <sys/xattr.h>
 #endif
 #include <fstream>
@@ -290,9 +291,8 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     if (sb.stx_attributes_mask & STATX_BTIME) {
         buf->creationTime = sb.stx_btime;
     } else {
-        buf->creationTime = sb.stx_ctime;
         if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
-            buf->creationTime = sb.st_ctime;
+            buf->creationTime = sb.stx_ctime;
             const auto err = errno;
             if (err == ENOTSUP) {
                 if (!_unsuportedFSLogged) {
@@ -310,9 +310,9 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
         }
     }
 #endif
-    buf->modtime = sb.st_mtime;
-    buf->size = sb.st_size;
-    if (S_ISLNK(sb.st_mode)) {
+    buf->modtime = sb.stx_mtime;
+    buf->size = sb.stx_size;
+    if (S_ISLNK(sb.stx_mode)) {
         // Symlink
         struct stat sbTarget;
         if (stat(path.string().c_str(), &sbTarget) < 0) {
