@@ -1356,7 +1356,7 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
     std::vector<SyncName> names;
     std::shared_ptr<Node> tmpNode = node;
     while (tmpNode && tmpNode->parentNode() != nullptr) {
-        if (tmpNode->moveOriginInfos().isValid()) {
+        if (tmpNode->hasChangeEvent(OperationType::Move)) {
             // Save origin file name
             names.push_back(tmpNode->moveOriginInfos().path().filename());
 

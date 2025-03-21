@@ -312,7 +312,6 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
 
             const auto otherNode = otherOp->affectedNode();
             LOG_IF_FAIL(otherNode)
-            if (!otherNode->moveOriginInfos().isValid()) continue;
             const auto otherNodeOriginPath = otherNode->moveOriginInfos().path();
             NodeId otherNodeOriginParentId;
             if (!getIdFromDb(otherNode->side(), otherNodeOriginPath.parent_path(), otherNodeOriginParentId)) continue;
@@ -440,7 +439,6 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
 
         const auto nodeX = opX->affectedNode();
         LOG_IF_FAIL(nodeX);
-        if (!nodeX->moveOriginInfos().isValid()) continue;
         const auto nodeOriginPathX = nodeX->moveOriginInfos().path();
         const auto nodeDestinationPathX = nodeX->getPath();
 

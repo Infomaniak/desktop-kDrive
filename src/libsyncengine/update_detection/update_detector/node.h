@@ -38,14 +38,23 @@ class Node {
                 MoveOriginInfos(const SyncPath &path, const NodeId &parentNodeId) :
                     _isValid(true), _path(path), _parentNodeId(parentNodeId) {}
 
-                bool isValid() const;
+                MoveOriginInfos &operator=(const MoveOriginInfos &newMoveOriginInfos) {
+                    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), newMoveOriginInfos.isValid());
+                    _isValid = newMoveOriginInfos.isValid();
+                    _path = newMoveOriginInfos.path();
+                    _parentNodeId = newMoveOriginInfos.parentNodeId();
+                    return *this;
+                }
                 const SyncPath &path() const;
                 const NodeId &parentNodeId() const;
 
             private:
+                bool isValid() const;
                 bool _isValid = false;
                 SyncPath _path = ":\0/:\0"; // Invalid path for increased safety
                 NodeId _parentNodeId = "-1"; // Invalid node id for increased safety
+                friend class Node;
+                friend class TestUpdateTreeWorker;
         };
 
     public:
@@ -107,10 +116,7 @@ class Node {
         inline void setSize(int64_t size) { _size = size; }
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
         bool setParentNode(const std::shared_ptr<Node> &parentNode);
-        inline void setMoveOriginInfos(const MoveOriginInfos &moveOriginInfos) {
-            LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), moveOriginInfos.isValid());
-            _moveOriginInfos = moveOriginInfos;
-        }
+        inline void setMoveOriginInfos(const MoveOriginInfos &moveOriginInfos) { _moveOriginInfos = moveOriginInfos; }
         inline void setStatus(const NodeStatus &status) { _status = status; }
 
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &children() { return _childrenById; }

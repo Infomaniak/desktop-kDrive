@@ -1005,9 +1005,7 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
                                                                                  : "")
                             : "",
                     syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeType::Unknown,
-                    syncOp->affectedNode()->moveOriginInfos().isValid() ? syncOp->affectedNode()->moveOriginInfos().path()
-                                                                        : syncOp->affectedNode()->getPath(),
-                    syncOp->conflict().type());
+                    syncOp->affectedNode()->moveOriginInfos().path(), syncOp->conflict().type());
 
             _syncPal->addError(err);
 
@@ -1202,9 +1200,7 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
                                                                                  : "")
                             : "",
                     syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeType::Unknown,
-                    syncOp->affectedNode()->moveOriginInfos().isValid() ? syncOp->affectedNode()->moveOriginInfos().path()
-                                                                        : syncOp->affectedNode()->getPath(),
-                    syncOp->conflict().type());
+                    syncOp->affectedNode()->moveOriginInfos().path(), syncOp->conflict().type());
 
             _syncPal->addError(err);
 
@@ -1602,10 +1598,8 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
     if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
         const Error err(_syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
                         syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
-                        syncOp->affectedNode()->moveOriginInfos().isValid() ? syncOp->affectedNode()->moveOriginInfos().path()
-                                                                            : syncItem.path(),
-                        syncItem.conflict(), syncItem.inconsistency(), cancelType,
-                        syncOp->affectedNode()->moveOriginInfos().isValid() ? relativeLocalPath : "");
+                        syncItem.path(), syncItem.conflict(), syncItem.inconsistency(), cancelType,
+                        syncOp->affectedNode()->hasChangeEvent(OperationType::Move) ? relativeLocalPath : "");
         _syncPal->addError(err);
     }
 

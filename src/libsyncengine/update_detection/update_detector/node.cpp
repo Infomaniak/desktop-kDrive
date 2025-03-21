@@ -219,7 +219,6 @@ bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
     return !isParentOf(parentNode);
 }
 bool Node::MoveOriginInfos::isValid() const {
-    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), _isValid);
     return _isValid;
 }
 const SyncPath &Node::MoveOriginInfos::path() const {
