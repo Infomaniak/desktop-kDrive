@@ -128,14 +128,16 @@ ExitCode PlatformInconsistencyCheckerWorker::checkLocalTree(std::shared_ptr<Node
         blacklistNode(localNode, InconsistencyType::NameLength);
         return ExitCode::Ok;
     }
-    auto it = localNode->children().begin();
-    for (; it != localNode->children().end(); it++) {
+    if (!localNode->isRoot() && PlatformInconsistencyCheckerUtility::isNameOnlySpaces(localNode->name())) {
+        blacklistNode(localNode, InconsistencyType::ForbiddenCharOnlySpaces);
+        return ExitCode::Ok;
+    }
+    for (auto it = localNode->children().begin(); it != localNode->children().end(); ++it) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
 
-        const ExitCode exitCode = checkLocalTree(it->second, parentPath / localNode->name());
-        if (exitCode != ExitCode::Ok) {
+        if (const auto exitCode = checkLocalTree(it->second, parentPath / localNode->name()); exitCode != ExitCode::Ok) {
             return exitCode;
         }
     }
