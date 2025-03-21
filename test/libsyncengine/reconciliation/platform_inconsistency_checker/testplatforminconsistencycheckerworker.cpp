@@ -287,11 +287,11 @@ void TestPlatformInconsistencyCheckerWorker::testNameSizeLocalTree() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testOnlySpaces() {
-    CPPUNIT_ASSERT_EQUAL(true, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(" "));
-    CPPUNIT_ASSERT_EQUAL(true, PlatformInconsistencyCheckerUtility::isNameOnlySpaces("     "));
-    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(" 1"));
-    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces("1 "));
-    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(" 1 "));
+    CPPUNIT_ASSERT_EQUAL(true, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str(" ")));
+    CPPUNIT_ASSERT_EQUAL(true, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str("     ")));
+    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str(" 1")));
+    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str("1 ")));
+    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str(" 1 ")));
 }
 
 void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {
