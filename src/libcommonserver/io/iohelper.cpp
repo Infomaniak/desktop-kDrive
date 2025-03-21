@@ -299,7 +299,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
                 _unsuportedFSLogged = true;
             }
         } else if (err == ENODATA) {
-            if (lsetxattr(path.string().c_str(), "kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
+            if (lsetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
                 LOG_ERROR(logger(), "Failed to set kDrive.birthtime extended attribute: " << strerror(errno));
             }
         }
