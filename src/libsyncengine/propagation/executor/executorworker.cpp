@@ -433,50 +433,51 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     bool alreadyExist = false;
 
     // List all items in parent dir
+    std::shared_ptr<GetFileListJob> job = nullptr;
     try {
-        GetFileListJob job(_syncPal->driveDbId(), parentId);
-        ExitCode exitCode = job.runSynchronously();
-        if (exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
-                                              << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << exitCode
-                                              << " " << job.exitCause());
-            return {exitCode, job.exitCause()};
-        }
-
-        Poco::JSON::Object::Ptr resObj = job.jsonRes();
-        if (!resObj) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                             "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
-            return {ExitCode::BackError, ExitCause::ApiErr};
-        }
-
-        Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-        if (!dataArray) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                             "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
-            return {ExitCode::BackError, ExitCause::ApiErr};
-        }
-
-        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-            Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-            std::string name;
-            if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
-                LOG_SYNCPAL_WARN(
-                        Log::instance()->getLogger(),
-                        "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
-                return {ExitCode::BackError, ExitCause::ApiErr};
-            }
-
-            if (name == absolutePath.filename().string()) {
-                alreadyExist = true;
-                break;
-            }
-        }
+        job = std::make_shared<GetFileListJob>(_syncPal->driveDbId(), parentId);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for driveDbId="
                                                        << _syncPal->driveDbId() << " nodeId=" << parentId.c_str()
                                                        << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
+
+    ExitCode exitCode = job->runSynchronously();
+    if (exitCode != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
+                                          << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << exitCode << " "
+                                          << job->exitCause());
+        return {exitCode, job->exitCause()};
+    }
+
+    Poco::JSON::Object::Ptr resObj = job->jsonRes();
+    if (!resObj) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+        return {ExitCode::BackError, ExitCause::ApiErr};
+    }
+
+    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+    if (!dataArray) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+        return {ExitCode::BackError, ExitCause::ApiErr};
+    }
+
+    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
+        Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
+        std::string name;
+        if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                             "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId.c_str());
+            return {ExitCode::BackError, ExitCause::ApiErr};
+        }
+
+        if (name == absolutePath.filename().string()) {
+            alreadyExist = true;
+            break;
+        }
     }
 
     if (!alreadyExist) {
