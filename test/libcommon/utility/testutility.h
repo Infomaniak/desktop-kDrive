@@ -37,6 +37,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testLanguageCode);
         CPPUNIT_TEST(testIsSupportedLanguage);
         CPPUNIT_TEST(testTruncateLongLogMessage);
+        CPPUNIT_TEST(testLogIfFail);
 #ifdef _WIN32
         CPPUNIT_TEST(testGetLastErrorMessage);
 #endif
@@ -58,6 +59,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testLanguageCode();
         void testIsSupportedLanguage();
         void testTruncateLongLogMessage();
+        void testLogIfFail();
 #ifdef _WIN32
         void testGetLastErrorMessage();
 #endif

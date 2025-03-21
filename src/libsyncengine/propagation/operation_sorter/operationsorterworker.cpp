@@ -654,16 +654,20 @@ void OperationSorterWorker::addPairToReorderings(const SyncOpPtr &op1, const Syn
 bool OperationSorterWorker::getIdFromDb(const ReplicaSide side, const SyncPath &path, NodeId &id) const {
     bool found = false;
     std::optional<NodeId> tmpId;
-    if (!_syncPal->_syncDb->id(side, path, tmpId, found)) {
+
+    if (!_syncPal->syncDb()->id(side, path, tmpId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return false;
     }
+
     if (!found || !tmpId) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found for path = " << Path2WStr(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found for " << Utility::formatSyncPath(path));
         return false;
     }
-    LOG_IF_FAIL(tmpId.has_value())
-    id = tmpId.value();
+
+    LOG_IF_FAIL(tmpId)
+    id = *tmpId;
+
     return true;
 }
 

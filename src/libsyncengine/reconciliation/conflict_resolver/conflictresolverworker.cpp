@@ -19,10 +19,11 @@
 #include "conflictresolverworker.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "libcommonserver/utility/utility.h"
+#include "utility/logiffail.h"
 
 namespace KDC {
 
-ConflictResolverWorker::ConflictResolverWorker(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
+ConflictResolverWorker::ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictResolverWorker::execute() {

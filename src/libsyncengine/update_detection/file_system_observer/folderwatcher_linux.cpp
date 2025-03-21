@@ -268,7 +268,7 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
         ++it;
         LOG4CPLUS_ERROR(_logger, "Error in inotify_rm_watch :" << errno);
         sentry::Handler::captureMessage(sentry::Level::Error, "FolderWatcher_linux::removeFoldersBelow",
-                                        "Error in inotify_rm_watch :" + errno);
+                                        "Error in inotify_rm_watch :" + std::to_string(errno));
     }
 }
 

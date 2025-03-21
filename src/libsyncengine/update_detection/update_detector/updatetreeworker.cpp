@@ -19,7 +19,7 @@
 #include "updatetreeworker.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/utility/utility.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 
