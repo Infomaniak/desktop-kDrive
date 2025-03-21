@@ -20,7 +20,7 @@
 
 #include "utility/types.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/utility/logiffail.h"
+#include "libcommon/utility/logiffail.h"
 
 #include <algorithm>
 #include <vector>
@@ -39,7 +39,7 @@ class Node {
                     _isValid(true), _path(path), _parentNodeId(parentNodeId) {}
 
                 MoveOriginInfos &operator=(const MoveOriginInfos &newMoveOriginInfos) {
-                    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), newMoveOriginInfos.isValid());
+                    LOG_IF_FAIL(Log::instance()->getLogger(), newMoveOriginInfos.isValid());
                     _isValid = newMoveOriginInfos.isValid();
                     _path = newMoveOriginInfos.path();
                     _parentNodeId = newMoveOriginInfos.parentNodeId();

@@ -19,9 +19,9 @@
 #include "node.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/logiffail.h"
 
 namespace KDC {
 
@@ -85,12 +85,12 @@ std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) 
 
 void Node::setChangeEvents(const OperationType ops) {
     _changeEvents = ops;
-    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
+    LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
 }
 
 void Node::insertChangeEvent(const OperationType &op) {
     _changeEvents |= op;
-    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
+    LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
 }
 
 std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nodeId /*= ""*/) {
@@ -222,11 +222,11 @@ bool Node::MoveOriginInfos::isValid() const {
     return _isValid;
 }
 const SyncPath &Node::MoveOriginInfos::path() const {
-    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), isValid());
+    LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
     return _path;
 }
 const NodeId &Node::MoveOriginInfos::parentNodeId() const {
-    LOG_IF_FAIL_LOGGER(Log::instance()->getLogger(), isValid());
+    LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
     return _parentNodeId;
 }
 } // namespace KDC
