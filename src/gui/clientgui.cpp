@@ -145,6 +145,9 @@ void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) 
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
             userIt->second.setCredentialsAsked(true);
+            if (_addDriveWizard) {
+                emit _addDriveWizard->exit();
+            }
             _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
         }
     }
