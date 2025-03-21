@@ -36,7 +36,6 @@
 #include "jobs/network/API_v2/getdriveslistjob.h"
 #include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/getsizejob.h"
-#include "jobs/jobmanager.h"
 #include "utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
