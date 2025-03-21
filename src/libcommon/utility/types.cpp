@@ -834,8 +834,8 @@ std::string toString(const SignalType e) {
 }
 
 void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList) {
-    long index = indexInList(exitInfoToMerge.code(), exitCodeList);
-    long thisIndex = indexInList(this->code(), exitCodeList);
+    const long index = indexInList(exitInfoToMerge.code(), exitCodeList);
+    const long thisIndex = indexInList(this->code(), exitCodeList);
 
     if (index < thisIndex) {
         *this = exitInfoToMerge;
@@ -843,9 +843,8 @@ void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode
 }
 
 long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode> &exitCodeList) {
-    auto it = find_if(exitCodeList.begin(), exitCodeList.end(),
-                      [exitCode](const ExitCode &tmpExitCode) { return exitCode == tmpExitCode; });
-    long index = it - exitCodeList.begin();
+    const auto it = std::find(exitCodeList.begin(), exitCodeList.end(), exitCode);
+    const long index = it - exitCodeList.begin();
     return index;
 }
 

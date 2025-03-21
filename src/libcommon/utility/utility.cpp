@@ -971,7 +971,7 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
 }
 
 SyncPath CommonUtility::applicationFilePath() {
-    size_t maxPathLength = CommonUtility::maxPathLength();
+    const size_t maxPathLength = CommonUtility::maxPathLength();
     SyncChar *pathStr = new SyncChar[maxPathLength + 1];
     memset(pathStr, Str('\0'), (maxPathLength + 1) * sizeof(SyncChar));
 
