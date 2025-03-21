@@ -17,21 +17,22 @@
  */
 
 #include "testremotefilesystemobserverworker.h"
-
-#include <memory>
+#include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
+#include "requests/syncnodecache.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommon/utility/utility.h"
+#include "libcommonserver/utility/utility.h"
+#include "libsyncengine/jobs/jobmanager.h"
 #include "libsyncengine/jobs/network/API_v2/deletejob.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
 #include "libsyncengine/jobs/network/API_v2/uploadjob.h"
-#include "jobs/network/networkjobsparams.h"
-#include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/utility/utility.h"
+#include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
-#include "requests/syncnodecache.h"
 #include "test_utility/testhelpers.h"
+
+#include <memory>
 
 using namespace CppUnit;
 using namespace std::literals;
@@ -107,6 +108,9 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
