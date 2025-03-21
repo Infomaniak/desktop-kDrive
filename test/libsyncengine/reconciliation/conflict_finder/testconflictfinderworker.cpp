@@ -1051,20 +1051,20 @@ void TestConflictFinderWorker::testConflictCmp() {
                                                         ConflictType::EditEdit,         ConflictType::MoveCreate};
     const size_t nbConflictType = conflictTypes.size();
 
-    const const auto localNodeA =
+    const auto localNodeA =
             std::make_shared<Node>(0, ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, "A", 0, 0,
                                            0, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
 
-    const const auto remoteNodeA =
+    const auto remoteNodeA =
             std::make_shared<Node>(0, ReplicaSide::Remote, Str("A"), NodeType::Directory, OperationType::None, "A", 0, 0,
                                            0, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     OperationType allOp = OperationType::Create | OperationType::Edit | OperationType::Delete | OperationType::Move;
-    const const auto localNodeAA = std::make_shared<Node>(
+    const auto localNodeAA = std::make_shared<Node>(
             0, ReplicaSide::Local, Str("AA"), NodeType::Directory, allOp, "AA", 0, 0, 0, localNodeA);
     localNodeAA->setMoveOriginInfos({"AA1", localNodeA->parentNode()->id().value()});
 
-    const const auto remoteNodeAA = std::make_shared<Node>(
+    const auto remoteNodeAA = std::make_shared<Node>(
             0, ReplicaSide::Remote, Str("AA"), NodeType::Directory, allOp, "AA", 0, 0, 0, remoteNodeA);
     remoteNodeAA->setMoveOriginInfos({"AA2", remoteNodeA->parentNode()->id().value()});
 
