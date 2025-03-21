@@ -129,8 +129,8 @@ namespace KDC {
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                     \
         sentry_add_breadcrumb(crumb);                                                                  \
         sentry::Handler::captureMessage(sentry::Level::Fatal, "Log fatal error", customLogStreamStr_); \
-        LOG4CPLUS_FATAL(logger, customLogStreamStr_.c_str());
-}
+        LOG4CPLUS_FATAL(logger, customLogStreamStr_.c_str());                                          \
+    }
 
 #define LOGW_FATAL(logger, logEvent)                                                                                   \
     {                                                                                                                  \
@@ -141,8 +141,8 @@ namespace KDC {
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                                     \
         sentry_add_breadcrumb(crumb);                                                                                  \
         sentry::Handler::captureMessage(sentry::Level::Fatal, "Log fatal error", Utility::ws2s(customLogWStreamStr_)); \
-        LOG4CPLUS_FATAL(logger, customLogWStreamStr_.c_str());
-}
+        LOG4CPLUS_FATAL(logger, customLogWStreamStr_.c_str());                                                         \
+    }
 #else
 #define LOG_DEBUG(logger, logEvent)                              \
     {                                                            \
