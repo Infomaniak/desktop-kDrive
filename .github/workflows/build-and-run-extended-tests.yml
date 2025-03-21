@@ -32,6 +32,7 @@ jobs:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
+      COVFILE: ${{ github.workspace }}\\src\\test.cov
     steps:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
@@ -63,36 +64,45 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          set COVFILE=%cd%\src\test.cov  
+          
           call "cov01.exe" -1
-      
+          call "cov01.exe" -s
+          
+          set PATH=%ProgramFiles%\BullseyeCoverage\bin;%ProgramFiles%\Microsoft Visual Studio\VC\bin;%PATH%
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
       - name: Execute tests
         run: |
+          & "cov01.exe" "-1" # coverage on
+          & "cov01.exe" "-s" # show status
+
           ./infomaniak-build-tools/run-tests.ps1
 
-      - name: Install sonar-scanner
-        if: false
-        uses: SonarSource/sonarcloud-github-c-cpp@v3
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
+      - name: Compute code coverage
+        run : |          
+          & "covselect.exe" "--add" 'exclude folder c:/'
+          & "covselect.exe" "--add" 'exclude folder ../'
+          & "covselect.exe" "--add" 'exclude folder 3rdparty/'
+          & "covselect.exe" "--add" 'exclude folder gui/'
+          
+          & "cov01.exe" "-0" # coverage off
+          & "cov01.exe" "-s" # show status
 
-      - name: Run sonar-scanner
-        if: false
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          SONAR_TOKEN: ${{ secrets.SONAR_DESKTOP_KDRIVE_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
-        run: >
-            sonar-scanner 
-            --define sonar.projectKey="Infomaniak_desktop-kDrive"
-            --define sonar.organization="infomaniak"
-            --define sonar.host.url="https://sonarcloud.io"
-            --define sonar.sources="src"
-            --define sonar.exclusions="src/3rdparty/**"
-            --define sonar.cfamily.compile-commands="build-windows/build/compile_commands.json"
+          & "covhtml.exe" "coverage_html"
+
+          & "cov01.exe" "-1" # coverage on
+          & "cov01.exe" "-s" # show status
+
+      - name: Code coverage preview
+        id: html_preview
+        uses: pavi2410/html-preview-action@v2
+        with:
+          html_file: 'coverage_html/index.html'
+
+      - name: Deactivate BullseyeCoverage
+        run: |
+          & "cov01.exe" "-0" # coverage off
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
