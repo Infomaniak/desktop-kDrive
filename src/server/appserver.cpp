@@ -17,7 +17,7 @@
  */
 
 #include "appserver.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/logiffail.h"
 #include "common/utility.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "migration/migrationparams.h"

@@ -20,7 +20,6 @@
 #include "config.h"
 #include "version.h"
 #include "common/utility.h"
-#include "libcommon/asserts.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"

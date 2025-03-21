@@ -119,7 +119,7 @@ function Get-Thumbprint {
 #                                                                                               #
 #################################################################################################
 
-$msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -version [16.0,17.0] -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe 
+$msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -version [16.0,17.0] -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
 $7zaPath = "${env:ProgramFiles}\7-Zip\7za.exe"
 
 Set-Alias msbuild $msbuildPath
@@ -299,6 +299,7 @@ $flags = @(
 if ($ci)
 {
 	$flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
+	$flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
 }
 
 $args += $flags
@@ -422,9 +423,9 @@ foreach ($file in $binaries)
 
 	$filename = Split-Path -Leaf $file
 
-	& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.comodoca.com /v $archivePath/$filename
+	& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $archivePath/$filename
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-	& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.comodoca.com?td=sha256 /td sha256 /as /v $archivePath/$filename
+	& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $archivePath/$filename
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
@@ -447,8 +448,8 @@ Move-Item -Path "$buildPath\$appName" -Destination "$contentPath"
 # Sign final installer
 if (Test-Path -Path $installerPath)
 {
-	& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.comodoca.com /v $installerPath
-	& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.comodoca.com?td=sha256 /td sha256 /as /v $installerPath
+	& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.digicert.com /v $installerPath
+	& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.digicert.com?td=sha256 /td sha256 /as /v $installerPath
 }
 else
 {
