@@ -28,7 +28,7 @@ function display_help {
   echo "where:"
   echo "-h  Show this help text."
   echo "-t <build-type>" 
-  echo "  Set the type of the build. Defaults to 'debug'. The valid values are: 'debug' or 'release'."
+  echo "  Set the type of the build. Defaults to 'debug'. The valid values are: 'debug' or 'release'. Defaults to 'debug'."
   echo "-u <unit-tests>" 
   echo "  Activate the build of unit tests. Without this flag, unit tests will not be built."
 }

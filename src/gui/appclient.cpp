@@ -19,7 +19,7 @@
 #include "appclient.h"
 #include "guiutility.h"
 #include "config.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/qlogiffail.h"
 #include "customproxystyle.h"
 #include "config.h"
 #include "guirequests.h"
