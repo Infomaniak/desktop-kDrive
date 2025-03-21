@@ -999,6 +999,23 @@ void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
     }
 }
 
+bool ClientGui::isUserUsed(int userDbId) const {
+    for (const auto &[accountDbId, accountInfoClient]: _accountInfoMap) {
+        if (accountInfoClient.userDbId() == userDbId) {
+            for (const auto &[driveDbId, driveInfoClient]: _driveInfoMap) {
+                if (driveInfoClient.accountDbId() == accountDbId) {
+                    for (const auto &[syncDbId, syncInfoClient]: _syncInfoMap) {
+                        if (syncInfoClient.driveDbId() == driveDbId) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
 #ifdef Q_OS_LINUX
     resetSystray(currentVersionLocked);

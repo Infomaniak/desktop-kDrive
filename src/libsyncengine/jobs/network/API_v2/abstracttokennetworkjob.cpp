@@ -366,6 +366,12 @@ std::string AbstractTokenNetworkJob::loadToken() {
                             throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
                         }
 
+                        if (user.keychainKey().empty()) {
+                            LOG_DEBUG(_logger, "Access token is empty");
+                            _exitCode = ExitCode::InvalidToken;
+                            throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN);
+                        }
+
                         // Read token form keystore
                         std::shared_ptr<Login> login = std::shared_ptr<Login>(new Login(user.keychainKey()));
                         if (!login->hasToken()) {
@@ -413,6 +419,12 @@ std::string AbstractTokenNetworkJob::loadToken() {
                     assert(false);
                     LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
                     throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
+                }
+
+                if (user.keychainKey().empty()) {
+                    LOG_DEBUG(_logger, "Access token is empty");
+                    _exitCode = ExitCode::InvalidToken;
+                    throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN);
                 }
 
                 // Read token form keystore
