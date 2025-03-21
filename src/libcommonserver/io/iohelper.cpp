@@ -266,16 +266,16 @@ bool IoHelper::isFileAccessible(const SyncPath &, IoError &ioError) {
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoError::Success;
 
-    struct statx sb;
+    struct stat sb;
 
-    if (lstatx(path.string().c_str(), &sb) < 0) {
+    if (lstat(path.string().c_str(), &sb) < 0) {
         ioError = posixError2ioError(errno);
         return isExpectedError(ioError);
     }
 
 #if defined(__APPLE__)
     buf->isHidden = false;
-    if (sb.stx_flags & UF_HIDDEN) {
+    if (sb.st_flags & UF_HIDDEN) {
         buf->isHidden = true;
     }
 #elif defined(__unix__)
@@ -284,35 +284,30 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     }
 #endif
 
-    buf->inode = sb.stx_ino;
+    buf->inode = sb.st_ino;
 #if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-    buf->creationTime = sb.stx_birthtime;
+    buf->creationTime = sb.st_birthtime;
 #else
-    if (sb.stx_attributes_mask & STATX_BTIME) {
-        buf->creationTime = sb.stx_btime;
-    } else {
-        if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
-            buf->creationTime = sb.stx_ctime;
-            const auto err = errno;
-            if (err == ENOTSUP) {
-                if (!_unsuportedFSLogged) {
-                    LOG_ERROR(logger(), "The file system does not support extended attributes");
-                    sentry::Handler::captureMessage(
-                            sentry::Level::Warning, "Unsuported file system",
-                            "The file system does not support neither creation time nor extended attributes");
-                    _unsuportedFSLogged = true;
-                }
-            } else if (err == ENODATA) {
-                if (lsetxattr(path.string().c_str(), "kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
-                    LOG_ERROR(logger(), "Failed to set kDrive.birthtime extended attribute: " << strerror(errno));
-                }
+    if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
+        buf->creationTime = sb.st_ctime;
+        const auto err = errno;
+        if (err == ENOTSUP) {
+            if (!_unsuportedFSLogged) {
+                LOG_ERROR(logger(), "The file system does not support extended attributes");
+                sentry::Handler::captureMessage(sentry::Level::Warning, "Unsuported file system",
+                                                "The file system does not support neither creation time nor extended attributes");
+                _unsuportedFSLogged = true;
+            }
+        } else if (err == ENODATA) {
+            if (lsetxattr(path.string().c_str(), "kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
+                LOG_ERROR(logger(), "Failed to set kDrive.birthtime extended attribute: " << strerror(errno));
             }
         }
     }
 #endif
-    buf->modtime = sb.stx_mtime;
-    buf->size = sb.stx_size;
-    if (S_ISLNK(sb.stx_mode)) {
+    buf->modtime = sb.st_mtime;
+    buf->size = sb.st_size;
+    if (S_ISLNK(sb.st_mode)) {
         // Symlink
         struct stat sbTarget;
         if (stat(path.string().c_str(), &sbTarget) < 0) {
