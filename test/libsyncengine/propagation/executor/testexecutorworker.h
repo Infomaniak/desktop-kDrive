@@ -61,6 +61,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testTerminatedJobsQueue);
         CPPUNIT_TEST(testPropagateConflictToDbAndTree);
         CPPUNIT_TEST(testDeleteOpNodes);
+        CPPUNIT_TEST(testInitSyncFileItem);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -76,6 +77,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         void testIsValidDestination();
         void testTerminatedJobsQueue();
         void testPropagateConflictToDbAndTree();
+        void testInitSyncFileItem();
         void testDeleteOpNodes();
 
         bool opsExist(SyncOpPtr op);

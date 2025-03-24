@@ -61,7 +61,7 @@ ConflictCmp::~ConflictCmp() {
     _remoteUpdateTree.reset();
 }
 
-bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
+bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const  {
     bool ret = false;
 
     // Compare conflicts types
@@ -84,12 +84,12 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
             case ConflictType::MoveMoveSource:
                 // Move origin path of the local node
                 localNode = c1.localNode();
-                if (localNode && localNode->moveOrigin().has_value()) {
-                    path1 = *c1.node()->moveOrigin();
+                if (localNode) {
+                    path1 = c1.node()->moveOriginInfos().path();
                 }
                 localNode = c2.localNode();
-                if (localNode && localNode->moveOrigin().has_value()) {
-                    path2 = *c2.correspondingNode()->moveOrigin();
+                if (localNode) {
+                    path2 = c2.correspondingNode()->moveOriginInfos().path();
                 }
                 break;
             case ConflictType::MoveMoveDest:
