@@ -61,8 +61,7 @@ std::shared_ptr<Node> TestSituationGenerator::moveNode(const ReplicaSide side, c
                                                       : _syncpal->updateTree(side)->getNodeById(generateId(side, newParentRawId));
     const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, id));
 
-    node->setMoveOrigin(node->getPath());
-    node->setMoveOriginParentDbId(newParentNode->idb());
+    node->setMoveOriginInfos({node->getPath(), newParentNode->id().value()});
     (void) node->parentNode()->deleteChildren(node);
     (void) node->setParentNode(newParentNode);
     (void) newParentNode->insertChildren(node);

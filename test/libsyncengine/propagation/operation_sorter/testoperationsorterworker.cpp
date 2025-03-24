@@ -98,6 +98,7 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
 
     // Rename B into A
+    nodeB->setMoveOriginInfos({nodeB->getPath(), "1"});
     nodeB->insertChangeEvent(OperationType::Move);
     nodeB->setName(Str("A"));
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeB);

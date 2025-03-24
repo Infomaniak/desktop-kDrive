@@ -43,6 +43,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         CPPUNIT_TEST(testMoveDelete5);
         CPPUNIT_TEST(testMoveDeletePlaceholder);
         CPPUNIT_TEST(testMoveParentDelete);
+        CPPUNIT_TEST(testMoveParentDeleteb);
         CPPUNIT_TEST(testMoveParentDelete2);
         CPPUNIT_TEST(testMoveParentDeleteDehydratedPlaceholder);
         CPPUNIT_TEST(testCreateParentDelete);
@@ -73,6 +74,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         void testMoveDelete5();
         void testMoveDeletePlaceholder();
         void testMoveParentDelete();
+        void testMoveParentDeleteb();
         void testMoveParentDelete2();
         void testMoveParentDeleteDehydratedPlaceholder();
         void testCreateParentDelete();

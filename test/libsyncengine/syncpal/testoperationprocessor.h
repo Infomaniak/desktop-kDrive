@@ -15,31 +15,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
+#include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+#include "syncpal/operationprocessor.h"
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include "test_utility/testbase.h"
+using namespace CppUnit;
 
 namespace KDC {
 
-class TestTypes : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestTypes);
-        CPPUNIT_TEST(testOtherSide);
-        CPPUNIT_TEST(testStreamConversion);
-        CPPUNIT_TEST(testExitInfo);
-        CPPUNIT_TEST(testToString);
+class TestOperationProcessor : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestOperationProcessor);
+        CPPUNIT_TEST(testIsPseudoConflict);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void) override { TestBase::start(); }
-        void tearDown(void) override { TestBase::stop(); }
+        TestOperationProcessor() {}
+        void setUp() override;
+        void tearDown() override;
 
-    protected:
-        void testOtherSide();
-        void testStreamConversion();
-        void testExitInfo();
-        void testToString();
+    private:
+        std::shared_ptr<SyncPal> _syncPal;
+        std::shared_ptr<ParmsDb> _parmsDb;
+        int _driveDbId = 0;
+        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
+
+        void testIsPseudoConflict();
 };
+
 } // namespace KDC

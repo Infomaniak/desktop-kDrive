@@ -316,14 +316,11 @@ bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> 
 }
 
 ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, const SyncOpPtr moveOp) {
-    if (!moveNode->moveOrigin().has_value()) {
-        LOG_SYNCPAL_WARN(_logger, "Failed to retrieve origin parent path");
-        return ExitCode::DataError;
-    }
+    LOG_IF_FAIL(moveNode)
 
     const auto updateTree = _syncPal->updateTree(moveNode->side());
-    const auto originParentNode = updateTree->getNodeByPath(moveNode->moveOrigin()->parent_path());
-    auto originPath = moveNode->moveOrigin();
+    const auto originParentNode = updateTree->getNodeById(moveNode->moveOriginInfos().parentNodeId());
+    const auto originPath = moveNode->moveOriginInfos().path();
     bool undoPossible = true;
 
     if (!originParentNode) {
@@ -334,9 +331,8 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     if (isABelowB(originParentNode, moveNode) || originParentNode->hasChangeEvent(OperationType::Delete)) {
         undoPossible = false;
     } else {
-        if (const auto potentialOriginNode =
-                    originParentNode->getChildExcept(originPath->filename().native(), OperationType::Delete);
-            potentialOriginNode && (potentialOriginNode->hasChangeEvent(OperationType::Create) ||
+        auto potentialOriginNode = originParentNode->getChildExcept(originPath.filename().native(), OperationType::Delete);
+        if (potentialOriginNode && (potentialOriginNode->hasChangeEvent(OperationType::Create) ||
                                     potentialOriginNode->hasChangeEvent(OperationType::Move))) {
             undoPossible = false;
         }

@@ -259,7 +259,7 @@ void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
 
     if (bitWiseEnumToBool(syncOp->type() & OperationType::Move)) {
         syncItem.setInstruction(SyncFileInstruction::Move);
-        syncItem.setPath(syncOp->affectedNode()->moveOrigin().has_value() ? *syncOp->affectedNode()->moveOrigin() : SyncPath());
+        syncItem.setPath(syncOp->affectedNode()->moveOriginInfos().path());
         syncItem.setNewPath(syncOp->affectedNode()->getPath());
     } else {
         syncItem.setPath(syncOp->affectedNode()->getPath());
@@ -364,12 +364,10 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
 
                 // Ignore operation
                 if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
-                    const Error err(
-                            _syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
-                            syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
-                            syncOp->affectedNode()->moveOrigin().has_value() ? syncOp->affectedNode()->moveOrigin().value()
-                                                                             : syncItem.path(),
-                            syncItem.conflict(), syncItem.inconsistency(), CancelType::Create);
+                    const Error err(_syncPal->syncDbId(),
+                                    syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
+                                    syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
+                                    syncItem.path(), syncItem.conflict(), syncItem.inconsistency(), CancelType::Create);
                     _syncPal->addError(err);
                 }
 
@@ -1546,12 +1544,10 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
     }
 
     if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
-        const Error err(
-                _syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
-                syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
-                syncOp->affectedNode()->moveOrigin().has_value() ? syncOp->affectedNode()->moveOrigin().value() : syncItem.path(),
-                syncItem.conflict(), syncItem.inconsistency(), cancelType,
-                syncOp->affectedNode()->moveOrigin().has_value() ? relativeLocalPath : "");
+        const Error err(_syncPal->syncDbId(), syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : "",
+                        syncItem.remoteNodeId().has_value() ? syncItem.remoteNodeId().value() : "", syncItem.type(),
+                        syncItem.path(), syncItem.conflict(), syncItem.inconsistency(), cancelType,
+                        syncOp->affectedNode()->hasChangeEvent(OperationType::Move) ? relativeLocalPath : "");
         _syncPal->addError(err);
     }
 

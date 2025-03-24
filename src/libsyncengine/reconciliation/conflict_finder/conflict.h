@@ -53,7 +53,7 @@ class ConflictCmp {
         ConflictCmp(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree);
         ~ConflictCmp();
 
-        bool operator()(const Conflict &c1, const Conflict &c2);
+        bool operator()(const Conflict &c1, const Conflict &c2) const;
 
         [[nodiscard]] SyncPath pathOfEvent(const Conflict &conflict, OperationType optype) const;
 
