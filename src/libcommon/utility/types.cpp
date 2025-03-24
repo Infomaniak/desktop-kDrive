@@ -204,6 +204,8 @@ std::string toString(const ExitCause e) {
             return "ShareLinkAlreadyExists";
         case ExitCause::InvalidArgument:
             return "InvalidArgument";
+        case ExitCause::InvalidDestination:
+            return "InvalidDestination";
         default:
             return noConversionStr;
     }

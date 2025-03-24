@@ -257,7 +257,8 @@ enum class ExitCause {
     OperationCanceled,
     ShareLinkAlreadyExists,
     InvalidArgument,
-    InvalidDestination EnumEnd
+    InvalidDestination,
+    EnumEnd
 };
 std::string toString(ExitCause e);
 
