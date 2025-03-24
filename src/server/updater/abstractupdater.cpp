@@ -22,7 +22,7 @@
 #include "requests/parameterscache.h"
 #if defined(__APPLE__)
 #include "sparkleupdater.h"
-#elif defined(_Win32)
+#elif defined(_WIN32)
 #include "windowsupdater.h"
 #else
 #include "linuxupdater.h"
@@ -144,7 +144,7 @@ std::unique_ptr<AbstractUpdater> createUpdater() {
     return std::make_unique<WindowsUpdater>();
 #else
     // the best we can do is notify about updates
-    return make_unique<LinuxUpdater>();
+    return std::make_unique<LinuxUpdater>();
 #endif
 }
 
