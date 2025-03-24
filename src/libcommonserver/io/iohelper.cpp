@@ -291,17 +291,19 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
         buf->creationTime = sb.st_ctime;
         const auto err = errno;
-        if (err == ENOTSUP) {
+        if (err == ENODATA) {
+            if (lsetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
+                LOG_ERROR(logger(), "Failed to set user.kDrive.birthtime extended attribute: " << strerror(errno));
+            }
+        } else if (err == ENOTSUP) {
             if (!_unsuportedFSLogged) {
-                LOG_ERROR(logger(), "The file system does not support extended attributes");
+                LOG_ERROR(logger(), "The file system does not support extended attributes: " << strerror(errno));
                 sentry::Handler::captureMessage(sentry::Level::Warning, "Unsuported file system",
                                                 "The file system does not support neither creation time nor extended attributes");
                 _unsuportedFSLogged = true;
             }
-        } else if (err == ENODATA) {
-            if (lsetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
-                LOG_ERROR(logger(), "Failed to set kDrive.birthtime extended attribute: " << strerror(errno));
-            }
+        } else {
+            LOG_ERROR(logger(), "Failed to get user.kDrive.birthtime extended attribute: " << strerror(errno));
         }
     }
 #endif
