@@ -348,7 +348,7 @@ enum class CancelType {
 };
 std::string toString(CancelType e);
 
-enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed, ConflictOpGenerated };
+enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed, ConflictOpGenerated, EnumEnd };
 std::string toString(NodeStatus e);
 
 enum class SyncStatus { Undefined, Starting, Running, Idle, PauseAsked, Paused, StopAsked, Stopped, Error, EnumEnd };

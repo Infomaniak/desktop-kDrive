@@ -89,7 +89,7 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const {
                 }
                 localNode = c2.localNode();
                 if (localNode) {
-                    path2 = c2.correspondingNode()->moveOriginInfos().path();
+                    path2 = c2.otherNode()->moveOriginInfos().path();
                 }
                 break;
             case ConflictType::MoveMoveDest:

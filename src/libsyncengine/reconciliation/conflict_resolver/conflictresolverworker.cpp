@@ -341,8 +341,8 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     SyncPath destinationPath;
     if (undoPossible) {
         moveOp->setNewParentNode(originParentNode);
-        moveOp->setNewName(originPath->filename().native());
-        destinationPath = moveNode->moveOrigin()->parent_path() / moveOp->newName();
+        moveOp->setNewName(originPath.filename().native());
+        destinationPath = originPath.parent_path() / moveOp->newName();
     } else {
         // We cannot undo the move operation, so the file is moved under the root node instead.
         // TODO : move it to the rescue folder instead
