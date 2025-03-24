@@ -31,7 +31,7 @@
 #include "guirequests.h"
 #include "parameterscache.h"
 #include "libcommongui/logger.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 
@@ -1122,7 +1122,7 @@ void ParametersDialog::onClearErrors(const int driveDbId, const bool autoResolve
     QListWidget *listWidgetToClear = nullptr;
 
     if (driveDbId == 0) {
-        LOG_IF_FAIL(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
+        QLOG_IF_FAIL(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
 
         errorTabWidget = dynamic_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
 
