@@ -51,6 +51,10 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     if (node->hasChangeEvent(OperationType::Move) && correspondingNode->hasChangeEvent(OperationType::Move) &&
         node->parentNode()->idb() == correspondingNode->parentNode()->idb() && isEqual) {
+        if (!node->parentNode()->idb().has_value() && !correspondingNode->parentNode()->idb().has_value() &&
+            node->parentNode()->getPath() != correspondingNode->parentNode()->getPath()) {
+            return false; // The parent nodes are not in DB and have different paths
+        }
         return true;
     }
 
@@ -65,11 +69,12 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
             snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
             (snapshot->isLink(*node->id()) || snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id()));
 
+    const auto nodeChecksum = snapshot->contentChecksum(*node->id());
+    const auto correspondingNodeChecksum = otherSnapshot->contentChecksum(*correspondingNode->id());
+
     const bool useContentChecksum =
             !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
-    const bool hasSameContent = useContentChecksum ? snapshot->contentChecksum(*node->id()) ==
-                                                             otherSnapshot->contentChecksum(*correspondingNode->id())
-                                                   : sameSizeAndDate;
+    const bool hasSameContent = useContentChecksum ? nodeChecksum == correspondingNodeChecksum : sameSizeAndDate;
 
     const bool hasCreateOrEditChangeEvent =
             (node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Edit)) &&
