@@ -28,7 +28,6 @@ add_subdirectory(vfs)
 set(libcommonserver_SRCS
     # Utility
     utility/utility.h utility/utility.cpp
-    utility/logiffail.h
     utility/stateholder.h
     # Db
     db/sqlitedb.h db/sqlitedb.cpp
