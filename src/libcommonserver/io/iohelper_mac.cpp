@@ -145,7 +145,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 
     struct stat sb;
 
-    if (stat(path.string().c_str(), &sb) < 0) {
+    if (lstat(path.string().c_str(), &sb) < 0) {
         ioError = posixError2ioError(errno);
         return isExpectedError(ioError);
     }
