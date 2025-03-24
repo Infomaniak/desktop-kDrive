@@ -22,6 +22,10 @@
 #include "requests/parameterscache.h"
 #if defined(__APPLE__)
 #include "sparkleupdater.h"
+#elif defined(_Win32)
+#include "windowsupdater.h"
+#else
+#include "linuxupdater.h"
 #endif
 
 namespace KDC {

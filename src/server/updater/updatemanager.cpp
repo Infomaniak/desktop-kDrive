@@ -35,7 +35,7 @@ namespace KDC {
 UpdateManager::UpdateManager(QObject *parent) : QObject(parent) {
     _currentChannel = ParametersCache::instance()->parameters().distributionChannel();
 
-    createUpdater();
+    initUpdater();
 
     connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdateManager::slotTimerFired);
 
@@ -110,7 +110,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
 }
 
 void UpdateManager::initUpdater() {
-    _updater = KDC::createUpdater();
+    _updater = createUpdater();
 }
 
 void UpdateManager::onUpdateStateChanged(const UpdateState newState) {
