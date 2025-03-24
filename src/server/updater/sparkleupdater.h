@@ -24,7 +24,7 @@ namespace KDC {
 
 class SparkleUpdater final : public AbstractUpdater {
     public:
-        static std::shared_ptr<SparkleUpdater> instance();
+        SparkleUpdater();
         ~SparkleUpdater() override;
 
         void onUpdateFound() override;
@@ -35,9 +35,6 @@ class SparkleUpdater final : public AbstractUpdater {
         void unskipVersion() override;
 
     private:
-        SparkleUpdater();
-        static std::shared_ptr<SparkleUpdater> _instance;
-
         void reset(const std::string &url = "");
         bool startSparkleUpdater();
 
