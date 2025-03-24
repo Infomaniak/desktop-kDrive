@@ -54,9 +54,9 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 
     buf->inode = sb.stx_ino;
     if (sb.stx_mask & STATX_BTIME) {
-        buf->creationTime = sb.stx_btime;
+        buf->creationTime = sb.stx_btime.tv_sec;
     } else if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
-        buf->creationTime = sb.stx_ctime;
+        buf->creationTime = sb.stx_ctime.tv_sec;
         const auto err = errno;
         if (err == ENODATA) {
             if (lsetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
@@ -74,8 +74,8 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
         }
     }
 
-    buf->modtime = sb.stx_mtime;
-    buf->size = sb.stx_size;
+    buf->modtime = sb.stx_mtime.tv_sec;
+    buf->size = sb.stx_size.tv_sec;
     if (S_ISLNK(sb.stx_mode)) {
         // Symlink
         struct stat sbTarget;
