@@ -26,6 +26,7 @@
 #include <system_error>
 
 #if defined(__APPLE__) || defined(__unix__)
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
 #endif
@@ -265,16 +266,16 @@ bool IoHelper::isFileAccessible(const SyncPath &, IoError &ioError) {
 bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoError::Success;
 
-    struct stat sb;
+    struct statx sb;
 
-    if (lstat(path.string().c_str(), &sb) < 0) {
+    if (statx(AT_FDCWD, path.string().c_str(), AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS | STATX_BTIME, &sb) < 0) {
         ioError = posixError2ioError(errno);
         return isExpectedError(ioError);
     }
 
 #if defined(__APPLE__)
     buf->isHidden = false;
-    if (sb.st_flags & UF_HIDDEN) {
+    if (sb.stx_flags & UF_HIDDEN) {
         buf->isHidden = true;
     }
 #elif defined(__unix__)
@@ -283,12 +284,14 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     }
 #endif
 
-    buf->inode = sb.st_ino;
+    buf->inode = sb.stx_ino;
 #if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-    buf->creationTime = sb.st_birthtime;
+    buf->creationTime = sb.stx_birthtime;
 #else
-    if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
-        buf->creationTime = sb.st_ctime;
+    if (sb.stx_mask & STATX_BTIME) {
+        buf->creationTime = sb.stx_btime;
+    } else if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
+        buf->creationTime = sb.stx_ctime;
         const auto err = errno;
         if (err == ENODATA) {
             if (lsetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
@@ -306,9 +309,9 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
         }
     }
 #endif
-    buf->modtime = sb.st_mtime;
-    buf->size = sb.st_size;
-    if (S_ISLNK(sb.st_mode)) {
+    buf->modtime = sb.stx_mtime;
+    buf->size = sb.stx_size;
+    if (S_ISLNK(sb.stx_mode)) {
         // Symlink
         struct stat sbTarget;
         if (stat(path.string().c_str(), &sbTarget) < 0) {
@@ -318,7 +321,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
             buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
         }
     } else {
-        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
+        buf->nodeType = S_ISDIR(sb.stx_mode) ? NodeType::Directory : NodeType::File;
     }
 
     return true;
