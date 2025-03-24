@@ -140,4 +140,38 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return true;
 }
 
+bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
+    ioError = IoError::Success;
+
+    struct stat sb;
+
+    if (stat(path.string().c_str(), &sb) < 0) {
+        ioError = posixError2ioError(errno);
+        return isExpectedError(ioError);
+    }
+
+    buf->isHidden = false;
+    if (sb.stx_flags & UF_HIDDEN) {
+        buf->isHidden = true;
+    }
+
+    buf->inode = sb.stx_ino;
+    buf->creationTime = sb.stx_birthtime;
+    buf->modtime = sb.stx_mtime;
+    buf->size = sb.stx_size;
+    if (S_ISLNK(sb.stx_mode)) {
+        // Symlink
+        struct stat sbTarget;
+        if (stat(path.string().c_str(), &sbTarget) < 0) {
+            // Cannot access target => undetermined
+            buf->nodeType = NodeType::Unknown;
+        } else {
+            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
+        }
+    } else {
+        buf->nodeType = S_ISDIR(sb.stx_mode) ? NodeType::Directory : NodeType::File;
+    }
+
+    return true;
+}
 } // namespace KDC

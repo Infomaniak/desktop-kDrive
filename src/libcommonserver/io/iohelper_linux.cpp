@@ -37,4 +37,58 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return true;
 }
 
+bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
+    ioError = IoError::Success;
+
+    struct statx sb;
+
+    if (statx(AT_FDCWD, path.string().c_str(), AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS | STATX_BTIME, &sb) < 0) {
+        ioError = posixError2ioError(errno);
+        return isExpectedError(ioError);
+    }
+
+    if (!_checkIfIsHiddenFile(path, buf->isHidden, ioError)) {
+        return false;
+    }
+
+    buf->inode = sb.stx_ino;
+    if (sb.stx_mask & STATX_BTIME) {
+        buf->creationTime = sb.stx_btime;
+    } else if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
+        buf->creationTime = sb.stx_ctime;
+        const auto err = errno;
+        if (err == ENODATA) {
+            if (lsetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
+                LOG_ERROR(logger(), "Failed to set user.kDrive.birthtime extended attribute: " << strerror(errno));
+            }
+        } else if (err == ENOTSUP) {
+            if (!_unsuportedFSLogged) {
+                LOG_ERROR(logger(), "The file system does not support extended attributes: " << strerror(errno));
+                sentry::Handler::captureMessage(sentry::Level::Warning, "Unsuported file system",
+                                                "The file system does not support neither creation time nor extended attributes");
+                _unsuportedFSLogged = true;
+            }
+        } else {
+            LOG_ERROR(logger(), "Failed to get user.kDrive.birthtime extended attribute: " << strerror(errno));
+        }
+    }
+
+    buf->modtime = sb.stx_mtime;
+    buf->size = sb.stx_size;
+    if (S_ISLNK(sb.stx_mode)) {
+        // Symlink
+        struct stat sbTarget;
+        if (stat(path.string().c_str(), &sbTarget) < 0) {
+            // Cannot access target => undetermined
+            buf->nodeType = NodeType::Unknown;
+        } else {
+            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
+        }
+    } else {
+        buf->nodeType = S_ISDIR(sb.stx_mode) ? NodeType::Directory : NodeType::File;
+    }
+
+    return true;
+}
+
 } // namespace KDC
