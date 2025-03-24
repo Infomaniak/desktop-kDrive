@@ -514,7 +514,7 @@ std::string toString(UpdateState e);
 enum class VersionChannel { Prod, Next, Beta, Internal, Legacy, Unknown };
 std::string toString(VersionChannel e);
 
-enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
+enum class Platform { MacOS, Windows, WindowsServer, LinuxAMD, LinuxARM, Unknown };
 std::string toString(Platform e);
 
 struct VersionInfo {
