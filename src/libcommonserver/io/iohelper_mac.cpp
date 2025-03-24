@@ -151,15 +151,15 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     }
 
     buf->isHidden = false;
-    if (sb.stx_flags & UF_HIDDEN) {
+    if (sb.st_flags & UF_HIDDEN) {
         buf->isHidden = true;
     }
 
-    buf->inode = sb.stx_ino;
-    buf->creationTime = sb.stx_birthtime;
-    buf->modtime = sb.stx_mtime;
-    buf->size = sb.stx_size;
-    if (S_ISLNK(sb.stx_mode)) {
+    buf->inode = sb.st_ino;
+    buf->creationTime = sb.st_birthtime;
+    buf->modtime = sb.st_mtime;
+    buf->size = sb.st_size;
+    if (S_ISLNK(sb.st_mode)) {
         // Symlink
         struct stat sbTarget;
         if (stat(path.string().c_str(), &sbTarget) < 0) {
@@ -169,7 +169,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
             buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
         }
     } else {
-        buf->nodeType = S_ISDIR(sb.stx_mode) ? NodeType::Directory : NodeType::File;
+        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
     }
 
     return true;
