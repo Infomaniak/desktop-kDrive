@@ -27,7 +27,6 @@
 
 #if defined(__APPLE__) || defined(__unix__)
 #include <sys/stat.h>
-#include <sys/statvfs.h>
 #include <sys/xattr.h>
 #endif
 #include <fstream>
