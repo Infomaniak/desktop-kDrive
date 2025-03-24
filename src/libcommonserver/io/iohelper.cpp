@@ -26,9 +26,7 @@
 #include <system_error>
 
 #if defined(__APPLE__) || defined(__unix__)
-#include <fcntl.h>
 #include <sys/stat.h>
-#include <sys/xattr.h>
 #endif
 #include <fstream>
 #include <log4cplus/loggingmacros.h> // LOGW_WARN

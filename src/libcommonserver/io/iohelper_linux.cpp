@@ -23,9 +23,10 @@
 
 #include <log4cplus/loggingmacros.h>
 
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <sys/xattr.h>
 namespace KDC {
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
