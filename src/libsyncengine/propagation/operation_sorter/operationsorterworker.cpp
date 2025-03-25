@@ -27,8 +27,7 @@
 namespace KDC {
 
 OperationSorterWorker::OperationSorterWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name,
-                                             const std::string &shortName) :
-    OperationProcessor(syncPal, name, shortName) {}
+                                             const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
 
 void OperationSorterWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());

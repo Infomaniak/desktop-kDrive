@@ -603,8 +603,8 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
             if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize)) {
-                LOGW_WARN(_logger, L"Request " << jobId() << L": not enough place at " << Utility::formatSyncPath(_tmpPath) << L" or "
-                                             << Utility::formatSyncPath(_localpath));
+                LOGW_WARN(_logger, L"Request " << jobId() << L": not enough place at " << Utility::formatSyncPath(_tmpPath)
+                                               << L" or " << Utility::formatSyncPath(_localpath));
                 writeError = true;
             }
             if (expectedSize < 0) {

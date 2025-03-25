@@ -398,13 +398,12 @@ void TestExecutorWorker::testPropagateConflictToDbAndTree() {
 }
 
 void TestExecutorWorker::testInitSyncFileItem() {
-    const auto localNode = std::make_shared<Node>(ReplicaSide::Local, Str("test_file.txt"), NodeType::File, OperationType::None, "lid",
-                                            testhelpers::defaultTime, testhelpers::defaultTime + 1, testhelpers::defaultFileSize,
-                                            _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    const auto localNode = std::make_shared<Node>(
+            ReplicaSide::Local, Str("test_file.txt"), NodeType::File, OperationType::None, "lid", testhelpers::defaultTime,
+            testhelpers::defaultTime + 1, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     const auto remoteNode = std::make_shared<Node>(
-            ReplicaSide::Remote, Str("test_file.txt"), NodeType::File, OperationType::None,
-                                             "rid", testhelpers::defaultTime + 2, testhelpers::defaultTime + 3,
-                                             testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+            ReplicaSide::Remote, Str("test_file.txt"), NodeType::File, OperationType::None, "rid", testhelpers::defaultTime + 2,
+            testhelpers::defaultTime + 3, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     // General case
     {
@@ -440,31 +439,31 @@ void TestExecutorWorker::testInitSyncFileItem() {
         syncOp->setType(OperationType::Create);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Put,
-                                   syncFileItem.instruction()); // Local create to be propagated to remote
+                             syncFileItem.instruction()); // Local create to be propagated to remote
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
 
         syncOp->setType(OperationType::Delete);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Remove,
-                                   syncFileItem.instruction()); // Local delete to be propagated to remote
+                             syncFileItem.instruction()); // Local delete to be propagated to remote
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
 
         syncOp->setType(OperationType::Edit);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Update,
-                                   syncFileItem.instruction()); // Local edit to be propagated to remote
+                             syncFileItem.instruction()); // Local edit to be propagated to remote
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
 
         syncOp->setType(OperationType::Move);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
-                                   syncFileItem.instruction()); // Local move to be propagated to remote
+                             syncFileItem.instruction()); // Local move to be propagated to remote
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
 
         syncOp->setType(OperationType::MoveEdit);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
-                                   syncFileItem.instruction()); // Local move + edit to be propagated to remote
+                             syncFileItem.instruction()); // Local move + edit to be propagated to remote
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
 
         syncOp->setAffectedNode(remoteNode);
@@ -474,31 +473,31 @@ void TestExecutorWorker::testInitSyncFileItem() {
         syncOp->setType(OperationType::Create);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Get,
-                                   syncFileItem.instruction()); // Remote create to be propagated to local
+                             syncFileItem.instruction()); // Remote create to be propagated to local
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
 
         syncOp->setType(OperationType::Delete);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Remove,
-                                   syncFileItem.instruction()); // Remote delete to be propagated to local
+                             syncFileItem.instruction()); // Remote delete to be propagated to local
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
 
         syncOp->setType(OperationType::Edit);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Update,
-                                   syncFileItem.instruction()); // Remote edit to be propagated to local
+                             syncFileItem.instruction()); // Remote edit to be propagated to local
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
 
         syncOp->setType(OperationType::Move);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
-                                   syncFileItem.instruction()); // Remote move to be propagated to local
+                             syncFileItem.instruction()); // Remote move to be propagated to local
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
 
         syncOp->setType(OperationType::MoveEdit);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
-                                   syncFileItem.instruction()); // Remote move + edit to be propagated to local
+                             syncFileItem.instruction()); // Remote move + edit to be propagated to local
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
     }
 

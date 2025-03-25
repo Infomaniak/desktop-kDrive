@@ -27,6 +27,8 @@
 #include <cstdlib>
 #include "testoperationprocessor.h"
 
+#include "test_classes/testinitialsituationgenerator.h"
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -93,104 +95,167 @@ void TestOperationProcessor::testIsPseudoConflict() {
         public:
             using OperationProcessor::OperationProcessor;
             void execute() override {}
-            bool isPseudoConflictTest(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode) {
-                return OperationProcessor::isPseudoConflict(node, correspondingNode);
+            bool isPseudoConflictTest(const std::shared_ptr<Node> node, const std::shared_ptr<Node> correspondingNode) {
+                return isPseudoConflict(node, correspondingNode);
             }
     };
 
     MockOperationProcessor opProcessor(_syncPal, "Operation Processor", "OPP");
 
-    auto localNodeSyncedDir =
-            std::make_shared<Node>(3, ReplicaSide::Local, Str("testSyncedDir"), NodeType::Directory, OperationType::None, "ldid1",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                   _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    auto remoteNodeSyncedDir =
-            std::make_shared<Node>(3, ReplicaSide::Remote, Str("testSyncedDir"), NodeType::Directory, OperationType::None,
-                                   "rdid2", testhelpers::defaultTime + 2, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                   _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    // Initial situation
+    // .
+    // └── A
+    //     └── AA
+    TestInitialSituationGenerator situationGenerator(_syncPal);
+    situationGenerator.generateInitialSituation(R"({"a":{"aa":1}})");
 
-    const auto localNodeFile = std::make_shared<Node>(2, ReplicaSide::Local, Str("testFile"), NodeType::File, OperationType::None,
-                                                      "lfid", testhelpers::defaultTime, testhelpers::defaultTime,
-                                                      testhelpers::defaultFileSize, localNodeSyncedDir);
-    const auto remoteNodeFile = std::make_shared<Node>(
-            2, ReplicaSide::Remote, Str("testFile"), NodeType::File, OperationType::None, "rfid", testhelpers::defaultTime + 2,
-            testhelpers::defaultTime, testhelpers::defaultFileSize, remoteNodeSyncedDir);
+    const auto lNodeA = situationGenerator.getNode(ReplicaSide::Local, "a");
+    const auto rNodeA = situationGenerator.getNode(ReplicaSide::Remote, "a");
+    const auto lNodeAA = situationGenerator.getNode(ReplicaSide::Local, "aa");
+    const auto rNodeAA = situationGenerator.getNode(ReplicaSide::Remote, "aa");
 
+    (void) _syncPal->snapshot(ReplicaSide::Local)
+            ->updateItem(SnapshotItem("ldid", _syncPal->snapshot(ReplicaSide::Local)->rootFolderId(), Str("testLocalDir"),
+                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                                      testhelpers::defaultDirSize, false, true, true));
+    const auto newLocalDirNode = std::make_shared<Node>( // Not synced directory (no dbId)
+            ReplicaSide::Local, Str("testLocalDir"), NodeType::Directory, OperationType::None, "ldid", testhelpers::defaultTime,
+            testhelpers::defaultTime, testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
 
-    const auto newLocalNodeNotSyncedDir = std::make_shared<Node>( // Not synced directory (no dbId)
-            ReplicaSide::Local, Str("testNotSyncedDirLocal"), NodeType::Directory, OperationType::None, "ldid3",
-            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-            _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    const auto newRemoteNodeNotSyncedDir = std::make_shared<Node>( // Not synced directory (no dbId)
-            ReplicaSide::Remote, Str("testNotSyncedDirRemote"), NodeType::Directory, OperationType::None, "rdid4",
-            testhelpers::defaultTime + 2, testhelpers::defaultTime, testhelpers::defaultFileSize,
-            _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    (void) _syncPal->snapshot(ReplicaSide::Local)
+            ->updateItem(SnapshotItem("rdid", _syncPal->snapshot(ReplicaSide::Remote)->rootFolderId(), Str("testRemoteDir"),
+                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                                      testhelpers::defaultDirSize, false, true, true));
+    const auto newRemoteDirNode = std::make_shared<Node>( // Not synced directory (no dbId)
+            ReplicaSide::Remote, Str("testRemoteDir"), NodeType::Directory, OperationType::None, "rdid", testhelpers::defaultTime,
+            testhelpers::defaultTime, testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+
+    (void) _syncPal->snapshot(ReplicaSide::Local)
+            ->updateItem(SnapshotItem("lfid", _syncPal->snapshot(ReplicaSide::Local)->rootFolderId(), Str("testLocalFile"),
+                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                      testhelpers::defaultFileSize, true, true, true));
+    const auto newLocalFileNode = std::make_shared<Node>( // Not synced file (no dbId)
+            ReplicaSide::Local, Str("testLocalFile"), NodeType::File, OperationType::None, "lfid", testhelpers::defaultTime,
+            testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+
+    (void) _syncPal->snapshot(ReplicaSide::Local)
+            ->updateItem(SnapshotItem("rfid", _syncPal->snapshot(ReplicaSide::Remote)->rootFolderId(), Str("testRemoteFile"),
+                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                      testhelpers::defaultFileSize, true, true, true));
+    const auto newRemoteFileNode = std::make_shared<Node>( // Not synced file (no dbId)
+            ReplicaSide::Remote, Str("testRemoteFile"), NodeType::File, OperationType::None, "rfid", testhelpers::defaultTime,
+            testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+
+    _syncPal->copySnapshots();
 
     // Two nodes without change events
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
 
-    // # Create-Created conflict
+    // # Create-Create conflict
     // ## On a directory
-    localNodeSyncedDir->setChangeEvents(OperationType::Create);
-    remoteNodeSyncedDir->setChangeEvents(OperationType::Create);
-    CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(localNodeSyncedDir, remoteNodeSyncedDir));
+    lNodeA->setChangeEvents(OperationType::Create);
+    rNodeA->setChangeEvents(OperationType::Create);
+    CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(lNodeA, rNodeA));
 
     // ## On a file
     // ### Same size and same modtime
-    localNodeFile->setChangeEvents(OperationType::Create);
-    remoteNodeFile->setChangeEvents(OperationType::Create);
-    CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
+    lNodeAA->setChangeEvents(OperationType::Create);
+    rNodeAA->setChangeEvents(OperationType::Create);
+    CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
+
+    // ### Same size and same modtime, but items are links
+    newLocalFileNode->setChangeEvents(OperationType::Create);
+    newRemoteFileNode->setChangeEvents(OperationType::Create);
+    CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
 
     // ### Different size and same modtime
-    localNodeFile->setSize(testhelpers::defaultFileSize + 1);
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
-    localNodeFile->setSize(testhelpers::defaultFileSize);
-    remoteNodeFile->setSize(testhelpers::defaultFileSize + 1);
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
-    remoteNodeFile->setSize(testhelpers::defaultFileSize);
+    lNodeAA->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
+    lNodeAA->setSize(testhelpers::defaultFileSize); // Reset size
+
+    rNodeAA->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
+    rNodeAA->setSize(testhelpers::defaultFileSize); // Reset size
+
+    // ### Different size and same modtime, but items are links
+    newLocalFileNode->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
+    newLocalFileNode->setSize(testhelpers::defaultFileSize); // Reset size
+
+    newRemoteFileNode->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
+    newRemoteFileNode->setSize(testhelpers::defaultFileSize); // Reset size
 
     // ### Same size and different modtime
-    localNodeFile->setLastModified(testhelpers::defaultTime + 1);
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
-    localNodeFile->setLastModified(testhelpers::defaultTime);
-    remoteNodeFile->setLastModified(testhelpers::defaultTime + 1);
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
-    remoteNodeFile->setLastModified(testhelpers::defaultTime);
+    lNodeAA->setLastModified(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
+    lNodeAA->setLastModified(testhelpers::defaultTime); // Reset time
+
+    rNodeAA->setLastModified(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
+    rNodeAA->setLastModified(testhelpers::defaultTime); // Reset time
+
+    // ### Same size and different modtime, but items are links
+    newLocalFileNode->setLastModified(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
+    newLocalFileNode->setLastModified(testhelpers::defaultTime); // Reset time
+
+    newRemoteFileNode->setLastModified(testhelpers::defaultTime + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
+    newRemoteFileNode->setLastModified(testhelpers::defaultTime); // Reset time
 
     // ### Different size and different modtime
-    localNodeFile->setSize(testhelpers::defaultFileSize + 1);
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
-    localNodeFile->setSize(testhelpers::defaultFileSize);
-    remoteNodeFile->setSize(testhelpers::defaultFileSize + 1);
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
-    remoteNodeFile->setSize(testhelpers::defaultFileSize);
+    lNodeAA->setLastModified(testhelpers::defaultTime + 1);
+    lNodeAA->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
+    lNodeAA->setLastModified(testhelpers::defaultTime); // Reset time
+    lNodeAA->setSize(testhelpers::defaultFileSize); // Reset size
+
+    rNodeAA->setLastModified(testhelpers::defaultTime + 1);
+    rNodeAA->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
+    rNodeAA->setLastModified(testhelpers::defaultTime); // Reset time
+    rNodeAA->setSize(testhelpers::defaultFileSize); // Reset size
+
+    // ### Different size and different modtime, but items are links
+    newLocalFileNode->setLastModified(testhelpers::defaultTime + 1);
+    newLocalFileNode->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
+    newLocalFileNode->setLastModified(testhelpers::defaultTime); // Reset time
+    newLocalFileNode->setSize(testhelpers::defaultFileSize); // Reset size
+
+    newRemoteFileNode->setLastModified(testhelpers::defaultTime + 1);
+    newRemoteFileNode->setSize(testhelpers::defaultFileSize + 1);
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(newLocalFileNode, newRemoteFileNode));
+    newRemoteFileNode->setLastModified(testhelpers::defaultTime); // Reset time
+    newRemoteFileNode->setSize(testhelpers::defaultFileSize); // Reset size
 
     // # Move-Move (Source) conflict
-    localNodeFile->setChangeEvents(OperationType::Move);
-    remoteNodeFile->setChangeEvents(OperationType::Move);
-    localNodeFile->setMoveOriginInfos({localNodeFile->getPath(), localNodeSyncedDir->id().value()});
-    remoteNodeFile->setMoveOriginInfos({remoteNodeFile->getPath(), remoteNodeSyncedDir->id().value()});
+    lNodeAA->setMoveOriginInfos({lNodeAA->getPath(), lNodeA->id().value()});
+    rNodeAA->setMoveOriginInfos({rNodeAA->getPath(), rNodeA->id().value()});
+    lNodeAA->setChangeEvents(OperationType::Move);
+    rNodeAA->setChangeEvents(OperationType::Move);
 
     // ## Both destination nodes are the same already synchronized directory and the file keeps the same name
-    CPPUNIT_ASSERT(localNodeFile->setParentNode(localNodeSyncedDir)); // Moved to a synced directory
-    CPPUNIT_ASSERT(remoteNodeFile->setParentNode(remoteNodeSyncedDir)); // Moved to a synced directory
-    CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
+    CPPUNIT_ASSERT(lNodeAA->setParentNode(lNodeA)); // Moved to a synced directory
+    CPPUNIT_ASSERT(rNodeAA->setParentNode(rNodeA)); // Moved to a synced directory
+    CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
 
     // ## Both destination nodes are the same already synchronized directory and the file name changes
-    localNodeFile->setName(Str("ThisNameIsDifferentFromTheCorrespondingNodeOne"));
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
-    localNodeFile->setName(remoteNodeFile->name()); // Reset name
+    lNodeAA->setName(Str("ThisNameIsDifferentFromTheCorrespondingNodeOne"));
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
+    lNodeAA->setName(rNodeAA->name()); // Reset name
 
     // ## One destination node is a not synchronized directory (Created in this sync) and the other is an already
     // synchronized directory
-    CPPUNIT_ASSERT(localNodeFile->setParentNode(newLocalNodeNotSyncedDir)); // Moved to a not synced directory
-    CPPUNIT_ASSERT(remoteNodeFile->setParentNode(remoteNodeSyncedDir)); // Moved to a synced directory
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
+    CPPUNIT_ASSERT(lNodeAA->setParentNode(newLocalDirNode)); // Moved to a not synced directory
+    CPPUNIT_ASSERT(rNodeAA->setParentNode(rNodeA)); // Moved to a synced directory
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
 
     // ## Both destination nodes are two different not synchronized directory (Created in this sync)
-    CPPUNIT_ASSERT(localNodeFile->setParentNode(newLocalNodeNotSyncedDir)); // Moved to a not synced directory
-    CPPUNIT_ASSERT(remoteNodeFile->setParentNode(newRemoteNodeNotSyncedDir)); // Moved to a not synced directory
-    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
+    CPPUNIT_ASSERT(lNodeAA->setParentNode(newLocalDirNode)); // Moved to a not synced directory
+    CPPUNIT_ASSERT(rNodeAA->setParentNode(newRemoteDirNode)); // Moved to a not synced directory
+    CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
 
 
     // Ensure that all the other combinations of operations do not generate pseudo conflicts
@@ -203,16 +268,13 @@ void TestOperationProcessor::testIsPseudoConflict() {
             if (localOp == OperationType::Move && remoteOp == OperationType::Move) continue; // Already tested
             if (localOp == OperationType::Edit && remoteOp == OperationType::Edit) continue; // Already tested
 
-            if (localOp == OperationType::Move)
-                localNodeFile->setMoveOriginInfos({localNodeFile->getPath(), localNodeSyncedDir->id().value()});
-            if (remoteOp == OperationType::Move)
-                remoteNodeFile->setMoveOriginInfos({remoteNodeFile->getPath(), remoteNodeSyncedDir->id().value()});
+            if (localOp == OperationType::Move) lNodeAA->setMoveOriginInfos({lNodeAA->getPath(), lNodeA->id().value()});
+            if (remoteOp == OperationType::Move) rNodeAA->setMoveOriginInfos({rNodeAA->getPath(), rNodeA->id().value()});
 
-            localNodeFile->setChangeEvents(localOp);
-            remoteNodeFile->setChangeEvents(remoteOp);
-            CPPUNIT_ASSERT_MESSAGE(
-                    toString(localNodeFile->changeEvents()) + std::string(" and ") + toString(remoteNodeFile->changeEvents()),
-                    !opProcessor.isPseudoConflictTest(localNodeFile, remoteNodeFile));
+            lNodeAA->setChangeEvents(localOp);
+            rNodeAA->setChangeEvents(remoteOp);
+            CPPUNIT_ASSERT_MESSAGE(toString(lNodeAA->changeEvents()) + std::string(" and ") + toString(rNodeAA->changeEvents()),
+                                   !opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
         }
     }
 }

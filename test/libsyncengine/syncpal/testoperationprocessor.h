@@ -24,13 +24,13 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestOperationProcessor : public CppUnit::TestFixture, public TestBase {
+class TestOperationProcessor final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestOperationProcessor);
         CPPUNIT_TEST(testIsPseudoConflict);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        TestOperationProcessor() {}
+        TestOperationProcessor() = default;
         void setUp() override;
         void tearDown() override;
 
@@ -38,7 +38,7 @@ class TestOperationProcessor : public CppUnit::TestFixture, public TestBase {
         std::shared_ptr<SyncPal> _syncPal;
         std::shared_ptr<ParmsDb> _parmsDb;
         int _driveDbId = 0;
-        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
+        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestOperationProcessor");
 
         void testIsPseudoConflict();
 };

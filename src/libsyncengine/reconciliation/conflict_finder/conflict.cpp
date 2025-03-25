@@ -61,7 +61,7 @@ ConflictCmp::~ConflictCmp() {
     _remoteUpdateTree.reset();
 }
 
-bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const  {
+bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const {
     bool ret = false;
 
     // Compare conflicts types
