@@ -213,7 +213,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void fixNodeTableDeleteItemsWithNullParentNodeId();
 
         virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
-        virtual int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
         virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         virtual bool isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const;
         virtual void refreshTmpBlacklist();

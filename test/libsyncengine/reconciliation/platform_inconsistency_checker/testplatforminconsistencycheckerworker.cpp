@@ -83,7 +83,7 @@ void TestPlatformInconsistencyCheckerWorker::tearDown() {
     TestBase::stop();
 }
 
-void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
+void TestPlatformInconsistencyCheckerWorker::testIsNameTooLong() {
     SyncName shortName = Str("1234567890");
     CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(shortName));
 
@@ -284,6 +284,14 @@ void TestPlatformInconsistencyCheckerWorker::testNameSizeLocalTree() {
     CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("testNode2"));
     CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("bNode"));
     CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("BNode"));
+}
+
+void TestPlatformInconsistencyCheckerWorker::testOnlySpaces() {
+    CPPUNIT_ASSERT_EQUAL(true, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str(" ")));
+    CPPUNIT_ASSERT_EQUAL(true, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str("     ")));
+    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str(" 1")));
+    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str("1 ")));
+    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str(" 1 ")));
 }
 
 void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {

@@ -39,11 +39,17 @@
     std::function<void()> _skipCallback;
 }
 - (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)updater;
+
 - (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater;
+
 - (void)updaterWillRelaunchApplication:(SPUUpdater *)updater;
+
 - (NSString *)availableVersion;
+
 - (void)setQuitCallback:(std::function<void()>)quitCallback;
+
 - (void)setSkipCallback:(std::function<void()>)skipCallback;
+
 - (void)updater:(SPUUpdater *)updater
         userDidMakeChoice:(SPUUserUpdateChoice)choice
                 forUpdate:(SUAppcastItem *)updateItem
@@ -187,16 +193,6 @@ class SparkleUpdater::Private {
 SparkleUpdater::SparkleUpdater() {
     d = new Private;
     reset();
-}
-
-std::shared_ptr<SparkleUpdater> SparkleUpdater::_instance;
-
-std::shared_ptr<SparkleUpdater> SparkleUpdater::instance() {
-    if (_instance == nullptr) {
-        _instance = std::shared_ptr<SparkleUpdater>(new SparkleUpdater());
-    }
-
-    return _instance;
 }
 
 SparkleUpdater::~SparkleUpdater() {
