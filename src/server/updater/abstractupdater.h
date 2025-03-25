@@ -89,4 +89,7 @@ class AbstractUpdater {
         std::function<void(UpdateState)> _stateChangeCallback = nullptr;
 };
 
+
+std::unique_ptr<AbstractUpdater> createUpdater();
+
 } // namespace KDC
