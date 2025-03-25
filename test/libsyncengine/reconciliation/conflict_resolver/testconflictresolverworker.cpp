@@ -104,8 +104,7 @@ void TestConflictResolverWorker::testMoveCreate() {
     const auto lNodeABA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "aba", "ab");
 
     // Simulate move of file A/AA/AAA to A/AB/ABA on remote replica
-    const auto rNodeAAA = _testSituationGenerator.moveNode(ReplicaSide::Remote, "aaa", "ab");
-    rNodeAAA->setName(Str("ABA"));
+    const auto rNodeAAA = _testSituationGenerator.moveNode(ReplicaSide::Remote, "aaa", "ab", Str("ABA"));
 
     const Conflict conflict(lNodeABA, rNodeAAA, ConflictType::MoveCreate);
     _syncPal->_conflictQueue->push(conflict);
@@ -404,6 +403,30 @@ void TestConflictResolverWorker::testMoveParentDelete() {
 }
 
 void TestConflictResolverWorker::testMoveParentDelete2() {
+    // Simulate a move of node A/AA to A/AB/AA on local replica
+    const auto lNodeAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aa", "ab");
+
+    // Simulate a rename (move) of node A to A2 on remote replica
+    (void) _testSituationGenerator.renameNode(ReplicaSide::Remote, "a", Str("A2"));
+
+    // Simulate a delete of node A/AB on remote replica
+    const auto rNodeAB = _testSituationGenerator.deleteNode(ReplicaSide::Remote, "ab");
+
+    const Conflict conflict(lNodeAA, rNodeAB, ConflictType::MoveParentDelete);
+    _syncPal->_conflictQueue->push(conflict);
+
+    _syncPal->_conflictResolverWorker->execute();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ExitInfo(_syncPal->_conflictResolverWorker->exitCode()));
+    // We should only undo the move operation on the move replica
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
+    const UniqueId opId = _syncPal->_syncOps->opSortedList().front();
+    const SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT(!op->omit());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op->type());
+}
+
+void TestConflictResolverWorker::testMoveParentDelete3() {
     // Set up a more complex tree
     // .
     // └── A

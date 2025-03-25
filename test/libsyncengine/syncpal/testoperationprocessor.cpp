@@ -166,10 +166,10 @@ void TestOperationProcessor::testIsPseudoConflict() {
     remoteNodeFile->setSize(testhelpers::defaultFileSize);
 
     // # Move-Move (Source) conflict
-    localNodeFile->setChangeEvents(OperationType::Move);
-    remoteNodeFile->setChangeEvents(OperationType::Move);
     localNodeFile->setMoveOriginInfos({localNodeFile->getPath(), localNodeSyncedDir->id().value()});
     remoteNodeFile->setMoveOriginInfos({remoteNodeFile->getPath(), remoteNodeSyncedDir->id().value()});
+    localNodeFile->setChangeEvents(OperationType::Move);
+    remoteNodeFile->setChangeEvents(OperationType::Move);
 
     // ## Both destination nodes are the same already synchronized directory and the file keeps the same name
     CPPUNIT_ASSERT(localNodeFile->setParentNode(localNodeSyncedDir)); // Moved to a synced directory

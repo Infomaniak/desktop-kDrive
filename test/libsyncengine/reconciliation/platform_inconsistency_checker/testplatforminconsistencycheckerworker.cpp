@@ -193,9 +193,9 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 
     // Set up remote tree
     const auto remoteParentNode = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
-    const auto remoteNodeLower =
-            std::make_shared<Node>(dbNodeIdLower, ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Move, "ra", 0, 0,
-                                   12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    const auto remoteNodeLower = std::make_shared<Node>(
+            dbNodeIdLower, ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Move, "ra", 0, 0, 12345,
+            _syncPal->updateTree(ReplicaSide::Remote)->rootNode(), Node::MoveOriginInfos("a1", remoteParentNode->id().value()));
     const auto remoteNodeUpper =
             std::make_shared<Node>(dbNodeIdUpper, ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::None, "rA", 0, 0,
                                    12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
@@ -325,7 +325,8 @@ void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {
                          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                          "aaaaaaaaaaaa"
                          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
-            NodeType::Directory, OperationType::Move, "testNode2", 0, 0, 12345, _syncPal->updateTree(side)->rootNode());
+            NodeType::Directory, OperationType::Move, "testNode2", 0, 0, 12345, _syncPal->updateTree(side)->rootNode(),
+            Node::MoveOriginInfos(SyncPath("testDira"), _syncPal->updateTree(side)->rootNode()->id().value()));
 
     const auto bNode = std::make_shared<Node>(_syncPal->updateTree(side)->side(), Str2SyncName("b.txt"), NodeType::File,
                                               OperationType::None, "bNode", 0, 0, 12345, testNode2);

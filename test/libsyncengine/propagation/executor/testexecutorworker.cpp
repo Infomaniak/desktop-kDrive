@@ -473,6 +473,8 @@ void TestExecutorWorker::testInitSyncFileItem() {
                              syncFileItem.instruction()); // Local edit to be propagated to remote
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
 
+        localNode->setMoveOriginInfos(
+                {Str("test_file2.txt"), _syncPal->updateTree(ReplicaSide::Local)->rootNode()->id().value()});
         syncOp->setType(OperationType::Move);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
@@ -507,6 +509,8 @@ void TestExecutorWorker::testInitSyncFileItem() {
                              syncFileItem.instruction()); // Remote edit to be propagated to local
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
 
+        remoteNode->setMoveOriginInfos(
+                {Str("test_file2.txt"), _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->id().value()});
         syncOp->setType(OperationType::Move);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,

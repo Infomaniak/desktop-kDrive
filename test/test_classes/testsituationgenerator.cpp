@@ -55,16 +55,17 @@ bool TestSituationGenerator::getDbNode(const NodeId &id, DbNode &dbNode) const {
     return found;
 }
 
-std::shared_ptr<Node> TestSituationGenerator::moveNode(const ReplicaSide side, const NodeId &id,
-                                                       const NodeId &newParentRawId) const {
-    const auto newParentNode = newParentRawId.empty() ? _syncpal->updateTree(side)->rootNode()
-                                                      : _syncpal->updateTree(side)->getNodeById(generateId(side, newParentRawId));
+std::shared_ptr<Node> TestSituationGenerator::moveNode(const ReplicaSide side, const NodeId &id, const NodeId &newParentId,
+                                                       const SyncName &newName /*= {}*/) const {
+    const auto newParentNode = newParentId.empty() ? _syncpal->updateTree(side)->rootNode()
+                                                   : _syncpal->updateTree(side)->getNodeById(generateId(side, newParentId));
     const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, id));
 
-    node->setMoveOriginInfos({node->getPath(), newParentNode->id().value()});
+    node->setMoveOriginInfos({node->getPath(), node->parentNode()->id().value()});
     (void) node->parentNode()->deleteChildren(node);
     (void) node->setParentNode(newParentNode);
     (void) newParentNode->insertChildren(node);
+    if (!newName.empty()) node->setName(newName);
     node->insertChangeEvent(OperationType::Move);
     return node;
 }
@@ -73,8 +74,7 @@ std::shared_ptr<Node> TestSituationGenerator::renameNode(const ReplicaSide side,
                                                          const SyncName &newName) const {
     const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, id));
     node->setName(newName);
-    node->setMoveOrigin(node->getPath());
-    node->setMoveOriginParentDbId(node->parentNode()->idb());
+    node->setMoveOriginInfos({node->getPath(), node->parentNode()->id().value()});
     node->insertChangeEvent(OperationType::Move);
     return node;
 }
@@ -162,9 +162,9 @@ std::shared_ptr<Node> TestSituationGenerator::insertInUpdateTree(
     const auto parentNode = parentId.empty() ? _syncpal->updateTree(side)->rootNode()
                                              : _syncpal->updateTree(side)->getNodeById(generateId(side, parentId));
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
-    const auto node = std::make_shared<Node>(dbNodeId, side, Str2SyncName(Utility::toUpper(id)), itemType, OperationType::None,
-                                             generateId(side, id), testhelpers::defaultTime, testhelpers::defaultTime, size,
-                                             parentNode, std::nullopt, std::nullopt);
+    const auto node =
+            std::make_shared<Node>(dbNodeId, side, Str2SyncName(Utility::toUpper(id)), itemType, OperationType::None,
+                                   generateId(side, id), testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode);
     _syncpal->updateTree(side)->insertNode(node);
     (void) parentNode->insertChildren(node);
     return node;
