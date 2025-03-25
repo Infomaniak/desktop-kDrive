@@ -61,9 +61,9 @@ std::shared_ptr<Node> TestInitialSituationGenerator::insertInUpdateTree(
     const auto parentNode = parentId.empty() ? _syncpal->updateTree(side)->rootNode()
                                              : _syncpal->updateTree(side)->getNodeById(generateId(side, parentId));
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
-    const auto node = std::make_shared<Node>(dbNodeId, side, Str2SyncName(Utility::toUpper(id)), itemType, OperationType::None,
-                                             generateId(side, id), testhelpers::defaultTime, testhelpers::defaultTime, size,
-                                             parentNode, std::nullopt, std::nullopt);
+    const auto node =
+            std::make_shared<Node>(dbNodeId, side, Str2SyncName(Utility::toUpper(id)), itemType, OperationType::None,
+                                   generateId(side, id), testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode);
     _syncpal->updateTree(side)->insertNode(node);
     (void) parentNode->insertChildren(node);
     return node;
@@ -74,7 +74,7 @@ void TestInitialSituationGenerator::moveNode(const ReplicaSide side, const NodeI
                                                       : _syncpal->updateTree(side)->getNodeById(generateId(side, newParentRawId));
     const auto node = _syncpal->updateTree(side)->getNodeById(generateId(side, id));
 
-    node->setMoveOrigin(node->getPath());
+    node->setMoveOriginInfos({node->getPath(), newParentNode->id().value()});
     (void) node->parentNode()->deleteChildren(node);
     (void) node->setParentNode(newParentNode);
     (void) newParentNode->insertChildren(node);
@@ -120,9 +120,9 @@ void TestInitialSituationGenerator::insertInAllSnapshot(const NodeType itemType,
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
         const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         const auto parentFinalId = parentId.empty() ? "1" : generateId(side, parentId);
-        SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
-                          testhelpers::defaultTime, itemType, size, false, true, true);
-        _syncpal->snapshot(side)->updateItem(item);
+        const SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
+                                testhelpers::defaultTime, itemType, size, false, true, true);
+        (void) _syncpal->snapshot(side)->updateItem(item);
     }
 }
 

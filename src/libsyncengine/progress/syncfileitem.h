@@ -61,10 +61,10 @@ class SyncFileItem {
         inline void setError(const std::string &error) { _error = error; }
         inline int64_t size() const { return _size; }
         inline void setSize(int64_t newSize) { _size = newSize; }
-        inline time_t modTime() const { return _modTime; }
-        inline void setModTime(time_t newModTime) { _modTime = newModTime; }
-        inline time_t creationTime() const { return _creationTime; }
-        inline void setCreationTime(time_t newCreationTime) { _creationTime = newCreationTime; }
+        inline SyncTime modTime() const { return _modTime; }
+        inline void setModTime(SyncTime newModTime) { _modTime = newModTime; }
+        inline SyncTime creationTime() const { return _creationTime; }
+        inline void setCreationTime(SyncTime newCreationTime) { _creationTime = newCreationTime; }
         inline bool dehydrated() const { return _dehydrated; }
         inline void setDehydrated(bool newDehydrated) { _dehydrated = newDehydrated; }
         inline bool confirmed() const { return _confirmed; }
@@ -99,8 +99,8 @@ class SyncFileItem {
         CancelType _cancelType{CancelType::None};
         std::string _error;
         int64_t _size{0};
-        time_t _modTime{0};
-        time_t _creationTime{0};
+        SyncTime _modTime{0};
+        SyncTime _creationTime{0};
         bool _dehydrated{false};
         bool _confirmed{false};
         SyncTime _timestamp{std::time(0)};

@@ -98,6 +98,7 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     const auto deleteOp = generateSyncOperation(OperationType::Delete, nodeA);
 
     // Rename B into A
+    nodeB->setMoveOriginInfos({nodeB->getPath(), "1"});
     nodeB->insertChangeEvent(OperationType::Move);
     nodeB->setName(Str("A"));
     const auto moveOp = generateSyncOperation(OperationType::Move, nodeB);
@@ -478,11 +479,13 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     const auto rMoveOpA = generateSyncOperation(OperationType::Move, rNodeA);
 
     // Move C to C*
+    rNodeC->setMoveOriginInfos({rNodeC->getPath(), "1"});
     rNodeC->insertChangeEvent(OperationType::Move);
     rNodeC->setName(Str("C*"));
     const auto rMoveOpC = generateSyncOperation(OperationType::Move, rNodeC);
 
     // Move A/AA/AAA to A/AA/AAA*
+    rNodeAAA->setMoveOriginInfos({rNodeAAA->getPath(), "aa"});
     rNodeAAA->insertChangeEvent(OperationType::Move);
     rNodeAAA->setName(Str("AAA*"));
     const auto rMoveOpAAA = generateSyncOperation(OperationType::Move, rNodeAAA);
@@ -496,31 +499,37 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
 
 void TestOperationSorterWorker::testFindCompleteCycles() {
     const auto nodeA = _initialSituationGenerator.getNode(ReplicaSide::Local, "a");
+    nodeA->setMoveOriginInfos({nodeA->getPath(), "1"});
     nodeA->insertChangeEvent(OperationType::Move);
     nodeA->setName(Str("A*"));
     const auto opA = generateSyncOperation(OperationType::Move, nodeA);
 
     const auto nodeB = _initialSituationGenerator.getNode(ReplicaSide::Local, "b");
+    nodeB->setMoveOriginInfos({nodeB->getPath(), "1"});
     nodeB->insertChangeEvent(OperationType::Move);
     nodeB->setName(Str("B*"));
     const auto opB = generateSyncOperation(OperationType::Move, nodeB);
 
     const auto nodeC = _initialSituationGenerator.getNode(ReplicaSide::Local, "c");
+    nodeC->setMoveOriginInfos({nodeC->getPath(), "1"});
     nodeC->insertChangeEvent(OperationType::Move);
     nodeC->setName(Str("C*"));
     const auto opC = generateSyncOperation(OperationType::Move, nodeC);
 
     const auto nodeD = _initialSituationGenerator.getNode(ReplicaSide::Local, "d");
+    nodeD->setMoveOriginInfos({nodeD->getPath(), "1"});
     nodeD->insertChangeEvent(OperationType::Move);
     nodeD->setName(Str("D*"));
     const auto opD = generateSyncOperation(OperationType::Move, nodeD);
 
     const auto nodeAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aa");
+    nodeAA->setMoveOriginInfos({nodeAA->getPath(), "a"});
     nodeAA->insertChangeEvent(OperationType::Move);
     nodeAA->setName(Str("AA*"));
     const auto opAA = generateSyncOperation(OperationType::Move, nodeAA);
 
     const auto nodeAAA = _initialSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+    nodeAAA->setMoveOriginInfos({nodeAAA->getPath(), "aa"});
     nodeAAA->insertChangeEvent(OperationType::Move);
     nodeAAA->setName(Str("AAA*"));
     const auto opAAA = generateSyncOperation(OperationType::Move, nodeAAA);
