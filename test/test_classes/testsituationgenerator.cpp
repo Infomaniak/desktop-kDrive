@@ -126,8 +126,8 @@ void TestSituationGenerator::insertInAllSnapshot(const NodeType itemType, const 
     for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
         const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         const auto parentFinalId = parentId.empty() ? "1" : generateId(side, parentId);
-        SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
-                          testhelpers::defaultTime, itemType, size, false, true, true);
+        const SnapshotItem item(generateId(side, id), parentFinalId, Str2SyncName(Utility::toUpper(id)), testhelpers::defaultTime,
+                                testhelpers::defaultTime, itemType, size, false, true, true);
         (void) _syncpal->snapshot(side)->updateItem(item);
     }
 }
