@@ -39,13 +39,7 @@ namespace KDC {
 
 namespace {
 void unskipVersion() {
-#if defined(__APPLE__)
-    SparkleUpdater::instance()->unskipVersion();
-#elif defined(_WIN32)
-    WindowsUpdater::instance()->unskipVersion();
-#elif defined(__linux__)
-    LinuxUpdater::instance()->unskipVersion();
-#endif
+    createUpdater()->unskipVersion();
 }
 } // namespace
 

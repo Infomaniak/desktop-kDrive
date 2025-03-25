@@ -30,7 +30,7 @@ class ConflictCmp;
 
 class Conflict {
     public:
-        Conflict() {}
+        Conflict() = default;
         Conflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode, ConflictType type);
         ~Conflict();
 
@@ -53,7 +53,7 @@ class ConflictCmp {
         ConflictCmp(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree);
         ~ConflictCmp();
 
-        bool operator()(const Conflict &c1, const Conflict &c2);
+        bool operator()(const Conflict &c1, const Conflict &c2) const;
 
         SyncPath pathOfEvent(const Conflict &conflict, OperationType optype) const;
 
