@@ -293,6 +293,8 @@ std::string toString(const CancelType e) {
             return "ExcludedByTemplate";
         case CancelType::Hardlink:
             return "Hardlink";
+        case CancelType::FileRescued:
+            return "FileRescued";
         default:
             return noConversionStr;
     }
