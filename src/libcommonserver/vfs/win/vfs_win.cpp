@@ -242,14 +242,6 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
                                   // NotFound as this make no sense in the context of a create
     }
 
-    // !!! Creating a placeholder DOESN'T triggers any file system event !!!
-    // Setting the pin state triggers an EDIT event and then the insertion into the local snapshot
-    if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_INHERIT) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
-        return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
-                                  // NotFound as this make no sense in the context of a create
-    }
-
     return ExitCode::Ok;
 }
 
