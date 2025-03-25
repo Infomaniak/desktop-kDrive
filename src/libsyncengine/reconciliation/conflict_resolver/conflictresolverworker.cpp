@@ -24,8 +24,7 @@
 namespace KDC {
 
 ConflictResolverWorker::ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                               const std::string &shortName) :
-    OperationProcessor(syncPal, name, shortName) {}
+                                               const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictResolverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -217,7 +216,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                         auto op = std::make_shared<SyncOperation>();
                         op->setType(OperationType::Move);
                         op->setAffectedNode(orphanNode);
-                        orphanNode->setMoveOrigin(orphanNode->getPath());
+                        orphanNode->setMoveOriginInfos({orphanNode->getPath(), orphanNode->parentNode()->id().value()});
                         op->setCorrespondingNode(correspondingOrphanNode);
                         op->setTargetSide(correspondingOrphanNode->side());
                         op->setOmit(true);
@@ -411,14 +410,12 @@ ExitCode ConflictResolverWorker::findAllChildNodeIdsFromDb(const std::shared_ptr
 }
 
 ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, SyncOpPtr moveOp) {
-    if (!moveNode->moveOrigin().has_value()) {
-        LOG_SYNCPAL_WARN(_logger, "Failed to retrieve origin parent path");
-        return ExitCode::DataError;
-    }
+    LOG_IF_FAIL(moveNode)
 
-    auto updateTree = _syncPal->updateTree(moveNode->side());
-    auto originParentNode = updateTree->getNodeByPath(moveNode->moveOrigin()->parent_path());
-    auto originPath = moveNode->moveOrigin();
+    const auto updateTree = _syncPal->updateTree(moveNode->side());
+    const auto originParentNode = updateTree->getNodeById(moveNode->moveOriginInfos().parentNodeId());
+    const auto originPath = moveNode->moveOriginInfos().path();
+
     bool undoPossible = true;
 
     if (!originParentNode) {
@@ -429,7 +426,7 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     if (isABelowB(originParentNode, moveNode) || originParentNode->hasChangeEvent(OperationType::Delete)) {
         undoPossible = false;
     } else {
-        auto potentialOriginNode = originParentNode->getChildExcept(originPath->filename().native(), OperationType::Delete);
+        auto potentialOriginNode = originParentNode->getChildExcept(originPath.filename().native(), OperationType::Delete);
         if (potentialOriginNode && (potentialOriginNode->hasChangeEvent(OperationType::Create) ||
                                     potentialOriginNode->hasChangeEvent(OperationType::Move))) {
             undoPossible = false;
@@ -438,7 +435,7 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
 
     if (undoPossible) {
         moveOp->setNewParentNode(originParentNode);
-        moveOp->setNewName(originPath->filename().native());
+        moveOp->setNewName(originPath.filename().native());
     } else {
         moveOp->setNewParentNode(_syncPal->updateTree(moveNode->side())->rootNode());
         SyncName newName;
