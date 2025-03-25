@@ -24,8 +24,7 @@
 namespace KDC {
 
 ConflictResolverWorker::ConflictResolverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                               const std::string &shortName) :
-    OperationProcessor(syncPal, name, shortName) {}
+                                               const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictResolverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -414,7 +413,7 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     LOG_IF_FAIL(moveNode)
 
     const auto updateTree = _syncPal->updateTree(moveNode->side());
-    const auto originParentNode =  updateTree->getNodeById(moveNode->moveOriginInfos().parentNodeId());
+    const auto originParentNode = updateTree->getNodeById(moveNode->moveOriginInfos().parentNodeId());
     const auto originPath = moveNode->moveOriginInfos().path();
 
     bool undoPossible = true;
