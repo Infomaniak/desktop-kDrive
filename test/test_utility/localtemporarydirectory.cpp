@@ -55,6 +55,7 @@ LocalTemporaryDirectory::~LocalTemporaryDirectory() {
     std::filesystem::remove_all(_path, ec);
     if (ec) {
         // Cannot remove directory
+        std::cout << ec.message() << std::endl;
         assert(false);
     }
 }

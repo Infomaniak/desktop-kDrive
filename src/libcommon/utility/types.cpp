@@ -273,6 +273,8 @@ std::string toString(const InconsistencyType e) {
             return "NotYetSupportedChar";
         case InconsistencyType::DuplicateNames:
             return "DuplicateNames";
+        case InconsistencyType::ForbiddenCharOnlySpaces:
+            return "ForbiddenCharOnlySpaces";
         default:
             return noConversionStr;
     }
