@@ -36,6 +36,7 @@ class PlatformInconsistencyCheckerUtility {
         bool isNameTooLong(const SyncName &name) const;
         bool isPathTooLong(size_t pathSize);
         bool nameHasForbiddenChars(const SyncPath &name);
+        static bool isNameOnlySpaces(const SyncName &name);
 
 #ifdef _WIN32
         bool fixNameWithBackslash(const SyncName &name, SyncName &newName);
