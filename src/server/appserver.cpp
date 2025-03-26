@@ -527,7 +527,7 @@ void AppServer::handleClientCrash(bool &quit) {
         // Reset client restart date in DB
         bool found = false;
         if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, 0, found) || !found) {
-            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+            addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
         }
 
@@ -539,7 +539,7 @@ void AppServer::handleClientCrash(bool &quit) {
         const std::string timestampStr = std::to_string(timestamp);
         bool found = false;
         if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found) || !found) {
-            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+            addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
         }
 
@@ -2897,7 +2897,7 @@ bool AppServer::serverCrashedRecently(int seconds) {
     AppStateValue appStateValue = int64_t(0);
     if (bool found = false;
         !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, appStateValue, found) || !found) {
-        addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+        addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     }
@@ -2920,7 +2920,7 @@ bool AppServer::clientCrashedRecently(int seconds) {
 
     if (bool found = false;
         !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found) || !found) {
-        addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+        addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     }
