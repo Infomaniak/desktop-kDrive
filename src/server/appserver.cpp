@@ -17,18 +17,15 @@
  */
 
 #include "appserver.h"
-#include "libcommon/utility/logiffail.h"
 #include "common/utility.h"
-#include "libcommonserver/vfs/vfs.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
-#include "libsyncengine/jobs/network/API_v2/loguploadjob.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/serverrequests.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/utility/utility.h"
+#include "libcommon/utility/logiffail.h"
 #include "libcommon/comm.h"
 #include "libcommon/info/driveinfo.h"
 #include "libcommon/info/driveavailableinfo.h"
@@ -39,10 +36,13 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
+#include "libcommonserver/vfs/vfs.h"
+#include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/jobmanager.h"
 #include "libsyncengine/jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
+#include "libsyncengine/jobs/network/API_v2/loguploadjob.h"
 
 #include <iostream>
 #include <fstream>
@@ -117,7 +117,14 @@ static void displayHelpText(const QString &t) {
 #endif
 
 AppServer::AppServer(int &argc, char **argv) :
-    SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv), _theme(Theme::instance()) {
+    SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv), _arguments(arguments()),
+    _theme(Theme::instance()) {}
+
+AppServer::~AppServer() {
+    LOG_DEBUG(_logger, "~AppServer");
+}
+
+void AppServer::init() {
     _startedAt.start();
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
     setApplicationName(_theme->appName());
@@ -129,7 +136,7 @@ AppServer::AppServer(int &argc, char **argv) :
         throw std::runtime_error("Unable to init logging.");
     }
 
-    parseOptions(arguments());
+    parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
         LOG_INFO(_logger, "Command line options processed");
         return;
@@ -159,13 +166,11 @@ AppServer::AppServer(int &argc, char **argv) :
     }
 
     // Init parms DB
-    bool alreadyExist = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExist, false, _testParmsDbName);
+    std::filesystem::path parmsDbPath = makeDbName();
     if (parmsDbPath.empty()) {
-        LOG_WARN(_logger, "Error in Db::makeDbName");
+        LOG_WARN(_logger, "Error in AppServer::makeDbName");
         throw std::runtime_error("Unable to get ParmsDb path.");
     }
-    _test = !_testParmsDbName.empty();
 
     bool newDbExists = false;
     IoError ioError = IoError::Success;
@@ -186,8 +191,8 @@ AppServer::AppServer(int &argc, char **argv) :
     LOGW_INFO(_logger, L"Old config exists : " << Path2WStr(pre334ConfigFilePath) << L" => " << oldConfigExists);
 
     // Init ParmsDb instance
-    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString(), false, _test)) {
-        LOG_WARN(_logger, "Error in ParmsDb::instance");
+    if (!initParmsDB(parmsDbPath, _theme->version().toStdString())) {
+        LOG_WARN(_logger, "Error in AppServer::initParmsDB");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
 
@@ -363,11 +368,9 @@ AppServer::AppServer(int &argc, char **argv) :
     processInterruptedLogsUpload();
 
     // Start client
-    if (!_test) {
-        if (!startClient()) {
-            LOG_ERROR(_logger, "Error in startClient");
-            throw std::runtime_error("Failed to start kDrive client.");
-        }
+    if (!startClient()) {
+        LOG_ERROR(_logger, "Error in startClient");
+        throw std::runtime_error("Failed to start kDrive client.");
     }
 
     // Send syncs progress
@@ -383,12 +386,8 @@ AppServer::AppServer(int &argc, char **argv) :
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
 }
 
-AppServer::~AppServer() {
-    LOG_DEBUG(_logger, "~AppServer");
-}
-
-void AppServer::onCleanup() {
-    LOG_DEBUG(_logger, "AppServer::onCleanup()");
+void AppServer::cleanup() {
+    LOG_DEBUG(_logger, "AppServer::cleanup()");
 
     // Stop JobManager
     JobManager::stop();
@@ -421,12 +420,6 @@ void AppServer::onCleanup() {
     // Close ParmsDb
     ParmsDb::instance()->close();
     LOG_DEBUG(_logger, "ParmsDb closed");
-
-    // Reset static variables (for testing)
-    JobManager::reset();
-    ParmsDb::reset();
-    ParametersCache::reset();
-    LOG_DEBUG(_logger, "Reset done");
 }
 
 // This task can be long and block the GUI
@@ -2137,6 +2130,10 @@ void AppServer::onUpdateStateChanged(const UpdateState state) {
     CommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params);
 }
 
+void AppServer::onCleanup() {
+    cleanup();
+}
+
 void AppServer::onRestartClientReceived() {
     bool quit = false;
 #if NDEBUG
@@ -2826,6 +2823,15 @@ bool AppServer::setupProxy() noexcept {
     return Proxy::instance(ParametersCache::instance()->parameters().proxyConfig()) != nullptr;
 }
 
+std::filesystem::path AppServer::makeDbName() {
+    bool alreadyExist = false;
+    return Db::makeDbName(alreadyExist);
+}
+
+std::shared_ptr<ParmsDb> AppServer::initParmsDB(const std::filesystem::path &dbPath, const std::string &version) {
+    return ParmsDb::instance(dbPath, version);
+}
+
 void AppServer::handleCrashRecovery(bool &shouldQuit) {
     bool found = false;
     if (AppStateValue lastServerRestartDate = int64_t(0);
@@ -2994,10 +3000,6 @@ void AppServer::parseOptions(const QStringList &options) {
             break;
         } else if (option == QLatin1String("--crashRecovered")) {
             _crashRecovered = true;
-            break;
-        } else if (option == QLatin1String("--testParmsDbName")) {
-            QString value = it.next();
-            _testParmsDbName = value.toStdString();
             break;
         } else {
             showHint("Unrecognized option '" + option.toStdString() + "'");

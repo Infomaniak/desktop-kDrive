@@ -20,17 +20,17 @@
 
 #include "qtsingleapplication.h"
 #include "commserver.h"
-#include "syncpal/syncpal.h"
-#include "libcommonserver/vfs/vfs.h"
 #include "navigationpanehelper.h"
 #include "socketapi.h"
+#include "config.h"
+#include "syncpal/syncpal.h"
 #include "libparms/db/user.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
 #include "libcommon/info/driveinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
-#include "config.h"
+#include "libcommonserver/vfs/vfs.h"
 
 #include <QApplication>
 #include <QElapsedTimer>
@@ -71,6 +71,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         explicit AppServer(int &argc, char **argv);
         virtual ~AppServer();
 
+        void init();
+        virtual void cleanup();
+
         inline bool helpAsked() { return _helpAsked; }
         inline bool versionAsked() { return _versionAsked; }
         inline bool clearSyncNodesAsked() { return _clearSyncNodesAsked; }
@@ -87,9 +90,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         void clearKeychainKeys();
 
         void showHint(std::string errorHint);
-        bool startClient();
 
     private:
+        QStringList _arguments;
         log4cplus::Logger _logger;
         static std::unordered_map<int, std::shared_ptr<SyncPal>> _syncPalMap;
         static std::unordered_map<int, std::shared_ptr<Vfs>> _vfsMap;
@@ -120,11 +123,11 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         std::unique_ptr<UpdateManager> _updateManager;
 
-        //! For testing
-        std::string _testParmsDbName;
-        bool _test{false};
+        virtual void parseOptions(const QStringList &);
+        virtual std::filesystem::path makeDbName();
+        virtual std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version);
+        virtual bool startClient();
 
-        void parseOptions(const QStringList &);
         bool initLogging() noexcept;
         void logUsefulInformation() const;
         bool setupProxy() noexcept;
