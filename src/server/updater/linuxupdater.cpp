@@ -20,16 +20,6 @@
 
 namespace KDC {
 
-std::shared_ptr<LinuxUpdater> LinuxUpdater::_instance;
-
-std::shared_ptr<LinuxUpdater> LinuxUpdater::instance() {
-    if (_instance == nullptr) {
-        _instance = std::make_shared<LinuxUpdater>();
-    }
-
-    return _instance;
-}
-
 void LinuxUpdater::onUpdateFound() {
     setState(UpdateState::ManualUpdateAvailable);
 }

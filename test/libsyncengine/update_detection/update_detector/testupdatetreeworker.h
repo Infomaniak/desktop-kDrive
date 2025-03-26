@@ -41,6 +41,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testStep6);
         CPPUNIT_TEST(testStep7);
         CPPUNIT_TEST(testStep8);
+        CPPUNIT_TEST(testStep8b);
         CPPUNIT_TEST(testClearTreeStep1);
         CPPUNIT_TEST(testClearTreeStep2);
         CPPUNIT_TEST(testClearTreeStep3);
@@ -82,6 +83,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         void testStep6();
         void testStep7();
         void testStep8();
+        void testStep8b();
 
         // Test with empty UpdateTree
         void testClearTreeStep1();

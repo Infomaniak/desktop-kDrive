@@ -726,7 +726,7 @@ bool ParmsDb::updateExclusionApps() {
             exclusionAppFileList.push_back(std::make_pair(appId, descr));
         }
     } else {
-        LOG_WARN(_logger, "Cannot open exclusion app file");
+        LOG_WARN(_logger, "Cannot open exclusion app file with " << Utility::getExcludedAppFilePath(_test));
         return false;
     }
 

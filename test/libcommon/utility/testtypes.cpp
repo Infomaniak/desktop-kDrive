@@ -165,4 +165,59 @@ void TestTypes::testExitInfo() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::DbError, exitInfo.code());
     }
 }
+
+template<IntegralEnum T>
+void testToStringIntValues() {
+    int i = 0;
+    while (true) {
+        if (fromInt<T>(i) == T::EnumEnd) {
+            break;
+        }
+        if (toString(fromInt<T>(i)) == noConversionStr || toString(fromInt<T>(i)) == "") {
+            const std::string failStr = std::string("No string conversion for value ") + std::to_string(i) + std::string(" of ") +
+                                        std::string(typeid(T).name());
+            CPPUNIT_FAIL(failStr);
+        }
+        i++;
+    }
+}
+
+void TestTypes::testToString() {
+    testToStringIntValues<AppType>();
+    testToStringIntValues<SignalCategory>();
+    testToStringIntValues<ReplicaSide>();
+    testToStringIntValues<NodeType>();
+    testToStringIntValues<ExitCode>();
+    testToStringIntValues<ExitCause>();
+    testToStringIntValues<ConflictType>();
+    testToStringIntValues<ConflictTypeResolution>();
+    testToStringIntValues<CancelType>();
+    testToStringIntValues<NodeStatus>();
+    testToStringIntValues<SyncStatus>();
+    testToStringIntValues<UploadSessionType>();
+    testToStringIntValues<SyncNodeType>();
+    testToStringIntValues<SyncDirection>();
+    testToStringIntValues<SyncFileStatus>();
+    testToStringIntValues<SyncDirection>();
+    testToStringIntValues<SyncFileInstruction>();
+    testToStringIntValues<SyncStep>();
+    testToStringIntValues<ActionType>();
+    testToStringIntValues<ActionTarget>();
+    testToStringIntValues<ErrorLevel>();
+    testToStringIntValues<Language>();
+    testToStringIntValues<LogLevel>();
+    testToStringIntValues<NotificationsDisabled>();
+    testToStringIntValues<VirtualFileMode>();
+    testToStringIntValues<PinState>();
+    testToStringIntValues<ProxyType>();
+    testToStringIntValues<ExclusionTemplateComplexity>();
+    testToStringIntValues<LinkType>();
+    testToStringIntValues<IoError>();
+    testToStringIntValues<AppStateKey>();
+    testToStringIntValues<LogUploadState>();
+    testToStringIntValues<UpdateState>();
+    testToStringIntValues<VersionChannel>();
+    testToStringIntValues<Platform>();
+    testToStringIntValues<sentry::ConfidentialityLevel>();
+}
 } // namespace KDC

@@ -115,6 +115,8 @@ std::string toString(const ExitCode e) {
             return "UpdateRequired";
         case ExitCode::LogUploadFailed:
             return "LogUploadFailed";
+        case ExitCode::UpdateFailed:
+            return "UpdateFailed";
         default:
             return noConversionStr;
     }
@@ -178,10 +180,14 @@ std::string toString(const ExitCause e) {
             return "NotEnoughtMemory";
         case ExitCause::FileTooBig:
             return "FileTooBig";
+        case ExitCause::MoveToTrashFailed:
+            return "MoveToTrashFailed";
         case ExitCause::InvalidName:
             return "InvalidName";
         case ExitCause::LiteSyncNotAllowed:
             return "LiteSyncNotAllowed";
+        case ExitCause::NotPlaceHolder:
+            return "NotPlaceHolder";
         case ExitCause::NetworkTimeout:
             return "NetworkTimeout";
         case ExitCause::SocketsDefuncted:
@@ -196,6 +202,8 @@ std::string toString(const ExitCause e) {
             return "OperationCanceled";
         case ExitCause::ShareLinkAlreadyExists:
             return "ShareLinkAlreadyExists";
+        case ExitCause::InvalidArgument:
+            return "InvalidArgument";
         default:
             return noConversionStr;
     }
@@ -265,6 +273,8 @@ std::string toString(const InconsistencyType e) {
             return "NotYetSupportedChar";
         case InconsistencyType::DuplicateNames:
             return "DuplicateNames";
+        case InconsistencyType::ForbiddenCharOnlySpaces:
+            return "ForbiddenCharOnlySpaces";
         default:
             return noConversionStr;
     }
@@ -662,6 +672,8 @@ std::string toString(const IoError e) {
             return "NoSuchFileOrDirectory";
         case IoError::ResultOutOfRange:
             return "ResultOutOfRange";
+        case IoError::CrossDeviceLink:
+            return "CrossDeviceLink";
         case IoError::Unknown:
             return "Unknown";
         default:
@@ -685,6 +697,8 @@ std::string toString(const AppStateKey e) {
             return "LogUploadPercent";
         case AppStateKey::LogUploadToken:
             return "LogUploadToken";
+        case AppStateKey::AppUid:
+            return "AppUid";
         case AppStateKey::Unknown:
             return "Unknown";
         default:
@@ -733,6 +747,8 @@ std::string toString(const UpdateState e) {
             return "DownloadError";
         case UpdateState::UpdateError:
             return "UpdateError";
+        case UpdateState::Unknown:
+            return "Unknown";
         default:
             return noConversionStr;
     }
@@ -779,6 +795,10 @@ std::string toString(const sentry::ConfidentialityLevel e) {
             return "Authenticated";
         case sentry::ConfidentialityLevel::Anonymous:
             return "Anonymous";
+        case sentry::ConfidentialityLevel::None:
+            return "None";
+        case sentry::ConfidentialityLevel::Specific:
+            return "Specific";
         default:
             return noConversionStr;
     }

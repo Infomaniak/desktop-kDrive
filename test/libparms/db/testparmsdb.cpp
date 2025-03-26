@@ -387,6 +387,7 @@ void TestParmsDb::testAppState(void) {
     while (true) {
         AppStateKey key = static_cast<AppStateKey>(i); // Test for all known keys
         if (key == AppStateKey::Unknown) {
+            CPPUNIT_ASSERT_EQUAL(AppStateKey::EnumEnd, fromInt<AppStateKey>(i + 1));
             break;
         }
         AppStateValue valueRes = "";

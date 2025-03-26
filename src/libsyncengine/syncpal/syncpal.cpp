@@ -56,9 +56,7 @@
 namespace KDC {
 
 SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, const std::string &version,
-                 const bool hasFullyCompleted) :
-    _vfs(vfs),
-    _logger(Log::instance()->getLogger()) {
+                 const bool hasFullyCompleted) : _vfs(vfs), _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
     assert(_vfs);
@@ -69,7 +67,7 @@ SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, co
 }
 
 SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId_, const std::string &version) :
-    _logger(Log::instance()->getLogger()), _vfs(vfs) {
+    _vfs(vfs), _logger(Log::instance()->getLogger()) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
     assert(_vfs);
 
@@ -1303,10 +1301,6 @@ void SyncPal::fixNodeTableDeleteItemsWithNullParentNodeId() {
 
 void SyncPal::increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side) {
     _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side);
-}
-
-int SyncPal::getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept {
-    return _tmpBlacklistManager->getErrorCount(nodeId, side);
 }
 
 void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {

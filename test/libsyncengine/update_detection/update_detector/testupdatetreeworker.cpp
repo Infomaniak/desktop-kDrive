@@ -105,73 +105,73 @@ void TestUpdateTreeWorker::setUpDbTree() {
     DbNodeId dbnodeIdfile6a;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "id1", "id drive 1", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                    std::nullopt);
+    const DbNode nodeDir1(0, _syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "id1", "id drive 1",
+                          testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                          testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
-    DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "id11", "id drive 11", testhelpers::defaultTime,
-                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                     std::nullopt);
+    const DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "id11", "id drive 11", testhelpers::defaultTime,
+                           testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
+                           std::nullopt);
     _syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "id111", "id drive 111", testhelpers::defaultTime,
-                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                      std::nullopt);
+    const DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "id111", "id drive 111",
+                            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                            testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
-    DbNode nodeFile112(0, dbNodeIdDir11, Str("File 1.1.2"), Str("File 1.1.2"), "id112", "id drive 112", testhelpers::defaultTime,
-                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
-                       "cs 1.1");
+    const DbNode nodeFile112(0, dbNodeIdDir11, Str("File 1.1.2"), Str("File 1.1.2"), "id112", "id drive 112",
+                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                             testhelpers::defaultFileSize, "cs 1.1");
     _syncDb->insertNode(nodeFile112, dbNodeId112, constraintError);
-    DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "id1111", "id drive 1111",
-                        testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
-                        testhelpers::defaultFileSize, "cs 1.1");
+    const DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "id1111", "id drive 1111",
+                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                              testhelpers::defaultFileSize, "cs 1.1");
     _syncDb->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "id2", "id drive 2", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                    std::nullopt);
+    const DbNode nodeDir2(0, _syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "id2", "id drive 2",
+                          testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                          testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "id3", "id drive 3", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                    std::nullopt);
+    const DbNode nodeDir3(0, _syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "id3", "id drive 3",
+                          testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                          testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-    DbNode nodeDir31(0, dbNodeIdDir3, Str("Dir 3.1"), Str("Dir 3.1"), "id31", "id drive 31", testhelpers::defaultTime,
-                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                     std::nullopt);
+    const DbNode nodeDir31(0, dbNodeIdDir3, Str("Dir 3.1"), Str("Dir 3.1"), "id31", "id drive 31", testhelpers::defaultTime,
+                           testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
+                           std::nullopt);
     _syncDb->insertNode(nodeDir31, dbNodeIdDir31, constraintError);
-    DbNode nodeDir4(0, _syncDb->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "id4", "id drive 4", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                    std::nullopt);
+    const DbNode nodeDir4(0, _syncDb->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "id4", "id drive 4",
+                          testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                          testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
-    DbNode nodedir41(0, dbnodeIdDir4, Str("Dir 4.1"), Str("Dir 4.1"), "id41", "id drive 41", testhelpers::defaultTime,
-                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                     std::nullopt);
+    const DbNode nodedir41(0, dbnodeIdDir4, Str("Dir 4.1"), Str("Dir 4.1"), "id41", "id drive 41", testhelpers::defaultTime,
+                           testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
+                           std::nullopt);
     _syncDb->insertNode(nodedir41, _dbnodeIdDir41, constraintError);
-    DbNode nodeDir411(0, _dbnodeIdDir41, Str("Dir 4.1.1"), Str("Dir 4.1.1"), "id411", "id drive 411", testhelpers::defaultTime,
-                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                      std::nullopt);
+    const DbNode nodeDir411(0, _dbnodeIdDir41, Str("Dir 4.1.1"), Str("Dir 4.1.1"), "id411", "id drive 411",
+                            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                            testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeDir411, _dbnodeIdDir411, constraintError);
-    DbNode nodeFile4111(0, _dbnodeIdDir411, Str("File 4.1.1.1"), Str("File 4.1.1.1"), "id4111", "id drive 4111",
-                        testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
-                        testhelpers::defaultFileSize, std::nullopt);
+    const DbNode nodeFile4111(0, _dbnodeIdDir411, Str("File 4.1.1.1"), Str("File 4.1.1.1"), "id4111", "id drive 4111",
+                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                              testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeFile4111, dbnodeIdfile4111, constraintError);
-    DbNode nodeFile4112(0, _dbnodeIdDir411, Str("File 4.1.1.2"), Str("File 4.1.1.2"), "id4112", "id drive 4112",
-                        testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
-                        testhelpers::defaultFileSize, std::nullopt);
+    const DbNode nodeFile4112(0, _dbnodeIdDir411, Str("File 4.1.1.2"), Str("File 4.1.1.2"), "id4112", "id drive 4112",
+                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                              testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeFile4112, dbnodeIdfile4112, constraintError);
-    DbNode nodeDir5(0, _syncDb->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "id5", "id drive 5", testhelpers::defaultTime,
-                    testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
-                    std::nullopt);
+    const DbNode nodeDir5(0, _syncDb->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "id5", "id drive 5",
+                          testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                          testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
-    DbNode nodeFile51(0, dbnodeIdDir5, Str("File 5.1"), Str("File 5.1"), "id51", "id drive 51", testhelpers::defaultTime,
-                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
-                      std::nullopt);
+    const DbNode nodeFile51(0, dbnodeIdDir5, Str("File 5.1"), Str("File 5.1"), "id51", "id drive 51", testhelpers::defaultTime,
+                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                            std::nullopt);
     _syncDb->insertNode(nodeFile51, dbnodeIdfile51, constraintError);
-    DbNode nodeFile6(0, _syncDb->rootNode().nodeId(), Str("File 6"), Str("File 6"), "id6", "id drive 6", testhelpers::defaultTime,
-                     testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
-                     std::nullopt);
+    const DbNode nodeFile6(0, _syncDb->rootNode().nodeId(), Str("File 6"), Str("File 6"), "id6", "id drive 6",
+                           testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                           testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeFile6, dbnodeIdfile6, constraintError);
-    DbNode nodeFile6a(0, _syncDb->rootNode().nodeId(), Str("File 6a"), Str("File 6a"), "id6a", "id drive 6a",
-                      testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
-                      testhelpers::defaultFileSize, std::nullopt);
+    const DbNode nodeFile6a(0, _syncDb->rootNode().nodeId(), Str("File 6a"), Str("File 6a"), "id6a", "id drive 6a",
+                            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                            testhelpers::defaultFileSize, std::nullopt);
     _syncDb->insertNode(nodeFile6a, dbnodeIdfile6a, constraintError);
 
     // Node with name encoded differently on remote (NFC) and on local (NFD) side
@@ -474,7 +474,7 @@ void TestUpdateTreeWorker::testStep2() {
     CPPUNIT_ASSERT(node->hasChangeEvent(OperationType::Move));
     CPPUNIT_ASSERT(node->id() == "id1111");
     CPPUNIT_ASSERT(node->parentNode()->id() == "id1");
-    CPPUNIT_ASSERT(node->moveOrigin() == "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1");
+    CPPUNIT_ASSERT(node->moveOriginInfos().path() == "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1");
 }
 
 void TestUpdateTreeWorker::testStep3() {
@@ -654,6 +654,38 @@ void TestUpdateTreeWorker::testStep8() {
     CPPUNIT_ASSERT_EQUAL(std::string("id7l"), *_localUpdateTree->getNodeByPath(testhelpers::makeNfdSyncName())->id());
 }
 
+void TestUpdateTreeWorker::testStep8b() {
+    // Moving a directory to a Dir1 will create tmpNode for Dir1
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id41", NodeType::Directory,
+                                                          testhelpers::defaultTime, testhelpers::defaultTime,
+                                                          testhelpers::defaultFileSize, "Dir 4/Dir 4.1", "Dir 1/Dir 4.1"));
+
+    // Renaming Dir1 to Dir1b will create real node for Dir1
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id1", NodeType::Directory,
+                                                          testhelpers::defaultTime, testhelpers::defaultTime,
+                                                          testhelpers::defaultFileSize, "Dir 1", "Dir 1b"));
+
+    // Ensure we have a duplicated Dir1 node in the tree (normal case), one is tmp, the other is not
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step1MoveDirectory());
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeById("id41")->parentNode()->isTmp());
+    CPPUNIT_ASSERT_EQUAL(std::string("Dir 1"), SyncName2Str(_localUpdateTree->getNodeById("id41")->parentNode()->name()));
+    CPPUNIT_ASSERT(_localUpdateTree->nodes().contains("id1"));
+
+    // Ensure the real Node has the origin node informations and the excpected name
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeById("id1")->moveOriginInfos().isValid());
+    CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1"), _localUpdateTree->getNodeById("id1")->moveOriginInfos().path());
+    CPPUNIT_ASSERT_EQUAL(std::string("Dir 1b"), SyncName2Str(_localUpdateTree->getNodeById("id1")->name()));
+
+    // Ensure origin node info and name are not lost after step8
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step8CompleteUpdateTree());
+
+    CPPUNIT_ASSERT(!_localUpdateTree->getNodeById("id41")->parentNode()->isTmp());
+    CPPUNIT_ASSERT_EQUAL(_localUpdateTree->getNodeById("id41")->parentNode(), _localUpdateTree->nodes().at("id1"));
+
+    CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1"), _localUpdateTree->getNodeById("id1")->moveOriginInfos().path());
+    CPPUNIT_ASSERT_EQUAL(std::string("Dir 1b"), SyncName2Str(_localUpdateTree->getNodeById("id1")->name()));
+}
+
 void TestUpdateTreeWorker::testClearTreeStep1() {
     // Step 1 : move into non-existing & existing folder
     _operationSet->insertOp(std::make_shared<FSOperation>(
@@ -688,7 +720,7 @@ void TestUpdateTreeWorker::testClearTreeStep2() {
     // tree has been cleared so parent node has temp data
     CPPUNIT_ASSERT(node->parentNode()->name() == Str("Dir 1"));
     CPPUNIT_ASSERT(node->parentNode()->isTmp());
-    CPPUNIT_ASSERT(node->moveOrigin() == "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1");
+    CPPUNIT_ASSERT(node->moveOriginInfos().path() == "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1");
 }
 
 void TestUpdateTreeWorker::testClearTreeStep3() {
@@ -830,11 +862,10 @@ void TestUpdateTreeWorker::testGetOriginPath() {
     CPPUNIT_ASSERT(node->getPath() == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
 
     // Test with move operation on the child
+    node->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1", "id411"});
     node->insertChangeEvent(OperationType::Move);
     CPPUNIT_ASSERT(node->setParentNode(_localUpdateTree->getNodeById("id4"))); // Move node 4111 under parent 4
     node->setName(Str("File 4.1.1.1 renamed")); // Rename node
-    node->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
-    node->setMoveOriginParentDbId(_dbnodeIdDir411);
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(node->getPath() == "Dir 4/File 4.1.1.1 renamed");
@@ -845,11 +876,10 @@ void TestUpdateTreeWorker::testGetOriginPath2() {
 
     // Test with move operation on some parents
     std::shared_ptr<Node> node = _localUpdateTree->getNodeById("id411");
+    node->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1", "id41"});
     node->insertChangeEvent(OperationType::Move);
     CPPUNIT_ASSERT(node->setParentNode(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
     node->setName(Str("Dir 4.1.1 renamed")); // Rename node
-    node->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1");
-    node->setMoveOriginParentDbId(_dbnodeIdDir41);
 
     SyncPath path;
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
@@ -867,16 +897,15 @@ void TestUpdateTreeWorker::testGetOriginPath3() {
 
     // Test with move operation on parent AND child (rename children THEN move parent)
     std::shared_ptr<Node> node4111 = _localUpdateTree->getNodeById("id4111");
+    std::shared_ptr<Node> node411 = _localUpdateTree->getNodeById("id411");
+
+    node4111->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1", "id411"});
     node4111->insertChangeEvent(OperationType::Move);
     node4111->setName(Str("File 4.1.1.1 renamed")); // Rename node
-    node4111->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
-    node4111->setMoveOriginParentDbId(_dbnodeIdDir411);
 
-    std::shared_ptr<Node> node411 = _localUpdateTree->getNodeById("id411");
+    node411->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1", "id41"});
     node411->insertChangeEvent(OperationType::Move);
     CPPUNIT_ASSERT(node411->setParentNode(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
-    node411->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1");
-    node411->setMoveOriginParentDbId(_dbnodeIdDir41);
 
     SyncPath path;
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getOriginPath(node4111, path) == ExitCode::Ok);
@@ -888,17 +917,16 @@ void TestUpdateTreeWorker::testGetOriginPath4() {
     setUpUpdateTree(ReplicaSide::Local);
 
     // Test with move operation on parent AND child (move parent THEN rename children)
+    std::shared_ptr<Node> node4111 = _localUpdateTree->getNodeById("id4111");
     std::shared_ptr<Node> node411 = _localUpdateTree->getNodeById("id411");
+
+    node411->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1", "id41"});
     node411->insertChangeEvent(OperationType::Move);
     CPPUNIT_ASSERT(node411->setParentNode(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
-    node411->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1");
-    node411->setMoveOriginParentDbId(_dbnodeIdDir41);
 
-    std::shared_ptr<Node> node4111 = _localUpdateTree->getNodeById("id4111");
+    node4111->setMoveOriginInfos({"Dir 4/Dir 4.1.1/File 4.1.1.1", "id411"});
     node4111->insertChangeEvent(OperationType::Move);
     node4111->setName(Str("File 4.1.1.1 renamed")); // Rename node
-    node4111->setMoveOrigin("Dir 4/Dir 4.1.1/File 4.1.1.1");
-    node4111->setMoveOriginParentDbId(_dbnodeIdDir411);
 
     SyncPath path;
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getOriginPath(node4111, path) == ExitCode::Ok);
