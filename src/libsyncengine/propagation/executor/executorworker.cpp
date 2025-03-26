@@ -1427,22 +1427,16 @@ ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPt
         return ExitCode::DataError;
     }
 
-    NodeId locaNodeId;
+    NodeId localNodeId;
     NodeId remoteNodeId;
-    if (syncOp->targetSide() == ReplicaSide::Local) {
-        if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) locaNodeId = *syncOp->correspondingNode()->id();
-        remoteNodeId = syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string();
-    } else {
-        locaNodeId = syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string();
-        if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) remoteNodeId = *syncOp->correspondingNode()->id();
-    }
+    getNodeIdsFromOp(syncOp, localNodeId, remoteNodeId);
 
     Error error;
     if (isInconsistencyIssue) {
-        error = Error(_syncPal->syncDbId(), locaNodeId, remoteNodeId, syncOp->affectedNode()->type(),
+        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::ForbiddenChar);
     } else {
-        error = Error(_syncPal->syncDbId(), locaNodeId, remoteNodeId, syncOp->affectedNode()->type(),
+        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None, CancelType::None, "",
                       ExitCode::BackError, jobExitCause);
     }
@@ -1466,15 +1460,9 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     ignored = false;
     bypassProgressComplete = false;
 
-    NodeId locaNodeId;
+    NodeId localNodeId;
     NodeId remoteNodeId;
-    if (syncOp->targetSide() == ReplicaSide::Local) {
-        if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) locaNodeId = *syncOp->correspondingNode()->id();
-        if (syncOp->affectedNode()->id()) remoteNodeId = *syncOp->affectedNode()->id();
-    } else {
-        if (syncOp->affectedNode()->id()) locaNodeId = *syncOp->affectedNode()->id();
-        if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) remoteNodeId = *syncOp->correspondingNode()->id();
-    }
+    getNodeIdsFromOp(syncOp, localNodeId, remoteNodeId);
 
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
     if (const bool isInconsistencyIssue = job->exitCause() == ExitCause::InvalidName;
@@ -2324,7 +2312,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     return opsExitInfo;
 }
 
-ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
+ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
     std::shared_ptr<Node> localBlacklistedNode = nullptr;
     std::shared_ptr<Node> remoteBlacklistedNode = nullptr;
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
@@ -2336,7 +2324,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(SyncOpPtr syncOp, const E
         }
     } else {
         // Both local and remote item will be temporarily blacklisted
-        auto localNode = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
+        const auto localNode = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
         if (!localNode) return ExitCode::LogicError;
 
         const SyncPath relativeLocalFilePath = localNode->getPath();
@@ -2350,110 +2338,73 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(SyncOpPtr syncOp, const E
     return removeDependentOps(localBlacklistedNode, remoteBlacklistedNode, syncOp->type());
 }
 
-ExitInfo ExecutorWorker::handleOpsFileNotFound(SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
+ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
     _syncPal->setRestart(true);
     _syncPal->invalideSnapshots(); // There is a file/dir missing; we need to recompute the snapshot.
     return removeDependentOps(syncOp);
 }
 
-ExitInfo ExecutorWorker::handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
-    // If the file/directory already exist either on local or remote side, we blacklist it localy and the remote
-    // verson will be downloaded again.
-
+ExitInfo ExecutorWorker::handleOpsAlreadyExistError(const SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
+    // If the file/directory already exist either on local or remote side, we blacklist it.
     if (syncOp->type() != OperationType::Create &&
         syncOp->type() != OperationType::Move) { // The above handling is only for create and move/rename operations.
         return opsExitInfo;
     }
 
-    SyncPath relativeLocalPath;
-    if (syncOp->targetSide() == ReplicaSide::Local) {
-        if (syncOp->type() == OperationType::Create) {
-            relativeLocalPath = syncOp->localCreationTargetPath();
-        } else {
-            assert(syncOp->type() == OperationType::Move);
-            assert(syncOp->correspondingNode());
-            relativeLocalPath = syncOp->correspondingNode()->parentNode()->getPath() / syncOp->newName();
-        }
+    // Check if the local item is already blacklisted
+    const auto affectedPath = syncOp->affectedNode()->getPath();
+    LOGW_SYNCPAL_DEBUG(_logger, L"blacklisting item " << Utility::formatSyncPath(affectedPath));
+    _syncPal->blacklistTemporarily(syncOp->affectedNode()->id().value(), affectedPath, syncOp->affectedNode()->side());
 
-        // Check if the local item is already blacklisted
-        if (_syncPal->isTmpBlacklisted(relativeLocalPath, ReplicaSide::Local)) {
-            LOGW_SYNCPAL_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath)
-                                                << L" is already blacklisted locally, blacklisting remote corresponding node.");
-            _syncPal->blacklistTemporarily(
-                    syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), relativeLocalPath,
-                    ReplicaSide::Remote);
-
-            // Clear update tree
-            if (!deleteOpNodes(syncOp)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
-                return ExitCode::DataError;
-            }
-
-            _syncPal->setRestart(true);
-            return removeDependentOps(syncOp);
-        }
-
-        // Check if we got the read right on the local item
-        IoError ioError = IoError::Unknown;
-        bool exist = false;
-        IoHelper::checkIfPathExists(_syncPal->localPath() / relativeLocalPath, exist, ioError);
-        if (ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(_logger, Utility::formatSyncPath(relativeLocalPath)
-                                        << L"has no read access, converting " << opsExitInfo << L" to "
-                                        << ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError));
-            return handleExecutorError(
-                    syncOp, {ExitCode::SystemError, ExitCause::FileAccessError}); // We got the write right but not the read right
-        }
-    } else if (syncOp->targetSide() == ReplicaSide::Remote) {
-        relativeLocalPath = syncOp->affectedNode()->parentNode()->getPath() / syncOp->newName();
-    } else {
-        return ExitCode::LogicError;
+    if (syncOp->correspondingNode()) {
+        const auto correspondingPath = syncOp->affectedNode()->getPath();
+        LOGW_SYNCPAL_DEBUG(_logger, L"blacklisting item " << Utility::formatSyncPath(correspondingPath));
+        _syncPal->blacklistTemporarily(syncOp->correspondingNode()->id().value(), correspondingPath,
+                                       syncOp->correspondingNode()->side());
     }
 
-    SyncPath absoluteLocalPath = _syncPal->localPath() / relativeLocalPath;
-    LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalPath)
-                                         << L" already exist. Blacklisting it on "
-                                            L"local replica.");
+    // Add error
+    NodeId localNodeId;
+    NodeId remoteNodeId;
+    getNodeIdsFromOp(syncOp, localNodeId, remoteNodeId);
+    const auto error =
+            Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(), affectedPath,
+                  ConflictType::None, InconsistencyType::None, CancelType::None, "", opsExitInfo.code(), opsExitInfo.cause());
+    _syncPal->addError(error);
 
-    if (ExitInfo exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
-                absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
-        !exitInfo) {
-        LOGW_WARN(_logger, L"Failed to blacklist file: " << Utility::formatSyncPath(absoluteLocalPath) << L" " << exitInfo);
-        return ExitCode::DataError; // The synchronization will be re-started.
+    // Clear update tree
+    if (!deleteOpNodes(syncOp)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
+        return ExitCode::DataError;
     }
-
 
     _syncPal->setRestart(true);
-    if (ExitInfo exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                                           << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
-        return exitInfo;
-    }
     return removeDependentOps(syncOp);
 }
 
-ExitInfo ExecutorWorker::removeDependentOps(SyncOpPtr syncOp) {
-    auto localNode = syncOp->affectedNode()->side() == ReplicaSide::Local ? syncOp->affectedNode() : syncOp->correspondingNode();
-    auto remoteNode =
+ExitInfo ExecutorWorker::removeDependentOps(const SyncOpPtr syncOp) {
+    const auto localNode =
+            syncOp->affectedNode()->side() == ReplicaSide::Local ? syncOp->affectedNode() : syncOp->correspondingNode();
+    const auto remoteNode =
             syncOp->affectedNode()->side() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
 
     return removeDependentOps(localNode, remoteNode, syncOp->type());
 }
 
-ExitInfo ExecutorWorker::removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode,
-                                            OperationType opType) {
+ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNode, const std::shared_ptr<Node> remoteNode,
+                                            const OperationType opType) {
     const std::scoped_lock lock(_opListMutex);
 
     std::list<UniqueId> dependentOps;
     for (const auto &opId: _opList) {
-        SyncOpPtr syncOp2 = _syncPal->_syncOps->getOp(opId);
+        const SyncOpPtr syncOp2 = _syncPal->_syncOps->getOp(opId);
         if (!syncOp2) {
             LOGW_SYNCPAL_WARN(_logger, L"Operation doesn't exist anymore: id=" << opId);
             continue;
         }
-        auto localNode2 =
+        const auto localNode2 =
                 syncOp2->affectedNode()->side() == ReplicaSide::Local ? syncOp2->affectedNode() : syncOp2->correspondingNode();
-        auto remoteNode2 =
+        const auto remoteNode2 =
                 syncOp2->affectedNode()->side() == ReplicaSide::Remote ? syncOp2->affectedNode() : syncOp2->correspondingNode();
         SyncName nodeName = localNode2 ? localNode2->name() : SyncName();
         if (nodeName.empty()) nodeName = remoteNode2 ? remoteNode2->name() : SyncName();
@@ -2487,6 +2438,16 @@ ExitInfo ExecutorWorker::removeDependentOps(std::shared_ptr<Node> localNode, std
     }
 
     return ExitCode::Ok;
+}
+
+void ExecutorWorker::getNodeIdsFromOp(SyncOpPtr syncOp, NodeId &localNodeId, NodeId &remoteNodeId) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
+        if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) localNodeId = *syncOp->correspondingNode()->id();
+        remoteNodeId = syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string();
+    } else {
+        localNodeId = syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string();
+        if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) remoteNodeId = *syncOp->correspondingNode()->id();
+    }
 }
 
 } // namespace KDC

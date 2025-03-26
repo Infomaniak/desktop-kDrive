@@ -144,9 +144,11 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 
-        bool deleteOpNodes(const SyncOpPtr syncOp);
+        bool deleteOpNodes(SyncOpPtr syncOp);
 
-        void setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status);
+        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status);
+
+        static void getNodeIdsFromOp(SyncOpPtr syncOp, NodeId &localNodeId, NodeId &remoteNodeId);
 
         // This methode will return ExitCode::Ok if the error is safely managed and the executor can continue. Else, it will
         // return opsExitInfo.
