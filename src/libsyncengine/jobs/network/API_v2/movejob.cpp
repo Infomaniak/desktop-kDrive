@@ -88,10 +88,15 @@ std::string MoveJob::getSpecificUrl() {
     return str;
 }
 
+void MoveJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+    uri.addQueryParameter(conflictKey, errorKey);
+    canceled = false;
+}
+
 ExitInfo MoveJob::setData() {
-    Poco::JSON::Object json;
     if (!_name.empty()) {
-        json.set("name", _name);
+        Poco::JSON::Object json;
+        (void) json.set("name", _name);
 
         std::stringstream ss;
         json.stringify(ss);
