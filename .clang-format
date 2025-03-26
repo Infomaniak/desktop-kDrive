@@ -1,5 +1,3 @@
----
-Language: Cpp
 BasedOnStyle: Google
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
@@ -29,14 +27,6 @@ BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 130
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ContinuationIndentWidth: 8
-ForEachMacros: 
-  - foreach
-  - Q_FOREACH
-  - BOOST_FOREACH
-  - forever
-  - Q_FOREVER
-  - QBENCHMARK
-  - QBENCHMARK_ONCE
 IncludeBlocks: Preserve
 IncludeCategories: 
   - Regex: '^<.*'
@@ -62,6 +52,19 @@ SpacesInAngles: false
 SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
-Standard: c++20
 TabWidth: 4
+
+---
+Language: Cpp
+ForEachMacros: 
+  - foreach
+  - Q_FOREACH
+  - BOOST_FOREACH
+  - forever
+  - Q_FOREVER
+  - QBENCHMARK
+  - QBENCHMARK_ONCE
+Standard: c++20
+---
+Language: ObjC
 ...
