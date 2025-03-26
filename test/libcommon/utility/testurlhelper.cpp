@@ -29,16 +29,25 @@ void TestUrlHelper::testGetUrl() {
     // prod and preprod URLs. Therefore, we randomly test either prod or preprod.
     std::random_device rd;
     std::default_random_engine gen(rd());
-    std::uniform_int_distribution distrib(1, 2);
+    const std::uniform_int_distribution distrib(1, 2);
     const auto test = distrib(gen);
     const bool usePreprod = test == 1;
     if (usePreprod) {
+#ifdef _WIN32
+        _putenv_s("KDRIVE_USE_PREPROD_URL", "1");
+#else
         (void) setenv("KDRIVE_USE_PREPROD_URL", "1", true);
+#endif
         std::cout << " Testing preprod URLs";
     } else {
+#ifdef _WIN32
+        _putenv_s("KDRIVE_USE_PREPROD_URL", "0");
+#else
         (void) setenv("KDRIVE_USE_PREPROD_URL", "0", true);
+#endif
         std::cout << " Testing prod URLs";
     }
+
 
     CPPUNIT_ASSERT_EQUAL(usePreprod, Utility::contains(UrlHelper::infomaniakApiUrl(), preprodKeyWord));
     CPPUNIT_ASSERT_EQUAL(false, Utility::contains(UrlHelper::infomaniakApiUrl(2, true), preprodKeyWord));
