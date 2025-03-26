@@ -1372,6 +1372,10 @@ void SynthesisPopover::onNotificationActionTriggered() {
         case NotificationsDisabled::Always:
             _notificationsDisabledUntilDateTime = QDateTime();
             break;
+
+        case NotificationsDisabled::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     emit disableNotifications(_notificationsDisabled, _notificationsDisabledUntilDateTime);
