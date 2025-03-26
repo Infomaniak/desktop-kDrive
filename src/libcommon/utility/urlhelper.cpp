@@ -46,7 +46,7 @@ std::string UrlHelper::loginApiUrl() {
 }
 
 bool UrlHelper::usePreProdUrl() {
-    static bool usePreProdUrl = CommonUtility::envVarValue("KDRIVE_USE_PREPROD_URL") == "1";
+    static const bool usePreProdUrl = CommonUtility::envVarValue("KDRIVE_USE_PREPROD_URL") == "1";
     return usePreProdUrl;
 }
 
