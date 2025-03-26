@@ -85,7 +85,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     buf->modtime = sb.stx_mtime.tv_sec;
     buf->size = static_cast<int64_t>(sb.stx_size);
     if (S_ISLNK(sb.stx_mode)) {
-        // Symlink
+        // The item is a symlink.
         struct stat sbTarget;
         if (stat(path.string().c_str(), &sbTarget) < 0) {
             // Cannot access target => undetermined

@@ -94,9 +94,9 @@ bool DeleteJob::canRun() {
         }
 
         if (filestat.nodeType != _nodeType && filestat.nodeType != NodeType::Unknown && _nodeType != NodeType::Unknown) {
-            // The nodeId has been reuse for another item, remove the old one from sync.
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
-                                          << L" has been reused for another item. Removing the old one from sync.");
+            // The nodeId has been reused by a new item: we remove the old one from sync.
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)
+                                          << L" has been reused by a new item. Removing the old item from sync.");
             return true;
         }
 
