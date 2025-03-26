@@ -106,6 +106,9 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             // An error occurred
             break;
         }
+        case UpdateState::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 }
 
