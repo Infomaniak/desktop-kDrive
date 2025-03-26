@@ -66,8 +66,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
         buf->creationTime = sb.stx_btime.tv_sec; // The file system supports creation time
     } else if (lgetxattr(path.string().c_str(), btimeXattrName, &buf->creationTime, sizeof(buf->creationTime)) < 0) {
         buf->creationTime = sb.stx_ctime.tv_sec;
-        const auto err = errno;
-        if (err == ENODATA) {
+        if (const auto err = errno; err == ENODATA) {
             if (lsetxattr(path.string().c_str(), btimeXattrName, &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
                 LOG_ERROR(logger(), "Failed to set user.kDrive.birthtime extended attribute: " << strerror(errno));
             }
