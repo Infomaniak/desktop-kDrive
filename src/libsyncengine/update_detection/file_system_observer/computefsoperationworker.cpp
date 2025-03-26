@@ -830,8 +830,15 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         return ExitCode::Ok;
     }
 
-    // The nodeId will be considered as reused if the creation date has changed, the modification date has changed, the size has
-    // changed and path has changed. Check if the creation date has changed
+    /* The nodeId will be considered as reused if each of the following has changed :
+     * - the creation date,
+     * - the modification date,
+     * - the size,
+     * - the path (this is needed as some software might delete and recreate a file when saving it, wich will change all the
+     *             previous properties, but the file is still the same)
+     */
+
+    // Check if the creation date has changed
     if (snapshot->createdAt(localNodeId) == dbNode.created().value()) {
         return ExitCode::Ok;
     }
@@ -871,7 +878,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
     }
 
     LOGW_SYNCPAL_DEBUG(_logger, L"Path, size, creation date and modification date has changed for " << Utility::s2ws(localNodeId)
-                                                                                                   << L". Node is reused.");
+                                                                                                    << L". Node is reused.");
     isReused = true;
     return ExitCode::Ok;
 }
