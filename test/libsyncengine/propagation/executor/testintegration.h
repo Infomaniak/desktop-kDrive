@@ -99,7 +99,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
                     };
                 }
                 ~MockIoHelperFileStat() { IoHelper::_getFileStat = IoHelper::_getFileStatFn; }
-                void setPathFakeInode(const SyncPath &path, const uint64_t &inode) {
+                void setPathWithFakeInode(const SyncPath &path, const uint64_t &inode) {
                     _pathNodeIdMap[path.lexically_normal()] = inode;
                 };
 
