@@ -526,8 +526,11 @@ QString CommonUtility::languageCode(const Language language) {
             return spanishCode;
         case Language::English:
             break;
+        case Language::EnumEnd:
+            assert(false && "Invalid enum value in switch statement.");
     }
-    return englishCode; // Return english by default.
+
+    return englishCode;
 }
 
 SyncPath CommonUtility::getAppDir() {
