@@ -53,13 +53,22 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     }
 
     buf->inode = sb.stx_ino;
+
+    /* Retrieve creation time
+     * On Linux, some file systems do not support creation time (btime).
+     * If this is the case, this function will try to get the creation time from an extended attribute previously set.
+     * If the extended attribute is not set, it will be set with the current ctime of the file.
+     * If the file system does not support extended attributes, a warning will be logged and the creation time will be set to the
+     * ctime of the file.
+     */
+    static const std::string btimeXattrName = "user.kDrive.birthtime";
     if (sb.stx_mask & STATX_BTIME) {
-        buf->creationTime = sb.stx_btime.tv_sec;
-    } else if (lgetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime)) < 0) {
+        buf->creationTime = sb.stx_btime.tv_sec; // The file system supports creation time
+    } else if (lgetxattr(path.string().c_str(), btimeXattrName, &buf->creationTime, sizeof(buf->creationTime)) < 0) {
         buf->creationTime = sb.stx_ctime.tv_sec;
         const auto err = errno;
         if (err == ENODATA) {
-            if (lsetxattr(path.string().c_str(), "user.kDrive.birthtime", &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
+            if (lsetxattr(path.string().c_str(), btimeXattrName, &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
                 LOG_ERROR(logger(), "Failed to set user.kDrive.birthtime extended attribute: " << strerror(errno));
             }
         } else if (err == ENOTSUP) {
