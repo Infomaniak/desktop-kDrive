@@ -869,7 +869,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         if (ignore) {
             return ExitCode::Ok;
         }
-        LOG_SYNCPAL_WARN(_logger, "Failed to retrieve path from snapshot for item " << localNodeId.c_str());
+        LOG_SYNCPAL_WARN(_logger, "Failed to retrieve path from snapshot for item " << localNodeId);
         return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     }
 
@@ -877,7 +877,7 @@ ExitInfo ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, con
         return ExitCode::Ok;
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Path, size, creation date and modification date has changed for " << Utility::s2ws(localNodeId)
+    LOGW_SYNCPAL_DEBUG(_logger, L"Path, size, creation date and modification date have all changed for " << Utility::s2ws(localNodeId)
                                                                                                     << L". Node is reused.");
     isReused = true;
     return ExitCode::Ok;
