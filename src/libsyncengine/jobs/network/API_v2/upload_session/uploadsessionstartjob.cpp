@@ -52,6 +52,9 @@ ExitInfo UploadSessionStartJob::setData() {
             if (_fileId.empty()) {
                 (void) json.set("file_name", _filename);
                 (void) json.set("directory_id", _remoteParentDirId);
+                // If an item already exist on server side with the same name, we want the back end to return an error.
+                // However, in case a conflict with a directory, the back end will change the error resolution to `rename` and
+                // automatically rename the uploaded file with a suffix counter (e.g.: test (1).txt)
                 (void) json.set(conflictKey, errorKey);
             } else {
                 (void) json.set("file_id", _fileId);
