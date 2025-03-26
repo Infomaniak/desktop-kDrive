@@ -18,10 +18,10 @@
 
 #include "remotefilesystemobserverworker.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/API_v2/listing/continuefilelistwithcursorjob.h"
+#include "jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/API_v2/listing/longpolljob.h"
 #include "jobs/network/API_v2/getfileinfojob.h"
-#include "jobs/network/API_v2/longpolljob.h"
-#include "jobs/network/API_v2/continuefilelistwithcursorjob.h"
 #ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
@@ -32,10 +32,6 @@
 #include "requests/parameterscache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "utility/jsonparserutility.h"
-
-#ifdef __APPLE__
-#include "utility/utility.h"
-#endif
 
 #include <log4cplus/loggingmacros.h>
 
@@ -56,6 +52,9 @@ RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
 void RemoteFileSystemObserverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
+
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _blackList);
+
     // Sync loop
     for (;;) {
         if (stopAsked()) {
@@ -173,7 +172,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         }
 
         try {
-            job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, _cursor);
+            job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, _cursor, _blackList);
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
                                               << _driveDbId << " error=" << e.what());
@@ -268,9 +267,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
-        std::unordered_set<NodeId> blackList;
-        SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
-        job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, dirId, blackList, true);
+        job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, dirId, _blackList, true);
     } catch (const std::exception &e) {
         std::string what = e.what();
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
@@ -413,7 +410,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     if (_snapshot->isValid()) {
         std::shared_ptr<LongPollJob> notifyJob = nullptr;
         try {
-            notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor);
+            notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor, _blackList);
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
             return ExitCode::DataError;
@@ -428,7 +425,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             }
 
             {
-                const std::lock_guard<std::mutex> lock(_mutex);
+                const std::scoped_lock lock(_mutex);
                 if (_updating) { // We want to update snapshot immediately, cancel LongPoll job and send a listing/continue
                                  // request
                     notifyJob->abort();

@@ -22,7 +22,6 @@
 #include "jobs/network/API_v2/deletejob.h"
 #include "jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/API_v2/duplicatejob.h"
-#include "jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/getavatarjob.h"
 #include "jobs/network/API_v2/getdriveslistjob.h"
 #include "jobs/network/API_v2/getfileinfojob.h"
@@ -31,7 +30,6 @@
 #include "jobs/network/API_v2/getinfouserjob.h"
 #include "jobs/network/API_v2/getinfodrivejob.h"
 #include "jobs/network/API_v2/getthumbnailjob.h"
-#include "jobs/network/API_v2/jsonfullfilelistwithcursorjob.h"
 #include "jobs/network/API_v2/movejob.h"
 #include "jobs/network/API_v2/renamejob.h"
 #include "jobs/network/API_v2/upload_session/driveuploadsession.h"
@@ -44,6 +42,7 @@
 #include "requests/parameterscache.h"
 #include "jobs/network/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
+#include "jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
@@ -54,6 +53,7 @@
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 using namespace CppUnit;
 
@@ -692,58 +692,6 @@ void TestNetworkJobs::testGetFileListWithCursor() {
     CPPUNIT_ASSERT(counter == 5);
 }
 
-void TestNetworkJobs::testFullFileListWithCursorJson() {
-    JsonFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-    int counter = 0;
-    std::string cursor;
-    Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
-    if (dataObj) {
-        cursor = dataObj->get(cursorKey).toString();
-
-        Poco::JSON::Array::Ptr filesArray = dataObj->getArray(filesKey);
-        if (filesArray) {
-            for (auto it = filesArray->begin(); it != filesArray->end(); ++it) {
-                Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-                if (obj->get(parentIdKey).toString() == pictureDirRemoteId) {
-                    counter++;
-                }
-            }
-        }
-    }
-
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 5);
-}
-
-void TestNetworkJobs::testFullFileListWithCursorJsonZip() {
-    JsonFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-    int counter = 0;
-    std::string cursor;
-    Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
-    if (dataObj) {
-        cursor = dataObj->get(cursorKey).toString();
-
-        Poco::JSON::Array::Ptr filesArray = dataObj->getArray(filesKey);
-        if (filesArray) {
-            for (auto it = filesArray->begin(); it != filesArray->end(); ++it) {
-                Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-                if (obj->get(parentIdKey).toString() == pictureDirRemoteId) {
-                    counter++;
-                }
-            }
-        }
-    }
-
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 5);
-}
-
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
     const ExitCode exitCode = job.runSynchronously();
@@ -794,32 +742,6 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
     CPPUNIT_ASSERT(!cursor.empty());
     CPPUNIT_ASSERT(counter == 5);
     CPPUNIT_ASSERT(eof);
-}
-
-void TestNetworkJobs::testFullFileListWithCursorJsonBlacklist() {
-    JsonFullFileListWithCursorJob job(_driveDbId, "1", {pictureDirRemoteId}, true);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-    int counter = 0;
-    std::string cursor;
-    Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
-    if (dataObj) {
-        cursor = dataObj->get(cursorKey).toString();
-
-        Poco::JSON::Array::Ptr filesArray = dataObj->getArray(filesKey);
-        if (filesArray) {
-            for (auto it = filesArray->begin(); it != filesArray->end(); ++it) {
-                Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
-                if (obj->get(parentIdKey).toString() == pictureDirRemoteId) {
-                    counter++;
-                }
-            }
-        }
-    }
-
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 0);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
