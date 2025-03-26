@@ -1001,9 +1001,12 @@ void TestNetworkJobs::testUploadAborted() {
     }
     job->abort();
 
-    Utility::msleep(5000); // Wait 5sec
+    // Wait for job to finish
+    while (!JobManager::instance()->isJobFinished(job->jobId())) {
+        Utility::msleep(100);
+    }
 
-    const NodeId newNodeId = job->nodeId();
+    const auto newNodeId = job->nodeId();
     CPPUNIT_ASSERT(newNodeId.empty());
 
     job.reset();

@@ -20,7 +20,7 @@
 #include "comm.h"
 #include "syncpal/virtualfilescleaner.h"
 #include "syncpalworker.h"
-#include "utility/logiffail.h"
+#include "libcommon/utility/logiffail.h"
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
@@ -66,7 +66,7 @@ SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const SyncPath &syncDbPath, co
 }
 
 SyncPal::SyncPal(const std::shared_ptr<Vfs> &vfs, const int syncDbId_, const std::string &version) :
-    _logger(Log::instance()->getLogger()), _vfs(vfs) {
+    _vfs(vfs), _logger(Log::instance()->getLogger()) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
     assert(_vfs);
 

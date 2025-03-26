@@ -18,30 +18,12 @@
 
 #pragma once
 
-#include "abstractupdater.h"
+#define KD_CONCAT(A, B) A##B
+#define KD_APPEND_NUM(NAME, NUM) KD_CONCAT(NAME##_, NUM)
+#define KD_GET_COUNT(_1, _2, _3, _4, _5, _6, _7, COUNT, ...) COUNT
+#define KD_EXPAND(...) __VA_ARGS__
+#define KD_VA_SIZE(...) KD_EXPAND(KD_GET_COUNT(__VA_ARGS__, 7, 6, 5, 4, 3, 2, 1, 0))
 
-namespace KDC {
-
-class SparkleUpdater final : public AbstractUpdater {
-    public:
-        SparkleUpdater();
-        ~SparkleUpdater() override;
-
-        void onUpdateFound() override;
-
-        void setQuitCallback(const std::function<void()> &quitCallback) override;
-        void startInstaller() override;
-
-        void unskipVersion() override;
-
-    private:
-        void reset(const std::string &url = "");
-        bool startSparkleUpdater();
-
-        void skipVersionCallback();
-
-        class Private;
-        Private *d;
-};
-
-} // namespace KDC
+#define KD_OVERLOAD_WITH_ARGS_SIZE(NAME, ...)    \
+    KD_APPEND_NUM(NAME, KD_VA_SIZE(__VA_ARGS__)) \
+    (__VA_ARGS__)

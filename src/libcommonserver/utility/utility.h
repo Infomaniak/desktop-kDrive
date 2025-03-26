@@ -21,6 +21,7 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/commonserverlib.h"
 #include "libcommonserver/db/dbdefs.h"
+#include "libcommon/utility/filename.h"
 #include "libcommon/utility/types.h"
 
 #include <xxhash.h>
@@ -48,11 +49,11 @@ class URI;
 /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
  *  static std::string errId(std::source_location location = std::source_location::current());
  */
-#define errId() Utility::_errId(__FILE__, __LINE__)
+#define errId() Utility::_errId(__FILENAME__, __LINE__)
 
 namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
-        inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
+        inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
 
         static bool init();
         static void free();
@@ -69,6 +70,11 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string ltrim(const std::string &s);
         static std::string rtrim(const std::string &s);
         static std::string trim(const std::string &s);
+#ifdef _WIN32
+        static SyncName ltrim(const SyncName &s);
+        static SyncName rtrim(const SyncName &s);
+        static SyncName trim(const SyncName &s);
+#endif
         static void msleep(int msec);
         static std::wstring v2ws(const dbtype &v);
 

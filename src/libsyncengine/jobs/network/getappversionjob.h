@@ -31,7 +31,7 @@ class GetAppVersionJob : public AbstractNetworkJob {
         ~GetAppVersionJob() override = default;
 
         /**
-         * @brief Return the adequat version info between Production or Production-Next.
+         * @brief Return the adequate version info between Production or Production-Next.
          * @return `VersionChannel` enum value.
          */
         [[nodiscard]] VersionChannel prodVersionChannel() const { return _prodVersionChannel; }

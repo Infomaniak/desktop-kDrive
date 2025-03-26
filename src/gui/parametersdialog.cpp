@@ -31,7 +31,7 @@
 #include "guirequests.h"
 #include "parameterscache.h"
 #include "libcommongui/logger.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/qlogiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 
@@ -705,6 +705,12 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
                 tr("The item name coincides with the name of another item in the same directory.<br>"
                    "It has been temporarily blacklisted. Consider removing duplicate items.");
     }
+    if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ForbiddenCharOnlySpaces)) {
+        text += (text.isEmpty() ? "" : "\n");
+        text +=
+                tr("The item name contains only spaces.<br>"
+                   "It has been temporarily blacklisted.");
+    }
 
     return text;
 }
@@ -1122,7 +1128,7 @@ void ParametersDialog::onClearErrors(const int driveDbId, const bool autoResolve
     QListWidget *listWidgetToClear = nullptr;
 
     if (driveDbId == 0) {
-        LOG_IF_FAIL(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
+        QLOG_IF_FAIL(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
 
         errorTabWidget = dynamic_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
 

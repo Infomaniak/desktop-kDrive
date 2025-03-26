@@ -18,30 +18,10 @@
 
 #pragma once
 
-#include "abstractupdater.h"
+#include <string.h>
 
-namespace KDC {
-
-class SparkleUpdater final : public AbstractUpdater {
-    public:
-        SparkleUpdater();
-        ~SparkleUpdater() override;
-
-        void onUpdateFound() override;
-
-        void setQuitCallback(const std::function<void()> &quitCallback) override;
-        void startInstaller() override;
-
-        void unskipVersion() override;
-
-    private:
-        void reset(const std::string &url = "");
-        bool startSparkleUpdater();
-
-        void skipVersionCallback();
-
-        class Private;
-        Private *d;
-};
-
-} // namespace KDC
+#if defined(_WIN32)
+#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#else
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif

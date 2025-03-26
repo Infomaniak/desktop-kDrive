@@ -18,30 +18,12 @@
 
 #pragma once
 
-#include "abstractupdater.h"
+#include "config.h"
 
-namespace KDC {
-
-class SparkleUpdater final : public AbstractUpdater {
-    public:
-        SparkleUpdater();
-        ~SparkleUpdater() override;
-
-        void onUpdateFound() override;
-
-        void setQuitCallback(const std::function<void()> &quitCallback) override;
-        void startInstaller() override;
-
-        void unskipVersion() override;
-
-    private:
-        void reset(const std::string &url = "");
-        bool startSparkleUpdater();
-
-        void skipVersionCallback();
-
-        class Private;
-        Private *d;
-};
-
-} // namespace KDC
+#ifdef KD_COVERAGE
+#define KD_COVERAGE_OFF _Pragma("BullseyeCoverage off")
+#define KD_COVERAGE_ON _Pragma("BullseyeCoverage on")
+#else
+#define KD_COVERAGE_OFF
+#define KD_COVERAGE_ON
+#endif

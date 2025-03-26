@@ -22,6 +22,10 @@
 #include "requests/parameterscache.h"
 #if defined(__APPLE__)
 #include "sparkleupdater.h"
+#elif defined(_WIN32)
+#include "windowsupdater.h"
+#else
+#include "linuxupdater.h"
 #endif
 
 namespace KDC {
@@ -131,6 +135,17 @@ void AbstractUpdater::setState(const UpdateState newState) {
         _state = newState;
         if (_stateChangeCallback) _stateChangeCallback(_state);
     }
+}
+
+std::unique_ptr<AbstractUpdater> createUpdater() {
+#if defined(__APPLE__)
+    return std::make_unique<SparkleUpdater>();
+#elif defined(_WIN32)
+    return std::make_unique<WindowsUpdater>();
+#else
+    // the best we can do is notify about updates
+    return std::make_unique<LinuxUpdater>();
+#endif
 }
 
 } // namespace KDC
