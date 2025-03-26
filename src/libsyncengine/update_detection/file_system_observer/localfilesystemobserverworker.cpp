@@ -759,7 +759,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                         << Utility::s2ws(parentNodeId) << L" createdAt:" << fileStat.creationTime
                                                         << L" modtime:" << fileStat.modtime << L" isDir:"
                                                         << (itemType.nodeType == NodeType::Directory) << L" size:"
-                                                        << fileStat.size);
+                                                        << fileStat.size << L" isLink:" << isLink);
                 }
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath.filename())

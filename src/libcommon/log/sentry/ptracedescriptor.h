@@ -68,21 +68,17 @@ enum class PTraceName {
 struct PTraceDescriptor {
         PTraceDescriptor() = default;
         PTraceDescriptor(std::string pTraceTitle, std::string pTraceDescription, const PTraceName pTraceName,
-                         const PTraceName parentPTraceName = PTraceName::None, const double _customSampleRate = 1.0) :
-            _pTraceName{pTraceName}, _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
-            _pTraceDescription{std::move(pTraceDescription)}
-#if NDEBUG
-            ,
-            _customSampleRate{_customSampleRate}
-#endif
-        {
-        }
+                         const PTraceName parentPTraceName = PTraceName::None, const double customSampleRate = 1.0) :
+            _pTraceName{pTraceName},
+            _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
+            _pTraceDescription{std::move(pTraceDescription)}, _customSampleRate{customSampleRate} {}
 
-        const PTraceName& pTraceName() const { return _pTraceName; }
-        const PTraceName& parentPTraceName() const { return _parentPTraceName; }
-        const std::string& pTraceTitle() const { return _pTraceTitle; }
-        const std::string& pTraceDescription() const { return _pTraceDescription; }
-        const double& customSampleRate() const { return _customSampleRate; }
+        [[nodiscard]] const PTraceName& pTraceName() const { return _pTraceName; }
+        [[nodiscard]] const PTraceName& parentPTraceName() const { return _parentPTraceName; }
+        [[nodiscard]] const std::string& pTraceTitle() const { return _pTraceTitle; }
+        [[nodiscard]] const std::string& pTraceDescription() const { return _pTraceDescription; }
+        [[nodiscard]] const double& customSampleRate() const { return _customSampleRate; }
+
     private:
         const PTraceName _pTraceName = PTraceName::None;
         const PTraceName _parentPTraceName = PTraceName::None;

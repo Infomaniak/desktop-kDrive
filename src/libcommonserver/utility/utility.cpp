@@ -189,14 +189,16 @@ std::string Utility::ws2s(const std::wstring &wstr) {
 
 std::string Utility::ltrim(const std::string &s) {
     std::string sout(s);
-    auto it = std::find_if(sout.begin(), sout.end(), [](char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    const auto it =
+            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
     sout.erase(sout.begin(), it);
     return sout;
 }
 
 std::string Utility::rtrim(const std::string &s) {
     std::string sout(s);
-    auto it = std::find_if(sout.rbegin(), sout.rend(), [](char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    const auto it =
+            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
     sout.erase(it.base(), sout.end());
     return sout;
 }
@@ -204,6 +206,28 @@ std::string Utility::rtrim(const std::string &s) {
 std::string Utility::trim(const std::string &s) {
     return ltrim(rtrim(s));
 }
+
+#ifdef _WIN32
+SyncName Utility::ltrim(const SyncName &s) {
+    SyncName sout(s);
+    const auto it =
+            std::find_if(sout.begin(), sout.end(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    sout.erase(sout.begin(), it);
+    return sout;
+}
+
+SyncName Utility::rtrim(const SyncName &s) {
+    SyncName sout(s);
+    const auto it =
+            std::find_if(sout.rbegin(), sout.rend(), [](const char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    sout.erase(it.base(), sout.end());
+    return sout;
+}
+
+SyncName Utility::trim(const SyncName &s) {
+    return ltrim(rtrim(s));
+}
+#endif
 
 void Utility::msleep(int msec) {
     std::chrono::milliseconds dura(msec);

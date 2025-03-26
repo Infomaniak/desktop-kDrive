@@ -15,33 +15,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
+#include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+#include "syncpal/operationprocessor.h"
 
-#include "abstractupdater.h"
+using namespace CppUnit;
 
 namespace KDC {
 
-class SparkleUpdater final : public AbstractUpdater {
+class TestOperationProcessor final : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestOperationProcessor);
+        CPPUNIT_TEST(testIsPseudoConflict);
+        CPPUNIT_TEST_SUITE_END();
+
     public:
-        SparkleUpdater();
-        ~SparkleUpdater() override;
-
-        void onUpdateFound() override;
-
-        void setQuitCallback(const std::function<void()> &quitCallback) override;
-        void startInstaller() override;
-
-        void unskipVersion() override;
+        TestOperationProcessor() = default;
+        void setUp() override;
+        void tearDown() override;
 
     private:
-        void reset(const std::string &url = "");
-        bool startSparkleUpdater();
+        std::shared_ptr<SyncPal> _syncPal;
+        std::shared_ptr<ParmsDb> _parmsDb;
+        int _driveDbId = 0;
+        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestOperationProcessor");
 
-        void skipVersionCallback();
-
-        class Private;
-        Private *d;
+        void testIsPseudoConflict();
 };
 
 } // namespace KDC

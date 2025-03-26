@@ -37,12 +37,12 @@ namespace KDC {
 class UpdateManager final : public QObject {
         Q_OBJECT
     public:
+        explicit UpdateManager(QObject *parent = nullptr);
+
         UpdateManager(UpdateManager &) = delete;
         UpdateManager(UpdateManager &&) = delete;
         UpdateManager &operator=(UpdateManager &) = delete;
         UpdateManager &operator=(UpdateManager &&) = delete;
-
-        static std::shared_ptr<UpdateManager> instance();
 
         void setDistributionChannel(VersionChannel channel);
         [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel = VersionChannel::Unknown) const {
@@ -53,7 +53,7 @@ class UpdateManager final : public QObject {
         void startInstaller() const;
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
-        std::shared_ptr<AbstractUpdater> updater() const { return _updater; };
+        std::unique_ptr<AbstractUpdater> &updater() { return _updater; };
 
     signals:
         void updateAnnouncement(const QString &title, const QString &msg);
@@ -66,16 +66,14 @@ class UpdateManager final : public QObject {
         void slotUpdateStateChanged(KDC::UpdateState newState);
 
     private:
-        explicit UpdateManager(QObject *parent = nullptr);
-        static std::shared_ptr<UpdateManager> _instance;
         /**
-         * @brief Create adequate updater according to OS.
+         * @brief Initialize updater according to OS.
          */
-        void createUpdater();
+        void initUpdater();
 
         void onUpdateStateChanged(UpdateState newState);
 
-        static std::shared_ptr<AbstractUpdater> _updater;
+        std::unique_ptr<AbstractUpdater> _updater;
         VersionChannel _currentChannel{VersionChannel::Unknown};
         QTimer _updateCheckTimer; /** Timer for the regular update check. */
 };

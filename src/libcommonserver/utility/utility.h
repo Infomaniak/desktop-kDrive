@@ -70,6 +70,11 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string ltrim(const std::string &s);
         static std::string rtrim(const std::string &s);
         static std::string trim(const std::string &s);
+#ifdef _WIN32
+        static SyncName ltrim(const SyncName &s);
+        static SyncName rtrim(const SyncName &s);
+        static SyncName trim(const SyncName &s);
+#endif
         static void msleep(int msec);
         static std::wstring v2ws(const dbtype &v);
 
