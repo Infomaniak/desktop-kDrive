@@ -1146,13 +1146,7 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
 bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    // Split path
-    std::vector<SyncName> names;
-    SyncPath pathTmp(path);
-    while (pathTmp != pathTmp.root_path()) {
-        names.emplace_back(pathTmp.filename().native());
-        pathTmp = pathTmp.parent_path();
-    }
+    const std::vector<SyncName> names = Utility::splitPath(path);
 
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
@@ -1172,7 +1166,7 @@ bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bo
         // Find file node
         std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
                                                      : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
-        for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+        for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
             LOG_IF_FAIL(queryResetAndClearBindings(id));
             LOG_IF_FAIL(queryBindValue(id, 1, dbNodeId));
             LOG_IF_FAIL(queryBindValue(id, 2, *nameIt));
@@ -1216,13 +1210,7 @@ bool SyncDb::clearNodes() {
 bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    // Split path
-    std::vector<SyncName> names;
-    SyncPath pathTmp(path);
-    while (pathTmp != pathTmp.root_path()) {
-        names.emplace_back(pathTmp.filename());
-        pathTmp = pathTmp.parent_path();
-    }
+    std::vector<SyncName> itemNames = Utility::splitPath(path);
 
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
@@ -1236,13 +1224,13 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
     DbNodeId nodeDbId;
     LOG_IF_FAIL(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 0, nodeDbId));
 
-    if (!names.empty()) {
+    if (!itemNames.empty()) {
         LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
         std::string queryId = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
                                                           : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
         // Find file node
-        for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+        for (std::vector<SyncName>::reverse_iterator nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
             LOG_IF_FAIL(queryResetAndClearBindings(queryId));
             LOG_IF_FAIL(queryBindValue(queryId, 1, nodeDbId));
             LOG_IF_FAIL(queryBindValue(queryId, 2, *nameIt));
@@ -1434,7 +1422,7 @@ bool SyncDb::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &
     path.clear();
     found = false;
 
-    std::vector<SyncName> names;
+    std::vector<SyncName> itemNames;
 
     const std::string requestId =
             (side == ReplicaSide::Local ? SELECT_ANCESTORS_NODES_LOCAL_REQUEST_ID : SELECT_ANCESTORS_NODES_DRIVE_REQUEST_ID);
@@ -1455,15 +1443,15 @@ bool SyncDb::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &
         SyncName name;
         LOG_IF_FAIL(querySyncNameValue(requestId, side == ReplicaSide::Local ? 0 : 1, name));
 
-        names.emplace_back(name);
+        itemNames.emplace_back(name);
     }
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
-    found = !names.empty();
+    found = !itemNames.empty();
 
-    // Construct path from names' vector
-    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    // Construct path from itemNames' vector
+    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
         path.append(*nameIt);
     }
 

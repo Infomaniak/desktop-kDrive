@@ -130,6 +130,19 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
 
+        /**
+         * Check whether two names indicate the same item on the file system.
+         * @param lhs SyncName value to be compared.
+         * @param rhs Other SyncName value to be compared.
+         * @param normalizePaths if true, lhs and rhs are normalized before comparing them with `==`.
+         * Otherwise just compare with `==`.
+         * @return true lhs and rhs have equal normalization when normalizeNames is true or if lhs == rhs when normalizeNames is
+         * false. Returns false otherwise.
+         */
+        static bool areEqual(const SyncName &lhs, const SyncName &rhs, bool normalizeNames);
+
+        static std::vector<SyncName> splitPath(const SyncPath &path);
+
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
         static bool preventSleeping(bool enable);

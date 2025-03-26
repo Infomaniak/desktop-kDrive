@@ -78,42 +78,32 @@ bool UpdateTree::deleteNode(const NodeId &id) {
     return deleteNode(node);
 }
 
-std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
+
+std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path, const bool normalizePaths) {
     if (path.empty()) {
         return _rootNode;
     }
 
-    // Split path
-    std::vector<SyncName> names;
-    SyncPath pathTmp(path);
-    while (pathTmp != pathTmp.root_path()) {
-        names.push_back(pathTmp.filename().native());
-        pathTmp = pathTmp.parent_path();
-    }
-
+    const std::vector<SyncName> itemNames = Utility::splitPath(path);
     std::shared_ptr<Node> tmpNode = _rootNode;
-    for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+
+    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
-        for (const auto &childNode: tmpNode->children()) {
-            bool isEqual = false;
-            if (!Utility::checkIfSameNormalization(*nameIt, childNode.second->name(), isEqual)) {
-                LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::checkIfSameNormalization: "
-                                                                << Utility::formatSyncName(*nameIt) << L" / "
-                                                                << Utility::formatSyncName(childNode.second->name()));
-                // Ignore child node
+        for (const auto &[_, childNode]: tmpNode->children()) {
+            if (const bool areEqualPaths = Utility::areEqual(*nameIt, childNode->name(), normalizePaths); areEqualPaths) {
+                tmpChildNode = childNode;
+                break;
+            } else {
                 continue;
             }
-
-            if (isEqual) {
-                tmpChildNode = childNode.second;
-                break;
-            }
         }
+
         if (tmpChildNode == nullptr) {
             return nullptr;
         }
         tmpNode = tmpChildNode;
     }
+
     return tmpNode;
 }
 
