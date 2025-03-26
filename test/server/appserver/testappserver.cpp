@@ -22,6 +22,7 @@
 #include "requests/parameterscache.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
+#include "libsyncengine/jobs/jobmanager.h"
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
@@ -30,7 +31,7 @@ void TestAppServer::setUp() {
     TestBase::start();
 
     if (QCoreApplication::instance()) {
-        _appPtr = dynamic_cast<AppServer *>(QCoreApplication::instance());
+        _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
         return;
     }
 
@@ -76,11 +77,12 @@ void TestAppServer::setUp() {
     // Create AppServer
     SyncPath exePath = KDC::CommonUtility::applicationFilePath();
     try {
-        const std::vector<std::string> args = {Path2Str(exePath), "--testParmsDbName", parmsDbPath.filename().string()};
+        const std::vector<std::string> args = {Path2Str(exePath), "--parmsDbName", parmsDbPath.filename().string()};
         std::vector<char *> argv;
         for (size_t i = 0; i < args.size(); ++i) argv.push_back(const_cast<char *>(args[i].c_str()));
         int argc = static_cast<int>(args.size());
-        _appPtr = new AppServer(argc, &argv[0]);
+        _appPtr = new MockAppServer(argc, &argv[0]);
+        _appPtr->init();
     } catch (const std::exception &e) {
         std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
         return;
@@ -203,6 +205,43 @@ bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) con
 bool TestAppServer::syncIsActive(int syncDbId) const {
     SyncStatus status = _appPtr->_syncPalMap[syncDbId]->status();
     return status == SyncStatus::Starting || status == SyncStatus::Running || status == SyncStatus::Idle;
+}
+
+MockAppServer::MockAppServer(int &argc, char **argv) : AppServer(argc, argv) {}
+
+void MockAppServer::parseOptions(const QStringList &options) {
+    // Parse options; if help or bad option exit
+    QStringListIterator it(options);
+    it.next(); // File name
+    if (it.hasNext()) {
+        QString option = it.next();
+        if (option == QLatin1String("--parmsDbName")) {
+            QString value = it.next();
+            _parmsDbName = value.toStdString();
+        } else {
+            showHint("Unrecognized option '" + option.toStdString() + "'");
+        }
+    } else {
+        showHint("Missing mandatory option 'parmsDbName'");
+    }
+}
+
+std::filesystem::path MockAppServer::makeDbName() {
+    bool alreadyExist = false;
+    return Db::makeDbName(alreadyExist, false, _parmsDbName);
+}
+
+std::shared_ptr<ParmsDb> MockAppServer::initParmsDB(const std::filesystem::path &dbPath, const std::string &version) {
+    return ParmsDb::instance(dbPath, version, false, true);
+}
+
+void MockAppServer::cleanup() {
+    AppServer::cleanup();
+
+    // Reset static variables
+    JobManager::reset();
+    ParmsDb::reset();
+    ParametersCache::reset();
 }
 
 } // namespace KDC

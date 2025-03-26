@@ -22,6 +22,19 @@
 
 namespace KDC {
 
+class MockAppServer : public AppServer {
+    public:
+        MockAppServer(int &argc, char **argv);
+        void parseOptions(const QStringList &options) override;
+        std::filesystem::path makeDbName() override;
+        std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version) override;
+        bool startClient() override { return true; }
+        void cleanup() override;
+
+    private:
+        std::string _parmsDbName;
+};
+
 class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestAppServer);
         CPPUNIT_TEST(testInitAndStopSyncPal);
@@ -38,7 +51,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         void testCleanup();
 
     private:
-        AppServer *_appPtr;
+        MockAppServer *_appPtr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
         SyncPath _localPath;
         SyncPath _remotePath;
