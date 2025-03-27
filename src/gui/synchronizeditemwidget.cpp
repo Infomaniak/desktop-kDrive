@@ -272,6 +272,9 @@ void SynchronizedItemWidget::setDirectionIcon() {
                         KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/download.svg", _directionIconColor)
                                 .pixmap(_directionIconSize));
                 break;
+            case SyncDirection::EnumEnd: {
+                assert(false && "Invalid enum value in switch statement.");
+            }
         }
     }
 }

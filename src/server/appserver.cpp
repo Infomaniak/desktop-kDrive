@@ -342,7 +342,7 @@ void AppServer::init() {
     updateSentryUser();
 
     // Update checks
-    _updateManager = std::make_unique<UpdateManager>(this);
+    _updateManager = std::make_unique<UpdateManager>();
     connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
 #ifdef Q_OS_MACOS
     const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);

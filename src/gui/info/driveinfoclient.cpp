@@ -68,8 +68,13 @@ void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
                     case SyncStatus::StopAsked:
                     case SyncStatus::Stopped:
                     case SyncStatus::PauseAsked:
-                    case SyncStatus::Paused:
+                    case SyncStatus::Paused: {
                         abortOrPausedSeen++;
+                        break;
+                    }
+                    case SyncStatus::EnumEnd: {
+                        assert(false && "Invalid enum value in switch statement.");
+                    }
                 }
             }
             if (syncInfo.unresolvedConflicts()) {
