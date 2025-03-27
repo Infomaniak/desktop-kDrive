@@ -25,8 +25,6 @@ jobs:
   build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     env:
-      PR_SOURCE_BRANCH: ${{ github.head_ref }}
-      PR_TARGET_BRANCH: ${{ github.base_ref }}
       COVFILE: ${{ github.workspace }}\\src\\test.cov
     steps:
       - name: Load system Path into Github environment
@@ -36,7 +34,6 @@ jobs:
       - name: Checkout the PR
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           submodules: recursive
           fetch-depth: 0
         
@@ -111,9 +108,6 @@ jobs:
             --define sonar.cfamily.bullseye.reportPath="coverage.xml"
             --define sonar.scm.exclusions.disabled=true
             --define sonar.verbose=true
-            --define sonar.newCode.referenceBranch
-            --define sonar.branch.name="${{ env.PR_SOURCE_BRANCH }}"
-            --define sonar.branch.target="${{ env.PR_TARGET_BRANCH }}"
 
       - name: Deactivate BullseyeCoverage
         run: |
