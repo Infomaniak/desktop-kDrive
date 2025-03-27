@@ -1126,10 +1126,10 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
     nodeIdIt = nodeIds.rbegin();
 
     for (; nameIt != itemNames.rend() && nodeIdIt != nodeIds.rend(); ++nameIt, ++nodeIdIt) {
-        if (FSOpPtr op = nullptr; _operationSet->findOp(*nameIt, OperationType::Move, op)) {
+        if (FSOpPtr op = nullptr; _operationSet->findOp(*nodeIdIt, OperationType::Move, op)) {
             newPath = op->destinationPath();
         } else {
-            newPath.append(*nodeIdIt);
+            newPath.append(*nameIt);
         }
     }
 
