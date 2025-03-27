@@ -208,6 +208,9 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
         }
         case UpdateState::Unknown:
             break;
+        case UpdateState::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     _updateStatusLabel->setText(statusString);

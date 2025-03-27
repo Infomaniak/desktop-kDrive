@@ -603,8 +603,8 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
             if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize)) {
-                LOGW_WARN(_logger, L"Request " << jobId() << L": not enough place at " << Utility::formatSyncPath(_tmpPath) << L" or "
-                                             << Utility::formatSyncPath(_localpath));
+                LOGW_WARN(_logger, L"Request " << jobId() << L": not enough place at " << Utility::formatSyncPath(_tmpPath)
+                                               << L" or " << Utility::formatSyncPath(_localpath));
                 writeError = true;
             }
             if (expectedSize < 0) {
@@ -705,7 +705,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     output.flush();
     output.seekp(0, std::ios_base::end);
     if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && output.tellp() != expectedSize && !readError &&
-        !writeError && !fetchError && isAborted()) {
+        !writeError && !fetchError && !isAborted()) {
         LOG_WARN(_logger, "Request " << jobId() << ": tmp file has been corrupted by another process");
         sentry::Handler::captureMessage(sentry::Level::Error, "DownloadJob::handleResponse", "Tmp file is corrupted");
         writeError = true;

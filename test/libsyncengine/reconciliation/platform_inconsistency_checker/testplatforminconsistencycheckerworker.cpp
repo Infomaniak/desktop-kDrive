@@ -83,7 +83,7 @@ void TestPlatformInconsistencyCheckerWorker::tearDown() {
     TestBase::stop();
 }
 
-void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
+void TestPlatformInconsistencyCheckerWorker::testIsNameTooLong() {
     SyncName shortName = Str("1234567890");
     CPPUNIT_ASSERT(!PlatformInconsistencyCheckerUtility::instance()->isNameTooLong(shortName));
 
@@ -149,14 +149,14 @@ void TestPlatformInconsistencyCheckerWorker::testCheckReservedNames() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testNameClash() {
-    const auto parentNode = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("parentNode"),
-                                                   NodeType::Directory, OperationType::Create, "parentID", 0, 0, 12345,
-                                                   _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    const auto parentNode =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("parentNode"), NodeType::Directory, OperationType::Create, "parentID",
+                                   0, 0, 12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    const auto nodeLower = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("a"), NodeType::File,
-                                                  OperationType::Create, "a", 0, 0, 12345, parentNode);
-    const auto nodeUpper = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"), NodeType::File,
-                                                  OperationType::Create, "A", 0, 0, 12345, parentNode);
+    const auto nodeLower = std::make_shared<Node>(ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Create, "a", 0, 0,
+                                                  12345, parentNode);
+    const auto nodeUpper = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::Create, "A", 0, 0,
+                                                  12345, parentNode);
 
     CPPUNIT_ASSERT(parentNode->insertChildren(nodeLower));
     CPPUNIT_ASSERT(parentNode->insertChildren(nodeUpper));
@@ -230,9 +230,9 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testExecute() {
-    const auto parentNode = std::make_shared<Node>(_syncPal->updateTree(ReplicaSide::Remote)->side(), Str("parentNode"),
-                                                   NodeType::Directory, OperationType::Create, "parentID", 0, 0, 12345,
-                                                   _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    const auto parentNode =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("parentNode"), NodeType::Directory, OperationType::Create, "parentID",
+                                   0, 0, 12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     const auto nodeLower = std::make_shared<Node>(ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Create, "a", 0, 0,
                                                   12345, parentNode);
@@ -284,6 +284,14 @@ void TestPlatformInconsistencyCheckerWorker::testNameSizeLocalTree() {
     CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("testNode2"));
     CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("bNode"));
     CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists("BNode"));
+}
+
+void TestPlatformInconsistencyCheckerWorker::testOnlySpaces() {
+    CPPUNIT_ASSERT_EQUAL(true, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str(" ")));
+    CPPUNIT_ASSERT_EQUAL(true, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str("     ")));
+    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str(" 1")));
+    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str("1 ")));
+    CPPUNIT_ASSERT_EQUAL(false, PlatformInconsistencyCheckerUtility::isNameOnlySpaces(Str(" 1 ")));
 }
 
 void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {

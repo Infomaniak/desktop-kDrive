@@ -143,10 +143,10 @@ inline constexpr C fromInt(int e) {
     return static_cast<C>(e);
 }
 
-enum class AppType { None, Server, Client };
+enum class AppType { None, Server, Client, EnumEnd };
 std::string toString(AppType e);
 
-enum class SignalCategory { Kill, Crash };
+enum class SignalCategory { Kill, Crash, EnumEnd };
 std::string toString(SignalCategory e);
 
 enum class SignalType {
@@ -164,7 +164,7 @@ enum class SignalType {
 std::string toString(SignalType e);
 
 using ExecuteCommand = std::function<void(const char *)>;
-enum class ReplicaSide { Unknown, Local, Remote };
+enum class ReplicaSide { Unknown, Local, Remote, EnumEnd };
 std::string toString(ReplicaSide e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
@@ -175,7 +175,8 @@ inline ReplicaSide otherSide(const ReplicaSide side) {
 enum class NodeType {
     Unknown,
     File, // File or symlink
-    Directory
+    Directory,
+    EnumEnd
 };
 std::string toString(NodeType e);
 
@@ -210,7 +211,8 @@ enum class ExitCode {
     OperationCanceled,
     UpdateRequired,
     LogUploadFailed,
-    UpdateFailed
+    UpdateFailed,
+    EnumEnd
 };
 std::string toString(ExitCode e);
 
@@ -254,7 +256,8 @@ enum class ExitCause {
     FullListParsingError,
     OperationCanceled,
     ShareLinkAlreadyExists,
-    InvalidArgument
+    InvalidArgument,
+    EnumEnd
 };
 std::string toString(ExitCause e);
 
@@ -304,7 +307,8 @@ enum class ConflictType {
     EditDelete,
     CreateCreate,
     EditEdit,
-    MoveMoveCycle
+    MoveMoveCycle,
+    EnumEnd
 };
 std::string toString(ConflictType e);
 
@@ -315,7 +319,7 @@ inline bool isConflictsWithLocalRename(ConflictType type) {
     return conflictsWithLocalRename.contains(type);
 }
 
-enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
+enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot, EnumEnd };
 std::string toString(ConflictTypeResolution e);
 
 enum class InconsistencyType {
@@ -326,7 +330,8 @@ enum class InconsistencyType {
     NameLength = 0x08,
     PathLength = 0x10,
     NotYetSupportedChar = 0x20, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-    DuplicateNames = 0x40 // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+    DuplicateNames = 0x40, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+    ForbiddenCharOnlySpaces = 0x80, // The name contains only spaces (not supported by back end)
 };
 std::string toString(InconsistencyType e);
 
@@ -341,27 +346,18 @@ enum class CancelType {
     AlreadyExistLocal,
     TmpBlacklisted,
     ExcludedByTemplate,
-    Hardlink
+    Hardlink,
+    EnumEnd
 };
 std::string toString(CancelType e);
 
-enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed };
+enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed, EnumEnd };
 std::string toString(NodeStatus e);
 
-enum class SyncStatus {
-    Undefined,
-    Starting,
-    Running,
-    Idle,
-    PauseAsked,
-    Paused,
-    StopAsked,
-    Stopped,
-    Error,
-};
+enum class SyncStatus { Undefined, Starting, Running, Idle, PauseAsked, Paused, StopAsked, Stopped, Error, EnumEnd };
 std::string toString(SyncStatus e);
 
-enum class UploadSessionType { Unknown, Drive, Log };
+enum class UploadSessionType { Unknown, Drive, Log, EnumEnd };
 std::string toString(UploadSessionType e);
 
 enum class SyncNodeType {
@@ -371,17 +367,18 @@ enum class SyncNodeType {
                // nodes in none of those lists are implicitly whitelisted
     UndecidedList, // Considered as blacklisted until user action
     TmpRemoteBlacklist, // Blacklisted temporarily
-    TmpLocalBlacklist // Blacklisted temporarily
+    TmpLocalBlacklist, // Blacklisted temporarily
+    EnumEnd
 };
 std::string toString(SyncNodeType e);
 
-enum class SyncDirection { Unknown = 0, Up, Down };
+enum class SyncDirection { Unknown = 0, Up, Down, EnumEnd };
 std::string toString(SyncDirection e);
 
-enum class SyncFileStatus { Unknown = 0, Error, Success, Conflict, Inconsistency, Ignored, Syncing };
+enum class SyncFileStatus { Unknown = 0, Error, Success, Conflict, Inconsistency, Ignored, Syncing, EnumEnd };
 std::string toString(SyncFileStatus e);
 
-enum class SyncFileInstruction { None = 0, Update, UpdateMetadata, Remove, Move, Get, Put, Ignore };
+enum class SyncFileInstruction { None = 0, Update, UpdateMetadata, Remove, Move, Get, Put, Ignore, EnumEnd };
 std::string toString(SyncFileInstruction e);
 
 enum class SyncStep {
@@ -395,29 +392,30 @@ enum class SyncStep {
     Reconciliation4, // Operation Generator
     Propagation1, // Sorter
     Propagation2, // Executor
-    Done
+    Done,
+    EnumEnd
 };
 std::string toString(SyncStep e);
 
-enum class ActionType { Stop = 0, Start };
+enum class ActionType { Stop = 0, Start, EnumEnd };
 std::string toString(ActionType e);
 
-enum class ActionTarget { Drive = 0, Sync, AllDrives };
+enum class ActionTarget { Drive = 0, Sync, AllDrives, EnumEnd };
 std::string toString(ActionTarget e);
 
-enum class ErrorLevel { Unknown = 0, Server, SyncPal, Node };
+enum class ErrorLevel { Unknown = 0, Server, SyncPal, Node, EnumEnd };
 std::string toString(ErrorLevel e);
 
-enum class Language { Default = 0, English, French, German, Spanish, Italian };
+enum class Language { Default = 0, English, French, German, Spanish, Italian, EnumEnd };
 std::string toString(Language e);
 
-enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal };
+enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal, EnumEnd };
 std::string toString(LogLevel e);
 
-enum class NotificationsDisabled { Never, OneHour, UntilTomorrow, TreeDays, OneWeek, Always };
+enum class NotificationsDisabled { Never, OneHour, UntilTomorrow, TreeDays, OneWeek, Always, EnumEnd };
 std::string toString(NotificationsDisabled e);
 
-enum class VirtualFileMode { Off, Win, Mac, Suffix };
+enum class VirtualFileMode { Off, Win, Mac, Suffix, EnumEnd };
 std::string toString(VirtualFileMode e);
 
 enum class PinState {
@@ -426,6 +424,7 @@ enum class PinState {
     OnlineOnly, // The content resides only on the server and is downloaded on demand.
     Unspecified, // Indicates that the system is free to (de)hydrate the content as needed.
     Unknown, // Represents an uninitialized state or an error. It has no equivalent in filesystems.
+    EnumEnd
 };
 
 std::string toString(PinState e);
@@ -435,14 +434,15 @@ enum class ProxyType {
     None,
     System,
     HTTP,
-    Socks5 // Don't use, not implemented in Poco library
+    Socks5, // Don't use, not implemented in Poco library
+    EnumEnd
 };
 std::string toString(ProxyType e);
 
-enum class ExclusionTemplateComplexity { Simplest = 0, Simple, Complex };
+enum class ExclusionTemplateComplexity { Simplest = 0, Simple, Complex, EnumEnd };
 std::string toString(ExclusionTemplateComplexity e);
 
-enum class LinkType { None = 0, Symlink, Hardlink, FinderAlias, Junction };
+enum class LinkType { None = 0, Symlink, Hardlink, FinderAlias, Junction, EnumEnd };
 std::string toString(LinkType e);
 
 enum class IoError {
@@ -462,7 +462,8 @@ enum class IoError {
     NoSuchFileOrDirectory,
     ResultOutOfRange,
     CrossDeviceLink,
-    Unknown
+    Unknown,
+    EnumEnd
 };
 std::string toString(IoError e);
 
@@ -488,14 +489,15 @@ enum class AppStateKey {
     LogUploadPercent,
     LogUploadToken,
     AppUid,
-    Unknown //!\ keep in last position (For tests) /!\\ Only for initialization purpose
+    Unknown, // Only for initialization purpose
+    EnumEnd
 };
 std::string toString(AppStateKey e);
 
 static constexpr int64_t selfRestarterDisableValue = -1;
 static constexpr int64_t selfRestarterNoCrashDetected = 0;
 
-enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
+enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled, EnumEnd };
 std::string toString(LogUploadState e);
 enum class UpdateState {
     UpToDate,
@@ -507,14 +509,15 @@ enum class UpdateState {
     CheckError,
     DownloadError,
     UpdateError,
-    Unknown
+    Unknown,
+    EnumEnd
 };
 std::string toString(UpdateState e);
 
-enum class VersionChannel { Prod, Next, Beta, Internal, Legacy, Unknown };
+enum class VersionChannel { Prod, Next, Beta, Internal, Legacy, Unknown, EnumEnd };
 std::string toString(VersionChannel e);
 
-enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
+enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown, EnumEnd };
 std::string toString(Platform e);
 
 struct VersionInfo {
@@ -577,7 +580,8 @@ enum class ConfidentialityLevel {
     Authenticated, // The sentry will contain information about the last user connected to the application. (email,
                    // username, user id, ...)
     Specific, // The sentry will contain information about the user passed as a parameter of the call to captureMessage.
-    None // Not initialized
+    None, // Not initialized
+    EnumEnd
 };
 } // namespace sentry
 std::string toString(sentry::ConfidentialityLevel e);
