@@ -75,7 +75,11 @@ QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
             return QStringLiteral("wincfapi");
         case KDC::VirtualFileMode::Mac:
             return QStringLiteral("mac");
+        case KDC::VirtualFileMode::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
+
     return QStringLiteral("off");
 }
 
