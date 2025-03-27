@@ -75,6 +75,9 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
             case LogLevel::Fatal:
                 _logger.setLogLevel(log4cplus::FATAL_LOG_LEVEL);
                 break;
+            case LogLevel::EnumEnd: {
+                assert(false && "Invalid enum value in switch statement.");
+            }
         }
     } else {
         _logger.setLogLevel(log4cplus::OFF_LOG_LEVEL);
