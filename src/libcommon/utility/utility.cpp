@@ -976,15 +976,15 @@ SyncPath CommonUtility::applicationFilePath() {
     memset(pathStr, Str('\0'), (maxPathLength + 1) * sizeof(SyncChar));
 
 #if defined(_WIN32)
-    DWORD pathLength = static_cast<DWORD>(maxPathLength);
-    DWORD count = GetModuleFileNameW(NULL, pathStr, pathLength);
+    const DWORD pathLength = static_cast<DWORD>(maxPathLength);
+    const DWORD count = GetModuleFileNameW(NULL, pathStr, pathLength);
     assert(count);
 #elif defined(__APPLE__)
     uint32_t pathLength = static_cast<uint32_t>(maxPathLength);
-    int ret = _NSGetExecutablePath(pathStr, &pathLength);
+    const int ret = _NSGetExecutablePath(pathStr, &pathLength);
     assert(!ret);
 #else
-    ssize_t count = readlink("/proc/self/exe", pathStr, maxPathLength);
+    const ssize_t count = readlink("/proc/self/exe", pathStr, maxPathLength);
     assert(count != -1);
 #endif
 
