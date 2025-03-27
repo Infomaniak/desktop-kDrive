@@ -525,10 +525,12 @@ void AppServer::handleClientCrash(bool &quit) {
         LOG_FATAL(_logger, "Client has crashed twice in a short time, exiting");
 
         // Reset client restart date in DB
-        bool found = false;
-        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, 0, found) || !found) {
-            addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
+        if (bool found = false; !KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, 0, found)) {
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        } else if (!found) {
+            addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
+            LOG_WARN(_logger, "ParmsDb::updateAppState: missing entry for key " << AppStateKey::LastClientSelfRestartDate);
         }
 
         quit = true;
@@ -537,10 +539,14 @@ void AppServer::handleClientCrash(bool &quit) {
         const long timestamp =
                 std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
         const std::string timestampStr = std::to_string(timestamp);
-        bool found = false;
-        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found) || !found) {
-            addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
+
+        if (bool found = false;
+            !KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found)) {
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        } else if (!found) {
+            addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
+            LOG_WARN(_logger, "ParmsDb::updateAppState: missing entry for key " << AppStateKey::LastClientSelfRestartDate);
         }
 
         // Restart client
@@ -2896,11 +2902,16 @@ bool AppServer::serverCrashedRecently(int seconds) {
 
     AppStateValue appStateValue = int64_t(0);
     if (bool found = false;
-        !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, appStateValue, found) || !found) {
-        addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, appStateValue, found)) {
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
+    } else if (!found) {
+        addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
+        LOG_WARN(_logger, "ParmsDb::selectAppState: missing entry for key " << AppStateKey::LastServerSelfRestartDate);
+        return false;
     }
+
     int64_t lastServerCrash = std::get<int64_t>(appStateValue);
 
     const auto diff = nowSeconds - lastServerCrash;
@@ -2919,9 +2930,13 @@ bool AppServer::clientCrashedRecently(int seconds) {
     AppStateValue appStateValue = int64_t(0);
 
     if (bool found = false;
-        !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found) || !found) {
-        addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found)) {
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        return false;
+    } else if (!found) {
+        addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
+        LOG_WARN(_logger, "ParmsDb::selectAppState: missing entry for key " << AppStateKey::LastServerSelfRestartDate);
         return false;
     }
 
