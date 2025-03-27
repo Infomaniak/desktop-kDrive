@@ -23,6 +23,7 @@ namespace KDC {
 class AbstractListingJob : public AbstractTokenNetworkJob {
     public:
         explicit AbstractListingJob(int driveDbId, const std::unordered_set<NodeId> &blacklist = {});
+        explicit AbstractListingJob(ApiType apiType, int driveDbId, const std::unordered_set<NodeId> &blacklist = {});
 
         void setQueryParameters(Poco::URI &uri, bool &) final;
         virtual void setSpecificQueryParameters(Poco::URI &uri) = 0;
