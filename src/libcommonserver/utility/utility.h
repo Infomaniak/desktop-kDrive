@@ -134,7 +134,7 @@ struct COMMONSERVER_EXPORT Utility {
          * Check whether two names indicate the same item on the file system.
          * @param lhs SyncName value to be compared.
          * @param rhs Other SyncName value to be compared.
-         * @param normalizePaths if true, lhs and rhs are normalized before comparing them with `==`.
+         * @param normalizeNames if true, lhs and rhs are normalized before comparing them with `==`.
          * Otherwise just compare with `==`.
          * @return true lhs and rhs have equal normalization when normalizeNames is true or if lhs == rhs when normalizeNames is
          * false. Returns false otherwise.
