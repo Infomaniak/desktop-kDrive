@@ -317,6 +317,9 @@ std::string SyncPalWorker::stepName(SyncStep step) {
         case SyncStep::Done:
             name += "Done";
             break;
+        case SyncStep::EnumEnd:
+            name += "EnumEnd";
+            break;
     }
 
     name += ">";
