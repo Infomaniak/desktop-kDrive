@@ -21,10 +21,8 @@
 #include "utility/logiffail.h"
 #include "log/log.h"
 #include "db/sqlitedb.h"
-
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
-
 
 #include <sqlite3.h>
 
@@ -108,12 +106,38 @@ Db::~Db() {
     close();
 }
 
-std::filesystem::path Db::makeDbName(bool &alreadyExist, bool addRandomSuffix /*= false*/, const std::string &name /*= ""*/) {
-    return makeDbName(0, 0, 0, 0, alreadyExist, addRandomSuffix, name);
+std::string Db::makeDbFileName(int userId, int accountId, int driveId, int syncDbId) {
+    std::string fileName;
+    if (!userId && !accountId && !driveId && !syncDbId) {
+        // ParmsDb
+        fileName.append(".parms");
+    } else {
+        // SyncDb
+        fileName.append(".sync_");
+
+        std::string key(std::to_string(userId));
+        key.append(":");
+        key.append(std::to_string(accountId));
+        key.append(":");
+        key.append(std::to_string(driveId));
+        key.append(":");
+        key.append(std::to_string(syncDbId));
+        Poco::MD5Engine md5;
+        md5.update(key.c_str());
+        std::string keyHash = Poco::DigestEngine::digestToHex(md5.digest()).substr(0, 6);
+        std::string keyHashHex;
+        Utility::str2hexstr(keyHash, keyHashHex);
+        fileName.append(keyHashHex);
+    }
+    return fileName;
+}
+
+std::filesystem::path Db::makeDbName(bool &alreadyExist) {
+    return makeDbName(0, 0, 0, 0, alreadyExist);
 }
 
 std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int syncDbId, bool &alreadyExist,
-                                     bool addRandomSuffix /*= false*/, const std::string &name /*= ""*/) {
+                                     std::function<std::string(int, int, int, int)> dbFileName) {
     // App support dir
     std::filesystem::path dbPath(CommonUtility::getAppSupportDir());
 
@@ -135,39 +159,12 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     }
 
     // Db file name
-    std::string dbFile;
-    if (!userId && !accountId && !driveId && !syncDbId) {
-        if (addRandomSuffix) {
-            dbFile.append(".parms" + CommonUtility::generateRandomStringAlphaNum() + ".db");
-        } else if (name.empty()) {
-            dbFile.append(".parms.db");
-        } else {
-            dbFile = name;
-        }
-    } else {
-        std::string key(std::to_string(userId));
-        key.append(":");
-        key.append(std::to_string(accountId));
-        key.append(":");
-        key.append(std::to_string(driveId));
-        key.append(":");
-        key.append(std::to_string(syncDbId));
-        Poco::MD5Engine md5;
-        md5.update(key.c_str());
-        std::string keyHash = Poco::DigestEngine::digestToHex(md5.digest()).substr(0, 6);
-        std::string keyHashHex;
-        Utility::str2hexstr(keyHash, keyHashHex);
-
-        dbFile.append(".sync_");
-        dbFile.append(keyHashHex);
-        if (addRandomSuffix) {
-            dbFile.append(CommonUtility::generateRandomStringAlphaNum());
-        }
-        dbFile.append(".db");
-    }
+    // std::string fileName = makeDbFileName(userId, accountId, driveId, syncDbId);
+    std::string fileName = dbFileName(userId, accountId, driveId, syncDbId);
+    fileName.append(".db");
 
     // Db file path
-    dbPath.append(dbFile);
+    dbPath.append(fileName);
 
     // If it exists already, the path is clearly usable
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {

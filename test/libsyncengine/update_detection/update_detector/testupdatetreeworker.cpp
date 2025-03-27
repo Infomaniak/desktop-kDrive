@@ -17,9 +17,10 @@
  */
 
 #include "testupdatetreeworker.h"
-#include "test_utility/testhelpers.h"
+#include "requests/parameterscache.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
-#include <requests/parameterscache.h>
+#include "test_utility/testhelpers.h"
 
 #include <memory>
 
@@ -31,12 +32,12 @@ void TestUpdateTreeWorker::setUp() {
     TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Create DB
-    const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists, true);
+    const std::filesystem::path syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
     _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), "3.6.1");
     _syncDb->init("3.6.1");
     _syncDb->setAutoDelete(true);

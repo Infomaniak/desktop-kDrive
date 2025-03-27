@@ -23,6 +23,8 @@
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libsyncengine/jobs/jobmanager.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
@@ -49,7 +51,7 @@ void TestAppServer::setUp() {
 
     // Create parmsDb
     bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, false, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
@@ -77,11 +79,12 @@ void TestAppServer::setUp() {
     // Create AppServer
     SyncPath exePath = KDC::CommonUtility::applicationFilePath();
     try {
-        const std::vector<std::string> args = {Path2Str(exePath), "--parmsDbName", parmsDbPath.filename().string()};
+        const std::vector<std::string> args = {Path2Str(exePath)};
         std::vector<char *> argv;
         for (size_t i = 0; i < args.size(); ++i) argv.push_back(const_cast<char *>(args[i].c_str()));
         int argc = static_cast<int>(args.size());
         _appPtr = new MockAppServer(argc, &argv[0]);
+        _appPtr->setParmsDbPath(parmsDbPath);
         _appPtr->init();
     } catch (const std::exception &e) {
         std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
@@ -187,7 +190,7 @@ void TestAppServer::testStartAndStopSync() {
 }
 
 void TestAppServer::testCleanup() {
-    _appPtr->onCleanup();
+    _appPtr->cleanup();
     delete _appPtr;
     CPPUNIT_ASSERT(true);
 }
@@ -209,26 +212,8 @@ bool TestAppServer::syncIsActive(int syncDbId) const {
 
 MockAppServer::MockAppServer(int &argc, char **argv) : AppServer(argc, argv) {}
 
-void MockAppServer::parseOptions(const QStringList &options) {
-    // Parse options; if help or bad option exit
-    QStringListIterator it(options);
-    it.next(); // File name
-    if (it.hasNext()) {
-        QString option = it.next();
-        if (option == QLatin1String("--parmsDbName")) {
-            QString value = it.next();
-            _parmsDbName = value.toStdString();
-        } else {
-            showHint("Unrecognized option '" + option.toStdString() + "'");
-        }
-    } else {
-        showHint("Missing mandatory option 'parmsDbName'");
-    }
-}
-
 std::filesystem::path MockAppServer::makeDbName() {
-    bool alreadyExist = false;
-    return Db::makeDbName(alreadyExist, false, _parmsDbName);
+    return _parmsDbPath;
 }
 
 std::shared_ptr<ParmsDb> MockAppServer::initParmsDB(const std::filesystem::path &dbPath, const std::string &version) {
@@ -239,6 +224,7 @@ void MockAppServer::cleanup() {
     AppServer::cleanup();
 
     // Reset static variables
+    AppServer::reset();
     JobManager::reset();
     ParmsDb::reset();
     ParametersCache::reset();

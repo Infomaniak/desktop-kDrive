@@ -25,14 +25,15 @@ namespace KDC {
 class MockAppServer : public AppServer {
     public:
         MockAppServer(int &argc, char **argv);
-        void parseOptions(const QStringList &options) override;
         std::filesystem::path makeDbName() override;
         std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version) override;
         bool startClient() override { return true; }
         void cleanup() override;
 
+        void setParmsDbPath(const std::filesystem::path &path) { _parmsDbPath = path; }
+
     private:
-        std::string _parmsDbName;
+        std::filesystem::path _parmsDbPath;
 };
 
 class TestAppServer : public CppUnit::TestFixture, public TestBase {

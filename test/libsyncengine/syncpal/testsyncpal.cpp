@@ -17,11 +17,13 @@
  */
 
 #include "testsyncpal.h"
-#include "libsyncengine/jobs/network/API_v2/movejob.h"
+#include "syncpal/tmpblacklistmanager.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
-#include "syncpal/tmpblacklistmanager.h"
+#include "libsyncengine/jobs/network/API_v2/movejob.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 #include <cstdlib>
@@ -45,7 +47,7 @@ void TestSyncPal::setUp() {
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync

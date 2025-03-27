@@ -20,11 +20,13 @@
 
 #include "requests/serverrequests.h"
 #include "requests/parameterscache.h"
-#include "test_utility/remotetemporarydirectory.h"
-#include "test_utility/testhelpers.h"
 #include "utility/types.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libparms/db/parmsdb.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
+#include "test_utility/remotetemporarydirectory.h"
+#include "test_utility/testhelpers.h"
 
 namespace KDC {
 
@@ -42,7 +44,7 @@ void TestServerRequests::setUp() {
 
     // Create parmsDb
     bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 

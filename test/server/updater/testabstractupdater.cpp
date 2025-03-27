@@ -34,6 +34,7 @@
 
 #include "mockupdater.h"
 #include "mockupdatechecker.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
 namespace KDC {
 
@@ -47,7 +48,7 @@ void TestAbstractUpdater::setUp() {
     TestBase::start();
     // Init parmsDb
     bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
+    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Setup parameters cache in test mode

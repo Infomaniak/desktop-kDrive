@@ -17,13 +17,15 @@
  */
 
 #include "testcomputefsoperationworker.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
 #include "syncpal/tmpblacklistmanager.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_classes/testinitialsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
@@ -57,7 +59,7 @@ void TestComputeFSOperationWorker::setUp() {
 
     /// Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     /// Insert user, account, drive & sync

@@ -17,6 +17,8 @@
  */
 
 #include "testconflictfinderworker.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
@@ -27,7 +29,7 @@ void TestConflictFinderWorker::setUp() {
     TestBase::start();
     // Create SyncPal
     bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
@@ -1048,7 +1050,7 @@ void TestConflictFinderWorker::testConflictCmp() {
 
     ConflictQueue queue(_syncPal->updateTree(ReplicaSide::Local), _syncPal->updateTree(ReplicaSide::Remote));
     for (size_t i = 0; i < 1000; i++) {
-        size_t index = rand() % nbConflictType;
+        size_t index = (size_t) rand() % nbConflictType;
         Conflict c1(localNodeAA, remoteNodeAA, conflictTypes[index]);
         queue.push(c1);
     }

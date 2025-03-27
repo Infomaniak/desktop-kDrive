@@ -15,11 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <libparms/db/parmsdb.h>
-#include <libcommon/keychainmanager/keychainmanager.h>
-#include <libcommonserver/utility/utility.h>
-
+#include "libparms/db/parmsdb.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommonserver/utility/utility.h"
 #include "mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 #include "testloguploadjob.h"
 
@@ -38,7 +39,12 @@ void TestLogUploadJob::setUp() {
   
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, parmsDbExist);
+    std::filesystem::path parmsDbPath;
+    if (parmsDbExist) {
+        parmsDbPath = Db::makeDbName(alreadyExists);
+    } else {
+        parmsDbPath = MockDb::makeDbName(alreadyExists);
+    }
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 }
 

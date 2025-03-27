@@ -73,6 +73,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void init();
         virtual void cleanup();
+        static void reset();
 
         inline bool helpAsked() { return _helpAsked; }
         inline bool versionAsked() { return _versionAsked; }
@@ -123,11 +124,11 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         static std::unique_ptr<UpdateManager> _updateManager;
 
-        virtual void parseOptions(const QStringList &);
         virtual std::filesystem::path makeDbName();
         virtual std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version);
         virtual bool startClient();
 
+        void parseOptions(const QStringList &options);
         bool initLogging() noexcept;
         void logUsefulInformation() const;
         bool setupProxy() noexcept;

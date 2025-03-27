@@ -24,6 +24,14 @@
 #include "jobs/local/localcopyjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
+#include "requests/syncnodecache.h"
+#include "requests/exclusiontemplatecache.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommonserver/network/proxy.h"
 #include "libsyncengine/jobs/network/API_v2/copytodirectoryjob.h"
 #include "libsyncengine/jobs/network/API_v2/createdirjob.h"
 #include "libsyncengine/jobs/network/API_v2/deletejob.h"
@@ -33,14 +41,8 @@
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
 #include "libsyncengine/jobs/network/API_v2/uploadjob.h"
-#include "requests/syncnodecache.h"
-#include "requests/exclusiontemplatecache.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
@@ -79,7 +81,7 @@ void TestIntegration::setUp() {
 
     // Create parmsDb
     bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync

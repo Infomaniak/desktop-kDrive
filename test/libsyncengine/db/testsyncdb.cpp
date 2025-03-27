@@ -22,6 +22,7 @@
 
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
 #include <algorithm>
 #include <time.h>
@@ -104,7 +105,7 @@ void TestSyncDb::tearDown() {
 
 void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
     bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
+    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
     ParmsDb::instance()->setAutoDelete(true);
 

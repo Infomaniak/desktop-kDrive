@@ -17,15 +17,16 @@
  */
 
 #include "testplatforminconsistencycheckerworker.h"
-
-#include <memory>
-#include "libcommonserver/utility/utility.h"
-#include "libcommon/utility/types.h"
 #include "syncpal/tmpblacklistmanager.h"
-
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#include "libcommon/utility/types.h"
+#include "libcommonserver/utility/utility.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
+
+#include <memory>
 
 using namespace CppUnit;
 
@@ -46,7 +47,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
-    const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const auto parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync

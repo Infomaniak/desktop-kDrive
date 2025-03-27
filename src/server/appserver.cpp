@@ -425,6 +425,10 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "ParmsDb closed");
 }
 
+void AppServer::reset() {
+    _updateManager.reset();
+}
+
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(int syncDbId) {
     // Stop sync and remove it from syncPalMap

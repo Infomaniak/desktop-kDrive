@@ -17,6 +17,7 @@
  */
 
 #include "testparmsdb.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
 using namespace CppUnit;
 
@@ -26,7 +27,7 @@ void TestParmsDb::setUp() {
     TestBase::start();
     // Create a temp parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
 }
 

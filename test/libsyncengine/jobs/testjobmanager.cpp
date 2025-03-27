@@ -27,10 +27,12 @@
 #include "jobs/network/API_v2/uploadjob.h"
 #include "jobs/network/API_v2/upload_session/driveuploadsession.h"
 #include "network/proxy.h"
+#include "requests/parameterscache.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
-#include "requests/parameterscache.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 
@@ -58,7 +60,7 @@ void KDC::TestJobManager::setUp() {
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
