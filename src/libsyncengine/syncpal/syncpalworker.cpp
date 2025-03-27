@@ -37,7 +37,8 @@
 namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                             const std::chrono::seconds &startDelay) : ISyncWorker(syncPal, name, shortName, startDelay) {}
+                             const std::chrono::seconds &startDelay) :
+    ISyncWorker(syncPal, name, shortName, startDelay) {}
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -317,9 +318,9 @@ std::string SyncPalWorker::stepName(SyncStep step) {
         case SyncStep::Done:
             name += "Done";
             break;
-        case SyncStep::EnumEnd:
-            name += "EnumEnd";
-            break;
+        case SyncStep::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     name += ">";
