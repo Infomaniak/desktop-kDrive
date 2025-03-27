@@ -393,8 +393,10 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
         case ExitCode::InvalidSync:
         case ExitCode::OperationCanceled:
         case ExitCode::InvalidOperation:
-        case ExitCode::UpdateFailed:
             break;
+        case ExitCode::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged exit code: code=" << exitCode;
@@ -704,6 +706,12 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
         text +=
                 tr("The item name coincides with the name of another item in the same directory.<br>"
                    "It has been temporarily blacklisted. Consider removing duplicate items.");
+    }
+    if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::ForbiddenCharOnlySpaces)) {
+        text += (text.isEmpty() ? "" : "\n");
+        text +=
+                tr("The item name contains only spaces.<br>"
+                   "It has been temporarily blacklisted.");
     }
 
     return text;

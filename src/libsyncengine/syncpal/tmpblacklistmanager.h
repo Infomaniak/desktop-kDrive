@@ -27,7 +27,6 @@ namespace KDC {
 class TmpBlacklistManager {
     public:
         struct TmpErrorInfo {
-                int count = 0;
                 std::chrono::time_point<std::chrono::steady_clock> lastErrorTime = std::chrono::steady_clock::now();
                 SyncPath path;
         };
@@ -43,7 +42,6 @@ class TmpBlacklistManager {
         void removeItemFromTmpBlacklist(const SyncPath &relativePath);
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         bool isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const;
-        int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
 
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side) const;

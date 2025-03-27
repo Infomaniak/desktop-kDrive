@@ -91,7 +91,8 @@ struct ListenerHasSocketPred {
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
                      const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+    QObject(parent),
+    _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
@@ -649,6 +650,8 @@ QString SocketApi::socketAPIString(SyncFileStatus status, const VfsStatus &vfsSt
         case SyncFileStatus::Error:
             statusString = QLatin1String("ERROR");
             break;
+        case SyncFileStatus::EnumEnd:
+            assert(false && "Invalid enum value in switch statement.");
     }
 
     return statusString;
