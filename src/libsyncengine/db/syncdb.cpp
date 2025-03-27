@@ -1210,7 +1210,7 @@ bool SyncDb::clearNodes() {
 bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::vector<SyncName> itemNames = Utility::splitPath(path);
+    const std::vector<SyncName> itemNames = Utility::splitPath(path);
 
     // Find root node
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
@@ -1230,7 +1230,7 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
         std::string queryId = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
                                                           : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
         // Find file node
-        for (std::vector<SyncName>::reverse_iterator nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+        for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
             LOG_IF_FAIL(queryResetAndClearBindings(queryId));
             LOG_IF_FAIL(queryBindValue(queryId, 1, nodeDbId));
             LOG_IF_FAIL(queryBindValue(queryId, 2, *nameIt));
