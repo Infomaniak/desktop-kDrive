@@ -29,7 +29,7 @@ void TestUrlHelper::testGetUrl() {
     // prod and preprod URLs. Therefore, we randomly test either prod or preprod.
     std::random_device rd;
     std::default_random_engine gen(rd());
-    const std::uniform_int_distribution distrib(1, 2);
+    std::uniform_int_distribution distrib(1, 2);
     const auto test = distrib(gen);
     const bool usePreprod = test == 1;
     if (usePreprod) {
