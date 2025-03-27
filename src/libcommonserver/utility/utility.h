@@ -139,7 +139,7 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true lhs and rhs have equal normalization when normalizeNames is true or if lhs == rhs when normalizeNames is
          * false. Returns false otherwise.
          */
-        static bool areEqual(const SyncName &lhs, const SyncName &rhs, bool normalizeNames);
+        static bool areEqual(const SyncName &lhs, const SyncName &rhs, bool normalizeNames = false);
 
         static std::vector<SyncName> splitPath(const SyncPath &path);
 

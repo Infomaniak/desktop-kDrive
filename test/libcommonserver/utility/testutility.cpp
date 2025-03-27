@@ -18,6 +18,7 @@
 
 #include "testutility.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/testhelpers.h"
 #include "config.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
 #include "libcommonserver/log/log.h"
@@ -506,4 +507,21 @@ void TestUtility::testUserName() {
 #endif
 }
 
+void TestUtility::testAreEqual() {
+    const SyncName nfcName = testhelpers::makeNfcSyncName();
+    CPPUNIT_ASSERT(Utility::areEqual(nfcName, nfcName));
+
+    const SyncName nfdName = testhelpers::makeNfdSyncName();
+    CPPUNIT_ASSERT(Utility::areEqual(nfdName, nfdName));
+
+    CPPUNIT_ASSERT(!Utility::areEqual(nfdName, nfcName));
+    CPPUNIT_ASSERT(Utility::areEqual(nfdName, nfcName, true));
+}
+
+void TestUtility::testSplitPath() {
+    const auto fileNames = Utility::splitPath(SyncPath("A") / "B" / "file.txt");
+    CPPUNIT_ASSERT_EQUAL(SyncName{"A"}, fileNames[2]);
+    CPPUNIT_ASSERT_EQUAL(SyncName{"B"}, fileNames[1]);
+    CPPUNIT_ASSERT_EQUAL(SyncName{"file.txt"}, fileNames[0]);
+}
 } // namespace KDC

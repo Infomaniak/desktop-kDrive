@@ -63,6 +63,8 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNormalizedSyncPath);
         CPPUNIT_TEST(testIsSameOrParentPath);
         CPPUNIT_TEST(testUserName);
+        CPPUNIT_TEST(testAreEqual);
+        CPPUNIT_TEST(testSplitPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -109,6 +111,8 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testNormalizedSyncPath();
         void testIsSameOrParentPath();
         void testUserName();
+        void testAreEqual();
+        void testSplitPath();
 
     private:
         std::unique_ptr<Utility> _testObj;

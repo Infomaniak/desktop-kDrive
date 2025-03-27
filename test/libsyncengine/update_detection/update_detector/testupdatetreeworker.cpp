@@ -330,6 +330,12 @@ void TestUpdateTreeWorker::testUtilsFunctions() {
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getNewPathAfterMove("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1", newPath) == ExitCode::Ok);
     CPPUNIT_ASSERT(newPath == "Dir 4/Dir 4.2/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath(newPath)->id() == "id4111");
+
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeByNormalizedPath(newPath) == _localUpdateTree->getNodeByPath(newPath));
+    _localUpdateTree->getNodeByPath("Dir 4/Dir 4.2")->setName(testhelpers::makeNfdSyncName());
+
+    CPPUNIT_ASSERT(nullptr == _localUpdateTree->getNodeByPath(SyncPath("Dir 4") / testhelpers::makeNfcSyncName()));
+    CPPUNIT_ASSERT(nullptr != _localUpdateTree->getNodeByNormalizedPath(SyncPath("Dir 4") / testhelpers::makeNfcSyncName()));
 }
 
 void TestUpdateTreeWorker::testUpdateTmpFileNode() {
