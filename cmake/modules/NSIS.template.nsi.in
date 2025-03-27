@@ -298,7 +298,7 @@ Var kill_counter
   ;Save command in a temp file
   Push $R1
   FileOpen $R1 $PLUGINSDIR\tempfile.ps1 w
-  FileWrite $R1 "${PSCommand}" 
+  FileWrite $R1 "${PSCommand}"
   FileClose $R1
   Pop $R1
 
