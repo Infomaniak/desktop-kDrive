@@ -926,6 +926,8 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             switch (error.exitCause()) {
                 case ExitCause::DriveMaintenance:
                 case ExitCause::DriveNotRenew:
+                case ExitCause::DriveAsleep:
+                case ExitCause::DriveWakingUp:
                 case ExitCause::DriveAccessError:
                 case ExitCause::HttpErrForbidden:
                 case ExitCause::ApiErr:
@@ -1546,7 +1548,9 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     }
 
     ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok && job->exitCause() != ExitCause::DriveNotRenew) {
+    const bool knownMaintenanceMode = job->exitCause() == ExitCause::DriveNotRenew ||
+                                      job->exitCause() == ExitCause::DriveAsleep || job->exitCause() == ExitCause::DriveWakingUp;
+    if (exitCode != ExitCode::Ok && !knownMaintenanceMode) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
         return exitCode;
     }
@@ -1607,15 +1611,13 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance)) {
             return ExitCode::BackError;
         }
-        drive.setMaintenance(inMaintenance);
 
         int64_t maintenanceFrom = 0;
-        if (drive.maintenance()) {
+        if (drive.maintenanceInfo()._maintenance) {
             if (!JsonParserUtility::extractValue(dataObj, maintenanceAtKey, maintenanceFrom, false)) {
                 return ExitCode::BackError;
             }
         }
-        drive.setMaintenanceFrom(maintenanceFrom);
 
         bool isLocked = false;
         if (!JsonParserUtility::extractValue(dataObj, isLockedKey, isLocked)) {
@@ -1623,7 +1625,11 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         }
         drive.setLocked(isLocked);
         drive.setAccessDenied(false);
-        drive.setNotRenew(job->exitCause() == ExitCause::DriveNotRenew);
+        drive.setMaintenanceInfo({._maintenance = inMaintenance,
+                                  ._notRenew = job->exitCause() == ExitCause::DriveNotRenew,
+                                  ._asleep = job->exitCause() == ExitCause::DriveAsleep,
+                                  ._wakingUp = false,
+                                  ._maintenanceFrom = maintenanceFrom});
 
         int64_t usedSize = 0;
         if (!JsonParserUtility::extractValue(dataObj, usedSizeKey, usedSize)) {
@@ -1943,7 +1949,7 @@ void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) 
     driveInfo.setColor(QColor(QString::fromStdString(drive.color())));
     driveInfo.setNotifications(drive.notifications());
     driveInfo.setAdmin(drive.admin());
-    driveInfo.setMaintenance(drive.maintenance());
+    driveInfo.setMaintenance(drive.maintenanceInfo()._maintenance);
     driveInfo.setLocked(drive.locked());
     driveInfo.setAccessDenied(drive.accessDenied());
 }

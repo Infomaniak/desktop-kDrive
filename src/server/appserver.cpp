@@ -2401,7 +2401,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
                 return exitCode;
             }
 
-            if (drive.accessDenied() || drive.maintenance()) {
+            if (drive.accessDenied() || drive.maintenanceInfo()._maintenance) {
                 LOG_WARN(_logger, "Access denied for driveId=" << drive.driveId());
 
                 std::vector<Sync> syncs;
@@ -2414,8 +2414,13 @@ ExitCode AppServer::updateUserInfo(User &user) {
                     // Pause sync
                     sync.setPaused(true);
                     ExitCause exitCause = ExitCause::DriveAccessError;
-                    if (drive.maintenance()) {
-                        exitCause = drive.notRenew() ? ExitCause::DriveNotRenew : ExitCause::DriveMaintenance;
+                    if (drive.maintenanceInfo()._maintenance) {
+                        if (drive.maintenanceInfo()._notRenew)
+                            exitCause = ExitCause::DriveNotRenew;
+                        else if (drive.maintenanceInfo()._asleep)
+                            exitCause = ExitCause::DriveAsleep;
+                        else
+                            exitCause = ExitCause::DriveMaintenance;
                     }
                     addError(Error(sync.dbId(), errId(), ExitCode::BackError, exitCause));
                 }

@@ -485,6 +485,11 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
                         "permanently deleted and it will be impossible to recover them.");
             }
         }
+        case ExitCause::DriveAsleep: {
+            return tr(
+                    "The kDrive is asleep.<br>"
+                    "Please contact an administrator to wake up the kDrive.");
+        }
         case ExitCause::DriveAccessError:
             return tr(
                     "You are not authorised to access this kDrive.<br>"

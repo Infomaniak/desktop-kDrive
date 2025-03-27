@@ -34,66 +34,68 @@ struct StringHash {
 
 ActionCode getActionCode(const std::string &action) noexcept {
     static const std::unordered_map<std::string, ActionCode, StringHash, std::equal_to<>> actionMap = {
-            {"file_create", ActionCode::actionCodeCreate},
-            {"file_rename", ActionCode::actionCodeRename},
-            {"file_update", ActionCode::actionCodeEdit},
-            {"file_access", ActionCode::actionCodeAccess},
-            {"file_trash", ActionCode::actionCodeTrash},
-            {"file_delete", ActionCode::actionCodeDelete},
-            {"file_move", ActionCode::actionCodeMoveIn},
-            {"file_move_out", ActionCode::actionCodeMoveOut},
-            {"file_restore", ActionCode::actionCodeRestore},
-            {"file_share_create", ActionCode::actionCodeRestoreFileShareCreate},
-            {"file_share_delete", ActionCode::actionCodeRestoreFileShareDelete},
-            {"share_link_create", ActionCode::actionCodeRestoreShareLinkCreate},
-            {"share_link_delete", ActionCode::actionCodeRestoreShareLinkDelete},
-            {"acl_insert", ActionCode::actionCodeAccessRightInsert},
-            {"acl_update", ActionCode::actionCodeAccessRightUpdate},
-            {"acl_remove", ActionCode::actionCodeAccessRightRemove},
-            {"acl_user_insert", ActionCode::actionCodeAccessRightUserInsert},
-            {"acl_user_update", ActionCode::actionCodeAccessRightUserUpdate},
-            {"acl_user_remove", ActionCode::actionCodeAccessRightUserRemove},
-            {"acl_team_insert", ActionCode::actionCodeAccessRightTeamInsert},
-            {"acl_team_update", ActionCode::actionCodeAccessRightTeamUpdate},
-            {"acl_team_remove", ActionCode::actionCodeAccessRightTeamRemove},
-            {"acl_main_users_insert", ActionCode::actionCodeAccessRightMainUsersInsert},
-            {"acl_main_users_update", ActionCode::actionCodeAccessRightMainUsersUpdate},
-            {"acl_main_users_remove", ActionCode::actionCodeAccessRightMainUsersRemove}};
+            {"file_create", ActionCode::ActionCodeCreate},
+            {"file_rename", ActionCode::ActionCodeRename},
+            {"file_update", ActionCode::ActionCodeEdit},
+            {"file_access", ActionCode::ActionCodeAccess},
+            {"file_trash", ActionCode::ActionCodeTrash},
+            {"file_delete", ActionCode::ActionCodeDelete},
+            {"file_move", ActionCode::ActionCodeMoveIn},
+            {"file_move_out", ActionCode::ActionCodeMoveOut},
+            {"file_restore", ActionCode::ActionCodeRestore},
+            {"file_share_create", ActionCode::ActionCodeRestoreFileShareCreate},
+            {"file_share_delete", ActionCode::ActionCodeRestoreFileShareDelete},
+            {"share_link_create", ActionCode::ActionCodeRestoreShareLinkCreate},
+            {"share_link_delete", ActionCode::ActionCodeRestoreShareLinkDelete},
+            {"acl_insert", ActionCode::ActionCodeAccessRightInsert},
+            {"acl_update", ActionCode::ActionCodeAccessRightUpdate},
+            {"acl_remove", ActionCode::ActionCodeAccessRightRemove},
+            {"acl_user_insert", ActionCode::ActionCodeAccessRightUserInsert},
+            {"acl_user_update", ActionCode::ActionCodeAccessRightUserUpdate},
+            {"acl_user_remove", ActionCode::ActionCodeAccessRightUserRemove},
+            {"acl_team_insert", ActionCode::ActionCodeAccessRightTeamInsert},
+            {"acl_team_update", ActionCode::ActionCodeAccessRightTeamUpdate},
+            {"acl_team_remove", ActionCode::ActionCodeAccessRightTeamRemove},
+            {"acl_main_users_insert", ActionCode::ActionCodeAccessRightMainUsersInsert},
+            {"acl_main_users_update", ActionCode::ActionCodeAccessRightMainUsersUpdate},
+            {"acl_main_users_remove", ActionCode::ActionCodeAccessRightMainUsersRemove}};
 
     if (const auto it = actionMap.find(action); it != actionMap.cend()) return it->second;
 
-    return ActionCode::actionCodeUnknown;
+    return ActionCode::ActionCodeUnknown;
 };
 
 NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {
     static const std::map<std::string, NetworkErrorCode, std::less<std::string>> errorCodeMap = {
-            {"forbidden_error", NetworkErrorCode::forbiddenError},
-            {"not_authorized", NetworkErrorCode::notAuthorized},
-            {"product_maintenance", NetworkErrorCode::productMaintenance},
-            {"drive_is_in_maintenance_error", NetworkErrorCode::driveIsInMaintenanceError},
-            {"file_share_link_already_exists", NetworkErrorCode::fileShareLinkAlreadyExists},
-            {"object_not_found", NetworkErrorCode::objectNotFound},
-            {"invalid_grant", NetworkErrorCode::invalidGrant},
-            {"validation_failed", NetworkErrorCode::validationFailed},
-            {"upload_not_terminated_error", NetworkErrorCode::uploadNotTerminatedError},
-            {"upload_error", NetworkErrorCode::uploadError},
-            {"destination_already_exists", NetworkErrorCode::destinationAlreadyExists},
-            {"conflict_error", NetworkErrorCode::conflictError},
-            {"access_denied", NetworkErrorCode::accessDenied},
-            {"limit_exceeded_error", NetworkErrorCode::fileTooBigError},
-            {"quota_exceeded_error", NetworkErrorCode::quotaExceededError}};
+            {"forbidden_error", NetworkErrorCode::ForbiddenError},
+            {"not_authorized", NetworkErrorCode::NotAuthorized},
+            {"product_maintenance", NetworkErrorCode::ProductMaintenance},
+            {"drive_is_in_maintenance_error", NetworkErrorCode::DriveIsInMaintenanceError},
+            {"file_share_link_already_exists", NetworkErrorCode::FileShareLinkAlreadyExists},
+            {"object_not_found", NetworkErrorCode::ObjectNotFound},
+            {"invalid_grant", NetworkErrorCode::InvalidGrant},
+            {"validation_failed", NetworkErrorCode::ValidationFailed},
+            {"upload_not_terminated_error", NetworkErrorCode::UploadNotTerminatedError},
+            {"upload_error", NetworkErrorCode::UploadError},
+            {"destination_already_exists", NetworkErrorCode::DestinationAlreadyExists},
+            {"conflict_error", NetworkErrorCode::ConflictError},
+            {"access_denied", NetworkErrorCode::AccessDenied},
+            {"limit_exceeded_error", NetworkErrorCode::FileTooBigError},
+            {"quota_exceeded_error", NetworkErrorCode::QuotaExceededError}};
 
     if (const auto it = errorCodeMap.find(errorCode); it != errorCodeMap.cend()) return it->second;
 
-    return NetworkErrorCode::unknownError;
+    return NetworkErrorCode::UnknownError;
 }
 NetworkErrorReason getNetworkErrorReason(const std::string &errorReason) noexcept {
     static const std::map<std::string, NetworkErrorReason, std::less<std::string>> errorReasonMap = {
-            {"refresh_token_revoked", NetworkErrorReason::refreshTokenRevoked}, {"not_renew", NetworkErrorReason::notRenew}};
+            {"refresh_token_revoked", NetworkErrorReason::RefreshTokenRevoked},
+            {"not_renew", NetworkErrorReason::NotRenew},
+            {"technical", NetworkErrorReason::Technical}};
 
     if (const auto it = errorReasonMap.find(errorReason); it != errorReasonMap.cend()) return it->second;
 
-    return NetworkErrorReason::unknownReason;
+    return NetworkErrorReason::UnknownReason;
 }
 
 } // namespace KDC

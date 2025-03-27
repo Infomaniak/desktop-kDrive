@@ -158,15 +158,15 @@ bool AbstractTokenNetworkJob::handleUnauthorizedResponse() {
 
 bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri) {
     static const std::map<NetworkErrorCode, AbstractTokenNetworkJob::ExitHandler> errorCodeHandlingMap = {
-            {NetworkErrorCode::validationFailed, ExitHandler{ExitCause::InvalidName, "Invalid file or directory name"}},
-            {NetworkErrorCode::uploadNotTerminatedError, ExitHandler{ExitCause::UploadNotTerminated, "Upload not terminated"}},
-            {NetworkErrorCode::uploadError, ExitHandler{ExitCause::ApiErr, "Upload failed"}},
-            {NetworkErrorCode::destinationAlreadyExists, ExitHandler{ExitCause::FileAlreadyExist, "Operation refused"}},
-            {NetworkErrorCode::conflictError, ExitHandler{ExitCause::FileAlreadyExist, "Operation refused"}},
-            {NetworkErrorCode::accessDenied, ExitHandler{ExitCause::HttpErrForbidden, "Access denied"}},
-            {NetworkErrorCode::fileTooBigError, ExitHandler{ExitCause::FileTooBig, "File too big"}},
-            {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}},
-            {NetworkErrorCode::fileShareLinkAlreadyExists,
+            {NetworkErrorCode::ValidationFailed, ExitHandler{ExitCause::InvalidName, "Invalid file or directory name"}},
+            {NetworkErrorCode::UploadNotTerminatedError, ExitHandler{ExitCause::UploadNotTerminated, "Upload not terminated"}},
+            {NetworkErrorCode::UploadError, ExitHandler{ExitCause::ApiErr, "Upload failed"}},
+            {NetworkErrorCode::DestinationAlreadyExists, ExitHandler{ExitCause::FileAlreadyExist, "Operation refused"}},
+            {NetworkErrorCode::ConflictError, ExitHandler{ExitCause::FileAlreadyExist, "Operation refused"}},
+            {NetworkErrorCode::AccessDenied, ExitHandler{ExitCause::HttpErrForbidden, "Access denied"}},
+            {NetworkErrorCode::FileTooBigError, ExitHandler{ExitCause::FileTooBig, "File too big"}},
+            {NetworkErrorCode::QuotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}},
+            {NetworkErrorCode::FileShareLinkAlreadyExists,
              ExitHandler{ExitCause::ShareLinkAlreadyExists, "Share link already exists"}}};
 
     const auto &errorHandling = errorCodeHandlingMap.find(errorCode);
@@ -205,7 +205,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
 
     const NetworkErrorCode errorCode = getNetworkErrorCode(_errorCode);
     switch (errorCode) {
-        case KDC::NetworkErrorCode::notAuthorized: {
+        case NetworkErrorCode::NotAuthorized: {
             if (!_accessTokenAlreadyRefreshed) {
                 LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str()
                                                       << ". Refreshing access token.");
@@ -223,14 +223,14 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
             return false;
         }
 
-        case KDC::NetworkErrorCode::productMaintenance:
-        case KDC::NetworkErrorCode::driveIsInMaintenanceError: {
+        case NetworkErrorCode::ProductMaintenance:
+        case NetworkErrorCode::DriveIsInMaintenanceError: {
             LOG_DEBUG(_logger, "Product in maintenance");
             noRetry();
             if (const auto contextObj = errorObjPtr->getObject(contextKey); contextObj != nullptr) {
                 std::string context;
                 JsonParserUtility::extractValue(contextObj, reasonKey, context, false);
-                if (getNetworkErrorReason(context) == NetworkErrorReason::notRenew) {
+                if (getNetworkErrorReason(context) == NetworkErrorReason::NotRenew) {
                     _exitCause = ExitCause::DriveNotRenew;
                     return false;
                 }
@@ -278,10 +278,28 @@ bool AbstractTokenNetworkJob::handleJsonResponse(std::istream &is) {
                 return false;
             }
 
-            if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::notRenew) {
+            if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::NotRenew) {
                 noRetry();
                 _exitCode = ExitCode::BackError;
                 _exitCause = ExitCause::DriveNotRenew;
+                return false;
+            }
+            if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::Technical) {
+                _exitCode = ExitCode::BackError;
+                _exitCause = ExitCause::Unknown;
+                const auto maintenanceTypesArray = JsonParserUtility::extractArrayObject(dataObj, maintenanceTypesKey);
+                if (!maintenanceTypesArray || maintenanceTypesArray->empty()) return false;
+
+                for (const auto &maintenanceInfoVar: *maintenanceTypesArray) {
+                    const auto &maintenanceInfoObj = maintenanceInfoVar.extract<Poco::JSON::Object::Ptr>();
+                    if (std::string code;
+                        JsonParserUtility::extractValue(maintenanceInfoObj, codeKey, code) && code == "asleep") {
+                        LOG_DEBUG(_logger, "Drive is asleep");
+                        _exitCause = ExitCause::DriveAsleep;
+                        return false;
+                    }
+                }
+
                 return false;
             }
         }

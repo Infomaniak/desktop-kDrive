@@ -37,8 +37,7 @@
 namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                             const std::chrono::seconds &startDelay) :
-    ISyncWorker(syncPal, name, shortName, startDelay) {}
+                             const std::chrono::seconds &startDelay) : ISyncWorker(syncPal, name, shortName, startDelay) {}
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -96,7 +95,10 @@ void SyncPalWorker::execute() {
                     LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
                     isFSOInProgress[index] = false;
                     stopAndWaitForExitOfWorker(fsoWorkers[index]);
-                    if (fsoWorkers[index]->exitCode() == ExitCode::NetworkError && !pauseAsked()) {
+                    bool shouldPause = fsoWorkers[index]->exitCode() == ExitCode::NetworkError ||
+                                       (fsoWorkers[index]->exitCode() == ExitCode::BackError &&
+                                        fsoWorkers[index]->exitCause() == ExitCause::ServiceUnavailable);
+                    if (shouldPause && !pauseAsked()) {
                         pause();
                     }
                 } else if (!pauseAsked()) {

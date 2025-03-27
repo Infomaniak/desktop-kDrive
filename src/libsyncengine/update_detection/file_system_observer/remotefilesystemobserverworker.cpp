@@ -196,7 +196,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         }
 
         if (std::string errorCode; job->hasErrorApi(&errorCode)) {
-            if (getNetworkErrorCode(errorCode) == NetworkErrorCode::forbiddenError) {
+            if (getNetworkErrorCode(errorCode) == NetworkErrorCode::ForbiddenError) {
                 LOG_SYNCPAL_WARN(_logger, "Access forbidden");
                 exitCode = ExitCode::Ok;
                 break;
@@ -611,14 +611,14 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
     // Process action
     switch (actionInfo.actionCode) {
         // Item added
-        case ActionCode::actionCodeAccessRightInsert:
-        case ActionCode::actionCodeAccessRightUpdate:
-        case ActionCode::actionCodeAccessRightUserInsert:
-        case ActionCode::actionCodeAccessRightUserUpdate:
-        case ActionCode::actionCodeAccessRightTeamInsert:
-        case ActionCode::actionCodeAccessRightTeamUpdate:
-        case ActionCode::actionCodeAccessRightMainUsersInsert:
-        case ActionCode::actionCodeAccessRightMainUsersUpdate: {
+        case ActionCode::ActionCodeAccessRightInsert:
+        case ActionCode::ActionCodeAccessRightUpdate:
+        case ActionCode::ActionCodeAccessRightUserInsert:
+        case ActionCode::ActionCodeAccessRightUserUpdate:
+        case ActionCode::ActionCodeAccessRightTeamInsert:
+        case ActionCode::ActionCodeAccessRightTeamUpdate:
+        case ActionCode::ActionCodeAccessRightMainUsersInsert:
+        case ActionCode::ActionCodeAccessRightMainUsersUpdate: {
             bool rightsOk = false;
             if (const ExitCode exitCode =
                         checkRightsAndUpdateItem(actionInfo.snapshotItem.id(), rightsOk, actionInfo.snapshotItem);
@@ -628,12 +628,12 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             if (!rightsOk) break; // Current user does not have the right to access this item, ignore action.
             [[fallthrough]];
         }
-        case ActionCode::actionCodeMoveIn:
-        case ActionCode::actionCodeRestore:
-        case ActionCode::actionCodeCreate:
-        case ActionCode::actionCodeRename: {
+        case ActionCode::ActionCodeMoveIn:
+        case ActionCode::ActionCodeRestore:
+        case ActionCode::ActionCodeCreate:
+        case ActionCode::ActionCodeRename: {
             const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
-                                    actionInfo.actionCode != ActionCode::actionCodeCreate &&
+                                    actionInfo.actionCode != ActionCode::ActionCodeCreate &&
                                     !_snapshot->exists(actionInfo.snapshotItem.id());
             _snapshot->updateItem(actionInfo.snapshotItem);
             if (exploreDir) {
@@ -656,22 +656,22 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
 
                 if (exitCode != ExitCode::Ok) return exitCode;
             }
-            if (actionInfo.actionCode == ActionCode::actionCodeMoveIn) {
+            if (actionInfo.actionCode == ActionCode::ActionCodeMoveIn) {
                 // Keep track of moved items
                 movedItems.insert(actionInfo.snapshotItem.id());
             }
             break;
         }
         // Item edited
-        case ActionCode::actionCodeEdit:
+        case ActionCode::ActionCodeEdit:
             _snapshot->updateItem(actionInfo.snapshotItem);
             break;
 
         // Item removed
-        case ActionCode::actionCodeAccessRightRemove:
-        case ActionCode::actionCodeAccessRightUserRemove:
-        case ActionCode::actionCodeAccessRightTeamRemove:
-        case ActionCode::actionCodeAccessRightMainUsersRemove: {
+        case ActionCode::ActionCodeAccessRightRemove:
+        case ActionCode::ActionCodeAccessRightUserRemove:
+        case ActionCode::ActionCodeAccessRightTeamRemove:
+        case ActionCode::ActionCodeAccessRightMainUsersRemove: {
             bool rightsOk = false;
             if (const ExitCode exitCode =
                         checkRightsAndUpdateItem(actionInfo.snapshotItem.id(), rightsOk, actionInfo.snapshotItem);
@@ -681,11 +681,11 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             if (rightsOk) break; // Current user still have the right to access this item, ignore action.
             [[fallthrough]];
         }
-        case ActionCode::actionCodeMoveOut:
+        case ActionCode::ActionCodeMoveOut:
             // Ignore move out action if destination is inside the synced folder.
             if (movedItems.find(actionInfo.snapshotItem.id()) != movedItems.end()) break;
             [[fallthrough]];
-        case ActionCode::actionCodeTrash:
+        case ActionCode::ActionCodeTrash:
             if (!_snapshot->removeItem(actionInfo.snapshotItem.id())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: "
                                                    << SyncName2WStr(actionInfo.snapshotItem.name()).c_str() << L" ("
@@ -696,12 +696,12 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             break;
 
         // Ignored actions
-        case ActionCode::actionCodeAccess:
-        case ActionCode::actionCodeDelete:
-        case ActionCode::actionCodeRestoreFileShareCreate:
-        case ActionCode::actionCodeRestoreFileShareDelete:
-        case ActionCode::actionCodeRestoreShareLinkCreate:
-        case ActionCode::actionCodeRestoreShareLinkDelete:
+        case ActionCode::ActionCodeAccess:
+        case ActionCode::ActionCodeDelete:
+        case ActionCode::ActionCodeRestoreFileShareCreate:
+        case ActionCode::ActionCodeRestoreFileShareDelete:
+        case ActionCode::ActionCodeRestoreShareLinkCreate:
+        case ActionCode::ActionCodeRestoreShareLinkDelete:
             // Ignore these actions
             break;
 

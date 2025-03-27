@@ -2137,9 +2137,9 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     auto tokenJob(std::dynamic_pointer_cast<AbstractTokenNetworkJob>(job));
     if (tokenJob && tokenJob->hasErrorApi(&errorCode)) {
         const auto code = getNetworkErrorCode(errorCode);
-        if (code == NetworkErrorCode::destinationAlreadyExists) {
+        if (code == NetworkErrorCode::DestinationAlreadyExists) {
             // Folder is already there, ignore this error
-        } else if (code == NetworkErrorCode::forbiddenError) {
+        } else if (code == NetworkErrorCode::ForbiddenError) {
             // The item should be blacklisted
             _syncPal->blacklistTemporarily(
                     syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(),

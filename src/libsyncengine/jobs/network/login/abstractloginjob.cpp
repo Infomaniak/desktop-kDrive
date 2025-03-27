@@ -102,8 +102,8 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
         std::string errorReason;
         JsonParserUtility::extractValue(jsonError, reasonKey, errorReason, false);
 
-        if (getNetworkErrorCode(_errorCode) == NetworkErrorCode::invalidGrant ||
-            getNetworkErrorReason(errorReason) == NetworkErrorReason::refreshTokenRevoked) {
+        if (getNetworkErrorCode(_errorCode) == NetworkErrorCode::InvalidGrant ||
+            getNetworkErrorReason(errorReason) == NetworkErrorReason::RefreshTokenRevoked) {
             _errorDescr = errorReason;
             LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : refresh token has been revoked ");
             noRetry();

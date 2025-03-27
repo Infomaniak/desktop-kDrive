@@ -204,6 +204,12 @@ std::string toString(const ExitCause e) {
             return "ShareLinkAlreadyExists";
         case ExitCause::InvalidArgument:
             return "InvalidArgument";
+        case ExitCause::DriveAsleep:
+            return "DriveAsleep";
+        case ExitCause::DriveWakingUp:
+            return "DriveWakingUp";
+        case ExitCause::ServiceUnavailable:
+            return "ServiceUnavailable";
         default:
             return noConversionStr;
     }

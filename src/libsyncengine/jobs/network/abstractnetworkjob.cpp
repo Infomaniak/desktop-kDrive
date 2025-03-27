@@ -95,7 +95,8 @@ bool AbstractNetworkJob::isManagedError(ExitCode exitCode, ExitCause exitCause) 
                                                           ExitCause::NotFound,
                                                           ExitCause::QuotaExceeded,
                                                           ExitCause::FileAlreadyExist,
-                                                          ExitCause::ShareLinkAlreadyExists};
+                                                          ExitCause::ShareLinkAlreadyExists,
+                                                          ExitCause::ServiceUnavailable};
 
     switch (exitCode) {
         case ExitCode::BackError:
@@ -471,6 +472,13 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             // Rate limitation
             _exitCode = ExitCode::RateLimited;
             LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
+            break;
+        }
+        case Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE: {
+            _exitCode = ExitCode::BackError;
+            _exitCause = ExitCause::ServiceUnavailable;
+            LOG_WARN(_logger, "Service unavailable");
+            noRetry();
             break;
         }
         default: {
