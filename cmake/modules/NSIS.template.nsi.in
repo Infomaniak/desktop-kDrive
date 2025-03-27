@@ -233,7 +233,7 @@ Var kill_counter
    process_${processName}_ended:
 !macroend
 
-!macro CheckAndConfirmEndProcesses1 process1 
+!macro CheckAndConfirmEndProcesse1 process1 
  !insertmacro CheckAndConfirmEndProcesses3 ${process1} "null1" "null2"
 !macroend
 
@@ -285,24 +285,24 @@ Var kill_counter
   InitPluginsDir
   ;Save command in a temp file
   Push $R1
-  FileOpen $R1 $INSTDIR\tempfile.ps1 w
+  FileOpen $R1 $PLUGINSDIR\tempfile.ps1 w
   FileWrite $R1 "${PSCommand}"
   FileClose $R1
   Pop $R1
  
-  !insertmacro PowerShellExecFileMacro "$INSTDIR\tempfile.ps1"
+  !insertmacro PowerShellExecFileMacro "$PLUGINSDIR\tempfile.ps1"
 !macroend
  
 !macro PowerShellExecLogMacro PSCommand
   InitPluginsDir
   ;Save command in a temp file
   Push $R1
-  FileOpen $R1 $INSTDIR\tempfile.ps1 w
+  FileOpen $R1 $PLUGINSDIR\tempfile.ps1 w
   FileWrite $R1 "${PSCommand}" 
   FileClose $R1
   Pop $R1
 
-  !insertmacro PowerShellExecFileLogMacro "$INSTDIR\tempfile.ps1"
+  !insertmacro PowerShellExecFileLogMacro "$PLUGINSDIR\tempfile.ps1"
 !macroend
  
 !macro PowerShellExecFileMacro PSFile
@@ -368,18 +368,18 @@ Function PageReinstall
     Abort
 
    ;Detect version
-    ReadRegDWORD $R0 HKLM "${regkey}" "VersionMajor"
+   ReadRegDWORD $R0 HKLM "${regkey}" "VersionMajor"
    IntCmp $R0 ${VER_MAJOR} minor_check new_version older_version
-    minor_check:
-        ReadRegDWORD $R0 HKLM "${regkey}" "VersionMinor"
+   minor_check:
+      ReadRegDWORD $R0 HKLM "${regkey}" "VersionMinor"
       IntCmp $R0 ${VER_MINOR} rev_check new_version older_version
-    rev_check:
-        ReadRegDWORD $R0 HKLM "${regkey}" "VersionRevision"
+   rev_check:
+      ReadRegDWORD $R0 HKLM "${regkey}" "VersionRevision"
       IntCmp $R0 ${VER_PATCH} build_check new_version older_version
-    build_check:
-        ReadRegDWORD $R0 HKLM "${regkey}" "VersionBuild"
+   build_check:
+      ReadRegDWORD $R0 HKLM "${regkey}" "VersionBuild"
       IntCmp $R0 ${VER_BUILD} same_version new_version older_version
-
+ 
    new_version:
       !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptions.ini" "Field 1" "Text" $PageReinstall_NEW_Field_1
       !insertmacro MUI_HEADER_TEXT $PageReinstall_NEW_MUI_HEADER_TEXT_TITLE $PageReinstall_NEW_MUI_HEADER_TEXT_SUBTITLE
@@ -491,7 +491,7 @@ SectionEnd
       CreateDirectory "$INSTDIR\shellext\AppX"
       SetOutPath "$INSTDIR\shellext\AppX"
       File /nonfatal /a /r "${VFS_APPX_DIRECTORY}\"
-      !insertmacro CheckAndConfirmEndProcesses1 "${EXTENSION_NAME}"
+      !insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
       ${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
       end_install_lite_sync_extension:
       
