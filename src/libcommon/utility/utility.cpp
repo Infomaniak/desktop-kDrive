@@ -464,8 +464,8 @@ bool CommonUtility::colorThresholdCheck(const int red, const int green, const in
 }
 
 SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &path) {
-    auto pathStr = path.string();
-    auto rootStr = rootPath.string();
+    const auto pathStr = path.string();
+    const auto rootStr = rootPath.string();
     auto rootIt = rootStr.begin();
     auto pathIt = pathStr.begin();
     const auto rootItEnd = rootStr.end();
