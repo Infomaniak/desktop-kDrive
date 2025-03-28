@@ -393,8 +393,10 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
         case ExitCode::InvalidSync:
         case ExitCode::OperationCanceled:
         case ExitCode::InvalidOperation:
-        case ExitCode::UpdateFailed:
             break;
+        case ExitCode::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged exit code: code=" << exitCode;
