@@ -53,9 +53,7 @@ void FolderWatcher_win::startWatching() {
         watchChanges();
 
         if (!_stop) {
-            // Other errors shouldn't actually happen,
-            // so sleep a bit to avoid running into the same error case in a
-            // tight loop.
+            changesLost();
             Utility::msleep(100);
         }
     }
@@ -65,15 +63,12 @@ void FolderWatcher_win::startWatching() {
 
 void FolderWatcher_win::stopWatching() {
     LOGW_DEBUG(_logger, L"Stop watching folder: " << Path2WStr(_folder).c_str());
-
     SetEvent(_stopEventHandle);
-    closeHandle();
 }
 
 void FolderWatcher_win::watchChanges() {
     LOG_DEBUG(_logger, "Start watching changes");
 
-    _directoryHandleMutex.lock();
     _directoryHandle =
             CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
                         nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
@@ -83,7 +78,6 @@ void FolderWatcher_win::watchChanges() {
         LOGW_WARN(_logger, L"Failed to create handle for " << _folder.wstring().c_str() << L" - error:" << errorCode);
         _directoryHandle = nullptr;
         setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
-        _directoryHandleMutex.unlock();
         return;
     }
 
@@ -104,7 +98,6 @@ void FolderWatcher_win::watchChanges() {
             DWORD errorCode = GetLastError();
             if (errorCode == ERROR_NOTIFY_ENUM_DIR) {
                 LOG_DEBUG(_logger, "The buffer for changes overflowed! Fallback to static sync");
-                changesLost();
             } else {
                 LOG_WARN(_logger, "ReadDirectoryChangesW error " << errorCode);
             }
@@ -132,7 +125,6 @@ void FolderWatcher_win::watchChanges() {
             const DWORD errorCode = GetLastError();
             if (errorCode == ERROR_NOTIFY_ENUM_DIR) {
                 LOG_DEBUG(_logger, "The buffer for changes overflowed! Fallback to static sync");
-                changesLost();
             } else {
                 LOG_WARN(_logger, "GetOverlappedResult error " << errorCode);
             }
@@ -188,7 +180,6 @@ void FolderWatcher_win::watchChanges() {
                                                                           notifInfo->NextEntryOffset);
         }
     }
-    _directoryHandleMutex.unlock();
 
     CancelIo(_directoryHandle);
     closeHandle();
@@ -197,8 +188,6 @@ void FolderWatcher_win::watchChanges() {
 }
 
 void FolderWatcher_win::closeHandle() {
-    const std::scoped_lock lock(_directoryHandleMutex);
-
     if (_directoryHandle) {
         try {
             CloseHandle(_directoryHandle);
