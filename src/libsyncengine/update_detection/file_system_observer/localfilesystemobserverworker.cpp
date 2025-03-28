@@ -245,8 +245,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     return;
                 }
 
-                PinState pinState = _syncPal->vfs()->pinState(absolutePath);
                 if (vfsStatus.isPlaceholder) {
+                    const PinState pinState = _syncPal->vfs()->pinState(absolutePath);
                     if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
                         (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
                         // Change status in order to start hydration/dehydration
