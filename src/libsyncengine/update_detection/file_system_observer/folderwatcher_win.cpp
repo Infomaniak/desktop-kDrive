@@ -83,6 +83,7 @@ void FolderWatcher_win::watchChanges() {
         LOGW_WARN(_logger, L"Failed to create handle for " << _folder.wstring().c_str() << L" - error:" << errorCode);
         _directoryHandle = nullptr;
         setExitInfo({ExitCode::SystemError, ExitCause::SyncDirAccesError});
+        _directoryHandleMutex.unlock();
         return;
     }
 
