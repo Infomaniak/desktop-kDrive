@@ -34,24 +34,16 @@ bool LocalMoveJob::canRun() {
     LOGW_DEBUG(_logger, L"Move from: " << Utility::formatSyncPath(_source) << L" to: " << Utility::formatSyncPath(_dest));
 
     // If the paths are not identical except for case and encoding, check that the destination doesn't already exist
-    SyncPath normalizedSource;
-    if (!Utility::normalizedSyncPath(_source, normalizedSource)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_source));
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::Unknown;
-        return false;
-    }
-
-    SyncPath normalizedDest;
-    if (!Utility::normalizedSyncPath(_dest, normalizedDest)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_dest));
+    bool isEqual = false;
+    if (!Utility::isEqualUpToCaseAndEnc(_source, _dest, isEqual)) {
+        LOG_WARN(_logger, "Error in Utility::isEqualUpToCaseAndEnc");
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::Unknown;
         return false;
     }
 
     IoError ioError = IoError::Success;
-    if (!Utility::isEqualInsensitive(normalizedSource, normalizedDest)) {
+    if (!isEqual) {
         // Check that we can move the file in destination
         bool exists = false;
         if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {

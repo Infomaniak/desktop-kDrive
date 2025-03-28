@@ -97,14 +97,14 @@ struct COMMONSERVER_EXPORT Utility {
         static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
         static bool endsWith(const std::string &str, const std::string &suffix);
         static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
-        static bool isEqualInsensitive(const std::string &strA, const std::string &strB);
 #ifdef _WIN32
         static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
         static bool startsWith(const SyncName &str, const SyncName &prefix);
         static bool endsWith(const SyncName &str, const SyncName &suffix);
         static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
-        static bool isEqualInsensitive(const SyncName &a, const SyncName &b);
 #endif
+
+        static bool isEqualUpToCaseAndEnc(const SyncPath &a, const SyncPath &b, bool &isEqual);
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.
