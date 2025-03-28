@@ -69,10 +69,10 @@ void TestUpdateChecker::testVersionInfo() {
 
     // Check the returned value when version Infos are not available.
     testObj._isVersionReceived = false;
-    CPPUNIT_ASSERT_EQUAL(testObj._defaultVersionInfo, testObj.versionInfo(VersionChannel::Prod));
-    CPPUNIT_ASSERT_EQUAL(testObj._defaultVersionInfo, testObj.versionInfo(VersionChannel::Next));
-    CPPUNIT_ASSERT_EQUAL(testObj._defaultVersionInfo, testObj.versionInfo(VersionChannel::Beta));
-    CPPUNIT_ASSERT_EQUAL(testObj._defaultVersionInfo, testObj.versionInfo(VersionChannel::Internal));
+    CPPUNIT_ASSERT(testObj._defaultVersionInfo == testObj.versionInfo(VersionChannel::Prod));
+    CPPUNIT_ASSERT(testObj._defaultVersionInfo == testObj.versionInfo(VersionChannel::Next));
+    CPPUNIT_ASSERT(testObj._defaultVersionInfo == testObj.versionInfo(VersionChannel::Beta));
+    CPPUNIT_ASSERT(testObj._defaultVersionInfo == testObj.versionInfo(VersionChannel::Internal));
 
     auto testFunc = [&testObj](const VersionValue expectedValue, const VersionChannel expectedChannel,
                                const VersionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber,
