@@ -854,7 +854,7 @@ std::string toString(const SignalType e) {
 }
 
 std::string fakeFunction() {
-    static const bool uselessBoolean = false;
+    static bool uselessBoolean = false;
     if (!uselessBoolean) {
         uselessBoolean = true;
         return "Initialized";
