@@ -1069,8 +1069,8 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         return ExitCode::DataError;
     }
 
-    if (job->runSynchronously() != ExitCode::Ok) {
-        if (job->exitCode() == ExitCode::BackError && job->exitCause() == ExitCause::ShareLinkAlreadyExists) {
+    if (job->runSynchronously().code() != ExitCode::Ok) {
+        if (job->exitInfo().code() == ExitCode::BackError && job->exitInfo().cause() == ExitCause::ShareLinkAlreadyExists) {
             // The link already exists, get it
             job.reset();
             try {
@@ -1080,13 +1080,13 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
                 return ExitCode::DataError;
             }
 
-            if (job->runSynchronously() != ExitCode::Ok) {
-                logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitCode()));
-                return job->exitCode();
+            if (job->runSynchronously().code() != ExitCode::Ok) {
+                logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitInfo().code()));
+                return job->exitInfo();
             }
         } else {
-            logWarning("PostFileLinkJob", driveDbId, nodeId, toString(job->exitCode()));
-            return job->exitCode();
+            logWarning("PostFileLinkJob", driveDbId, nodeId, toString(job->exitInfo().code()));
+            return job->exitInfo();
         }
     }
 
@@ -1548,8 +1548,9 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     }
 
     ExitCode exitCode = job->runSynchronously();
-    const bool knownMaintenanceMode = job->exitCause() == ExitCause::DriveNotRenew ||
-                                      job->exitCause() == ExitCause::DriveAsleep || job->exitCause() == ExitCause::DriveWakingUp;
+    const bool knownMaintenanceMode = job->exitInfo().cause() == ExitCause::DriveNotRenew ||
+                                      job->exitInfo().cause() == ExitCause::DriveAsleep ||
+                                      job->exitInfo().cause() == ExitCause::DriveWakingUp;
     if (exitCode != ExitCode::Ok && !knownMaintenanceMode) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
         return exitCode;
@@ -1626,8 +1627,8 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         drive.setLocked(isLocked);
         drive.setAccessDenied(false);
         drive.setMaintenanceInfo({._maintenance = inMaintenance,
-                                  ._notRenew = job->exitCause() == ExitCause::DriveNotRenew,
-                                  ._asleep = job->exitCause() == ExitCause::DriveAsleep,
+                                  ._notRenew = job->exitInfo().cause() == ExitCause::DriveNotRenew,
+                                  ._asleep = job->exitInfo().cause() == ExitCause::DriveAsleep,
                                   ._wakingUp = false,
                                   ._maintenanceFrom = maintenanceFrom});
 

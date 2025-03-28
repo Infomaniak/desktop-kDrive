@@ -67,7 +67,7 @@ void ConflictingFilesCorrector::runJob() {
         }
     }
 
-    _exitCode = ExitCode::Ok;
+    _exitInfo = ExitCode::Ok;
 }
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
@@ -75,14 +75,14 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     SyncPath originalAbsolutePath = error.destinationPath().parent_path() / error.path().filename();
     LocalDeleteJob deleteJob(originalAbsolutePath);
     deleteJob.runSynchronously();
-    if (deleteJob.exitCode() != ExitCode::Ok) {
+    if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;
     }
 
     // Rename the local version
     LocalMoveJob renameJob(error.destinationPath(), originalAbsolutePath);
     renameJob.runSynchronously();
-    if (renameJob.exitCode() != ExitCode::Ok) {
+    if (renameJob.exitInfo().code() != ExitCode::Ok) {
         return false;
     }
 
@@ -97,7 +97,7 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // Delete local version
     LocalDeleteJob deleteJob(error.destinationPath());
     deleteJob.runSynchronously();
-    if (deleteJob.exitCode() != ExitCode::Ok) {
+    if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;
     }
 

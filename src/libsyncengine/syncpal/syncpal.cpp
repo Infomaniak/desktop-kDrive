@@ -321,9 +321,9 @@ ExitCode SyncPal::clearNodes() {
 void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
     auto jobPtr = JobManager::instance()->getJob(jobId);
     if (jobPtr) {
-        if (jobPtr->exitCode() != ExitCode::Ok) {
+        if (jobPtr->exitInfo().code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in PropagatorJob");
-            addError(Error(syncDbId(), errId(), jobPtr->exitCode(), ExitCause::Unknown));
+            addError(Error(syncDbId(), errId(), jobPtr->exitInfo().code(), ExitCause::Unknown));
             return;
         }
 

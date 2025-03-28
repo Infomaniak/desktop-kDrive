@@ -291,10 +291,10 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         Utility::msleep(100);
     }
 
-    if (job->exitCode() != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob::runSynchronously : " << job->exitCode());
+    if (job->exitInfo().code() != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob::runSynchronously : " << job->exitInfo());
         setExitCause(job->getExitCause());
-        return job->exitCode();
+        return job->exitInfo();
     }
 
     if (saveCursor) {
@@ -441,11 +441,11 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             Utility::msleep(100);
         }
 
-        if (notifyJob->exitCode() == ExitCode::NetworkError) {
+        if (notifyJob->exitInfo().code() == ExitCode::NetworkError) {
             LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
                                                                                    << " and cursor: " << _cursor.c_str());
-            if (notifyJob->exitCause() == ExitCause::NetworkTimeout) {
-                _syncPal->addError(Error(errId(), notifyJob->exitCode(), notifyJob->exitCause()));
+            if (notifyJob->exitInfo().cause() == ExitCause::NetworkTimeout) {
+                _syncPal->addError(Error(errId(), notifyJob->exitInfo().code(), notifyJob->exitInfo().cause()));
             }
             return ExitCode::NetworkError;
         } else if (notifyJob->hasHttpError()) {
@@ -459,7 +459,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             } else {
                 LOG_SYNCPAL_WARN(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
                                                                                       << " and cursor: " << _cursor.c_str());
-                return notifyJob->exitCode();
+                return notifyJob->exitInfo();
             }
         } else {
             Poco::JSON::Object::Ptr resObj = notifyJob->jsonRes();
@@ -728,7 +728,7 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     }
 
     job->runSynchronously();
-    if (job->hasHttpError() || job->exitCode() != ExitCode::Ok) {
+    if (job->hasHttpError() || job->exitInfo().code() != ExitCode::Ok) {
         if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
             job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
             hasRights = false;

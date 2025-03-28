@@ -275,6 +275,7 @@ struct ExitInfo {
 
         const ExitCode &code() const { return _code; }
         const ExitCause &cause() const { return _cause; }
+        void setCause(const ExitCause cause) { _cause = cause; }
         operator ExitCode() const { return _code; }
         operator ExitCause() const { return _cause; }
         explicit operator std::string() const {

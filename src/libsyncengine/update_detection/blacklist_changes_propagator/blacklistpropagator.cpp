@@ -44,24 +44,24 @@ void BlacklistPropagator::runJob() {
     bool found = true;
     if (!ParmsDb::instance()->selectSync(_syncPal->syncDbId(), _sync, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-        _exitCode = ExitCode::DbError;
+        _exitInfo = ExitCode::DbError;
         return;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Sync not found");
-        _exitCode = ExitCode::DataError;
+        _exitInfo = ExitCode::DataError;
         return;
     }
 
     ExitCode exitCode = checkNodes();
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in BlacklistPropagator::checkNodes");
-        _exitCode = exitCode;
+        _exitInfo = exitCode;
         return;
     }
 
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator ended");
-    _exitCode = ExitCode::Ok;
+    _exitInfo = ExitCode::Ok;
 }
 
 ExitCode BlacklistPropagator::checkNodes() {
@@ -238,7 +238,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         LocalDeleteJob job(_syncPal->syncInfo(), localPath, liteSyncActivated, remoteNodeId);
         job.setBypassCheck(true);
         job.runSynchronously();
-        if (job.exitCode() != ExitCode::Ok) {
+        if (job.exitInfo().code() != ExitCode::Ok) {
             LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                               L"Failed to remove item with " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                              << Utility::s2ws(localNodeId).c_str()

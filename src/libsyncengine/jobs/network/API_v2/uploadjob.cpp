@@ -65,22 +65,19 @@ bool UploadJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger,
                    L"Item does not exist anymore. Aborting current sync and restart " << Utility::formatSyncPath(_filePath));
-        _exitCode = ExitCode::DataError;
-        _exitCause = ExitCause::UnexpectedFileSystemEvent;
+        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
         return false;
     }
 

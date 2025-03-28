@@ -66,6 +66,6 @@ RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     DeleteJob job(_driveDbId, _dirId, "", "");
     job.setBypassCheck(true);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("~RemoteTemporaryDirectory() failed to delete the directory on remote side.", ExitCode::Ok,
-                                 job.runSynchronously());
+                                 job.runSynchronously().code());
 }
 } // namespace KDC
