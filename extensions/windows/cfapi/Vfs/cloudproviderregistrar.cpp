@@ -75,6 +75,18 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                     TRACE_ERROR(L"Could not set default registry value");
                 }
 
+                // Update AMUID key
+                const std::wstring name(REGKEY_AUMID);
+                const std::wstring aumidValue = KDC_AUMID;
+                const std::wstring value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
+
+                TRACE_INFO(L"AUMID value: %s", aumidValue.c_str());
+
+                if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(),
+                                  (DWORD) (value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
+                    TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
+                }
+
                 if (RegCloseKey(hKey) != ERROR_SUCCESS) {
                     TRACE_ERROR(L"Could not close key %s", subKey.c_str());
                 }
@@ -169,21 +181,10 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 }
 
                 // Create AMUID key
-                std::wstring name(REGKEY_AUMID);
-                std::wstring value;
+                const std::wstring name(REGKEY_AUMID);
+                const std::wstring aumidValue = KDC_AUMID;
+                const std::wstring value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
 
-                DWORD aumidValueSize = 65535;
-                std::wstring aumidValue;
-                aumidValue.resize(aumidValueSize);
-                LPCWSTR aumidEnvVarName = nullptr;
-#ifdef _DEBUG
-                aumidEnvVarName = L"KDC_VIRTUAL_AUMID";
-#else
-                aumidEnvVarName = L"KDC_PHYSICAL_AUMID";
-#endif
-                aumidValueSize = GetEnvironmentVariableW(aumidEnvVarName, &aumidValue[0], aumidValueSize);
-                aumidValue.resize(aumidValueSize);
-                value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
                 TRACE_INFO(L"AUMID value: %s", aumidValue.c_str());
 
                 if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(),
