@@ -473,7 +473,7 @@ void TestUtility::testLogIfFail() {
 
 void TestUtility::testRelativePath() {
     const std::vector<char> separators = {'/', '\\'};
-    const std::vector<std::string> rootPathItems = {"dir1", "dir2", "dir3"}; // "/dir1/dir2/dir3
+    const std::vector<std::string> rootPathItems = {"dir1", "dir2", "??"}; // "/dir1/dir2/??
     const std::vector<std::string> relativePathItems = {"syncDir1", "syncDir2", "syncDir3"}; // "syncDir1/syncDir2/syncDir3
 
     // Root path is empty
