@@ -67,7 +67,7 @@ void TestUpdateChecker::testVersionInfo() {
     UpdateChecker testObj;
     testObj._prodVersionChannel = VersionChannel::Prod;
 
-    // Check the returned value when version Infos are not available.
+    // Check the returned value when versionInfo is not available.
     testObj._isVersionReceived = false;
     CPPUNIT_ASSERT(testObj._defaultVersionInfo == testObj.versionInfo(VersionChannel::Prod));
     CPPUNIT_ASSERT(testObj._defaultVersionInfo == testObj.versionInfo(VersionChannel::Next));
