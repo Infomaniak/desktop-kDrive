@@ -67,16 +67,21 @@ void TestUpdateChecker::testVersionInfo() {
     UpdateChecker testObj;
     testObj._prodVersionChannel = VersionChannel::Prod;
 
+    // Check the returned value when version Infos are not available.
+    testObj._isVersionReceived = false;
+    CPPUNIT_ASSERT_EQUAL(testObj._defaultVersionInfo, testObj.versionInfo(VersionChannel::Prod));
+    CPPUNIT_ASSERT_EQUAL(testObj._defaultVersionInfo, testObj.versionInfo(VersionChannel::Next));
+    CPPUNIT_ASSERT_EQUAL(testObj._defaultVersionInfo, testObj.versionInfo(VersionChannel::Beta));
+    CPPUNIT_ASSERT_EQUAL(testObj._defaultVersionInfo, testObj.versionInfo(VersionChannel::Internal));
+
     auto testFunc = [&testObj](const VersionValue expectedValue, const VersionChannel expectedChannel,
                                const VersionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber,
                                const CPPUNIT_NS::SourceLine &sourceline) {
         testObj._versionsInfo.clear();
-        testObj._versionsInfo.try_emplace(VersionChannel::Prod,
-                                          getVersionInfo(VersionChannel::Prod, versionsNumber[0]));
-        testObj._versionsInfo.try_emplace(VersionChannel::Beta,
-                                          getVersionInfo(VersionChannel::Beta, versionsNumber[1]));
-        testObj._versionsInfo.try_emplace(VersionChannel::Internal,
-                                          getVersionInfo(VersionChannel::Internal, versionsNumber[2]));
+        testObj._isVersionReceived = true;
+        testObj._versionsInfo.try_emplace(VersionChannel::Prod, getVersionInfo(VersionChannel::Prod, versionsNumber[0]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Beta, getVersionInfo(VersionChannel::Beta, versionsNumber[1]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Internal, getVersionInfo(VersionChannel::Internal, versionsNumber[2]));
         const auto &versionInfo = testObj.versionInfo(selectedChannel);
         CPPUNIT_NS::assertEquals(expectedChannel, versionInfo.channel, sourceline, "");
         CPPUNIT_NS::assertEquals(tag(expectedValue), versionInfo.tag, sourceline, "");
