@@ -473,23 +473,20 @@ void TestUtility::testLogIfFail() {
 
 void TestUtility::testRelativePath() {
     const std::vector<char> separators = {'/', '\\'};
-    const std::vector<std::string> rootPathItems = {"dir1", "dir2", "dir3"}; // "dir1/dir2/dir3
+    const std::vector<std::string> rootPathItems = {"dir1", "dir2", "dir3"}; // "/dir1/dir2/dir3
     const std::vector<std::string> relativePathItems = {"syncDir1", "syncDir2", "syncDir3"}; // "syncDir1/syncDir2/syncDir3
 
     // Root path is empty
     std::vector<SyncPath> relativePaths;
     generatePaths(relativePathItems, separators, false, relativePaths);
-    CPPUNIT_ASSERT_EQUAL(relativePaths.size(), static_cast<size_t>(3 * pow(2, relativePathItems.size() - 1)));
 
     for (const auto &relativePath: relativePaths) {
-        std::cout << "Relative paths: " << relativePath.string() << std::endl;
         CPPUNIT_ASSERT_EQUAL(relativePath, CommonUtility::relativePath(SyncPath(), relativePath));
     }
 
     // Absolute path is empty
     std::vector<SyncPath> rootPaths;
     generatePaths(rootPathItems, separators, true, rootPaths);
-    CPPUNIT_ASSERT_EQUAL(rootPaths.size(), static_cast<size_t>(3 * pow(2, rootPathItems.size())));
 
     for (const auto &rootPath: rootPaths) {
         CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(rootPath, SyncPath()));
@@ -500,8 +497,9 @@ void TestUtility::testRelativePath() {
 
     // Both paths are the same
     for (const auto &rootPath: rootPaths) {
-        std::cout << "Root paths: " << rootPath.string() << std::endl;
-        CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(rootPath, rootPath));
+        for (const auto &absolutePath: rootPaths) {
+            CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(rootPath, absolutePath));
+        }
     }
 
     // Absolute path is a subpath of the root path
@@ -512,7 +510,6 @@ void TestUtility::testRelativePath() {
             for (const auto &separator: separators) {
                 const SyncPath absolutePath = rootPath.string() + separator + relativePath.string();
                 (void) absolutePaths.emplace_back(absolutePath, relativePath);
-                std::cout << "Absolute paths: " << absolutePath.string() << std::endl;
             }
         }
     }
@@ -523,5 +520,8 @@ void TestUtility::testRelativePath() {
                                          relativePaths, CommonUtility::relativePath(rootPath, absolutePath));
         }
     }
+
+    // Absolute path is not a subpath of the root path
+    CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(SyncPath("dir1"), SyncPath("dir2/test")));
 }
 } // namespace KDC
