@@ -55,7 +55,7 @@ ExitInfo UploadSessionStartJob::setData() {
                 // If an item already exist on server side with the same name, we want the back end to return an error.
                 // However, in case a conflict with a directory, the back end will change the error resolution to `rename` and
                 // automatically rename the uploaded file with a suffix counter (e.g.: test (1).txt)
-                (void) json.set(conflictKey, errorKey);
+                (void) json.set(conflictKey, conflictErrorValue);
             } else {
                 (void) json.set("file_id", _fileId);
             }

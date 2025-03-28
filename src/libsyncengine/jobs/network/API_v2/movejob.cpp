@@ -89,7 +89,7 @@ std::string MoveJob::getSpecificUrl() {
 }
 
 void MoveJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
-    uri.addQueryParameter(conflictKey, errorKey);
+    uri.addQueryParameter(conflictKey, conflictErrorValue);
     canceled = false;
 }
 

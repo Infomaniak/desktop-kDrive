@@ -100,6 +100,7 @@ static const std::string pageKey = "page";
 static const std::string pagesKey = "pages";
 static const std::string itemsPerPageKey = "items_per_page";
 static const std::string conflictKey = "conflict";
+static const std::string conflictErrorValue = "error";
 
 static const std::string inMaintenanceKey = "in_maintenance";
 static const std::string maintenanceAtKey = "maintenance_at";
