@@ -175,9 +175,9 @@ void TestUtility::testIsEqualInsensitive(void) {
 
     // NFC vs NFD
     SyncName nfcNormalized;
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("éééé", nfcNormalized));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfcNormalized));
     SyncName nfdNormalized;
-    CPPUNIT_ASSERT(Utility::normalizedSyncName("éééé", nfdNormalized, Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfdNormalized, Utility::UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(!_testObj->isEqualInsensitive(nfcNormalized, nfdNormalized));
 }
 
