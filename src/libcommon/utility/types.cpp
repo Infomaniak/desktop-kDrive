@@ -853,4 +853,14 @@ std::string toString(const SignalType e) {
     }
 }
 
+std::string fakeFunction() {
+    static bool uselessBoolean = false;
+    if (!uselessBoolean) {
+        uselessBoolean = true;
+        return "Initialized";
+    } else
+        return "Already set";
+}
+
+
 } // namespace KDC
