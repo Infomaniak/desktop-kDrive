@@ -31,9 +31,27 @@ bool LocalMoveJob::canRun() {
         return true;
     }
 
-    std::error_code ec;
+    LOGW_DEBUG(_logger, L"Move from: " << Utility::formatSyncPath(_source) << L" to: " << Utility::formatSyncPath(_dest));
+
+    // If the paths are not identical except for case and encoding, check that the destination doesn't already exist
+    SyncPath normalizedSource;
+    if (!Utility::normalizedSyncPath(_source, normalizedSource)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_source));
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+
+    SyncPath normalizedDest;
+    if (!Utility::normalizedSyncPath(_dest, normalizedDest)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_dest));
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::Unknown;
+        return false;
+    }
+
     IoError ioError = IoError::Success;
-    if (!Utility::isEqualInsensitive(_source, _dest)) {
+    if (!Utility::isEqualInsensitive(normalizedSource, normalizedDest)) {
         // Check that we can move the file in destination
         bool exists = false;
         if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
