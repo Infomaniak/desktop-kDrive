@@ -68,7 +68,7 @@ void TestLogUploadJob::testLogUploadJobWithOldSessions() {
     };
     auto job1 = std::make_shared<MockLogUploadJob>(true, dummyCallback);
     job1->setUploadMock([this](const SyncPath &path) -> ExitInfo {
-        std::set<SyncPath> expectedFiles = {Str2SyncName(".parms.db"), Str2SyncName("user_description.txt")};
+        std::set<SyncPath> expectedFiles = {KDC::ParmsDb::instance()->dbPath().filename(), Str2SyncName("user_description.txt")};
         std::set<SyncPath> unexpectedFiles;
         getLogDirInfo(expectedFiles, expectedFiles, unexpectedFiles);
         checkArchiveContent(path, expectedFiles);
@@ -101,7 +101,7 @@ void TestLogUploadJob::testLogUploadJobWithoutOldSessions() {
     };
     auto job1 = std::make_shared<MockLogUploadJob>(false, dummyCallback);
     job1->setUploadMock([this](const SyncPath &path) -> ExitInfo {
-        std::set<SyncPath> expectedFiles = {Str2SyncName(".parms.db"), Str2SyncName("user_description.txt")};
+        std::set<SyncPath> expectedFiles = {KDC::ParmsDb::instance()->dbPath().filename(), Str2SyncName("user_description.txt")};
         std::set<SyncPath> unexpectedFiles;
         getLogDirInfo(expectedFiles, unexpectedFiles, unexpectedFiles);
         checkArchiveContent(path, expectedFiles); // Will CPPUNIT_ASSERT if the archive is not valid
