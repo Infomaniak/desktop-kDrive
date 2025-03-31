@@ -83,6 +83,8 @@ std::unordered_map<int, std::shared_ptr<SyncPal>> AppServer::_syncPalMap;
 std::unordered_map<int, std::shared_ptr<KDC::Vfs>> AppServer::_vfsMap;
 std::vector<AppServer::Notification> AppServer::_notifications;
 
+std::unique_ptr<UpdateManager> AppServer::_updateManager;
+
 namespace {
 
 static const char optionsC[] =
@@ -335,15 +337,16 @@ AppServer::AppServer(int &argc, char **argv) :
     updateSentryUser();
 
     // Update checks
-    connect(UpdateManager::instance().get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
+    _updateManager = std::make_unique<UpdateManager>();
+    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
 #ifdef Q_OS_MACOS
     const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    UpdateManager::instance()->setQuitCallback(quitCallback);
+    _updateManager.get()->setQuitCallback(quitCallback);
 #endif
 
-    connect(UpdateManager::instance().get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
-    connect(UpdateManager::instance().get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-    connect(UpdateManager::instance().get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
+    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
 
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
@@ -1957,24 +1960,24 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             auto channel = VersionChannel::Unknown;
             QDataStream paramsStream(params);
             paramsStream >> channel;
-            UpdateManager::instance()->setDistributionChannel(channel);
+            _updateManager.get()->setDistributionChannel(channel);
             break;
         }
         case RequestNum::UPDATER_VERSION_INFO: {
             auto channel = VersionChannel::Unknown;
             QDataStream paramsStream(params);
             paramsStream >> channel;
-            VersionInfo versionInfo = UpdateManager::instance()->versionInfo(channel);
+            VersionInfo versionInfo = _updateManager.get()->versionInfo(channel);
             resultStream << versionInfo;
             break;
         }
         case RequestNum::UPDATER_STATE: {
-            UpdateState state = UpdateManager::instance()->state();
+            UpdateState state = _updateManager.get()->state();
             resultStream << state;
             break;
         }
         case RequestNum::UPDATER_START_INSTALLER: {
-            UpdateManager::instance()->startInstaller();
+            _updateManager.get()->startInstaller();
             break;
         }
         case RequestNum::UPDATER_SKIP_VERSION: {
@@ -2120,7 +2123,7 @@ void AppServer::onScheduleAppRestart() {
 void AppServer::onShowWindowsUpdateDialog() {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << UpdateManager::instance()->versionInfo();
+    paramsStream << _updateManager.get()->versionInfo();
     CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
 }
 
@@ -3739,7 +3742,7 @@ void AppServer::addError(const Error &error) {
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(error.syncDbId());
     } else if (error.exitCode() == ExitCode::UpdateRequired) {
-        UpdateManager::instance()->updater()->unskipVersion();
+        _updateManager.get()->updater()->unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {

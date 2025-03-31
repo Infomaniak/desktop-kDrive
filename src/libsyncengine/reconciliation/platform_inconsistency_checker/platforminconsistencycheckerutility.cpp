@@ -120,6 +120,10 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &
     return false;
 }
 
+bool PlatformInconsistencyCheckerUtility::isNameOnlySpaces(const SyncName &name) {
+    return Utility::ltrim(name).empty();
+}
+
 #ifdef _WIN32
 bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &name, SyncName &newName) {
     size_t pos = name.find('\\');

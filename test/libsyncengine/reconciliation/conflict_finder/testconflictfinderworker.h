@@ -44,6 +44,7 @@ class TestConflictFinderWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCase511);
         CPPUNIT_TEST(testCase513);
         CPPUNIT_TEST(testCase516);
+        CPPUNIT_TEST(testConflictCmp);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -71,6 +72,7 @@ class TestConflictFinderWorker : public CppUnit::TestFixture, public TestBase {
         void testCase511();
         void testCase513();
         void testCase516();
+        void testConflictCmp();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;

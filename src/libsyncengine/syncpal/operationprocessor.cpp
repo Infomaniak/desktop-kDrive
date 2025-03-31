@@ -22,17 +22,14 @@
 
 namespace KDC {
 
-OperationProcessor::OperationProcessor(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName) {}
+OperationProcessor::OperationProcessor(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
+                                       const std::string &shortName) : ISyncWorker(syncPal, name, shortName) {}
 
-bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode) {
+bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, const std::shared_ptr<Node> correspondingNode) {
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
         // We can have a conflict only if the node on both replica has change events
         return false;
     }
-
-    std::shared_ptr<const Snapshot> snapshot = _syncPal->snapshotCopy(node->side());
-    std::shared_ptr<const Snapshot> otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
 
     // Create-Create pseudo-conflict
     if (node->hasChangeEvent(OperationType::Create) && correspondingNode->hasChangeEvent(OperationType::Create) &&
@@ -51,6 +48,10 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     if (node->hasChangeEvent(OperationType::Move) && correspondingNode->hasChangeEvent(OperationType::Move) &&
         node->parentNode()->idb() == correspondingNode->parentNode()->idb() && isEqual) {
+        if (!node->parentNode()->idb().has_value() && !correspondingNode->parentNode()->idb().has_value() &&
+            node->parentNode()->getPath() != correspondingNode->parentNode()->getPath()) {
+            return false; // The parent nodes are not in DB and have different paths
+        }
         return true;
     }
 
@@ -60,15 +61,19 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         return false;
     }
 
-    bool useContentChecksum =
-            !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
-    bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
-                           snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
-    bool hasSameContent = useContentChecksum ? snapshot->contentChecksum(*node->id()) ==
-                                                       otherSnapshot->contentChecksum(*correspondingNode->id())
-                                             : sameSizeAndDate;
+    // Size can differ for links between remote and local replica, do not check it in that case
+    const auto snapshot = _syncPal->snapshotCopy(node->side());
+    const bool sameSizeAndDate = node->lastmodified() == correspondingNode->lastmodified() &&
+                                 (snapshot->isLink(*node->id()) || node->size() == correspondingNode->size());
 
-    bool hasCreateOrEditChangeEvent =
+    const auto nodeChecksum = snapshot->contentChecksum(*node->id());
+    const auto otherSnapshot = _syncPal->snapshotCopy(correspondingNode->side());
+    const auto correspondingNodeChecksum = otherSnapshot->contentChecksum(*correspondingNode->id());
+
+    const bool useContentChecksum = !nodeChecksum.empty() && !correspondingNodeChecksum.empty();
+    const bool hasSameContent = useContentChecksum ? nodeChecksum == correspondingNodeChecksum : sameSizeAndDate;
+
+    const bool hasCreateOrEditChangeEvent =
             (node->hasChangeEvent(OperationType::Create) || node->hasChangeEvent(OperationType::Edit)) &&
             (correspondingNode->hasChangeEvent(OperationType::Create) || correspondingNode->hasChangeEvent(OperationType::Edit));
 

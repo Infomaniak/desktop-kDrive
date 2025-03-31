@@ -29,6 +29,7 @@ class TestTypes : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testOtherSide);
         CPPUNIT_TEST(testStreamConversion);
         CPPUNIT_TEST(testExitInfo);
+        CPPUNIT_TEST(testToString);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -39,5 +40,6 @@ class TestTypes : public CppUnit::TestFixture, public TestBase {
         void testOtherSide();
         void testStreamConversion();
         void testExitInfo();
+        void testToString();
 };
 } // namespace KDC

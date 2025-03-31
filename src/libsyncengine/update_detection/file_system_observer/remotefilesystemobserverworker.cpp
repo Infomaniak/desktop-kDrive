@@ -371,7 +371,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                                                     << Utility::s2ws(item.id()).c_str() << L", parent inode:"
                                                     << Utility::s2ws(item.parentId()).c_str() << L", createdAt:"
                                                     << item.createdAt() << L", modtime:" << item.lastModified() << L", isDir:"
-                                                    << (item.type() == NodeType::Directory) << L", size:" << item.size());
+                                                    << (item.type() == NodeType::Directory) << L", size:" << item.size()
+                                                    << L", isLink:" << item.isLink());
             }
         }
     }
