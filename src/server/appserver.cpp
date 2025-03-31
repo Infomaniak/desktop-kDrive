@@ -94,9 +94,9 @@ static const char optionsC[] =
         "  --synthesis          : show the Synthesis window (if the application is running).\n";
 }
 
-static constexpr char showSynthesisMsg[] = "showSynthesis";
-static constexpr char showSettingsMsg[] = "showSettings";
-static constexpr char restartClientMsg[] = "restartClient";
+static const std::string showSynthesisMsg = "showSynthesis";
+static const std::string showSettingsMsg = "showSettings";
+static const std::string restartClientMsg = "restartClient";
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
@@ -2148,7 +2148,7 @@ void AppServer::onRestartClientReceived() {
         LOG_ERROR(_logger, "Client disconnected because it has crashed");
         handleClientCrash(quit);
         if (quit) {
-            QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
+            (void) QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
         }
     } else {
         LOG_INFO(_logger, "Client disconnected because it was killed");
@@ -2166,11 +2166,11 @@ void AppServer::onRestartClientReceived() {
 void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObject *) {
     LOG_DEBUG(_logger, "Message received from another kDrive process: '" << message.toStdString() << "'");
 
-    if (message == showSynthesisMsg) {
+    if (message.toStdString() == showSynthesisMsg) {
         showSynthesis();
-    } else if (message == showSettingsMsg) {
+    } else if (message.toStdString() == showSettingsMsg) {
         showSettings();
-    } else if (message == restartClientMsg) {
+    } else if (message.toStdString() == restartClientMsg) {
         _clientManuallyRestarted = true;
         if (!startClient()) {
             LOG_ERROR(_logger, "Failed to start the client");
@@ -3060,15 +3060,15 @@ void AppServer::clearSyncNodes() {
 }
 
 void AppServer::sendShowSettingsMsg() {
-    sendMessage(showSettingsMsg);
+    sendMessage(QString::fromStdString(showSettingsMsg));
 }
 
 void AppServer::sendShowSynthesisMsg() {
-    sendMessage(showSynthesisMsg);
+    sendMessage(QString::fromStdString(showSynthesisMsg));
 }
 
 void AppServer::sendRestartClientMsg() {
-    sendMessage(restartClientMsg);
+    sendMessage(QString::fromStdString(restartClientMsg));
 }
 
 void AppServer::showSettings() {

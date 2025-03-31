@@ -190,13 +190,13 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
 void CommonUtility::resetTranslations() {
     if (qApp) {
         if (_translator) {
-            QCoreApplication::removeTranslator(_translator);
+            (void) QCoreApplication::removeTranslator(_translator);
             _translator->deleteLater();
             _translator = nullptr;
         }
 
         if (_qtTranslator) {
-            QCoreApplication::removeTranslator(_qtTranslator);
+            (void) QCoreApplication::removeTranslator(_qtTranslator);
             _qtTranslator->deleteLater();
             _qtTranslator = nullptr;
         }
@@ -457,8 +457,8 @@ void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language
                     }
                 }
             }
-            if (!_translator->isEmpty()) QCoreApplication::installTranslator(_translator);
-            if (!_qtTranslator->isEmpty()) QCoreApplication::installTranslator(_qtTranslator);
+            if (!_translator->isEmpty()) (void) QCoreApplication::installTranslator(_translator);
+            if (!_qtTranslator->isEmpty()) (void) QCoreApplication::installTranslator(_qtTranslator);
             break;
         }
         if (app->property("ui_lang").isNull()) app->setProperty("ui_lang", "C");

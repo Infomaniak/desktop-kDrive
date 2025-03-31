@@ -159,7 +159,6 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     }
 
     // Db file name
-    // std::string fileName = makeDbFileName(userId, accountId, driveId, syncDbId);
     std::string fileName = dbFileName(userId, accountId, driveId, syncDbId);
     fileName.append(".db");
 

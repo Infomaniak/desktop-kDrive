@@ -33,9 +33,9 @@
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
-constexpr size_t nbWorkers = 2;
-constexpr short workerHydration = 0;
-constexpr short workerDehydration = 1;
+static constexpr size_t nbWorkers = 2;
+static constexpr short workerHydration = 0;
+static constexpr short workerDehydration = 1;
 
 namespace KDC {
 
