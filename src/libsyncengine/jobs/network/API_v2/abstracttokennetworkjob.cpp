@@ -25,6 +25,7 @@
 #include "libcommon/utility/jsonparserutility.h"
 
 #include <unordered_map>
+#include <format>
 
 #include <log4cplus/loggingmacros.h>
 
