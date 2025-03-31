@@ -93,9 +93,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
         static ExitCode getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
-        static ExitCode getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
+        static ExitInfo getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false);
-        static ExitCode getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
+        static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
         static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
         static ExitCode getPublicLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId,

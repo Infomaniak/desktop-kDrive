@@ -486,9 +486,15 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
             }
         }
         case ExitCause::DriveAsleep: {
-            return tr(
-                    "The kDrive is asleep.<br>"
-                    "Please contact an administrator to wake up the kDrive.");
+            const auto &driveInfoMapIt = _gui->driveInfoMap().find(_currentDriveDbId);
+            if (driveInfoMapIt != _gui->driveInfoMap().end()) {
+                QString driveLink = QString(APPLICATION_PREVIEW_URL).arg(driveInfoMapIt->second.id()).arg("");
+                return tr(R"(The kDrive is asleep.<br>)"
+                          R"(Please, login to the <a style="%1" href="%2">web version</a> to check your kDrive's status, or contact your administrator.)")
+                        .arg(CommonUtility::linkStyle, driveLink);
+            }
+            return tr(R"(The kDrive is asleep.<br>)"
+                      R"(Please, login to the web version to check your kDrive's status, or contact your administrator.)");
         }
         case ExitCause::DriveAccessError:
             return tr(

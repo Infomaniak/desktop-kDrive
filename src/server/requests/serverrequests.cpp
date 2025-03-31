@@ -546,7 +546,7 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
+ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                        const bool withPath /*= false*/) {
     std::shared_ptr<GetRootFileListJob> job = nullptr;
     if (nodeId.isEmpty()) {
@@ -569,12 +569,11 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     }
 
     job->setWithPath(withPath);
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " code=" << exitCode);
-        return exitCode;
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " error=" << exitInfo);
+        return exitInfo;
     }
 
     Poco::JSON::Object::Ptr resObj = job->jsonRes();
@@ -601,8 +600,8 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             return ExitCode::BackError;
         }
 
-        NodeId nodeId;
-        if (!JsonParserUtility::extractValue(dirObj, idKey, nodeId)) {
+        NodeId nodeId2;
+        if (!JsonParserUtility::extractValue(dirObj, idKey, nodeId2)) {
             return ExitCode::BackError;
         }
 
@@ -636,7 +635,7 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             }
         }
 
-        NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name),
+        NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
                           -1, // Size is not set here as it can be very long to evaluate
                           parentId.c_str(), modTime, SyncName2QStr(path));
         list << nodeInfo;
@@ -645,9 +644,9 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath /*= false*/) {
+ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath /*= false*/) {
     Drive drive;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in selectDrive");
         return ExitCode::DbError;
@@ -1945,6 +1944,7 @@ void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &a
 
 void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) {
     driveInfo.setDbId(drive.dbId());
+    driveInfo.setId(drive.driveId());
     driveInfo.setAccountDbId(drive.accountDbId());
     driveInfo.setName(QString::fromStdString(drive.name()));
     driveInfo.setColor(QColor(QString::fromStdString(drive.color())));

@@ -75,6 +75,8 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) :
     _messageLabel->setWordWrap(true);
     _messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _messageLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    _messageLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    _messageLabel->setOpenExternalLinks(true);
     _middleLayout->addWidget(_messageLabel);
 
     // Bottom layout

@@ -133,15 +133,14 @@ void FolderTreeItemWidget::loadSubFolders() {
     clear();
 
     QList<NodeInfo> nodeInfoList;
-    ExitCode exitCode = GuiRequests::getSubFolders(_userDbId, _driveId, _nodeId, nodeInfoList, true);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = GuiRequests::getSubFolders(_userDbId, _driveId, _nodeId, nodeInfoList, true);
+        exitInfo.code() != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSubFolders";
-        emit terminated(true);
+        emit terminated(true, exitInfo.cause());
         return;
     }
 
-    exitCode = updateBlackUndecidedSet();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = updateBlackUndecidedSet(); exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in updateBlackUndecidedSet";
         return;
     }
@@ -153,7 +152,7 @@ void FolderTreeItemWidget::loadSubFolders() {
         updateDirectories(nullptr, _nodeId, nodeInfoList);
     } else {
         // No sub folders
-        emit terminated(false, true);
+        emit terminated(false, ExitCause::Unknown, true);
     }
 }
 
@@ -445,10 +444,10 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
 
     if (list.size() == 0) {
         // No sub folder
-        emit terminated(false, true);
+        emit terminated(false, ExitCause::Unknown, true);
         return;
     } else {
-        emit terminated(false, false);
+        emit terminated(false, ExitCause::Unknown, false);
     }
 
     _root = static_cast<CustomTreeWidgetItem *>(topLevelItem(0));

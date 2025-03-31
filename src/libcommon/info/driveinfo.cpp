@@ -20,19 +20,16 @@
 
 namespace KDC {
 
-DriveInfo::DriveInfo(int dbId, int accountDbId, const QString &name, const QColor &color) :
-    _dbId(dbId), _accountDbId(accountDbId), _name(name), _color(color) {}
-
-DriveInfo::DriveInfo() : _dbId(0), _accountDbId(0) {}
+DriveInfo::DriveInfo() {}
 
 QDataStream &operator>>(QDataStream &in, DriveInfo &info) {
-    in >> info._dbId >> info._accountDbId >> info._name >> info._color >> info._notifications >> info._maintenance >>
+    in >> info._dbId >> info._id >> info._accountDbId >> info._name >> info._color >> info._notifications >> info._maintenance >>
             info._locked >> info._accessDenied;
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const DriveInfo &info) {
-    out << info._dbId << info._accountDbId << info._name << info._color << info._notifications << info._maintenance
+    out << info._dbId << info._id << info._accountDbId << info._name << info._color << info._notifications << info._maintenance
         << info._locked << info._accessDenied;
     return out;
 }
@@ -51,9 +48,9 @@ QDataStream &operator>>(QDataStream &in, QList<DriveInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        DriveInfo *info = new DriveInfo();
-        in >> *info;
-        list.push_back(*info);
+        DriveInfo info;
+        in >> info;
+        list.push_back(info);
     }
     return in;
 }

@@ -27,11 +27,12 @@ namespace KDC {
 
 class DriveInfo {
     public:
-        DriveInfo(int dbId, int accountDbId, const QString &name, const QColor &color);
         DriveInfo();
 
         inline void setDbId(int driveDbId) { _dbId = driveDbId; }
         inline int dbId() const { return _dbId; }
+        void setId(const int driveId) { _id = driveId; }
+        int id() const { return _id; }
         inline void setAccountDbId(int accountDbId) { _accountDbId = accountDbId; }
         inline int accountDbId() const { return _accountDbId; }
         inline void setName(const QString &name) { _name = name; }
@@ -57,8 +58,9 @@ class DriveInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<DriveInfo> &list);
 
     protected:
-        int _dbId;
-        int _accountDbId;
+        int _dbId{0};
+        int _id{0};
+        int _accountDbId{0};
         QString _name;
         QColor _color;
         bool _notifications{false};

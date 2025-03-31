@@ -287,6 +287,10 @@ struct ExitInfo {
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
 
+        static ExitInfo fromInt(const int val) {
+            return ExitInfo(static_cast<ExitCode>(val / 100), static_cast<ExitCause>(val % 100));
+        }
+
     private:
         ExitCode _code{ExitCode::Unknown};
         ExitCause _cause{ExitCause::Unknown};

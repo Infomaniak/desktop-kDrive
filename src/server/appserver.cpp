@@ -1395,13 +1395,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> withPath;
 
             QList<NodeInfo> subfoldersList;
-            ExitCode exitCode = ServerRequests::getSubFolders(userDbId, driveId, nodeId, subfoldersList, withPath);
-            if (exitCode != ExitCode::Ok) {
+            const auto exitInfo = ServerRequests::getSubFolders(userDbId, driveId, nodeId, subfoldersList, withPath);
+            if (exitInfo.code() != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getSubFolders");
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
+                addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo);
             resultStream << subfoldersList;
             break;
         }
@@ -1415,13 +1415,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> withPath;
 
             QList<NodeInfo> subfoldersList;
-            ExitCode exitCode = ServerRequests::getSubFolders(driveDbId, nodeId, subfoldersList, withPath);
-            if (exitCode != ExitCode::Ok) {
+            const auto exitInfo = ServerRequests::getSubFolders(driveDbId, nodeId, subfoldersList, withPath);
+            if (exitInfo.code() != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getSubFolders");
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
+                addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo);
             resultStream << subfoldersList;
             break;
         }
