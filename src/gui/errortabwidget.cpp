@@ -29,9 +29,9 @@
 
 namespace KDC {
 
-ErrorTabWidget::ErrorTabWidget(int driveDbId, bool generic, QWidget *parent) :
-    QTabWidget(parent), _tabBar(nullptr), _paramsDialog((ParametersDialog *) parent), _autoResolvedErrorsListWidget(nullptr),
-    _unresolvedErrorsListWidget(nullptr), _lastErrorTimestamp(0), _driveDbId(driveDbId), _generic(generic) {
+ErrorTabWidget::ErrorTabWidget(std::shared_ptr<ClientGui> gui, const int driveDbId, const bool generic, QWidget *parent) :
+    QTabWidget(parent), _gui(gui), _tabBar(nullptr), _paramsDialog(static_cast<ParametersDialog *>(parent)),
+    _autoResolvedErrorsListWidget(nullptr), _unresolvedErrorsListWidget(nullptr), _driveDbId(driveDbId), _generic(generic) {
     setObjectName("tabWidgetErrorWidget");
     _tabBar = new CustomTabBar(this);
     _tabBar->setObjectName("tabBarErrorWidget");
@@ -216,7 +216,7 @@ void ErrorTabWidget::onScrollBarValueChanged(int value) {
 }
 
 void ErrorTabWidget::onResolveConflictErrors() {
-    FixConflictingFilesDialog resolveDialog(_driveDbId, this);
+    FixConflictingFilesDialog resolveDialog(_driveDbId, _gui, this);
     if (resolveDialog.exec() == QDialog::Accepted) {
         _paramsDialog->resolveConflictErrors(_driveDbId, resolveDialog.keepLocalVersion());
     }
