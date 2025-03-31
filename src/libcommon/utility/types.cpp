@@ -148,7 +148,7 @@ std::string toString(const ExitCause e) {
             return "ApiErr";
         case ExitCause::InvalidSize:
             return "InvalidSize";
-        case ExitCause::FileAlreadyExist:
+        case ExitCause::FileAlreadyExists:
             return "FileAlreadyExist";
         case ExitCause::FileAccessError:
             return "FileAccessError";

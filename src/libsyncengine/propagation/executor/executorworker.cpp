@@ -480,7 +480,7 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     if (!alreadyExist) {
         return ExitCode::Ok;
     }
-    return {ExitCode::DataError, ExitCause::FileAlreadyExist};
+    return {ExitCode::DataError, ExitCause::FileAlreadyExists};
 }
 
 ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hydrating) noexcept {
@@ -2299,9 +2299,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
             return handleOpsFileNotFound(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist)):
-        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExist)): {
+        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExists)):
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExists)):
+        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileAlreadyExists)): {
             return handleOpsAlreadyExistError(syncOp, opsExitInfo);
         }
         default: {

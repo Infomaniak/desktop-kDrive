@@ -94,7 +94,7 @@ bool AbstractNetworkJob::isManagedError(ExitCode exitCode, ExitCause exitCause) 
                                                           ExitCause::FileTooBig,
                                                           ExitCause::NotFound,
                                                           ExitCause::QuotaExceeded,
-                                                          ExitCause::FileAlreadyExist,
+                                                          ExitCause::FileAlreadyExists,
                                                           ExitCause::ShareLinkAlreadyExists};
 
     switch (exitCode) {

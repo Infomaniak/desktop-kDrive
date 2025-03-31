@@ -232,7 +232,7 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // Folder already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFolderPath);
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist), exitInfo);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExists), exitInfo);
 #endif
     }
 
@@ -287,7 +287,7 @@ void TestWorkers::testCreatePlaceholder() {
 #if defined(__APPLE__) || defined(_WIN32)
         // File already exists
         exitInfo = _syncPal->_executorWorker->createPlaceholder(relativeFilePath);
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExist), exitInfo);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAlreadyExists), exitInfo);
 #endif
     }
 }
