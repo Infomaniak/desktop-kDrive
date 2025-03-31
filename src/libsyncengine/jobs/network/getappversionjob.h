@@ -19,6 +19,7 @@
 #pragma once
 
 #include "API_v2/abstracttokennetworkjob.h"
+#include "utility/urlhelper.h"
 
 #include <config.h>
 
@@ -38,7 +39,7 @@ class GetAppVersionJob : public AbstractNetworkJob {
         [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel) { return _versionsInfo[channel]; }
         [[nodiscard]] const AllVersionsInfo &versionsInfo() const { return _versionsInfo; }
 
-        std::string getUrl() override { return INFOMANIAK_API_URL + getSpecificUrl(); }
+        std::string getUrl() override { return UrlHelper::infomaniakApiUrl(1, true) + getSpecificUrl(); }
 
         static std::string toStr(Platform platform);
         static std::string toStr(VersionChannel channel);
