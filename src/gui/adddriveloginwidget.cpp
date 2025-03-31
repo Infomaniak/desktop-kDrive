@@ -25,6 +25,7 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
+#include "utility/urlhelper.h"
 
 #include <QBoxLayout>
 #include <QLabel>
@@ -106,12 +107,11 @@ void AddDriveLoginWidget::onErrorReceived(const QString error, const QString err
 }
 
 QUrl AddDriveLoginWidget::generateUrl() {
-    QString loginUrl(LOGIN_URL);
-    QUrl url(loginUrl);
+    QUrl url(UrlHelper::loginApiUrl().c_str());
     url.setPath(authorizePath);
 
     _codeVerifier = generateCodeVerifier();
-    QString codeChallenge = generateCodeChallenge(_codeVerifier);
+    const QString codeChallenge = generateCodeChallenge(_codeVerifier);
 
     QUrlQuery query;
     query.addQueryItem(responseTypeKey, responseType);
