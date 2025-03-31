@@ -37,7 +37,8 @@
 namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                             const std::chrono::seconds &startDelay) : ISyncWorker(syncPal, name, shortName, startDelay) {}
+                             const std::chrono::seconds &startDelay) :
+    ISyncWorker(syncPal, name, shortName, startDelay) {}
 
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
@@ -317,6 +318,9 @@ std::string SyncPalWorker::stepName(SyncStep step) {
         case SyncStep::Done:
             name += "Done";
             break;
+        case SyncStep::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+        }
     }
 
     name += ">";
@@ -485,9 +489,10 @@ SyncStep SyncPalWorker::nextStep() const {
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_conflictQueue->size() << " conflicts found")
             return _syncPal->_conflictQueue->empty() ? SyncStep::Reconciliation4 : SyncStep::Reconciliation3;
         case SyncStep::Reconciliation3:
+            return SyncStep::Propagation2; // Go directly to the Executor step
         case SyncStep::Reconciliation4:
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated")
-            return _syncPal->_conflictQueue->empty() ? SyncStep::Propagation1 : SyncStep::Propagation2;
+            return SyncStep::Propagation1;
         case SyncStep::Propagation1:
             return SyncStep::Propagation2;
         case SyncStep::Propagation2:

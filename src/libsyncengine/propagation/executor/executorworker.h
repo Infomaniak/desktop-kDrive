@@ -103,9 +103,6 @@ class ExecutorWorker : public OperationProcessor {
         ExitInfo handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
 
-        /// @note _executorExitCode and _executorExitCause must be set when the function returns with hasError == true
-        void waitForAllJobsToFinish(bool &hasError);
-
         ExitInfo waitForAllJobsToFinish();
         ExitInfo deleteFinishedAsyncJobs();
         ExitInfo handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue,
@@ -131,12 +128,12 @@ class ExecutorWorker : public OperationProcessor {
         void cancelAllOngoingJobs();
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
-        inline bool isLiteSyncActivated() { return _syncPal->vfsMode() != VirtualFileMode::Off; }
+        [[nodiscard]] bool isLiteSyncActivated() const { return _syncPal->vfsMode() != VirtualFileMode::Off; }
 
-        inline std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) {
+        [[nodiscard]] std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) const {
             return _syncPal->updateTree(otherSide(syncOp->targetSide()));
         }
-        inline std::shared_ptr<UpdateTree> targetUpdateTree(SyncOpPtr syncOp) {
+        [[nodiscard]] std::shared_ptr<UpdateTree> targetUpdateTree(SyncOpPtr syncOp) const {
             return _syncPal->updateTree(syncOp->targetSide());
         }
 
@@ -144,9 +141,9 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo getFileSize(const SyncPath &path, uint64_t &size);
 
-        bool deleteOpNodes(const SyncOpPtr syncOp);
+        bool deleteOpNodes(SyncOpPtr syncOp);
 
-        void setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status);
+        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status);
 
         // This methode will return ExitCode::Ok if the error is safely managed and the executor can continue. Else, it will
         // return opsExitInfo.

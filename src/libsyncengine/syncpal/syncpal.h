@@ -141,6 +141,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
         [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
+        [[nodiscard]] const std::shared_ptr<ConflictQueue> &conflictQueue() const { return _conflictQueue; }
 
         // TODO : not ideal, to be refactored
         bool checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
@@ -238,6 +239,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _computeFSOperationsWorker = worker;
         }
 
+        void createSharedObjects();
+        void freeSharedObjects();
+        void initSharedObjects();
+        void resetSharedObjects();
+
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
         std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
 
@@ -294,10 +300,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager{nullptr};
 
-        void createSharedObjects();
-        void freeSharedObjects();
-        void initSharedObjects();
-        void resetSharedObjects();
+
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
@@ -338,7 +341,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class PlatformInconsistencyCheckerWorker;
         friend class OperationProcessor;
         friend class ConflictFinderWorker;
-        friend class ConflictResolverWorker;
         friend class OperationGeneratorWorker;
         friend class OperationSorterWorker;
         friend class ExecutorWorker;
