@@ -284,9 +284,11 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     // Detect EDIT
     const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
+    const SyncTime snapshotCreatedAt = snapshot->createdAt(nodeId);
+    const SyncTime dbCreatedAt = dbNode.created().has_value() ? dbNode.created().value() : 0;
     // Size can differ for links between remote and local replica, do not check it in that case
     if (const auto sameSize = snapshot->isLink(nodeId) || snapshot->size(nodeId) == dbNode.size();
-        (snapshotLastModified != dbLastModified || !sameSize) && dbNode.type() == NodeType::File) {
+        (snapshotLastModified != dbLastModified || snapshotCreatedAt != dbCreatedAt || !sameSize) && dbNode.type() == NodeType::File) {
         // Edit operation
         auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
                                                   snapshotLastModified, snapshot->size(nodeId), snapshotPath);

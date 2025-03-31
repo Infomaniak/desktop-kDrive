@@ -178,6 +178,13 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
         correspondingNode->setStatus(NodeStatus::Processed);
     }
 
+    // If only the creation date is different, we can omit the operation
+    if (currentNode->side() == ReplicaSide::Local && currentNode->size() == correspondingNode->size() &&
+        currentNode->lastmodified() == correspondingNode->lastmodified() && currentNode->createdAt() != correspondingNode->createdAt()) {
+        // Only update DB and tree
+        op->setOmit(true);
+    }
+
     op->setType(OperationType::Edit);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
