@@ -54,6 +54,7 @@ void FolderWatcher_win::startWatching() {
 
         if (!_stop) {
             changesLost();
+            // TODO: Is it necessary to wait?
             Utility::msleep(100);
         }
     }
