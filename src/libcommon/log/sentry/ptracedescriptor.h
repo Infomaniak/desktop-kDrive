@@ -69,8 +69,7 @@ struct PTraceDescriptor {
         PTraceDescriptor() = default;
         PTraceDescriptor(std::string pTraceTitle, std::string pTraceDescription, const PTraceName pTraceName,
                          const PTraceName parentPTraceName = PTraceName::None, const double customSampleRate = 1.0) :
-            _pTraceName{pTraceName},
-            _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
+            _pTraceName{pTraceName}, _parentPTraceName{parentPTraceName}, _pTraceTitle{std::move(pTraceTitle)},
             _pTraceDescription{std::move(pTraceDescription)}, _customSampleRate{customSampleRate} {}
 
         [[nodiscard]] const PTraceName& pTraceName() const { return _pTraceName; }

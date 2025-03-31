@@ -420,6 +420,10 @@ bool Utility::isEqualInsensitive(const std::string &strA, const std::string &str
            });
 }
 
+bool Utility::contains(const std::string &str, const std::string &substr) {
+    return str.find(substr) != std::string::npos;
+}
+
 #ifdef _WIN32
 bool Utility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {

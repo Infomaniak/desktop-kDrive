@@ -27,7 +27,7 @@
 #include <cstdlib>
 #include "testoperationprocessor.h"
 
-#include "test_classes/testinitialsituationgenerator.h"
+#include "test_classes/testsituationgenerator.h"
 
 using namespace CppUnit;
 
@@ -106,7 +106,7 @@ void TestOperationProcessor::testIsPseudoConflict() {
     // .
     // └── A
     //     └── AA
-    TestInitialSituationGenerator situationGenerator(_syncPal);
+    TestSituationGenerator situationGenerator(_syncPal);
     situationGenerator.generateInitialSituation(R"({"a":{"aa":1}})");
 
     const auto lNodeA = situationGenerator.getNode(ReplicaSide::Local, "a");
