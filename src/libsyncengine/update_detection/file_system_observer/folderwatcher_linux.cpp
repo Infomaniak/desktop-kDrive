@@ -186,8 +186,8 @@ bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     }
 
     const auto wd = inotify_add_watch(_fileDescriptor, path.string().c_str(),
-                               IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
-                                       IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
+                                      IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
+                                              IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
 
     if (wd > -1) {
         _watchToPath.insert({wd, path});
@@ -223,7 +223,7 @@ bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
     }
 
     for (const auto &subDirPath: allSubFolders) {
-        if (std::error_code ec ;std::filesystem::exists(subDirPath, ec) && !_pathToWatch.contains(subDirPath)  ) {
+        if (std::error_code ec; std::filesystem::exists(subDirPath, ec) && !_pathToWatch.contains(subDirPath)) {
             subdirs++;
 
             inotifyRegisterPath(subDirPath);
@@ -267,11 +267,12 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
 
         ++it;
         LOG4CPLUS_ERROR(_logger, "Error in inotify_rm_watch :" << errno);
-        sentry::Handler::captureMessage(sentry::Level::Error, "FolderWatcher_linux::removeFoldersBelow", "Error in inotify_rm_watch :" + std::to_string(errno));
+        sentry::Handler::captureMessage(sentry::Level::Error, "FolderWatcher_linux::removeFoldersBelow",
+                                        "Error in inotify_rm_watch :" + std::to_string(errno));
     }
 }
 
-void FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType)const {
+void FolderWatcher_linux::changeDetected(const SyncPath &path, OperationType opType) const {
     std::list<std::pair<SyncPath, OperationType>> list;
     (void) list.emplace_back(path, opType);
     _parent->changesDetected(list);
