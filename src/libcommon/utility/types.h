@@ -523,7 +523,7 @@ struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
         // std::string changeLog; // List of changes in this version, not used for now.
         uint64_t buildVersion{0}; // Example: 20240816
-        std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
+        std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
         [[nodiscard]] bool isValid() const {
