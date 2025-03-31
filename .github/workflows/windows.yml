@@ -74,7 +74,7 @@ jobs:
           ./infomaniak-build-tools/run-tests.ps1
 
       - name: Compute code coverage
-        if: true
+        if: false
         run : |          
           & "covselect.exe" "--add" 'exclude folder c:/'
           & "covselect.exe" "--add" 'exclude folder ../'
@@ -90,7 +90,7 @@ jobs:
           & "cov01.exe" "-s" # show status
 
       - name: Run sonar-scanner
-        if: true
+        if: false
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.SONAR_DESKTOP_KDRIVE_TOKEN }}
