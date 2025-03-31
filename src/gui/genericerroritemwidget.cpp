@@ -59,9 +59,10 @@ void GenericErrorItemWidget::init() {
         } else if (_errorInfo.level() == ErrorLevel::Node) {
             const bool useDestPath = _errorInfo.cancelType() == CancelType::AlreadyExistRemote ||
                                      _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
+                                     _errorInfo.cancelType() == CancelType::FileRescued ||
                                      _errorInfo.conflictType() == ConflictType::EditDelete;
             const QString &filePath = useDestPath ? _errorInfo.destinationPath() : _errorInfo.path();
-            setFilePath(filePath, _errorInfo.nodeType());
+            setPathAndName(filePath, _errorInfo.nodeType());
         }
     }
 

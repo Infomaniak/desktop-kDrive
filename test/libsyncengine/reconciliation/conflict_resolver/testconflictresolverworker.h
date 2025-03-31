@@ -19,6 +19,9 @@
 #pragma once
 
 #include "testincludes.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
+#include "test_classes/testsituationgenerator.h"
+#include "vfs/mac/vfs_mac.h"
 
 #include <reconciliation/conflict_resolver/conflictresolverworker.h>
 
@@ -30,6 +33,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         CPPUNIT_TEST(testCreateCreate);
         CPPUNIT_TEST(testEditEdit);
         CPPUNIT_TEST(testMoveCreate);
+        CPPUNIT_TEST(testMoveCreateDehydratedPlaceholder);
         CPPUNIT_TEST(testEditDelete1);
         CPPUNIT_TEST(testEditDelete2);
         CPPUNIT_TEST(testMoveDelete1);
@@ -37,12 +41,16 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         CPPUNIT_TEST(testMoveDelete3);
         CPPUNIT_TEST(testMoveDelete4);
         CPPUNIT_TEST(testMoveDelete5);
+        CPPUNIT_TEST(testMoveDeletePlaceholder);
         CPPUNIT_TEST(testMoveParentDelete);
-        CPPUNIT_TEST(testMoveParentDeleteb);
+        CPPUNIT_TEST(testMoveParentDelete2);
+        CPPUNIT_TEST(testMoveParentDelete3);
+        CPPUNIT_TEST(testMoveParentDeleteDehydratedPlaceholder);
         CPPUNIT_TEST(testCreateParentDelete);
         CPPUNIT_TEST(testMoveMoveSource);
-        CPPUNIT_TEST(testMoveMoveSourceWithOrphanNodes);
+        CPPUNIT_TEST(testMoveMoveSourceDehydratedPlaceholder);
         CPPUNIT_TEST(testMoveMoveDest);
+        CPPUNIT_TEST(testMoveMoveDestDehydratedPlaceholder);
         CPPUNIT_TEST(testMoveMoveCycle);
         CPPUNIT_TEST(testMoveMoveCycle2);
         CPPUNIT_TEST_SUITE_END();
@@ -55,25 +63,32 @@ class TestConflictResolverWorker : public CppUnit::TestFixture, public TestBase 
         void testCreateCreate();
         void testEditEdit();
         void testMoveCreate();
+        void testMoveCreateDehydratedPlaceholder();
         void testEditDelete1();
         void testEditDelete2();
         // Move-Delete tests : see thesis (https://hal.science/hal-02319573/) section 5.5 for the detailed test case
         void testMoveDelete1();
         void testMoveDelete2();
         void testMoveDelete3();
-        void testMoveDelete4(); // Test with orphan nodes
+        void testMoveDelete4();
         void testMoveDelete5();
+        void testMoveDeletePlaceholder();
         void testMoveParentDelete();
-        void testMoveParentDeleteb();
+        void testMoveParentDelete2();
+        void testMoveParentDelete3();
+        void testMoveParentDeleteDehydratedPlaceholder();
         void testCreateParentDelete();
         void testMoveMoveSource();
-        void testMoveMoveSourceWithOrphanNodes();
+        void testMoveMoveSourceDehydratedPlaceholder();
         void testMoveMoveDest();
+        void testMoveMoveDestDehydratedPlaceholder();
         void testMoveMoveCycle();
         void testMoveMoveCycle2();
 
     private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<SyncPal> _syncPal;
+        std::shared_ptr<MockVfs<VfsOff>> _mockVfs;
+        TestSituationGenerator _testSituationGenerator;
 };
 
 } // namespace KDC

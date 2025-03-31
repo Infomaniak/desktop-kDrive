@@ -954,10 +954,10 @@ bool ServerRequests::isAutoResolvedError(const Error &error) {
     } else if (error.level() == ErrorLevel::SyncPal) {
         autoResolved =
                 (error.exitCode() ==
-                         ExitCode::NetworkError // Sync is paused and we try to restart it every RESTART_SYNCS_INTERVAL
-                 || (error.exitCode() == ExitCode::BackError // Sync is stoped and a full sync is restarted
+                         ExitCode::NetworkError // Sync is paused, and we try to restart it every RESTART_SYNCS_INTERVAL
+                 || (error.exitCode() == ExitCode::BackError // Sync is stopped and a full sync is restarted
                      && error.exitCause() != ExitCause::DriveAccessError && error.exitCause() != ExitCause::DriveNotRenew) ||
-                 error.exitCode() == ExitCode::DataError); // Sync is stoped and a full sync is restarted
+                 error.exitCode() == ExitCode::DataError); // Sync is stopped and a full sync is restarted
     } else if (error.level() == ErrorLevel::Node) {
         autoResolved = (error.conflictType() != ConflictType::None && !isConflictsWithLocalRename(error.conflictType())) ||
                        (error.inconsistencyType() !=
@@ -1068,7 +1068,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         return ExitCode::DataError;
     }
 
-    if (job->runSynchronously() != ExitCode::Ok) {
+    if (!job->runSynchronously()) {
         if (job->exitCode() == ExitCode::BackError && job->exitCause() == ExitCause::ShareLinkAlreadyExists) {
             // The link already exists, get it
             job.reset();
@@ -1079,7 +1079,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
                 return ExitCode::DataError;
             }
 
-            if (job->runSynchronously() != ExitCode::Ok) {
+            if (!job->runSynchronously()) {
                 logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitCode()));
                 return job->exitCode();
             }
@@ -1302,7 +1302,42 @@ ExitCode ServerRequests::deleteErrorsServer() {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
+bool keepError(const int syncDbId, const Error &error, ExitInfo &exitInfo) {
+    exitInfo = ExitCode::Ok;
+    if (error.conflictType() == ConflictType::CreateCreate || error.conflictType() == ConflictType::EditEdit ||
+        error.cancelType() == CancelType::FileRescued) {
+        // For the selected conflict types, the local item is renamed.
+        Sync sync;
+        bool found = false;
+        if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
+            exitInfo = ExitCode::DbError;
+            return false;
+        }
+        if (!found) {
+            LOG_WARN(Log::instance()->getLogger(), "Sync with id=" << syncDbId << " not found");
+            exitInfo = ExitCode::DataError;
+            return false;
+        }
+
+        auto ioError = IoError::Success;
+        const SyncPath dest = sync.localPath() / error.destinationPath();
+        if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError));
+            exitInfo = ExitCode::SystemError;
+            return false;
+        }
+
+        // If the conflicted file still exists, keep the error.
+        if (found) {
+            return true;
+        }
+    }
+    return false;
+}
+
+ExitCode ServerRequests::deleteErrorsForSync(const int syncDbId, const bool autoResolved) {
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, syncDbId, INT_MAX, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
@@ -1315,32 +1350,9 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
     }
 
     for (const Error &error: errorList) {
-        if (error.conflictType() == ConflictType::CreateCreate || error.conflictType() == ConflictType::EditEdit) {
-            // For conflict type that rename local file
-            Sync sync;
-            bool found = false;
-            if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-                return ExitCode::DbError;
-            }
-            if (!found) {
-                LOG_WARN(Log::instance()->getLogger(), "Sync with id=" << syncDbId << " not found");
-                return ExitCode::DataError;
-            }
-
-            auto ioError = IoError::Success;
-            const SyncPath dest = sync.localPath() / error.destinationPath();
-            if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
-                LOGW_WARN(Log::instance()->getLogger(),
-                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError).c_str());
-                return ExitCode::SystemError;
-            }
-
-            // If conflict file still exists, keep the error.
-            if (found) {
-                continue;
-            }
-        }
+        ExitInfo exitInfo;
+        if (keepError(syncDbId, error, exitInfo)) continue;
+        if (!exitInfo) return exitInfo;
 
         if (isAutoResolvedError(error) == autoResolved) {
             bool found = false;

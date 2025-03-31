@@ -218,15 +218,19 @@ bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
 bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
     return !isParentOf(parentNode);
 }
+
 bool Node::MoveOriginInfos::isValid() const {
     return _isValid;
 }
+
 const SyncPath &Node::MoveOriginInfos::path() const {
     LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
     return _path;
 }
+
 const NodeId &Node::MoveOriginInfos::parentNodeId() const {
     LOG_IF_FAIL(Log::instance()->getLogger(), isValid());
     return _parentNodeId;
 }
+
 } // namespace KDC

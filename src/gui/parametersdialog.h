@@ -97,7 +97,7 @@ class ParametersDialog : public CustomDialog {
 
         QString getAppErrorText(const QString &fctCode, ExitCode exitCode, ExitCause exitCause) const;
         QString getSyncPalErrorText(const QString &fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const;
-        QString getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const;
+        QString getConflictText(ConflictType conflictType) const;
         QString getInconsistencyText(InconsistencyType inconsistencyType) const;
         QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "") const;
         QString getErrorMessage(const ErrorInfo &errorInfo) const;
