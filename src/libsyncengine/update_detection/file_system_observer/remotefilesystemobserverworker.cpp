@@ -410,7 +410,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     if (_snapshot->isValid()) {
         std::shared_ptr<LongPollJob> notifyJob = nullptr;
         try {
-            notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor, _blackList);
+            notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor);
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
             return ExitCode::DataError;
