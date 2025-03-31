@@ -22,9 +22,12 @@
 #include "io/filestat.h"
 #include "io/iohelper.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "network/proxy.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "propagation/executor/filerescuer.h"
 
+#include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
 #include <memory>
@@ -71,13 +74,13 @@ void TestExecutorWorker::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
-                                         KDRIVE_VERSION_STRING);
+    _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    _syncPal = std::make_shared<SyncPal>(_mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers(std::chrono::seconds(0));
     _syncPal->syncDb()->setAutoDelete(true);
 
-    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
+    _executorWorker = std::make_shared<ExecutorWorker>(_syncPal, "Executor", "EXEC");
 }
 
 void TestExecutorWorker::tearDown() {
@@ -91,15 +94,7 @@ void TestExecutorWorker::tearDown() {
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
-    // Setup a syncpal using MockVfs
-    _syncPal->stop();
-    std::shared_ptr<MockVfs> mockVfs = std::make_shared<MockVfs>();
-    _syncPal = std::make_shared<SyncPal>(mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);
-    _syncPal->createSharedObjects();
-    _syncPal->createWorkers();
-    _syncPal->syncDb()->setAutoDelete(true);
-
-    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
+    _executorWorker = std::make_shared<ExecutorWorker>(_syncPal, "Executor", "EXEC");
 
 
     //   Setup dummy values. Test inputs are set in the callbacks defined below.
@@ -111,8 +106,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     opPtr->setAffectedNode(node);
     // A hydrated placeholder.
     {
-        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = true, .isSyncing = false, .progress = 0};
-        mockVfs->setVfsStatusOutput(vfsStatus);
+        auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = true;
+            vfsStatus.isSyncing = false;
+            vfsStatus.progress = 0;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -121,8 +122,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A dehydrated placeholder.
     {
-        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = false, .isSyncing = false, .progress = 0};
-        mockVfs->setVfsStatusOutput(vfsStatus);
+        auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = false;
+            vfsStatus.isSyncing = false;
+            vfsStatus.progress = 0;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -131,8 +138,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A partially hydrated placeholder (syncing item).
     {
-        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = false, .isSyncing = true, .progress = 30};
-        mockVfs->setVfsStatusOutput(vfsStatus);
+        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = false;
+            vfsStatus.isSyncing = true;
+            vfsStatus.progress = 30;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -141,8 +154,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // Not a placeholder.
     {
-        constexpr VfsStatus vfsStatus = {.isPlaceholder = false, .isHydrated = false, .isSyncing = false, .progress = 0};
-        mockVfs->setVfsStatusOutput(vfsStatus);
+        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = false;
+            vfsStatus.isHydrated = false;
+            vfsStatus.isSyncing = false;
+            vfsStatus.progress = 0;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -456,6 +475,8 @@ void TestExecutorWorker::testInitSyncFileItem() {
                              syncFileItem.instruction()); // Local edit to be propagated to remote
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
 
+        localNode->setMoveOriginInfos(
+                {Str("test_file2.txt"), _syncPal->updateTree(ReplicaSide::Local)->rootNode()->id().value()});
         syncOp->setType(OperationType::Move);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
@@ -490,6 +511,8 @@ void TestExecutorWorker::testInitSyncFileItem() {
                              syncFileItem.instruction()); // Remote edit to be propagated to local
         CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
 
+        remoteNode->setMoveOriginInfos(
+                {Str("test_file2.txt"), _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->id().value()});
         syncOp->setType(OperationType::Move);
         _executorWorker->initSyncFileItem(syncOp, syncFileItem);
         CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,

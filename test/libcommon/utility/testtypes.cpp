@@ -190,7 +190,6 @@ void TestTypes::testToString() {
     testToStringIntValues<ExitCode>();
     testToStringIntValues<ExitCause>();
     testToStringIntValues<ConflictType>();
-    testToStringIntValues<ConflictTypeResolution>();
     testToStringIntValues<CancelType>();
     testToStringIntValues<NodeStatus>();
     testToStringIntValues<SyncStatus>();
