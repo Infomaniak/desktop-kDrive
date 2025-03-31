@@ -33,6 +33,7 @@
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
 #include "libsyncengine/jobs/network/API_v2/uploadjob.h"
+#include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "libcommon/utility/utility.h"
@@ -2174,7 +2175,9 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     MockIoHelperFileStat mockIoHelper;
     // Create a file with a custom inode on the local side
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
-    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
+    {
+        const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string());
+    }
     waitForSyncToFinish();
     CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
     const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
@@ -2206,7 +2209,9 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
 
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
+    {
+        const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string());
+    }
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
@@ -2239,7 +2244,9 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
     MockIoHelperFileStat mockIoHelper;
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
-    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
+    {
+        const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string());
+    }
     waitForSyncToFinish();
     CPPUNIT_ASSERT_EQUAL(NodeId("2"), localSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
     const NodeId remoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
@@ -2264,7 +2271,9 @@ void TestIntegration::testNodeIdReuseFile2File() {
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile2", 2);
-    { std::ofstream((absoluteLocalWorkingDir / "testNodeIdReuseFile2").string()) << "New content"; }
+    {
+        std::ofstream((absoluteLocalWorkingDir / "testNodeIdReuseFile2").string()) << "New content";
+    }
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
@@ -2298,14 +2307,25 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
 void TestIntegration::waitForSyncToFinish() {
     Utility::msleep(1000);
-
+    int timeOutCounter = 0;
     // Wait for end of sync
     while (!_syncPal->isIdle()) {
+        CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
         Utility::msleep(1000);
     }
 
-    Utility::msleep(10000); // Wait more to make sure the remote snapshot has been updated (TODO : not needed once longpoll
-                            // request is implemented)
+    Utility::msleep(1000);
+
+    // Wait for the snapshot to be updated.
+    while (_syncPal->_localFSObserverWorker->updating()) {
+        CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+        Utility::msleep(1000);
+    }
+
+    while (_syncPal->_remoteFSObserverWorker->updating()) {
+        CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+        Utility::msleep(1000);
+    }
 }
 
 } // namespace KDC
