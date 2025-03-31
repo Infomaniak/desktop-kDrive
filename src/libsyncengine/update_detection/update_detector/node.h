@@ -71,7 +71,7 @@ class Node {
 
         Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
              const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
-             int64_t size, std::shared_ptr<Node> parentNodet);
+             int64_t size, std::shared_ptr<Node> parentNode);
 
         /**
          * @brief Node
@@ -129,13 +129,13 @@ class Node {
 
         void setChangeEvents(const OperationType ops);
         void insertChangeEvent(const OperationType &op);
-        inline void deleteChangeEvent(const OperationType &op) { _changeEvents ^= op; }
-        inline void clearChangeEvents() { _changeEvents = OperationType::None; }
-        inline bool hasChangeEvent() const { return _changeEvents != OperationType::None; }
-        inline bool hasChangeEvent(const OperationType op) const { return (_changeEvents & op) == op; }
+        void deleteChangeEvent(const OperationType &op) { _changeEvents ^= op; }
+        void clearChangeEvents() { _changeEvents = OperationType::None; }
+        bool hasChangeEvent() const { return _changeEvents != OperationType::None; }
+        bool hasChangeEvent(const OperationType op) const { return (_changeEvents & op) == op; }
 
-        inline void insertConflictAlreadyConsidered(const ConflictType &conf) { _conflictsAlreadyConsidered.push_back(conf); }
-        inline void clearConflictAlreadyConsidered() { _conflictsAlreadyConsidered.clear(); }
+        void insertConflictAlreadyConsidered(const ConflictType &conf) { _conflictsAlreadyConsidered.push_back(conf); }
+        void clearConflictAlreadyConsidered() { _conflictsAlreadyConsidered.clear(); }
 
         bool isEditFromDeleteCreate() const;
 

@@ -24,7 +24,6 @@
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
-#include "test_classes/testinitialsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
