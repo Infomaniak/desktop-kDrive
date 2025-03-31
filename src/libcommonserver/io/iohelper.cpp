@@ -718,8 +718,8 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
     }
 }
 
-bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, time_t previousMtime, bool &changed,
-                                  IoError &ioError) noexcept {
+bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, SyncTime previousMtime,
+                                  SyncTime previousCreationTime, bool &changed, IoError &ioError) noexcept {
     changed = false;
 
     FileStat fileStat;
@@ -733,7 +733,8 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, ti
         return isExpectedError(ioError);
     }
 
-    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modtime);
+    changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modtime) ||
+              (previousCreationTime != fileStat.creationTime);
 
     return true;
 }

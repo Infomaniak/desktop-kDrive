@@ -176,13 +176,23 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     if (isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
         correspondingNode->setStatus(NodeStatus::Processed);
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOGW_SYNCPAL_DEBUG(_logger,
+                               L"Edit-Edit pseudo conflict detected. Operation Edit to be propagated in DB only for item "
+                                       << Utility::formatSyncPath(currentNode->getPath()));
+        }
     }
 
     // If only the creation date is different, we can omit the operation
     if (currentNode->side() == ReplicaSide::Local && currentNode->size() == correspondingNode->size() &&
-        currentNode->lastmodified() == correspondingNode->lastmodified() && currentNode->createdAt() != correspondingNode->createdAt()) {
+        currentNode->lastmodified() == correspondingNode->lastmodified() &&
+        currentNode->createdAt() != correspondingNode->createdAt()) {
         // Only update DB and tree
         op->setOmit(true);
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Only Creation date is different. Operation Edit to be propagated in DB only for item "
+                                                << Utility::formatSyncPath(currentNode->getPath()).c_str());
+        }
     }
 
     op->setType(OperationType::Edit);
@@ -196,13 +206,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     }
     _syncPal->_syncOps->pushOp(op);
 
-    if (op->omit()) {
-        if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger,
-                               L"Edit-Edit pseudo conflict detected. Operation Edit to be propagated in DB only for item "
-                                       << Utility::formatSyncPath(currentNode->getPath()).c_str());
-        }
-    } else {
+    if (!op->omit()) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Edit operation "
