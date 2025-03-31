@@ -23,6 +23,7 @@
 #include "libparms/db/parmsdb.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/jsonparserutility.h"
+#include "utility/urlhelper.h"
 
 #include <unordered_map>
 
@@ -246,13 +247,13 @@ std::string AbstractTokenNetworkJob::getUrl() {
         case ApiType::Drive:
         case ApiType::DriveByUser:
         case ApiType::Desktop:
-            apiUrl = KDRIVE_API_V2_URL;
+            apiUrl = UrlHelper::kDriveApiUrl();
             break;
         case ApiType::NotifyDrive:
-            apiUrl = NOTIFY_KDRIVE_V2_URL;
+            apiUrl = UrlHelper::notifyApiUrl();
             break;
         case ApiType::Profile:
-            apiUrl = GLOBAL_API_V2_URL;
+            apiUrl = UrlHelper::infomaniakApiUrl();
             break;
     }
     return apiUrl + getSpecificUrl();

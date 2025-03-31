@@ -204,6 +204,8 @@ std::string toString(const ExitCause e) {
             return "ShareLinkAlreadyExists";
         case ExitCause::InvalidArgument:
             return "InvalidArgument";
+        case ExitCause::InvalidDestination:
+            return "InvalidDestination";
         case ExitCause::DriveAsleep:
             return "DriveAsleep";
         case ExitCause::DriveWakingUp:
@@ -243,19 +245,6 @@ std::string toString(const ConflictType e) {
             return "EditEdit";
         case ConflictType::MoveMoveCycle:
             return "MoveMoveCycle";
-        default:
-            return noConversionStr;
-    }
-}
-
-std::string toString(const ConflictTypeResolution e) {
-    switch (e) {
-        case ConflictTypeResolution::None:
-            return "None";
-        case ConflictTypeResolution::DeleteCanceled:
-            return "DeleteCanceled";
-        case ConflictTypeResolution::FileMovedToRoot:
-            return "FileMovedToRoot";
         default:
             return noConversionStr;
     }
@@ -310,6 +299,8 @@ std::string toString(const CancelType e) {
             return "ExcludedByTemplate";
         case CancelType::Hardlink:
             return "Hardlink";
+        case CancelType::FileRescued:
+            return "FileRescued";
         default:
             return noConversionStr;
     }
@@ -325,6 +316,8 @@ std::string toString(const NodeStatus e) {
             return "PartiallyProcessed";
         case NodeStatus::Processed:
             return "Processed";
+        case NodeStatus::ConflictOpGenerated:
+            return "ConflictOpGenerated";
         default:
             return noConversionStr;
     }

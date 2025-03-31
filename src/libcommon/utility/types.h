@@ -257,6 +257,7 @@ enum class ExitCause {
     OperationCanceled,
     ShareLinkAlreadyExists,
     InvalidArgument,
+    InvalidDestination,
     DriveAsleep,
     DriveWakingUp,
     ServiceUnavailable,
@@ -306,13 +307,13 @@ std::string toString(ExitInfo e);
 // Conflict types ordered by priority
 enum class ConflictType {
     None,
-    MoveParentDelete,
+    EditDelete,
     MoveDelete,
+    MoveParentDelete,
     CreateParentDelete,
     MoveMoveSource,
     MoveMoveDest,
     MoveCreate,
-    EditDelete,
     CreateCreate,
     EditEdit,
     MoveMoveCycle,
@@ -320,15 +321,11 @@ enum class ConflictType {
 };
 std::string toString(ConflictType e);
 
-static const std::unordered_set<ConflictType> conflictsWithLocalRename = { // All conflicts that rename the local file
-        ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
-
-inline bool isConflictsWithLocalRename(ConflictType type) {
+// All conflict types whose resolution involves adding a "_conflict_" suffix to the local file's name.
+static const std::unordered_set<ConflictType> conflictsWithLocalRename = {ConflictType::CreateCreate, ConflictType::EditEdit};
+inline bool isConflictsWithLocalRename(const ConflictType type) {
     return conflictsWithLocalRename.contains(type);
 }
-
-enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot, EnumEnd };
-std::string toString(ConflictTypeResolution e);
 
 enum class InconsistencyType {
     None = 0x00,
@@ -355,11 +352,12 @@ enum class CancelType {
     TmpBlacklisted,
     ExcludedByTemplate,
     Hardlink,
+    FileRescued,
     EnumEnd
 };
 std::string toString(CancelType e);
 
-enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed, EnumEnd };
+enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed, ConflictOpGenerated, EnumEnd };
 std::string toString(NodeStatus e);
 
 enum class SyncStatus { Undefined, Starting, Running, Idle, PauseAsked, Paused, StopAsked, Stopped, Error, EnumEnd };
@@ -533,7 +531,7 @@ struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
         // std::string changeLog; // List of changes in this version, not used for now.
         uint64_t buildVersion{0}; // Example: 20240816
-        std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
+        std::string buildMinOsVersion; // Optional. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
         std::string downloadUrl; // URL to download the version
 
         [[nodiscard]] bool isValid() const {

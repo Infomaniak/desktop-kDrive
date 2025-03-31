@@ -31,25 +31,24 @@ bool LocalMoveJob::canRun() {
         return true;
     }
 
-    std::error_code ec;
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
     if (!Utility::isEqualInsensitive(_source, _dest)) {
         // Check that we can move the file in destination
         bool exists = false;
         if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError).c_str());
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
             _exitInfo = ExitCode::SystemError;
             return false;
         }
         if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_dest).c_str());
+            LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_dest));
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             return false;
         }
 
         if (exists) {
-            LOGW_DEBUG(_logger, L"Item " << Path2WStr(_dest).c_str() << L" already exist. Aborting current sync and restart.");
-            _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+            LOGW_DEBUG(_logger, L"Item already exists: " << Utility::formatSyncPath(_dest));
+            _exitInfo = {ExitCode::DataError, ExitCause::FileAlreadyExist};
             return false;
         }
     }
@@ -57,15 +56,14 @@ bool LocalMoveJob::canRun() {
     // Check that the source file still exists.
     bool exists = false;
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
         _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger,
-                   L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_source).c_str());
-        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
+        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_source));
+        _exitInfo = {ExitCode::DataError, ExitCause::InvalidDestination};
         return false;
     }
 

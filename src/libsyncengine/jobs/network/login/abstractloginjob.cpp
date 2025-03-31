@@ -22,6 +22,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "utility/jsonparserutility.h"
+#include "utility/urlhelper.h"
 
 #include <Poco/JSON/Parser.h>
 
@@ -50,7 +51,7 @@ std::string AbstractLoginJob::getSpecificUrl() {
 }
 
 std::string AbstractLoginJob::getUrl() {
-    return std::string(LOGIN_URL) + getSpecificUrl();
+    return std::string(UrlHelper::loginApiUrl()) + getSpecificUrl();
 }
 
 std::string AbstractLoginJob::getContentType(bool &canceled) {
