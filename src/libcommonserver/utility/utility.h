@@ -104,6 +104,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool endsWith(const std::string &str, const std::string &suffix);
         static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
         static bool isEqualInsensitive(const std::string &strA, const std::string &strB);
+        static bool contains(const std::string &str, const std::string &substr);
 #ifdef _WIN32
         static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
         static bool startsWith(const SyncName &str, const SyncName &prefix);
