@@ -2186,7 +2186,9 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
 
     // Replace the file with a directory on the local side (with the same id)
     _syncPal->pause();
-
+    while (!_syncPal->isPaused()) {
+        Utility::msleep(100);
+    }
     IoError ioError = IoError::Success;
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -2206,7 +2208,9 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
 
     // Replace the directory with a file on the local side with the same id
     _syncPal->pause();
-
+    while (!_syncPal->isPaused()) {
+        Utility::msleep(100);
+    }
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     {
@@ -2266,6 +2270,9 @@ void TestIntegration::testNodeIdReuseFile2File() {
     // Delete a file and create an other file with the same inode at a different path with different content and ctime
     // Expected behavior: new file on remote side
     _syncPal->pause();
+    while (!_syncPal->isPaused()) {
+        Utility::msleep(100);
+    }
 
     IoError ioError = IoError::Success;
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
@@ -2311,7 +2318,11 @@ void TestIntegration::waitForSyncToFinish() {
     // Wait for end of sync
     while (!_syncPal->isIdle()) {
         CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
-        Utility::msleep(1000);
+        Utility::msleep(2000);
+        while (!_syncPal->isIdle()) {
+            CPPUNIT_ASSERT_LESS(60, timeOutCounter++);
+            Utility::msleep(2000);
+        }
     }
 
     Utility::msleep(1000);
