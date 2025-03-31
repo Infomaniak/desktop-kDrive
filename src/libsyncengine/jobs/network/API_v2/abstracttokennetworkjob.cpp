@@ -330,7 +330,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
                     }
                     if (!found) {
                         assert(false);
-                        std::string err{"Drive not found for driveDbId=" + std::to_string(_driveDbId)};
+                        std::string err = std::format("Drive not found for driveDbId={}", _driveDbId);
                         LOG_WARN(_logger, err);
                         throw DataError(err);
                     }
@@ -347,7 +347,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
                     }
                     if (!found) {
                         assert(false);
-                        std::string err{"Account not found for accountDbId=" + std::to_string(drive.accountDbId())};
+                        std::string err = std::format("Account not found for accountDbId={}", drive.accountDbId());
                         LOG_WARN(_logger, err);
                         throw DataError(err);
                     }
@@ -365,7 +365,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
                         }
                         if (!found) {
                             assert(false);
-                            std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
+                            std::string err = std::format("User not found for userDbId={}", _userDbId);
                             LOG_WARN(_logger, err);
                             throw DataError(err);
                         }
@@ -400,7 +400,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
                 token = it->second.first->apiToken().accessToken();
             } else {
                 assert(false);
-                std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
+                std::string err = std::format("User cache not set for userDbId={}", _userDbId);
                 LOG_WARN(_logger, err);
                 throw std::runtime_error(err);
             }
@@ -425,7 +425,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
                 }
                 if (!found) {
                     assert(false);
-                    std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
+                    std::string err = std::format("User not found for userDbId={}", _userDbId);
                     LOG_WARN(_logger, err);
                     throw DataError(err);
                 }
