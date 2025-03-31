@@ -195,5 +195,4 @@ NetworkErrorReason getNetworkErrorReason(const std::string &errorCode) noexcept;
 /// Error descriptions
 static const std::string storageObjectIsNotOk = "storage_object_is_not_ok";
 
-static const std::string invalidToken = "Invalid Token";
 } // namespace KDC
