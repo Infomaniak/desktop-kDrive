@@ -2345,9 +2345,9 @@ ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_u
 }
 
 ExitInfo ExecutorWorker::handleOpsAlreadyExistError(const SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
-    // If the file/directory already exist either on local or remote side, we blacklist it.
+    // If the item already exists either on local or remote side, we blacklist it.
     if (syncOp->type() != OperationType::Create &&
-        syncOp->type() != OperationType::Move) { // The below handling is only for create and move/rename operations.
+        syncOp->type() != OperationType::Move) { // The below handling is only for Create and Move/Rename operations.
         return opsExitInfo;
     }
 

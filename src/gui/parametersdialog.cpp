@@ -842,7 +842,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
         case ExitCode::DataError: {
             if (errorInfo.exitCause() == ExitCause::FileAlreadyExist) {
                 return tr(
-                        "Item already exist on other side.<br>"
+                        "Item already exists on other side.<br>"
                         "It has been temporarily blacklisted.");
             }
         }
