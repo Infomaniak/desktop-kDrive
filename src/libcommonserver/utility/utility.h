@@ -134,12 +134,13 @@ struct COMMONSERVER_EXPORT Utility {
          * Check whether two names indicate the same item on the file system.
          * @param lhs SyncName value to be compared.
          * @param rhs Other SyncName value to be compared.
+         * @param isEquivalent true if lhs and rhs have equal normalization when normalizeNames is true or if lhs == rhs when
+         * normalizeNames is false. False otherwise; in particular it is false if normalization fails on any of the two inputs.
          * @param normalizeNames if true, lhs and rhs are normalized before comparing them with `==`.
          * Otherwise just compare with `==`.
-         * @return true lhs and rhs have equal normalization when normalizeNames is true or if lhs == rhs when normalizeNames is
-         * false. Returns false otherwise.
+         * @return true if no normalization error occurred, false otherwise.
          */
-        static bool areEqual(const SyncName &lhs, const SyncName &rhs, bool normalizeNames = false);
+        static bool checkIfEquivalent(const SyncName &lhs, const SyncName &rhs, bool &isEquivalent, bool normalizeNames = false);
 
         static std::vector<SyncName> splitPath(const SyncPath &path);
 

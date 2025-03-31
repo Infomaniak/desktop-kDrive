@@ -90,11 +90,10 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path, const bool
     for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
         for (const auto &[_, childNode]: tmpNode->children()) {
-            if (const bool areEqualPaths = Utility::areEqual(*nameIt, childNode->name(), normalizePaths); areEqualPaths) {
+            bool areEquivalent = false;
+            if (Utility::checkIfEquivalent(*nameIt, childNode->name(), areEquivalent, normalizePaths) && areEquivalent) {
                 tmpChildNode = childNode;
                 break;
-            } else {
-                continue;
             }
         }
 

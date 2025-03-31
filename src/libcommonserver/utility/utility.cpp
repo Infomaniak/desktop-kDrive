@@ -484,20 +484,20 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
-bool Utility::areEqual(const SyncName &lhs, const SyncName &rhs, bool normalizeNames) {
-    bool areEqual = false;
+bool Utility::checkIfEquivalent(const SyncName &lhs, const SyncName &rhs, bool &isEquivalent, bool normalizeNames) {
+    isEquivalent = false;
 
     if (normalizeNames) {
-        if (!Utility::checkIfSameNormalization(lhs, rhs, areEqual)) {
+        if (!Utility::checkIfSameNormalization(lhs, rhs, isEquivalent)) {
             LOGW_WARN(logger(), L"Error in Utility::checkIfSameNormalization: " << Utility::formatSyncName(lhs) << L" / "
                                                                                 << Utility::formatSyncName(rhs));
             return false;
         }
     } else {
-        areEqual = lhs == rhs;
+        isEquivalent = lhs == rhs;
     }
 
-    return areEqual;
+    return true;
 }
 
 std::vector<SyncName> Utility::splitPath(const SyncPath &path) {
