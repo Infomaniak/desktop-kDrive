@@ -408,7 +408,9 @@ bool Utility::isEqualUpToCaseAndEnc(const SyncPath &a, const SyncPath &b, bool &
 
     isEqual = normalizedAStr.size() == normalizedBStr.size() &&
               std::equal(normalizedAStr.begin(), normalizedAStr.end(), normalizedBStr.begin(), normalizedBStr.end(),
-                         [](SyncChar a, SyncChar b) { return std::toupper(a, std::locale()) == std::toupper(b, std::locale()); });
+                         [](const SyncChar c1, const SyncChar c2) {
+                             return std::toupper(c1, std::locale()) == std::toupper(c2, std::locale());
+                         });
 
     return true;
 }
