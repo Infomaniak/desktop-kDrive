@@ -29,13 +29,13 @@ class QListWidget;
 
 namespace KDC {
 
-class FixConflictingFilesDialog : public CustomDialog {
+class FixConflictingFilesDialog final : public CustomDialog {
         Q_OBJECT
 
     public:
-        FixConflictingFilesDialog(int driveDbId, QWidget *parent = nullptr);
+        explicit FixConflictingFilesDialog(int driveDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-        inline bool keepLocalVersion() const { return _keepLocalVersion; }
+        bool keepLocalVersion() const { return _keepLocalVersion; }
 
     private slots:
         void onLinkActivated(const QString &link);
@@ -50,6 +50,7 @@ class FixConflictingFilesDialog : public CustomDialog {
 
         void insertFileItems(const int nbItems);
 
+        std::shared_ptr<ClientGui> _gui;
         int _driveDbId = 0;
         QList<ErrorInfo> _conflictList;
 
