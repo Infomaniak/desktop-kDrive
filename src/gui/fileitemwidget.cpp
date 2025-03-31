@@ -30,7 +30,7 @@ FileItemWidget::FileItemWidget(const QString &fullFilePath, const NodeType nodeT
 }
 
 void FileItemWidget::init() {
-    setFilePath(_fullFilePath, _nodeType);
+    setPathAndName(_fullFilePath, _nodeType);
 }
 
 } // namespace KDC

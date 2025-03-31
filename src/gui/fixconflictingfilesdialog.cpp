@@ -44,8 +44,9 @@ static const int titleBoxVMargin = 14;
 
 static const QString learnMoreLink = "learnMoreLink";
 
-FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *parent /*= nullptr*/) :
-    CustomDialog(true, parent), _driveDbId(driveDbId) {
+FixConflictingFilesDialog::FixConflictingFilesDialog(const int driveDbId, std::shared_ptr<ClientGui> gui,
+                                                     QWidget *parent /*= nullptr*/) :
+    CustomDialog(true, parent), _gui(gui), _driveDbId(driveDbId) {
     setModal(true);
     setResizable(true);
     GuiRequests::getConflictList(
@@ -248,7 +249,8 @@ QString FixConflictingFilesDialog::descriptionText() const {
 void FixConflictingFilesDialog::insertFileItems(const int nbItems) {
     int max = (std::min)(_fileListWidget->count() + nbItems, static_cast<int>(_conflictList.size()));
     for (auto i = _fileListWidget->count(); i < max; i++) {
-        const auto w = new FileItemWidget(_conflictList[i].destinationPath(), _conflictList[i].nodeType(), this);
+        QString fullpath = _gui->folderPath(_conflictList[i].syncDbId(), _conflictList[i].destinationPath());
+        const auto w = new FileItemWidget(fullpath, _conflictList[i].nodeType(), this);
 
         const auto listWidgetItem = new QListWidgetItem();
         listWidgetItem->setFlags(Qt::NoItemFlags);

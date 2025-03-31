@@ -19,7 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
-#include "test_classes/testinitialsituationgenerator.h"
+#include "test_classes/testsituationgenerator.h"
 
 #include <propagation/operation_sorter/operationsorterworker.h>
 
@@ -66,7 +66,7 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         SyncOpPtr generateSyncOperation(OperationType opType, const std::shared_ptr<Node> &affectedNode) const;
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
-        TestInitialSituationGenerator _initialSituationGenerator;
+        TestSituationGenerator _testSituationGenerator;
 };
 
 } // namespace KDC

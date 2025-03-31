@@ -50,9 +50,10 @@
 !define VER_BUILD "@KDRIVE_VERSION_BUILD@"
 !define VERSION "@KDRIVE_VERSION@"
 
-!define VFS_APPX_DIRECTORY "@{extpath}\FileExplorerExtensionPackage\\AppPackages\\FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_Test"
+!define VFS_APPX_DIRECTORY "@{extpath}/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_Test"
 !define VFS_APPX_BUNDLE "FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_x64_arm64.msixbundle"
 !define VFS_PACKAGE_NAME "Infomaniak.kDrive.Extension"
+!define EXTENSION_NAME "FileExplorerExtension.exe"
 
 Var InstallRunIfSilent
 Var NoAutomaticUpdates
@@ -232,7 +233,11 @@ Var kill_counter
    process_${processName}_ended:
 !macroend
 
-!macro CheckAndConfirmEndProcesses process1 process2
+!macro CheckAndConfirmEndProcesse1 process1 
+ !insertmacro CheckAndConfirmEndProcesses3 ${process1} "null1" "null2"
+!macroend
+
+!macro CheckAndConfirmEndProcesses3 process1 process2 process3
 
  !insertmacro INSTALLOPTIONS_READ $R1 "NSIS.InstallOptionsWithButtons.ini" "Field 2" "State"
    
@@ -249,6 +254,11 @@ Var kill_counter
       StrCpy $R2 "Y"
    no_process_${process2}_to_end:
    
+   !insertmacro CheckForProcess ${process3} process_${process3}_found no_process_${process3}_to_end
+   process_${process3}_found:
+      StrCpy $R2 "Y"
+   no_process_${process3}_to_end:
+   
    StrCmp $R2 "Y" 0 end_processes_finished 
    
    ; Ask user
@@ -260,7 +270,7 @@ Var kill_counter
    kill_processes:
       !insertmacro EndProcess ${process1}
       !insertmacro EndProcess ${process2}
-   
+      !insertmacro EndProcess ${process3}
    end_processes_finished:
    
 !macroend
@@ -291,7 +301,7 @@ Var kill_counter
   FileWrite $R1 "${PSCommand}"
   FileClose $R1
   Pop $R1
- 
+
   !insertmacro PowerShellExecFileLogMacro "$PLUGINSDIR\tempfile.ps1"
 !macroend
  
@@ -331,67 +341,9 @@ finish_${PSExecID}:
 !define PowerShellExecFile '!insertmacro PowerShellExecFileMacro'
 !define PowerShellExecFileLog '!insertmacro PowerShellExecFileLogMacro'
 
-Function UninstallFct
-   ReadRegStr $R0 HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\kDrive" "DisplayVersion"
-   !define /redef InstalledVersion $R0
-   StrCmp ${InstalledVersion} "3.5.6" uninstall_old_version 0
-   StrCmp ${InstalledVersion} "3.5.7" uninstall_old_version uninstall_old_version_done
-   uninstall_old_version:
-
-   ; Delete Vfs keys
-   SetRegView 64
-   StrCpy $0 0
-   loop2:
-      ; Look at every registered explorer SyncRootManager for HKLM and check if it was added by our application
-      EnumRegKey $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager" $0
-      StrCmp $1 "" done2
-
-      ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" ""
-      StrCmp $R0 "${APPLICATION_NAME}" deleteSyncRootManager
-      ; Increment the index when not deleting the enumerated key.
-      IntOp $0 $0 + 1
-      goto loop2
-
-      deleteSyncRootManager:
-         ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" "NamespaceCLSID"
-         StrCmp $R1 "" done2
-
-         DetailPrint "Removing SyncRootManager $1"
-         DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1"
-
-         DetailPrint "Removing Navigation Pane CLSID $R1"
-         ; Should match FolderMan::updateCloudStorageRegistry
-         DeleteRegKey HKCU "Software\Classes\CLSID\$R1"
-         DeleteRegKey HKCU "Software\Classes\\WOW6432Node\CLSID\$R1"
-         DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$R1"
-         DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" $R1
-
-         goto loop2
-   done2:
-
-   ; Go back to the 32bit registry.
-   SetRegView lastused
-
-   ;Remove reg key
-   DeleteRegKey HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\kDrive"
-
-   ;Remove extension
-   !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${InstalledVersion}.0_x64__dbrs6rk4qqhna"
-   IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
-      uninstall_x64:
-      ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
-   !undef PackageFullName_x64
-   uninstall_kdrive_ext_x64_done:
-
-   uninstall_old_version_done:
-FunctionEnd
-
 Function EnsureKDriveShutdown
    ; Stop processes
-   !insertmacro CheckAndConfirmEndProcesses "${APPLICATION_SERVER_EXECUTABLE}" "${APPLICATION_CLIENT_EXECUTABLE}"
-
-   ;Hack - Uninstall if needed
-   Call UninstallFct
+   !insertmacro CheckAndConfirmEndProcesses3 "${APPLICATION_SERVER_EXECUTABLE}" "${APPLICATION_CLIENT_EXECUTABLE}" "${EXTENSION_NAME}"
 FunctionEnd
 
 Function InstallRedistributables
@@ -411,9 +363,9 @@ FunctionEnd
 ##############################################################################
 
 Function PageReinstall
-   ReadRegStr $R0 HKLM "${regkey}" ""
-   StrCmp $R0 "" 0 +2
-   Abort
+    ReadRegStr $R0 HKLM "${regkey}" ""
+    StrCmp $R0 "" 0 +2
+    Abort
 
    ;Detect version
    ReadRegDWORD $R0 HKLM "${regkey}" "VersionMajor"
@@ -427,7 +379,7 @@ Function PageReinstall
    build_check:
       ReadRegDWORD $R0 HKLM "${regkey}" "VersionBuild"
       IntCmp $R0 ${VER_BUILD} same_version new_version older_version
-
+ 
    new_version:
       !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptions.ini" "Field 1" "Text" $PageReinstall_NEW_Field_1
       !insertmacro MUI_HEADER_TEXT $PageReinstall_NEW_MUI_HEADER_TEXT_TITLE $PageReinstall_NEW_MUI_HEADER_TEXT_SUBTITLE
@@ -539,7 +491,8 @@ SectionEnd
       CreateDirectory "$INSTDIR\shellext\AppX"
       SetOutPath "$INSTDIR\shellext\AppX"
       File /nonfatal /a /r "${VFS_APPX_DIRECTORY}\"
-      ${PowerShellExecLog} "Add-AppxPackage -Path '${VFS_APPX_BUNDLE}'"
+      !insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
+      ${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
       end_install_lite_sync_extension:
       
    ${MementoSectionEnd}
@@ -654,7 +607,7 @@ SectionEnd
 
 Function un.EnsureKDriveShutdown
    ; Stop processes
-   !insertmacro CheckAndConfirmEndProcesses "${APPLICATION_SERVER_EXECUTABLE}" "${APPLICATION_CLIENT_EXECUTABLE}"
+   !insertmacro CheckAndConfirmEndProcesses3 "${APPLICATION_SERVER_EXECUTABLE}" "${APPLICATION_CLIENT_EXECUTABLE}" "${EXTENSION_NAME}"
 FunctionEnd
 
 Function un.UninstallFct
@@ -665,65 +618,66 @@ Function un.UninstallFct
 
    ; Delete Navigation Pane entries added for Windows 10.
    ; On 64bit Windows, the client will be writing to the 64bit registry.
-   ${If} ${RunningX64}
-      SetRegView 64
+   ${IfNot} ${Silent}   
+       ${If} ${RunningX64}
+          SetRegView 64
+       ${EndIf}
+       StrCpy $0 0
+       loop:
+          ; Look at every registered explorer namespace for HKCU and check if it was added by our application
+          ; (we write to a custom "ApplicationName" value there).
+          EnumRegKey $1 HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace" $0
+          StrCmp $1 "" done
+
+          ReadRegStr $R0 HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$1" "ApplicationName"
+          StrCmp $R0 "${APPLICATION_NAME}" deleteClsid
+          ; Increment the index when not deleting the enumerated key.
+          IntOp $0 $0 + 1
+          goto loop
+
+          deleteClsid:
+             DetailPrint "Removing Navigation Pane CLSID $1"
+             ; Should match FolderMan::updateCloudStorageRegistry
+             DeleteRegKey HKCU "Software\Classes\CLSID\$1"
+             DeleteRegKey HKCU "Software\Classes\\WOW6432Node\CLSID\$1"
+             DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$1"
+             DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" $1
+             goto loop
+       done:
+
+       ; Delete Vfs keys
+       StrCpy $0 0
+       loop2:
+          ; Look at every registered explorer SyncRootManager for HKLM and check if it was added by our application
+          EnumRegKey $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager" $0
+          StrCmp $1 "" done2
+
+          ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" ""
+          StrCmp $R0 "${APPLICATION_NAME}" deleteSyncRootManager
+          ; Increment the index when not deleting the enumerated key.
+          IntOp $0 $0 + 1
+          goto loop2
+
+          deleteSyncRootManager:
+             ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" "NamespaceCLSID"
+             StrCmp $R1 "" done2
+
+             DetailPrint "Removing SyncRootManager $1"
+             DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1"
+
+             DetailPrint "Removing Navigation Pane CLSID $R1"
+             ; Should match FolderMan::updateCloudStorageRegistry
+             DeleteRegKey HKCU "Software\Classes\CLSID\$R1"
+             DeleteRegKey HKCU "Software\Classes\\WOW6432Node\CLSID\$R1"
+             DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$R1"
+             DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" $R1
+
+             goto loop2
+       done2:
+
+       ; Go back to the 32bit registry.
+       SetRegView lastused
    ${EndIf}
-   StrCpy $0 0
-   loop:
-      ; Look at every registered explorer namespace for HKCU and check if it was added by our application
-      ; (we write to a custom "ApplicationName" value there).
-      EnumRegKey $1 HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace" $0
-      StrCmp $1 "" done
-
-      ReadRegStr $R0 HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$1" "ApplicationName"
-      StrCmp $R0 "${APPLICATION_NAME}" deleteClsid
-      ; Increment the index when not deleting the enumerated key.
-      IntOp $0 $0 + 1
-      goto loop
-
-      deleteClsid:
-         DetailPrint "Removing Navigation Pane CLSID $1"
-         ; Should match FolderMan::updateCloudStorageRegistry
-         DeleteRegKey HKCU "Software\Classes\CLSID\$1"
-         DeleteRegKey HKCU "Software\Classes\\WOW6432Node\CLSID\$1"
-         DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$1"
-         DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" $1
-         goto loop
-   done:
-
-   ; Delete Vfs keys
-   StrCpy $0 0
-   loop2:
-      ; Look at every registered explorer SyncRootManager for HKLM and check if it was added by our application
-      EnumRegKey $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager" $0
-      StrCmp $1 "" done2
-
-      ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" ""
-      StrCmp $R0 "${APPLICATION_NAME}" deleteSyncRootManager
-      ; Increment the index when not deleting the enumerated key.
-      IntOp $0 $0 + 1
-      goto loop2
-
-      deleteSyncRootManager:
-         ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" "NamespaceCLSID"
-         StrCmp $R1 "" done2
-
-         DetailPrint "Removing SyncRootManager $1"
-         DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1"
-
-         DetailPrint "Removing Navigation Pane CLSID $R1"
-         ; Should match FolderMan::updateCloudStorageRegistry
-         DeleteRegKey HKCU "Software\Classes\CLSID\$R1"
-         DeleteRegKey HKCU "Software\Classes\\WOW6432Node\CLSID\$R1"
-         DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$R1"
-         DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" $R1
-
-         goto loop2
-   done2:
-
-   ; Go back to the 32bit registry.
-   SetRegView lastused
-
    ;Delete registry keys.
    DeleteRegValue HKLM "${regkey}" "VersionBuild"
    DeleteRegValue HKLM "${regkey}" "VersionMajor"
@@ -804,29 +758,30 @@ Function un.UninstallFct
       ${EndIf}
    ${EndIf}
 
+   ${IfNot} ${Silent}
+       ;Uninstall extension
+       ;${If} ${RunningX64}
+          !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_x64__@{AUMID}"
+          IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
+             uninstall_x64:
+             DetailPrint $UNINSTALL_EXTENSION
+             ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
+          !undef PackageFullName_x64
+          uninstall_kdrive_ext_x64_done:
+       ;${ElseIf} ${IsNativeARM64}
+          !define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_arm64__@{AUMID}"
+          IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
+             uninstall_arm64:
+             DetailPrint $UNINSTALL_EXTENSION
+             ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
+          !undef PackageFullName_arm64
+          uninstall_kdrive_ext_arm64_done:
+       ;${EndIf}
+       ;uninstall_kdrive_ext_done:
+   ${EndIf}
+   
    ;Remove all the Program Files.
    RMDir /r $INSTDIR
-
-   ;Uninstall extension
-   ;${If} ${RunningX64}
-      !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_x64__@{AUMID}"
-      IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
-         uninstall_x64:
-         DetailPrint $UNINSTALL_EXTENSION
-         ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
-      !undef PackageFullName_x64
-      uninstall_kdrive_ext_x64_done:
-   ;${ElseIf} ${IsNativeARM64}
-      !define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_arm64__@{AUMID}"
-      IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
-         uninstall_arm64:
-         DetailPrint $UNINSTALL_EXTENSION
-         ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
-      !undef PackageFullName_arm64
-      uninstall_kdrive_ext_arm64_done:
-   ;${EndIf}
-   ;uninstall_kdrive_ext_done:
-
 ;@{uninstallFiles}
 ;@{uninstallDirs}
 
@@ -866,7 +821,6 @@ Function .onInit
    ${IfNot} ${Errors}
       StrCpy $NoAutomaticUpdates "yes"
    ${EndIf}
-
 
    !insertmacro INSTALLOPTIONS_EXTRACT "NSIS.InstallOptions.ini"
 
