@@ -248,28 +248,30 @@ void GuiUtility::setStyle(QApplication *app, bool isDarkTheme) {
 }
 
 QString GuiUtility::getFileStatusIconPath(::KDC::SyncFileStatus status) {
-    QString path;
     switch (status) {
-        case ::KDC::SyncFileStatus::Unknown:
-            path = QString();
-            break;
         case ::KDC::SyncFileStatus::Error:
-            path = QString(":/client/resources/icons/statuts/error-sync.svg");
+            return QString(":/client/resources/icons/statuts/error-sync.svg");
             break;
         case ::KDC::SyncFileStatus::Success:
         case ::KDC::SyncFileStatus::Inconsistency:
-            path = QString(":/client/resources/icons/statuts/success.svg");
+            return QString(":/client/resources/icons/statuts/success.svg");
             break;
         case ::KDC::SyncFileStatus::Conflict:
         case ::KDC::SyncFileStatus::Ignored:
-            path = QString(":/client/resources/icons/statuts/warning.svg");
+            return QString(":/client/resources/icons/statuts/warning.svg");
             break;
         case ::KDC::SyncFileStatus::Syncing:
-            path = QString(":/client/resources/icons/statuts/sync.svg");
+            return QString(":/client/resources/icons/statuts/sync.svg");
             break;
+        case ::KDC::SyncFileStatus::Unknown:
+            break;
+        case ::KDC::SyncFileStatus::EnumEnd: {
+            assert(false && "Invalid enum value in switch statement.");
+            break;
+        }
     }
 
-    return path;
+    return {};
 }
 
 QString GuiUtility::getSyncStatusIconPath(StatusInfo &statusInfo) {
