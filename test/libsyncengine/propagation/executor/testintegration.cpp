@@ -2306,7 +2306,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
 }
 
 void TestIntegration::waitForSyncToFinish() {
-    Utility::msleep(1000);
+    Utility::msleep(2000);
     int timeOutCounter = 0;
     // Wait for end of sync
     while (!_syncPal->isIdle()) {
