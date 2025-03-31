@@ -1405,7 +1405,7 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
     return exitInfo;
 }
 
-ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue,
+ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool invalidName,
                                                 bool downloadImpossible) {
     if (jobExitCause == ExitCause::NotFound && !downloadImpossible) {
         // The operation failed because the destination does not exist anymore
@@ -1432,7 +1432,7 @@ ExitInfo ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPt
     getNodeIdsFromOp(syncOp, localNodeId, remoteNodeId);
 
     Error error;
-    if (isInconsistencyIssue) {
+    if (invalidName) {
         error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::ForbiddenChar);
     } else {
@@ -1465,10 +1465,9 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     getNodeIdsFromOp(syncOp, localNodeId, remoteNodeId);
 
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
-    if (const bool isInconsistencyIssue = job->exitCause() == ExitCause::InvalidName;
+    if (const bool invalidName = job->exitCause() == ExitCause::InvalidName;
         job->exitCode() == ExitCode::BackError && details::isManagedBackError(job->exitCause())) {
-        return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue,
-                                      networkJob && networkJob->isDownloadImpossible());
+        return handleManagedBackError(job->exitCause(), syncOp, invalidName, networkJob && networkJob->isDownloadImpossible());
     }
 
     if (job->exitCode() != ExitCode::Ok) {
