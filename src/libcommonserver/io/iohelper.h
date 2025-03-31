@@ -148,7 +148,7 @@ struct IoHelper {
          \param path is a file system path to a directory entry (we also call it an item).
          \param previousSize is a file size in bytes to be checked against.
          \param previousMtime is the previous modification date to be checked against.
-         \param previouxBirthtime is the previous creation date to be checked against.
+         \param previousBirthtime is the previous creation date to be checked against.
          \param ioError holds the error returned when an underlying OS API call fails.
          \param changed is a boolean set with true if the check is successful and the file has changed with respect to size or
          modification time. False otherwise.
