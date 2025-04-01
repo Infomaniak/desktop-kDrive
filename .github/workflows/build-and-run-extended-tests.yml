@@ -96,7 +96,7 @@ jobs:
 
       - name: Code coverage preview
         id: html_preview
-        uses: pavi2410/html-preview-action@v2
+        uses: pavi2410/html-preview-action@v4
         with:
           html_file: 'coverage_html/index.html'
           job_summary: true
