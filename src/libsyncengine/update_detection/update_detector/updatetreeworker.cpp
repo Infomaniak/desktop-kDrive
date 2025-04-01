@@ -1108,7 +1108,7 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
     auto nodeIdIt = nodeIds.rbegin();
 
     for (; nameIt != itemNames.rend() && nodeIdIt != nodeIds.rend(); ++nameIt, ++nodeIdIt) {
-        tmpPath.append(*nameIt);
+        tmpPath /= *nameIt;
         bool found = false;
         std::optional<NodeId> tmpNodeId{std::nullopt};
         if (!_syncDb->id(_side, tmpPath, tmpNodeId, found)) {
@@ -1129,7 +1129,7 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
         if (FSOpPtr op = nullptr; _operationSet->findOp(*nodeIdIt, OperationType::Move, op)) {
             newPath = op->destinationPath();
         } else {
-            newPath.append(*nameIt);
+            newPath /= *nameIt;
         }
     }
 
