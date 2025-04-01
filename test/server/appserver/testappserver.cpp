@@ -210,8 +210,6 @@ bool TestAppServer::syncIsActive(int syncDbId) const {
     return status == SyncStatus::Starting || status == SyncStatus::Running || status == SyncStatus::Idle;
 }
 
-MockAppServer::MockAppServer(int &argc, char **argv) : AppServer(argc, argv) {}
-
 std::filesystem::path MockAppServer::makeDbName() {
     return _parmsDbPath;
 }

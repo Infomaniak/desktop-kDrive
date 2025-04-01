@@ -390,7 +390,7 @@ void AppServer::init() {
 }
 
 void AppServer::cleanup() {
-    LOG_DEBUG(_logger, "AppServer::cleanup()");
+    LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop JobManager
     JobManager::stop();

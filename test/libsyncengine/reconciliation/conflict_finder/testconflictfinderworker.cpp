@@ -55,8 +55,8 @@ void TestConflictFinderWorker::tearDown() {
 
 void TestConflictFinderWorker::setUpTreesAndDb() {
     // db insertion
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     DbNodeId dbNodeIdDirA;
     DbNodeId dbNodeIdDirB;
     DbNodeId dbNodeIdDir1;
@@ -464,8 +464,8 @@ void TestConflictFinderWorker::testMoveMoveCycle() {
 /* Edit-Edit + Move-Create */
 void TestConflictFinderWorker::testCase55b() {
     // cf p93 figure 5.5 (b)
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
@@ -524,8 +524,8 @@ void TestConflictFinderWorker::testCase55b() {
 /* Move-Move (Source) + Move-Create + Move-Create */
 void TestConflictFinderWorker::testCase55c() {
     // cf p93 figure 5.5 (c)
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
@@ -581,8 +581,8 @@ void TestConflictFinderWorker::testCase55c() {
 /* Move-ParentDelete > Move-Move (Source) */
 void TestConflictFinderWorker::testCase57() {
     // cf p96 figure 5.7 (b)
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
@@ -660,8 +660,8 @@ void TestConflictFinderWorker::testCase57() {
 /* Move-Delete > Move-Move (Dest) */
 void TestConflictFinderWorker::testCase59() {
     // cf p98 figure 5.9 (b)
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     DbNodeId dbNodeIdDirA;
     DbNodeId dbNodeIdDirB;
 
@@ -714,8 +714,8 @@ void TestConflictFinderWorker::testCase59() {
 /* Move-Delete | Create-ParentDelete */
 void TestConflictFinderWorker::testCase510() {
     // cf p99 figure 5.10
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     DbNodeId dbNodeIdDirA;
     DbNodeId dbNodeIdFileX;
 
@@ -776,8 +776,8 @@ void TestConflictFinderWorker::testCase510() {
 /* Move-Delete > Create-ParentDelete */
 void TestConflictFinderWorker::testCase511() {
     // cf p100 figure 5.11
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     DbNodeId dbNodeIdDirA;
     DbNodeId dbNodeIdDirB;
 
@@ -839,8 +839,8 @@ void TestConflictFinderWorker::testCase511() {
 /* Move_Move_Cycle */
 void TestConflictFinderWorker::testCase513() {
     // cf p103 figure 5.13
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     DbNodeId dbNodeIdDirQ;
     DbNodeId dbNodeIdDirR;
     DbNodeId dbNodeIdDirN;
@@ -914,8 +914,8 @@ void TestConflictFinderWorker::testCase513() {
 /* Move_Move_Cycle & 2 Move-Move-Source */
 void TestConflictFinderWorker::testCase516() {
     // cf p106 figure 5.16
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     DbNodeId dbNodeIdDirQ;
     DbNodeId dbNodeIdDirR;
     DbNodeId dbNodeIdDirN;

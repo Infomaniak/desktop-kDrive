@@ -191,8 +191,8 @@ std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &loca
     _testObj->enablePrepare(true);
     _testObj->prepare();
 
-    const time_t tLoc = std::time(0);
-    const time_t tDrive = std::time(0);
+    const time_t tLoc = std::time(nullptr);
+    const time_t tDrive = std::time(nullptr);
     const auto rootId = _testObj->rootNode().nodeId();
 
     const auto nfc = testhelpers::makeNfcSyncName();
@@ -316,8 +316,8 @@ void TestSyncDb::testUpdateLocalName() {
     const auto nfd = testhelpers::makeNfdSyncName();
 
     // Insert node
-    const time_t tLoc = std::time(0);
-    const time_t tDrive = std::time(0);
+    const time_t tLoc = std::time(nullptr);
+    const time_t tDrive = std::time(nullptr);
 
     DbNodeTest nodeDir1(_testObj->rootNode().nodeId(), nfc, Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                         NodeType::Directory, 0, std::nullopt);
@@ -342,8 +342,8 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->clearNodes());
 
     // Insert node
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
 
     DbNode nodeDir1(0, _testObj->rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc,
                     tDrive, NodeType::Directory, 0, std::nullopt);
@@ -762,8 +762,8 @@ void TestSyncDb::testCorrespondingNodeId() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
 
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     bool constraintError = false;
 
 

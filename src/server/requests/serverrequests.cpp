@@ -375,7 +375,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     ExitCode exitCode;
 
     // Generate keychainKey
-    std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(0)).c_str()));
+    std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr)).c_str()));
 
     // Create Login instance and request token
     Login login(keychainKey);

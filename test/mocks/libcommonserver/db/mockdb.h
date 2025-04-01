@@ -29,7 +29,7 @@ namespace KDC {
 
 class MockDb : public Db {
     public:
-        MockDb(const std::filesystem::path &dbPath) : Db(dbPath) {}
+        explicit MockDb(const std::filesystem::path &dbPath) : Db(dbPath) {}
 
         static std::string makeDbFileName(int userId, int accountId, int driveId, int syncDbId) {
             std::string fileName = Db::makeDbFileName(userId, accountId, driveId, syncDbId);

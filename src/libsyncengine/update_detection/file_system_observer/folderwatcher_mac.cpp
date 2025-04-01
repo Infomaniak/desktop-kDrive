@@ -97,17 +97,21 @@ void FolderWatcher_mac::startWatching() {
 
     FSEventStreamContext ctx = {0, this, nullptr, nullptr, nullptr};
 
-    _streamMutex.lock();
-    _stream = FSEventStreamCreate(
-            nullptr, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
-            0, // latency
-            kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents /*| kFSEventStreamCreateFlagIgnoreSelf*/);
-    // TODO : try kFSEventStreamCreateFlagUseExtendedData to get inode directly from event
+    {
+        const std::lock_guard<std::mutex> lock(_streamMutex);
+        if (_stream) {
+            _stream = FSEventStreamCreate(nullptr, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
+                                          0, // latency
+                                          kFSEventStreamCreateFlagUseCFTypes |
+                                                  kFSEventStreamCreateFlagFileEvents /*| kFSEventStreamCreateFlagIgnoreSelf*/);
+            // TODO : try kFSEventStreamCreateFlagUseExtendedData to get inode directly from event
 
-    CFRelease(pathsToWatch);
-    FSEventStreamScheduleWithRunLoop(_stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-    FSEventStreamStart(_stream);
-    _streamMutex.unlock();
+            CFRelease(pathsToWatch);
+            FSEventStreamScheduleWithRunLoop(_stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+            FSEventStreamStart(_stream);
+        }
+    }
+
     CFRunLoopRun();
 
     LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));

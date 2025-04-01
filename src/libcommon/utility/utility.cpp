@@ -978,24 +978,22 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
 
 SyncPath CommonUtility::applicationFilePath() {
     const size_t maxPathLength = CommonUtility::maxPathLength();
-    SyncChar *pathStr = new SyncChar[maxPathLength + 1];
-    memset(pathStr, Str('\0'), (maxPathLength + 1) * sizeof(SyncChar));
+    std::vector<SyncChar> pathStr(maxPathLength + 1, '\0');
 
 #if defined(_WIN32)
     const DWORD pathLength = static_cast<DWORD>(maxPathLength);
-    const DWORD count = GetModuleFileNameW(NULL, pathStr, pathLength);
+    const DWORD count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
     assert(count);
 #elif defined(__APPLE__)
     uint32_t pathLength = static_cast<uint32_t>(maxPathLength);
-    const int ret = _NSGetExecutablePath(pathStr, &pathLength);
+    const int ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
     assert(!ret);
 #else
-    const ssize_t count = readlink("/proc/self/exe", pathStr, maxPathLength);
+    const ssize_t count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
     assert(count != -1);
 #endif
 
-    SyncPath path = SyncPath(pathStr);
-    delete[] pathStr;
+    SyncPath path = SyncPath(pathStr.data());
     return path;
 }
 
