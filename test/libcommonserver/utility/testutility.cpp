@@ -157,21 +157,29 @@ void TestUtility::testEndsWithInsensitive() {
     CPPUNIT_ASSERT(_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
 }
 
-void TestUtility::testIsEqualInsensitive(void) {
-    const std::string strA = "abcdefg";
-    const std::string strB = "aBcDeFg";
-    CPPUNIT_ASSERT(_testObj->isEqualInsensitive(strA, strB));
-    CPPUNIT_ASSERT(_testObj->isEqualInsensitive(strA, strA));
-    CPPUNIT_ASSERT(_testObj->isEqualInsensitive(strB, strB));
-    CPPUNIT_ASSERT(_testObj->isEqualInsensitive(strB, strA));
-    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive(strA, "abcdef"));
-    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive("abcdef", strA));
+void TestUtility::testIsEqualUpToCaseAndEnc(void) {
+    bool isEqual = false;
+    const SyncPath pathA{"abcdefg"};
+    const SyncPath pathB{"aBcDeFg"};
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(pathA, pathB, isEqual) && isEqual);
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(pathA, pathA, isEqual) && isEqual);
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(pathB, pathB, isEqual) && isEqual);
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(pathB, pathA, isEqual) && isEqual);
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(pathA, "abcdef", isEqual) && !isEqual);
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding("abcdef", pathA, isEqual) && !isEqual);
 
-    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive(strA, "abcdefh"));
-    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive("abcdefh", strA));
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(pathA, "abcdefh", isEqual) && !isEqual);
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding("abcdefh", pathA, isEqual) && !isEqual);
 
-    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive(strA, "abcdefgh"));
-    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive("abcdefgh", strA));
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(pathA, "abcdefgh", isEqual) && !isEqual);
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding("abcdefgh", pathA, isEqual) && !isEqual);
+
+    // NFC vs NFD
+    SyncName nfcNormalizedName;
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfcNormalizedName));
+    SyncName nfdNormalizedName;
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfdNormalizedName, Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(nfcNormalizedName, nfdNormalizedName, isEqual) && isEqual);
 }
 
 void TestUtility::testMoveItemToTrash(void) {
