@@ -773,10 +773,12 @@ std::string toString(const VersionChannel e) {
 }
 std::string toString(const Platform e) {
     switch (e) {
-        case Platform::Windows:
-            return "Windows";
         case Platform::MacOS:
             return "MacOS";
+        case Platform::Windows:
+            return "Windows";
+        case Platform::WindowsServer:
+            return "WindowsServer";
         case Platform::LinuxAMD:
             return "LinuxAMD";
         case Platform::LinuxARM:

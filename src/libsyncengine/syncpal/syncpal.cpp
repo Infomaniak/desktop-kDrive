@@ -705,7 +705,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
         addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
-        return ExitCode::Unknown;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     // Queue job
@@ -1216,7 +1216,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
             }
         } catch (const std::exception &e) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob: error=" << e.what());
-            return ExitCode::BackError;
+            return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
     }
 

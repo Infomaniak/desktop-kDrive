@@ -206,40 +206,42 @@ bool AbstractUploadSession::initChunks() {
 }
 
 bool AbstractUploadSession::startSession() {
+    std::shared_ptr<UploadSessionStartJob> startJob = nullptr;
     try {
-        auto startJob = createStartJob();
-        const ExitCode exitCode = startJob->runSynchronously();
-        if (startJob->hasHttpError() || exitCode != ExitCode::Ok) {
-            LOGW_ERROR(_logger, L"Failed to start upload session for " << Utility::formatSyncPath(_filePath.filename()).c_str());
-            _exitInfo = startJob->exitInfo();
-            return false;
-        }
-
-        // Extract file ID
-        if (!startJob->jsonRes()) {
-            LOG_WARN(_logger, "jsonRes is NULL");
-            _exitInfo = ExitCode::DataError;
-            return false;
-        }
-
-        Poco::JSON::Object::Ptr dataObj = startJob->jsonRes()->getObject(dataKey);
-        if (!dataObj || !JsonParserUtility::extractValue(dataObj, tokenKey, _sessionToken)) {
-            LOG_WARN(_logger, "Failed to extract upload session token");
-            _exitInfo = ExitCode::DataError;
-            return false;
-        }
-
-        if (!handleStartJobResult(startJob, _sessionToken)) {
-            LOG_WARN(_logger, "Error in handleStartJobResult");
-            return false;
-        }
-
-        _sessionStarted = true;
+        startJob = createStartJob();
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Error in UploadSessionStartJob: error=" << e.what());
+        LOG_WARN(_logger, "Error in UploadSessionStartJob::UploadSessionStartJob: error=" << e.what());
+        _exitInfo = AbstractTokenNetworkJob::exception2ExitCode(e);
+        return false;
+    }
+
+    const ExitCode exitCode = startJob->runSynchronously();
+    if (startJob->hasHttpError() || exitCode != ExitCode::Ok) {
+        LOGW_ERROR(_logger, L"Failed to start upload session for " << Utility::formatSyncPath(_filePath.filename()).c_str());
+        _exitInfo = startJob->exitInfo();
+        return false;
+    }
+
+    // Extract file ID
+    if (!startJob->jsonRes()) {
+        LOG_WARN(_logger, "jsonRes is NULL");
         _exitInfo = ExitCode::DataError;
         return false;
     }
+
+    Poco::JSON::Object::Ptr dataObj = startJob->jsonRes()->getObject(dataKey);
+    if (!dataObj || !JsonParserUtility::extractValue(dataObj, tokenKey, _sessionToken)) {
+        LOG_WARN(_logger, "Failed to extract upload session token");
+        _exitInfo = ExitCode::DataError;
+        return false;
+    }
+
+    if (!handleStartJobResult(startJob, _sessionToken)) {
+        LOG_WARN(_logger, "Error in handleStartJobResult");
+        return false;
+    }
+
+    _sessionStarted = true;
 
     if (_sessionToken.empty()) {
         LOG_WARN(_logger, "Invalid upload session token!");
@@ -407,23 +409,24 @@ bool AbstractUploadSession::closeSession() {
         return false;
     }
 
+    std::shared_ptr<UploadSessionFinishJob> finishJob = nullptr;
     try {
-        auto finishJob = createFinishJob();
-        const ExitCode exitCode = finishJob->runSynchronously();
-        if (exitCode != ExitCode::Ok || finishJob->hasHttpError()) {
-            LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: exit code="
-                                       << exitCode << L" file=" << Path2WStr(_filePath.filename()).c_str());
-            return false;
-        }
-
-        if (!handleFinishJobResult(finishJob)) {
-            LOGW_WARN(_logger, L"Error in handleFinishJobResult");
-            return false;
-        }
-
+        finishJob = createFinishJob();
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Error in UploadSessionFinishJob: error=" << e.what());
-        _exitInfo = ExitCode::DataError;
+        LOG_WARN(_logger, "Error in UploadSessionFinishJob::UploadSessionFinishJob: error=" << e.what());
+        _exitInfo = AbstractTokenNetworkJob::exception2ExitCode(e);
+        return false;
+    }
+
+    const ExitCode exitCode = finishJob->runSynchronously();
+    if (exitCode != ExitCode::Ok || finishJob->hasHttpError()) {
+        LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: exit code="
+                                   << exitCode << L" file=" << Path2WStr(_filePath.filename()).c_str());
+        return false;
+    }
+
+    if (!handleFinishJobResult(finishJob)) {
+        LOGW_WARN(_logger, L"Error in handleFinishJobResult");
         return false;
     }
 
@@ -456,25 +459,24 @@ bool AbstractUploadSession::cancelSession() {
         }
     }
 
+    LOG_INFO(_logger, "Aborting upload session: " << _sessionToken.c_str());
+    std::shared_ptr<UploadSessionCancelJob> cancelJob = nullptr;
     try {
-        LOG_INFO(_logger, "Aborting upload session: " << _sessionToken.c_str());
-        auto cancelJob = createCancelJob();
-
-        const ExitCode exitCode = cancelJob->runSynchronously();
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously: code=" << exitCode);
-            _exitInfo = exitCode;
-            return false;
-        }
-
-        if (!handleCancelJobResult(cancelJob)) {
-            LOG_WARN(_logger, "Error in handleCancelJobResult");
-            return false;
-        }
-
+        cancelJob = createCancelJob();
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Error in UploadSessionCancelJob: error=" << e.what());
-        _exitInfo = ExitCode::DataError;
+        LOG_WARN(_logger, "Error in UploadSessionCancelJob::UploadSessionCancelJob: error=" << e.what());
+        _exitInfo = AbstractTokenNetworkJob::exception2ExitCode(e);
+        return false;
+    }
+
+    if (const auto exitInfo = cancelJob->runSynchronously(); !exitInfo) {
+        LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously: " << exitInfo);
+        _exitInfo = exitInfo;
+        return false;
+    }
+
+    if (!handleCancelJobResult(cancelJob)) {
+        LOG_WARN(_logger, "Error in handleCancelJobResult");
         return false;
     }
 
