@@ -2419,6 +2419,8 @@ ExitCode AppServer::updateUserInfo(User &user) {
                             exitCause = ExitCause::DriveNotRenew;
                         else if (drive.maintenanceInfo()._asleep)
                             exitCause = ExitCause::DriveAsleep;
+                        else if (drive.maintenanceInfo()._wakingUp)
+                            exitCause = ExitCause::DriveWakingUp;
                         else
                             exitCause = ExitCause::DriveMaintenance;
                     }

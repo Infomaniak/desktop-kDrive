@@ -478,16 +478,21 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
                         "The kDrive is blocked.<br>"
                         "Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be "
                         "impossible to recover them.");
-            } else {
-                return tr(
-                        "The kDrive is blocked.<br>"
-                        "Please contact an administrator to renew the kDrive. If no action is taken, the data will be "
-                        "permanently deleted and it will be impossible to recover them.");
             }
+            return tr(
+                    "The kDrive is blocked.<br>"
+                    "Please contact an administrator to renew the kDrive. If no action is taken, the data will be "
+                    "permanently deleted and it will be impossible to recover them.");
+        }
+        case ExitCause::DriveWakingUp: {
+            return tr(
+                    "The kDrive is waking up.<br>"
+                    "Synchronization will begin again as soon as possible. Please contact our support team if the error "
+                    "persists.");
         }
         case ExitCause::DriveAsleep: {
-            const auto &driveInfoMapIt = _gui->driveInfoMap().find(_currentDriveDbId);
-            if (driveInfoMapIt != _gui->driveInfoMap().end()) {
+            if (const auto &driveInfoMapIt = _gui->driveInfoMap().find(_currentDriveDbId);
+                driveInfoMapIt != _gui->driveInfoMap().end()) {
                 QString driveLink = QString(APPLICATION_PREVIEW_URL).arg(driveInfoMapIt->second.id()).arg("");
                 return tr(R"(The kDrive is asleep.<br>)"
                           R"(Please, login to the <a style="%1" href="%2">web version</a> to check your kDrive's status, or contact your administrator.)")

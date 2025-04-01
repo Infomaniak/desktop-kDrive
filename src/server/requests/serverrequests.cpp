@@ -1543,7 +1543,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
+ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
     updated = false;
     accountUpdated = false;
     quotaUpdated = false;
@@ -1558,13 +1558,12 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    const bool knownMaintenanceMode = job->exitInfo().cause() == ExitCause::DriveNotRenew ||
-                                      job->exitInfo().cause() == ExitCause::DriveAsleep ||
-                                      job->exitInfo().cause() == ExitCause::DriveWakingUp;
-    if (exitCode != ExitCode::Ok && !knownMaintenanceMode) {
+    const auto exitInfo = job->runSynchronously();
+    const bool knownMaintenanceMode = exitInfo.cause() == ExitCause::DriveNotRenew ||
+                                      exitInfo.cause() == ExitCause::DriveAsleep || exitInfo.cause() == ExitCause::DriveWakingUp;
+    if (!exitInfo && !knownMaintenanceMode) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
-        return exitCode;
+        return exitInfo;
     }
 
     Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
@@ -1573,7 +1572,8 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         LOG_WARN(Log::instance()->getLogger(), "Unable to get drive info for driveDbId=" << drive.dbId());
         drive.setAccessDenied(true);
         return ExitCode::Ok;
-    } else if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
+    }
+    if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Network error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
         return ExitCode::NetworkError;
@@ -1640,7 +1640,7 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         drive.setMaintenanceInfo({._maintenance = inMaintenance,
                                   ._notRenew = job->exitInfo().cause() == ExitCause::DriveNotRenew,
                                   ._asleep = job->exitInfo().cause() == ExitCause::DriveAsleep,
-                                  ._wakingUp = false,
+                                  ._wakingUp = job->exitInfo().cause() == ExitCause::DriveWakingUp,
                                   ._maintenanceFrom = maintenanceFrom});
 
         int64_t usedSize = 0;
