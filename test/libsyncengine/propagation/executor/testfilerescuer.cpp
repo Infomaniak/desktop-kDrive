@@ -15,11 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "testfilerescuer.h"
-
 #include "db/parmsdb.h"
 #include "keychainmanager/keychainmanager.h"
 #include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
+
+#include "mocks/libcommonserver/db/mockdb.h"
 #include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
@@ -38,7 +39,7 @@ void TestFileRescuer::setUp() {
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 

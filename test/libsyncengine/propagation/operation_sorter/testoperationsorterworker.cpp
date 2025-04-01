@@ -20,7 +20,6 @@
 #include "propagation/operation_sorter/cyclefinder.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
-#include "test_classes/testinitialsituationgenerator.h"
 #include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 

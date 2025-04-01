@@ -24,9 +24,9 @@
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "network/proxy.h"
-#include "mocks/libcommonserver/db/mockdb.h"
 #include "propagation/executor/filerescuer.h"
 
+#include "mocks/libcommonserver/db/mockdb.h"
 #include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
