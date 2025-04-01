@@ -35,8 +35,8 @@ bool LocalMoveJob::canRun() {
 
     // If the paths are not identical except for case and encoding, check that the destination doesn't already exist
     bool isEqual = false;
-    if (!Utility::isEqualUpToCaseAndEnc(_source, _dest, isEqual)) {
-        LOG_WARN(_logger, "Error in Utility::isEqualUpToCaseAndEnc");
+    if (!Utility::checkIfEqualUpToCaseAndEncoding(_source, _dest, isEqual)) {
+        LOG_WARN(_logger, "Error in Utility::checkIfEqualUpToCaseAndEncoding");
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::Unknown;
         return false;

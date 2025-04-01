@@ -103,8 +103,14 @@ struct COMMONSERVER_EXPORT Utility {
         static bool endsWith(const SyncName &str, const SyncName &suffix);
         static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
 #endif
-
-        static bool isEqualUpToCaseAndEnc(const SyncPath &a, const SyncPath &b, bool &isEqual);
+        /**
+         * Check if two paths coincide up to case and encoding of file names.
+         * @param a SyncPath value to be compared.
+         * @param b Other SyncPath value to be compared.
+         * @param isEqual true if a is equal to b up to case and NFC-normalization.
+         * @return true if no normalization issue occurs when comparing.
+         */
+        static bool checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual);
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.

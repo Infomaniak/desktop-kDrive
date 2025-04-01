@@ -390,7 +390,9 @@ bool Utility::endsWithInsensitive(const std::string &str, const std::string &suf
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
 
-bool Utility::isEqualUpToCaseAndEnc(const SyncPath &a, const SyncPath &b, bool &isEqual) {
+bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual) {
+    isEqual = false;
+
     SyncPath normalizedA;
     if (!Utility::normalizedSyncPath(a, normalizedA)) {
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
