@@ -143,7 +143,10 @@ QString CommonUtility::platformName() {
 Platform CommonUtility::platform() {
     const QString name = platformName();
     if (name.contains("macos", Qt::CaseInsensitive)) return Platform::MacOS;
-    if (name.contains("windows", Qt::CaseInsensitive)) return Platform::Windows;
+    if (name.contains("windows", Qt::CaseInsensitive)) {
+        if (name.contains("server", Qt::CaseInsensitive)) return Platform::WindowsServer;
+        return Platform::Windows;
+    }
     // Otherwise we consider the OS to be Linux based
     if (platformArch().contains("arm", Qt::CaseInsensitive)) return Platform::LinuxARM;
 

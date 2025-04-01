@@ -509,7 +509,7 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
         uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
-        return ExitCode::SystemError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     };
 
     bool canceledByUser = false;
