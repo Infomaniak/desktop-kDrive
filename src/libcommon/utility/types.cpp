@@ -204,6 +204,8 @@ std::string toString(const ExitCause e) {
             return "ShareLinkAlreadyExists";
         case ExitCause::InvalidArgument:
             return "InvalidArgument";
+        case ExitCause::InvalidDestination:
+            return "InvalidDestination";
         default:
             return noConversionStr;
     }
@@ -237,19 +239,6 @@ std::string toString(const ConflictType e) {
             return "EditEdit";
         case ConflictType::MoveMoveCycle:
             return "MoveMoveCycle";
-        default:
-            return noConversionStr;
-    }
-}
-
-std::string toString(const ConflictTypeResolution e) {
-    switch (e) {
-        case ConflictTypeResolution::None:
-            return "None";
-        case ConflictTypeResolution::DeleteCanceled:
-            return "DeleteCanceled";
-        case ConflictTypeResolution::FileMovedToRoot:
-            return "FileMovedToRoot";
         default:
             return noConversionStr;
     }
@@ -304,6 +293,8 @@ std::string toString(const CancelType e) {
             return "ExcludedByTemplate";
         case CancelType::Hardlink:
             return "Hardlink";
+        case CancelType::FileRescued:
+            return "FileRescued";
         default:
             return noConversionStr;
     }
@@ -319,6 +310,8 @@ std::string toString(const NodeStatus e) {
             return "PartiallyProcessed";
         case NodeStatus::Processed:
             return "Processed";
+        case NodeStatus::ConflictOpGenerated:
+            return "ConflictOpGenerated";
         default:
             return noConversionStr;
     }
@@ -774,10 +767,12 @@ std::string toString(const VersionChannel e) {
 }
 std::string toString(const Platform e) {
     switch (e) {
-        case Platform::Windows:
-            return "Windows";
         case Platform::MacOS:
             return "MacOS";
+        case Platform::Windows:
+            return "Windows";
+        case Platform::WindowsServer:
+            return "WindowsServer";
         case Platform::LinuxAMD:
             return "LinuxAMD";
         case Platform::LinuxARM:

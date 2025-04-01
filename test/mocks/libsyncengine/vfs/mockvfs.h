@@ -126,11 +126,9 @@ class MockVfs : public T {
         void setMockIsDehydratedPlaceholder(std::function<ExitInfo(const SyncPath &, bool &)> isDehydratedPlaceholder) {
             _isDehydratedPlaceholder = isDehydratedPlaceholder;
         }
-        void setMockSetPinState(std::function<ExitInfo(const SyncPath &, KDC::PinState)> setPinState) {
-            _setPinState = setPinState;
-        }
-        void setMockPinState(std::function<KDC::PinState(const SyncPath &)> pinState) { _pinState = pinState; }
-        void setMockStatus(std::function<ExitInfo(const SyncPath &, const VfsStatus &)> status) { _status = status; }
+        void setMockSetPinState(std::function<ExitInfo(const SyncPath &, PinState)> setPinState) { _setPinState = setPinState; }
+        void setMockPinState(std::function<PinState(const SyncPath &)> pinState) { _pinState = pinState; }
+        void setMockStatus(std::function<ExitInfo(const SyncPath &, VfsStatus &)> status) { _status = status; }
         void setMockSetThumbnail(std::function<ExitInfo(const SyncPath &, const QPixmap &)> setThumbnail) {
             _setThumbnail = setThumbnail;
         }
@@ -140,7 +138,7 @@ class MockVfs : public T {
         }
         void setMockExclude(std::function<void(const SyncPath &)> exclude) { _exclude = exclude; }
         void setMockIsExcluded(std::function<bool(const SyncPath &)> isExcluded) { _isExcluded = isExcluded; }
-        void setMockFileStatusChanged(std::function<bool(const SyncPath &, KDC::SyncFileStatus)> fileStatusChanged) {
+        void setMockFileStatusChanged(std::function<bool(const SyncPath &, SyncFileStatus)> fileStatusChanged) {
             _fileStatusChanged = fileStatusChanged;
         }
         void setMockClearFileAttributes(std::function<void(const SyncPath &)> clearFileAttributes) {

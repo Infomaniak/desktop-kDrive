@@ -31,20 +31,20 @@ class ConflictCmp;
 class Conflict {
     public:
         Conflict() = default;
-        Conflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode, ConflictType type);
+        Conflict(std::shared_ptr<Node> node, std::shared_ptr<Node> otherNode, ConflictType type);
         ~Conflict();
 
-        inline const std::shared_ptr<Node> node() const { return _node; }
-        inline const std::shared_ptr<Node> correspondingNode() const { return _correspondingNode; }
-        inline ConflictType type() const { return _type; }
+        [[nodiscard]] std::shared_ptr<Node> node() const { return _node; }
+        [[nodiscard]] std::shared_ptr<Node> otherNode() const { return _otherNode; }
+        [[nodiscard]] ConflictType type() const { return _type; }
 
-        ReplicaSide sideOfEvent(OperationType opType) const;
-        std::shared_ptr<Node> localNode() const;
-        std::shared_ptr<Node> remoteNode() const;
+        [[nodiscard]] ReplicaSide sideOfEvent(OperationType opType) const;
+        [[nodiscard]] std::shared_ptr<Node> localNode() const;
+        [[nodiscard]] std::shared_ptr<Node> remoteNode() const;
 
     private:
-        std::shared_ptr<Node> _node = nullptr;
-        std::shared_ptr<Node> _correspondingNode = nullptr;
+        std::shared_ptr<Node> _node;
+        std::shared_ptr<Node> _otherNode;
         ConflictType _type = ConflictType::None;
 };
 
@@ -55,7 +55,7 @@ class ConflictCmp {
 
         bool operator()(const Conflict &c1, const Conflict &c2) const;
 
-        SyncPath pathOfEvent(const Conflict &conflict, OperationType optype) const;
+        [[nodiscard]] SyncPath pathOfEvent(const Conflict &conflict, OperationType optype) const;
 
     private:
         std::shared_ptr<UpdateTree> _localUpdateTree;
@@ -68,13 +68,13 @@ class ConflictQueue : public SharedObject {
         ~ConflictQueue();
 
         void push(Conflict c);
-        inline void pop() { _queue->pop(); }
-        inline const Conflict top() { return _queue->top(); }
-        inline size_t size() { return _queue->size(); }
-        inline bool empty() { return _queue->empty(); }
+        void pop() const { _queue->pop(); }
+        [[nodiscard]] const Conflict &top() const { return _queue->top(); }
+        [[nodiscard]] size_t size() const { return _queue->size(); }
+        [[nodiscard]] bool empty() const { return _queue->empty(); }
         void clear();
         void initQueue();
-        inline bool hasConflict(ConflictType t) { return _existingConflictTypes.find(t) != _existingConflictTypes.end(); }
+        [[nodiscard]] bool hasConflict(const ConflictType t) const { return _existingConflictTypes.contains(t); }
 
     private:
         ConflictCmp _conflictCmp;

@@ -407,7 +407,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::GetFileInfoJob for userDbId="
                                                        << userDbId << " driveId=" << driveId
                                                        << " nodeId=" << nodeId.toStdString().c_str() << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     job->setWithPath(withPath);
@@ -471,7 +471,7 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -555,7 +555,7 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
         } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
                                                            << userDbId << " driveId=" << driveId << " error=" << e.what());
-            return ExitCode::DataError;
+            return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
     } else {
         try {
@@ -564,7 +564,7 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
                                                            << userDbId << " driveId=" << driveId << " nodeId="
                                                            << nodeId.toStdString().c_str() << " error=" << e.what());
-            return ExitCode::DataError;
+            return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
     }
 
@@ -953,10 +953,10 @@ bool ServerRequests::isAutoResolvedError(const Error &error) {
     } else if (error.level() == ErrorLevel::SyncPal) {
         autoResolved =
                 (error.exitCode() ==
-                         ExitCode::NetworkError // Sync is paused and we try to restart it every RESTART_SYNCS_INTERVAL
-                 || (error.exitCode() == ExitCode::BackError // Sync is stoped and a full sync is restarted
+                         ExitCode::NetworkError // Sync is paused, and we try to restart it every RESTART_SYNCS_INTERVAL
+                 || (error.exitCode() == ExitCode::BackError // Sync is stopped and a full sync is restarted
                      && error.exitCause() != ExitCause::DriveAccessError && error.exitCause() != ExitCause::DriveNotRenew) ||
-                 error.exitCode() == ExitCode::DataError); // Sync is stoped and a full sync is restarted
+                 error.exitCode() == ExitCode::DataError); // Sync is stopped and a full sync is restarted
     } else if (error.level() == ErrorLevel::Node) {
         autoResolved = (error.conflictType() != ConflictType::None && !isConflictsWithLocalRename(error.conflictType())) ||
                        (error.inconsistencyType() !=
@@ -1021,7 +1021,7 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1064,10 +1064,10 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
     } catch (const std::exception &e) {
         logWarning("PostFileLinkJob", driveDbId, nodeId, e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    if (job->runSynchronously() != ExitCode::Ok) {
+    if (!job->runSynchronously()) {
         if (job->exitCode() == ExitCode::BackError && job->exitCause() == ExitCause::ShareLinkAlreadyExists) {
             // The link already exists, get it
             job.reset();
@@ -1075,10 +1075,10 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
                 job = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
             } catch (const std::exception &e) {
                 logWarning("GetFileLinkJob", driveDbId, nodeId, e.what());
-                return ExitCode::DataError;
+                return AbstractTokenNetworkJob::exception2ExitCode(e);
             }
 
-            if (job->runSynchronously() != ExitCode::Ok) {
+            if (!job->runSynchronously()) {
                 logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitCode()));
                 return job->exitCode();
             }
@@ -1125,7 +1125,7 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::GetSizeJob for userDbId=" << userDbId << " driveId=" << driveId
                                                                  << " nodeId=" << nodeId.c_str() << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1301,7 +1301,42 @@ ExitCode ServerRequests::deleteErrorsServer() {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
+bool keepError(const int syncDbId, const Error &error, ExitInfo &exitInfo) {
+    exitInfo = ExitCode::Ok;
+    if (error.conflictType() == ConflictType::CreateCreate || error.conflictType() == ConflictType::EditEdit ||
+        error.cancelType() == CancelType::FileRescued) {
+        // For the selected conflict types, the local item is renamed.
+        Sync sync;
+        bool found = false;
+        if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
+            exitInfo = ExitCode::DbError;
+            return false;
+        }
+        if (!found) {
+            LOG_WARN(Log::instance()->getLogger(), "Sync with id=" << syncDbId << " not found");
+            exitInfo = ExitCode::DataError;
+            return false;
+        }
+
+        auto ioError = IoError::Success;
+        const SyncPath dest = sync.localPath() / error.destinationPath();
+        if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError));
+            exitInfo = ExitCode::SystemError;
+            return false;
+        }
+
+        // If the conflicted file still exists, keep the error.
+        if (found) {
+            return true;
+        }
+    }
+    return false;
+}
+
+ExitCode ServerRequests::deleteErrorsForSync(const int syncDbId, const bool autoResolved) {
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, syncDbId, INT_MAX, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
@@ -1314,32 +1349,9 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
     }
 
     for (const Error &error: errorList) {
-        if (error.conflictType() == ConflictType::CreateCreate || error.conflictType() == ConflictType::EditEdit) {
-            // For conflict type that rename local file
-            Sync sync;
-            bool found = false;
-            if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-                return ExitCode::DbError;
-            }
-            if (!found) {
-                LOG_WARN(Log::instance()->getLogger(), "Sync with id=" << syncDbId << " not found");
-                return ExitCode::DataError;
-            }
-
-            auto ioError = IoError::Success;
-            const SyncPath dest = sync.localPath() / error.destinationPath();
-            if (const bool success = IoHelper::checkIfPathExists(dest, found, ioError); !success) {
-                LOGW_WARN(Log::instance()->getLogger(),
-                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError).c_str());
-                return ExitCode::SystemError;
-            }
-
-            // If conflict file still exists, keep the error.
-            if (found) {
-                continue;
-            }
-        }
+        ExitInfo exitInfo;
+        if (keepError(syncDbId, error, exitInfo)) continue;
+        if (!exitInfo) return exitInfo;
 
         if (isAutoResolvedError(error) == autoResolved) {
             bool found = false;
@@ -1542,7 +1554,7 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId() << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1648,7 +1660,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetThumbnailJob::GetThumbnailJob for driveDbId="
                                                        << driveDbId << " and nodeId=" << nodeId.c_str() << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1680,13 +1692,9 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     try {
         job = std::make_shared<GetInfoUserJob>(user.dbId());
     } catch (const std::exception &e) {
-        const std::string what = e.what();
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " error=" << what.c_str());
-        if (what == invalidToken) {
-            return ExitCode::InvalidToken;
-        }
-        return ExitCode::DataError;
+                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
