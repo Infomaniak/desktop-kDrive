@@ -467,31 +467,24 @@ bool CommonUtility::colorThresholdCheck(const int red, const int green, const in
 }
 
 SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &path) {
-    std::filesystem::path rootPathNormal(rootPath.lexically_normal());
-    std::filesystem::path pathNormal(path.lexically_normal());
-
-    if (rootPathNormal == pathNormal) {
-        return std::filesystem::path();
+    const auto& pathStr = path.native();
+    const auto& rootStr = rootPath.native();
+    auto rootIt = rootStr.begin();
+    auto pathIt = pathStr.begin();
+    const auto rootItEnd = rootStr.end();
+    const auto pathItEnd = pathStr.end();
+    while (rootIt != rootItEnd && pathIt != pathItEnd &&
+           (*rootIt == *pathIt || (*rootIt == '/' && *pathIt == '\\') || (*rootIt == '\\' && *pathIt == '/'))) {
+        ++rootIt;
+        ++pathIt;
     }
 
-    std::vector<SyncName> rootPathElts;
-    for (const auto &dir: rootPathNormal) {
-        rootPathElts.push_back(dir.native());
+    if (rootIt != rootItEnd || pathIt == pathItEnd) {
+        // path is not a subpath of rootPath or the relative Path is empty
+        return {};
     }
-
-    size_t index = 0;
-    std::filesystem::path relativePath;
-    for (const auto &dir: pathNormal) {
-        if (index >= rootPathElts.size()) {
-            relativePath /= dir;
-        } else if (dir != rootPathElts[index]) {
-            // path is not a sub path of rootPath
-            break;
-        }
-        index++;
-    }
-
-    return relativePath;
+    while (pathIt != pathItEnd && (*pathIt == '\\' || *pathIt == '/')) ++pathIt;
+    return {pathIt, pathItEnd};
 }
 
 QStringList CommonUtility::languageCodeList(const Language enforcedLocale) {
