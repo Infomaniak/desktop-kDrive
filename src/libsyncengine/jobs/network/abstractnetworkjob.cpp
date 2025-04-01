@@ -40,8 +40,6 @@
 #include <functional>
 #include <Poco/JSON/Parser.h>
 
-#define ABSTRACTNETWORKJOB_NEW_ERROR_MSG "Failed to create AbstractNetworkJob instance!"
-
 #define BUF_SIZE 1024
 
 #define MAX_TRIALS 5
@@ -65,19 +63,18 @@ AbstractNetworkJob::AbstractNetworkJob() {
                 _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
             } catch (Poco::Exception const &e) {
                 if (trials < _trials) {
-                    LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e).c_str() << ", retrying...");
+                    LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
                     continue;
                 } else {
-                    LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e).c_str());
-                    throw std::runtime_error(ABSTRACTNETWORKJOB_NEW_ERROR_MSG);
+                    LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e));
+                    throw std::runtime_error(errorText(e).c_str());
                 }
             } catch (std::exception &e) {
                 if (trials < _trials) {
-                    LOG_INFO(_logger,
-                             "Unknown error in Poco::Net::Context constructor: " << errorText(e).c_str() << ", retrying...");
+                    LOG_INFO(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
                 } else {
                     LOG_ERROR(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e));
-                    throw std::runtime_error(ABSTRACTNETWORKJOB_NEW_ERROR_MSG);
+                    throw std::runtime_error(errorText(e).c_str());
                 }
             }
         }

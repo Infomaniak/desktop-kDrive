@@ -76,14 +76,14 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         bool loadInfoMaps();
         void openLoginDialog(int userDbId, bool invalidTokenError);
         void newDriveWizard(bool addDriveAccept = false);
-        static void restoreGeometry(QWidget *w);
         void getWebviewDriveLink(int userDbId, QString &driveLink);
-
         void errorInfoList(int driveDbId, QList<ErrorInfo> &errorInfoList);
         void resolveConflictErrors(int driveDbId, bool keepLocalVersion);
         void resolveUnsupportedCharErrors(int driveDbId);
         void closeAllExcept(const QWidget *exceptWidget);
-        void onAppVersionLocked(bool currentVersionLocked);
+        bool isUserUsed(int userDbId) const;
+
+        static void restoreGeometry(QWidget *w);
 
     signals:
         void userListRefreshed();
@@ -116,6 +116,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onFixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors);
         void onNewDriveWizard();
         void onShowWindowsUpdateDialog(const KDC::VersionInfo &versionInfo) const;
+        void onAppVersionLocked(bool currentVersionLocked);
 
     private:
         QScopedPointer<Systray> _tray;
@@ -163,7 +164,6 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void refreshErrorList(int driveDbId);
         ExitCode loadError(int driveDbId, int syncDbId, ErrorLevel level);
         ExitCode handleErrors(int driveDbId, int syncDbId, ErrorLevel level);
-
 
     private slots:
         void onShowTrayMessage(const QString &title, const QString &msg);
