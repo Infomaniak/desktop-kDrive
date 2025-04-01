@@ -129,19 +129,14 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true if no normalization issue.
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
-
         /**
-         * Check whether two names indicate the same item on the file system.
-         * @param lhs SyncName value to be compared.
-         * @param rhs Other SyncName value to be compared.
-         * @param isEquivalent true if lhs and rhs have equal normalization when normalizeNames is true or if lhs == rhs when
-         * normalizeNames is false. False otherwise; in particular it is false if normalization fails on any of the two inputs.
-         * @param normalizeNames if true, lhs and rhs are normalized before comparing them with `==`.
-         * Otherwise just compare with `==`.
-         * @return true if no normalization error occurred, false otherwise.
+         * Split the input path into a vector of file and directory names.
+         * @param path SyncPath the path to split.
+         * @return A vector of the file and directory names composing the path, sorted
+         * in reverse order.
+         * Example: the return value associated to path = SyncPath("A / B / c.txt") is the vector
+         * ["c.txt", "B", "A"]
          */
-        static bool checkIfEquivalent(const SyncName &lhs, const SyncName &rhs, bool &isEquivalent, bool normalizeNames = false);
-
         static std::vector<SyncName> splitPath(const SyncPath &path);
 
         static bool moveItemToTrash(const SyncPath &itemPath);

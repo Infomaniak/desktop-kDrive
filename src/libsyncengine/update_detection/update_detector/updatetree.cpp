@@ -79,7 +79,7 @@ bool UpdateTree::deleteNode(const NodeId &id) {
 }
 
 
-std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path, const bool normalizePaths) {
+std::shared_ptr<Node> UpdateTree::getNodeByNormalizedPath(const SyncPath &path) {
     if (path.empty()) {
         return _rootNode;
     }
@@ -89,9 +89,13 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path, const bool
 
     for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
+        SyncName normalizedSyncName;
+        if (!Utility::normalizedSyncName(*nameIt, normalizedSyncName)) continue;
+
         for (const auto &[_, childNode]: tmpNode->children()) {
-            bool areEquivalent = false;
-            if (Utility::checkIfEquivalent(*nameIt, childNode->name(), areEquivalent, normalizePaths) && areEquivalent) {
+            SyncName normalizedChildSyncName;
+            if (!Utility::normalizedSyncName(childNode->name(), normalizedChildSyncName)) continue;
+            if (normalizedSyncName == normalizedChildSyncName) {
                 tmpChildNode = childNode;
                 break;
             }
@@ -105,6 +109,35 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path, const bool
 
     return tmpNode;
 }
+
+
+std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
+    if (path.empty()) {
+        return _rootNode;
+    }
+
+    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    std::shared_ptr<Node> tmpNode = _rootNode;
+
+    for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
+        std::shared_ptr<Node> tmpChildNode = nullptr;
+
+        for (const auto &[_, childNode]: tmpNode->children()) {
+            if (*nameIt == childNode->name()) {
+                tmpChildNode = childNode;
+                break;
+            }
+        }
+
+        if (tmpChildNode == nullptr) {
+            return nullptr;
+        }
+        tmpNode = tmpChildNode;
+    }
+
+    return tmpNode;
+}
+
 
 std::shared_ptr<Node> UpdateTree::getNodeById(const NodeId &nodeId) {
     auto it = _nodes.find(nodeId);

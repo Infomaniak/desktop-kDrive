@@ -40,8 +40,8 @@ class UpdateTree : public SharedObject {
         inline std::shared_ptr<Node> rootNode() { return _rootNode; }
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &nodes() { return _nodes; }
         inline std::unordered_map<NodeId, NodeId> &previousIdSet() { return _previousIdSet; }
-        std::shared_ptr<Node> getNodeByPath(const SyncPath &path) { return getNodeByPath(path, false); };
-        std::shared_ptr<Node> getNodeByNormalizedPath(const SyncPath &path) { return getNodeByPath(path, true); }
+        std::shared_ptr<Node> getNodeByPath(const SyncPath &path);
+        std::shared_ptr<Node> getNodeByNormalizedPath(const SyncPath &path);
         std::shared_ptr<Node> getNodeById(const NodeId &nodeId);
         bool exists(const NodeId &id);
 
@@ -66,7 +66,6 @@ class UpdateTree : public SharedObject {
 
     private:
         void drawUpdateTreeRow(std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth = 0);
-        std::shared_ptr<Node> getNodeByPath(const SyncPath &path, bool normalizePath);
 
         std::unordered_map<NodeId, std::shared_ptr<Node>> _nodes;
         std::shared_ptr<Node> _rootNode;

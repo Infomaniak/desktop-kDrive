@@ -484,22 +484,6 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
-bool Utility::checkIfEquivalent(const SyncName &lhs, const SyncName &rhs, bool &isEquivalent, bool normalizeNames) {
-    isEquivalent = false;
-
-    if (normalizeNames) {
-        if (!Utility::checkIfSameNormalization(lhs, rhs, isEquivalent)) {
-            LOGW_WARN(logger(), L"Error in Utility::checkIfSameNormalization: " << Utility::formatSyncName(lhs) << L" / "
-                                                                                << Utility::formatSyncName(rhs));
-            return false;
-        }
-    } else {
-        isEquivalent = lhs == rhs;
-    }
-
-    return true;
-}
-
 std::vector<SyncName> Utility::splitPath(const SyncPath &path) {
     std::vector<SyncName> itemNames;
     SyncPath pathTmp(path);

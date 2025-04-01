@@ -507,19 +507,6 @@ void TestUtility::testUserName() {
 #endif
 }
 
-void TestUtility::testCheckIfEquivalent() {
-    bool isEquivalent = false;
-
-    const SyncName nfcName = testhelpers::makeNfcSyncName();
-    CPPUNIT_ASSERT(Utility::checkIfEquivalent(nfcName, nfcName, isEquivalent) && isEquivalent);
-
-    const SyncName nfdName = testhelpers::makeNfdSyncName();
-    CPPUNIT_ASSERT(Utility::checkIfEquivalent(nfdName, nfdName, isEquivalent) && isEquivalent);
-
-    CPPUNIT_ASSERT(Utility::checkIfEquivalent(nfdName, nfcName, isEquivalent) && !isEquivalent);
-    CPPUNIT_ASSERT(Utility::checkIfEquivalent(nfdName, nfcName, isEquivalent, true) && isEquivalent);
-}
-
 void TestUtility::testSplitPath() {
     const auto fileNames = Utility::splitPath(SyncPath("A") / "B" / "file.txt");
     CPPUNIT_ASSERT_EQUAL(SyncName{"A"}, fileNames[2]);
