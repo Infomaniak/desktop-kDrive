@@ -90,11 +90,19 @@ std::shared_ptr<Node> UpdateTree::getNodeByNormalizedPath(const SyncPath &path) 
     for (auto nameIt = itemNames.rbegin(); nameIt != itemNames.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
         SyncName normalizedSyncName;
-        if (!Utility::normalizedSyncName(*nameIt, normalizedSyncName)) continue;
+        if (!Utility::normalizedSyncName(*nameIt, normalizedSyncName)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*nameIt));
+            continue;
+        }
 
         for (const auto &[_, childNode]: tmpNode->children()) {
             SyncName normalizedChildSyncName;
-            if (!Utility::normalizedSyncName(childNode->name(), normalizedChildSyncName)) continue;
+            if (!Utility::normalizedSyncName(childNode->name(), normalizedChildSyncName)) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(childNode->name()));
+                continue;
+            }
             if (normalizedSyncName == normalizedChildSyncName) {
                 tmpChildNode = childNode;
                 break;
