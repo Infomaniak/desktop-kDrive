@@ -93,7 +93,7 @@ std::shared_ptr<Node> UpdateTree::getNodeByNormalizedPath(const SyncPath &path) 
         if (!Utility::normalizedSyncName(*nameIt, normalizedSyncName)) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(*nameIt));
-            continue;
+            return nullptr;
         }
 
         for (const auto &[_, childNode]: tmpNode->children()) {
@@ -101,7 +101,7 @@ std::shared_ptr<Node> UpdateTree::getNodeByNormalizedPath(const SyncPath &path) 
             if (!Utility::normalizedSyncName(childNode->name(), normalizedChildSyncName)) {
                 LOGW_WARN(Log::instance()->getLogger(),
                           L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(childNode->name()));
-                continue;
+                return nullptr;
             }
             if (normalizedSyncName == normalizedChildSyncName) {
                 tmpChildNode = childNode;
