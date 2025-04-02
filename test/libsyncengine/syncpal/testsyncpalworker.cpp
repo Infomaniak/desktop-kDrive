@@ -79,10 +79,10 @@ void TestSyncPalWorker::setUp() {
 void TestSyncPalWorker::tearDown() {
     _testEnded = true;
     // Stop SyncPal and delete sync DB
-    ParmsDb::instance()->close();
     if (_syncPal) {
         _syncPal->stop(false, true, true);
     }
+    ParmsDb::instance()->close();
     ParmsDb::reset();
 
     for (auto& thread: _runningThreads) {
