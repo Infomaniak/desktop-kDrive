@@ -63,7 +63,7 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 
     std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;
@@ -120,10 +120,10 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 }
 
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
-    std::unordered_set<NodeId> ids;
+    NodeSet ids;
     _syncPal->_remoteFSObserverWorker->snapshot()->ids(ids);
 
-    std::unordered_set<NodeId> childrenIds;
+    NodeSet childrenIds;
     CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->snapshot()->getChildrenIds(testRemoteFsoDirId, childrenIds));
     CPPUNIT_ASSERT_EQUAL(size_t(nbFileInTestDir), childrenIds.size());
 

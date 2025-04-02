@@ -148,8 +148,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool checkIfCanShareItem(const SyncPath &path, bool &canShare) const;
 
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
-        ExitCode syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet);
-        ExitCode setSyncIdSet(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet);
+        ExitCode syncIdSet(SyncNodeType type, NodeSet &nodeIdSet);
+        ExitCode setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet);
         ExitCode syncListUpdated(bool restartSync);
         ExitCode excludeListUpdated();
         ExitCode fixConflictingFiles(bool keepLocalVersion, std::vector<Error> &errorList);

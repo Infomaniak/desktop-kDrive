@@ -120,7 +120,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _sendFilesNotificationsTimer;
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
-        std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
+        std::unordered_map<int, NodeSet> _undecidedListCacheMap;
 
         static std::unique_ptr<UpdateManager> _updateManager;
 
@@ -141,11 +141,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);
         ExitCode updateAllUsersInfo();
-        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync,
-                                           const std::unordered_set<NodeId> &blackList = std::unordered_set<NodeId>(),
-                                           const std::unordered_set<NodeId> &undecidedList = std::unordered_set<NodeId>(),
-                                           const std::unordered_set<NodeId> &whiteList = std::unordered_set<NodeId>(),
-                                           bool start = true, const std::chrono::seconds &startDelay = std::chrono::seconds(0),
+        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, const NodeSet &undecidedList = {},
+                                           const NodeSet &whiteList = {}, bool start = true,
+                                           const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
                                            const QSet<QString> &whiteList, bool start = true,

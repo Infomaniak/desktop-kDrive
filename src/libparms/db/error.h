@@ -27,7 +27,7 @@ namespace KDC {
 
 class PARMS_EXPORT Error {
     public:
-        Error();
+        Error() = default;
 
         // Error level Server constructor
         Error(const std::string &functionName, ExitCode exitCode, ExitCause exitCause);

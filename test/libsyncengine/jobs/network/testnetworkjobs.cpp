@@ -105,7 +105,7 @@ void TestNetworkJobs::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);

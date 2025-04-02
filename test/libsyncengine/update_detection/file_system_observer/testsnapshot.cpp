@@ -108,7 +108,7 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT(_snapshot->exists("a"));
     CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(_snapshot->name("a")));
     CPPUNIT_ASSERT_EQUAL(NodeType::Directory, _snapshot->type("a"));
-    std::unordered_set<NodeId> childrenIds;
+    NodeSet childrenIds;
     _snapshot->getChildrenIds(_rootNodeId, childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("a"));
 

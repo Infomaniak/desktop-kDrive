@@ -45,7 +45,7 @@ void TestOperationProcessor::setUp() {
 
     std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;

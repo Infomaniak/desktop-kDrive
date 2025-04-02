@@ -722,14 +722,14 @@ void TestSyncDb::testSyncNodes() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
 
-    std::unordered_set<NodeId> nodeIdSet;
+    NodeSet nodeIdSet;
     nodeIdSet.emplace("1");
     nodeIdSet.emplace("2");
     nodeIdSet.emplace("3");
     nodeIdSet.emplace("4");
     nodeIdSet.emplace("5");
 
-    std::unordered_set<NodeId> nodeIdSet2;
+    NodeSet nodeIdSet2;
     nodeIdSet2.emplace("11");
     nodeIdSet2.emplace("12");
     nodeIdSet2.emplace("13");
@@ -737,7 +737,7 @@ void TestSyncDb::testSyncNodes() {
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, nodeIdSet));
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::UndecidedList, nodeIdSet2));
 
-    std::unordered_set<NodeId> nodeIdSet3;
+    NodeSet nodeIdSet3;
     CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet3));
     CPPUNIT_ASSERT_EQUAL(size_t(5), nodeIdSet3.size());
     CPPUNIT_ASSERT(nodeIdSet3.contains("1"));
@@ -752,7 +752,7 @@ void TestSyncDb::testSyncNodes() {
     CPPUNIT_ASSERT(nodeIdSet3.contains("12"));
     CPPUNIT_ASSERT(nodeIdSet3.contains("13"));
 
-    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, std::unordered_set<NodeId>()));
+    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, NodeSet()));
     nodeIdSet3.clear();
     CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet3));
     CPPUNIT_ASSERT_EQUAL(size_t(0), nodeIdSet3.size());

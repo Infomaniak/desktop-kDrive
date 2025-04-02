@@ -424,7 +424,7 @@ void TestUtility::testGetLastErrorMessage() {
 #endif
 
 void TestUtility::generatePaths(const std::vector<std::string> &itemsNames, const std::vector<char> &separators,
-                                bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start, int pos) {
+                                bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start, size_t pos) {
     if (pos == itemsNames.size()) {
         (void) result.emplace_back(start);
         for (const auto &separator: separators) {

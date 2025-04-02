@@ -120,7 +120,7 @@ void TestLocalFileSystemObserverWorker::tearDown() {
 }
 
 void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
-    std::unordered_set<NodeId> ids;
+    NodeSet ids;
     _syncPal->snapshot(ReplicaSide::Local)->ids(ids);
 
     uint64_t fileCounter = 0;

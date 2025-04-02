@@ -49,6 +49,7 @@ using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
+using NodeSet = std::unordered_set<NodeId, std::hash<NodeId>, std::equal_to<>>;
 
 using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 

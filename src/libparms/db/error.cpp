@@ -24,11 +24,8 @@
 
 namespace KDC {
 
-Error::Error() {}
-
 Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitCause) :
-    _level(ErrorLevel::Server), _functionName(functionName), _workerName(std::string()), _exitCode(exitCode),
-    _exitCause(exitCause) {}
+    _level(ErrorLevel::Server), _functionName(functionName), _exitCode(exitCode), _exitCause(exitCause) {}
 
 Error::Error(const std::string &functionName, const ExitInfo &exitInfo) :
     _level(ErrorLevel::Server), _functionName(functionName), _exitCode(exitInfo.code()), _exitCause(exitInfo.cause()) {}

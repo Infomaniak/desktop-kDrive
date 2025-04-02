@@ -989,8 +989,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             if (const auto exitInfo =
-                        initSyncPal(sync, std::unordered_set<NodeId>(), std::unordered_set<NodeId>(),
-                                    std::unordered_set<NodeId>(), true, std::chrono::seconds(0), resumedByUser, false);
+                        initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), true, std::chrono::seconds(0), resumedByUser, false);
                 !exitInfo) {
                 LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 addError(Error(errId(), exitInfo));
@@ -1299,7 +1298,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
-            std::unordered_set<NodeId> nodeIdSet;
+            NodeSet nodeIdSet;
             ExitCode exitCode = _syncPalMap[syncDbId]->syncIdSet(type, nodeIdSet);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in SyncPal::getSyncIdSet: code=" << exitCode);
@@ -1330,7 +1329,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
-            std::unordered_set<NodeId> nodeIdSet2;
+            NodeSet nodeIdSet2;
             for (const QString &nodeId: nodeIdSet) {
                 nodeIdSet2.insert(nodeId.toStdString());
             }
@@ -1495,7 +1494,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 if (!syncPalMapElt.second) continue;
                 if (syncPalMapElt.second->driveDbId() == driveDbId) {
                     // Get blacklist
-                    std::unordered_set<NodeId> nodeIdSet;
+                    NodeSet nodeIdSet;
                     ExitCode exitCode = syncPalMapElt.second->syncIdSet(SyncNodeType::BlackList, nodeIdSet);
                     if (exitCode != ExitCode::Ok) {
                         LOG_WARN(_logger, "Error in SyncPal::syncIdSet for syncDbId=" << syncPalMapElt.first);
@@ -3259,9 +3258,9 @@ ExitCode AppServer::updateAllUsersInfo() {
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeId> &blackList,
-                                const std::unordered_set<NodeId> &undecidedList, const std::unordered_set<NodeId> &whiteList,
-                                bool start, const std::chrono::seconds &startDelay, bool resumedByUser, bool firstInit) {
+ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, const NodeSet &undecidedList,
+                                const NodeSet &whiteList, bool start, const std::chrono::seconds &startDelay, bool resumedByUser,
+                                bool firstInit) {
     if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
         std::shared_ptr<Vfs> vfsPtr;
         if (ExitInfo exitInfo = getVfsPtr(sync.dbId(), vfsPtr); !exitInfo) {
@@ -3282,7 +3281,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
         _syncPalMap[sync.dbId()]->setAddCompletedItemCallback(&addCompletedItem);
         _syncPalMap[sync.dbId()]->setSendSignalCallback(&sendSignal);
 
-        if (blackList != std::unordered_set<NodeId>()) {
+        if (!blackList.empty()) {
             // Set blackList (create or overwrite the possible existing list in DB)
             if (const ExitInfo exitInfo = _syncPalMap[sync.dbId()]->setSyncIdSet(SyncNodeType::BlackList, blackList); !exitInfo) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
@@ -3290,7 +3289,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
             }
         }
 
-        if (undecidedList != std::unordered_set<NodeId>()) {
+        if (!undecidedList.empty()) {
             // Set undecidedList (create or overwrite the possible existing list in DB)
             if (const ExitInfo exitInfo = _syncPalMap[sync.dbId()]->setSyncIdSet(SyncNodeType::UndecidedList, undecidedList);
                 !exitInfo) {
@@ -3299,7 +3298,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
             }
         }
 
-        if (whiteList != std::unordered_set<NodeId>()) {
+        if (!whiteList.empty()) {
             // Set undecidedList (create or overwrite the possible existing list in DB)
             if (const ExitInfo exitInfo = _syncPalMap[sync.dbId()]->setSyncIdSet(SyncNodeType::WhiteList, whiteList); !exitInfo) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
@@ -3339,17 +3338,17 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
 ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
                                 const QSet<QString> &whiteList, bool start, const std::chrono::seconds &startDelay,
                                 bool resumedByUser, bool firstInit) {
-    std::unordered_set<NodeId> blackList2;
+    NodeSet blackList2;
     for (const QString &nodeId: blackList) {
         blackList2.insert(nodeId.toStdString());
     }
 
-    std::unordered_set<NodeId> undecidedList2;
+    NodeSet undecidedList2;
     for (const QString &nodeId: undecidedList) {
         undecidedList2.insert(nodeId.toStdString());
     }
 
-    std::unordered_set<NodeId> whiteList2;
+    NodeSet whiteList2;
     for (const QString &nodeId: whiteList) {
         whiteList2.insert(nodeId.toStdString());
     }
@@ -4013,7 +4012,7 @@ void AppServer::onUpdateSyncsProgress() {
         }
 
         // New big folders detection
-        std::unordered_set<NodeId> undecidedSet;
+        NodeSet undecidedSet;
         ExitCode exitCode = syncPal->syncIdSet(SyncNodeType::UndecidedList, undecidedSet);
         if (exitCode != ExitCode::Ok) {
             addError(Error(syncDbId, errId(), exitCode, ExitCause::Unknown));
