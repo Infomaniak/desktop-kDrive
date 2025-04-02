@@ -99,17 +99,15 @@ void FolderWatcher_mac::startWatching() {
 
     {
         const std::scoped_lock lock(_streamMutex);
-        if (_stream) {
-            _stream = FSEventStreamCreate(nullptr, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
-                                          0, // latency
-                                          kFSEventStreamCreateFlagUseCFTypes |
-                                                  kFSEventStreamCreateFlagFileEvents /*| kFSEventStreamCreateFlagIgnoreSelf*/);
-            // TODO : try kFSEventStreamCreateFlagUseExtendedData to get inode directly from event
+        _stream = FSEventStreamCreate(
+                nullptr, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
+                0, // latency
+                kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents /*| kFSEventStreamCreateFlagIgnoreSelf*/);
+        // TODO : try kFSEventStreamCreateFlagUseExtendedData to get inode directly from event
 
-            CFRelease(pathsToWatch);
-            FSEventStreamScheduleWithRunLoop(_stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-            FSEventStreamStart(_stream);
-        }
+        CFRelease(pathsToWatch);
+        FSEventStreamScheduleWithRunLoop(_stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        FSEventStreamStart(_stream);
     }
 
     CFRunLoopRun();

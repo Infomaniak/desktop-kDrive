@@ -106,6 +106,8 @@ void TestLocalFileSystemObserverWorker::tearDown() {
 
     if (_syncPal && _syncPal->_localFSObserverWorker) {
         _syncPal->_localFSObserverWorker->stop();
+        _syncPal->_localFSObserverWorker->waitForExit();
+        _syncPal->_localFSObserverWorker.reset();
     }
 
     ParmsDb::instance()->close();
