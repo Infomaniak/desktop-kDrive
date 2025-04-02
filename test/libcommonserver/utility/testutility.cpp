@@ -509,8 +509,8 @@ void TestUtility::testUserName() {
 
 void TestUtility::testSplitPath() {
     const auto fileNames = Utility::splitPath(SyncPath("A") / "B" / "file.txt");
-    CPPUNIT_ASSERT_EQUAL(SyncName{"A"}, fileNames[2]);
-    CPPUNIT_ASSERT_EQUAL(SyncName{"B"}, fileNames[1]);
-    CPPUNIT_ASSERT_EQUAL(SyncName{"file.txt"}, fileNames[0]);
+    CPPUNIT_ASSERT(Str("A") == fileNames[2]);
+    CPPUNIT_ASSERT(Str("B") == fileNames[1]);
+    CPPUNIT_ASSERT(Str("file.txt") == fileNames[0]);
 }
 } // namespace KDC
