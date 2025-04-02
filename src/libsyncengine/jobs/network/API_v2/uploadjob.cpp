@@ -267,8 +267,6 @@ ExitInfo UploadJob::readLink() {
 
         if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File misses search permissions - " << Utility::formatSyncPath(_filePath).c_str());
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 #endif
