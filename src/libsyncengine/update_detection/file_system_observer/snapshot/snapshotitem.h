@@ -41,7 +41,6 @@ class SnapshotItem {
         [[nodiscard]] const NodeId &parentId() const { return _parentId; }
         void setParentId(const NodeId &newParentId) { _parentId = newParentId; }
         [[nodiscard]] const std::unordered_set<std::shared_ptr<SnapshotItem>> &childrens() const { return _childrens; }
-        void setChildrenIds(const std::unordered_set<std::shared_ptr<SnapshotItem>> &newChildrens) { _childrens = newChildrens; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
         void setName(const SyncName &newName) {

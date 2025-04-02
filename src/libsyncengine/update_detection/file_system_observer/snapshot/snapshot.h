@@ -40,8 +40,7 @@ class Snapshot : public SharedObject {
         void init();
 
         bool updateItem(const SnapshotItem &newItem);
-        bool removeItem(std::shared_ptr<SnapshotItem> &item);
-        bool removeItem(const NodeId &itemId);
+        bool removeItem(const NodeId &itemId); // Do not pass by reference to avoid dangling references
 
         NodeId itemId(const SyncPath &path) const;
         NodeId parentId(const NodeId &itemId) const;
@@ -87,6 +86,8 @@ class Snapshot : public SharedObject {
 
     private:
         bool getChildrens(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &childrens) const;
+        bool removeItem(std::shared_ptr<SnapshotItem> &item);
+
         std::shared_ptr<SnapshotItem> findItem(const NodeId &itemId) const;
         void removeChildrenRecursively(const std::shared_ptr<SnapshotItem> &parent);
         bool checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentId) const;
