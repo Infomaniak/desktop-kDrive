@@ -451,14 +451,9 @@ void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language
             const QString qtTrPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
             const QString qtTrFile = QLatin1String("qt_") + lang;
             const QString qtBaseTrFile = QLatin1String("qtbase_") + lang;
-            if (!_qtTranslator->load(qtTrFile, qtTrPath)) {
-                if (!_qtTranslator->load(qtTrFile, trPath)) {
-                    if (!_qtTranslator->load(qtBaseTrFile, qtTrPath)) {
-                        static_cast<void>(_qtTranslator->load(qtBaseTrFile, trPath));
-                        // static_cast<void>() explicitly discard warning on
-                        // function declared with 'nodiscard' attribute
-                    }
-                }
+            if (!_qtTranslator->load(qtTrFile, qtTrPath) && !_qtTranslator->load(qtTrFile, trPath) &&
+                !_qtTranslator->load(qtBaseTrFile, qtTrPath)) {
+                static_cast<void>(_qtTranslator->load(qtBaseTrFile, trPath));
             }
             if (!_translator->isEmpty()) (void) QCoreApplication::installTranslator(_translator);
             if (!_qtTranslator->isEmpty()) (void) QCoreApplication::installTranslator(_qtTranslator);
