@@ -232,6 +232,8 @@ bool KDC::isVfsPluginAvailable(const VirtualFileMode virtualFileMode, QString &e
     }
 
     if (virtualFileMode == VirtualFileMode::Win) {
+        if (CommonUtility::platform() == Platform::WindowsServer) return false; // LiteSync not available on Windows Server
+
         if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::Windows &&
             QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10 &&
             QOperatingSystemVersion::current().microVersion() >= MIN_WINDOWS10_MICROVERSION_FOR_CFAPI) {

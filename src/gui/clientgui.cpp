@@ -145,6 +145,9 @@ void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) 
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
             userIt->second.setCredentialsAsked(true);
+            if (_addDriveWizard) {
+                emit _addDriveWizard->exit();
+            }
             _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
         }
     }
@@ -1006,6 +1009,23 @@ void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
             dialog->hide();
         }
     }
+}
+
+bool ClientGui::isUserUsed(int userDbId) const {
+    for (const auto &[accountDbId, accountInfoClient]: _accountInfoMap) {
+        if (accountInfoClient.userDbId() == userDbId) {
+            for (const auto &[driveDbId, driveInfoClient]: _driveInfoMap) {
+                if (driveInfoClient.accountDbId() == accountDbId) {
+                    for (const auto &[syncDbId, syncInfoClient]: _syncInfoMap) {
+                        if (syncInfoClient.driveDbId() == driveDbId) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
 }
 
 void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
