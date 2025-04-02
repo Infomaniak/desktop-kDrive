@@ -160,11 +160,12 @@ bool Snapshot::removeItem(std::shared_ptr<SnapshotItem> &item) {
     if (const auto parentItem = findItem(item->parentId()); parentItem) {
         parentItem->removeChildren(item);
     }
+    const NodeId itemId = item->id();
     item.reset();
-    _items.erase(item->id());
+    _items.erase(itemId);
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Item " << item->id() << " removed from " << _side << " snapshot.");
+        LOG_DEBUG(Log::instance()->getLogger(), "Item " << itemId << " removed from " << _side << " snapshot.");
     }
 
     return true;
