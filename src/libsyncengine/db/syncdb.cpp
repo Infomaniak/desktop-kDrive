@@ -1443,7 +1443,7 @@ bool SyncDb::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &
         SyncName name;
         LOG_IF_FAIL(querySyncNameValue(requestId, side == ReplicaSide::Local ? 0 : 1, name));
 
-        itemNames.emplace_back(name);
+        (void) itemNames.emplace_back(name);
     }
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));

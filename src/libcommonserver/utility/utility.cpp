@@ -489,7 +489,7 @@ std::vector<SyncName> Utility::splitPath(const SyncPath &path) {
     SyncPath pathTmp(path);
 
     while (pathTmp != pathTmp.root_path()) {
-        itemNames.emplace_back(pathTmp.filename().native());
+        (void) itemNames.emplace_back(pathTmp.filename().native());
         pathTmp = pathTmp.parent_path();
     }
 
