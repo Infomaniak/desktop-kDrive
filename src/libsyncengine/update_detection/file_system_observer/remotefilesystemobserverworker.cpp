@@ -332,6 +332,13 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         perfMonitorExploreItem.start();
 
         itemCount++;
+        if (itemCount % 1000 == 0) {
+            LOG_SYNCPAL_INFO(
+                    _logger,
+                    itemCount << " items treated in"
+                             << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count()
+                             << "s");
+        }
         if (error) {
             LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");
             setExitCause(ExitCause::FullListParsingError);

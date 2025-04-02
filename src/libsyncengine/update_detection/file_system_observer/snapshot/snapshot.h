@@ -40,11 +40,11 @@ class Snapshot : public SharedObject {
         void init();
 
         bool updateItem(const SnapshotItem &newItem);
-        bool removeItem(const NodeId id); // Do not pass by reference to avoid dangling references
+        bool removeItem(std::shared_ptr<SnapshotItem> &item);
+        bool removeItem(const NodeId &itemId);
 
         NodeId itemId(const SyncPath &path) const;
         NodeId parentId(const NodeId &itemId) const;
-        bool setParentId(const NodeId &itemId, const NodeId &newParentId);
         bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept;
         SyncName name(const NodeId &itemId) const;
         bool setName(const NodeId &itemId, const SyncName &newName);
@@ -86,12 +86,26 @@ class Snapshot : public SharedObject {
         bool checkIntegrityRecursively() const;
 
     private:
-        void removeChildrenRecursively(const NodeId &parentId);
-        bool checkIntegrityRecursively(const NodeId &parentId) const;
+        bool getChildrens(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &childrens) const;
+        std::shared_ptr<SnapshotItem> findItem(const NodeId &itemId) const;
+        void removeChildrenRecursively(const std::shared_ptr<SnapshotItem> &parent);
+        bool checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentId) const;
 
         ReplicaSide _side = ReplicaSide::Unknown;
         NodeId _rootFolderId;
-        std::unordered_map<NodeId, SnapshotItem> _items; // key: id
+
+        class SnapshotItemUnorderedMap : public std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>> {
+            public:
+                using std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::unordered_map;
+                using std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::insert;
+                void erase(const NodeId &id) {
+                    auto it = std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::find(id);
+                    assert(it->second.use_count() == 1);
+                    std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::erase(id);
+                }
+        };
+
+        SnapshotItemUnorderedMap _items; // key: id
         bool _isValid = false;
         bool _copy = false; // false for a real time snapshot, true for a copy
 

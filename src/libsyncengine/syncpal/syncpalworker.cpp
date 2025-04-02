@@ -47,11 +47,11 @@ void SyncPalWorker::execute() {
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
         sentry::pTraces::scoped::ResetStatus perfMonitor1(syncDbId());
         // Reset vfs files status
-        if (!resetVfsFilesStatus()) {
+        /* if (!resetVfsFilesStatus()) {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
         } else {
             perfMonitor1.stop();
-        }
+        }*/
 
         // Manage stop
         if (stopAsked()) {

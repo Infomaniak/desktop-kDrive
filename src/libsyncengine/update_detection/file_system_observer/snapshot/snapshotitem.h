@@ -40,8 +40,8 @@ class SnapshotItem {
         void setId(const NodeId &id) { _id = id; }
         [[nodiscard]] const NodeId &parentId() const { return _parentId; }
         void setParentId(const NodeId &newParentId) { _parentId = newParentId; }
-        [[nodiscard]] const std::unordered_set<NodeId> &childrenIds() const { return _childrenIds; }
-        void setChildrenIds(const std::unordered_set<NodeId> &newChildrenIds) { _childrenIds = newChildrenIds; }
+        [[nodiscard]] const std::unordered_set<std::shared_ptr<SnapshotItem>> &childrens() const { return _childrens; }
+        void setChildrenIds(std::unordered_set<std::shared_ptr<SnapshotItem>> &newChildrens) { _childrens = newChildrens; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
         void setName(const SyncName &newName) {
@@ -71,8 +71,8 @@ class SnapshotItem {
         SnapshotItem &operator=(const SnapshotItem &other);
 
         void copyExceptChildren(const SnapshotItem &other);
-        void addChildren(const NodeId &id);
-        void removeChildren(const NodeId &id);
+        void addChildren(const std::shared_ptr<SnapshotItem> &child);
+        void removeChildren(const std::shared_ptr<SnapshotItem> &child);
 
     private:
         NodeId _id;
@@ -89,7 +89,7 @@ class SnapshotItem {
         bool _canWrite = true;
         bool _canShare = true;
 
-        std::unordered_set<NodeId> _childrenIds;
+        std::unordered_set<std::shared_ptr<SnapshotItem>> _childrens;
 
         mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
 

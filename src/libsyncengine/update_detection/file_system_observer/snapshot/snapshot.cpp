@@ -31,7 +31,7 @@ namespace KDC {
 
 Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode) :
     _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
-    _items.insert({_rootFolderId, SnapshotItem(_rootFolderId)});
+    (void) _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId));
 }
 
 Snapshot::~Snapshot() {
@@ -58,7 +58,7 @@ void Snapshot::init() {
     startUpdate();
 
     _items.clear();
-    _items.insert({_rootFolderId, SnapshotItem(_rootFolderId)});
+    (void) _items.try_emplace(_rootFolderId, std::make_shared<SnapshotItem>(_rootFolderId));
 
     _isValid = false;
 }
@@ -79,95 +79,92 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     }
 
     // Check if `newItem` already exists with the same path but a different Id
-    if (auto itNewParent = _items.find(newItem.parentId()); itNewParent != _items.end()) {
-        for (const NodeId &childId: itNewParent->second.childrenIds()) {
-            auto child = _items.find(childId);
-            if (child == _items.end()) {
-                assert(false && "Child not found in snapshot");
-                LOG_WARN(Log::instance()->getLogger(), "Child " << childId.c_str() << " not found in snapshot");
-                continue;
-            }
-            if (child->second.normalizedName() == newItem.normalizedName() && child->second.id() != newItem.id()) {
+    if (const auto newParent = findItem(newItem.parentId()); newParent) {
+        for (auto child: newParent->childrens()) {
+            if (child->normalizedName() == newItem.normalizedName() && child->id() != newItem.id()) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
                            L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
                                      << L") already exists in parent: " << Utility::s2ws(newItem.parentId())
                                      << L" with a different id. Removing it and adding the new one.");
-                removeItem(childId);
+                removeItem(child);
                 break; // There should be (at most) only one item with the same name in a folder
             }
         }
     }
 
-    const SnapshotItem &prevItem = _items[newItem.id()];
-
-    // Update parent's children lists
     bool parentChanged = false;
-    if (prevItem.id() != _rootFolderId && prevItem.parentId() != newItem.parentId()) {
-        parentChanged = true;
+    auto item = findItem(newItem.id());
+    // Update parent's children lists if the item already exists
+    if (item) {
+        parentChanged = item->id() != _rootFolderId && item->parentId() != newItem.parentId();
 
         // Remove children from previous parent
-        auto itParent = _items.find(prevItem.parentId());
-        if (itParent != _items.end()) {
-            itParent->second.removeChildren(newItem.id());
+        if (const auto previousParent = findItem(item->parentId()); previousParent) {
+            previousParent->removeChildren(item);
         }
 
         // Add children to new parent
-        itParent = _items.find(newItem.parentId());
-        if (itParent == _items.end()) {
+
+        if (auto newParent = findItem(newItem.parentId()); !newParent) {
             // New parent not found, create it
             LOG_DEBUG(Log::instance()->getLogger(),
                       "Parent " << newItem.parentId().c_str() << " does not exist yet, creating it");
-            itParent = _items.insert({newItem.parentId(), SnapshotItem(newItem.parentId())}).first;
+            newParent = std::make_shared<SnapshotItem>(newItem.parentId());
+            (void) _items.try_emplace(newItem.parentId(), newParent);
+            newParent->addChildren(item);
+        } else {
+            newParent->addChildren(item);
         }
-
-        itParent->second.addChildren(newItem.id());
+    } else {
+        item = std::make_shared<SnapshotItem>(newItem.id());
+        (void) _items.try_emplace(newItem.id(), item);
     }
 
     // Update item
-    _items[newItem.id()].copyExceptChildren(newItem);
+    item->copyExceptChildren(newItem);
 
-    if (parentChanged || !isOrphan(newItem.id())) {
+    if (parentChanged || !isOrphan(item->id())) {
         startUpdate();
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(newItem.name()) << L" ("
-                                                           << Utility::s2ws(newItem.id()) << L") updated at:"
-                                                           << newItem.lastModified());
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(item->name()) << L" (" << Utility::s2ws(item->id())
+                                                           << L") updated at:" << item->lastModified());
     }
-
     return true;
 }
 
-bool Snapshot::removeItem(const NodeId id) {
+bool Snapshot::removeItem(const NodeId &itemId) {
+    if (auto item = findItem(itemId); item) {
+        return removeItem(item);
+    }
+    return true; // Nothing to delete
+}
+
+bool Snapshot::removeItem(std::shared_ptr<SnapshotItem> &item) {
     const std::scoped_lock lock(_mutex);
 
-    if (id.empty()) {
+    if (!item) {
         assert(false);
         return false;
     }
 
-    auto it = _items.find(id);
-    if (it == _items.end()) {
-        return true; // Nothing to delete
-    }
-
-    if (!isOrphan(id)) {
+    if (!isOrphan(item->id())) {
         startUpdate();
     }
 
     // First remove all children
-    removeChildrenRecursively(id);
+    removeChildrenRecursively(item);
 
     // Remove it also from its parent's children
-    if (auto parentIt = _items.find(it->second.parentId()); parentIt != _items.end()) {
-        parentIt->second.removeChildren(id);
+    if (const auto parentItem = findItem(item->parentId()); parentItem) {
+        parentItem->removeChildren(item);
     }
-
-    _items.erase(id);
+    item.reset();
+    _items.erase(item->id());
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Item " << id.c_str() << " removed from " << _side << " snapshot.");
+        LOG_DEBUG(Log::instance()->getLogger(), "Item " << item->id() << " removed from " << _side << " snapshot.");
     }
 
     return true;
@@ -177,7 +174,8 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
     const std::scoped_lock lock(_mutex);
 
     NodeId ret;
-    auto itemIt = _items.find(_rootFolderId);
+    auto item = _items.at(_rootFolderId);
+    LOG_IF_FAIL(Log::instance()->getLogger(), item);
 
     for (auto pathIt = path.begin(); pathIt != path.end(); pathIt++) {
 #ifndef _WIN32
@@ -187,10 +185,9 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
 #endif // _WIN32
 
         bool idFound = false;
-        for (const NodeId &childId: itemIt->second.childrenIds()) {
-            if (name(childId) == *pathIt) {
-                itemIt = _items.find(childId);
-                ret = childId;
+        for (const auto &child: item->childrens()) {
+            if (child->name() == *pathIt) {
+                item = child;
                 idFound = true;
                 break;
             }
@@ -201,30 +198,16 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
         }
     }
 
-    return ret;
+    return item->id();
 }
 
 NodeId Snapshot::parentId(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     NodeId ret;
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        ret = it->second.parentId();
+    if (const auto item = findItem(itemId); item) {
+        ret = item->parentId();
     }
     return ret;
-}
-
-bool Snapshot::setParentId(const NodeId &itemId, const NodeId &newParentId) {
-    const std::scoped_lock lock(_mutex);
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        it->second.setParentId(newParentId);
-
-        if (!isOrphan(itemId)) {
-            startUpdate();
-        }
-        return true;
-    }
-
-    return false;
 }
 
 bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept {
@@ -243,16 +226,16 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
         NodeId id = itemId;
         const std::scoped_lock lock(_mutex);
         while (!parentIsRoot) {
-            if (const auto it = _items.find(id); it != _items.end()) {
+            if (const auto item = findItem(id); item) {
                 if (_copy) {
-                    if (!it->second.path().empty()) {
-                        path = it->second.path();
+                    if (!item->path().empty()) {
+                        path = item->path();
                         break;
                     }
                 }
 
-                ancestors.push_back({it->first, it->second.name()});
-                id = it->second.parentId();
+                ancestors.push_back({item->id(), item->name()});
+                id = item->parentId();
                 parentIsRoot = id == _rootFolderId;
                 continue;
             }
@@ -267,9 +250,9 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
     while (!ancestors.empty()) {
         path /= ancestors.back().second;
         if (_copy) {
-            const auto it = _items.find(ancestors.back().first);
-            assert(it != _items.end());
-            it->second.setPath(path);
+            const auto item = findItem(ancestors.back().first);
+            assert(item);
+            item->setPath(path);
         }
         ancestors.pop_back();
     }
@@ -287,20 +270,16 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
 
 SyncName Snapshot::name(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    SyncName ret;
-
-    if (const auto it = _items.find(itemId); it != _items.cend()) {
-        ret = it->second.name();
+    if (const auto item = findItem(itemId); item) {
+        return item->name();
     }
-
-    return ret;
+    return SyncName();
 }
 
 bool Snapshot::setName(const NodeId &itemId, const SyncName &newName) {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        it->second.setName(newName);
-
+    if (const auto item = findItem(itemId); item) {
+        item->setName(newName);
         if (!isOrphan(itemId)) {
             startUpdate();
         }
@@ -311,18 +290,16 @@ bool Snapshot::setName(const NodeId &itemId, const SyncName &newName) {
 
 SyncTime Snapshot::createdAt(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    SyncTime ret = 0;
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        ret = it->second.createdAt();
+    if (const auto item = findItem(itemId); item) {
+        return item->createdAt();
     }
-    return ret;
+    return 0;
 }
 
 bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        it->second.setCreatedAt(newTime);
-
+    if (const auto item = findItem(itemId); item) {
+        item->setCreatedAt(newTime);
         if (!isOrphan(itemId)) {
             startUpdate();
         }
@@ -333,17 +310,16 @@ bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
 
 SyncTime Snapshot::lastModified(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    SyncTime ret = 0;
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        ret = it->second.lastModified();
+    if (const auto item = findItem(itemId); item) {
+        return item->lastModified();
     }
-    return ret;
+    return 0;
 }
 
 bool Snapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        it->second.setLastModified(newTime);
+    if (const auto it = _items.find(itemId); it != _items.end()) {
+        it->second->setLastModified(newTime);
 
         if (!isOrphan(itemId)) {
             startUpdate();
@@ -355,45 +331,43 @@ bool Snapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
 
 NodeType Snapshot::type(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    NodeType ret = NodeType::Unknown;
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        ret = it->second.type();
+    if (const auto item = findItem(itemId); item) {
+        return item->type();
     }
-    return ret;
+    return NodeType::Unknown;
 }
 
 int64_t Snapshot::size(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     int64_t ret = 0;
-    if (type(itemId) == NodeType::Directory) {
-        std::unordered_set<NodeId> childrenIds;
-        getChildrenIds(itemId, childrenIds);
-        for (auto &childId: childrenIds) {
-            ret += size(childId);
+    const auto item = findItem(itemId);
+    if (!item) return 0;
+
+    if (item->type() == NodeType::Directory) {
+        std::unordered_set<std::shared_ptr<SnapshotItem>> childrens;
+        childrens = item->childrens();
+        for (auto &child: childrens) {
+            ret += size(child->id());
         }
     } else {
-        auto it = _items.find(itemId);
-        if (it != _items.end()) {
-            ret = it->second.size();
-        }
+        return item->size();
     }
     return ret;
 }
 
 std::string Snapshot::contentChecksum(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    std::string ret;
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        ret = it->second.contentChecksum();
+    if (const auto item = findItem(itemId); item) {
+        return item->contentChecksum();
     }
-    return ret;
+    return "";
 }
 
 bool Snapshot::setContentChecksum(const NodeId &itemId, const std::string &newChecksum) {
     const std::scoped_lock lock(_mutex);
     // Note: do not call "startUpdate" here since the computation of content checksum is asynchronous
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        it->second.setContentChecksum(newChecksum);
+    if (const auto item = findItem(itemId); item) {
+        item->setContentChecksum(newChecksum);
         return true;
     }
     return false;
@@ -401,20 +375,18 @@ bool Snapshot::setContentChecksum(const NodeId &itemId, const std::string &newCh
 
 bool Snapshot::canWrite(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    bool ret = true;
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        ret = it->second.canWrite();
+    if (const auto item = findItem(itemId); item) {
+        return item->canWrite();
     }
-    return ret;
+    return true;
 }
 
 bool Snapshot::canShare(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    bool ret = true;
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        ret = it->second.canShare();
+    if (const auto item = findItem(itemId); item) {
+        return item->canShare();
     }
-    return ret;
+    return true;
 }
 
 bool Snapshot::clearContentChecksum(const NodeId &itemId) {
@@ -424,10 +396,7 @@ bool Snapshot::clearContentChecksum(const NodeId &itemId) {
 
 bool Snapshot::exists(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _items.find(itemId); it != _items.end() && !isOrphan(itemId)) {
-        return true;
-    }
-    return false;
+    return findItem(itemId) && !isOrphan(itemId);
 }
 
 bool Snapshot::pathExists(const SyncPath &path) const {
@@ -437,18 +406,38 @@ bool Snapshot::pathExists(const SyncPath &path) const {
 
 bool Snapshot::isLink(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    bool ret = false;
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        ret = it->second.isLink();
+    if (const auto item = findItem(itemId); item) {
+        return item->isLink();
     }
-    return ret;
+    return false;
+}
+
+bool Snapshot::getChildrens(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &childrens) const {
+    const std::scoped_lock lock(_mutex);
+    if (const auto item = findItem(itemId); item) {
+        childrens = item->childrens();
+        return true;
+    }
+    return false;
+}
+
+std::shared_ptr<SnapshotItem> Snapshot::findItem(const NodeId &itemId) const {
+    const std::scoped_lock lock(_mutex);
+    if (const auto it = _items.find(itemId); it != _items.end()) {
+        return it->second;
+    }
+    return nullptr;
 }
 
 bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) const {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _items.find(itemId); it != _items.end()) {
-        childrenIds = it->second.childrenIds();
-        return true;
+    std::unordered_set<std::shared_ptr<SnapshotItem>> childrens;
+    if (!getChildrens(itemId, childrens)) {
+        return false;
+    }
+
+    for (const auto &child: childrens) {
+        (void) childrenIds.insert(child->id());
     }
     return false;
 }
@@ -524,39 +513,34 @@ void Snapshot::setValid(bool newIsValid) {
 }
 
 bool Snapshot::checkIntegrityRecursively() const {
-    return checkIntegrityRecursively(rootFolderId());
+    return checkIntegrityRecursively(_items.at(rootFolderId()));
 }
 
-bool Snapshot::checkIntegrityRecursively(const NodeId &parentId) const {
+bool Snapshot::checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentItem) const {
     // Check that we do not have the same file twice in the same folder
-    const auto &parentItem = _items.at(parentId);
     std::set<SyncName> names;
-    for (auto childId = parentItem.childrenIds().begin(), end = parentItem.childrenIds().end(); childId != end; childId++) {
-        if (!checkIntegrityRecursively(*childId)) {
+    for (const auto child: parentItem->childrens()) {
+        if (!checkIntegrityRecursively(child)) {
             return false;
         }
 
-        auto result = names.insert(_items.at(*childId).name());
+        const auto result = names.insert(child->name());
         if (!result.second) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Snapshot integrity check failed, the folder named: \""
-                              << SyncName2WStr(parentItem.name()) << L"\"(" << Utility::s2ws(parentItem.id()) << L") contains: \""
-                              << SyncName2WStr(_items.at(*childId).name()) << L"\" twice with two different NodeIds");
+                              << SyncName2WStr(parentItem->name()) << L"\"(" << Utility::s2ws(parentItem->id())
+                              << L") contains: \"" << SyncName2WStr(child->name()) << L"\" twice with two different NodeIds");
             return false;
         }
     }
     return true;
 }
 
-void Snapshot::removeChildrenRecursively(const NodeId &parentId) {
-    auto parentIt = _items.find(parentId);
-    if (parentIt == _items.end()) {
-        return;
-    }
-
-    for (const NodeId &childId: parentIt->second.childrenIds()) {
-        removeChildrenRecursively(childId);
-        _items.erase(childId);
+void Snapshot::removeChildrenRecursively(const std::shared_ptr<SnapshotItem> &parent) {
+    for (const auto &child: parent->childrens()) {
+        removeChildrenRecursively(child);
+        parent->removeChildren(child);
+        _items.erase(child->id());
     }
 }
 
