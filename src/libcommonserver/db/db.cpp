@@ -110,10 +110,10 @@ std::string Db::makeDbFileName(int userId, int accountId, int driveId, int syncD
     std::string fileName;
     if (!userId && !accountId && !driveId && !syncDbId) {
         // ParmsDb
-        fileName.append(".parms");
+        (void) fileName.append(".parms");
     } else {
         // SyncDb
-        fileName.append(".sync_");
+        (void) fileName.append(".sync_");
 
         std::string key(std::to_string(userId));
         key.append(":");
@@ -124,10 +124,10 @@ std::string Db::makeDbFileName(int userId, int accountId, int driveId, int syncD
         key.append(std::to_string(syncDbId));
         Poco::MD5Engine md5;
         md5.update(key.c_str());
-        std::string keyHash = Poco::DigestEngine::digestToHex(md5.digest()).substr(0, 6);
+        const std::string keyHash = Poco::DigestEngine::digestToHex(md5.digest()).substr(0, 6);
         std::string keyHashHex;
         Utility::str2hexstr(keyHash, keyHashHex);
-        fileName.append(keyHashHex);
+        (void) fileName.append(keyHashHex);
     }
     return fileName;
 }
@@ -160,10 +160,10 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
 
     // Db file name
     std::string fileName = dbFileName(userId, accountId, driveId, syncDbId);
-    fileName.append(".db");
+    (void) fileName.append(".db");
 
     // Db file path
-    dbPath.append(fileName);
+    (void) dbPath.append(fileName);
 
     // If it exists already, the path is clearly usable
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {

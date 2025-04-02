@@ -970,24 +970,23 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
 }
 
 SyncPath CommonUtility::applicationFilePath() {
-    const size_t maxPathLength = CommonUtility::maxPathLength();
+    const auto maxPathLength = CommonUtility::maxPathLength();
     std::vector<SyncChar> pathStr(maxPathLength + 1, '\0');
 
 #if defined(_WIN32)
-    const DWORD pathLength = static_cast<DWORD>(maxPathLength);
-    const DWORD count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
+    const auto pathLength = static_cast<DWORD>(maxPathLength);
+    const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
     assert(count);
 #elif defined(__APPLE__)
-    uint32_t pathLength = static_cast<uint32_t>(maxPathLength);
-    const int ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
+    auto pathLength = static_cast<uint32_t>(maxPathLength);
+    const auto ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
     assert(!ret);
 #else
-    const ssize_t count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
+    const auto count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
     assert(count != -1);
 #endif
 
-    SyncPath path = SyncPath(pathStr.data());
-    return path;
+    return SyncPath(pathStr.data());
 }
 
 
