@@ -421,7 +421,27 @@ void TestUtility::testGetLastErrorMessage() {
         CPPUNIT_ASSERT(msg.starts_with(L"(2) - "));
     }
 }
+
 #endif
+
+void TestUtility::generatePaths(const std::vector<std::string> &itemsNames, const std::vector<char> &separators,
+                                bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start, int pos) {
+    if (pos == itemsNames.size()) {
+        (void) result.emplace_back(start);
+        for (const auto &separator: separators) {
+            result.emplace_back(start + separator);
+        }
+        return;
+    }
+    if (!startWithSeparator && start.empty()) {
+        generatePaths(itemsNames, separators, false, result, itemsNames.at(pos), pos + 1);
+
+    } else {
+        for (const auto &separator: separators) {
+            generatePaths(itemsNames, separators, false, result, start + separator + itemsNames.at(pos), pos + 1);
+        }
+    }
+};
 
 void TestUtility::testTruncateLongLogMessage() {
     // No truncation
@@ -449,5 +469,59 @@ void TestUtility::testLogIfFail() {
     LOG_IF_FAIL(Log::instance()->getLogger(), false)
     LOG_MSG_IF_FAIL(Log::instance()->getLogger(), false, "Check your logs, something went wrong.")
 #endif
+}
+
+void TestUtility::testRelativePath() {
+    const std::vector<char> separators = {'/', '\\'};
+    const std::vector<std::string> rootPathItems = {"dir1", "dir2", "??"}; // "/dir1/dir2/??
+    const std::vector<std::string> relativePathItems = {"syncDir1", "syncDir2", "syncDir3"}; // "syncDir1/syncDir2/syncDir3
+
+    // Root path is empty
+    std::vector<SyncPath> relativePaths;
+    generatePaths(relativePathItems, separators, false, relativePaths);
+
+    for (const auto &relativePath: relativePaths) {
+        CPPUNIT_ASSERT_EQUAL(relativePath, CommonUtility::relativePath(SyncPath(), relativePath));
+    }
+
+    // Absolute path is empty
+    std::vector<SyncPath> rootPaths;
+    generatePaths(rootPathItems, separators, true, rootPaths);
+
+    for (const auto &rootPath: rootPaths) {
+        CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(rootPath, SyncPath()));
+    }
+
+    // Both paths are empty
+    CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(SyncPath(), SyncPath()));
+
+    // Both paths are the same
+    for (const auto &rootPath: rootPaths) {
+        for (const auto &absolutePath: rootPaths) {
+            CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(rootPath, absolutePath));
+        }
+    }
+
+    // Absolute path is a subpath of the root path
+    std::vector<std::pair<SyncPath /*Absolute path*/, SyncPath /*Relative paths*/>> absolutePaths;
+    for (const auto &rootPath: rootPaths) {
+        if (rootPath.string().back() == separators[0] || rootPath.string().back() == separators[1]) continue;
+        for (const auto &relativePath: relativePaths) {
+            for (const auto &separator: separators) {
+                const SyncPath absolutePath = rootPath.string() + separator + relativePath.string();
+                (void) absolutePaths.emplace_back(absolutePath, relativePath);
+            }
+        }
+    }
+
+    for (const auto &rootPath: rootPaths) {
+        for (const auto &[absolutePath, relativePaths]: absolutePaths) {
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("Root path: " + rootPath.string() + " Absolute path: " + absolutePath.string(),
+                                         relativePaths, CommonUtility::relativePath(rootPath, absolutePath));
+        }
+    }
+
+    // Absolute path is not a subpath of the root path
+    CPPUNIT_ASSERT_EQUAL(SyncPath(), CommonUtility::relativePath(SyncPath("dir1"), SyncPath("dir2/test")));
 }
 } // namespace KDC
