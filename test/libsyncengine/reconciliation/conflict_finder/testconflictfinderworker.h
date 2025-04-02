@@ -20,6 +20,7 @@
 
 #include "reconciliation/conflict_finder/conflictfinderworker.h"
 #include "testincludes.h"
+#include "test_classes/testsituationgenerator.h"
 
 namespace KDC {
 
@@ -39,6 +40,7 @@ class TestConflictFinderWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCase55b);
         CPPUNIT_TEST(testCase55c);
         CPPUNIT_TEST(testCase57);
+        CPPUNIT_TEST(testCase58);
         CPPUNIT_TEST(testCase59);
         CPPUNIT_TEST(testCase510);
         CPPUNIT_TEST(testCase511);
@@ -50,8 +52,6 @@ class TestConflictFinderWorker : public CppUnit::TestFixture, public TestBase {
     public:
         void setUp() override;
         void tearDown() override;
-
-        void setUpTreesAndDb();
 
         void testCreateCreate();
         void testEditEdit();
@@ -67,6 +67,7 @@ class TestConflictFinderWorker : public CppUnit::TestFixture, public TestBase {
         void testCase55b();
         void testCase55c();
         void testCase57();
+        void testCase58();
         void testCase59();
         void testCase510();
         void testCase511();
@@ -75,7 +76,8 @@ class TestConflictFinderWorker : public CppUnit::TestFixture, public TestBase {
         void testConflictCmp();
 
     private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<SyncPal> _syncPal;
+        TestSituationGenerator _situationGenerator;
 };
 
 } // namespace KDC

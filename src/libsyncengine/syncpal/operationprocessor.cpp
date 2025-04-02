@@ -85,7 +85,7 @@ bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, cons
     return false;
 }
 
-std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shared_ptr<Node> node) {
+std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(const std::shared_ptr<Node> node) {
     std::optional<DbNodeId> dbNodeId = node->idb();
     if (!dbNodeId && node->id()) {
         // Find node in DB
@@ -106,7 +106,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shar
     return findCorrespondingNodeFromPath(node);
 }
 
-std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::shared_ptr<Node> node) {
+std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const std::shared_ptr<Node> node) {
     std::shared_ptr<Node> parentNode = node;
     std::vector<SyncName> names;
     DbNodeId parentDbNodeId;
@@ -158,7 +158,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::sha
     return correspondingNode;
 }
 
-std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(std::shared_ptr<Node> node) {
+std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(const std::shared_ptr<Node> node) {
     if (node->idb() == std::nullopt) {
         return nullptr;
     }
@@ -189,7 +189,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(std::shared_pt
     return nullptr;
 }
 
-bool OperationProcessor::isABelowB(std::shared_ptr<Node> a, std::shared_ptr<Node> b) {
+bool OperationProcessor::isABelowB(const std::shared_ptr<Node> a, const std::shared_ptr<Node> b) {
     std::shared_ptr<Node> tmpNode = a;
     while (tmpNode->parentNode() != nullptr) {
         if (tmpNode == b) {

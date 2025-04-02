@@ -73,11 +73,11 @@ bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
     return true;
 }
 
-std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) {
-    for (auto &child: this->children()) {
+std::shared_ptr<Node> Node::getChildExcept(SyncName name, const OperationType except) {
+    for (auto &[_, child]: this->children()) {
         // return only non excluded type
-        if (child.second->name() == name && !child.second->hasChangeEvent(except)) {
-            return child.second;
+        if (child->name() == name && !child->hasChangeEvent(except)) {
+            return child;
         }
     }
     return nullptr;
