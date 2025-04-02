@@ -38,14 +38,27 @@ Snapshot::~Snapshot() {
     _items.clear();
 }
 
-Snapshot &Snapshot::operator=(Snapshot &other) {
+Snapshot &Snapshot::operator=(const Snapshot &other) {
     if (this != &other) {
         const std::scoped_lock lock(_mutex, other._mutex);
 
         assert(_side == other._side);
         assert(_rootFolderId == other._rootFolderId);
+        _items.clear();
+        for (const auto &item: other._items) {
+            _items.try_emplace(item.first, std::make_shared<SnapshotItem>(*item.second));
+        }
 
-        _items = other._items;
+        // Update the child list
+        for (const auto &[_, item]: _items) {
+            const auto childrensCopy = item->childrens();
+            for (const auto &child: childrensCopy) {
+                const auto childId = child->id();
+                item->removeChildren(child); // Remove the old pointer
+                item->addChildren(_items.at(childId)); // Add the new pointer
+            }
+        }
+
         _isValid = other._isValid;
         _copy = true;
     }
@@ -97,14 +110,24 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     // Update parent's children lists if the item already exists
     if (item) {
         parentChanged = item->id() != _rootFolderId && item->parentId() != newItem.parentId();
-
         // Remove children from previous parent
-        if (const auto previousParent = findItem(item->parentId()); previousParent) {
-            previousParent->removeChildren(item);
+        if (parentChanged) {
+            if (const auto previousParent = findItem(item->parentId()); previousParent) {
+                previousParent->removeChildren(item);
+            }
         }
 
-        // Add children to new parent
+    } else {
+        parentChanged = true;
+        item = std::make_shared<SnapshotItem>(newItem.id());
+        (void) _items.try_emplace(newItem.id(), item);
+    }
 
+    // Update item
+    item->copyExceptChildren(newItem);
+
+    if (parentChanged) {
+        // Add children to new parent
         if (auto newParent = findItem(newItem.parentId()); !newParent) {
             // New parent not found, create it
             LOG_DEBUG(Log::instance()->getLogger(),
@@ -115,14 +138,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         } else {
             newParent->addChildren(item);
         }
-    } else {
-        item = std::make_shared<SnapshotItem>(newItem.id());
-        (void) _items.try_emplace(newItem.id(), item);
     }
-
-    // Update item
-    item->copyExceptChildren(newItem);
-
     if (parentChanged || !isOrphan(item->id())) {
         startUpdate();
     }
@@ -538,10 +554,15 @@ bool Snapshot::checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &pa
 }
 
 void Snapshot::removeChildrenRecursively(const std::shared_ptr<SnapshotItem> &parent) {
-    for (const auto &child: parent->childrens()) {
+    auto it = parent->childrens().begin();
+    while (it != parent->childrens().end()) {
+        const auto &child = *it;
+        const NodeId childId = child->id();
+
         removeChildrenRecursively(child);
+        ++it;
         parent->removeChildren(child);
-        _items.erase(child->id());
+        _items.erase(childId);
     }
 }
 

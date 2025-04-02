@@ -35,7 +35,7 @@ class Snapshot : public SharedObject {
         ~Snapshot();
 
         Snapshot(Snapshot const &) = delete;
-        Snapshot &operator=(Snapshot &other);
+        Snapshot &operator=(const Snapshot &other);
 
         void init();
 
