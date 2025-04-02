@@ -33,7 +33,7 @@ class MockDb : public Db {
 
         static std::string makeDbFileName(int userId, int accountId, int driveId, int syncDbId) {
             std::string fileName = Db::makeDbFileName(userId, accountId, driveId, syncDbId);
-            fileName.append(CommonUtility::generateRandomStringAlphaNum());
+            (void) fileName.append(CommonUtility::generateRandomStringAlphaNum());
             return fileName;
         }
 

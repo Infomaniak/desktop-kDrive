@@ -53,7 +53,7 @@ void TestComputeFSOperationWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     /// Create parmsDb
@@ -64,19 +64,19 @@ void TestComputeFSOperationWorker::setUp() {
     /// Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                          KDRIVE_VERSION_STRING);

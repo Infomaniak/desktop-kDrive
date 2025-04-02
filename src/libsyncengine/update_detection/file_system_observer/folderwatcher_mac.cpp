@@ -98,7 +98,7 @@ void FolderWatcher_mac::startWatching() {
     FSEventStreamContext ctx = {0, this, nullptr, nullptr, nullptr};
 
     {
-        const std::lock_guard<std::mutex> lock(_streamMutex);
+        const std::scoped_lock lock(_streamMutex);
         if (_stream) {
             _stream = FSEventStreamCreate(nullptr, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
                                           0, // latency

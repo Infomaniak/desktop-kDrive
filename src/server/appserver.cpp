@@ -118,9 +118,10 @@ static void displayHelpText(const QString &t) {
 }
 #endif
 
-AppServer::AppServer(int &argc, char **argv) :
-    SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv), _arguments(arguments()),
-    _theme(Theme::instance()) {}
+AppServer::AppServer(int &argc, char **argv) : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv) {
+    _arguments = arguments();
+    _theme = Theme::instance();
+}
 
 AppServer::~AppServer() {
     LOG_DEBUG(_logger, "~AppServer");

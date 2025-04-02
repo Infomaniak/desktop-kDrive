@@ -110,18 +110,18 @@ void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
     ParmsDb::instance()->setAutoDelete(true);
 
     const User user(1, 5555555, "123");
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
     const Account acc(1, 12345678, user.dbId());
-    ParmsDb::instance()->insertAccount(acc);
+    (void) ParmsDb::instance()->insertAccount(acc);
     Drive drive(1, 99999991, acc.dbId(), "Drive 1", 2000000000, "#000000");
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync;
     sync.setDbId(1);
     sync.setDriveDbId(drive.dbId());
     sync.setLocalPath(localPath);
     sync.setDbPath(syncDbPath);
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 }
 
 // Get file names as actually encoded by the local file system.

@@ -34,7 +34,7 @@ void TestFileRescuer::setUp() {
 
     // Insert api token into keystore
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
@@ -46,19 +46,19 @@ void TestFileRescuer::setUp() {
     // Insert user, account, drive & sync
     int userId(12321);
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     const auto sync = Sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
     Parameters parameters;

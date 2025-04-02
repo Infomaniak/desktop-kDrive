@@ -104,7 +104,7 @@ void TestNetworkJobs::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
     bool alreadyExists = false;
@@ -115,17 +115,17 @@ void TestNetworkJobs::setUp() {
     // Insert user, account & drive
     const int userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
     _userDbId = user.dbId();
 
     const int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
     const int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     _remoteDirId = testVariables.remoteDirId;
 

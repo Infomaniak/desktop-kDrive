@@ -39,7 +39,7 @@ void TestServerRequests::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
@@ -51,16 +51,16 @@ void TestServerRequests::setUp() {
     // Insert user, account & drive
     const int userId(atoi(testVariables.userId.c_str()));
     const User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
     const Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
     const int driveId = atoi(testVariables.driveId.c_str());
     const Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 }
 
 void TestServerRequests::tearDown() {

@@ -46,7 +46,7 @@ void TestAppServer::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
@@ -58,20 +58,20 @@ void TestAppServer::setUp() {
     // Insert user, account, drive & sync
     const int userId(atoi(testVariables.userId.c_str()));
     const User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
     const Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     const int driveId = atoi(testVariables.driveId.c_str());
     const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, _remotePath);
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
@@ -82,7 +82,7 @@ void TestAppServer::setUp() {
         const std::vector<std::string> args = {Path2Str(exePath)};
         std::vector<char *> argv;
         for (size_t i = 0; i < args.size(); ++i) argv.push_back(const_cast<char *>(args[i].c_str()));
-        int argc = static_cast<int>(args.size());
+        auto argc = static_cast<int>(args.size());
         _appPtr = new MockAppServer(argc, &argv[0]);
         _appPtr->setParmsDbPath(parmsDbPath);
         _appPtr->init();
@@ -152,24 +152,24 @@ void TestAppServer::testStartAndStopSync() {
     // Start syncs (ie. Vfs & SyncPal) for a user
     ExitInfo exitInfo = _appPtr->startSyncs(user);
     CPPUNIT_ASSERT(exitInfo);
-    CPPUNIT_ASSERT(_appPtr->_syncPalMap[syncDbId]->isRunning());
+    CPPUNIT_ASSERT(AppServer::_syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop sync & clear maps
     _appPtr->stopSyncTask(syncDbId);
-    CPPUNIT_ASSERT(_appPtr->_syncPalMap.size() == 0);
-    CPPUNIT_ASSERT(_appPtr->_vfsMap.size() == 0);
+    CPPUNIT_ASSERT(AppServer::_syncPalMap.empty());
+    CPPUNIT_ASSERT(AppServer::_vfsMap.empty());
 
     // Start syncs for all users
     exitInfo = _appPtr->startSyncs();
     CPPUNIT_ASSERT(exitInfo);
-    CPPUNIT_ASSERT(_appPtr->_syncPalMap[syncDbId]->isRunning());
+    CPPUNIT_ASSERT(AppServer::_syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop syncs & clear maps for all users
     _appPtr->stopAllSyncsTask({syncDbId});
-    CPPUNIT_ASSERT(_appPtr->_syncPalMap.size() == 0);
-    CPPUNIT_ASSERT(_appPtr->_vfsMap.size() == 0);
+    CPPUNIT_ASSERT(AppServer::_syncPalMap.empty());
+    CPPUNIT_ASSERT(AppServer::_vfsMap.empty());
 
     // Update sync local folder with a dummy value
     Sync sync;
@@ -198,15 +198,14 @@ void TestAppServer::testCleanup() {
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {
     int count = 0;
     while (count++ < 100) {
-        SyncStatus status = _appPtr->_syncPalMap[syncDbId]->status();
-        if (status == targetStatus) return true;
+        if (auto status = AppServer::_syncPalMap[syncDbId]->status(); status == targetStatus) return true;
         Utility::msleep(100);
     }
     return false;
 }
 
 bool TestAppServer::syncIsActive(int syncDbId) const {
-    SyncStatus status = _appPtr->_syncPalMap[syncDbId]->status();
+    SyncStatus status = AppServer::_syncPalMap[syncDbId]->status();
     return status == SyncStatus::Starting || status == SyncStatus::Running || status == SyncStatus::Idle;
 }
 

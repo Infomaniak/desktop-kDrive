@@ -31,11 +31,11 @@ class PARMS_EXPORT Error {
 
         // Error level Server constructor
         Error(const std::string &functionName, ExitCode exitCode, ExitCause exitCause);
-        Error(const std::string &functionName, ExitInfo exitInfo);
+        Error(const std::string &functionName, const ExitInfo &exitInfo);
 
         // Error level SyncPal constructor
         Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause);
-        Error(int syncDbId, const std::string &workerName, ExitInfo exitInfo);
+        Error(int syncDbId, const std::string &workerName, const ExitInfo &exitInfo);
 
         // Error level Node constructor
         Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,

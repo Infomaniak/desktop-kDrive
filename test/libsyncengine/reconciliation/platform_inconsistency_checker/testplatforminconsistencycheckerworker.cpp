@@ -52,16 +52,16 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
 
     // Insert user, account, drive & sync
     const User user(1, 1, "dummy");
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     const Account account(1, 1, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     const Drive drive(1, 1, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     const Sync sync(1, drive.dbId(), _tempDir.path(), "");
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),

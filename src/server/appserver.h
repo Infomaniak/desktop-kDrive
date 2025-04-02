@@ -69,7 +69,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         };
 
         explicit AppServer(int &argc, char **argv);
-        virtual ~AppServer();
+        ~AppServer();
 
         void init();
         virtual void cleanup();

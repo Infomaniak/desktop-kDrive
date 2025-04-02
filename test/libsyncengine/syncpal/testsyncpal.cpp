@@ -42,7 +42,7 @@ void TestSyncPal::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
@@ -53,21 +53,21 @@ void TestSyncPal::setUp() {
     // Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, _remotePath);
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
     Parameters parameters;
