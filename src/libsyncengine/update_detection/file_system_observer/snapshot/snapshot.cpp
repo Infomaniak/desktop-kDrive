@@ -366,7 +366,7 @@ int64_t Snapshot::size(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     int64_t ret = 0;
     if (type(itemId) == NodeType::Directory) {
-        std::unordered_set<NodeId> childrenIds;
+        NodeSet childrenIds;
         getChildrenIds(itemId, childrenIds);
         for (auto &childId: childrenIds) {
             ret += size(childId);
@@ -444,7 +444,7 @@ bool Snapshot::isLink(const NodeId &itemId) const {
     return ret;
 }
 
-bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) const {
+bool Snapshot::getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const {
     const std::scoped_lock lock(_mutex);
     if (auto it = _items.find(itemId); it != _items.end()) {
         childrenIds = it->second.childrenIds();
@@ -453,7 +453,7 @@ bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &
     return false;
 }
 
-void Snapshot::ids(std::unordered_set<NodeId> &ids) const {
+void Snapshot::ids(NodeSet &ids) const {
     const std::scoped_lock lock(_mutex);
     ids.clear();
     for (const auto &[id, _]: _items) {

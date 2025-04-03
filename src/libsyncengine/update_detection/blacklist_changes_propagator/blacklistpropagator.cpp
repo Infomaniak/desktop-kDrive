@@ -69,7 +69,7 @@ ExitCode BlacklistPropagator::checkNodes() {
 
     _syncPal->setSyncHasFullyCompleted(false);
 
-    std::unordered_set<NodeId> blackList;
+    NodeSet blackList;
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
 
     if (blackList.empty()) {

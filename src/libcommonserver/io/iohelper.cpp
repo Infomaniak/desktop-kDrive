@@ -747,6 +747,7 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
 }
 
 void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
+    exists = true;
     IoError ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError)) {
         exists = (ioError != IoError::NoSuchFileOrDirectory);

@@ -40,6 +40,15 @@
 
 namespace KDC {
 
+struct StringHash {
+        using is_transparent = void; // Enables heterogeneous operations.
+
+        std::size_t operator()(std::string_view sv) const {
+            std::hash<std::string_view> hasher;
+            return hasher(sv);
+        }
+};
+
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
@@ -49,6 +58,7 @@ using SyncName = std::filesystem::path::string_type;
 using SyncChar = std::filesystem::path::value_type;
 using DirectoryEntry = std::filesystem::directory_entry;
 using DirectoryOptions = std::filesystem::directory_options;
+using NodeSet = std::unordered_set<NodeId, StringHash, std::equal_to<>>;
 
 using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
@@ -288,6 +298,14 @@ struct ExitInfo {
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
 
+        //! Merge 'this' object with an exitInfoToMerge given as a parameter, according to an ExitCode list ordered by priority:
+        //! - If 'this' object's code has priority over the parameter's code, do nothing.
+        //! - Else, update 'this' object using the exitInfoToMerge parameter.
+        /*!
+          \param exitInfo is used to update 'this' object.
+          \param exitCodeList is a vector of ExitCode(s) ranked by decreasing priority.
+        */
+        void merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList);
         static ExitInfo fromInt(const int val) {
             return ExitInfo(static_cast<ExitCode>(val / 100), static_cast<ExitCause>(val % 100));
         }
@@ -301,6 +319,10 @@ struct ExitInfo {
             if (_code == ExitCode::Ok) return "";
             return " from (" + _srcLoc.toString() + ")";
         }
+
+        static long indexInList(const ExitCode &exitCode, const std::vector<ExitCode> &exitCodeList);
+
+        friend class TestTypes;
 };
 std::string toString(ExitInfo e);
 

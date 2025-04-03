@@ -53,6 +53,11 @@ void KDC::TestLocalJobs::setUp() {
     ParametersCache::instance(true);
 }
 
+void TestLocalJobs::tearDown() {
+    ParametersCache::reset();
+    TestBase::stop();
+}
+
 void KDC::TestLocalJobs::testLocalJobs() {
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs");
     const SyncPath localDirPath = temporaryDirectory.path() / "tmp_dir";

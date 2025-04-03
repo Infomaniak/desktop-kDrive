@@ -35,7 +35,7 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
 
     public:
         void setUp() override;
-        void tearDown() override { TestBase::stop(); }
+        void tearDown() override;
 
     protected:
         void testLocalJobs();

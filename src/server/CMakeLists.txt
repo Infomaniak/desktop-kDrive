@@ -106,10 +106,8 @@ endif()
 set( final_src
     ${KDRIVE_RC_SRC}
     ${server_SRCS}
-    ${server_UI_SRCS}
     ${server_version}
     ${3rdparty_SRC}
-    ${3rdparty_MOC}
 )
 
 # Target
@@ -222,8 +220,8 @@ target_link_libraries(${APPLICATION_EXECUTABLE}
     sentry::sentry
     updater)
 
-## handle DBUS for Fdo notifications
 if( UNIX AND NOT APPLE )
+    # handle DBUS for Fdo notifications
     find_package(Qt6 COMPONENTS DBus)
     target_link_libraries(${APPLICATION_EXECUTABLE} Qt6::DBus)
     target_compile_definitions(${APPLICATION_EXECUTABLE} PRIVATE "USE_FDO_NOTIFICATIONS")

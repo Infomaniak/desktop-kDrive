@@ -23,15 +23,6 @@
 
 namespace KDC {
 
-struct StringHash {
-        using is_transparent = void; // Enables heterogeneous operations.
-
-        std::size_t operator()(std::string_view sv) const {
-            std::hash<std::string_view> hasher;
-            return hasher(sv);
-        }
-};
-
 ActionCode getActionCode(const std::string &action) noexcept {
     static const std::unordered_map<std::string, ActionCode, StringHash, std::equal_to<>> actionMap = {
             {"file_create", ActionCode::ActionCodeCreate},
