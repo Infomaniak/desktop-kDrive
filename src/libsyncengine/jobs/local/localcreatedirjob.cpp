@@ -48,7 +48,7 @@ bool LocalCreateDirJob::canRun() {
 
     if (exists) {
         LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" already exist.");
-        _exitInfo = {ExitCode::DataError, ExitCause::FileAlreadyExist};
+        _exitInfo = {ExitCode::DataError, ExitCause::FileAlreadyExists};
         return false;
     }
 

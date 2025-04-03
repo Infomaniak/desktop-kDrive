@@ -91,7 +91,7 @@ bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
                                                ExitCause::FileTooBig,
                                                ExitCause::NotFound,
                                                ExitCause::QuotaExceeded,
-                                               ExitCause::FileAlreadyExist,
+                                               ExitCause::FileAlreadyExists,
                                                ExitCause::ShareLinkAlreadyExists,
                                                ExitCause::ServiceUnavailable};
 
