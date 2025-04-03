@@ -424,7 +424,7 @@ void TestConflictFinderWorker::testCase513() {
 }
 // Move-Move (Cycle) introduces new Move-Move : cf p106 figure 5.16
 void TestConflictFinderWorker::testCase516() {
-    // Step1 : detection of the Move-Move (Cycle) conflict : cf p106 figure 5.16 (b)
+    // Step1 : Detection of the Move-Move (Cycle) conflict : cf p106 figure 5.16 (b)
     // Simulate MOVE of A/AE to AE on local replica
     const auto lNodeAE = _situationGenerator.moveNode(ReplicaSide::Local, "ae", "");
     // Simulate MOVE of B/BE to AE/BE on local replica
@@ -443,51 +443,60 @@ void TestConflictFinderWorker::testCase516() {
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), _syncPal->_conflictQueue->size());
 
     auto conf = _syncPal->_conflictQueue->top();
-    CPPUNIT_ASSERT_EQUAL(conf.type() == ConflictType::MoveMoveSource);
-    CPPUNIT_ASSERT_EQUAL(conf.node() == nodeM);
-    CPPUNIT_ASSERT_EQUAL(conf.node()->side() == nodeM->side());
-    CPPUNIT_ASSERT_EQUAL(conf.otherNode() == rNodeM);
-    CPPUNIT_ASSERT_EQUAL(conf.otherNode()->side() == rNodeM->side());
+    CPPUNIT_ASSERT_EQUAL(ConflictType::MoveMoveSource, conf.type());
+    CPPUNIT_ASSERT_EQUAL(lNodeAE, conf.node());
+    CPPUNIT_ASSERT_EQUAL(rNodeAE, conf.otherNode());
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT_EQUAL(conf.type() == ConflictType::MoveMoveSource);
-    CPPUNIT_ASSERT_EQUAL(conf.node() == rNodeN);
-    CPPUNIT_ASSERT_EQUAL(conf.node()->side() == rNodeN->side());
-    CPPUNIT_ASSERT_EQUAL(conf.otherNode() == nodeN);
-    CPPUNIT_ASSERT_EQUAL(conf.otherNode()->side() == nodeN->side());
+
+    conf = _syncPal->_conflictQueue->top();
+    CPPUNIT_ASSERT_EQUAL(ConflictType::MoveMoveSource, conf.type());
+    CPPUNIT_ASSERT_EQUAL(rNodeBE, conf.node());
+    CPPUNIT_ASSERT_EQUAL(lNodeBE, conf.otherNode());
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT_EQUAL(conf.type() == ConflictType::MoveMoveCycle);
-    CPPUNIT_ASSERT_EQUAL(conf.node() == nodeN);
-    CPPUNIT_ASSERT_EQUAL(conf.node()->side() == nodeN->side());
-    CPPUNIT_ASSERT_EQUAL(conf.otherNode() == rNodeM);
-    CPPUNIT_ASSERT_EQUAL(conf.otherNode()->side() == rNodeM->side());
+
+    conf = _syncPal->_conflictQueue->top();
+    CPPUNIT_ASSERT_EQUAL(ConflictType::MoveMoveCycle, conf.type());
+    CPPUNIT_ASSERT_EQUAL(lNodeBE, conf.node());
+    CPPUNIT_ASSERT_EQUAL(rNodeAE, conf.otherNode());
+
+    // Step2 : Detection of Move-Move (Cycle) conflict : cf p106 figure 5.16 (c)
+    _syncPal->_conflictQueue->clear();
+
+    // Cancel the move of local node BE
+    (void) _situationGenerator.moveNode(ReplicaSide::Local, "be", "b");
+    lNodeBE->setChangeEvents(OperationType::None);
+
+    _syncPal->_conflictFinderWorker->findConflicts();
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_conflictQueue->size());
+
+    conf = _syncPal->_conflictQueue->top();
+    CPPUNIT_ASSERT_EQUAL(ConflictType::MoveMoveSource, conf.type());
+    CPPUNIT_ASSERT_EQUAL(lNodeAE, conf.node());
+    CPPUNIT_ASSERT_EQUAL(rNodeAE, conf.otherNode());
+    _syncPal->_conflictQueue->pop();
+
+    conf = _syncPal->_conflictQueue->top();
+    CPPUNIT_ASSERT_EQUAL(ConflictType::MoveMoveCycle, conf.type());
+    CPPUNIT_ASSERT_EQUAL(lNodeA, conf.node());
+    CPPUNIT_ASSERT_EQUAL(rNodeB, conf.otherNode());
 }
 
 void TestConflictFinderWorker::testConflictCmp() {
     const ConflictCmp cmp(_syncPal->updateTree(ReplicaSide::Local), _syncPal->updateTree(ReplicaSide::Remote));
-    const std::array<ConflictType, 10> conflictTypes = {ConflictType::MoveParentDelete, ConflictType::CreateParentDelete,
-                                                        ConflictType::MoveDelete,       ConflictType::EditDelete,
-                                                        ConflictType::MoveMoveSource,   ConflictType::MoveMoveDest,
-                                                        ConflictType::MoveMoveCycle,    ConflictType::CreateCreate,
-                                                        ConflictType::EditEdit,         ConflictType::MoveCreate};
+    constexpr std::array conflictTypes = {ConflictType::MoveParentDelete, ConflictType::CreateParentDelete,
+                                          ConflictType::MoveDelete,       ConflictType::EditDelete,
+                                          ConflictType::MoveMoveSource,   ConflictType::MoveMoveDest,
+                                          ConflictType::MoveMoveCycle,    ConflictType::CreateCreate,
+                                          ConflictType::EditEdit,         ConflictType::MoveCreate};
+
+    // EditDelete, MoveDelete, MoveParentDelete, CreateParentDelete, MoveMoveSource, MoveMoveDest, MoveCreate, CreateCreate,
+    //         EditEdit, MoveMoveCycle,
+
     const size_t nbConflictType = conflictTypes.size();
 
-    const auto localNodeA = std::make_shared<Node>(0, ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None, "A",
-                                                   0, 0, 0, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-
-    const auto remoteNodeA = std::make_shared<Node>(0, ReplicaSide::Remote, Str("A"), NodeType::Directory, OperationType::None,
-                                                    "A", 0, 0, 0, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
-
     OperationType allOp = OperationType::Create | OperationType::Edit | OperationType::Delete | OperationType::Move;
-    const auto localNodeAA =
-            std::make_shared<Node>(0, ReplicaSide::Local, Str("AA"), NodeType::Directory, allOp, "AA", 0, 0, 0, localNodeA);
-    localNodeAA->setMoveOriginInfos({"AA1", localNodeA->parentNode()->id().value()});
-
-    const auto remoteNodeAA =
-            std::make_shared<Node>(0, ReplicaSide::Remote, Str("AA"), NodeType::Directory, allOp, "AA", 0, 0, 0, remoteNodeA);
-    remoteNodeAA->setMoveOriginInfos({"AA2", remoteNodeA->parentNode()->id().value()});
-
-
     ConflictQueue queue(_syncPal->updateTree(ReplicaSide::Local), _syncPal->updateTree(ReplicaSide::Remote));
+
     for (size_t i = 0; i < 1000; i++) {
         size_t index = rand() % nbConflictType;
         Conflict c1(localNodeAA, remoteNodeAA, conflictTypes[index]);
