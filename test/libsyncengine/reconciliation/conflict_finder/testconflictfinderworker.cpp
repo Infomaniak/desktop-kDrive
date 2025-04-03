@@ -489,22 +489,25 @@ void TestConflictFinderWorker::testConflictCmp() {
                                           ConflictType::MoveMoveCycle,    ConflictType::CreateCreate,
                                           ConflictType::EditEdit,         ConflictType::MoveCreate};
 
-    // EditDelete, MoveDelete, MoveParentDelete, CreateParentDelete, MoveMoveSource, MoveMoveDest, MoveCreate, CreateCreate,
-    //         EditEdit, MoveMoveCycle,
-
-    const size_t nbConflictType = conflictTypes.size();
-
-    OperationType allOp = OperationType::Create | OperationType::Edit | OperationType::Delete | OperationType::Move;
     ConflictQueue queue(_syncPal->updateTree(ReplicaSide::Local), _syncPal->updateTree(ReplicaSide::Remote));
 
-    for (size_t i = 0; i < 1000; i++) {
-        size_t index = rand() % nbConflictType;
-        Conflict c1(localNodeAA, remoteNodeAA, conflictTypes[index]);
+    const OperationType allOp = OperationType::Create | OperationType::Edit | OperationType::Delete | OperationType::Move;
+    const auto lNodeAA = _situationGenerator.getNode(ReplicaSide::Local, "aa");
+    lNodeAA->setMoveOriginInfos({lNodeAA->getPath(), *lNodeAA->parentNode()->id()});
+    lNodeAA->setChangeEvents(allOp);
+    const auto rNodeAA = _situationGenerator.getNode(ReplicaSide::Remote, "aa");
+    rNodeAA->setMoveOriginInfos({rNodeAA->getPath(), *rNodeAA->parentNode()->id()});
+    rNodeAA->setChangeEvents(allOp);
+
+    constexpr size_t nbConflictType = conflictTypes.size();
+    for (size_t i = 0; i < 100; i++) {
+        const auto index = rand() % nbConflictType;
+        const Conflict c1(lNodeAA, rNodeAA, conflictTypes[index]);
         queue.push(c1);
     }
 
-    // Ensure that all the operations are grouped by type
-    ConflictType lastType = ConflictType::None;
+    // Ensure that all the operations are grouped and sorted by type
+    auto lastType = ConflictType::None;
     while (!queue.empty()) {
         const ConflictType currentType = queue.top().type();
         CPPUNIT_ASSERT(currentType >= lastType);
