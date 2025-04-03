@@ -2690,13 +2690,7 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
 
     // Set sync target nodeId for advanced sync
     if (!sync.targetPath().empty()) {
-        // Split path
-        std::vector<SyncName> names;
-        SyncPath pathTmp(sync.targetPath());
-        while (pathTmp != pathTmp.root_path()) {
-            names.push_back(pathTmp.filename().native());
-            pathTmp = pathTmp.parent_path();
-        }
+        std::vector<SyncName> itemNames = Utility::splitPath(sync.targetPath());
 
         // Get root subfolders
         QList<NodeInfo> list;
@@ -2706,12 +2700,12 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
         }
 
         NodeId nodeId;
-        while (!list.empty() && !names.empty()) {
+        while (!list.empty() && !itemNames.empty()) {
             NodeInfo info = list.back();
             list.pop_back();
-            if (QStr2SyncName(info.name()) == names.back()) {
-                names.pop_back();
-                if (names.empty()) {
+            if (QStr2SyncName(info.name()) == itemNames.back()) {
+                itemNames.pop_back();
+                if (itemNames.empty()) {
                     nodeId = info.nodeId().toStdString();
                     break;
                 }
