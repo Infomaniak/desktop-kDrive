@@ -63,9 +63,9 @@ class Snapshot : public SharedObject {
         bool pathExists(const SyncPath &path) const;
         bool isLink(const NodeId &itemId) const;
 
-        bool getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) const;
+        bool getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const;
 
-        void ids(std::unordered_set<NodeId> &ids) const;
+        void ids(NodeSet &ids) const;
         /** Checks if ancestorItem is an ancestor of item.
          * @return true indicates that ancestorItem is an ancestor of item
          */

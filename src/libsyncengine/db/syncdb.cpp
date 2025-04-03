@@ -1539,7 +1539,7 @@ bool SyncDb::ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found) {
     return true;
 }
 
-bool SyncDb::ids(ReplicaSide side, std::unordered_set<NodeId> &ids, bool &found) {
+bool SyncDb::ids(ReplicaSide side, NodeSet &ids, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     // Find root node
@@ -1699,7 +1699,7 @@ bool SyncDb::correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeI
     return id(otherSide(side), dbNodeId, nodeIdOut, found);
 }
 
-bool SyncDb::updateAllSyncNodes(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet) {
+bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     int errId;
@@ -1733,7 +1733,7 @@ bool SyncDb::updateAllSyncNodes(SyncNodeType type, const std::unordered_set<Node
     return true;
 }
 
-bool SyncDb::selectAllSyncNodes(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet) {
+bool SyncDb::selectAllSyncNodes(SyncNodeType type, NodeSet &nodeIdSet) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNC_NODE_REQUEST_ID));
@@ -1892,7 +1892,7 @@ bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector
     return true;
 }
 
-bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids) {
+bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, NodeSet &ids) {
     std::queue<DbNodeId> dbNodeIdQueue;
     dbNodeIdQueue.push(parentNodeDbId);
 

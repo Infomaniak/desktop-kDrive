@@ -569,30 +569,15 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
     return str;
 }
 
-std::string Utility::list2str(std::unordered_set<std::string> inList) {
+std::string Utility::nodeSet2str(const NodeSet &set) {
     bool first = true;
     std::string out;
-    for (const auto &str: inList) {
+    for (const auto &nodeId: set) {
         if (!first) {
             out += ",";
         }
-        if (!str.empty()) {
-            out += str;
-            first = false;
-        }
-    }
-    return out;
-}
-
-std::string Utility::list2str(std::list<std::string> inList) {
-    bool first = true;
-    std::string out;
-    for (const auto &str: inList) {
-        if (!first) {
-            out += ",";
-        }
-        if (!str.empty()) {
-            out += str;
+        if (!nodeId.empty()) {
+            out += nodeId;
             first = false;
         }
     }

@@ -150,10 +150,10 @@ struct COMMONSERVER_EXPORT Utility {
         static void strhex2str(const std::string &hexstr, std::string &str);
         static std::vector<std::string> splitStr(const std::string &str, char sep);
         static std::string joinStr(const std::vector<std::string> &strList, char sep = 0);
-        static std::string list2str(std::unordered_set<std::string> inList);
-        static std::string list2str(std::list<std::string> inList);
 
-        inline static int pathDepth(const SyncPath &path) { return (int) std::distance(path.begin(), path.end()); };
+        static std::string nodeSet2str(const NodeSet &set);
+
+        inline static int pathDepth(const SyncPath &path) { return (int) std::distance(path.begin(), path.end()); }
         static std::string computeMd5Hash(const std::string &in);
         static std::string computeMd5Hash(const char *in, std::size_t length);
         static std::string computeXxHash(const std::string &in);

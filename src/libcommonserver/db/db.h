@@ -35,9 +35,10 @@ class COMMONSERVER_EXPORT Db {
         Db(const std::filesystem::path &dbPath);
         virtual ~Db();
 
-        static std::filesystem::path makeDbName(bool &alreadyExist, bool addRandomSuffix = false);
+        static std::string makeDbFileName(int userId, int accountId, int driveId, int syncDbId);
+        static std::filesystem::path makeDbName(bool &alreadyExist);
         static std::filesystem::path makeDbName(int userId, int accountId, int driveId, int syncDbId, bool &alreadyExist,
-                                                bool addRandomSuffix = false);
+                                                std::function<std::string(int, int, int, int)> dbFileName = makeDbFileName);
 
         void setAutoDelete(bool value);
         bool exists();
@@ -72,7 +73,7 @@ class COMMONSERVER_EXPORT Db {
 
         inline const std::string &fromVersion() const { return _fromVersion; }
 
-        inline int createNormalizeSyncNameFunc() { return _sqliteDb->createNormalizeSyncNameFunc(); };
+        inline int createNormalizeSyncNameFunc() { return _sqliteDb->createNormalizeSyncNameFunc(); }
 
         bool tableExists(const std::string &tableName, bool &exist);
         bool columnExists(const std::string &tableName, const std::string &columnName, bool &exist);
