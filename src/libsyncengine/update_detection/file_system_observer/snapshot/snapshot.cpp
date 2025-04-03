@@ -51,12 +51,12 @@ Snapshot &Snapshot::operator=(const Snapshot &other) {
 
         // Update the child list
         for (const auto &[_, item]: _items) {
-            NodeSet childrensIds;
-            for (const auto &child: item->childrens()) {
-                (void) childrensIds.insert(child->id());
+            NodeSet childrenIds;
+            for (const auto &child: item->children()) {
+                (void) childrenIds.insert(child->id());
             }
-            item->removeAllChildrens();
-            for (const auto &childId: childrensIds) {
+            item->removeAllChildren();
+            for (const auto &childId: childrenIds) {
                 item->addChildren(_items.at(childId)); // Add the new pointer
             }
         }
@@ -95,7 +95,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
 
     // Check if `newItem` already exists with the same path but a different Id
     if (const auto newParent = findItem(newItem.parentId()); newParent) {
-        for (auto child: newParent->childrens()) {
+        for (auto child: newParent->children()) {
             if (child->normalizedName() == newItem.normalizedName() && child->id() != newItem.id()) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
                            L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
@@ -115,7 +115,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         // Remove children from previous parent
         if (parentChanged) {
             if (const auto previousParent = findItem(item->parentId()); previousParent) {
-                previousParent->removeChildren(item);
+                previousParent->removeChild(item);
             }
         }
 
@@ -177,7 +177,7 @@ bool Snapshot::removeItem(std::shared_ptr<SnapshotItem> &item) {
 
     // Remove it also from its parent's children
     if (const auto parentItem = findItem(item->parentId()); parentItem) {
-        parentItem->removeChildren(item);
+        parentItem->removeChild(item);
     }
     const NodeId itemId = item->id();
     item.reset();
@@ -205,7 +205,7 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
 #endif // _WIN32
 
         bool idFound = false;
-        for (const auto &child: item->childrens()) {
+        for (const auto &child: item->children()) {
             if (child->name() == *pathIt) {
                 item = child;
                 idFound = true;
@@ -422,10 +422,10 @@ bool Snapshot::isLink(const NodeId &itemId) const {
     return false;
 }
 
-bool Snapshot::getChildrens(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &childrens) const {
+bool Snapshot::getChildren(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &children) const {
     const std::scoped_lock lock(_mutex);
     if (const auto item = findItem(itemId); item) {
-        childrens = item->childrens();
+        children = item->children();
         return true;
     }
     return false;
@@ -441,12 +441,12 @@ std::shared_ptr<SnapshotItem> Snapshot::findItem(const NodeId &itemId) const {
 
 bool Snapshot::getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const {
     const std::scoped_lock lock(_mutex);
-    std::unordered_set<std::shared_ptr<SnapshotItem>> childrens;
-    if (!getChildrens(itemId, childrens)) {
+    std::unordered_set<std::shared_ptr<SnapshotItem>> children;
+    if (!getChildren(itemId, children)) {
         return false;
     }
     childrenIds.clear();
-    for (const auto &child: childrens) {
+    for (const auto &child: children) {
         (void) childrenIds.insert(child->id());
     }
     return true;
@@ -529,7 +529,7 @@ bool Snapshot::checkIntegrityRecursively() const {
 bool Snapshot::checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentItem) const {
     // Check that we do not have the same file twice in the same folder
     std::set<SyncName> names;
-    for (const auto child: parentItem->childrens()) {
+    for (const auto child: parentItem->children()) {
         if (!checkIntegrityRecursively(child)) {
             return false;
         }
@@ -547,14 +547,14 @@ bool Snapshot::checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &pa
 }
 
 void Snapshot::removeChildrenRecursively(const std::shared_ptr<SnapshotItem> &parent) {
-    auto it = parent->childrens().begin();
-    while (it != parent->childrens().end()) {
+    auto it = parent->children().begin();
+    while (it != parent->children().end()) {
         const auto &child = *it;
         const NodeId childId = child->id();
 
         removeChildrenRecursively(child);
         ++it;
-        parent->removeChildren(child);
+        parent->removeChild(child);
         _items.erase(childId);
     }
 }

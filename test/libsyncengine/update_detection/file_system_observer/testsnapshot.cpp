@@ -409,24 +409,24 @@ void TestSnapshot::testCopySnapshot() {
     snapShotCopy.ids(snapshotCopyIds);
     CPPUNIT_ASSERT(snapshotIds == snapshotCopyIds);
 
-    // Ensure _items elements are copied, not juste the pointer
+    // Ensure _items elements are copied, not just the pointer
     snapshot.setName("file1.1", Str("newFile1.1"));
     CPPUNIT_ASSERT(Str2SyncName("newFile1.1") == snapshot.name("file1.1"));
     CPPUNIT_ASSERT(Str2SyncName("file1.1") == snapShotCopy.name("file1.1"));
 
-    // Ensure SnapshotItems::_childrens elements are copied, not juste the pointer
+    // Ensure SnapshotItems::_children elements are copied, not just the pointer
     const auto snapshotDir1 = snapshot.findItem("dir1");
     const auto snapshotCopyDir1 = snapShotCopy.findItem("dir1");
     CPPUNIT_ASSERT(snapshotDir1);
     CPPUNIT_ASSERT(snapshotCopyDir1);
 
-    const auto snapshotDir1Childrens = snapshotDir1->childrens();
-    const auto snapshotCopyDir1Childrens = snapshotCopyDir1->childrens();
-    CPPUNIT_ASSERT_EQUAL(size_t(1), snapshotDir1Childrens.size());
-    CPPUNIT_ASSERT_EQUAL(size_t(1), snapshotCopyDir1Childrens.size());
+    const auto snapshotDir1Children = snapshotDir1->children();
+    const auto snapshotCopyDir1Children = snapshotCopyDir1->children();
+    CPPUNIT_ASSERT_EQUAL(size_t(1), snapshotDir1Children.size());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), snapshotCopyDir1Children.size());
 
-    const auto snapshotDir1ChildPtr = snapshotDir1Childrens.begin()->get();
-    const auto snapshotCopyDir1ChildPtr = snapshotCopyDir1Childrens.begin()->get();
+    const auto snapshotDir1ChildPtr = snapshotDir1Children.begin()->get();
+    const auto snapshotCopyDir1ChildPtr = snapshotCopyDir1Children.begin()->get();
     CPPUNIT_ASSERT_EQUAL(NodeId("file1.1"), snapshotDir1ChildPtr->id());
     CPPUNIT_ASSERT_EQUAL(NodeId("file1.1"), snapshotCopyDir1ChildPtr->id());
 

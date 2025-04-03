@@ -85,7 +85,7 @@ class Snapshot : public SharedObject {
         bool checkIntegrityRecursively() const;
 
     private:
-        bool getChildrens(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &childrens) const;
+        bool getChildren(const NodeId &itemId, std::unordered_set<std::shared_ptr<SnapshotItem>> &children) const;
         bool removeItem(std::shared_ptr<SnapshotItem> &item);
 
         std::shared_ptr<SnapshotItem> findItem(const NodeId &itemId) const;
