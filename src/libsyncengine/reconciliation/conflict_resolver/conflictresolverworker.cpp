@@ -154,6 +154,10 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     op->setRelativeOriginPath(originPath);
     op->setRelativeDestinationPath(originPath.parent_path() / newName);
 
+    // Update node
+    conflict.remoteNode()->setMoveOriginInfos({conflict.remoteNode()->getPath(), *conflict.remoteNode()->parentNode()->id()});
+    conflict.remoteNode()->setChangeEvents(OperationType::Move);
+
     LOGW_SYNCPAL_INFO(_logger, getLogString(op));
 
     (void) _syncPal->syncOps()->pushOp(op);
