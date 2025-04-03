@@ -111,6 +111,8 @@ class Snapshot : public SharedObject {
         bool _copy = false; // false for a real time snapshot, true for a copy
 
         mutable std::recursive_mutex _mutex;
+
+        friend class TestSnapshot;
 };
 
 } // namespace KDC

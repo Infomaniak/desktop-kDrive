@@ -34,6 +34,18 @@ SnapshotItem::SnapshotItem(const SnapshotItem &other) {
     *this = other;
 }
 
+int64_t SnapshotItem::size() const {
+    int64_t ret = 0;
+    if (!_childrens.empty()) {
+        for (auto &child: _childrens) {
+            ret += child->size();
+        }
+    } else {
+        ret = _size;
+    }
+    return ret;
+}
+
 SnapshotItem &SnapshotItem::operator=(const SnapshotItem &other) {
     copyExceptChildren(other);
     _childrens = other.childrens();
@@ -64,6 +76,10 @@ void SnapshotItem::addChildren(const std::shared_ptr<SnapshotItem> &child) {
 
 void SnapshotItem::removeChildren(const std::shared_ptr<SnapshotItem> &child) {
     _childrens.erase(child);
+}
+
+void SnapshotItem::removeAllChildrens() {
+    _childrens.clear();
 }
 
 } // namespace KDC

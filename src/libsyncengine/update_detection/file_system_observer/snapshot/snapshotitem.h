@@ -56,7 +56,7 @@ class SnapshotItem {
         void setLastModified(const SyncTime newLastModified) { _lastModified = newLastModified; }
         [[nodiscard]] NodeType type() const { return _type; }
         void setType(const NodeType type) { _type = type; }
-        [[nodiscard]] int64_t size() const { return _size; }
+        [[nodiscard]] int64_t size() const;
         void setSize(const int64_t newSize) { _size = newSize; }
         [[nodiscard]] bool isLink() const { return _isLink; }
         void setIsLink(const bool isLink) { _isLink = isLink; }
@@ -72,6 +72,7 @@ class SnapshotItem {
         void copyExceptChildren(const SnapshotItem &other);
         void addChildren(const std::shared_ptr<SnapshotItem> &child);
         void removeChildren(const std::shared_ptr<SnapshotItem> &child);
+        void removeAllChildrens();
 
     private:
         NodeId _id;

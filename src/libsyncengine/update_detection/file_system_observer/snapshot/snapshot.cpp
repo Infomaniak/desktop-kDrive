@@ -51,10 +51,12 @@ Snapshot &Snapshot::operator=(const Snapshot &other) {
 
         // Update the child list
         for (const auto &[_, item]: _items) {
-            const auto childrensCopy = item->childrens();
-            for (const auto &child: childrensCopy) {
-                const auto childId = child->id();
-                item->removeChildren(child); // Remove the old pointer
+            NodeSet childrensIds;
+            for (const auto &child: item->childrens()) {
+                (void) childrensIds.insert(child->id());
+            }
+            item->removeAllChildrens();
+            for (const auto &childId: childrensIds) {
                 item->addChildren(_items.at(childId)); // Add the new pointer
             }
         }
@@ -357,20 +359,10 @@ NodeType Snapshot::type(const NodeId &itemId) const {
 
 int64_t Snapshot::size(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
-    int64_t ret = 0;
-    const auto item = findItem(itemId);
-    if (!item) return 0;
-
-    if (item->type() == NodeType::Directory) {
-        std::unordered_set<std::shared_ptr<SnapshotItem>> childrens;
-        childrens = item->childrens();
-        for (auto &child: childrens) {
-            ret += size(child->id());
-        }
-    } else {
+    if (const auto item = findItem(itemId); item) {
         return item->size();
     }
-    return ret;
+    return 0;
 }
 
 std::string Snapshot::contentChecksum(const NodeId &itemId) const {
