@@ -40,8 +40,8 @@ class SnapshotItem {
         void setId(const NodeId &id) { _id = id; }
         [[nodiscard]] const NodeId &parentId() const { return _parentId; }
         void setParentId(const NodeId &newParentId) { _parentId = newParentId; }
-        [[nodiscard]] const std::unordered_set<NodeId> &childrenIds() const { return _childrenIds; }
-        void setChildrenIds(const std::unordered_set<NodeId> &newChildrenIds) { _childrenIds = newChildrenIds; }
+        [[nodiscard]] const NodeSet &childrenIds() const { return _childrenIds; }
+        void setChildrenIds(const NodeSet &newChildrenIds) { _childrenIds = newChildrenIds; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
         void setName(const SyncName &newName) {
@@ -89,7 +89,7 @@ class SnapshotItem {
         bool _canWrite = true;
         bool _canShare = true;
 
-        std::unordered_set<NodeId> _childrenIds;
+        NodeSet _childrenIds;
 
         mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
 

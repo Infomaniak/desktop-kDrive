@@ -38,6 +38,12 @@ std::shared_ptr<ParametersCache> ParametersCache::instance(const bool isTest /*=
     return _instance;
 }
 
+void ParametersCache::reset() {
+    if (_instance) {
+        _instance = nullptr;
+    }
+}
+
 ParametersCache::ParametersCache(bool isTest /*= false*/) {
     if (isTest) {
         // In test, use extended log by default

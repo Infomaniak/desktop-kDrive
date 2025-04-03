@@ -37,7 +37,8 @@ namespace KDC {
 const int secondsBetweenCpuCalculation = 10;
 const double cpuThreadsThreshold = 0.5;
 
-JobManager *JobManager::_instance = nullptr;
+std::shared_ptr<JobManager> JobManager::_instance = nullptr;
+
 bool JobManager::_stop = false;
 
 int JobManager::_maxNbThread = 0;
@@ -53,10 +54,15 @@ std::unordered_set<UniqueId> JobManager::_runningJobs;
 std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>> JobManager::_pendingJobs;
 std::recursive_mutex JobManager::_mutex;
 
-JobManager *JobManager::instance() {
-    if (!_instance) {
-        _instance = new JobManager();
+std::shared_ptr<JobManager> JobManager::instance() noexcept {
+    if (_instance == nullptr) {
+        try {
+            _instance = std::shared_ptr<JobManager>(new JobManager());
+        } catch (...) {
+            return nullptr;
+        }
     }
+
     return _instance;
 }
 
@@ -78,6 +84,13 @@ void JobManager::clear() {
     }
     _managedJobs.clear();
     _runningJobs.clear();
+    _stop = false;
+}
+
+void JobManager::reset() {
+    if (_instance) {
+        _instance = nullptr;
+    }
 }
 
 void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/,
