@@ -90,7 +90,7 @@ class Snapshot : public SharedObject {
 
         std::shared_ptr<SnapshotItem> findItem(const NodeId &itemId) const;
         void removeChildrenRecursively(const std::shared_ptr<SnapshotItem> &parent);
-        bool checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentItem) const;
+        bool checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parent) const;
 
         ReplicaSide _side = ReplicaSide::Unknown;
         NodeId _rootFolderId;
