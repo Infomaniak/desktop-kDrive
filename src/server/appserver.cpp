@@ -529,7 +529,6 @@ void AppServer::handleClientCrash(bool &quit) {
             addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
         } else if (!found) {
-            addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
             LOG_WARN(_logger, "ParmsDb::updateAppState: missing entry for key " << AppStateKey::LastClientSelfRestartDate);
         }
 
@@ -545,7 +544,6 @@ void AppServer::handleClientCrash(bool &quit) {
             addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
         } else if (!found) {
-            addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
             LOG_WARN(_logger, "ParmsDb::updateAppState: missing entry for key " << AppStateKey::LastClientSelfRestartDate);
         }
 
@@ -2907,7 +2905,6 @@ bool AppServer::serverCrashedRecently(int seconds) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     } else if (!found) {
-        addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
         LOG_WARN(_logger, "ParmsDb::selectAppState: missing entry for key " << AppStateKey::LastServerSelfRestartDate);
         return false;
     }
@@ -2935,7 +2932,6 @@ bool AppServer::clientCrashedRecently(int seconds) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     } else if (!found) {
-        addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
         LOG_WARN(_logger, "ParmsDb::selectAppState: missing entry for key " << AppStateKey::LastServerSelfRestartDate);
         return false;
     }
