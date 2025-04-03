@@ -225,10 +225,14 @@ std::optional<Conflict> ConflictFinderWorker::checkCreateCreateConflict(const st
         return std::nullopt;
     }
     std::optional<Conflict> conflict = std::nullopt;
-    const std::shared_ptr<Node> correspondingCreateNode =
-            correspondingParentNode->getChildExcept(createNode->name(), OperationType::Delete);
+    SyncName normalizedName;
+    if (!Utility::normalizedSyncName(createNode->name(), normalizedName)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(createNode->name()));
+        return std::nullopt;
+    }
 
-    if (correspondingCreateNode != nullptr && correspondingCreateNode->hasChangeEvent(OperationType::Create)) {
+    if (const auto correspondingCreateNode = correspondingParentNode->getChildExcept(normalizedName, OperationType::Delete);
+        correspondingCreateNode && correspondingCreateNode->hasChangeEvent(OperationType::Create)) {
         if (!isPseudoConflict(createNode, correspondingCreateNode)) {
             conflict = Conflict(createNode, correspondingCreateNode, ConflictType::CreateCreate);
             correspondingCreateNode->insertConflictAlreadyConsidered(ConflictType::CreateCreate);
@@ -252,10 +256,14 @@ std::optional<Conflict> ConflictFinderWorker::checkEditEditConflict(const std::s
 std::optional<Conflict> ConflictFinderWorker::checkMoveCreateConflict(const std::shared_ptr<Node> moveNode) {
     std::optional<Conflict> conflict = std::nullopt;
     const auto moveParentNode = moveNode->parentNode();
-    if (const auto correspondingParentNode = correspondingNodeDirect(moveParentNode); correspondingParentNode != nullptr) {
-        if (const auto potentialCreateChildNode =
-                    correspondingParentNode->getChildExcept(moveNode->name(), OperationType::Delete);
-            potentialCreateChildNode != nullptr && potentialCreateChildNode->hasChangeEvent(OperationType::Create)) {
+    if (const auto correspondingParentNode = correspondingNodeDirect(moveParentNode); correspondingParentNode) {
+        SyncName normalizedName;
+        if (!Utility::normalizedSyncName(moveNode->name(), normalizedName)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(moveNode->name()));
+            return std::nullopt;
+        }
+        if (const auto potentialCreateChildNode = correspondingParentNode->getChildExcept(normalizedName, OperationType::Delete);
+            potentialCreateChildNode && potentialCreateChildNode->hasChangeEvent(OperationType::Create)) {
             conflict = Conflict(moveNode, potentialCreateChildNode, ConflictType::MoveCreate);
         }
     }
@@ -345,9 +353,14 @@ std::optional<Conflict> ConflictFinderWorker::checkMoveMoveSourceConflict(const 
 std::optional<Conflict> ConflictFinderWorker::checkMoveMoveDestConflict(const std::shared_ptr<Node> moveNode) {
     const auto nodeParentInOtherTree = correspondingNodeDirect(moveNode->parentNode());
     std::optional<Conflict> conflict = std::nullopt;
-    if (nodeParentInOtherTree != nullptr) {
-        const auto potentialMoveChild = nodeParentInOtherTree->getChildExcept(moveNode->name(), OperationType::Delete);
-        if (potentialMoveChild != nullptr && potentialMoveChild->hasChangeEvent(OperationType::Move) &&
+    if (nodeParentInOtherTree) {
+        SyncName normalizedName;
+        if (!Utility::normalizedSyncName(moveNode->name(), normalizedName)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(moveNode->name()));
+            return std::nullopt;
+        }
+        if (const auto potentialMoveChild = nodeParentInOtherTree->getChildExcept(normalizedName, OperationType::Delete);
+            potentialMoveChild && potentialMoveChild->hasChangeEvent(OperationType::Move) &&
             potentialMoveChild->idb() != moveNode->idb()) {
             conflict = Conflict(moveNode, potentialMoveChild, ConflictType::MoveMoveDest);
             potentialMoveChild->insertConflictAlreadyConsidered(ConflictType::MoveMoveDest);
