@@ -57,7 +57,7 @@ Snapshot &Snapshot::operator=(const Snapshot &other) {
             }
             item->removeAllChildren();
             for (const auto &childId: childrenIds) {
-                item->addChildren(_items.at(childId)); // Add the new pointer
+                item->addChild(_items.at(childId)); // Add the new pointer
             }
         }
 
@@ -137,9 +137,9 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
                       "Parent " << newItem.parentId().c_str() << " does not exist yet, creating it");
             newParent = std::make_shared<SnapshotItem>(newItem.parentId());
             (void) _items.try_emplace(newItem.parentId(), newParent);
-            newParent->addChildren(item);
+            newParent->addChild(item);
         } else {
-            newParent->addChildren(item);
+            newParent->addChild(item);
         }
     }
     if (parentChanged || !isOrphan(item->id())) {

@@ -90,19 +90,17 @@ class Snapshot : public SharedObject {
 
         std::shared_ptr<SnapshotItem> findItem(const NodeId &itemId) const;
         void removeChildrenRecursively(const std::shared_ptr<SnapshotItem> &parent);
-        bool checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentId) const;
+        bool checkIntegrityRecursively(const std::shared_ptr<SnapshotItem> &parentItem) const;
 
         ReplicaSide _side = ReplicaSide::Unknown;
         NodeId _rootFolderId;
 
         class SnapshotItemUnorderedMap : public std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>> {
             public:
-                using std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::unordered_map;
-                using std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::insert;
                 void erase(const NodeId &id) {
-                    auto it = std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::find(id);
+                    const auto it = std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::find(id);
                     assert(it->second.use_count() == 1);
-                    std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::erase(id);
+                    (void) std::unordered_map<NodeId, std::shared_ptr<SnapshotItem>>::erase(it);
                 }
         };
 

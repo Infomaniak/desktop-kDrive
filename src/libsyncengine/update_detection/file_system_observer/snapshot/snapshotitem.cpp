@@ -70,7 +70,7 @@ void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     _path = other.path();
 }
 
-void SnapshotItem::addChildren(const std::shared_ptr<SnapshotItem> &child) {
+void SnapshotItem::addChild(const std::shared_ptr<SnapshotItem> &child) {
     _children.insert(child);
 }
 

@@ -70,7 +70,7 @@ class SnapshotItem {
         SnapshotItem &operator=(const SnapshotItem &other);
 
         void copyExceptChildren(const SnapshotItem &other);
-        void addChildren(const std::shared_ptr<SnapshotItem> &child);
+        void addChild(const std::shared_ptr<SnapshotItem> &child);
         void removeChild(const std::shared_ptr<SnapshotItem> &child);
         void removeAllChildren();
 
