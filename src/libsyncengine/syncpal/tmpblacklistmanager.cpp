@@ -100,7 +100,7 @@ void TmpBlacklistManager::refreshBlacklist() {
 
                 const auto blacklistType_ = blackListType(side);
 
-                std::unordered_set<NodeId> tmp;
+                NodeSet tmp;
                 SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType_, tmp);
                 tmp.erase(errorIt->first);
                 SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, tmp);
@@ -159,7 +159,7 @@ bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, const ReplicaSi
 void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, const ReplicaSide side) const {
     const auto blacklistType_ = blackListType(side);
 
-    std::unordered_set<NodeId> tmp;
+    NodeSet tmp;
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType_, tmp);
     tmp.insert(nodeId);
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, tmp);
@@ -170,7 +170,7 @@ void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, const ReplicaS
 void TmpBlacklistManager::eraseSingleItemFromBlacklist(const NodeId &nodeId, const ReplicaSide side) {
     const SyncNodeType blacklistType_ = blackListType(side);
 
-    std::unordered_set<NodeId> tmp;
+    NodeSet tmp;
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType_, tmp);
     if (tmp.contains(nodeId)) {
         tmp.erase(nodeId);

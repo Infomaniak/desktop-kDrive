@@ -22,6 +22,8 @@
 
 #include <CoreServices/CoreServices.h>
 
+#include <mutex>
+
 namespace KDC {
 
 class LocalFileSystemObserverWorker;
@@ -36,6 +38,8 @@ class FolderWatcher_mac : public FolderWatcher {
         void doNotifyParent(const std::list<std::pair<SyncPath, OperationType>> &changes);
 
         static OperationType getOpType(FSEventStreamEventFlags eventFlags);
+
+        std::mutex _streamMutex;
 
     private:
         FSEventStreamRef _stream;

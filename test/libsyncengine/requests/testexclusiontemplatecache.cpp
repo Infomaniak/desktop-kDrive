@@ -19,6 +19,8 @@
 #include "testexclusiontemplatecache.h"
 #include "libparms/db/parmsdb.h"
 #include "requests/parameterscache.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 #include <filesystem>
@@ -113,7 +115,7 @@ void TestExclusionTemplateCache::setUp() {
     TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     ExclusionTemplateCache::instance()->update(true, excludedTemplates);
@@ -122,6 +124,7 @@ void TestExclusionTemplateCache::setUp() {
 void TestExclusionTemplateCache::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    ParametersCache::reset();
     TestBase::stop();
 }
 

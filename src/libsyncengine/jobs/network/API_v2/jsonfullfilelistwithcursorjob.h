@@ -24,7 +24,7 @@ namespace KDC {
 
 class JsonFullFileListWithCursorJob : public AbstractTokenNetworkJob {
     public:
-        JsonFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, std::list<NodeId> blacklist = {}, bool zip = true);
+        JsonFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, NodeSet blacklist = {}, bool zip = true);
 
     private:
         virtual std::string getSpecificUrl() override;
@@ -34,7 +34,7 @@ class JsonFullFileListWithCursorJob : public AbstractTokenNetworkJob {
         virtual bool handleResponse(std::istream &is) override;
 
         NodeId _dirId;
-        std::list<NodeId> _blacklist;
+        NodeSet _blacklist;
         bool _zip = true;
 };
 

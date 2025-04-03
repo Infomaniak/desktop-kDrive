@@ -10,16 +10,28 @@ find_package(Poco 1.13.3 REQUIRED XML Net)
 
 set(CMAKE_AUTOMOC ON)
 
+if(WIN32)
+    # Set stack size
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:0x4000000")
+    # Set no manifest
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
+endif()
+
 set(testserver_NAME ${APPLICATION_NAME}_test_server)
 
 set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
+    ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
     ${server_srcs_path}/socketapi.h ${server_srcs_path}/socketapi.cpp
     ${server_srcs_path}/socketlistener.h ${server_srcs_path}/socketlistener.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
+    ${server_srcs_path}/commserver.h ${server_srcs_path}/commserver.cpp
+    ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp
+    ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
+    ${server_srcs_path}/app_resources.rc
 )
 
 if(APPLE)
@@ -42,6 +54,20 @@ else ()
     list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp)
 endif()
 
+set(3rdparty_SRC
+    ../../src/3rdparty/QProgressIndicator/QProgressIndicator.cpp
+    ../../src/3rdparty/qtlockedfile/qtlockedfile.cpp
+    ../../src/3rdparty/qtsingleapplication/qtlocalpeer.cpp
+    ../../src/3rdparty/qtsingleapplication/qtsingleapplication.cpp
+    ../../src/3rdparty/qtsingleapplication/qtsinglecoreapplication.cpp
+)
+
+if(WIN32)
+    list(APPEND 3rdparty_SRC ../../src/3rdparty/qtlockedfile/qtlockedfile_win.cpp )
+else()
+    list(APPEND 3rdparty_SRC ../../src/3rdparty/qtlockedfile/qtlockedfile_unix.cpp)
+endif()
+
 set(testserver_SRCS
     ../libsyncengine/jobs/network/mockgetappversionjob.h
     updater/mockupdater.h
@@ -57,6 +83,7 @@ set(testserver_SRCS
     updater/testabstractupdater.h updater/testabstractupdater.cpp
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
+    appserver/testappserver.h appserver/testappserver.cpp
 )
 
 if(APPLE)
@@ -76,11 +103,29 @@ endif()
 
 add_executable(${testserver_NAME}
     ${server_SRCS}
+    ${3rdparty_SRC}
     ${testserver_SRCS})
 
 set_target_properties(${testserver_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
 
+# Includes
+if (WIN32)
+    target_include_directories(${testserver_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+        ${CMAKE_CURRENT_BINARY_DIR}
+        "C:/Program Files (x86)/log4cplus/include")
+else()
+    target_include_directories(${testserver_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+        ${CMAKE_CURRENT_BINARY_DIR})
+endif()
+
+# Link
 target_link_libraries(${testserver_NAME}
     Qt6::Svg
     updater
@@ -112,6 +157,13 @@ if (APPLE)
 elseif (WIN32)
     target_link_libraries(${testserver_NAME}
         "${libcommonserver_NAME}_vfs_win")
+endif()
+
+if( UNIX AND NOT APPLE )
+    # For migrationparams
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBSECRET IMPORTED_TARGET libsecret-1)
+    target_link_libraries(${testserver_NAME} PkgConfig::LIBSECRET)
 endif()
 
 # Install

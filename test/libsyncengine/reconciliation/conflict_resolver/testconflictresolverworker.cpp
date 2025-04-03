@@ -17,9 +17,10 @@
  */
 
 #include "testconflictresolverworker.h"
-
-#include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
+
 #include "test_utility/testhelpers.h"
 #if defined(__APPLE__)
 #include "vfs/mac/vfs_mac.h"
@@ -33,12 +34,11 @@ void TestConflictResolverWorker::setUp() {
     TestBase::start();
     // Create SyncPal
     bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
-    SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
+    SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
     (void) std::filesystem::remove(syncDbPath);
-
     _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     _syncPal = std::make_shared<SyncPal>(_mockVfs, syncDbPath, KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);

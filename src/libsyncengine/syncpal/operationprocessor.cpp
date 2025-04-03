@@ -23,7 +23,8 @@
 namespace KDC {
 
 OperationProcessor::OperationProcessor(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                       const std::string &shortName) : ISyncWorker(syncPal, name, shortName) {}
+                                       const std::string &shortName) :
+    ISyncWorker(syncPal, name, shortName) {}
 
 bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, const std::shared_ptr<Node> correspondingNode) {
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
@@ -111,6 +112,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::sha
     std::vector<SyncName> names;
     DbNodeId parentDbNodeId;
     bool found = false;
+
     while (parentNode != nullptr && !found) {
         if (!parentNode->id()) {
             LOG_SYNCPAL_WARN(_logger, "Parent node has an empty nodeId");
@@ -118,7 +120,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::sha
         }
 
         if (!_syncPal->_syncDb->dbId(node->side(), *parentNode->id(), parentDbNodeId, found)) {
-            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*parentNode->id()).c_str());
+            LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << (*parentNode->id()));
             return nullptr;
         }
         if (!found) {
@@ -129,7 +131,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::sha
 
     // Construct relative path
     SyncPath relativeTraversedPath;
-    for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         relativeTraversedPath /= *nameIt;
     }
 
@@ -150,7 +152,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::sha
 
     // Construct path with ancestor path / relative path
     SyncPath correspondingPath = correspondingParentNode->getPath() / relativeTraversedPath;
-    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByPath(correspondingPath);
+    std::shared_ptr<Node> correspondingNode = otherTree->getNodeByNormalizedPath(correspondingPath);
     if (correspondingNode == nullptr) {
         return nullptr;
     }
