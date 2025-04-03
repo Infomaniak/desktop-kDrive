@@ -99,6 +99,8 @@ static const std::string totalNbItemKey = "total";
 static const std::string pageKey = "page";
 static const std::string pagesKey = "pages";
 static const std::string itemsPerPageKey = "items_per_page";
+static const std::string conflictKey = "conflict";
+static const std::string conflictErrorValue = "error";
 
 static const std::string inMaintenanceKey = "in_maintenance";
 static const std::string maintenanceAtKey = "maintenance_at";
@@ -109,7 +111,6 @@ static const std::string usedSizeKey = "used_size";
 static const std::string colorKey = "color";
 
 static const std::string errorCodePathKey = "/Error/Code";
-static const std::string redirectUrlPathKey = "/html/body/a";
 
 static const std::string dirKey = "dir";
 static const std::string fileKey = "file";

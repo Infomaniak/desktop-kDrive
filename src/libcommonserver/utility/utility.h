@@ -129,6 +129,15 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true if no normalization issue.
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
+        /**
+         * Split the input path into a vector of file and directory names.
+         * @param path SyncPath the path to split.
+         * @return A vector of the file and directory names composing the path, sorted
+         * in reverse order.
+         * Example: the return value associated to path = SyncPath("A / B / c.txt") is the vector
+         * ["c.txt", "B", "A"]
+         */
+        static std::vector<SyncName> splitPath(const SyncPath &path);
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
