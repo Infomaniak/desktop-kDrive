@@ -29,32 +29,32 @@ class DriveInfo {
     public:
         DriveInfo();
 
-        inline void setDbId(int driveDbId) { _dbId = driveDbId; }
-        inline int dbId() const { return _dbId; }
+        void setDbId(const int driveDbId) { _dbId = driveDbId; }
+        int dbId() const { return _dbId; }
         void setId(const int driveId) { _id = driveId; }
         int id() const { return _id; }
-        inline void setAccountDbId(int accountDbId) { _accountDbId = accountDbId; }
-        inline int accountDbId() const { return _accountDbId; }
-        inline void setName(const QString &name) { _name = name; }
-        inline const QString &name() const { return _name; }
-        inline void setColor(const QColor &color) { _color = color; }
-        inline const QColor &color() const { return _color; }
-        inline bool notifications() const { return _notifications; }
-        inline void setNotifications(bool notifications) { _notifications = notifications; }
-        inline bool admin() const { return _admin; }
-        inline void setAdmin(bool admin) { _admin = admin; }
+        void setAccountDbId(const int accountDbId) { _accountDbId = accountDbId; }
+        int accountDbId() const { return _accountDbId; }
+        void setName(const QString &name) { _name = name; }
+        const QString &name() const { return _name; }
+        void setColor(const QColor &color) { _color = color; }
+        const QColor &color() const { return _color; }
+        bool notifications() const { return _notifications; }
+        void setNotifications(const bool notifications) { _notifications = notifications; }
+        bool admin() const { return _admin; }
+        void setAdmin(const bool admin) { _admin = admin; }
 
-        inline bool maintenance() const { return _maintenance; }
-        inline void setMaintenance(bool maintenance) { _maintenance = maintenance; }
-        inline bool locked() const { return _locked; }
-        inline void setLocked(bool newLocked) { _locked = newLocked; }
-        inline bool accessDenied() const { return _accessDenied; }
-        inline void setAccessDenied(bool accessDenied) { _accessDenied = accessDenied; }
+        bool maintenance() const { return _maintenance; }
+        void setMaintenance(const bool maintenance) { _maintenance = maintenance; }
+        bool locked() const { return _locked; }
+        void setLocked(const bool newLocked) { _locked = newLocked; }
+        bool accessDenied() const { return _accessDenied; }
+        void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
 
-        friend QDataStream &operator>>(QDataStream &in, DriveInfo &info);
+        friend void operator>>(QDataStream &in, DriveInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const DriveInfo &info);
 
-        friend QDataStream &operator>>(QDataStream &in, QList<DriveInfo> &list);
+        friend void operator>>(QDataStream &in, QList<DriveInfo> &list);
         friend QDataStream &operator<<(QDataStream &out, const QList<DriveInfo> &list);
 
     protected:
