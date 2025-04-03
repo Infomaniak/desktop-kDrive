@@ -117,6 +117,10 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     if (_fileId.empty()) {
         uri.addQueryParameter("file_name", SyncName2Str(_filename));
         uri.addQueryParameter("directory_id", _remoteParentDirId);
+        // If an item already exists on the remote side with the same name, we want the backend to return an error.
+        // However, in case of conflict with a directory, the backend will change the error resolution to `rename` and
+        // automatically rename the uploaded file with a suffix counter (e.g.: test (1).txt)
+        uri.addQueryParameter(conflictKey, conflictErrorValue);
     } else {
         uri.addQueryParameter("file_id", _fileId);
     }

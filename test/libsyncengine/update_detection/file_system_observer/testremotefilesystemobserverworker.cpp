@@ -17,21 +17,24 @@
  */
 
 #include "testremotefilesystemobserverworker.h"
-
-#include <memory>
+#include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
+#include "requests/syncnodecache.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommon/utility/utility.h"
+#include "libcommonserver/utility/utility.h"
+#include "libsyncengine/jobs/jobmanager.h"
 #include "libsyncengine/jobs/network/API_v2/deletejob.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libsyncengine/jobs/network/API_v2/renamejob.h"
 #include "libsyncengine/jobs/network/API_v2/uploadjob.h"
-#include "jobs/network/networkjobsparams.h"
-#include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/utility/utility.h"
+#include "libsyncengine/jobs/network/networkjobsparams.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
-#include "requests/syncnodecache.h"
 #include "test_utility/testhelpers.h"
+
+#include <memory>
 
 using namespace CppUnit;
 using namespace std::literals;
@@ -59,30 +62,30 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     const int userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
     const int driveId(atoi(testVariables.driveId.c_str()));
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync(1, drive.dbId(), "/", "/");
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::make_shared<SyncPalTest>(sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
@@ -107,6 +110,9 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
@@ -114,10 +120,10 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 }
 
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
-    std::unordered_set<NodeId> ids;
+    NodeSet ids;
     _syncPal->_remoteFSObserverWorker->snapshot()->ids(ids);
 
-    std::unordered_set<NodeId> childrenIds;
+    NodeSet childrenIds;
     CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->snapshot()->getChildrenIds(testRemoteFsoDirId, childrenIds));
     CPPUNIT_ASSERT_EQUAL(size_t(nbFileInTestDir), childrenIds.size());
 

@@ -36,7 +36,6 @@
 #include "jobs/network/API_v2/getdriveslistjob.h"
 #include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/getsizejob.h"
-#include "jobs/jobmanager.h"
 #include "utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
@@ -376,7 +375,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     ExitCode exitCode;
 
     // Generate keychainKey
-    std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(0)).c_str()));
+    std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
 
     // Create Login instance and request token
     Login login(keychainKey);
@@ -917,6 +916,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             switch (error.exitCause()) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
+                case ExitCause::FileAlreadyExists:
                     return true;
                 default:
                     return false;

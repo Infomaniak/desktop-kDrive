@@ -49,11 +49,12 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
-#include "mocks/libsyncengine/vfs/mockvfs.h"
 
 using namespace CppUnit;
 
@@ -103,28 +104,28 @@ void TestNetworkJobs::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
     const int userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
     _userDbId = user.dbId();
 
     const int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
     const int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     _remoteDirId = testVariables.remoteDirId;
 
@@ -148,6 +149,10 @@ void TestNetworkJobs::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    ParametersCache::reset();
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
     MockIoHelperTestNetworkJobs::resetStdFunctions();
     TestBase::stop();
 }

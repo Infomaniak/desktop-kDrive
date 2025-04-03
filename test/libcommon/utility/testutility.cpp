@@ -385,8 +385,7 @@ void TestUtility::testLanguageCode() {
     CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
 
-    const auto systemLanguages = QLocale::system().uiLanguages();
-    const auto systemLanguage = systemLanguages.first().left(2);
+    const auto systemLanguage = QLocale::languageToCode(QLocale::system().language());
     CPPUNIT_ASSERT_EQUAL(systemLanguage.toStdString(), CommonUtility::languageCode(Language::Default).toStdString());
 
     // English is the default language and is always returned if the provided language code is unknown.
@@ -425,7 +424,7 @@ void TestUtility::testGetLastErrorMessage() {
 #endif
 
 void TestUtility::generatePaths(const std::vector<std::string> &itemsNames, const std::vector<char> &separators,
-                                bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start, int pos) {
+                                bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start, size_t pos) {
     if (pos == itemsNames.size()) {
         (void) result.emplace_back(start);
         for (const auto &separator: separators) {

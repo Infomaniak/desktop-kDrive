@@ -710,6 +710,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
 }
 
 void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
+    exists = true;
     IoError ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError)) {
         exists = (ioError != IoError::NoSuchFileOrDirectory);

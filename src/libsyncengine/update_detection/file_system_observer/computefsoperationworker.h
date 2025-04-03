@@ -41,7 +41,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         void execute() override;
 
     private:
-        using NodeIdSet = std::unordered_set<NodeId>;
+        using NodeIdSet = NodeSet;
         using DbNodeIdSet = std::unordered_set<DbNodeId>;
         // Detect changes based on the database records: delete, move and edit operations
         ExitCode inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);
@@ -51,7 +51,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
                                        const SyncPath &remoteDbPath); // Detect change for a single node on a specific side.
 
         // Detect changes based on the snapshot records: create operations
-        ExitCode exploreSnapshotTree(ReplicaSide side, const std::unordered_set<NodeId> &idsSet);
+        ExitCode exploreSnapshotTree(ReplicaSide side, const NodeSet &idsSet);
 
         ExitCode checkFileIntegrity(const DbNode &dbNode);
 
@@ -82,7 +82,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         ExitInfo checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
-                                      std::unordered_set<NodeId> &tmpTooBigList);
+                                      NodeSet &tmpTooBigList);
 
         void updateUnsyncedList();
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);

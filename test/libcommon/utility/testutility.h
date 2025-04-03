@@ -81,7 +81,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
          * @param result: the list of generated paths
          */
         void generatePaths(const std::vector<std::string> &itemsNames, const std::vector<char> &separators,
-                           bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start = "", int pos = 0);
+                           bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start = "", size_t pos = 0);
 };
 
 

@@ -268,7 +268,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
-        std::unordered_set<NodeId> blackList;
+        NodeSet blackList;
         SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
         job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, dirId, blackList, true);
     } catch (const std::exception &e) {
@@ -386,7 +386,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     // Delete orphans
-    std::unordered_set<NodeId> nodeIds;
+    NodeSet nodeIds;
     _snapshot->ids(nodeIds);
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {

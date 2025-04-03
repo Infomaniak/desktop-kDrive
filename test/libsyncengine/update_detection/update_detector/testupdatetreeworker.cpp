@@ -17,9 +17,10 @@
  */
 
 #include "testupdatetreeworker.h"
-#include "test_utility/testhelpers.h"
+#include "requests/parameterscache.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
-#include <requests/parameterscache.h>
+#include "test_utility/testhelpers.h"
 
 #include <memory>
 
@@ -31,12 +32,12 @@ void TestUpdateTreeWorker::setUp() {
     TestBase::start();
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Create DB
-    const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists, true);
+    const std::filesystem::path syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
     _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), "3.6.1");
     _syncDb->init("3.6.1");
     _syncDb->setAutoDelete(true);
@@ -61,6 +62,7 @@ void TestUpdateTreeWorker::tearDown() {
     // The singleton ParmsDb calls KDC::Log()->instance() in its destructor.
     // As the two singletons are instantiated in different translation units, the order of their destruction is unknown.
     ParmsDb::reset();
+    ParametersCache::reset();
     TestBase::stop();
 }
 
@@ -330,6 +332,12 @@ void TestUpdateTreeWorker::testUtilsFunctions() {
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getNewPathAfterMove("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1", newPath) == ExitCode::Ok);
     CPPUNIT_ASSERT(newPath == "Dir 4/Dir 4.2/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath(newPath)->id() == "id4111");
+
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeByNormalizedPath(newPath) == _localUpdateTree->getNodeByPath(newPath));
+    _localUpdateTree->getNodeByPath("Dir 4/Dir 4.2")->setName(testhelpers::makeNfdSyncName());
+
+    CPPUNIT_ASSERT(nullptr == _localUpdateTree->getNodeByPath(SyncPath("Dir 4") / testhelpers::makeNfcSyncName()));
+    CPPUNIT_ASSERT(nullptr != _localUpdateTree->getNodeByNormalizedPath(SyncPath("Dir 4") / testhelpers::makeNfcSyncName()));
 }
 
 void TestUpdateTreeWorker::testUpdateTmpFileNode() {

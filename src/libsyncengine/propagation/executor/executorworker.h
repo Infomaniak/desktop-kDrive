@@ -105,8 +105,7 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo waitForAllJobsToFinish();
         ExitInfo deleteFinishedAsyncJobs();
-        ExitInfo handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue,
-                                        bool downloadImpossible);
+        ExitInfo handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool invalidName, bool downloadImpossible);
         ExitInfo handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                    bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
@@ -144,6 +143,8 @@ class ExecutorWorker : public OperationProcessor {
         bool deleteOpNodes(SyncOpPtr syncOp);
 
         void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status);
+
+        static void getNodeIdsFromOp(SyncOpPtr syncOp, NodeId &localNodeId, NodeId &remoteNodeId);
 
         // This methode will return ExitCode::Ok if the error is safely managed and the executor can continue. Else, it will
         // return opsExitInfo.

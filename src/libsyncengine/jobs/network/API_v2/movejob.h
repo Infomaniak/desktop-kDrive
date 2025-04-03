@@ -28,14 +28,14 @@ class MoveJob : public AbstractTokenNetworkJob {
     public:
         MoveJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
                 const NodeId &destDirId, const SyncName &name = Str(""));
-        ~MoveJob();
+        ~MoveJob() override;
 
-        virtual bool canRun() override;
+        bool canRun() override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
-        virtual ExitInfo setData() override;
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
+        ExitInfo setData() override;
 
         SyncPath _destFilepath;
         std::string _fileId;

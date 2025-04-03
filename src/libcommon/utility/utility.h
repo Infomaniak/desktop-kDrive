@@ -80,6 +80,8 @@ struct COMMON_EXPORT CommonUtility {
         static bool compressFile(const QString &originalName, const QString &targetName,
                                  const std::function<bool(int)> &progressCallback = nullptr);
 
+        static QTranslator *_translator;
+        static QTranslator *_qtTranslator;
         static const QString englishCode;
         static const QString frenchCode;
         static const QString germanCode;
@@ -145,6 +147,9 @@ struct COMMON_EXPORT CommonUtility {
 
         static QString truncateLongLogMessage(const QString &message);
 
+        static SyncPath applicationFilePath();
+
+        static void resetTranslations();
 
     private:
         static std::mutex _generateRandomStringMutex;
