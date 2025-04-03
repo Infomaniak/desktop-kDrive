@@ -484,6 +484,18 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
+std::vector<SyncName> Utility::splitPath(const SyncPath &path) {
+    std::vector<SyncName> itemNames;
+    SyncPath pathTmp(path);
+
+    while (pathTmp != pathTmp.root_path()) {
+        (void) itemNames.emplace_back(pathTmp.filename().native());
+        pathTmp = pathTmp.parent_path();
+    }
+
+    return itemNames;
+}
+
 bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
     if (path == potentialDescendant) return true;
     for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
@@ -708,8 +720,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     }
 
     if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the
-                      // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in the
-                      // path
+                      // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in
+                      // the path
         LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name));
         return false;
     }
