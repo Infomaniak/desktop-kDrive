@@ -1122,7 +1122,7 @@ void DrivePreferencesWidget::onOpenFolder(const QString &filePath) {
     emit openFolder(filePath);
 }
 
-void DrivePreferencesWidget::onSubfoldersLoaded(bool error, ExitCause exitCause, bool empty) {
+void DrivePreferencesWidget::onSubfoldersLoaded(const bool error, const ExitCause, const bool empty) {
     setCursor(Qt::ArrowCursor);
     if (error || empty) {
         FolderItemWidget *itemWidget = blocItemWidget((PreferencesBlocWidget *) sender()->parent());
