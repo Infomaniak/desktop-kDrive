@@ -286,6 +286,10 @@ void ConflictResolverWorker::generateRescueOperation(const Conflict &conflict, c
     moveOp->setRelativeOriginPath(node->getPath());
     moveOp->setConflict(conflict);
     moveOp->setIsRescueOperation(true);
+
+    // Update node
+    conflict.remoteNode()->setMoveOriginInfos({conflict.remoteNode()->getPath(), *conflict.remoteNode()->parentNode()->id()});
+    conflict.remoteNode()->setChangeEvents(OperationType::Move);
     node->setStatus(NodeStatus::ConflictOpGenerated);
 
     LOGW_SYNCPAL_INFO(_logger, getLogString(moveOp) << L" because it has been modified locally.");
