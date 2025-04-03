@@ -916,6 +916,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             switch (error.exitCause()) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
+                case ExitCause::FileAlreadyExists:
                     return true;
                 default:
                     return false;
