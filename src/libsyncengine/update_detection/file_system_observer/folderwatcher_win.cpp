@@ -53,9 +53,8 @@ void FolderWatcher_win::startWatching() {
         watchChanges();
 
         if (!_stop) {
-            // Other errors shouldn't actually happen,
-            // so sleep a bit to avoid running into the same error case in a
-            // tight loop.
+            changesLost();
+            // TODO: Is it necessary to wait?
             Utility::msleep(100);
         }
     }
@@ -65,9 +64,7 @@ void FolderWatcher_win::startWatching() {
 
 void FolderWatcher_win::stopWatching() {
     LOGW_DEBUG(_logger, L"Stop watching folder: " << Path2WStr(_folder).c_str());
-
     SetEvent(_stopEventHandle);
-    closeHandle();
 }
 
 void FolderWatcher_win::watchChanges() {
@@ -102,7 +99,6 @@ void FolderWatcher_win::watchChanges() {
             DWORD errorCode = GetLastError();
             if (errorCode == ERROR_NOTIFY_ENUM_DIR) {
                 LOG_DEBUG(_logger, "The buffer for changes overflowed! Fallback to static sync");
-                changesLost();
             } else {
                 LOG_WARN(_logger, "ReadDirectoryChangesW error " << errorCode);
             }
@@ -130,7 +126,6 @@ void FolderWatcher_win::watchChanges() {
             const DWORD errorCode = GetLastError();
             if (errorCode == ERROR_NOTIFY_ENUM_DIR) {
                 LOG_DEBUG(_logger, "The buffer for changes overflowed! Fallback to static sync");
-                changesLost();
             } else {
                 LOG_WARN(_logger, "GetOverlappedResult error " << errorCode);
             }

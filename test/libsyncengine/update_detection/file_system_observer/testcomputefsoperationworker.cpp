@@ -17,13 +17,15 @@
  */
 
 #include "testcomputefsoperationworker.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
 #include "syncpal/tmpblacklistmanager.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
@@ -51,30 +53,30 @@ void TestComputeFSOperationWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     /// Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     /// Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                          KDRIVE_VERSION_STRING);
@@ -107,6 +109,7 @@ void TestComputeFSOperationWorker::tearDown() {
         _syncPal->syncDb()->close();
     }
     ParmsDb::reset();
+    ParametersCache::reset();
     TestBase::stop();
 }
 

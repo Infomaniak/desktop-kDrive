@@ -361,8 +361,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
 }
 
 ExitInfo LogUploadJob::copyParmsDbTo(const SyncPath &outputPath) const {
-    const SyncPath parmsDbName = ".parms.db";
-    const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
+    const SyncPath parmsDbPath = KDC::ParmsDb::instance()->dbPath();
     DirectoryEntry entryParmsDb;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {

@@ -447,7 +447,7 @@ std::shared_ptr<SnapshotItem> Snapshot::findItem(const NodeId &itemId) const {
     return nullptr;
 }
 
-bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) const {
+bool Snapshot::getChildrenIds(const NodeId &itemId, NodeSet &childrenIds) const {
     const std::scoped_lock lock(_mutex);
     std::unordered_set<std::shared_ptr<SnapshotItem>> childrens;
     if (!getChildrens(itemId, childrens)) {
@@ -460,7 +460,7 @@ bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &
     return true;
 }
 
-void Snapshot::ids(std::unordered_set<NodeId> &ids) const {
+void Snapshot::ids(NodeSet &ids) const {
     const std::scoped_lock lock(_mutex);
     ids.clear();
     for (const auto &[id, _]: _items) {

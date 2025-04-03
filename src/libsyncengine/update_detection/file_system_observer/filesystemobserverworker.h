@@ -40,7 +40,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         [[nodiscard]] virtual bool updating() const { return _updating; }
         [[nodiscard]] bool initializing() const { return _initializing; }
 
-        [[nodiscard]] std::shared_ptr<Snapshot> snapshot() const { return _snapshot; };
+        [[nodiscard]] std::shared_ptr<Snapshot> snapshot() const { return _snapshot; }
 
     protected:
         std::shared_ptr<SyncDb> _syncDb;

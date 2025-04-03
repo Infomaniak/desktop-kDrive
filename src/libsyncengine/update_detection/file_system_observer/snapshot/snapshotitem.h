@@ -87,7 +87,6 @@ class SnapshotItem {
         std::string _contentChecksum;
         bool _canWrite = true;
         bool _canShare = true;
-
         std::unordered_set<std::shared_ptr<SnapshotItem>> _childrens;
 
         mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.

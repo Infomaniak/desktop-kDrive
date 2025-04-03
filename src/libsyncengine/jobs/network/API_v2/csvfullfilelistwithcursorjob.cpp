@@ -259,10 +259,10 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
     return true;
 }
 
-CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId,
-                                                           std::unordered_set<NodeId> blacklist /*= {}*/, bool zip /*= true*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _dirId(dirId), _blacklist(blacklist), _zip(zip),
-    _snapshotItemHandler(_logger) {
+CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, NodeSet blacklist /*= {}*/,
+                                                           bool zip /*= true*/) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _dirId(dirId), _blacklist(blacklist), _zip(zip), _snapshotItemHandler(_logger) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = API_TIMEOUT + 15;
 
@@ -293,7 +293,7 @@ void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canc
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("format", "safe_csv");
     if (!_blacklist.empty()) {
-        std::string str = Utility::list2str(_blacklist);
+        std::string str = Utility::nodeSet2str(_blacklist);
         if (!str.empty()) {
             uri.addQueryParameter("without_ids", str);
         }

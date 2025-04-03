@@ -27,6 +27,7 @@
 #include "updater/testabstractupdater.h"
 #include "updater/testupdatechecker.h"
 #include "requests/testserverrequests.h"
+#include "appserver/testappserver.h"
 
 namespace KDC {
 
@@ -38,6 +39,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
 } // namespace KDC
 
 int main(int, char **) {
