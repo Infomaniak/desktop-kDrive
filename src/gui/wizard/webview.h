@@ -55,11 +55,12 @@ class WebView : public QWidget {
     private:
         Ui::WebView *_ui;
 
-        QWebEngineView *_webview;
-        QWebEngineProfile *_profile;
-        WebEnginePage *_page;
+        QWebEngineView *_webview{nullptr};
+        QWebEngineProfile *_profile{nullptr};
+        WebEnginePage *_page{nullptr};
+        QWebEngineView *_inspectorView{nullptr};
 
-        WebViewPageUrlSchemeHandler *_schemeHandler;
+        WebViewPageUrlSchemeHandler *_schemeHandler{nullptr};
 };
 
 } // namespace KDC

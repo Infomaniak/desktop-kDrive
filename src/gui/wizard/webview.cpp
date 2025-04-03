@@ -100,6 +100,12 @@ WebView::WebView(QWidget *parent) : QWidget(parent), _ui(new Ui::WebView) {
     _webview->settings()->setAttribute(QWebEngineSettings::ShowScrollBars, false);
     _ui->verticalLayout->addWidget(_webview);
 
+    static const auto webviewDebugPort = CommonUtility::envVarValue("QTWEBENGINE_REMOTE_DEBUGGING");
+    if (!webviewDebugPort.empty()) {
+        _inspectorView = new QWebEngineView(this);
+        _webview->page()->setDevToolsPage(_inspectorView->page());
+    }
+
     connect(_webview, &QWebEngineView::loadProgress, _ui->progressBar, &QProgressBar::setValue);
     connect(_webview, &QWebEngineView::loadStarted, this, &WebView::loadStarted);
     connect(_webview, &QWebEngineView::loadFinished, this, &WebView::loadFinished);
