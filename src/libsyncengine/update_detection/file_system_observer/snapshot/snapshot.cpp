@@ -153,7 +153,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     return true;
 }
 
-bool Snapshot::removeItem(const NodeId &itemId) {
+bool Snapshot::removeItem(const NodeId itemId) {
     if (auto item = findItem(itemId); item) {
         return removeItem(item);
     }
