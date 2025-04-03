@@ -107,7 +107,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
 
     bool parentChanged = false;
     auto item = findItem(newItem.id());
-    // Update parent's children lists if the item already exists
+    // Update old parent's children lists if the item already exists
     if (item) {
         parentChanged = item->id() != _rootFolderId && item->parentId() != newItem.parentId();
         // Remove children from previous parent
@@ -118,6 +118,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         }
 
     } else {
+        // Item does not exist yet, create it
         parentChanged = true;
         item = std::make_shared<SnapshotItem>(newItem.id());
         (void) _items.try_emplace(newItem.id(), item);
@@ -452,11 +453,11 @@ bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &
     if (!getChildrens(itemId, childrens)) {
         return false;
     }
-
+    childrenIds.clear();
     for (const auto &child: childrens) {
         (void) childrenIds.insert(child->id());
     }
-    return false;
+    return true;
 }
 
 void Snapshot::ids(std::unordered_set<NodeId> &ids) const {
