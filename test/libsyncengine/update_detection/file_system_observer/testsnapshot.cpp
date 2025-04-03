@@ -409,7 +409,7 @@ void TestSnapshot::testCopySnapshot() {
     snapShotCopy.ids(snapshotCopyIds);
     CPPUNIT_ASSERT(snapshotIds == snapshotCopyIds);
 
-    // Ensure _items elements are copied, not juste the pointer
+    // Ensure _items elements are copied, not just the pointer
     snapshot.setName("file1.1", Str("newFile1.1"));
     CPPUNIT_ASSERT(Str2SyncName("newFile1.1") == snapshot.name("file1.1"));
     CPPUNIT_ASSERT(Str2SyncName("file1.1") == snapShotCopy.name("file1.1"));
