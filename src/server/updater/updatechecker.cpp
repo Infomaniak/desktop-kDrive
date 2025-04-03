@@ -65,9 +65,8 @@ const VersionInfo &UpdateChecker::versionInfo(const VersionChannel choosedChanne
     // Otherwise, we need to check if there is not a newer version in other channels.
     const VersionInfo &betaVersion =
             _versionsInfo.contains(VersionChannel::Beta) ? _versionsInfo[VersionChannel::Beta] : _defaultVersionInfo;
-    const VersionInfo &internalVersion = _versionsInfo.contains(VersionChannel::Internal)
-                                                 ? _versionsInfo[VersionChannel::Internal]
-                                                 : _defaultVersionInfo;
+    const VersionInfo &internalVersion =
+            _versionsInfo.contains(VersionChannel::Internal) ? _versionsInfo[VersionChannel::Internal] : _defaultVersionInfo;
     std::set<std::reference_wrapper<const VersionInfo>, VersionInfoCmp> sortedVersionList;
     sortedVersionList.insert(prodVersion);
     sortedVersionList.insert(betaVersion);
@@ -114,9 +113,11 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
 
 ExitCode UpdateChecker::generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) {
     AppStateValue appStateValue = "";
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
         return ExitCode::DbError;
+    } else if (!found) {
+        return ExitCode::DataError;
     }
 
     std::vector<User> userList;

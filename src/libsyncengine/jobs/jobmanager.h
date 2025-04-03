@@ -51,9 +51,14 @@ class JobPriorityCmp {
 
 class JobManager {
     public:
-        static JobManager *instance();
+        static std::shared_ptr<JobManager> instance() noexcept;
+
+        JobManager(JobManager const &) = delete;
+        void operator=(JobManager const &) = delete;
+
         static void stop();
         static void clear();
+        static void reset();
 
         /*
          * Queue a job to be executed as soon as a thread is available in the default thread pool
@@ -89,7 +94,7 @@ class JobManager {
         static bool isParentPendingOrRunning(UniqueId jobIb);
         static bool canStartJob(std::shared_ptr<AbstractJob> job, int uploadSessionCount);
 
-        static JobManager *_instance;
+        static std::shared_ptr<JobManager> _instance;
         static bool _stop;
         static int _maxNbThread;
         static double _cpuUsageThreshold;

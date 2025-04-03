@@ -135,14 +135,6 @@ class Handler {
         // `sentry_set_user(sentry_value_t)`
         sentry_value_t toSentryValue(const SentryUser &user) const;
 
-        struct StringHash {
-                using is_transparent = void; // Enables heterogeneous operations.
-                std::size_t operator()(std::string_view sv) const {
-                    std::hash<std::string_view> hasher;
-                    return hasher(sv);
-                }
-        };
-
         // SentryEvent is a structure that represents an event that has been send to sentry. It allows us to keep track of
         // the sent event and block any sentry flood from a single user.
         struct SentryEvent {

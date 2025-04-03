@@ -18,6 +18,7 @@
 
 #include "testutility.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/testhelpers.h"
 #include "config.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
 #include "libcommonserver/log/log.h"
@@ -172,6 +173,13 @@ void TestUtility::testIsEqualInsensitive(void) {
 
     CPPUNIT_ASSERT(!_testObj->isEqualInsensitive(strA, "abcdefgh"));
     CPPUNIT_ASSERT(!_testObj->isEqualInsensitive("abcdefgh", strA));
+
+    // NFC vs NFD
+    SyncName nfcNormalized;
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfcNormalized));
+    SyncName nfdNormalized;
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(Str("éééé"), nfdNormalized, Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(!Utility::isEqualInsensitive(nfcNormalized, nfdNormalized));
 }
 
 void TestUtility::testMoveItemToTrash(void) {
@@ -506,4 +514,10 @@ void TestUtility::testUserName() {
 #endif
 }
 
+void TestUtility::testSplitPath() {
+    const auto fileNames = Utility::splitPath(SyncPath("A") / "B" / "file.txt");
+    CPPUNIT_ASSERT(Str("A") == fileNames[2]);
+    CPPUNIT_ASSERT(Str("B") == fileNames[1]);
+    CPPUNIT_ASSERT(Str("file.txt") == fileNames[0]);
+}
 } // namespace KDC

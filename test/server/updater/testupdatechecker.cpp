@@ -32,6 +32,14 @@ void TestUpdateChecker::setUp() {
     ParametersCache::instance(true);
 }
 
+void TestUpdateChecker::tearDown() {
+    ParametersCache::reset();
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
+    TestBase::stop();
+}
+
 void TestUpdateChecker::testCheckUpdateAvailable() {
     // Version is higher than current version
     {
@@ -71,12 +79,9 @@ void TestUpdateChecker::testVersionInfo() {
                                const VersionChannel selectedChannel, const std::vector<VersionValue> &versionsNumber,
                                const CPPUNIT_NS::SourceLine &sourceline) {
         testObj._versionsInfo.clear();
-        testObj._versionsInfo.try_emplace(VersionChannel::Prod,
-                                          getVersionInfo(VersionChannel::Prod, versionsNumber[0]));
-        testObj._versionsInfo.try_emplace(VersionChannel::Beta,
-                                          getVersionInfo(VersionChannel::Beta, versionsNumber[1]));
-        testObj._versionsInfo.try_emplace(VersionChannel::Internal,
-                                          getVersionInfo(VersionChannel::Internal, versionsNumber[2]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Prod, getVersionInfo(VersionChannel::Prod, versionsNumber[0]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Beta, getVersionInfo(VersionChannel::Beta, versionsNumber[1]));
+        testObj._versionsInfo.try_emplace(VersionChannel::Internal, getVersionInfo(VersionChannel::Internal, versionsNumber[2]));
         const auto &versionInfo = testObj.versionInfo(selectedChannel);
         CPPUNIT_NS::assertEquals(expectedChannel, versionInfo.channel, sourceline, "");
         CPPUNIT_NS::assertEquals(tag(expectedValue), versionInfo.tag, sourceline, "");

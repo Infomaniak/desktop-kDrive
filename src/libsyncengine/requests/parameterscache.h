@@ -29,6 +29,9 @@ namespace KDC {
 class SYNCENGINE_EXPORT ParametersCache {
     public:
         static std::shared_ptr<ParametersCache> instance(bool isTest = false);
+
+        static void reset();
+
         // If _instance is not initialized, use extended log by default
         static bool isExtendedLogEnabled() noexcept { return instance() ? instance()->_parameters.extendedLog() : true; }
 

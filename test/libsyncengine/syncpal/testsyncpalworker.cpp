@@ -17,12 +17,15 @@
  */
 
 #include "testsyncpalworker.h"
-#include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
+#include "libsyncengine/jobs/network/API_v2/movejob.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 #include "test_utility/timeouthelper.h"
+
 #include <cstdlib>
 #include <atomic>
 
@@ -40,32 +43,32 @@ void TestSyncPalWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
     _sync = Sync(1, drive.dbId(), _localPath, _remotePath);
-    ParmsDb::instance()->insertSync(_sync);
+    (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
     Parameters parameters;

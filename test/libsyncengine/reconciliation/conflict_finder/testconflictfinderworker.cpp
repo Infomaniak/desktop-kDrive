@@ -17,6 +17,8 @@
  */
 
 #include "testconflictfinderworker.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
@@ -27,7 +29,7 @@ void TestConflictFinderWorker::setUp() {
     TestBase::start();
     // Create SyncPal
     bool alreadyExists = false;
-    const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const auto parmsDbPath = MockDb::makeDbName(alreadyExists);
     (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);

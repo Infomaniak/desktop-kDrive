@@ -103,7 +103,7 @@ class SyncFileItem {
         SyncTime _creationTime{0};
         bool _dehydrated{false};
         bool _confirmed{false};
-        SyncTime _timestamp{std::time(0)};
+        SyncTime _timestamp{std::time(nullptr)};
 };
 
 } // namespace KDC

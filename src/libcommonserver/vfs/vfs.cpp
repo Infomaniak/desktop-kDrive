@@ -144,7 +144,7 @@ ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, con
             return {ExitCode::SystemError, ExitCause::NotFound, location};
         } else {
             LOGW_DEBUG(logger(), L"File already exists: " << Utility::formatSyncPath(itemPath));
-            return {ExitCode::SystemError, ExitCause::FileAlreadyExist, location};
+            return {ExitCode::SystemError, ExitCause::FileAlreadyExists, location};
         }
     }
     return ExitCode::Ok;
