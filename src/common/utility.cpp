@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include "common/utility.h"
+#include "libcommon/utility/utility.h"
 
 // Note:  This file must compile without QtGui
 #include <QDir>
@@ -100,7 +101,7 @@ void OldUtility::addLegacySyncRootKeys(const QUuid &clsid, const QString &folder
 
     QDir path = QDir(folderPath);
     QString title = path.dirName();
-    QString iconPath = QDir::toNativeSeparators(qApp->applicationFilePath());
+    QString iconPath = QString::fromStdWString(CommonUtility::applicationFilePath().native());
     QString targetFolderPath = QDir::toNativeSeparators(QDir::cleanPath(folderPath));
 
     // qCInfo(lcUtility) << "Explorer Cloud storage provider: saving path" << targetFolderPath << "to CLSID" << clsidStr;
@@ -189,6 +190,7 @@ void OldUtility::removeLegacySyncRootKeys(const QUuid &clsid) {
         OldUtility::registryDeleteKeyValue(HKEY_CURRENT_USER, newstartpanelPath, clsidStr);
     }
 }
+
 #endif
 
 } // namespace KDC

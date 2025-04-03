@@ -15,11 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <libparms/db/parmsdb.h>
-#include <libcommon/keychainmanager/keychainmanager.h>
-#include <libcommonserver/utility/utility.h>
-
+#include "libparms/db/parmsdb.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommonserver/utility/utility.h"
 #include "mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_utility/testhelpers.h"
 #include "testloguploadjob.h"
 
@@ -38,7 +39,12 @@ void TestLogUploadJob::setUp() {
   
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, parmsDbExist);
+    std::filesystem::path parmsDbPath;
+    if (parmsDbExist) {
+        parmsDbPath = Db::makeDbName(alreadyExists);
+    } else {
+        parmsDbPath = MockDb::makeDbName(alreadyExists);
+    }
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 }
 
@@ -62,7 +68,7 @@ void TestLogUploadJob::testLogUploadJobWithOldSessions() {
     };
     auto job1 = std::make_shared<MockLogUploadJob>(true, dummyCallback);
     job1->setUploadMock([this](const SyncPath &path) -> ExitInfo {
-        std::set<SyncPath> expectedFiles = {Str2SyncName(".parms.db"), Str2SyncName("user_description.txt")};
+        std::set<SyncPath> expectedFiles = {KDC::ParmsDb::instance()->dbPath().filename(), Str2SyncName("user_description.txt")};
         std::set<SyncPath> unexpectedFiles;
         getLogDirInfo(expectedFiles, expectedFiles, unexpectedFiles);
         checkArchiveContent(path, expectedFiles);
@@ -95,7 +101,7 @@ void TestLogUploadJob::testLogUploadJobWithoutOldSessions() {
     };
     auto job1 = std::make_shared<MockLogUploadJob>(false, dummyCallback);
     job1->setUploadMock([this](const SyncPath &path) -> ExitInfo {
-        std::set<SyncPath> expectedFiles = {Str2SyncName(".parms.db"), Str2SyncName("user_description.txt")};
+        std::set<SyncPath> expectedFiles = {KDC::ParmsDb::instance()->dbPath().filename(), Str2SyncName("user_description.txt")};
         std::set<SyncPath> unexpectedFiles;
         getLogDirInfo(expectedFiles, unexpectedFiles, unexpectedFiles);
         checkArchiveContent(path, expectedFiles); // Will CPPUNIT_ASSERT if the archive is not valid
@@ -253,20 +259,20 @@ void TestLogUploadJob::insertUserInDb() {
 
     // Insert user, account & drive
     const std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     const int userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     const int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 }
 
 void TestLogUploadJob::createFakeActiveSessionFile(int newNbActiveSessionFiles) {

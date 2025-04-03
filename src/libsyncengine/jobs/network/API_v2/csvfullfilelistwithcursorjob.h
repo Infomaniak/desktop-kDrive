@@ -74,8 +74,7 @@ class SnapshotItemHandler {
 
 class CsvFullFileListWithCursorJob : public AbstractTokenNetworkJob {
     public:
-        CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, std::unordered_set<NodeId> blacklist = {},
-                                     bool zip = true);
+        CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, NodeSet blacklist = {}, bool zip = true);
 
         /**
          * @brief getItem
@@ -96,7 +95,7 @@ class CsvFullFileListWithCursorJob : public AbstractTokenNetworkJob {
         virtual bool handleResponse(std::istream &is) override;
 
         NodeId _dirId;
-        std::unordered_set<NodeId> _blacklist;
+        NodeSet _blacklist;
         bool _zip = true;
 
         std::stringstream _ss;

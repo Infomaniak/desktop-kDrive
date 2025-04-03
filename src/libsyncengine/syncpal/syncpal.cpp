@@ -813,7 +813,7 @@ ExitCode SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
 
 ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
     // Remove deleted nodes from sync_node table & cache
-    std::unordered_set<NodeId> nodeIdSet;
+    NodeSet nodeIdSet;
     ExitCode exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
@@ -946,7 +946,7 @@ bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     return true;
 }
 
-ExitCode SyncPal::syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet) {
+ExitCode SyncPal::syncIdSet(SyncNodeType type, NodeSet &nodeIdSet) {
     ExitCode exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), type, nodeIdSet);
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
@@ -956,7 +956,7 @@ ExitCode SyncPal::syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeI
     return ExitCode::Ok;
 }
 
-ExitCode SyncPal::setSyncIdSet(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet) {
+ExitCode SyncPal::setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet) {
     ExitCode exitCode = SyncNodeCache::instance()->update(syncDbId(), type, nodeIdSet);
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
@@ -1076,8 +1076,8 @@ void SyncPal::start(const std::chrono::seconds &startDelay) {
     setVfsMode(sync.virtualFileMode());
 
     // Clear tmp blacklist
-    SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpRemoteBlacklist, std::unordered_set<NodeId>());
-    SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpLocalBlacklist, std::unordered_set<NodeId>());
+    SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpRemoteBlacklist, NodeSet());
+    SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpLocalBlacklist, NodeSet());
 
     // Create and init shared objects
     createSharedObjects();

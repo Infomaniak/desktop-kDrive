@@ -179,7 +179,6 @@ set(final_src
     ${guiMoc}
     ${client_I18N}
     ${3rdparty_SRC}
-    ${3rdparty_MOC}
 )
 
 # Target

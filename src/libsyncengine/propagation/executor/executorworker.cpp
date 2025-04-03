@@ -185,7 +185,7 @@ void ExecutorWorker::execute() {
                 }
 
                 if (syncOp->affectedNode()->id().has_value()) {
-                    std::unordered_set<NodeId> whiteList;
+                    NodeSet whiteList;
                     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
                     if (whiteList.contains(syncOp->affectedNode()->id().value())) {
                         // This item has been synchronized, it can now be removed from white list
@@ -1350,7 +1350,7 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                     }
 
                     if (syncOp->affectedNode()->id().has_value()) {
-                        std::unordered_set<NodeId> whiteList;
+                        NodeSet whiteList;
                         SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
                         if (whiteList.find(syncOp->affectedNode()->id().value()) != whiteList.end()) {
                             // This item has been synchronized, it can now be removed from
