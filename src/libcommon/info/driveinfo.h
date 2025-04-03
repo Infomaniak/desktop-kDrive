@@ -51,12 +51,6 @@ class DriveInfo {
         bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
 
-        friend void operator>>(QDataStream &in, DriveInfo &info);
-        friend QDataStream &operator<<(QDataStream &out, const DriveInfo &info);
-
-        friend void operator>>(QDataStream &in, QList<DriveInfo> &list);
-        friend QDataStream &operator<<(QDataStream &out, const QList<DriveInfo> &list);
-
     protected:
         int _dbId{0};
         int _id{0};
@@ -71,5 +65,11 @@ class DriveInfo {
         bool _locked{false};
         bool _accessDenied{false};
 };
+
+void operator>>(QDataStream &in, DriveInfo &info);
+QDataStream &operator<<(QDataStream &out, const DriveInfo &info);
+
+void operator>>(QDataStream &in, QList<DriveInfo> &list);
+QDataStream &operator<<(QDataStream &out, const QList<DriveInfo> &list);
 
 } // namespace KDC
