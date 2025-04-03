@@ -526,7 +526,7 @@ void AppServer::handleClientCrash(bool &quit) {
 
         // Reset client restart date in DB
         if (bool found = false; !KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, 0, found)) {
-            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
         } else if (!found) {
             addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
@@ -542,7 +542,7 @@ void AppServer::handleClientCrash(bool &quit) {
 
         if (bool found = false;
             !KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found)) {
-            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
         } else if (!found) {
             addError(Error(errId(), ExitCode::DataError, ExitCause::DbEntryNotFound));
@@ -2903,7 +2903,7 @@ bool AppServer::serverCrashedRecently(int seconds) {
     AppStateValue appStateValue = int64_t(0);
     if (bool found = false;
         !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, appStateValue, found)) {
-        addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     } else if (!found) {
@@ -2931,7 +2931,7 @@ bool AppServer::clientCrashedRecently(int seconds) {
 
     if (bool found = false;
         !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found)) {
-        addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+        addError(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     } else if (!found) {
