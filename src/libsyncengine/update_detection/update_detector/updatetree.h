@@ -41,6 +41,7 @@ class UpdateTree : public SharedObject {
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &nodes() { return _nodes; }
         inline std::unordered_map<NodeId, NodeId> &previousIdSet() { return _previousIdSet; }
         std::shared_ptr<Node> getNodeByPath(const SyncPath &path);
+        std::shared_ptr<Node> getNodeByNormalizedPath(const SyncPath &path);
         std::shared_ptr<Node> getNodeById(const NodeId &nodeId);
         bool exists(const NodeId &id);
 

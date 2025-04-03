@@ -239,7 +239,7 @@ enum class ExitCause {
     RedirectionError,
     ApiErr,
     InvalidSize,
-    FileAlreadyExist,
+    FileAlreadyExists,
     FileAccessError,
     UnexpectedFileSystemEvent,
     NotEnoughDiskSpace,
