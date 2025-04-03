@@ -285,6 +285,12 @@ void AppServer::init() {
         throw std::runtime_error("Unable to initialize proxy.");
     }
 
+    // Init JobManager
+    if (!JobManager::instance()) {
+        LOG_WARN(_logger, "Error in JobManager::instance");
+        throw std::runtime_error("Unable to initialize job manager.");
+    }
+
     // Setup auto start
 #ifdef NDEBUG
     if (ParametersCache::instance()->parameters().autoStart() && !OldUtility::hasLaunchOnStartup(_theme->appName(), _logger)) {
