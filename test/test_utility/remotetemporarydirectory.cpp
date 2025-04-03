@@ -41,7 +41,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
         // Create remote test dir
         CreateDirJob job(nullptr, _driveDbId, parentId, _dirName);
         job.runSynchronously();
-        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist) && retry > 0) {
+        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExists) && retry > 0) {
             retry--;
             continue;
         }

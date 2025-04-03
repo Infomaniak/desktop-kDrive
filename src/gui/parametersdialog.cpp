@@ -313,7 +313,7 @@ void ParametersDialog::reset() {
     _noDrivePagewidget->setVisible(true);
 }
 
-QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const {
+QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode exitCode, const ExitCause exitCause) const {
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
     // TODO: USELESS CODE : this switch should be simplified !!!!
     switch (exitCode) {
@@ -404,7 +404,7 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
     return {};
 }
 
-QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const {
+QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const ExitCause exitCause) const {
     switch (exitCause) {
         case ExitCause::SyncDirDoesntExist:
             return tr("The synchronization folder is no longer accessible (error %1).<br>"
@@ -465,7 +465,7 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCaus
     }
 }
 
-QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const {
+QString ParametersDialog::getSyncPalBackErrorText(const QString &err, const ExitCause exitCause, const bool userIsAdmin) const {
     switch (exitCause) {
         case ExitCause::DriveMaintenance:
             return tr(
@@ -497,7 +497,8 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
     }
 }
 
-QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const {
+QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const ExitCode exitCode, const ExitCause exitCause,
+                                              bool userIsAdmin) const {
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
 
     switch (exitCode) {
@@ -628,7 +629,7 @@ QString ParametersDialog::getConflictText(const ConflictType conflictType) const
     return {};
 }
 
-QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const {
+QString ParametersDialog::getInconsistencyText(const InconsistencyType inconsistencyType) const {
     QString text;
     if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::Case)) {
         text +=
@@ -715,7 +716,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
                     "It will be restored to its original location.");
         }
         case CancelType::AlreadyExistRemote: {
-            return tr("This item already exists on remote kDrive. It is not synced because it has been blacklisted.");
+            return tr("This item already exists on remote kDrive. It is not synced.");
         }
         case CancelType::MoveToBinFailed: {
             return tr("Failed to move this item to trash, it has been blacklisted.");
@@ -807,10 +808,18 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
         case ExitCode::BackError: {
             return getBackErrorText(errorInfo);
         }
-
+        case ExitCode::DataError: {
+            if (errorInfo.exitCause() == ExitCause::FileAlreadyExists) {
+                return tr(
+                        "Item already exists on other side.<br>"
+                        "It has been temporarily blacklisted.");
+            }
+        }
+            [[fallthrough]];
         default:
-            return tr("Synchronization error.");
+            break;
     }
+    return tr("Synchronization error.");
 }
 
 QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
