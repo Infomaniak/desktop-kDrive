@@ -25,7 +25,7 @@ ConflictFinderWorker::ConflictFinderWorker(const std::shared_ptr<SyncPal> syncPa
                                            const std::string &shortName) : OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictFinderWorker::execute() {
-    ExitCode exitCode(ExitCode::Unknown);
+    auto exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
     _syncPal->_conflictQueue->startUpdate();
@@ -380,7 +380,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 continue;
             }
             // get databases relative paths
-            bool found;
+            bool found = false;
             SyncPath localDbPath;
             if (!_syncPal->_syncDb->path(localNode->side(), *localNode->id(), localDbPath, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");

@@ -73,6 +73,21 @@ void TestConflictFinderWorker::testCreateCreate() {
     CPPUNIT_ASSERT_EQUAL(ConflictType::CreateCreate, conf->type());
 }
 
+void TestConflictFinderWorker::testCreateCreateDifferentEncoding() {
+    // Simulate CREATE of A/AC on both replica
+    const auto lNodeAC = _situationGenerator.createNode(ReplicaSide::Local, NodeType::File, "ac", "a");
+    lNodeAC->setName(testhelpers::makeNfcSyncName());
+    lNodeAC->setSize(testhelpers::defaultFileSize + 1);
+    const auto rNodeAC = _situationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "ac", "a");
+    rNodeAC->setName(testhelpers::makeNfdSyncName());
+
+    const auto conf = _syncPal->_conflictFinderWorker->checkCreateCreateConflict(lNodeAC);
+    CPPUNIT_ASSERT(conf);
+    CPPUNIT_ASSERT_EQUAL(lNodeAC, conf->node());
+    CPPUNIT_ASSERT_EQUAL(rNodeAC, conf->otherNode());
+    CPPUNIT_ASSERT_EQUAL(ConflictType::CreateCreate, conf->type());
+}
+
 void TestConflictFinderWorker::testEditEdit() {
     // Simulate EDIT of A/AA on both replica
     const auto lNodeAA = _situationGenerator.editNode(ReplicaSide::Local, "aa");

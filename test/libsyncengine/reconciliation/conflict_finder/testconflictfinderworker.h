@@ -27,6 +27,7 @@ namespace KDC {
 class TestConflictFinderWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestConflictFinderWorker);
         CPPUNIT_TEST(testCreateCreate);
+        CPPUNIT_TEST(testCreateCreateDifferentEncoding);
         CPPUNIT_TEST(testEditEdit);
         CPPUNIT_TEST(testMoveCreate);
         CPPUNIT_TEST(testEditDelete);
@@ -54,6 +55,7 @@ class TestConflictFinderWorker : public CppUnit::TestFixture, public TestBase {
         void tearDown() override;
 
         void testCreateCreate();
+        void testCreateCreateDifferentEncoding();
         void testEditEdit();
         void testMoveCreate();
         void testEditDelete();

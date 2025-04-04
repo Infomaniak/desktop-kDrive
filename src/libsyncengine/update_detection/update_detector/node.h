@@ -125,11 +125,17 @@ class Node {
         [[nodiscard]] bool insertChildren(std::shared_ptr<Node> child);
         size_t deleteChildren(std::shared_ptr<Node> child);
         size_t deleteChildren(const NodeId &childId);
-        std::shared_ptr<Node> getChildExcept(SyncName name, OperationType except);
+        /**
+         * @brief Retrieve the child node based on its name. Filter out the nodes with change events of type `except`.
+         * @param normalizedName Make sure to provide a normalized name.
+         * @param except The event type to filter out.
+         * @return A pointer to the node if found, `nullptr` otherwise.
+         */
+        std::shared_ptr<Node> getChildExcept(const SyncName &normalizedName, OperationType except);
 
-        void setChangeEvents(const OperationType ops);
-        void insertChangeEvent(const OperationType &op);
-        void deleteChangeEvent(const OperationType &op) { _changeEvents ^= op; }
+        void setChangeEvents(OperationType ops);
+        void insertChangeEvent(OperationType op);
+        void deleteChangeEvent(const OperationType op) { _changeEvents ^= op; }
         void clearChangeEvents() { _changeEvents = OperationType::None; }
         bool hasChangeEvent() const { return _changeEvents != OperationType::None; }
         bool hasChangeEvent(const OperationType op) const { return (_changeEvents & op) == op; }
