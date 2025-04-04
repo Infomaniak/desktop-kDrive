@@ -300,7 +300,7 @@ void TestConflictFinderWorker::testCase57() {
 // Move-Delete > Move-Create : cf p98 figure 5.8
 void TestConflictFinderWorker::testCase58() {
     // Simulate MOVE of A/AA to A/AC on local replica
-    const auto lNodeAA = _situationGenerator.renameNode(ReplicaSide::Local, "aa", "AC");
+    const auto lNodeAA = _situationGenerator.renameNode(ReplicaSide::Local, "aa", Str("AC"));
 
     // Simulate CREATE of A/AC on remote replica
     const auto rNodeAC = _situationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "ac", "a");
@@ -325,12 +325,12 @@ void TestConflictFinderWorker::testCase58() {
 // Move-Delete > Move-Move (Dest) : cf p98 figure 5.9 (b)
 void TestConflictFinderWorker::testCase59() {
     // Simulate MOVE of A/AB to A/X on local replica
-    const auto lNodeAB = _situationGenerator.renameNode(ReplicaSide::Local, "ab", "X");
+    const auto lNodeAB = _situationGenerator.renameNode(ReplicaSide::Local, "ab", Str("X"));
 
     // Simulate DELETE of A/AB on remote replica
     const auto rNodeAB = _situationGenerator.deleteNode(ReplicaSide::Remote, "ab");
     // Simulate MOVE of A/AA to A/X on remote replica
-    const auto rNodeAA = _situationGenerator.renameNode(ReplicaSide::Remote, "aa", "X");
+    const auto rNodeAA = _situationGenerator.renameNode(ReplicaSide::Remote, "aa", Str("X"));
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), _syncPal->_conflictQueue->size());
