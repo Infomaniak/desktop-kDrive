@@ -117,15 +117,34 @@ function Get-Aumid {
    return $aumid
 }
 
-function Build-Extension {
+function Get-Installer-Path {
    param (
-        [string] $path
-		[string] $extPath
+		[string] $buildPath,
+        [string] $contentPath
    )
 
-    Write-Host "Building extension ..."
+   $prodName = "kDrive"
+   $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
+   $appName = "$prodName-$version.exe"
 
-   	msbuild "$extPath\kDriveExt.sln" /p:Configuration=Release /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
+   $installerPath = "$contentPath/$appName"
+
+   return $installerPath
+}
+
+function Build-Extension {
+   param (
+        [string] $path,
+		[string] $extPath,
+        [string] $buildType 
+   )
+
+    Write-Host "Building extension ($buildType) ..."
+
+    $configuration = $buildType
+    if ($buildType -eq "RelWithDebInfo")  { $configuration = "Release" }
+
+   	msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
 
    	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -140,8 +159,8 @@ function Build-Extension {
 
 function CMake-Build-And-Install {
    param (
-        [string] $path
-        [string] $installPath
+        [string] $path,
+        [string] $installPath,
 		[string] $vfsDir
    )
 
@@ -218,12 +237,13 @@ param (
 
 function Set-Up-NSIS {
    param (
-        [string] $buildPath
-        [string] $contentPath
-        [string] $extPath
-		[string] $vfsDir
-		[string] $archiveName
-		[string] $archivePath
+        [string] $buildPath,
+        [string] $contentPath,
+        [string] $extPath,
+		[string] $vfsDir,
+		[string] $archiveName,
+		[string] $archivePath,
+        [string] $archiveDataPath,
 		[bool] $upload
    )
 
@@ -235,12 +255,9 @@ function Set-Up-NSIS {
    $compName = "Infomaniak Network SA"
 
    $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
-   $versionPart = $version -split "\."
-   $mainVersion = "$($versionPart[0]).$($versionPart[1]).$($versionPart[2])"
-
    $appName = "$prodName-$version.exe"
-   $installerPath = "$contentPath/$appName"
 
+   $installerPath = Get-Installer-Path $buildPath $contentPath
    Clean $installerPath
 
    $aumid = Get-Aumid $upload
@@ -266,10 +283,10 @@ function Set-Up-NSIS {
 
 function Prepare-Archive {
    param (
-        [string] $buildType
-        [string] $buildPath
-		[string] $vfsDir
-		[string] $archivePath
+        [string] $buildType,
+        [string] $buildPath,
+		[string] $vfsDir,
+		[string] $archivePath,
 		[bool] $upload
    )
 
@@ -356,13 +373,12 @@ function Prepare-Archive {
 
 function Create-Archive {
    param (
-        [string] $path
-        [string] $contentPath
-        [string] $buildPath
-        [string] $installPath
-        [string] $installerPath
-		[string] $archiveName
-		[string] $archivePath
+        [string] $path,
+        [string] $buildPath,
+        [string] $contentPath,
+        [string] $installPath,
+		[string] $archiveName,
+		[string] $archivePath,
 		[bool] $upload
    )
 
@@ -388,6 +404,8 @@ function Create-Archive {
     {
         $thumbprint = Get-Thumbprint $upload
     }
+
+    $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath)
     {
@@ -536,7 +554,7 @@ if ($upload)
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext)
 {
-	Build-Extension $path $extPath
+	Build-Extension $path $extPath $buildType
 
 	if ($LASTEXITCODE -ne 0)
     {
@@ -565,7 +583,7 @@ if ($LASTEXITCODE -ne 0)
 #                                                                                               #
 #################################################################################################
 
-Set-Up-NSIS $buildPath $contentPath $extPath $vfsDir $archiveName $archivePath $upload
+Set-Up-NSIS $buildPath $contentPath $extPath $vfsDir $archiveName $archivePath $archiveDataPath $upload
 
 if ($LASTEXITCODE -ne 0)
 {
@@ -591,11 +609,13 @@ Prepare-Archive $buildType $buildPath $vfsDir $archivePath $upload
 #                                                                                               #
 #################################################################################################
 
-Create-Archive $path $contentPath $buildPath $installPath $installerPath $archiveName $archivePath $upload
-if ($LASTEXITCODE -ne 0)
-{
-	Write-Host "Archive creation failed. Aborting." -f Red
-	exit $LASTEXITCODE
+if (!$ci) {
+    Create-Archive $path $buildPath $contentPath $installPath $archiveName $archivePath $upload
+    if ($LASTEXITCODE -ne 0)
+    {
+        Write-Host "Archive creation failed. Aborting." -f Red
+        exit $LASTEXITCODE
+    }
 }
 
 #################################################################################################
@@ -607,8 +627,14 @@ if ($LASTEXITCODE -ne 0)
 Copy-Item -Path "$buildPath\bin\kDrive*.pdb" -Destination $contentPath
 Remove-Item $archiveDataPath
 
+#################################################################################################
+#                                                                                               #
+#                                         UPLOAD INVITE                                         #
+#                                                                                               #
+#################################################################################################
+
 if ($upload)
 {
-	Write-Host "Packaging done"
-	Write-Host "Run the upload script to generate the update file and upload the new version"
+	Write-Host "Packaging done."
+	Write-Host "Run the upload script to generate the update file and upload the new version."
 }
