@@ -35,6 +35,7 @@
 #include <variant>
 
 #include <signal.h>
+#include "sourcelocation.h"
 
 #include <QDebug>
 
