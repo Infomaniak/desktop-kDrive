@@ -101,7 +101,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
                            L"Item: " << SyncName2WStr(newItem.name()) << L" (" << Utility::s2ws(newItem.id())
                                      << L") already exists in parent: " << Utility::s2ws(newItem.parentId())
                                      << L" with a different id. Removing it and adding the new one.");
-                auto child2 = child; // removeItem cannot be call on a const ref, we need to make a copy.
+                auto child2 = child; // removeItem cannot be called on a const ref, we need to make a copy.
                 removeItem(child2);
                 break; // There should be (at most) only one item with the same name in a folder
             }

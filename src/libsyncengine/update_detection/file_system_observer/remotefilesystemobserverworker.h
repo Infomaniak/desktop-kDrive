@@ -48,7 +48,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
 
         struct ActionInfo {
-                ActionCode actionCode{ActionCode::actionCodeUnknown};
+                ActionCode actionCode{ActionCode::ActionCodeUnknown};
                 SnapshotItem snapshotItem;
                 SyncName path;
         };

@@ -109,14 +109,14 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     {
         LocalDeleteJobMockingTrash nfcDeleteJob(temporaryDirectory.path() / testhelpers::makeNfcSyncName());
         nfcDeleteJob.runSynchronously();
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfcDeleteJob.exitCode());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfcDeleteJob.exitCause());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfcDeleteJob.exitInfo().code());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfcDeleteJob.exitInfo().cause());
     }
     {
         LocalDeleteJobMockingTrash nfdDeleteJob(temporaryDirectory.path() / testhelpers::makeNfdSyncName());
         nfdDeleteJob.runSynchronously();
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfdDeleteJob.exitCode());
-        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfdDeleteJob.exitCause());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfdDeleteJob.exitInfo().code());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfdDeleteJob.exitInfo().cause());
     }
 
     CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / testhelpers::makeNfcSyncName()));

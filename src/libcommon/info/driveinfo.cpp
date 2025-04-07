@@ -20,42 +20,57 @@
 
 namespace KDC {
 
-DriveInfo::DriveInfo(int dbId, int accountDbId, const QString &name, const QColor &color) :
-    _dbId(dbId), _accountDbId(accountDbId), _name(name), _color(color) {}
+DriveInfo::DriveInfo() {}
 
-DriveInfo::DriveInfo() : _dbId(0), _accountDbId(0) {}
+void operator>>(QDataStream &in, DriveInfo &info) {
+    int dbId{0};
+    int id{0};
+    int accountDbId{0};
+    QString name;
+    QColor color;
+    bool notifications{false};
+    bool admin{false};
+    bool maintenance{false};
+    bool locked{false};
+    bool accessDenied{false};
 
-QDataStream &operator>>(QDataStream &in, DriveInfo &info) {
-    in >> info._dbId >> info._accountDbId >> info._name >> info._color >> info._notifications >> info._maintenance >>
-            info._locked >> info._accessDenied;
-    return in;
+    in >> dbId >> id >> accountDbId >> name >> color >> notifications >> admin >> maintenance >> locked >> accessDenied;
+
+    info.setDbId(dbId);
+    info.setId(id);
+    info.setAccountDbId(accountDbId);
+    info.setName(name);
+    info.setColor(color);
+    info.setNotifications(notifications);
+    info.setAdmin(admin);
+    info.setMaintenance(maintenance);
+    info.setLocked(locked);
+    info.setAccessDenied(accessDenied);
 }
 
 QDataStream &operator<<(QDataStream &out, const DriveInfo &info) {
-    out << info._dbId << info._accountDbId << info._name << info._color << info._notifications << info._maintenance
-        << info._locked << info._accessDenied;
+    out << info.dbId() << info.id() << info.accountDbId() << info.name() << info.color() << info.notifications() << info.admin()
+        << info.maintenance() << info.locked() << info.accessDenied();
     return out;
+}
+
+void operator>>(QDataStream &in, QList<DriveInfo> &list) {
+    int count = 0;
+    in >> count;
+    for (int i = 0; i < count; i++) {
+        DriveInfo info;
+        in >> info;
+        list.push_back(info);
+    }
 }
 
 QDataStream &operator<<(QDataStream &out, const QList<DriveInfo> &list) {
     int count = static_cast<int>(list.size());
     out << count;
     for (int i = 0; i < count; i++) {
-        DriveInfo info = list[i];
-        out << info;
+        out << list[i];
     }
     return out;
-}
-
-QDataStream &operator>>(QDataStream &in, QList<DriveInfo> &list) {
-    int count = 0;
-    in >> count;
-    for (int i = 0; i < count; i++) {
-        DriveInfo *info = new DriveInfo();
-        in >> *info;
-        list.push_back(*info);
-    }
-    return in;
 }
 
 } // namespace KDC

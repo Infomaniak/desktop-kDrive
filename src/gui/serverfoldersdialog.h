@@ -64,7 +64,7 @@ class ServerFoldersDialog : public CustomDialog {
         void onExit();
         void onBackButtonTriggered(bool checked = false);
         void onContinueButtonTriggered(bool checked = false);
-        void onSubfoldersLoaded(bool empty);
+        void onSubfoldersLoaded(bool error, ExitCause exitCause, bool empty);
         void onNeedToSave();
 };
 
