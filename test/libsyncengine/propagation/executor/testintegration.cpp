@@ -2295,7 +2295,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
     _syncPal->unpause();
     waitForSyncToFinish();
-
+    _syncPal->pause();
     const NodeId newRemoteFileId = remoteSnapshot->itemId(relativeWorkingDirPath / "testNodeIdReuseFile2");
     CPPUNIT_ASSERT(!newRemoteFileId.empty());
     CPPUNIT_ASSERT(remoteFileId != newRemoteFileId);
