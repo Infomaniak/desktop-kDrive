@@ -48,7 +48,7 @@ AbstractJob::~AbstractJob() {
 
 ExitInfo AbstractJob::runSynchronously() {
     run();
-    return {_exitCode, _exitCause};
+    return _exitInfo;
 }
 
 void AbstractJob::setProgress(int64_t newProgress) {

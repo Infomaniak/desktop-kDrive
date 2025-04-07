@@ -206,6 +206,12 @@ std::string toString(const ExitCause e) {
             return "InvalidArgument";
         case ExitCause::InvalidDestination:
             return "InvalidDestination";
+        case ExitCause::DriveAsleep:
+            return "DriveAsleep";
+        case ExitCause::DriveWakingUp:
+            return "DriveWakingUp";
+        case ExitCause::ServiceUnavailable:
+            return "ServiceUnavailable";
         default:
             return noConversionStr;
     }
