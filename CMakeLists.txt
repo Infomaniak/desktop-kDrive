@@ -246,6 +246,70 @@ if (BUILD_KDRIVE_OSX_BUNDLE)
     find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
+
+    # xxHash
+    find_library(XXHASH_SHARED_LIBRARY NAMES xxHash.0.8.2 NO_CACHE)
+    message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
+    install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/ RENAME libxxhash.0.dylib)
+
+    # Sentry
+    find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
+    message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
+    install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # PocoXML
+    find_library(POCO_XML_SHARED_LIBRARY NAMES PocoXML.103 NO_CACHE)
+    message(STATUS "PocoXML dll found in ${POCO_XML_SHARED_LIBRARY}")
+    install(FILES ${POCO_XML_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # PocoFoundation
+    find_library(POCO_FOUNDATION_SHARED_LIBRARY NAMES PocoFoundation.103 NO_CACHE)
+    message(STATUS "PocoFoundation dll found in ${POCO_FOUNDATION_SHARED_LIBRARY}")
+    install(FILES ${POCO_FOUNDATION_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # PocoUtil
+    find_library(POCO_UTIL_SHARED_LIBRARY NAMES PocoUtil.103 NO_CACHE)
+    message(STATUS "PocoUtil dll found in ${POCO_UTIL_SHARED_LIBRARY}")
+    install(FILES ${POCO_UTIL_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # PocoJSON
+    find_library(POCO_JSON_SHARED_LIBRARY NAMES PocoJSON.103 NO_CACHE)
+    message(STATUS "PocoJSON dll found in ${POCO_JSON_SHARED_LIBRARY}")
+    install(FILES ${POCO_JSON_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # PocoNet
+    find_library(POCO_NET_SHARED_LIBRARY NAMES PocoNet.103 NO_CACHE)
+    message(STATUS "PocoNet dll found in ${POCO_NET_SHARED_LIBRARY}")
+    install(FILES ${POCO_NET_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # PocoNetSSL
+    find_library(POCO_NET_SSL_SHARED_LIBRARY NAMES PocoNetSSL.103 NO_CACHE)
+    message(STATUS "PocoNetSSL dll found in ${POCO_NET_SSL_SHARED_LIBRARY}")
+    install(FILES ${POCO_NET_SSL_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # PocoCrypto
+    find_library(POCO_CRYPTO_SHARED_LIBRARY NAMES PocoCrypto.103 NO_CACHE)
+    message(STATUS "PocoCrypto dll found in ${POCO_CRYPTO_SHARED_LIBRARY}")
+    install(FILES ${POCO_CRYPTO_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # log4cplus
+    find_library(LOG4CPLUS_SHARED_LIBRARY NAMES log4cplusU.9 NO_CACHE)
+    message(STATUS "log4cplus dll found in ${LOG4CPLUS_SHARED_LIBRARY}")
+    install(FILES ${LOG4CPLUS_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # libzip
+    find_library(LIBZIP_SHARED_LIBRARY NAMES zip.5.5 NO_CACHE)
+    message(STATUS "libzip dll found in ${LIBZIP_SHARED_LIBRARY}")
+    install(FILES ${LIBZIP_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+
+    # Qt
+    install(DIRECTORY "${QTDIR}/lib/QtSvg.framework" DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+    install(DIRECTORY "${QTDIR}/lib/QtWidgets.framework" DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+    install(DIRECTORY "${QTDIR}/lib/QtNetwork.framework" DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+    install(DIRECTORY "${QTDIR}/lib/QtGui.framework" DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+    install(DIRECTORY "${QTDIR}/lib/QtSql.framework" DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+    install(DIRECTORY "${QTDIR}/lib/QtCore.framework" DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
+    install(DIRECTORY "${QTDIR}/lib/QtDBus.framework" DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
 elseif(BUILD_CLIENT)
     if (WIN32)
         # NSIS
