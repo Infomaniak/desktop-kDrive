@@ -255,7 +255,10 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // Edit operation
     _syncPal->_localSnapshot->setLastModified("l_aa", testhelpers::defaultTime + 60);
     // Move operation
-    _syncPal->_localSnapshot->setParentId("l_ab", "l_b");
+    _syncPal->_localSnapshot->removeItem("l_ab");
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("l_ab", "l_b", Str("AB"), testhelpers::defaultTime,
+                                                      testhelpers::defaultTime, NodeType::Directory, 0, false, true, true));
+
     // Rename operation
     _syncPal->_localSnapshot->setName("l_ba", Str("BA-renamed"));
     // Delete operation

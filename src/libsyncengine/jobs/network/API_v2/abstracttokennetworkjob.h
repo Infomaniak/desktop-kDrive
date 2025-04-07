@@ -55,7 +55,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
 
-        ExitCause getExitCause();
+        ExitCause getExitCause() const;
 
         static void updateLoginByUserDbId(const Login &login, int userDbId);
 

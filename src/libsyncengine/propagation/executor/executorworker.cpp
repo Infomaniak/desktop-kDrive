@@ -444,12 +444,10 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in GetFileListJob::runSynchronously for driveDbId="
-                                          << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << exitCode << " "
-                                          << job->exitCause());
-        return {exitCode, job->exitCause()};
+                                          << _syncPal->driveDbId() << " nodeId=" << parentId.c_str() << " : " << job->exitInfo());
+        return exitInfo;
     }
 
     Poco::JSON::Object::Ptr resObj = job->jsonRes();
@@ -1115,7 +1113,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
     vfsStatus.progress = 100;
     _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, vfsStatus);
 
-    if (job->exitCode() == ExitCode::Ok && syncOp->conflict().type() != ConflictType::None) {
+    if (job->exitInfo().code() == ExitCode::Ok && syncOp->conflict().type() != ConflictType::None) {
         // Conflict fixing job finished successfully
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode = nullptr;
@@ -1433,12 +1431,13 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     getNodeIdsFromOp(syncOp, localNodeId, remoteNodeId);
 
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
-    if (const bool invalidName = job->exitCause() == ExitCause::InvalidName;
-        job->exitCode() == ExitCode::BackError && details::isManagedBackError(job->exitCause())) {
-        return handleManagedBackError(job->exitCause(), syncOp, invalidName, networkJob && networkJob->isDownloadImpossible());
+    if (const bool invalidName = job->exitInfo().cause() == ExitCause::InvalidName;
+        job->exitInfo().code() == ExitCode::BackError && details::isManagedBackError(job->exitInfo().cause())) {
+        return handleManagedBackError(job->exitInfo().cause(), syncOp, invalidName,
+                                      networkJob && networkJob->isDownloadImpossible());
     }
 
-    if (job->exitCode() != ExitCode::Ok) {
+    if (job->exitInfo().code() != ExitCode::Ok) {
         if (networkJob && (networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
                            networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT)) {
             if (ExitInfo exitInfo = handleForbiddenAction(syncOp, relativeLocalPath, ignored); !exitInfo) {
@@ -1446,15 +1445,15 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
                                                    << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
                 return exitInfo;
             }
-        } else if (!handleExecutorError(syncOp, {job->exitCode(), job->exitCause()})) {
+        } else if (!handleExecutorError(syncOp, job->exitInfo())) {
             // Cancel all queued jobs
-            LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. " << ExitInfo(job->exitCode(), job->exitCause()));
+            LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. " << job->exitInfo());
             cancelAllOngoingJobs();
-            return {job->exitCode(), job->exitCause()};
+            return job->exitInfo();
 
         } else { // The error is managed and the execution can continue.
-            LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitCode() << L" " << job->exitCause() << L" on "
-                                                                << syncOp->type() << L" operation for "
+            LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
+                                                                << L" operation for "
                                                                 << Utility::formatSyncPath(syncOp->affectedNode()->getPath()));
             bypassProgressComplete = true;
             return {ExitCode::Ok, ExitCause::OperationCanceled};
@@ -2075,9 +2074,9 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
     auto tokenJob(std::dynamic_pointer_cast<AbstractTokenNetworkJob>(job));
     if (tokenJob && tokenJob->hasErrorApi(&errorCode)) {
         const auto code = getNetworkErrorCode(errorCode);
-        if (code == NetworkErrorCode::destinationAlreadyExists) {
+        if (code == NetworkErrorCode::DestinationAlreadyExists) {
             // Folder is already there, ignore this error
-        } else if (code == NetworkErrorCode::forbiddenError) {
+        } else if (code == NetworkErrorCode::ForbiddenError) {
             // The item should be blacklisted
             _syncPal->blacklistTemporarily(
                     syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(),
@@ -2098,9 +2097,9 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<Abstr
         }
     }
 
-    if (job->exitCode() != ExitCode::Ok) {
+    if (job->exitInfo().code() != ExitCode::Ok) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to create directory: " << Utility::formatSyncName(syncOp->affectedNode()->name()));
-        return {job->exitCode(), job->exitCause()};
+        return job->exitInfo();
     }
 
     NodeId newNodeId;

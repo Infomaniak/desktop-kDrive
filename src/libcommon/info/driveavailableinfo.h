@@ -50,13 +50,13 @@ class DriveAvailableInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<DriveAvailableInfo> &list);
 
     private:
-        int _driveId;
-        int _userId;
-        int _accountId;
+        int _driveId{0};
+        int _userId{0};
+        int _accountId{0};
         QString _name;
         QColor _color;
 
-        int _userDbId;
+        int _userDbId{0};
 };
 
 } // namespace KDC
