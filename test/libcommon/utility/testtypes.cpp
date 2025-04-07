@@ -98,7 +98,6 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, eca);
     CPPUNIT_ASSERT_EQUAL(202, static_cast<int>(ei));
 
-
     ec = ExitCode::BackError;
     ei = ec;
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, ei.code());
@@ -164,6 +163,13 @@ void TestTypes::testExitInfo() {
         exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
         CPPUNIT_ASSERT_EQUAL(ExitCode::DbError, exitInfo.code());
     }
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown), ExitInfo::fromInt(0));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::WorkerExited), ExitInfo::fromInt(1));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Unknown, ExitCause::Unknown), ExitInfo::fromInt(100));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent), ExitInfo::fromInt(414));
+    // Because of the implementation of method ExitInfo::int(), we need to make sure that ExitCause enum never has more than 100
+    // values
+    CPPUNIT_ASSERT(static_cast<int>(ExitCause::EnumEnd) < 100);
 }
 
 template<IntegralEnum T>
@@ -219,4 +225,5 @@ void TestTypes::testToString() {
     testToStringIntValues<Platform>();
     testToStringIntValues<sentry::ConfidentialityLevel>();
 }
+
 } // namespace KDC

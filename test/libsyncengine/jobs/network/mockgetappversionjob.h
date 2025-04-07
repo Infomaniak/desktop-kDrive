@@ -67,7 +67,7 @@ class MockGetAppVersionJob final : public GetAppVersionJob {
             const std::istringstream iss(str);
             std::istream is(iss.rdbuf());
             GetAppVersionJob::handleResponse(is);
-            _exitCode = ExitCode::Ok;
+            _exitInfo = ExitCode::Ok;
         }
 
     private:
@@ -82,8 +82,8 @@ class MockGetAppVersionJob final : public GetAppVersionJob {
             versionObj.set("download_link", "test");
 
             Poco::JSON::Array publishedVersionsArray;
-            for (const auto channel: {VersionChannel::Prod, VersionChannel::Next, VersionChannel::Beta,
-                                      VersionChannel::Internal}) {
+            for (const auto channel:
+                 {VersionChannel::Prod, VersionChannel::Next, VersionChannel::Beta, VersionChannel::Internal}) {
                 Poco::JSON::Object tmpObj;
                 tmpObj.set("tag", tag);
                 tmpObj.set("tag_updated_at", "2020-06-04 15:06:37");

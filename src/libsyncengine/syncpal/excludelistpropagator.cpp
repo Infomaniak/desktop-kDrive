@@ -37,11 +37,11 @@ void ExcludeListPropagator::runJob() {
     ExitCode exitCode = checkItems();
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ExcludeListPropagator::checkItems");
-        _exitCode = exitCode;
+        _exitInfo = exitCode;
     }
 
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator ended");
-    _exitCode = ExitCode::Ok;
+    _exitInfo = ExitCode::Ok;
 }
 
 int ExcludeListPropagator::syncDbId() const {
