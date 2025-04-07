@@ -2168,7 +2168,7 @@ void TestIntegration::testMoveMoveCycleConflict() {
 }
 
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
-    // if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
     SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
                                       {test_commonDocumentsNodeId}); // Exclude common documents folder
     const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2DirAndDir2File");
@@ -2242,7 +2242,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
 }
 
 void TestIntegration::testNodeIdReuseFile2File() {
-    // if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
     SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
                                       {test_commonDocumentsNodeId}); // Exclude common documents folder
     const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2File");
