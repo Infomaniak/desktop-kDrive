@@ -16,6 +16,8 @@
 
 #include "snapshotitemhandler.h"
 
+#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+
 namespace KDC {
 
 static const std::string endOfFileDelimiter("#EOF");

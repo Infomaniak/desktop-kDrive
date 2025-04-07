@@ -28,7 +28,6 @@ CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, 
                                                            const std::unordered_set<NodeId> blacklist /*= {}*/,
                                                            const bool zip /*= true*/) :
     AbstractListingJob(driveDbId, blacklist), _dirId(dirId), _zip(zip), _snapshotItemHandler(_logger) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = API_TIMEOUT + 15;
 
     if (_zip) {

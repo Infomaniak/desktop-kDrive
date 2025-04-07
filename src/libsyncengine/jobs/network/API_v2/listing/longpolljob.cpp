@@ -22,7 +22,6 @@ namespace KDC {
 
 LongPollJob::LongPollJob(const int driveDbId, const std::string &cursor, std::unordered_set<NodeId> blacklist /*= {}*/) :
     AbstractListingJob(ApiType::NotifyDrive, driveDbId, blacklist), _cursor(cursor) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = API_TIMEOUT + 5; // Must be < 1 min (VPNs' default timeout)
 }
 

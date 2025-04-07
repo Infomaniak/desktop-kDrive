@@ -20,9 +20,7 @@ namespace KDC {
 
 ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(const int driveDbId, const std::string &cursor,
                                                              std::unordered_set<NodeId> blacklist /*= {}*/) :
-    AbstractListingJob(driveDbId, blacklist), _cursor(cursor) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-}
+    AbstractListingJob(driveDbId, blacklist), _cursor(cursor) {}
 
 std::string ContinueFileListWithCursorJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
