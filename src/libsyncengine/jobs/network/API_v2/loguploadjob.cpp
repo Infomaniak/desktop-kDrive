@@ -108,8 +108,7 @@ bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
 void LogUploadJob::runJob() {
     if (!canRun()) {
         LOG_DEBUG(Log::instance()->getLogger(), "LogUploadJob job cannot run.");
-        _exitCode = ExitCode::Ok;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::Ok;
         return;
     }
 
@@ -202,8 +201,7 @@ void LogUploadJob::finalize() {
     }
 
     notifyLogUploadProgress(LogUploadState::Success, 100);
-    _exitCode = ExitCode::Ok;
-    _exitCause = ExitCause::Unknown;
+    _exitInfo = ExitCode::Ok;
     _runningJob.reset();
 }
 
@@ -612,8 +610,7 @@ void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTm
     }
 
     _runningJob.reset();
-    _exitCode = exitInfo.code();
-    _exitCause = exitInfo.cause();
+    _exitInfo = exitInfo;
 }
 
 bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {

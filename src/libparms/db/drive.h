@@ -26,41 +26,46 @@
 
 namespace KDC {
 
+
 class PARMS_EXPORT Drive {
     public:
+        struct MaintenanceInfo {
+                bool _maintenance{false};
+                bool _notRenew{false};
+                bool _asleep{false};
+                bool _wakingUp{false};
+                int64_t _maintenanceFrom{0};
+        };
+
         Drive();
         Drive(int dbId, int driveId, int accountDbId, const std::string &name = std::string(), int64_t size = int64_t(),
               const std::string &color = std::string(), bool notifications = true, bool admin = true);
 
-        inline void setDbId(int dbId) { _dbId = dbId; }
-        inline int dbId() const { return _dbId; }
-        inline void setDriveId(int driveId) { _driveId = driveId; }
-        inline int driveId() const { return _driveId; }
-        inline void setAccountDbId(int accountDbId) { _accountDbId = accountDbId; }
-        inline int accountDbId() const { return _accountDbId; }
-        inline void setName(const std::string &newDriveName) { _name = newDriveName; }
-        inline const std::string &name() const { return _name; }
-        inline int64_t size() const { return _size; }
-        inline void setSize(int64_t newSize) { _size = newSize; }
-        inline std::string color() const { return _color; }
-        inline void setColor(std::string color) { _color = color; }
-        inline bool notifications() const { return _notifications; }
-        inline void setNotifications(bool newNotifications) { _notifications = newNotifications; }
-        inline bool admin() const { return _admin; }
-        inline void setAdmin(bool admin) { _admin = admin; }
+        void setDbId(int dbId) { _dbId = dbId; }
+        int dbId() const { return _dbId; }
+        void setDriveId(int driveId) { _driveId = driveId; }
+        int driveId() const { return _driveId; }
+        void setAccountDbId(int accountDbId) { _accountDbId = accountDbId; }
+        int accountDbId() const { return _accountDbId; }
+        void setName(const std::string &newDriveName) { _name = newDriveName; }
+        const std::string &name() const { return _name; }
+        int64_t size() const { return _size; }
+        void setSize(int64_t newSize) { _size = newSize; }
+        std::string color() const { return _color; }
+        void setColor(std::string color) { _color = color; }
+        bool notifications() const { return _notifications; }
+        void setNotifications(bool newNotifications) { _notifications = newNotifications; }
+        bool admin() const { return _admin; }
+        void setAdmin(bool admin) { _admin = admin; }
 
-        inline bool maintenance() const { return _maintenance; }
-        inline void setMaintenance(bool newMaintenance) { _maintenance = newMaintenance; }
-        inline bool notRenew() const { return _notRenew; }
-        inline void setNotRenew(bool newNotRenew) { _notRenew = newNotRenew; }
-        inline int64_t maintenanceFrom() const { return _maintenanceFrom; }
-        inline void setMaintenanceFrom(int64_t newMaintenanceFrom) { _maintenanceFrom = newMaintenanceFrom; }
-        inline bool locked() const { return _locked; }
-        inline void setLocked(bool newLocked) { _locked = newLocked; }
-        inline int64_t usedSize() { return _usedSize; }
-        inline void setUsedSize(int64_t newUsedSize) { _usedSize = newUsedSize; }
-        inline bool accessDenied() const { return _accessDenied; }
-        inline void setAccessDenied(bool accessDenied) { _accessDenied = accessDenied; }
+        const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
+        void setMaintenanceInfo(const MaintenanceInfo &info) { _maintenanceInfo = info; }
+        bool locked() const { return _locked; }
+        void setLocked(bool newLocked) { _locked = newLocked; }
+        int64_t usedSize() { return _usedSize; }
+        void setUsedSize(int64_t newUsedSize) { _usedSize = newUsedSize; }
+        bool accessDenied() const { return _accessDenied; }
+        void setAccessDenied(bool accessDenied) { _accessDenied = accessDenied; }
 
     private:
         log4cplus::Logger _logger;
@@ -74,9 +79,7 @@ class PARMS_EXPORT Drive {
         bool _admin;
 
         // Non DB attributes
-        bool _maintenance;
-        bool _notRenew = false;
-        int64_t _maintenanceFrom;
+        MaintenanceInfo _maintenanceInfo;
         bool _locked;
         int64_t _usedSize;
         bool _accessDenied;
