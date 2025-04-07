@@ -135,7 +135,7 @@ class AbstractNetworkJob : public AbstractJob {
         bool processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e);
         bool processSocketError(const std::string &msg, const UniqueId jobId, int err, const std::string &errMsg);
         bool ioOrLogicalErrorOccurred(std::ios &stream);
-        static bool isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept;
+        static bool isManagedError(ExitInfo exitInfo) noexcept;
 
         std::unordered_map<std::string, std::string> _rawHeaders;
 

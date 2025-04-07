@@ -163,7 +163,10 @@ bool ProgressInfo::setProgressComplete(const SyncPath &path, const SyncFileStatu
     if (it->second.empty()) {
         _currentItems.erase(normalizedPath);
     }
-    recomputeCompletedSize();
+
+    if (const auto currentItemsSize = _currentItems.size(); currentItemsSize < 100 || currentItemsSize % 1000 == 0) {
+        recomputeCompletedSize();
+    }
     return true;
 }
 

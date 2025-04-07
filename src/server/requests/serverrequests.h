@@ -93,9 +93,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
         static ExitCode getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
-        static ExitCode getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
+        static ExitInfo getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false);
-        static ExitCode getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
+        static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
         static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
         static ExitCode getPublicLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
@@ -110,7 +110,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests
-        static ExitCode loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
+        static ExitInfo loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
         static ExitCode loadUserInfo(User &user, bool &updated);
         static ExitCode loadUserAvatar(User &user);
         static ExitCode getThumbnail(int driveDbId, NodeId nodeId, int width, std::string &thumbnail);

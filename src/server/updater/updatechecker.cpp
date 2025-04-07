@@ -98,10 +98,9 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         ss << errorCode.c_str() << " - " << errorDescr;
         sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
-    } else if (getAppVersionJobPtr->exitCode() != ExitCode::Ok) {
-        LOG_ERROR(Log::instance()->getLogger(), "Error in UpdateChecker::versionInfoReceived : exit code: "
-                                                        << getAppVersionJobPtr->exitCode()
-                                                        << ", exit cause: " << getAppVersionJobPtr->exitCause());
+    } else if (getAppVersionJobPtr->exitInfo().code() != ExitCode::Ok) {
+        LOG_ERROR(Log::instance()->getLogger(),
+                  "Error in UpdateChecker::versionInfoReceived : " << getAppVersionJobPtr->exitInfo());
     } else {
         _versionsInfo = getAppVersionJobPtr->versionsInfo();
         _prodVersionChannel = getAppVersionJobPtr->prodVersionChannel();
