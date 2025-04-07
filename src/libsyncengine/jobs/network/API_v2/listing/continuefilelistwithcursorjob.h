@@ -22,7 +22,7 @@ namespace KDC {
 
 class ContinueFileListWithCursorJob final : public AbstractListingJob {
     public:
-        ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor, std::unordered_set<NodeId> blacklist = {});
+        ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor, NodeSet blacklist = {});
 
     private:
         std::string getSpecificUrl() override;

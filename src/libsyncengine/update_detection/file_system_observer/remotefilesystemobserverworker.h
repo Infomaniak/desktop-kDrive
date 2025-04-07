@@ -46,7 +46,6 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitCode exploreDirectory(const NodeId &nodeId);
         ExitCode getItemsInDir(const NodeId &dirId, bool saveCursor);
 
-
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::ActionCodeUnknown};
                 SnapshotItem snapshotItem;
@@ -64,7 +63,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         int _driveDbId = -1;
         std::string _cursor;
-        std::unordered_set<NodeId> _blackList;
+        NodeSet _blackList;
         int _listingFullCounter = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 

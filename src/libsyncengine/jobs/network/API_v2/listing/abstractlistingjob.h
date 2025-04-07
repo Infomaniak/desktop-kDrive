@@ -22,14 +22,14 @@ namespace KDC {
 
 class AbstractListingJob : public AbstractTokenNetworkJob {
     public:
-        explicit AbstractListingJob(int driveDbId, const std::unordered_set<NodeId> &blacklist = {});
-        explicit AbstractListingJob(ApiType apiType, int driveDbId, const std::unordered_set<NodeId> &blacklist = {});
+        explicit AbstractListingJob(int driveDbId, const NodeSet &blacklist = {});
+        explicit AbstractListingJob(ApiType apiType, int driveDbId, const NodeSet &blacklist = {});
 
         void setQueryParameters(Poco::URI &uri, bool &) final;
         virtual void setSpecificQueryParameters(Poco::URI &uri) = 0;
 
     private:
-        std::unordered_set<NodeId> _blacklist;
+        NodeSet _blacklist;
 };
 
 } // namespace KDC

@@ -25,8 +25,7 @@
 namespace KDC {
 
 CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, const NodeId &dirId,
-                                                           const std::unordered_set<NodeId> blacklist /*= {}*/,
-                                                           const bool zip /*= true*/) :
+                                                           const NodeSet &blacklist /*= {}*/, const bool zip /*= true*/) :
     AbstractListingJob(driveDbId, blacklist), _dirId(dirId), _zip(zip), _snapshotItemHandler(_logger) {
     _customTimeout = API_TIMEOUT + 15;
 
