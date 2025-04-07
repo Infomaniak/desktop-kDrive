@@ -925,8 +925,8 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         ioError = IoError::InvalidArgument;
         return false;
     }
-
-    if (_dirIterator == std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
+    const auto dirIteratorEnd = std::filesystem::end(_dirIterator);
+    if (_dirIterator == dirIteratorEnd) {
         endOfDirectory = true;
         ioError = IoError::Success;
         return true;
@@ -949,7 +949,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         _firstElement = false;
     }
 
-    if (_dirIterator != std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
+    if (_dirIterator != dirIteratorEnd) {
         ioError = IoHelper::stdError2ioError(ec);
 
         if (ioError != IoError::Success) {
