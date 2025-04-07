@@ -91,10 +91,9 @@ class CustomDialog : public QDialog {
             setButtonIcon(value);
         }
 
-        virtual void setButtonIcon(const QColor &value) { Q_UNUSED(value); };
+        virtual void setButtonIcon(const QColor &value) { Q_UNUSED(value); }
 
     private slots:
-        void onDrag(const QPoint &move);
         void onExit();
 };
 

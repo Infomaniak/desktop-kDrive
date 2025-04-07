@@ -24,6 +24,7 @@
 #include <QApplication>
 #include <QIcon>
 #include <QStyle>
+#include <QWindow>
 
 namespace KDC {
 
@@ -43,8 +44,7 @@ static const int winDialogBoxHMargin = 12;
 static const int winDialogBoxVTMargin = 10;
 static const int winDialogBoxVBMargin = 0;
 
-CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) :
-    QWidget(parent), _popup(popup), _dragging(false), _lastCursorPosition(QPoint()) {
+CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) : QWidget(parent), _popup(popup) {
     QHBoxLayout *hBox = new QHBoxLayout();
     setLayout(hBox);
 
@@ -112,25 +112,10 @@ CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) :
 }
 
 void CustomSystemBar::mousePressEvent(QMouseEvent *event) {
-    QWidget::mousePressEvent(event);
-    _dragging = true;
-    _lastCursorPosition = QCursor::pos();
-}
-
-void CustomSystemBar::mouseReleaseEvent(QMouseEvent *event) {
-    QWidget::mouseReleaseEvent(event);
-    if (_dragging) {
-        _dragging = false;
-        _lastCursorPosition = QPoint();
-    }
-}
-
-void CustomSystemBar::mouseMoveEvent(QMouseEvent *event) {
-    QWidget::mouseMoveEvent(event);
-    if (_dragging) {
-        QPoint newCursorPosition = QCursor::pos();
-        emit drag(newCursorPosition - _lastCursorPosition);
-        _lastCursorPosition = newCursorPosition;
+    if (event->buttons() == Qt::LeftButton) {
+        window()->windowHandle()->startSystemMove();
+    } else {
+        QWidget::mousePressEvent(event);
     }
 }
 

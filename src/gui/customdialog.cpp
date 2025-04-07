@@ -84,7 +84,6 @@ CustomDialog::CustomDialog(const bool popup, QWidget *parent) :
     effect->setOffset(0);
     setGraphicsEffect(effect);
 
-    connect(systemBar, &CustomSystemBar::drag, this, &CustomDialog::onDrag);
     connect(systemBar, &CustomSystemBar::exit, this, &CustomDialog::onExit);
 }
 
@@ -356,12 +355,6 @@ CustomDialog::Edge CustomDialog::calculateCursorPosition(int x, int y) {
     }
 
     return None;
-}
-
-void CustomDialog::onDrag(const QPoint &move) {
-    if (!_resizeMode) {
-        this->move(pos() + move);
-    }
 }
 
 void CustomDialog::onExit() {
