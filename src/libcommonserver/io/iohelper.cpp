@@ -938,11 +938,12 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 
     if (!_firstElement) {
         _dirIterator.increment(ec);
-        ioError = IoHelper::stdError2ioError(ec);
-
-        if (ioError != IoError::Success) {
-            _invalid = true;
-            return true;
+        if (ec) {
+            ioError = IoHelper::stdError2ioError(ec);
+            if (ioError != IoError::Success) {
+                _invalid = true;
+                return true;
+            }
         }
 
     } else {
@@ -950,13 +951,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     }
 
     if (_dirIterator != dirIteratorEnd) {
-        ioError = IoHelper::stdError2ioError(ec);
-
-        if (ioError != IoError::Success) {
-            _invalid = true;
-            return true;
-        }
-
 #ifdef _WIN32
         // skip_permission_denied doesn't work on Windows
         try {
