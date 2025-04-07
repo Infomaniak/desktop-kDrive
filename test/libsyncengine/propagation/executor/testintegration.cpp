@@ -124,6 +124,7 @@ void TestIntegration::setUp() {
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                          KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
+    _syncPal->syncDb()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true); // Enable extended log to see more details in the logs
     ParametersCache::instance()->parameters().setSyncHiddenFiles(true); // Enable sync of hidden files
 
@@ -2170,7 +2171,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     // if (!testhelpers::isExtendedTest()) return;
     SyncNodeCache::instance()->update(_driveDbId, SyncNodeType::BlackList,
                                       {test_commonDocumentsNodeId}); // Exclude common documents folder
-    const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2File");
+    const RemoteTemporaryDirectory remoteTempDir(_driveDbId, "1", "testNodeIdReuseFile2DirAndDir2File");
     const SyncPath relativeWorkingDirPath = remoteTempDir.name();
     const SyncPath absoluteLocalWorkingDir = _localPath / relativeWorkingDirPath;
     _syncPal->start();

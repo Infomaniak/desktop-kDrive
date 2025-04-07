@@ -63,7 +63,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
 RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     if (_isDeleted) return;
 
-    DeleteJob job(_driveDbId, _dirId, "", "", NodeType::File);
+    DeleteJob job(_driveDbId, _dirId, "", "", NodeType::Directory);
     job.setBypassCheck(true);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("~RemoteTemporaryDirectory() failed to delete the directory on remote side.",
                                  ExitInfo(ExitCode::Ok), job.runSynchronously());
