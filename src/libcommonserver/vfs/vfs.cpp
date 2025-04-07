@@ -144,7 +144,7 @@ ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, con
             return {ExitCode::SystemError, ExitCause::NotFound, location};
         } else {
             LOGW_DEBUG(logger(), L"File already exists: " << Utility::formatSyncPath(itemPath));
-            return {ExitCode::SystemError, ExitCause::FileAlreadyExist, location};
+            return {ExitCode::SystemError, ExitCause::FileAlreadyExists, location};
         }
     }
     return ExitCode::Ok;
@@ -231,6 +231,8 @@ bool KDC::isVfsPluginAvailable(const VirtualFileMode virtualFileMode, QString &e
     }
 
     if (virtualFileMode == VirtualFileMode::Win) {
+        if (CommonUtility::platform() == Platform::WindowsServer) return false; // LiteSync not available on Windows Server
+
         if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::Windows &&
             QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10 &&
             QOperatingSystemVersion::current().microVersion() >= MIN_WINDOWS10_MICROVERSION_FOR_CFAPI) {

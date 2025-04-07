@@ -100,29 +100,25 @@ bool LocalDeleteJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absolutePath).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart: "
                                     << Utility::formatSyncPath(_absolutePath).c_str());
-        _exitCode = ExitCode::DataError;
-        _exitCause = ExitCause::UnexpectedFileSystemEvent;
+        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
         return false;
     }
 
     if (_remoteNodeId.empty()) {
         LOG_WARN(_logger, "Remote node ID is empty");
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
@@ -141,8 +137,7 @@ bool LocalDeleteJob::canRun() {
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(_relativePath, normalizedPath)) {
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativePath));
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
@@ -150,8 +145,7 @@ bool LocalDeleteJob::canRun() {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
-        _exitCode = ExitCode::DataError; // We need to rebuild the remote snapshot from scratch
-        _exitCause = ExitCause::InvalidSnapshot;
+        _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
         return false;
     }
 
@@ -179,7 +173,7 @@ void LocalDeleteJob::runJob() {
     const bool tryMoveToTrash =
             (ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash;
 
-    _exitCode = ExitCode::Ok;
+    _exitInfo = ExitCode::Ok;
     if (tryMoveToTrash && moveToTrash()) return;
 
     LOGW_DEBUG(_logger, L"Delete item with " << Utility::formatSyncPath(_absolutePath).c_str());
@@ -188,11 +182,9 @@ void LocalDeleteJob::runJob() {
     if (ec) {
         LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(_absolutePath, ec).c_str());
         if (IoHelper::stdError2ioError(ec) == IoError::AccessDenied) {
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
+            _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         } else {
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::Unknown;
+            _exitInfo = ExitCode::SystemError;
         }
         return;
     }

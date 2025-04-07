@@ -17,8 +17,9 @@
  */
 
 #include "testoperationsorterworker.h"
-
 #include "propagation/operation_sorter/cyclefinder.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+
 #include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
@@ -30,7 +31,7 @@ void TestOperationSorterWorker::setUp() {
     TestBase::start();
     // Create SyncPal
     bool alreadyExists = false;
-    const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const auto parmsDbPath = MockDb::makeDbName(alreadyExists);
     (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);

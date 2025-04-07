@@ -36,7 +36,6 @@
 #include "jobs/network/API_v2/getdriveslistjob.h"
 #include "jobs/network/API_v2/createdirjob.h"
 #include "jobs/network/API_v2/getsizejob.h"
-#include "jobs/jobmanager.h"
 #include "utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
@@ -376,7 +375,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     ExitCode exitCode;
 
     // Generate keychainKey
-    std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(0)).c_str()));
+    std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
 
     // Create Login instance and request token
     Login login(keychainKey);
@@ -407,7 +406,7 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::GetFileInfoJob for userDbId="
                                                        << userDbId << " driveId=" << driveId
                                                        << " nodeId=" << nodeId.toStdString().c_str() << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     job->setWithPath(withPath);
@@ -471,7 +470,7 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -546,7 +545,7 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
+ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                        const bool withPath /*= false*/) {
     std::shared_ptr<GetRootFileListJob> job = nullptr;
     if (nodeId.isEmpty()) {
@@ -555,7 +554,7 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
         } catch (const std::exception &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
                                                            << userDbId << " driveId=" << driveId << " error=" << e.what());
-            return ExitCode::DataError;
+            return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
     } else {
         try {
@@ -564,17 +563,16 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
                                                            << userDbId << " driveId=" << driveId << " nodeId="
                                                            << nodeId.toStdString().c_str() << " error=" << e.what());
-            return ExitCode::DataError;
+            return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
     }
 
     job->setWithPath(withPath);
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId
-                                                       << " nodeId=" << nodeId.toStdString().c_str() << " code=" << exitCode);
-        return exitCode;
+                                                       << " nodeId=" << nodeId.toStdString().c_str() << " error=" << exitInfo);
+        return exitInfo;
     }
 
     Poco::JSON::Object::Ptr resObj = job->jsonRes();
@@ -601,8 +599,8 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             return ExitCode::BackError;
         }
 
-        NodeId nodeId;
-        if (!JsonParserUtility::extractValue(dirObj, idKey, nodeId)) {
+        NodeId nodeId2;
+        if (!JsonParserUtility::extractValue(dirObj, idKey, nodeId2)) {
             return ExitCode::BackError;
         }
 
@@ -636,7 +634,7 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             }
         }
 
-        NodeInfo nodeInfo(QString::fromStdString(nodeId), SyncName2QStr(name),
+        NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
                           -1, // Size is not set here as it can be very long to evaluate
                           parentId.c_str(), modTime, SyncName2QStr(path));
         list << nodeInfo;
@@ -645,9 +643,9 @@ ExitCode ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath /*= false*/) {
+ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath /*= false*/) {
     Drive drive;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in selectDrive");
         return ExitCode::DbError;
@@ -917,6 +915,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             switch (error.exitCause()) {
                 case ExitCause::MigrationError:
                 case ExitCause::MigrationProxyNotImplemented:
+                case ExitCause::FileAlreadyExists:
                     return true;
                 default:
                     return false;
@@ -926,6 +925,8 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             switch (error.exitCause()) {
                 case ExitCause::DriveMaintenance:
                 case ExitCause::DriveNotRenew:
+                case ExitCause::DriveAsleep:
+                case ExitCause::DriveWakingUp:
                 case ExitCause::DriveAccessError:
                 case ExitCause::HttpErrForbidden:
                 case ExitCause::ApiErr:
@@ -1021,7 +1022,7 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1064,27 +1065,27 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         job = std::make_shared<PostFileLinkJob>(driveDbId, nodeId);
     } catch (const std::exception &e) {
         logWarning("PostFileLinkJob", driveDbId, nodeId, e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     if (!job->runSynchronously()) {
-        if (job->exitCode() == ExitCode::BackError && job->exitCause() == ExitCause::ShareLinkAlreadyExists) {
+        if (job->exitInfo().code() == ExitCode::BackError && job->exitInfo().cause() == ExitCause::ShareLinkAlreadyExists) {
             // The link already exists, get it
             job.reset();
             try {
                 job = std::make_shared<GetFileLinkJob>(driveDbId, nodeId);
             } catch (const std::exception &e) {
                 logWarning("GetFileLinkJob", driveDbId, nodeId, e.what());
-                return ExitCode::DataError;
+                return AbstractTokenNetworkJob::exception2ExitCode(e);
             }
 
             if (!job->runSynchronously()) {
-                logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitCode()));
-                return job->exitCode();
+                logWarning("GetFileLinkJob", driveDbId, nodeId, toString(job->exitInfo().code()));
+                return job->exitInfo();
             }
         } else {
-            logWarning("PostFileLinkJob", driveDbId, nodeId, toString(job->exitCode()));
-            return job->exitCode();
+            logWarning("PostFileLinkJob", driveDbId, nodeId, toString(job->exitInfo().code()));
+            return job->exitInfo();
         }
     }
 
@@ -1125,7 +1126,7 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetSizeJob::GetSizeJob for userDbId=" << userDbId << " driveId=" << driveId
                                                                  << " nodeId=" << nodeId.c_str() << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1542,7 +1543,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
+ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
     updated = false;
     accountUpdated = false;
     quotaUpdated = false;
@@ -1554,13 +1555,15 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetInfoDriveJob::GetInfoDriveJob for driveDbId=" << drive.dbId() << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok && job->exitCause() != ExitCause::DriveNotRenew) {
+    const auto exitInfo = job->runSynchronously();
+    const bool knownMaintenanceMode = exitInfo.cause() == ExitCause::DriveNotRenew ||
+                                      exitInfo.cause() == ExitCause::DriveAsleep || exitInfo.cause() == ExitCause::DriveWakingUp;
+    if (!exitInfo && !knownMaintenanceMode) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
-        return exitCode;
+        return exitInfo;
     }
 
     Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
@@ -1569,7 +1572,8 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         LOG_WARN(Log::instance()->getLogger(), "Unable to get drive info for driveDbId=" << drive.dbId());
         drive.setAccessDenied(true);
         return ExitCode::Ok;
-    } else if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
+    }
+    if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Network error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
         return ExitCode::NetworkError;
@@ -1619,15 +1623,13 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance)) {
             return ExitCode::BackError;
         }
-        drive.setMaintenance(inMaintenance);
 
         int64_t maintenanceFrom = 0;
-        if (drive.maintenance()) {
+        if (drive.maintenanceInfo()._maintenance) {
             if (!JsonParserUtility::extractValue(dataObj, maintenanceAtKey, maintenanceFrom, false)) {
                 return ExitCode::BackError;
             }
         }
-        drive.setMaintenanceFrom(maintenanceFrom);
 
         bool isLocked = false;
         if (!JsonParserUtility::extractValue(dataObj, isLockedKey, isLocked)) {
@@ -1635,7 +1637,11 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         }
         drive.setLocked(isLocked);
         drive.setAccessDenied(false);
-        drive.setNotRenew(job->exitCause() == ExitCause::DriveNotRenew);
+        drive.setMaintenanceInfo({._maintenance = inMaintenance,
+                                  ._notRenew = job->exitInfo().cause() == ExitCause::DriveNotRenew,
+                                  ._asleep = job->exitInfo().cause() == ExitCause::DriveAsleep,
+                                  ._wakingUp = job->exitInfo().cause() == ExitCause::DriveWakingUp,
+                                  ._maintenanceFrom = maintenanceFrom});
 
         int64_t usedSize = 0;
         if (!JsonParserUtility::extractValue(dataObj, usedSizeKey, usedSize)) {
@@ -1660,7 +1666,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetThumbnailJob::GetThumbnailJob for driveDbId="
                                                        << driveDbId << " and nodeId=" << nodeId.c_str() << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1692,13 +1698,9 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     try {
         job = std::make_shared<GetInfoUserJob>(user.dbId());
     } catch (const std::exception &e) {
-        const std::string what = e.what();
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " error=" << what.c_str());
-        if (what == invalidToken) {
-            return ExitCode::InvalidToken;
-        }
-        return ExitCode::DataError;
+                 "Error in GetInfoUserJob::GetInfoUserJob for userDbId=" << user.dbId() << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     ExitCode exitCode = job->runSynchronously();
@@ -1950,12 +1952,13 @@ void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &a
 
 void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) {
     driveInfo.setDbId(drive.dbId());
+    driveInfo.setId(drive.driveId());
     driveInfo.setAccountDbId(drive.accountDbId());
     driveInfo.setName(QString::fromStdString(drive.name()));
     driveInfo.setColor(QColor(QString::fromStdString(drive.color())));
     driveInfo.setNotifications(drive.notifications());
     driveInfo.setAdmin(drive.admin());
-    driveInfo.setMaintenance(drive.maintenance());
+    driveInfo.setMaintenance(drive.maintenanceInfo()._maintenance);
     driveInfo.setLocked(drive.locked());
     driveInfo.setAccessDenied(drive.accessDenied());
 }

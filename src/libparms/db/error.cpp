@@ -24,28 +24,26 @@
 
 namespace KDC {
 
-Error::Error() :
-    _dbId(0), _time(std::time(0)), _level(ErrorLevel::Unknown), _syncDbId(0), _exitCode(ExitCode::Unknown),
-    _exitCause(ExitCause::Unknown), _nodeType(NodeType::Unknown), _conflictType(ConflictType::None),
-    _inconsistencyType(InconsistencyType::None), _cancelType(CancelType::None) {}
-
 Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitCause) :
-    _dbId(0), _time(std::time(0)), _level(ErrorLevel::Server), _functionName(functionName), _syncDbId(0),
-    _workerName(std::string()), _exitCode(exitCode), _exitCause(exitCause), _nodeType(NodeType::Unknown),
-    _conflictType(ConflictType::None), _inconsistencyType(InconsistencyType::None), _cancelType(CancelType::None) {}
+    _level(ErrorLevel::Server), _functionName(functionName), _exitCode(exitCode), _exitCause(exitCause) {}
+
+Error::Error(const std::string &functionName, const ExitInfo &exitInfo) :
+    _level(ErrorLevel::Server), _functionName(functionName), _exitCode(exitInfo.code()), _exitCause(exitInfo.cause()) {}
 
 Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause) :
-    _dbId(0), _time(std::time(0)), _level(ErrorLevel::SyncPal), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitCode),
-    _exitCause(exitCause), _nodeType(NodeType::Unknown), _conflictType(ConflictType::None),
-    _inconsistencyType(InconsistencyType::None), _cancelType(CancelType::None) {}
+    _level(ErrorLevel::SyncPal), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitCode), _exitCause(exitCause) {}
+
+Error::Error(int syncDbId, const std::string &workerName, const ExitInfo &exitInfo) :
+    _level(ErrorLevel::SyncPal), _syncDbId(syncDbId), _workerName(workerName), _exitCode(exitInfo.code()),
+    _exitCause(exitInfo.cause()) {}
 
 Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
              ConflictType conflictType, InconsistencyType inconsistencyType /*= InconsistencyType::None */,
              CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/
              ,
              ExitCode exitCode /*= ExitCode::Unknown*/, ExitCause exitCause /*= ExitCause::Unknown*/) :
-    _dbId(0), _time(std::time(0)), _level(ErrorLevel::Node), _syncDbId(syncDbId), _exitCode(exitCode), _exitCause(exitCause),
-    _localNodeId(localNodeId), _remoteNodeId(remoteNodeId), _nodeType(nodeType), _path(path), _conflictType(conflictType),
+    _level(ErrorLevel::Node), _syncDbId(syncDbId), _exitCode(exitCode), _exitCause(exitCause), _localNodeId(localNodeId),
+    _remoteNodeId(remoteNodeId), _nodeType(nodeType), _path(path), _conflictType(conflictType),
     _inconsistencyType(inconsistencyType), _cancelType(cancelType), _destinationPath(destinationPath) {}
 
 Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &functionName, int syncDbId,

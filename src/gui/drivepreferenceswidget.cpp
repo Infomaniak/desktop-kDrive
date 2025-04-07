@@ -1122,7 +1122,7 @@ void DrivePreferencesWidget::onOpenFolder(const QString &filePath) {
     emit openFolder(filePath);
 }
 
-void DrivePreferencesWidget::onSubfoldersLoaded(bool error, bool empty) {
+void DrivePreferencesWidget::onSubfoldersLoaded(const bool error, const ExitCause, const bool empty) {
     setCursor(Qt::ArrowCursor);
     if (error || empty) {
         FolderItemWidget *itemWidget = blocItemWidget((PreferencesBlocWidget *) sender()->parent());
@@ -1133,19 +1133,11 @@ void DrivePreferencesWidget::onSubfoldersLoaded(bool error, bool empty) {
         emit itemWidget->displayFolderDetailCanceled();
 
         if (error) {
-            CustomMessageBox msgBox(QMessageBox::Warning, tr("An error occured while loading the list of subfolders."),
+            CustomMessageBox msgBox(QMessageBox::Warning, tr("An error occurred while loading the list of subfolders."),
                                     QMessageBox::Ok, this);
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.exec();
         }
-        /*else if (empty) {
-            CustomMessageBox msgBox(
-                        QMessageBox::Information,
-                        tr("No subfolders currently on the server."),
-                        QMessageBox::Ok, this);
-            msgBox.setDefaultButton(QMessageBox::Ok);
-            msgBox.exec();
-        }*/
     } else {
         FolderTreeItemWidget *treeItemWidget = (FolderTreeItemWidget *) sender();
         if (!treeItemWidget) {

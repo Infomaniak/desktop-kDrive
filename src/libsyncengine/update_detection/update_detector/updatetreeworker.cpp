@@ -994,14 +994,7 @@ ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool is
         return ExitCode::Ok;
     }
 
-    // Split path
-    std::vector<SyncName> names;
-    SyncPath pathTmp(path);
-    while (pathTmp != pathTmp.root_path()) {
-        names.push_back(
-                pathTmp.filename().native()); // TODO : not optimized to do push back on vector, use queue or deque instead
-        pathTmp = pathTmp.parent_path();
-    }
+    std::vector<SyncName> names = Utility::splitPath(path);
 
     // create intermediate nodes if needed
     std::shared_ptr<Node> tmpNode = _updateTree->rootNode();
@@ -1105,20 +1098,18 @@ bool UpdateTreeWorker::integrityCheck() {
 }
 
 ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &newPath) {
-    // Split path
-    std::vector<std::pair<SyncName, NodeId>> names;
-    SyncPath pathTmp(path);
-    while (pathTmp != pathTmp.root_path()) {
-        names.emplace_back(pathTmp.filename(), "0");
-        pathTmp = pathTmp.parent_path();
-    }
+    const std::vector<SyncName> itemNames = Utility::splitPath(path);
+    std::vector<NodeId> nodeIds(itemNames.size());
 
     // Vector ID
     SyncPath tmpPath;
-    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
-        tmpPath.append(nameIt->first);
+    auto nameIt = itemNames.rbegin();
+    auto nodeIdIt = nodeIds.rbegin();
+
+    for (; nameIt != itemNames.rend() && nodeIdIt != nodeIds.rend(); ++nameIt, ++nodeIdIt) {
+        tmpPath /= *nameIt;
         bool found = false;
-        std::optional<NodeId> tmpNodeId{};
+        std::optional<NodeId> tmpNodeId{std::nullopt};
         if (!_syncDb->id(_side, tmpPath, tmpNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
             return ExitCode::DbError;
@@ -1127,16 +1118,20 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
             LOGW_SYNCPAL_WARN(_logger, L"Node not found for " << Utility::formatSyncPath(tmpPath).c_str());
             return ExitCode::DataError;
         }
-        nameIt->second = *tmpNodeId;
+        *nodeIdIt = *tmpNodeId;
     }
 
-    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
-        if (FSOpPtr op = nullptr; _operationSet->findOp(nameIt->second, OperationType::Move, op)) {
+    nameIt = itemNames.rbegin();
+    nodeIdIt = nodeIds.rbegin();
+
+    for (; nameIt != itemNames.rend() && nodeIdIt != nodeIds.rend(); ++nameIt, ++nodeIdIt) {
+        if (FSOpPtr op = nullptr; _operationSet->findOp(*nodeIdIt, OperationType::Move, op)) {
             newPath = op->destinationPath();
         } else {
-            newPath.append(nameIt->first);
+            newPath /= *nameIt;
         }
     }
+
     return ExitCode::Ok;
 }
 

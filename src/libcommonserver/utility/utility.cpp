@@ -484,6 +484,18 @@ bool Utility::checkIfSameNormalization(const SyncPath &a, const SyncPath &b, boo
     return true;
 }
 
+std::vector<SyncName> Utility::splitPath(const SyncPath &path) {
+    std::vector<SyncName> itemNames;
+    SyncPath pathTmp(path);
+
+    while (pathTmp != pathTmp.root_path()) {
+        (void) itemNames.emplace_back(pathTmp.filename().native());
+        pathTmp = pathTmp.parent_path();
+    }
+
+    return itemNames;
+}
+
 bool Utility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
     if (path == potentialDescendant) return true;
     for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
@@ -557,30 +569,15 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
     return str;
 }
 
-std::string Utility::list2str(std::unordered_set<std::string> inList) {
+std::string Utility::nodeSet2str(const NodeSet &set) {
     bool first = true;
     std::string out;
-    for (const auto &str: inList) {
+    for (const auto &nodeId: set) {
         if (!first) {
             out += ",";
         }
-        if (!str.empty()) {
-            out += str;
-            first = false;
-        }
-    }
-    return out;
-}
-
-std::string Utility::list2str(std::list<std::string> inList) {
-    bool first = true;
-    std::string out;
-    for (const auto &str: inList) {
-        if (!first) {
-            out += ",";
-        }
-        if (!str.empty()) {
-            out += str;
+        if (!nodeId.empty()) {
+            out += nodeId;
             first = false;
         }
     }
@@ -723,8 +720,8 @@ bool Utility::normalizedSyncName(const SyncName &name, SyncName &normalizedName,
     }
 
     if (!strResult) { // Some special characters seem to be not supported, therefore a null pointer is returned if the
-                      // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in the
-                      // path
+                      // conversion has failed. e.g.: Linux can sometimes send filesystem events with strange characters in
+                      // the path
         LOGW_DEBUG(logger(), L"Failed to normalize " << formatSyncName(name));
         return false;
     }

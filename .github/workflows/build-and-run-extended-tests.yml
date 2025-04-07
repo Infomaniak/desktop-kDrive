@@ -94,12 +94,6 @@ jobs:
           & "cov01.exe" "-1" # coverage on
           & "cov01.exe" "-s" # show status
 
-      - name: Code coverage preview
-        id: html_preview
-        uses: pavi2410/html-preview-action@v2
-        with:
-          html_file: 'coverage_html/index.html'
-          job_summary: true
 
       - name: Deactivate BullseyeCoverage
         run: |

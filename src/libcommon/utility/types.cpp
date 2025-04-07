@@ -148,7 +148,7 @@ std::string toString(const ExitCause e) {
             return "ApiErr";
         case ExitCause::InvalidSize:
             return "InvalidSize";
-        case ExitCause::FileAlreadyExist:
+        case ExitCause::FileAlreadyExists:
             return "FileAlreadyExist";
         case ExitCause::FileAccessError:
             return "FileAccessError";
@@ -206,6 +206,12 @@ std::string toString(const ExitCause e) {
             return "InvalidArgument";
         case ExitCause::InvalidDestination:
             return "InvalidDestination";
+        case ExitCause::DriveAsleep:
+            return "DriveAsleep";
+        case ExitCause::DriveWakingUp:
+            return "DriveWakingUp";
+        case ExitCause::ServiceUnavailable:
+            return "ServiceUnavailable";
         default:
             return noConversionStr;
     }
@@ -767,10 +773,12 @@ std::string toString(const VersionChannel e) {
 }
 std::string toString(const Platform e) {
     switch (e) {
-        case Platform::Windows:
-            return "Windows";
         case Platform::MacOS:
             return "MacOS";
+        case Platform::Windows:
+            return "Windows";
+        case Platform::WindowsServer:
+            return "WindowsServer";
         case Platform::LinuxAMD:
             return "LinuxAMD";
         case Platform::LinuxARM:
@@ -844,6 +852,21 @@ std::string toString(const SignalType e) {
         default:
             return noConversionStr;
     }
+}
+
+void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList) {
+    const long index = indexInList(exitInfoToMerge.code(), exitCodeList);
+    const long thisIndex = indexInList(this->code(), exitCodeList);
+
+    if (index < thisIndex) {
+        *this = exitInfoToMerge;
+    }
+}
+
+long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode> &exitCodeList) {
+    const auto it = std::find(exitCodeList.begin(), exitCodeList.end(), exitCode);
+    const long index = it - exitCodeList.begin();
+    return index;
 }
 
 } // namespace KDC

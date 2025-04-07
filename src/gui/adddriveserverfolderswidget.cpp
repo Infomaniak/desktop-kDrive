@@ -28,6 +28,7 @@
 #include <QDir>
 #include <QLoggingCategory>
 #include <QProgressBar>
+#include <config.h>
 
 namespace KDC {
 
@@ -54,6 +55,7 @@ AddDriveServerFoldersWidget::AddDriveServerFoldersWidget(std::shared_ptr<ClientG
 }
 
 void AddDriveServerFoldersWidget::init(int userDbId, const DriveAvailableInfo &driveInfo) {
+    _driveInfo = driveInfo;
     _folderTreeItemWidget->setUserDbIdAndDriveInfo(userDbId, driveInfo);
     _folderTreeItemWidget->loadSubFolders();
 }
@@ -190,22 +192,21 @@ void AddDriveServerFoldersWidget::setLogoColor(const QColor &color) {
                                           .pixmap(logoTextIconSize));
 }
 
-void AddDriveServerFoldersWidget::onSubfoldersLoaded(bool error, bool /*empty*/) {
+void AddDriveServerFoldersWidget::onSubfoldersLoaded(const bool error, const ExitCause exitCause) {
     if (error) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("An error occured while loading the list of subfolders."),
-                                QMessageBox::Ok, this);
+        QString errorMsg = tr("An error occurred while loading the list of subfolders.");
+        if (exitCause == ExitCause::ServiceUnavailable) {
+            QString driveLink = QString(APPLICATION_PREVIEW_URL).arg(_driveInfo.driveId()).arg("");
+            errorMsg =
+                    tr(R"(Impossible to load the list of subfolders. Your kDrive might be in maintenance.<br>)"
+                       R"(Please, login to the <a style="%1" href="%2">web version</a> to check your kDrive's status, or contact your administrator.)")
+                            .arg(CommonUtility::linkStyle, driveLink);
+        }
+        CustomMessageBox msgBox(QMessageBox::Warning, errorMsg, QMessageBox::Ok, this);
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.exec();
         emit terminated(false);
     }
-    /*if (empty) {
-        CustomMessageBox msgBox(
-                    QMessageBox::Warning,
-                    tr("No subfolders currently on the server."),
-                    QMessageBox::Ok, this);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.exec();
-    }*/
 }
 
 void AddDriveServerFoldersWidget::onNeedToSave() {

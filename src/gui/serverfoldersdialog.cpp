@@ -132,7 +132,7 @@ void ServerFoldersDialog::onContinueButtonTriggered(bool checked) {
     accept();
 }
 
-void ServerFoldersDialog::onSubfoldersLoaded(bool empty) {
+void ServerFoldersDialog::onSubfoldersLoaded(bool, ExitCause, const bool empty) {
     FolderTreeItemWidget *folderTreeItemWidget = qobject_cast<FolderTreeItemWidget *>(sender());
     folderTreeItemWidget->setVisible(!empty);
     if (empty) {

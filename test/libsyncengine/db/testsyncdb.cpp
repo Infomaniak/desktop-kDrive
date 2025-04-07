@@ -22,6 +22,7 @@
 
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
 #include <algorithm>
 #include <time.h>
@@ -104,23 +105,23 @@ void TestSyncDb::tearDown() {
 
 void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
     bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
+    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
     ParmsDb::instance()->setAutoDelete(true);
 
     const User user(1, 5555555, "123");
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
     const Account acc(1, 12345678, user.dbId());
-    ParmsDb::instance()->insertAccount(acc);
+    (void) ParmsDb::instance()->insertAccount(acc);
     Drive drive(1, 99999991, acc.dbId(), "Drive 1", 2000000000, "#000000");
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync;
     sync.setDbId(1);
     sync.setDriveDbId(drive.dbId());
     sync.setLocalPath(localPath);
     sync.setDbPath(syncDbPath);
-    ParmsDb::instance()->insertSync(sync);
+    (void) ParmsDb::instance()->insertSync(sync);
 }
 
 // Get file names as actually encoded by the local file system.
@@ -190,8 +191,8 @@ std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &loca
     _testObj->enablePrepare(true);
     _testObj->prepare();
 
-    const time_t tLoc = std::time(0);
-    const time_t tDrive = std::time(0);
+    const time_t tLoc = std::time(nullptr);
+    const time_t tDrive = std::time(nullptr);
     const auto rootId = _testObj->rootNode().nodeId();
 
     const auto nfc = testhelpers::makeNfcSyncName();
@@ -315,8 +316,8 @@ void TestSyncDb::testUpdateLocalName() {
     const auto nfd = testhelpers::makeNfdSyncName();
 
     // Insert node
-    const time_t tLoc = std::time(0);
-    const time_t tDrive = std::time(0);
+    const time_t tLoc = std::time(nullptr);
+    const time_t tDrive = std::time(nullptr);
 
     DbNodeTest nodeDir1(_testObj->rootNode().nodeId(), nfc, Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                         NodeType::Directory, 0, std::nullopt);
@@ -341,8 +342,8 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->clearNodes());
 
     // Insert node
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
 
     DbNode nodeDir1(0, _testObj->rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc,
                     tDrive, NodeType::Directory, 0, std::nullopt);
@@ -721,14 +722,14 @@ void TestSyncDb::testSyncNodes() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
 
-    std::unordered_set<NodeId> nodeIdSet;
+    NodeSet nodeIdSet;
     nodeIdSet.emplace("1");
     nodeIdSet.emplace("2");
     nodeIdSet.emplace("3");
     nodeIdSet.emplace("4");
     nodeIdSet.emplace("5");
 
-    std::unordered_set<NodeId> nodeIdSet2;
+    NodeSet nodeIdSet2;
     nodeIdSet2.emplace("11");
     nodeIdSet2.emplace("12");
     nodeIdSet2.emplace("13");
@@ -736,7 +737,7 @@ void TestSyncDb::testSyncNodes() {
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, nodeIdSet));
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::UndecidedList, nodeIdSet2));
 
-    std::unordered_set<NodeId> nodeIdSet3;
+    NodeSet nodeIdSet3;
     CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet3));
     CPPUNIT_ASSERT_EQUAL(size_t(5), nodeIdSet3.size());
     CPPUNIT_ASSERT(nodeIdSet3.contains("1"));
@@ -751,7 +752,7 @@ void TestSyncDb::testSyncNodes() {
     CPPUNIT_ASSERT(nodeIdSet3.contains("12"));
     CPPUNIT_ASSERT(nodeIdSet3.contains("13"));
 
-    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, std::unordered_set<NodeId>()));
+    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, NodeSet()));
     nodeIdSet3.clear();
     CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet3));
     CPPUNIT_ASSERT_EQUAL(size_t(0), nodeIdSet3.size());
@@ -761,8 +762,8 @@ void TestSyncDb::testCorrespondingNodeId() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
 
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    time_t tLoc = std::time(nullptr);
+    time_t tDrive = std::time(nullptr);
     bool constraintError = false;
 
 

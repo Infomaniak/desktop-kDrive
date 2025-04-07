@@ -41,7 +41,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
         // Create remote test dir
         CreateDirJob job(nullptr, _driveDbId, parentId, _dirName);
         job.runSynchronously();
-        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExist) && retry > 0) {
+        if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileAlreadyExists) && retry > 0) {
             retry--;
             continue;
         }
@@ -65,7 +65,7 @@ RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
 
     DeleteJob job(_driveDbId, _dirId, "", "");
     job.setBypassCheck(true);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("~RemoteTemporaryDirectory() failed to delete the directory on remote side.",
-                                 ExitInfo(ExitCode::Ok), job.runSynchronously());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("~RemoteTemporaryDirectory() failed to delete the directory on remote side.", ExitCode::Ok,
+                                 job.runSynchronously().code());
 }
 } // namespace KDC
