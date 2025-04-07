@@ -117,16 +117,26 @@ function Get-Aumid {
    return $aumid
 }
 
-function Get-Installer-Path {
+function Get-App-Name {
    param (
-		[string] $buildPath,
-        [string] $contentPath
+		[string] $buildPath
    )
 
    $prodName = "kDrive"
    $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
    $appName = "$prodName-$version.exe"
 
+   
+   return $appName
+}
+
+function Get-Installer-Path {
+   param (
+		[string] $buildPath,
+        [string] $contentPath
+   )
+
+   $appName = Get-App-Name $buildPath
    $installerPath = "$contentPath/$appName"
 
    return $installerPath
@@ -251,16 +261,15 @@ function Set-Up-NSIS {
 
    # NSIS needs the path to use backslash
    $iconPath = Get-Icon-Path $buildpath
-   $prodName = "kDrive"
-   $compName = "Infomaniak Network SA"
-
-   $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
-   $appName = "$prodName-$version.exe"
-
+   $appName = Get-App-Name $buildpath
+   
    $installerPath = Get-Installer-Path $buildPath $contentPath
    Clean $installerPath
 
    $aumid = Get-Aumid $upload
+   $prodName = "kDrive"
+   $compName = "Infomaniak Network SA"
+   $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
 
    $scriptContent = Get-Content "$buildPath/NSIS.template.nsi" -Raw
    $scriptContent = $scriptContent -replace "@{icon}", $iconPath
@@ -397,7 +406,9 @@ function Create-Archive {
     & makensis "$buildPath\NSIS.template.nsi"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+    $appName = Get-App-Name $buildPath
     Move-Item -Path "$buildPath\$appName" -Destination "$contentPath"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     # Sign final installer
     if (!$thumbprint)
