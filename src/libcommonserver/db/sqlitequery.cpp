@@ -60,7 +60,7 @@ int SqliteQuery::prepare(const std::string &sql, bool allow_failure) {
         if (_errId != SQLITE_OK) {
             _error = std::string(sqlite3_errmsg(_sqlite3Db.get()));
             LOG_WARN(_logger, "Sqlite prepare statement error: " << _error.c_str() << " in " << _sql.c_str());
-            LOG_IF_FAIL(allow_failure, "SQLITE Prepare error");
+            LOG_MSG_IF_FAIL(allow_failure, "SQLITE Prepare error");
         } else {
             LOG_IF_FAIL(_stmt.get());
         }

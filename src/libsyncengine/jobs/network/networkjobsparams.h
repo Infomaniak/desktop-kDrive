@@ -99,17 +99,19 @@ static const std::string totalNbItemKey = "total";
 static const std::string pageKey = "page";
 static const std::string pagesKey = "pages";
 static const std::string itemsPerPageKey = "items_per_page";
+static const std::string conflictKey = "conflict";
+static const std::string conflictErrorValue = "error";
 
 static const std::string inMaintenanceKey = "in_maintenance";
 static const std::string maintenanceAtKey = "maintenance_at";
 static const std::string maintenanceReasonKey = "maintenance_reason";
+static const std::string maintenanceTypesKey = "maintenance_types";
 static const std::string isLockedKey = "is_locked";
 static const std::string usedSizeKey = "used_size";
 
 static const std::string colorKey = "color";
 
 static const std::string errorCodePathKey = "/Error/Code";
-static const std::string redirectUrlPathKey = "/html/body/a";
 
 static const std::string dirKey = "dir";
 static const std::string fileKey = "file";
@@ -117,32 +119,32 @@ static const std::string urlKey = "url";
 
 /// Action type
 enum class ActionCode {
-    actionCodeCreate,
-    actionCodeRename,
-    actionCodeEdit,
-    actionCodeAccess,
-    actionCodeTrash, // The file has been put into the trash
-    actionCodeDelete, // The file has been completely deleted from the trash
-    actionCodeMoveIn,
-    actionCodeMoveOut,
-    actionCodeRestore,
-    actionCodeRestoreFileShareCreate,
-    actionCodeRestoreFileShareDelete,
-    actionCodeRestoreShareLinkCreate,
-    actionCodeRestoreShareLinkDelete,
-    actionCodeAccessRightInsert,
-    actionCodeAccessRightUpdate,
-    actionCodeAccessRightRemove,
-    actionCodeAccessRightUserInsert,
-    actionCodeAccessRightUserUpdate,
-    actionCodeAccessRightUserRemove,
-    actionCodeAccessRightTeamInsert,
-    actionCodeAccessRightTeamUpdate,
-    actionCodeAccessRightTeamRemove,
-    actionCodeAccessRightMainUsersInsert,
-    actionCodeAccessRightMainUsersUpdate,
-    actionCodeAccessRightMainUsersRemove,
-    actionCodeUnknown
+    ActionCodeCreate,
+    ActionCodeRename,
+    ActionCodeEdit,
+    ActionCodeAccess,
+    ActionCodeTrash, // The file has been put into the trash
+    ActionCodeDelete, // The file has been completely deleted from the trash
+    ActionCodeMoveIn,
+    ActionCodeMoveOut,
+    ActionCodeRestore,
+    ActionCodeRestoreFileShareCreate,
+    ActionCodeRestoreFileShareDelete,
+    ActionCodeRestoreShareLinkCreate,
+    ActionCodeRestoreShareLinkDelete,
+    ActionCodeAccessRightInsert,
+    ActionCodeAccessRightUpdate,
+    ActionCodeAccessRightRemove,
+    ActionCodeAccessRightUserInsert,
+    ActionCodeAccessRightUserUpdate,
+    ActionCodeAccessRightUserRemove,
+    ActionCodeAccessRightTeamInsert,
+    ActionCodeAccessRightTeamUpdate,
+    ActionCodeAccessRightTeamRemove,
+    ActionCodeAccessRightMainUsersInsert,
+    ActionCodeAccessRightMainUsersUpdate,
+    ActionCodeAccessRightMainUsersRemove,
+    ActionCodeUnknown
 };
 
 /// Visibility
@@ -161,28 +163,30 @@ static const std::string contextKey = "context";
 
 /// Error codes
 enum class NetworkErrorCode {
-    forbiddenError,
-    notAuthorized,
-    productMaintenance,
-    driveIsInMaintenanceError,
-    fileShareLinkAlreadyExists,
-    objectNotFound,
-    invalidGrant,
-    validationFailed,
-    uploadNotTerminatedError,
-    uploadError,
-    destinationAlreadyExists,
-    conflictError,
-    accessDenied,
-    fileTooBigError,
-    quotaExceededError,
-    unknownError // None of the handled errors
+    ForbiddenError,
+    NotAuthorized,
+    ProductMaintenance,
+    DriveIsInMaintenanceError,
+    FileShareLinkAlreadyExists,
+    ObjectNotFound,
+    InvalidGrant,
+    ValidationFailed,
+    UploadNotTerminatedError,
+    UploadError,
+    DestinationAlreadyExists,
+    ConflictError,
+    AccessDenied,
+    FileTooBigError,
+    QuotaExceededError,
+    UnknownError, // None of the handled errors
+    EnumEnd
 };
 
 enum class NetworkErrorReason {
-    refreshTokenRevoked,
-    notRenew,
-    unknownReason // None of the handled reasons
+    RefreshTokenRevoked,
+    NotRenew,
+    Technical,
+    UnknownReason // None of the handled reasons
 };
 
 ActionCode getActionCode(const std::string &action) noexcept;
@@ -195,5 +199,4 @@ NetworkErrorReason getNetworkErrorReason(const std::string &errorCode) noexcept;
 /// Error descriptions
 static const std::string storageObjectIsNotOk = "storage_object_is_not_ok";
 
-static const std::string invalidToken = "Invalid Token";
 } // namespace KDC

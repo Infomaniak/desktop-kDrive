@@ -747,6 +747,7 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
 }
 
 void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
+    exists = true;
     IoError ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError)) {
         exists = (ioError != IoError::NoSuchFileOrDirectory);
@@ -924,8 +925,8 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         ioError = IoError::InvalidArgument;
         return false;
     }
-
-    if (_dirIterator == std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
+    const auto dirIteratorEnd = std::filesystem::end(_dirIterator);
+    if (_dirIterator == dirIteratorEnd) {
         endOfDirectory = true;
         ioError = IoError::Success;
         return true;
@@ -937,25 +938,19 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 
     if (!_firstElement) {
         _dirIterator.increment(ec);
-        ioError = IoHelper::stdError2ioError(ec);
-
-        if (ioError != IoError::Success) {
-            _invalid = true;
-            return true;
+        if (ec) {
+            ioError = IoHelper::stdError2ioError(ec);
+            if (ioError != IoError::Success) {
+                _invalid = true;
+                return true;
+            }
         }
 
     } else {
         _firstElement = false;
     }
 
-    if (_dirIterator != std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
-        ioError = IoHelper::stdError2ioError(ec);
-
-        if (ioError != IoError::Success) {
-            _invalid = true;
-            return true;
-        }
-
+    if (_dirIterator != dirIteratorEnd) {
 #ifdef _WIN32
         // skip_permission_denied doesn't work on Windows
         try {

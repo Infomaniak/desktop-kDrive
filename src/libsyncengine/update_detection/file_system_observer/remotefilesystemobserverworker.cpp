@@ -177,7 +177,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
                                               << _driveDbId << " error=" << e.what());
-            exitCode = ExitCode::DataError;
+            exitCode = AbstractTokenNetworkJob::exception2ExitCode(e);
             break;
         }
 
@@ -196,7 +196,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
         }
 
         if (std::string errorCode; job->hasErrorApi(&errorCode)) {
-            if (getNetworkErrorCode(errorCode) == NetworkErrorCode::forbiddenError) {
+            if (getNetworkErrorCode(errorCode) == NetworkErrorCode::ForbiddenError) {
                 LOG_SYNCPAL_WARN(_logger, "Access forbidden");
                 exitCode = ExitCode::Ok;
                 break;
@@ -268,17 +268,13 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     sentry::pTraces::scoped::RFSOBackRequest perfMonitorBackRequest(!saveCursor, syncDbId());
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
-        std::unordered_set<NodeId> blackList;
+        NodeSet blackList;
         SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
         job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, dirId, blackList, true);
     } catch (const std::exception &e) {
-        std::string what = e.what();
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
-                                          << _driveDbId << " error=" << what.c_str());
-        if (what == invalidToken) {
-            return ExitCode::InvalidToken;
-        }
-        return ExitCode::DataError;
+                                          << _driveDbId << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
@@ -291,10 +287,10 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         Utility::msleep(100);
     }
 
-    if (job->exitCode() != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob::runSynchronously : " << job->exitCode());
+    if (job->exitInfo().code() != ExitCode::Ok) {
+        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob::runSynchronously : " << job->exitInfo());
         setExitCause(job->getExitCause());
-        return job->exitCode();
+        return job->exitInfo();
     }
 
     if (saveCursor) {
@@ -375,7 +371,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                                                     << Utility::s2ws(item.id()).c_str() << L", parent inode:"
                                                     << Utility::s2ws(item.parentId()).c_str() << L", createdAt:"
                                                     << item.createdAt() << L", modtime:" << item.lastModified() << L", isDir:"
-                                                    << (item.type() == NodeType::Directory) << L", size:" << item.size());
+                                                    << (item.type() == NodeType::Directory) << L", size:" << item.size()
+                                                    << L", isLink:" << item.isLink());
             }
         }
     }
@@ -389,7 +386,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     // Delete orphans
-    std::unordered_set<NodeId> nodeIds;
+    NodeSet nodeIds;
     _snapshot->ids(nodeIds);
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
@@ -415,7 +412,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor);
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
-            return ExitCode::DataError;
+            return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
 
         JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
@@ -440,11 +437,11 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             Utility::msleep(100);
         }
 
-        if (notifyJob->exitCode() == ExitCode::NetworkError) {
+        if (notifyJob->exitInfo().code() == ExitCode::NetworkError) {
             LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
                                                                                    << " and cursor: " << _cursor.c_str());
-            if (notifyJob->exitCause() == ExitCause::NetworkTimeout) {
-                _syncPal->addError(Error(errId(), notifyJob->exitCode(), notifyJob->exitCause()));
+            if (notifyJob->exitInfo().cause() == ExitCause::NetworkTimeout) {
+                _syncPal->addError(Error(errId(), notifyJob->exitInfo().code(), notifyJob->exitInfo().cause()));
             }
             return ExitCode::NetworkError;
         } else if (notifyJob->hasHttpError()) {
@@ -458,7 +455,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             } else {
                 LOG_SYNCPAL_WARN(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
                                                                                       << " and cursor: " << _cursor.c_str());
-                return notifyJob->exitCode();
+                return notifyJob->exitInfo();
             }
         } else {
             Poco::JSON::Object::Ptr resObj = notifyJob->jsonRes();
@@ -610,14 +607,14 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
     // Process action
     switch (actionInfo.actionCode) {
         // Item added
-        case ActionCode::actionCodeAccessRightInsert:
-        case ActionCode::actionCodeAccessRightUpdate:
-        case ActionCode::actionCodeAccessRightUserInsert:
-        case ActionCode::actionCodeAccessRightUserUpdate:
-        case ActionCode::actionCodeAccessRightTeamInsert:
-        case ActionCode::actionCodeAccessRightTeamUpdate:
-        case ActionCode::actionCodeAccessRightMainUsersInsert:
-        case ActionCode::actionCodeAccessRightMainUsersUpdate: {
+        case ActionCode::ActionCodeAccessRightInsert:
+        case ActionCode::ActionCodeAccessRightUpdate:
+        case ActionCode::ActionCodeAccessRightUserInsert:
+        case ActionCode::ActionCodeAccessRightUserUpdate:
+        case ActionCode::ActionCodeAccessRightTeamInsert:
+        case ActionCode::ActionCodeAccessRightTeamUpdate:
+        case ActionCode::ActionCodeAccessRightMainUsersInsert:
+        case ActionCode::ActionCodeAccessRightMainUsersUpdate: {
             bool rightsOk = false;
             if (const ExitCode exitCode =
                         checkRightsAndUpdateItem(actionInfo.snapshotItem.id(), rightsOk, actionInfo.snapshotItem);
@@ -627,12 +624,12 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             if (!rightsOk) break; // Current user does not have the right to access this item, ignore action.
             [[fallthrough]];
         }
-        case ActionCode::actionCodeMoveIn:
-        case ActionCode::actionCodeRestore:
-        case ActionCode::actionCodeCreate:
-        case ActionCode::actionCodeRename: {
+        case ActionCode::ActionCodeMoveIn:
+        case ActionCode::ActionCodeRestore:
+        case ActionCode::ActionCodeCreate:
+        case ActionCode::ActionCodeRename: {
             const bool exploreDir = actionInfo.snapshotItem.type() == NodeType::Directory &&
-                                    actionInfo.actionCode != ActionCode::actionCodeCreate &&
+                                    actionInfo.actionCode != ActionCode::ActionCodeCreate &&
                                     !_snapshot->exists(actionInfo.snapshotItem.id());
             _snapshot->updateItem(actionInfo.snapshotItem);
             if (exploreDir) {
@@ -655,22 +652,22 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
 
                 if (exitCode != ExitCode::Ok) return exitCode;
             }
-            if (actionInfo.actionCode == ActionCode::actionCodeMoveIn) {
+            if (actionInfo.actionCode == ActionCode::ActionCodeMoveIn) {
                 // Keep track of moved items
                 movedItems.insert(actionInfo.snapshotItem.id());
             }
             break;
         }
         // Item edited
-        case ActionCode::actionCodeEdit:
+        case ActionCode::ActionCodeEdit:
             _snapshot->updateItem(actionInfo.snapshotItem);
             break;
 
         // Item removed
-        case ActionCode::actionCodeAccessRightRemove:
-        case ActionCode::actionCodeAccessRightUserRemove:
-        case ActionCode::actionCodeAccessRightTeamRemove:
-        case ActionCode::actionCodeAccessRightMainUsersRemove: {
+        case ActionCode::ActionCodeAccessRightRemove:
+        case ActionCode::ActionCodeAccessRightUserRemove:
+        case ActionCode::ActionCodeAccessRightTeamRemove:
+        case ActionCode::ActionCodeAccessRightMainUsersRemove: {
             bool rightsOk = false;
             if (const ExitCode exitCode =
                         checkRightsAndUpdateItem(actionInfo.snapshotItem.id(), rightsOk, actionInfo.snapshotItem);
@@ -680,11 +677,11 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             if (rightsOk) break; // Current user still have the right to access this item, ignore action.
             [[fallthrough]];
         }
-        case ActionCode::actionCodeMoveOut:
+        case ActionCode::ActionCodeMoveOut:
             // Ignore move out action if destination is inside the synced folder.
             if (movedItems.find(actionInfo.snapshotItem.id()) != movedItems.end()) break;
             [[fallthrough]];
-        case ActionCode::actionCodeTrash:
+        case ActionCode::ActionCodeTrash:
             if (!_snapshot->removeItem(actionInfo.snapshotItem.id())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: "
                                                    << SyncName2WStr(actionInfo.snapshotItem.name()).c_str() << L" ("
@@ -695,12 +692,12 @@ ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
             break;
 
         // Ignored actions
-        case ActionCode::actionCodeAccess:
-        case ActionCode::actionCodeDelete:
-        case ActionCode::actionCodeRestoreFileShareCreate:
-        case ActionCode::actionCodeRestoreFileShareDelete:
-        case ActionCode::actionCodeRestoreShareLinkCreate:
-        case ActionCode::actionCodeRestoreShareLinkDelete:
+        case ActionCode::ActionCodeAccess:
+        case ActionCode::ActionCodeDelete:
+        case ActionCode::ActionCodeRestoreFileShareCreate:
+        case ActionCode::ActionCodeRestoreFileShareDelete:
+        case ActionCode::ActionCodeRestoreShareLinkCreate:
+        case ActionCode::ActionCodeRestoreShareLinkDelete:
             // Ignore these actions
             break;
 
@@ -723,11 +720,11 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetFileInfoJob::GetFileInfoJob for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str()
                                                                           << " error=" << e.what());
-        return ExitCode::DataError;
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     job->runSynchronously();
-    if (job->hasHttpError() || job->exitCode() != ExitCode::Ok) {
+    if (job->hasHttpError() || job->exitInfo().code() != ExitCode::Ok) {
         if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
             job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
             hasRights = false;

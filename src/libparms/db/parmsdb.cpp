@@ -18,7 +18,7 @@
 
 #include "parmsdb.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/utility/logiffail.h"
+#include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <3rdparty/sqlite3/sqlite3.h>
@@ -726,7 +726,7 @@ bool ParmsDb::updateExclusionApps() {
             exclusionAppFileList.push_back(std::make_pair(appId, descr));
         }
     } else {
-        LOG_WARN(_logger, "Cannot open exclusion app file");
+        LOG_WARN(_logger, "Cannot open exclusion app file with " << Utility::getExcludedAppFilePath(_test));
         return false;
     }
 

@@ -92,7 +92,7 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
         *newPathPtr = std::move(newFullPath);
     }
 
-    return {moveJob.exitCode(), moveJob.exitCause()};
+    return moveJob.exitInfo();
 }
 
 bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &name) {
@@ -118,6 +118,10 @@ bool PlatformInconsistencyCheckerUtility::nameHasForbiddenChars(const SyncPath &
 #endif
 
     return false;
+}
+
+bool PlatformInconsistencyCheckerUtility::isNameOnlySpaces(const SyncName &name) {
+    return Utility::ltrim(name).empty();
 }
 
 #ifdef _WIN32

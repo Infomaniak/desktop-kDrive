@@ -95,9 +95,9 @@ class ParametersDialog : public CustomDialog {
         QByteArray contents(const QString &path);
         void reset();
 
-        QString getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const;
-        QString getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const;
-        QString getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const;
+        QString getAppErrorText(const QString &fctCode, ExitCode exitCode, ExitCause exitCause) const;
+        QString getSyncPalErrorText(const QString &fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const;
+        QString getConflictText(ConflictType conflictType) const;
         QString getInconsistencyText(InconsistencyType inconsistencyType) const;
         QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "") const;
         QString getErrorMessage(const ErrorInfo &errorInfo) const;
@@ -127,7 +127,6 @@ class ParametersDialog : public CustomDialog {
         void retranslateUi();
         void onPauseSync(int syncDbId = 0);
         void onResumeSync(int syncDbId = 0);
-        void onRunSync(int syncDbId = 0);
         void onClearErrors(int syncDbId, bool autoResolved);
 };
 

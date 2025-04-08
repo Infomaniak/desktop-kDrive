@@ -32,6 +32,14 @@ void TestUpdateChecker::setUp() {
     ParametersCache::instance(true);
 }
 
+void TestUpdateChecker::tearDown() {
+    ParametersCache::reset();
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
+    TestBase::stop();
+}
+
 void TestUpdateChecker::testCheckUpdateAvailable() {
     // Version is higher than current version
     {

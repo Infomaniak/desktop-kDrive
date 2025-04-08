@@ -98,11 +98,132 @@ void TestTypes::testExitInfo() {
     CPPUNIT_ASSERT_EQUAL(ExitCause::DbAccessError, eca);
     CPPUNIT_ASSERT_EQUAL(202, static_cast<int>(ei));
 
-
     ec = ExitCode::BackError;
     ei = ec;
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, ei.code());
     CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, ei.cause());
     CPPUNIT_ASSERT_EQUAL(600, static_cast<int>(ei));
+
+    // indexInList
+    {
+        long index =
+                ExitInfo::indexInList(ExitCode::SystemError, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(0L, index);
+    }
+
+    {
+        long index = ExitInfo::indexInList(ExitCode::BackError, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(2L, index);
+    }
+
+    {
+        long index = ExitInfo::indexInList(ExitCode::DataError, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(3L, index);
+    }
+
+    // merge
+    {
+        ExitInfo exitInfo = ExitCode::Ok;
+        ExitInfo exitInfoToMerge = ExitCode::SystemError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DataError;
+        ExitInfo exitInfoToMerge = ExitCode::BackError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DataError;
+        ExitInfo exitInfoToMerge = ExitCode::NetworkError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DbError;
+        ExitInfo exitInfoToMerge = ExitCode::SystemError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DbError;
+        ExitInfo exitInfoToMerge = ExitCode::BackError;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DbError, exitInfo.code());
+    }
+
+    {
+        ExitInfo exitInfo = ExitCode::DbError;
+        ExitInfo exitInfoToMerge = ExitCode::Ok;
+        exitInfo.merge(exitInfoToMerge, {ExitCode::SystemError, ExitCode::DbError, ExitCode::BackError});
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DbError, exitInfo.code());
+    }
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown), ExitInfo::fromInt(0));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::WorkerExited), ExitInfo::fromInt(1));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Unknown, ExitCause::Unknown), ExitInfo::fromInt(100));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent), ExitInfo::fromInt(414));
+    // Because of the implementation of method ExitInfo::int(), we need to make sure that ExitCause enum never has more than 100
+    // values
+    CPPUNIT_ASSERT(static_cast<int>(ExitCause::EnumEnd) < 100);
 }
+
+template<IntegralEnum T>
+void testToStringIntValues() {
+    int i = 0;
+    while (true) {
+        if (fromInt<T>(i) == T::EnumEnd) {
+            break;
+        }
+        if (toString(fromInt<T>(i)) == noConversionStr || toString(fromInt<T>(i)) == "") {
+            const std::string failStr = std::string("No string conversion for value ") + std::to_string(i) + std::string(" of ") +
+                                        std::string(typeid(T).name());
+            CPPUNIT_FAIL(failStr);
+        }
+        i++;
+    }
+}
+
+void TestTypes::testToString() {
+    testToStringIntValues<AppType>();
+    testToStringIntValues<SignalCategory>();
+    testToStringIntValues<ReplicaSide>();
+    testToStringIntValues<NodeType>();
+    testToStringIntValues<ExitCode>();
+    testToStringIntValues<ExitCause>();
+    testToStringIntValues<ConflictType>();
+    testToStringIntValues<CancelType>();
+    testToStringIntValues<NodeStatus>();
+    testToStringIntValues<SyncStatus>();
+    testToStringIntValues<UploadSessionType>();
+    testToStringIntValues<SyncNodeType>();
+    testToStringIntValues<SyncDirection>();
+    testToStringIntValues<SyncFileStatus>();
+    testToStringIntValues<SyncDirection>();
+    testToStringIntValues<SyncFileInstruction>();
+    testToStringIntValues<SyncStep>();
+    testToStringIntValues<ActionType>();
+    testToStringIntValues<ActionTarget>();
+    testToStringIntValues<ErrorLevel>();
+    testToStringIntValues<Language>();
+    testToStringIntValues<LogLevel>();
+    testToStringIntValues<NotificationsDisabled>();
+    testToStringIntValues<VirtualFileMode>();
+    testToStringIntValues<PinState>();
+    testToStringIntValues<ProxyType>();
+    testToStringIntValues<ExclusionTemplateComplexity>();
+    testToStringIntValues<LinkType>();
+    testToStringIntValues<IoError>();
+    testToStringIntValues<AppStateKey>();
+    testToStringIntValues<LogUploadState>();
+    testToStringIntValues<UpdateState>();
+    testToStringIntValues<VersionChannel>();
+    testToStringIntValues<Platform>();
+    testToStringIntValues<sentry::ConfidentialityLevel>();
+}
+
 } // namespace KDC

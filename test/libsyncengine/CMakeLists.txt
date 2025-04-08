@@ -24,7 +24,7 @@ set(testsyncengine_SRCS
         ../mocks/libsyncengine/vfs/mockvfs.h
         ../mocks/libsyncengine/jobs/network/API_v2/mockloguploadjob.h
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
-        ../test_classes/testinitialsituationgenerator.h ../test_classes/testinitialsituationgenerator.cpp
+        ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         olddb/testoldsyncdb.h olddb/testoldsyncdb.cpp
@@ -59,9 +59,11 @@ set(testsyncengine_SRCS
         propagation/operation_sorter/testoperationsorterworker.h propagation/operation_sorter/testoperationsorterworker.cpp
         propagation/executor/testintegration.h propagation/executor/testintegration.cpp
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
+        propagation/executor/testfilerescuer.h propagation/executor/testfilerescuer.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
+        syncpal/testoperationprocessor.h syncpal/testoperationprocessor.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
 )

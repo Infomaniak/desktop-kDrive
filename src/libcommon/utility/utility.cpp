@@ -58,6 +58,7 @@
 #include "utility_win.cpp"
 #elif defined(Q_OS_MAC)
 #include "utility_mac.cpp"
+#include <mach-o/dyld.h>
 #else
 #include "utility_linux.cpp"
 #endif
@@ -81,6 +82,8 @@ const int CommonUtility::logMaxSize = 500 * 1024 * 1024; // MB
 
 SyncPath CommonUtility::_workingDirPath = "";
 
+QTranslator *CommonUtility::_translator = nullptr;
+QTranslator *CommonUtility::_qtTranslator = nullptr;
 const QString CommonUtility::englishCode = "en";
 const QString CommonUtility::frenchCode = "fr";
 const QString CommonUtility::germanCode = "de";
@@ -140,7 +143,10 @@ QString CommonUtility::platformName() {
 Platform CommonUtility::platform() {
     const QString name = platformName();
     if (name.contains("macos", Qt::CaseInsensitive)) return Platform::MacOS;
-    if (name.contains("windows", Qt::CaseInsensitive)) return Platform::Windows;
+    if (name.contains("windows", Qt::CaseInsensitive)) {
+        if (name.contains("server", Qt::CaseInsensitive)) return Platform::WindowsServer;
+        return Platform::Windows;
+    }
     // Otherwise we consider the OS to be Linux based
     if (platformArch().contains("arm", Qt::CaseInsensitive)) return Platform::LinuxARM;
 
@@ -184,6 +190,22 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
     return {};
 }
 
+void CommonUtility::resetTranslations() {
+    if (qApp) {
+        if (_translator) {
+            (void) QCoreApplication::removeTranslator(_translator);
+            _translator->deleteLater();
+            _translator = nullptr;
+        }
+
+        if (_qtTranslator) {
+            (void) QCoreApplication::removeTranslator(_qtTranslator);
+            _qtTranslator->deleteLater();
+            _qtTranslator = nullptr;
+        }
+    }
+}
+
 QString CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
@@ -208,7 +230,6 @@ QString CommonUtility::getIconPath(const IconType iconType) {
 bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType iconType) {
 #ifdef Q_OS_MAC
     if (!setFolderCustomIcon_private(folderPath, getIconPath(iconType))) {
-        // qCWarning(lcUtility) << "Error setting custom icon" << getIconPath(iconType) << "for folder" << folderPath;
         return false;
     }
     return true;
@@ -411,28 +432,16 @@ QString applicationTrPath() {
 void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language enforcedLocale) {
     QStringList uiLanguages = languageCodeList(enforcedLocale);
 
-    static QTranslator *translator = nullptr;
-    static QTranslator *qtTranslator = nullptr;
+    resetTranslations();
 
-    if (translator) {
-        app->removeTranslator(translator);
-        translator->deleteLater();
-        translator = nullptr;
-    }
-    translator = new QTranslator(app);
-
-    if (qtTranslator) {
-        app->removeTranslator(qtTranslator);
-        qtTranslator->deleteLater();
-        qtTranslator = nullptr;
-    }
-    qtTranslator = new QTranslator(app);
+    _translator = new QTranslator(app);
+    _qtTranslator = new QTranslator(app);
 
     foreach (QString lang, uiLanguages) {
         lang.replace(QLatin1Char('-'), QLatin1Char('_')); // work around QTBUG-25973
         const QString trPath = applicationTrPath();
         const QString trFile = QLatin1String("client_") + lang;
-        if (translator->load(trFile, trPath) || lang.startsWith(QLatin1String("en"))) {
+        if (_translator->load(trFile, trPath) || lang.startsWith(QLatin1String("en"))) {
             // Permissive approach: Qt translations
             // may be missing, but Qt translations must be there in order
             // for us to accept the language. Otherwise, we try with the next.
@@ -442,17 +451,12 @@ void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language
             const QString qtTrPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
             const QString qtTrFile = QLatin1String("qt_") + lang;
             const QString qtBaseTrFile = QLatin1String("qtbase_") + lang;
-            if (!qtTranslator->load(qtTrFile, qtTrPath)) {
-                if (!qtTranslator->load(qtTrFile, trPath)) {
-                    if (!qtTranslator->load(qtBaseTrFile, qtTrPath)) {
-                        static_cast<void>(qtTranslator->load(qtBaseTrFile, trPath));
-                        // static_cast<void>() explicitly discard warning on
-                        // function declared with 'nodiscard' attribute
-                    }
-                }
+            if (!_qtTranslator->load(qtTrFile, qtTrPath) && !_qtTranslator->load(qtTrFile, trPath) &&
+                !_qtTranslator->load(qtBaseTrFile, qtTrPath)) {
+                static_cast<void>(_qtTranslator->load(qtBaseTrFile, trPath));
             }
-            if (!translator->isEmpty()) app->installTranslator(translator);
-            if (!qtTranslator->isEmpty()) app->installTranslator(qtTranslator);
+            if (!_translator->isEmpty()) (void) QCoreApplication::installTranslator(_translator);
+            if (!_qtTranslator->isEmpty()) (void) QCoreApplication::installTranslator(_qtTranslator);
             break;
         }
         if (app->property("ui_lang").isNull()) app->setProperty("ui_lang", "C");
@@ -464,31 +468,24 @@ bool CommonUtility::colorThresholdCheck(const int red, const int green, const in
 }
 
 SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &path) {
-    std::filesystem::path rootPathNormal(rootPath.lexically_normal());
-    std::filesystem::path pathNormal(path.lexically_normal());
-
-    if (rootPathNormal == pathNormal) {
-        return std::filesystem::path();
+    const auto &pathStr = path.native();
+    const auto &rootStr = rootPath.native();
+    auto rootIt = rootStr.begin();
+    auto pathIt = pathStr.begin();
+    const auto rootItEnd = rootStr.end();
+    const auto pathItEnd = pathStr.end();
+    while (rootIt != rootItEnd && pathIt != pathItEnd &&
+           (*rootIt == *pathIt || (*rootIt == '/' && *pathIt == '\\') || (*rootIt == '\\' && *pathIt == '/'))) {
+        ++rootIt;
+        ++pathIt;
     }
 
-    std::vector<SyncName> rootPathElts;
-    for (const auto &dir: rootPathNormal) {
-        rootPathElts.push_back(dir.native());
+    if (rootIt != rootItEnd || pathIt == pathItEnd) {
+        // path is not a subpath of rootPath or the relative Path is empty
+        return {};
     }
-
-    size_t index = 0;
-    std::filesystem::path relativePath;
-    for (const auto &dir: pathNormal) {
-        if (index >= rootPathElts.size()) {
-            relativePath /= dir;
-        } else if (dir != rootPathElts[index]) {
-            // path is not a sub path of rootPath
-            break;
-        }
-        index++;
-    }
-
-    return relativePath;
+    while (pathIt != pathItEnd && (*pathIt == '\\' || *pathIt == '/')) ++pathIt;
+    return {pathIt, pathItEnd};
 }
 
 QStringList CommonUtility::languageCodeList(const Language enforcedLocale) {
@@ -510,9 +507,8 @@ bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
 QString CommonUtility::languageCode(const Language language) {
     switch (language) {
         case Language::Default: {
-            const auto systemLanguages = QLocale::system().uiLanguages();
-            if (systemLanguages.empty()) break;
-            if (const auto systemLanguage = systemLanguages.first().left(2); isSupportedLanguage(systemLanguage))
+            if (const auto systemLanguage = QLocale::languageToCode(QLocale::system().language());
+                isSupportedLanguage(systemLanguage))
                 return systemLanguage;
             break;
         }
@@ -526,8 +522,11 @@ QString CommonUtility::languageCode(const Language language) {
             return spanishCode;
         case Language::English:
             break;
+        case Language::EnumEnd:
+            assert(false && "Invalid enum value in switch statement.");
     }
-    return englishCode; // Return english by default.
+
+    return englishCode;
 }
 
 SyncPath CommonUtility::getAppDir() {
@@ -963,6 +962,26 @@ QString CommonUtility::truncateLongLogMessage(const QString &message) {
     }
 
     return message;
+}
+
+SyncPath CommonUtility::applicationFilePath() {
+    const auto maxPathLength = CommonUtility::maxPathLength();
+    std::vector<SyncChar> pathStr(maxPathLength + 1, '\0');
+
+#if defined(_WIN32)
+    const auto pathLength = static_cast<DWORD>(maxPathLength);
+    const auto count = GetModuleFileNameW(nullptr, pathStr.data(), pathLength);
+    assert(count);
+#elif defined(__APPLE__)
+    auto pathLength = static_cast<uint32_t>(maxPathLength);
+    const auto ret = _NSGetExecutablePath(pathStr.data(), &pathLength);
+    assert(!ret);
+#else
+    const auto count = readlink("/proc/self/exe", pathStr.data(), maxPathLength);
+    assert(count != -1);
+#endif
+
+    return SyncPath(pathStr.data());
 }
 
 

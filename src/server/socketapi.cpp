@@ -19,7 +19,7 @@
 #include "socketapi.h"
 #include "config.h"
 #include "version.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/logiffail.h"
 #include "common/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -91,7 +91,8 @@ struct ListenerHasSocketPred {
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
                      const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
-    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+    QObject(parent),
+    _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
@@ -220,7 +221,7 @@ void SocketApi::onLostConnection() {
     sender()->deleteLater();
 
     auto socket = qobject_cast<QIODevice *>(sender());
-    LOG_IF_FAIL(socket);
+    LOG_IF_FAIL(Log::instance()->getLogger(), socket)
     _listeners.erase(std::remove_if(_listeners.begin(), _listeners.end(), ListenerHasSocketPred(socket)), _listeners.end());
 }
 
@@ -231,7 +232,7 @@ void SocketApi::slotSocketDestroyed(QObject *obj) {
 
 void SocketApi::slotReadSocket() {
     auto *socket = qobject_cast<QIODevice *>(sender());
-    LOG_IF_FAIL(socket);
+    LOG_IF_FAIL(Log::instance()->getLogger(), socket)
 
     // Find the SocketListener
     //
@@ -649,6 +650,8 @@ QString SocketApi::socketAPIString(SyncFileStatus status, const VfsStatus &vfsSt
         case SyncFileStatus::Error:
             statusString = QLatin1String("ERROR");
             break;
+        case SyncFileStatus::EnumEnd:
+            assert(false && "Invalid enum value in switch statement.");
     }
 
     return statusString;
@@ -1075,7 +1078,7 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
 
     // File availability actions
     if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->socketApiPinStateActionsShown()) {
-        ENFORCE(!files.isEmpty());
+        LOG_IF_FAIL(Log::instance()->getLogger(), !files.isEmpty());
 
         bool canHydrate = true;
         bool canDehydrate = true;
@@ -1236,7 +1239,7 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
 
     // File availability actions
     if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileMode::Off) {
-        ENFORCE(!argumentList.isEmpty());
+        LOG_IF_FAIL(Log::instance()->getLogger(), !argumentList.isEmpty());
 
         for (const auto &file: qAsConst(argumentList)) {
             auto fileData = FileData::get(file);

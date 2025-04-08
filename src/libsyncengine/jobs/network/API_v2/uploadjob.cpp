@@ -65,22 +65,19 @@ bool UploadJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::Unknown;
+        _exitInfo = ExitCode::SystemError;
         return false;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
         return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger,
                    L"Item does not exist anymore. Aborting current sync and restart " << Utility::formatSyncPath(_filePath));
-        _exitCode = ExitCode::DataError;
-        _exitCause = ExitCause::UnexpectedFileSystemEvent;
+        _exitInfo = {ExitCode::DataError, ExitCause::UnexpectedFileSystemEvent};
         return false;
     }
 
@@ -117,6 +114,10 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     if (_fileId.empty()) {
         uri.addQueryParameter("file_name", SyncName2Str(_filename));
         uri.addQueryParameter("directory_id", _remoteParentDirId);
+        // If an item already exists on the remote side with the same name, we want the backend to return an error.
+        // However, in case of conflict with a directory, the backend will change the error resolution to `rename` and
+        // automatically rename the uploaded file with a suffix counter (e.g.: test (1).txt)
+        uri.addQueryParameter(conflictKey, conflictErrorValue);
     } else {
         uri.addQueryParameter("file_id", _fileId);
     }
@@ -270,8 +271,6 @@ ExitInfo UploadJob::readLink() {
 
         if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File misses search permissions - " << Utility::formatSyncPath(_filePath).c_str());
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 #endif

@@ -65,7 +65,7 @@ class SyncDb : public Db {
         bool name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &found);
         bool checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);
         bool ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found);
-        bool ids(ReplicaSide side, std::unordered_set<NodeId> &ids, bool &found);
+        bool ids(ReplicaSide side, NodeSet &ids, bool &found);
         bool ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found);
         bool dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);
         bool dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found);
@@ -85,8 +85,8 @@ class SyncDb : public Db {
         bool syncing(ReplicaSide side, const SyncPath &path, bool &syncing, bool &found);
         bool setSyncing(ReplicaSide side, const SyncPath &path, bool syncing, bool &found);
 
-        bool updateAllSyncNodes(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet);
-        bool selectAllSyncNodes(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet);
+        bool updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet);
+        bool selectAllSyncNodes(SyncNodeType type, NodeSet &nodeIdSet);
 
         bool selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyColon);
         bool deleteNodesWithNullParentNodeId();
@@ -109,7 +109,7 @@ class SyncDb : public Db {
         DbNode _rootNode;
 
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
-        bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
+        bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, NodeSet &ids);
 
         // Helpers
         bool checkNodeIds(const DbNode &node);

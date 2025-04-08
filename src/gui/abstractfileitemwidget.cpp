@@ -75,6 +75,8 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) :
     _messageLabel->setWordWrap(true);
     _messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _messageLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    _messageLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    _messageLabel->setOpenExternalLinks(true);
     _middleLayout->addWidget(_messageLabel);
 
     // Bottom layout
@@ -117,9 +119,31 @@ QSize AbstractFileItemWidget::sizeHint() const {
     return {width(), height};
 }
 
-void AbstractFileItemWidget::setFilePath(const QString &filePath, NodeType type /*= NodeType::File*/) {
-    setFileName(filePath, type);
+void AbstractFileItemWidget::setPathAndName(const QString &filePath, NodeType type /*= NodeType::File*/) {
+    setName(filePath, type);
     setPath(filePath);
+}
+
+void AbstractFileItemWidget::setName(const QString &path, const NodeType type) {
+    setFileTypeIcon(CommonUtility::getFileIconPathFromFileName(path, type));
+    _filenameLabel->setText(QFileInfo(path).fileName());
+}
+
+void AbstractFileItemWidget::setPath(const QString &path) const {
+    _driveIconLabel->setPixmap(
+            GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor).pixmap(iconSize));
+
+    const QFileInfo fInfo(path);
+    QString printablePath;
+    if (!fInfo.isAbsolute()) printablePath = "/";
+    printablePath += path;
+    GuiUtility::makePrintablePath(printablePath);
+
+    printablePath = QDir::toNativeSeparators(printablePath);
+    QString pathStr = QString(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, path, printablePath);
+
+    _pathLabel->setText(pathStr);
+    _pathLabel->setToolTip(path);
 }
 
 void AbstractFileItemWidget::setDriveName(const QString &driveName, const QString &localPath) {
@@ -178,29 +202,6 @@ void AbstractFileItemWidget::paintEvent(QPaintEvent *event) {
 
 void AbstractFileItemWidget::setFileTypeIcon(const QString &ressourcePath) {
     _fileTypeIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(ressourcePath).pixmap(iconSize));
-}
-
-void AbstractFileItemWidget::setFileName(const QString &path, NodeType type) {
-    setFileTypeIcon(CommonUtility::getFileIconPathFromFileName(path, type));
-    _filenameLabel->setText(QFileInfo(path).fileName());
-}
-
-void AbstractFileItemWidget::setPath(const QString &path) {
-    _driveIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor)
-                    .pixmap(iconSize));
-
-    const QFileInfo fInfo(path);
-    QString printablePath;
-    if (!fInfo.isAbsolute()) printablePath = "/";
-    printablePath += path;
-    GuiUtility::makePrintablePath(printablePath);
-
-    printablePath = QDir::toNativeSeparators(printablePath);
-    QString pathStr = QString("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle, path, printablePath);
-
-    _pathLabel->setText(pathStr);
-    _pathLabel->setToolTip(path);
 }
 
 } // namespace KDC

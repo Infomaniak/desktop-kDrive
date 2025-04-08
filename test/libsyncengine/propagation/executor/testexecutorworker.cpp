@@ -22,7 +22,12 @@
 #include "io/filestat.h"
 #include "io/iohelper.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "network/proxy.h"
+#include "propagation/executor/filerescuer.h"
+
+#include "mocks/libcommonserver/db/mockdb.h"
+#include "test_classes/testsituationgenerator.h"
 #include "test_utility/testhelpers.h"
 
 #include <memory>
@@ -37,31 +42,31 @@ void TestExecutorWorker::setUp() {
 
     // Insert api token into keystore
     std::string keychainKey("123");
-    KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId(12321);
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
 
     int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
     int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     _sync = Sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
-    ParmsDb::instance()->insertSync(_sync);
+    (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
     Parameters parameters;
@@ -69,13 +74,13 @@ void TestExecutorWorker::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
-                                         KDRIVE_VERSION_STRING);
+    _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    _syncPal = std::make_shared<SyncPal>(_mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers(std::chrono::seconds(0));
     _syncPal->syncDb()->setAutoDelete(true);
 
-    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
+    _executorWorker = std::make_shared<ExecutorWorker>(_syncPal, "Executor", "EXEC");
 }
 
 void TestExecutorWorker::tearDown() {
@@ -89,15 +94,7 @@ void TestExecutorWorker::tearDown() {
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
-    // Setup a syncpal using MockVfs
-    _syncPal->stop();
-    std::shared_ptr<MockVfs> mockVfs = std::make_shared<MockVfs>();
-    _syncPal = std::make_shared<SyncPal>(mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);
-    _syncPal->createSharedObjects();
-    _syncPal->createWorkers();
-    _syncPal->syncDb()->setAutoDelete(true);
-
-    _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(_syncPal, "Executor", "EXEC"));
+    _executorWorker = std::make_shared<ExecutorWorker>(_syncPal, "Executor", "EXEC");
 
 
     //   Setup dummy values. Test inputs are set in the callbacks defined below.
@@ -109,8 +106,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     opPtr->setAffectedNode(node);
     // A hydrated placeholder.
     {
-        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = true, .isSyncing = false, .progress = 0};
-        mockVfs->setVfsStatusOutput(vfsStatus);
+        auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = true;
+            vfsStatus.isSyncing = false;
+            vfsStatus.progress = 0;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -119,8 +122,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A dehydrated placeholder.
     {
-        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = false, .isSyncing = false, .progress = 0};
-        mockVfs->setVfsStatusOutput(vfsStatus);
+        auto mockStatus = []([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = false;
+            vfsStatus.isSyncing = false;
+            vfsStatus.progress = 0;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -129,8 +138,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // A partially hydrated placeholder (syncing item).
     {
-        constexpr VfsStatus vfsStatus = {.isPlaceholder = true, .isHydrated = false, .isSyncing = true, .progress = 30};
-        mockVfs->setVfsStatusOutput(vfsStatus);
+        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = false;
+            vfsStatus.isSyncing = true;
+            vfsStatus.progress = 30;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -139,8 +154,14 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
     // Not a placeholder.
     {
-        constexpr VfsStatus vfsStatus = {.isPlaceholder = false, .isHydrated = false, .isSyncing = false, .progress = 0};
-        mockVfs->setVfsStatusOutput(vfsStatus);
+        auto mockStatus = [&]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+            vfsStatus.isPlaceholder = false;
+            vfsStatus.isHydrated = false;
+            vfsStatus.isSyncing = false;
+            vfsStatus.progress = 0;
+            return ExitCode::Ok;
+        };
+        _mockVfs->setMockStatus(mockStatus);
         bool isDehydratedPlaceholder = false;
         _executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
@@ -395,6 +416,153 @@ void TestExecutorWorker::testPropagateConflictToDbAndTree() {
     syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveMoveSource));
     _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
     CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+}
+
+void TestExecutorWorker::testInitSyncFileItem() {
+    const auto localNode = std::make_shared<Node>(
+            ReplicaSide::Local, Str("test_file.txt"), NodeType::File, OperationType::None, "lid", testhelpers::defaultTime,
+            testhelpers::defaultTime + 1, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    const auto remoteNode = std::make_shared<Node>(
+            ReplicaSide::Remote, Str("test_file.txt"), NodeType::File, OperationType::None, "rid", testhelpers::defaultTime + 2,
+            testhelpers::defaultTime + 3, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+
+    // General case
+    {
+        auto syncOp = std::make_shared<SyncOperation>();
+        syncOp->setAffectedNode(localNode);
+        syncOp->setCorrespondingNode(remoteNode);
+        syncOp->setType(OperationType::Create);
+        syncOp->setTargetSide(ReplicaSide::Remote);
+
+        SyncFileItem syncFileItem;
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(NodeType::File, syncFileItem.type());
+        CPPUNIT_ASSERT_EQUAL(ConflictType::None, syncFileItem.conflict());
+        CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, syncFileItem.creationTime());
+        CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 1, syncFileItem.modTime());
+        CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, syncFileItem.size());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("test_file.txt"), syncFileItem.path());
+        CPPUNIT_ASSERT(!syncFileItem.newPath().has_value());
+        CPPUNIT_ASSERT(syncFileItem.localNodeId().has_value());
+        CPPUNIT_ASSERT_EQUAL(std::string("lid"), syncFileItem.localNodeId().value());
+        CPPUNIT_ASSERT(syncFileItem.remoteNodeId().has_value());
+        CPPUNIT_ASSERT_EQUAL(std::string("rid"), syncFileItem.remoteNodeId().value());
+    }
+
+    // Test SyncItem::instruction and SyncItem::direction
+    {
+        auto syncOp = std::make_shared<SyncOperation>();
+        syncOp->setAffectedNode(localNode);
+        syncOp->setCorrespondingNode(remoteNode);
+        syncOp->setTargetSide(ReplicaSide::Remote);
+        SyncFileItem syncFileItem;
+
+        syncOp->setType(OperationType::Create);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Put,
+                             syncFileItem.instruction()); // Local create to be propagated to remote
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
+
+        syncOp->setType(OperationType::Delete);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Remove,
+                             syncFileItem.instruction()); // Local delete to be propagated to remote
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
+
+        syncOp->setType(OperationType::Edit);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Update,
+                             syncFileItem.instruction()); // Local edit to be propagated to remote
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
+
+        localNode->setMoveOriginInfos(
+                {Str("test_file2.txt"), _syncPal->updateTree(ReplicaSide::Local)->rootNode()->id().value()});
+        syncOp->setType(OperationType::Move);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
+                             syncFileItem.instruction()); // Local move to be propagated to remote
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
+
+        syncOp->setType(OperationType::MoveEdit);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
+                             syncFileItem.instruction()); // Local move + edit to be propagated to remote
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Up, syncFileItem.direction());
+
+        syncOp->setAffectedNode(remoteNode);
+        syncOp->setCorrespondingNode(localNode);
+        syncOp->setTargetSide(ReplicaSide::Local);
+
+        syncOp->setType(OperationType::Create);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Get,
+                             syncFileItem.instruction()); // Remote create to be propagated to local
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
+
+        syncOp->setType(OperationType::Delete);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Remove,
+                             syncFileItem.instruction()); // Remote delete to be propagated to local
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
+
+        syncOp->setType(OperationType::Edit);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Update,
+                             syncFileItem.instruction()); // Remote edit to be propagated to local
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
+
+        remoteNode->setMoveOriginInfos(
+                {Str("test_file2.txt"), _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->id().value()});
+        syncOp->setType(OperationType::Move);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
+                             syncFileItem.instruction()); // Remote move to be propagated to local
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
+
+        syncOp->setType(OperationType::MoveEdit);
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Move,
+                             syncFileItem.instruction()); // Remote move + edit to be propagated to local
+        CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, syncFileItem.direction());
+    }
+
+    // Move special case
+    {
+        const auto localParentNode = std::make_shared<Node>(
+                ReplicaSide::Local, Str("parent_dir"), NodeType::Directory, OperationType::None, "lid", testhelpers::defaultTime,
+                testhelpers::defaultTime + 1, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+        const auto remoteParentNode =
+                std::make_shared<Node>(ReplicaSide::Remote, Str("parent_dir"), NodeType::Directory, OperationType::None, "rid",
+                                       testhelpers::defaultTime + 2, testhelpers::defaultTime + 3, testhelpers::defaultFileSize,
+                                       _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+
+        CPPUNIT_ASSERT(remoteNode->setParentNode(remoteParentNode));
+        CPPUNIT_ASSERT(remoteParentNode->insertChildren(remoteNode));
+
+        // Local move from parent_dir/test_file.txt to /test_file.txt
+        localNode->setMoveOriginInfos({"parent_dir/test_file.txt", localParentNode->id().value()});
+        localNode->setChangeEvents(OperationType::Move);
+
+        auto syncOp = std::make_shared<SyncOperation>();
+        syncOp->setAffectedNode(localNode);
+        syncOp->setCorrespondingNode(remoteNode);
+        syncOp->setType(OperationType::Move);
+        syncOp->setTargetSide(ReplicaSide::Remote);
+        SyncFileItem syncFileItem;
+        _executorWorker->initSyncFileItem(syncOp, syncFileItem);
+        CPPUNIT_ASSERT_EQUAL(NodeType::File, syncFileItem.type());
+        CPPUNIT_ASSERT_EQUAL(ConflictType::None, syncFileItem.conflict());
+        CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, syncFileItem.creationTime());
+        CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 1, syncFileItem.modTime());
+        CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, syncFileItem.size());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("parent_dir/test_file.txt"), syncFileItem.path());
+        CPPUNIT_ASSERT(syncFileItem.newPath().has_value());
+        CPPUNIT_ASSERT_EQUAL(SyncPath("test_file.txt"), syncFileItem.newPath().value());
+        CPPUNIT_ASSERT(syncFileItem.localNodeId().has_value());
+        CPPUNIT_ASSERT_EQUAL(std::string("lid"), syncFileItem.localNodeId().value());
+        CPPUNIT_ASSERT(syncFileItem.remoteNodeId().has_value());
+        CPPUNIT_ASSERT_EQUAL(std::string("rid"), syncFileItem.remoteNodeId().value());
+    }
 }
 
 void TestExecutorWorker::testDeleteOpNodes() {

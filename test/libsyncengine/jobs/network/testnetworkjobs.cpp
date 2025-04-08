@@ -49,11 +49,12 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
-#include "mocks/libsyncengine/vfs/mockvfs.h"
 
 using namespace CppUnit;
 
@@ -103,28 +104,28 @@ void TestNetworkJobs::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
     const int userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
+    (void) ParmsDb::instance()->insertUser(user);
     _userDbId = user.dbId();
 
     const int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
+    (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
     const int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     _remoteDirId = testVariables.remoteDirId;
 
@@ -148,6 +149,10 @@ void TestNetworkJobs::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
+    ParametersCache::reset();
+    JobManager::stop();
+    JobManager::clear();
+    JobManager::reset();
     MockIoHelperTestNetworkJobs::resetStdFunctions();
     TestBase::stop();
 }
@@ -430,7 +435,7 @@ void TestNetworkJobs::testDownload() {
         // Upload file
         UploadJob uploadJob(nullptr, _driveDbId, local9MoFilePath, Str2SyncName("9Mo.txt"), remoteTmpDir.id(), 0);
         uploadJob.runSynchronously();
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitInfo().code());
 
         CPPUNIT_ASSERT(!smallPartitionPath.empty());
         IoError ioError = IoError::Unknown;
@@ -453,10 +458,9 @@ void TestNetworkJobs::testDownload() {
 
             downloadJob.runSynchronously();
             MockIoHelperTestNetworkJobs::resetStdFunctions();
-            const ExitInfo exitInfo = {downloadJob.exitCode(), downloadJob.exitCause()};
             CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
                                                      std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
-                                         ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), exitInfo);
+                                         ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
         }
 
         // Not Enough disk space (destination dir)
@@ -467,10 +471,9 @@ void TestNetworkJobs::testDownload() {
             DownloadJob downloadJob(nullptr, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
 
             downloadJob.runSynchronously();
-            const ExitInfo exitInfo = {downloadJob.exitCode(), downloadJob.exitCause()};
             CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
                                                      std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
-                                         ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), exitInfo);
+                                         ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
         }
     }
 
@@ -484,7 +487,7 @@ void TestNetworkJobs::testDownload() {
         // Upload file
         UploadJob uploadJob(nullptr, _driveDbId, local0bytesFilePath, Str2SyncName("0bytes.txt"), remoteTmpDir.id(), 0);
         uploadJob.runSynchronously();
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitInfo().code());
         const NodeId remote0bytesFileId = uploadJob.nodeId();
         const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
         const SyncPath localDestFilePath = temporaryDirectorySync.path() / "empty_file.txt";
@@ -492,8 +495,7 @@ void TestNetworkJobs::testDownload() {
         {
             DownloadJob job(nullptr, _driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false);
             (void) job.runSynchronously();
-            const ExitInfo exitInfo = {job.exitCode(), job.exitCause()};
-            CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exitInfo().code());
         }
         // Check that the file has been copied
         CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
@@ -631,7 +633,7 @@ void TestNetworkJobs::testGetDriveList() {
 void TestNetworkJobs::testGetFileInfo() {
     {
         GetFileInfoJob job(_driveDbId, testFileRemoteId);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
         CPPUNIT_ASSERT(job.jsonRes());
         CPPUNIT_ASSERT(job.path().empty());
     }
@@ -640,7 +642,7 @@ void TestNetworkJobs::testGetFileInfo() {
     {
         GetFileInfoJob jobWithPath(_driveDbId, testFileRemoteId);
         jobWithPath.setWithPath(true);
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, jobWithPath.runSynchronously());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, jobWithPath.runSynchronously().code());
 
         const auto expectedPath =
                 SyncPath("Common documents") / "Test kDrive" / "test_ci" / "test_networkjobs" / "test_download.txt";
@@ -650,7 +652,7 @@ void TestNetworkJobs::testGetFileInfo() {
     // The returned path is empty if the job requests info on the remote drive root.
     {
         GetFileInfoJob jobWithPath(_driveDbId, "1"); // The identifier of the remote root drive is always 1.
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, jobWithPath.runSynchronously());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, jobWithPath.runSynchronously().code());
         jobWithPath.setWithPath(true);
         CPPUNIT_ASSERT(jobWithPath.path().empty());
     }
@@ -1001,9 +1003,12 @@ void TestNetworkJobs::testUploadAborted() {
     }
     job->abort();
 
-    Utility::msleep(1000); // Wait 1sec
+    // Wait for job to finish
+    while (!JobManager::instance()->isJobFinished(job->jobId())) {
+        Utility::msleep(100);
+    }
 
-    NodeId newNodeId = job->nodeId();
+    const auto newNodeId = job->nodeId();
     CPPUNIT_ASSERT(newNodeId.empty());
 
     job.reset();
@@ -1092,7 +1097,8 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
         if (exitCode == ExitCode::Ok) {
             newNodeId = driveUploadSessionJob.nodeId();
             break;
-        } else if (exitCode == ExitCode::NetworkError && driveUploadSessionJob.exitCause() == ExitCause::SocketsDefuncted) {
+        } else if (exitCode == ExitCode::NetworkError &&
+                   driveUploadSessionJob.exitInfo().cause() == ExitCause::SocketsDefuncted) {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
@@ -1134,7 +1140,8 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
         exitCode = driveUploadSessionJob.runSynchronously();
         if (exitCode == ExitCode::Ok) {
             break;
-        } else if (exitCode == ExitCode::NetworkError && driveUploadSessionJob.exitCause() == ExitCause::SocketsDefuncted) {
+        } else if (exitCode == ExitCode::NetworkError &&
+                   driveUploadSessionJob.exitInfo().cause() == ExitCause::SocketsDefuncted) {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {

@@ -77,7 +77,7 @@ bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessio
     (void) startJob;
     if (_syncDb && !_syncDb->insertUploadSessionToken(UploadSessionToken(uploadToken), _uploadSessionTokenDbId)) {
         LOG_WARN(getLogger(), "Error in SyncDb::insertUploadSessionToken");
-        _exitCode = ExitCode::DbError;
+        _exitInfo = ExitCode::DbError;
         return false;
     }
     return true;
@@ -87,10 +87,9 @@ bool DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessi
     _nodeId = finishJob->nodeId();
     _modtimeOut = finishJob->modtime();
 
-    bool found = false;
-    if (_syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
+    if (bool found = false; _syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
         LOG_WARN(getLogger(), "Error in SyncDb::deleteUploadSessionTokenByDbId");
-        _exitCode = ExitCode::DbError;
+        _exitInfo = ExitCode::DbError;
         return false;
     }
 
@@ -102,10 +101,9 @@ bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessi
         return false;
     }
 
-    bool found = false;
-    if (_syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
+    if (bool found = false; _syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
         LOG_WARN(getLogger(), "Error in SyncDb::deleteUploadSessionTokenByDbId");
-        _exitCode = ExitCode::DbError;
+        _exitInfo = ExitCode::DbError;
         return false;
     }
 

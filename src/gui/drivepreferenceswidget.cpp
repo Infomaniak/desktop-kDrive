@@ -32,7 +32,7 @@
 #include "guiutility.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
-#include "libcommon/asserts.h"
+#include "libcommon/utility/qlogiffail.h"
 #include "languagechangefilter.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
@@ -575,7 +575,6 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
             folderTreeItemWidget->setVisible(false);
             folderTreeBox->addWidget(folderTreeItemWidget);
 
-            connect(folderItemWidget, &FolderItemWidget::runSync, this, &DrivePreferencesWidget::runSync);
             connect(folderItemWidget, &FolderItemWidget::pauseSync, this, &DrivePreferencesWidget::pauseSync);
             connect(folderItemWidget, &FolderItemWidget::resumeSync, this, &DrivePreferencesWidget::resumeSync);
             connect(folderItemWidget, &FolderItemWidget::unSync, this, &DrivePreferencesWidget::onUnsyncTriggered);
@@ -1123,7 +1122,7 @@ void DrivePreferencesWidget::onOpenFolder(const QString &filePath) {
     emit openFolder(filePath);
 }
 
-void DrivePreferencesWidget::onSubfoldersLoaded(bool error, bool empty) {
+void DrivePreferencesWidget::onSubfoldersLoaded(const bool error, const ExitCause, const bool empty) {
     setCursor(Qt::ArrowCursor);
     if (error || empty) {
         FolderItemWidget *itemWidget = blocItemWidget((PreferencesBlocWidget *) sender()->parent());
@@ -1134,19 +1133,11 @@ void DrivePreferencesWidget::onSubfoldersLoaded(bool error, bool empty) {
         emit itemWidget->displayFolderDetailCanceled();
 
         if (error) {
-            CustomMessageBox msgBox(QMessageBox::Warning, tr("An error occured while loading the list of subfolders."),
+            CustomMessageBox msgBox(QMessageBox::Warning, tr("An error occurred while loading the list of subfolders."),
                                     QMessageBox::Ok, this);
             msgBox.setDefaultButton(QMessageBox::Ok);
             msgBox.exec();
         }
-        /*else if (empty) {
-            CustomMessageBox msgBox(
-                        QMessageBox::Information,
-                        tr("No subfolders currently on the server."),
-                        QMessageBox::Ok, this);
-            msgBox.setDefaultButton(QMessageBox::Ok);
-            msgBox.exec();
-        }*/
     } else {
         FolderTreeItemWidget *treeItemWidget = (FolderTreeItemWidget *) sender();
         if (!treeItemWidget) {
@@ -1175,7 +1166,7 @@ void DrivePreferencesWidget::onNeedToSave(bool isFolderItemBlackListed) {
 void DrivePreferencesWidget::onCancelUpdate(int syncDbId) {
     FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *) sender()->parent());
     if (treeItemWidget) {
-        LOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
+        QLOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
         treeItemWidget->loadSubFolders();
 
         // Hide update widget
@@ -1190,7 +1181,7 @@ void DrivePreferencesWidget::onCancelUpdate(int syncDbId) {
 void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
     FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget((PreferencesBlocWidget *) sender()->parent());
     if (treeItemWidget) {
-        LOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
+        QLOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
         _displayBigFoldersWarningWidget->setVisible(false);
 
         QSet<QString> oldUndecidedSet;
