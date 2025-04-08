@@ -53,6 +53,7 @@ void RemoteFileSystemObserverWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
+    // Retrieve the list of blacklisted folders.
     (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _blackList);
 
     // Sync loop

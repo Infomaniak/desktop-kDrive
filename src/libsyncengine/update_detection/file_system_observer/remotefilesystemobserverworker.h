@@ -63,7 +63,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         int _driveDbId = -1;
         std::string _cursor;
-        NodeSet _blackList;
+        NodeSet _blackList; // A list of user-selected folders not to be synchronized.
         int _listingFullCounter = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
